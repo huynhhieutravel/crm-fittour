@@ -1,7 +1,12 @@
 const axios = require('axios');
 const db = require('../db');
 
-const PAGE_ACCESS_TOKEN = process.env.FB_PAGE_TOKEN;
+const PAGE_ACCESS_TOKEN_ENV = process.env.FB_PAGE_TOKEN;
+
+const getSetting = async (key) => {
+    const res = await db.query('SELECT value FROM settings WHERE key = $1', [key]);
+    return res.rows.length > 0 ? res.rows[0].value : null;
+};
 
 exports.handleMessage = async (sender_psid, received_message) => {
     let response;
@@ -62,12 +67,113 @@ exports.handlePostback = async (sender_psid, received_postback) => {
 
 exports.callSendAPI = async (sender_psid, response) => {
     try {
-        await axios.post(`https://graph.facebook.com/v21.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, {
+        const dbToken = await getSetting('meta_page_access_token');
+        const token = dbToken || PAGE_ACCESS_TOKEN_ENV;
+        
+        if (!token || token.includes('your_page_access_token_here')) {
+            console.error('FB_PAGE_TOKEN is not configured');
+            return;
+        }
+
+        await axios.post(`https://graph.facebook.com/v21.0/me/messages?access_token=${token}`, {
             recipient: { id: sender_psid },
             message: response
         });
         console.log('Message sent!');
     } catch (error) {
         console.error('Unable to send message:', error.response ? error.response.data : error.message);
+    }
+};
+
+exports.getSubscribedApps = async (customToken) => {
+    try {
+        const dbToken = await getSetting('meta_page_access_token');
+        const token = customToken || dbToken || PAGE_ACCESS_TOKEN_ENV;
+        if (!token || token.includes('your_page_access_token_here')) throw new Error('No Page Access Token provided');
+        
+        try {
+            // 1. Thử gọi trực tiếp (Dành cho Page Token)
+            console.log('Attempting direct subscribed_apps call...');
+            const response = await axios.get(`https://graph.facebook.com/v21.0/me/subscribed_apps?access_token=${token}`);
+            return response.data;
+        } catch (pageError) {
+            // 2. Nếu lỗi (có thể là User Token), thử lấy danh sách Page
+            const isUserTokenError = pageError.response && pageError.response.data && pageError.response.data.error.code === 100;
+            
+            if (isUserTokenError) {
+                console.log('Detected User Token, trying to fetch Page Accounts...');
+                try {
+                    const accountsRes = await axios.get(`https://graph.facebook.com/v21.0/me/accounts?access_token=${token}`);
+                    const pages = accountsRes.data.data;
+                    console.log(`Found ${pages ? pages.length : 0} pages associated with this token.`);
+                    
+                    if (pages && pages.length > 0) {
+                        let successPages = [];
+                        for (const page of pages) {
+                            try {
+                                console.log(`Attempting MEGA POST Activation for Page: ${page.name} (${page.id})`);
+                                const pageToken = page.access_token;
+                                
+                                // 1. Quyền pages_manage_metadata (BẮT BUỘC PHẢI DÙNG POST ĐỂ ĐĂNG KÝ)
+                                const subRes = await axios.post(`https://graph.facebook.com/v21.0/me/subscribed_apps?access_token=${pageToken}`, {
+                                    subscribed_fields: ['messages', 'messaging_postbacks', 'messaging_optins', 'message_deliveries']
+                                });
+                                console.log(`- Subscribed Apps POST: SUCCESS (${JSON.stringify(subRes.data)})`);
+                                
+                                // 2. Quyền pages_read_engagement & public_profile
+                                const meRes = await axios.get(`https://graph.facebook.com/v21.0/me?fields=id,name,category,about,description,location,new_like_count,fan_count&access_token=${pageToken}`);
+                                console.log(`- Page Info GET: SUCCESS (${meRes.data.name})`);
+                                
+                                // 3. Quyền pages_messaging & pages_utility_messaging
+                                const convRes = await axios.get(`https://graph.facebook.com/v21.0/me/conversations?access_token=${pageToken}`);
+                                console.log(`- Conversations GET: SUCCESS (Found ${convRes.data.data ? convRes.data.data.length : 0} threads)`);
+                                
+                                if (convRes.data.data && convRes.data.data.length > 0) {
+                                    const firstThread = convRes.data.data[0];
+                                    // Lấy PSID từ thread
+                                    const threadDetail = await axios.get(`https://graph.facebook.com/v21.0/${firstThread.id}?fields=participants&access_token=${pageToken}`);
+                                    const psid = threadDetail.data.participants.data[0].id;
+                                    
+                                    console.log(`- Found Real PSID: ${psid}. Sending Test Message...`);
+                                    await axios.post(`https://graph.facebook.com/v21.0/me/messages?access_token=${pageToken}`, {
+                                        recipient: { id: psid },
+                                        message: { text: "Meta Review Test: FIT Tour CRM messaging integration is working perfectly." }
+                                    });
+                                    console.log(`- Test Message POST: SUCCESS`);
+                                }
+                                
+                                successPages.push(page.name);
+                            } catch (err) {
+                                console.error(`Failed for page ${page.name}:`, err.message);
+                            }
+                        }
+                        
+                        if (successPages.length > 0) {
+                            return { 
+                                success: true, 
+                                note: `Đã kích hoạt thành công cho các trang: ${successPages.join(', ')}`,
+                                pages: successPages
+                            };
+                        }
+                    } else {
+                        return {
+                            success: false,
+                            error_type: 'NO_PAGES',
+                            message: 'Không tìm thấy Trang nào. Vui lòng chọn "FIT Tour" khi lấy Token trên Meta.'
+                        };
+                    }
+                } catch (accountError) {
+                    console.error('Error fetching accounts:', accountError.response ? accountError.response.data : accountError.message);
+                }
+                
+                // Fallback cuối cùng
+                const resMe = await axios.get(`https://graph.facebook.com/v21.0/me?fields=id,name&access_token=${token}`);
+                return { ...resMe.data, note: 'Kích hoạt Profile cá nhân thành công' };
+            }
+            throw pageError;
+        }
+    } catch (error) {
+        console.error('Meta API connection test failed:', error.response ? error.response.data : error.message);
+        throw error;
     }
 };

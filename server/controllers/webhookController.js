@@ -1,7 +1,10 @@
 const facebookService = require('../services/facebookService');
 
-exports.verifyWebhook = (req, res) => {
-    const VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN;
+const db = require('../db');
+
+exports.verifyWebhook = async (req, res) => {
+    const resSetting = await db.query('SELECT value FROM settings WHERE key = $1', ['meta_verify_token']);
+    const VERIFY_TOKEN = (resSetting.rows.length > 0 && resSetting.rows[0].value) || process.env.FB_VERIFY_TOKEN;
 
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];

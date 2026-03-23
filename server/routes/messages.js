@@ -60,4 +60,26 @@ router.post('/send', auth, async (req, res) => {
     }
 });
 
+// 4. Test Meta API connection (Dành cho việc chứng minh quyền pages_manage_metadata)
+router.post('/test-meta', auth, async (req, res) => {
+    const { token: providedToken } = req.body; // Nhận token từ body
+    console.log('--- META TEST POST REQUEST RECEIVED ---');
+    console.log('Token snippet:', providedToken ? providedToken.substring(0, 10) + '...' : 'NONE');
+    try {
+        const data = await facebookService.getSubscribedApps(providedToken);
+        res.json({
+            success: true,
+            message: 'Đã thực hiện lệnh gọi API thành công!',
+            data: data
+        });
+    } catch (err) {
+        console.error('Test Meta Error:', err.message);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Lỗi khi kết nối Meta API. Vui lòng kiểm tra Page Token.',
+            error: err.message 
+        });
+    }
+});
+
 module.exports = router;

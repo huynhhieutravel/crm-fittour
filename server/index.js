@@ -26,6 +26,7 @@ const leadRoutes = require('./routes/leads');
 const bookingRoutes = require('./routes/bookings');
 const customerRoutes = require('./routes/customers');
 const messageRoutes = require('./routes/messages');
+const settingsRoutes = require('./routes/settings');
 
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/auth', authRoutes);
@@ -34,6 +35,7 @@ app.use('/api/leads', leadRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.get('/', (req, res) => {
     res.send('FIT Tour CRM API is running...');
