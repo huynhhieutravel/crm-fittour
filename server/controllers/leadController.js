@@ -16,11 +16,11 @@ exports.getAllLeads = async (req, res) => {
 };
 
 exports.createLead = async (req, res) => {
-    const { name, phone, email, source, tour_id, assigned_to } = req.body;
+    const { name, phone, email, source, tour_id, assigned_to, consultation_note } = req.body;
     try {
         const result = await db.query(
-            'INSERT INTO leads (name, phone, email, source, tour_id, assigned_to, status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [name, phone, email, source, tour_id, assigned_to, 'new']
+            'INSERT INTO leads (name, phone, email, source, tour_id, assigned_to, status, consultation_note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+            [name, phone, email, source, tour_id, assigned_to, 'new', consultation_note]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {

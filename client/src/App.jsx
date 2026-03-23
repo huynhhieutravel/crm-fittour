@@ -61,6 +61,9 @@ function AppContent() {
     meta_page_access_token: '',
     meta_page_id: ''
   });
+  const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '' });
+  const [showAddLeadModal, setShowAddLeadModal] = useState(false);
+  const [newLead, setNewLead] = useState({ name: '', phone: '', source: 'hotline', tour_id: '', consultation_note: '' });
 
   const addToast = (msg) => addToastGlobal(msg, setToasts);
 
@@ -114,6 +117,35 @@ function AppContent() {
       setLoading(false);
     }
   };
+
+  const handleAddLead = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('/api/leads', newLead, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã thêm Lead mới thành công!');
+      setShowAddLeadModal(false);
+      setNewLead({ name: '', phone: '', source: 'hotline', tour_id: '', consultation_note: '' });
+      fetchLeads();
+    } catch (err) {
+      console.error(err);
+      addToast('Lỗi khi thêm Lead mới');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredLeads = leads.filter(lead => {
+    const matchesStatus = !leadFilters.status || lead.status === leadFilters.status;
+    const matchesSource = !leadFilters.source || lead.source === leadFilters.source;
+    const matchesSearch = !leadFilters.search || 
+      (lead.name?.toLowerCase().includes(leadFilters.search.toLowerCase())) ||
+      (lead.phone?.includes(leadFilters.search));
+    return matchesStatus && matchesSource && matchesSearch;
+  });
 
   const fetchConversations = async () => { /* Giữ nguyên logic fetch */
     try {
@@ -345,32 +377,85 @@ function AppContent() {
         )}
 
         {activeTab === 'leads' && (
-          <div className="leads-view">
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <h2 className="section-title">Quản lý Lead (Marketing)</h2>
-              <button className="login-btn" style={{ width: 'auto', padding: '0.5rem 1rem' }}>+ Thêm Lead mới</button>
+          <div className="leads-view animate-fade-in">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+              <h2 className="section-title" style={{ margin: 0 }}>Quản lý Lead (Marketing)</h2>
+              
+              <div style={{ display: 'flex', gap: '0.75rem', flex: 1, justifyContent: 'flex-end', minWidth: '300px' }}>
+                <input 
+                  type="text" 
+                  placeholder="Tìm tên hoặc SĐT..." 
+                  value={leadFilters.search}
+                  onChange={(e) => setLeadFilters({...leadFilters, search: e.target.value})}
+                  style={{ width: '200px', padding: '0.5rem 1rem', borderRadius: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }}
+                />
+                <select 
+                  value={leadFilters.status}
+                  onChange={(e) => setLeadFilters({...leadFilters, status: e.target.value})}
+                  style={{ padding: '0.5rem', borderRadius: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }}
+                >
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="new">Mới</option>
+                  <option value="potential">Tiềm năng</option>
+                  <option value="won">Chốt đơn</option>
+                  <option value="lost">Thất bại</option>
+                </select>
+                <select 
+                  value={leadFilters.source}
+                  onChange={(e) => setLeadFilters({...leadFilters, source: e.target.value})}
+                  style={{ padding: '0.5rem', borderRadius: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }}
+                >
+                  <option value="">Tất cả nguồn</option>
+                  <option value="messenger">Messenger</option>
+                  <option value="facebook_ads">Facebook Ads</option>
+                  <option value="hotline">Hotline</option>
+                  <option value="website">Website</option>
+                </select>
+                <button className="login-btn" style={{ width: 'auto', padding: '0.5rem 1.5rem' }} onClick={() => setShowAddLeadModal(true)}>+ Thêm Lead</button>
+              </div>
             </div>
+
             <div className="recent-bookings excel-mode">
               <table>
-                <thead><tr><th>Họ tên</th><th>Số điện thoại</th><th>Nguồn</th><th>Tour quan tâm</th><th>Trạng thái</th><th>Ghi chú tư vấn</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Họ tên</th>
+                    <th>Số điện thoại</th>
+                    <th>Nguồn</th>
+                    <th>Tour quan tâm</th>
+                    <th>Trạng thái</th>
+                    <th>Ghi chú tư vấn</th>
+                  </tr>
+                </thead>
                 <tbody>
-                  {leads.map(lead => (
+                  {filteredLeads.map(lead => (
                     <tr key={lead.id}>
                       <td><input className="cell-input" defaultValue={lead.name} onBlur={(e) => handleInlineUpdate(lead.id, 'name', e.target.value)} /></td>
-                      <td><input className="cell-input" defaultValue={lead.phone} onBlur={(e) => handleInlineUpdate(lead.id, 'phone', e.target.value)} placeholder="Chưa có SĐT..." /></td>
+                      <td><input className="cell-input" defaultValue={lead.phone} onBlur={(e) => handleInlineUpdate(lead.id, 'phone', e.target.value)} placeholder="Trống..." /></td>
                       <td>
                         <select className="cell-select" defaultValue={lead.source} onChange={(e) => handleInlineUpdate(lead.id, 'source', e.target.value)}>
-                          <option value="messenger">Messenger</option><option value="facebook_ads">Facebook Ads</option><option value="tiktok">Tik Tok</option><option value="website">Website</option><option value="hotline">Hotline</option>
+                          <option value="messenger">Messenger</option>
+                          <option value="facebook_ads">Facebook Ads</option>
+                          <option value="tiktok">Tik Tok</option>
+                          <option value="website">Website</option>
+                          <option value="hotline">Hotline</option>
                         </select>
                       </td>
                       <td>
                         <select className="cell-select" defaultValue={lead.tour_id} onChange={(e) => handleInlineUpdate(lead.id, 'tour_id', e.target.value)}>
-                          <option value="">Chọn tour...</option>{tours.map(t => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                          <option value="">Chọn tour...</option>
+                          {tours.map(t => (<option key={t.id} value={t.id}>{t.name}</option>))}
                         </select>
                       </td>
                       <td>
                         <select className={`cell-select status-${lead.status}`} defaultValue={lead.status} onChange={(e) => handleInlineUpdate(lead.id, 'status', e.target.value)}>
-                          <option value="new">✨ Mới</option><option value="potential">💎 Tiềm năng</option><option value="high_opportunity">🔥 Cơ hội cao</option><option value="returning">🔄 Khách quay lại</option><option value="non_potential">⚪ Không tiềm năng</option><option value="junk">🗑️ Lead rác</option><option value="won">✅ Chốt đơn</option><option value="lost">❌ Thất bại</option>
+                          <option value="new">✨ Mới</option>
+                          <option value="potential">💎 Tiềm năng</option>
+                          <option value="high_opportunity">🔥 Cơ hội cao</option>
+                          <option value="returning">🔄 Quay lại</option>
+                          <option value="non_potential">⚪ Thấp</option>
+                          <option value="won">✅ Chốt</option>
+                          <option value="lost">❌ Lost</option>
                         </select>
                       </td>
                       <td><input className="cell-input" defaultValue={lead.consultation_note} onBlur={(e) => handleInlineUpdate(lead.id, 'consultation_note', e.target.value)} placeholder="Nhập ghi chú..." /></td>
@@ -378,6 +463,59 @@ function AppContent() {
                   ))}
                 </tbody>
               </table>
+              {filteredLeads.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-light)', opacity: 0.5 }}>Không tìm thấy Lead nào khớp với bộ lọc.</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Modal Thêm Lead Mới */}
+        {showAddLeadModal && (
+          <div className="modal-overlay" onClick={() => setShowAddLeadModal(false)}>
+            <div className="modal-content animate-fade-in" onClick={e => e.stopPropagation()}>
+              <h3 style={{ marginBottom: '1.5rem' }}>Thêm Lead mới</h3>
+              <form onSubmit={handleAddLead} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="form-group">
+                  <label>Họ tên khách hàng</label>
+                  <input type="text" required value={newLead.name} onChange={e => setNewLead({...newLead, name: e.target.value})} placeholder="Nguyễn Văn A..." />
+                </div>
+                <div className="form-group">
+                  <label>Số điện thoại</label>
+                  <input type="text" value={newLead.phone} onChange={e => setNewLead({...newLead, phone: e.target.value})} placeholder="090..." />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label>Nguồn</label>
+                    <select value={newLead.source} onChange={e => setNewLead({...newLead, source: e.target.value})}>
+                      <option value="hotline">Hotline</option>
+                      <option value="messenger">Messenger</option>
+                      <option value="website">Website</option>
+                      <option value="walk_in">Khách vãng lai</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Tour quan tâm</label>
+                    <select value={newLead.tour_id} onChange={e => setNewLead({...newLead, tour_id: e.target.value})}>
+                      <option value="">Chọn tour...</option>
+                      {tours.map(t => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                    </select>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Ghi chú ban đầu</label>
+                  <textarea 
+                    value={newLead.consultation_note} 
+                    onChange={e => setNewLead({...newLead, consultation_note: e.target.value})}
+                    placeholder="Khách cần tư vấn tour Tây Tạng..."
+                    style={{ minHeight: '80px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)', borderRadius: '0.5rem', padding: '0.75rem', color: 'white' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                  <button type="button" className="login-btn" style={{ background: 'transparent', border: '1px solid var(--glass-border)' }} onClick={() => setShowAddLeadModal(false)}>Hủy</button>
+                  <button type="submit" className="login-btn" disabled={loading}>{loading ? 'Đang lưu...' : 'Lưu Lead'}</button>
+                </div>
+              </form>
             </div>
           </div>
         )}
