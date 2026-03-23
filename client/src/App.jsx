@@ -69,10 +69,21 @@ function AppContent() {
   const [leadNotes, setLeadNotes] = useState([]);
   const [newNote, setNewNote] = useState('');
   const [hoveredNote, setHoveredNote] = useState({ id: null, content: '', x: 0, y: 0 });
+  const [isLightMode, setIsLightMode] = useState(false);
+  const [showEditLeadModal, setShowEditLeadModal] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
 
   const addToast = (msg) => addToastGlobal(msg, setToasts);
 
   // Restore Session
+  useEffect(() => {
+    if (isLightMode) {
+      document.body.classList.add('light-mode');
+    } else {
+      document.body.classList.remove('light-mode');
+    }
+  }, [isLightMode]);
+
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
@@ -175,6 +186,25 @@ function AppContent() {
       fetchNotes(selectedLeadForNotes.id);
       addToast('Đã lưu ghi chú mới');
     } catch (err) { console.error(err); }
+  };
+
+  const handleUpdateLead = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/leads/${editingLead.id}`, editingLead, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã cập nhật thông tin Lead!');
+      setShowEditLeadModal(false);
+      fetchLeads();
+    } catch (err) {
+      console.error(err);
+      addToast('Lỗi khi cập nhật Lead');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredLeads = leads.filter(lead => {
@@ -350,7 +380,16 @@ function AppContent() {
       <main className="main-content">
         <header className="header">
           <h1>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
-          <div className="user-profile">Chào, {user?.full_name} ({user?.role})</div>
+          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+            <button 
+              onClick={() => setIsLightMode(!isLightMode)} 
+              style={{ background: 'var(--card-bg)', border: '1px solid var(--glass-border)', padding: '0.6rem', borderRadius: '50%', cursor: 'pointer', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title={isLightMode ? "Chế độ tối" : "Chế độ sáng"}
+            >
+              {isLightMode ? <Lock size={20} /> : <ShieldCheck size={20} />}
+            </button>
+            <div className="user-profile">Chào, {user?.full_name} ({user?.role})</div>
+          </div>
         </header>
 
         {activeTab === 'dashboard' && (
@@ -542,7 +581,7 @@ function AppContent() {
                         <input className="cell-input" defaultValue={lead.consultation_note} onBlur={(e) => handleInlineUpdate(lead.id, 'consultation_note', e.target.value)} placeholder="Ghi chú..." />
                         <button 
                           style={{ background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer', padding: '4px' }}
-                          onClick={() => { setSelectedLeadForNotes(lead); fetchNotes(lead.id); }}
+                          onClick={() => { setEditingLead(lead); setShowEditLeadModal(true); }}
                         >
                           <Settings size={14} />
                         </button>
@@ -602,6 +641,77 @@ function AppContent() {
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                   <button type="button" className="login-btn" style={{ background: 'transparent', border: '1px solid var(--glass-border)' }} onClick={() => setShowAddLeadModal(false)}>Hủy</button>
                   <button type="submit" className="login-btn" disabled={loading}>{loading ? 'Đang lưu...' : 'Lưu Lead'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Chỉnh sửa Lead */}
+        {showEditLeadModal && editingLead && (
+          <div className="modal-overlay" onClick={() => setShowEditLeadModal(false)}>
+            <div className="modal-content animate-fade-in" style={{ maxWidth: '650px' }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                <h3>Chỉnh sửa thông tin Lead</h3>
+                <button onClick={() => setShowEditLeadModal(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>✕</button>
+              </div>
+              <form onSubmit={handleUpdateLead} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label>Họ tên</label>
+                    <input type="text" value={editingLead.name} onChange={e => setEditingLead({...editingLead, name: e.target.value})} />
+                  </div>
+                  <div className="form-group">
+                    <label>Số điện thoại</label>
+                    <input type="text" value={editingLead.phone} onChange={e => setEditingLead({...editingLead, phone: e.target.value})} />
+                  </div>
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label>Nguồn</label>
+                    <select value={editingLead.source} onChange={e => setEditingLead({...editingLead, source: e.target.value})}>
+                      <option value="messenger">Messenger</option>
+                      <option value="facebook_ads">Facebook Ads</option>
+                      <option value="tiktok">Tik Tok</option>
+                      <option value="website">Website</option>
+                      <option value="hotline">Hotline</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Tour quan tâm</label>
+                    <select value={editingLead.tour_id || ''} onChange={e => setEditingLead({...editingLead, tour_id: e.target.value})}>
+                      <option value="">Chọn tour...</option>
+                      {tours.map(t => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Trạng thái</label>
+                  <select value={editingLead.status} onChange={e => setEditingLead({...editingLead, status: e.target.value})}>
+                    <option value="new">✨ Mới</option>
+                    <option value="potential">💎 Tiềm năng</option>
+                    <option value="high_opportunity">🔥 Cơ hội cao</option>
+                    <option value="returning">🔄 Quay lại</option>
+                    <option value="won">✅ Chốt đơn</option>
+                    <option value="lost">❌ Lost</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Ghi chú chi tiết</label>
+                  <textarea 
+                    value={editingLead.consultation_note || ''} 
+                    onChange={e => setEditingLead({...editingLead, consultation_note: e.target.value})}
+                    style={{ minHeight: '100px', background: 'rgba(0,0,0,0.2)', width: '100%', border: '1px solid var(--glass-border)', padding: '1rem', color: 'white', borderRadius: '0.75rem' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                  <button type="button" className="login-btn" style={{ background: 'transparent', border: '1px solid var(--glass-border)' }} onClick={() => setShowEditLeadModal(false)}>Hủy</button>
+                  <button type="button" className="login-btn" style={{ background: 'var(--primary-light)', color: 'white' }} onClick={() => { setShowEditLeadModal(false); setSelectedLeadForNotes(editingLead); fetchNotes(editingLead.id); }}>Lịch sử tư vấn</button>
+                  <button type="submit" className="login-btn">Lưu thay đổi</button>
                 </div>
               </form>
             </div>
