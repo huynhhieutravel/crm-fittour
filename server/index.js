@@ -27,6 +27,7 @@ const bookingRoutes = require('./routes/bookings');
 const customerRoutes = require('./routes/customers');
 const messageRoutes = require('./routes/messages');
 const settingsRoutes = require('./routes/settings');
+const notesRoutes = require('./routes/notes'); // Added notes route require
 
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/auth', authRoutes);

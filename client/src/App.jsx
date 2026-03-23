@@ -64,6 +64,11 @@ function AppContent() {
   const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '' });
   const [showAddLeadModal, setShowAddLeadModal] = useState(false);
   const [newLead, setNewLead] = useState({ name: '', phone: '', source: 'hotline', tour_id: '', consultation_note: '' });
+  const [fastLead, setFastLead] = useState({ name: '', phone: '', source: 'facebook_ads', tour_id: '', status: 'new' });
+  const [selectedLeadForNotes, setSelectedLeadForNotes] = useState(null);
+  const [leadNotes, setLeadNotes] = useState([]);
+  const [newNote, setNewNote] = useState('');
+  const [hoveredNote, setHoveredNote] = useState({ id: null, content: '', x: 0, y: 0 });
 
   const addToast = (msg) => addToastGlobal(msg, setToasts);
 
@@ -120,15 +125,25 @@ function AppContent() {
 
   const handleAddLead = async (e) => {
     e.preventDefault();
+    await createLead(newLead);
+    setShowAddLeadModal(false);
+    setNewLead({ name: '', phone: '', source: 'hotline', tour_id: '', consultation_note: '' });
+  };
+
+  const handleFastAddLead = async () => {
+    if (!fastLead.name) { addToast('Vui lòng nhập tên khách'); return; }
+    await createLead(fastLead);
+    setFastLead({ name: '', phone: '', source: 'facebook_ads', tour_id: '', status: 'new' });
+  };
+
+  const createLead = async (leadData) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('/api/leads', newLead, {
+      await axios.post('/api/leads', leadData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       addToast('Đã thêm Lead mới thành công!');
-      setShowAddLeadModal(false);
-      setNewLead({ name: '', phone: '', source: 'hotline', tour_id: '', consultation_note: '' });
       fetchLeads();
     } catch (err) {
       console.error(err);
@@ -136,6 +151,30 @@ function AppContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchNotes = async (leadId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`/api/notes/${leadId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setLeadNotes(res.data);
+    } catch (err) { console.error(err); }
+  };
+
+  const handleAddNote = async (e) => {
+    e.preventDefault();
+    if (!newNote.trim()) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('/api/notes', { lead_id: selectedLeadForNotes.id, content: newNote }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNewNote('');
+      fetchNotes(selectedLeadForNotes.id);
+      addToast('Đã lưu ghi chú mới');
+    } catch (err) { console.error(err); }
   };
 
   const filteredLeads = leads.filter(lead => {
@@ -428,9 +467,50 @@ function AppContent() {
                   </tr>
                 </thead>
                 <tbody>
+                  {/* Dòng nhập nhanh (Fast Add) */}
+                  <tr style={{ background: 'rgba(251, 191, 36, 0.1)', border: '2px solid var(--secondary)' }}>
+                    <td><input className="cell-input" placeholder="Nhập tên nhanh..." value={fastLead.name} onChange={e => setFastLead({...fastLead, name: e.target.value})} onKeyDown={e => e.key === 'Enter' && handleFastAddLead()} /></td>
+                    <td><input className="cell-input" placeholder="SĐT..." value={fastLead.phone} onChange={e => setFastLead({...fastLead, phone: e.target.value})} /></td>
+                    <td>
+                      <select className="cell-select" value={fastLead.source} onChange={e => setFastLead({...fastLead, source: e.target.value})}>
+                        <option value="facebook_ads">Facebook Ads</option>
+                        <option value="messenger">Messenger</option>
+                        <option value="website">Website</option>
+                        <option value="hotline">Hotline</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select className="cell-select" value={fastLead.tour_id} onChange={e => setFastLead({...fastLead, tour_id: e.target.value})}>
+                        <option value="">Chọn tour...</option>
+                        {tours.map(t => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                      </select>
+                    </td>
+                    <td>
+                      <select className="cell-select" value={fastLead.status} onChange={e => setFastLead({...fastLead, status: e.target.value})}>
+                        <option value="new">✨ Mới</option>
+                        <option value="potential">💎 Tiềm năng</option>
+                      </select>
+                    </td>
+                    <td style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <button className="login-btn" style={{ width: '80%', padding: '0.4rem', fontSize: '0.8rem' }} onClick={handleFastAddLead}>LƯU</button>
+                    </td>
+                  </tr>
+
                   {filteredLeads.map(lead => (
                     <tr key={lead.id}>
-                      <td><input className="cell-input" defaultValue={lead.name} onBlur={(e) => handleInlineUpdate(lead.id, 'name', e.target.value)} /></td>
+                      <td style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input className="cell-input" defaultValue={lead.name} onBlur={(e) => handleInlineUpdate(lead.id, 'name', e.target.value)} />
+                        {lead.consultation_note && (
+                          <div 
+                            style={{ cursor: 'help', color: 'var(--secondary)', position: 'relative' }}
+                            onMouseEnter={(e) => setHoveredNote({ id: lead.id, content: lead.consultation_note, x: e.clientX, y: e.clientY })}
+                            onMouseLeave={() => setHoveredNote({ id: null, content: '', x: 0, y: 0 })}
+                            onClick={() => { setSelectedLeadForNotes(lead); fetchNotes(lead.id); }}
+                          >
+                            <MessageSquare size={16} />
+                          </div>
+                        )}
+                      </td>
                       <td><input className="cell-input" defaultValue={lead.phone} onBlur={(e) => handleInlineUpdate(lead.id, 'phone', e.target.value)} placeholder="Trống..." /></td>
                       <td>
                         <select className="cell-select" defaultValue={lead.source} onChange={(e) => handleInlineUpdate(lead.id, 'source', e.target.value)}>
@@ -458,7 +538,15 @@ function AppContent() {
                           <option value="lost">❌ Lost</option>
                         </select>
                       </td>
-                      <td><input className="cell-input" defaultValue={lead.consultation_note} onBlur={(e) => handleInlineUpdate(lead.id, 'consultation_note', e.target.value)} placeholder="Nhập ghi chú..." /></td>
+                      <td style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input className="cell-input" defaultValue={lead.consultation_note} onBlur={(e) => handleInlineUpdate(lead.id, 'consultation_note', e.target.value)} placeholder="Ghi chú..." />
+                        <button 
+                          style={{ background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer', padding: '4px' }}
+                          onClick={() => { setSelectedLeadForNotes(lead); fetchNotes(lead.id); }}
+                        >
+                          <Settings size={14} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -517,6 +605,68 @@ function AppContent() {
                 </div>
               </form>
             </div>
+          </div>
+        )}
+
+        {/* Modal Lịch sử tư vấn */}
+        {selectedLeadForNotes && (
+          <div className="modal-overlay" onClick={() => setSelectedLeadForNotes(null)}>
+            <div className="modal-content animate-fade-in" style={{ maxWidth: '700px' }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                <h3>Lịch sử tư vấn: {selectedLeadForNotes.name}</h3>
+                <button onClick={() => setSelectedLeadForNotes(null)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>✕</button>
+              </div>
+              
+              <div className="form-group" style={{ marginBottom: '2rem' }}>
+                <label>Ghi chú chi tiết hiện tại</label>
+                <textarea 
+                  defaultValue={selectedLeadForNotes.consultation_note} 
+                  onBlur={(e) => handleInlineUpdate(selectedLeadForNotes.id, 'consultation_note', e.target.value)}
+                  style={{ minHeight: '100px', background: 'rgba(0,0,0,0.2)', width: '100%', border: '1px solid var(--glass-border)', padding: '1rem', color: 'white', borderRadius: '0.75rem' }}
+                />
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+                <h4 style={{ marginBottom: '1rem' }}>Timeline chăm sóc</h4>
+                <form onSubmit={handleAddNote} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                  <input 
+                    className="cell-input" 
+                    placeholder="Nhập nội dung tư vấn mới..." 
+                    value={newNote}
+                    onChange={e => setNewNote(e.target.value)}
+                    style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '0.75rem' }}
+                  />
+                  <button type="submit" className="login-btn" style={{ width: 'auto', padding: '0.5rem 1.5rem' }}>Gửi</button>
+                </form>
+
+                <div style={{ maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {leadNotes.map(note => (
+                    <div key={note.id} style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '0.75rem', borderLeft: '3px solid var(--secondary)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-light)', marginBottom: '0.5rem' }}>
+                        <span>{note.creator_name}</span>
+                        <span>{new Date(note.created_at).toLocaleString('vi-VN')}</span>
+                      </div>
+                      <div>{note.content}</div>
+                    </div>
+                  ))}
+                  {leadNotes.length === 0 && <div style={{ textAlign: 'center', opacity: 0.5 }}>Chưa có lịch sử tư vấn.</div>}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Note Tooltip */}
+        {hoveredNote.id && (
+          <div style={{ 
+            position: 'fixed', top: hoveredNote.y + 20, left: hoveredNote.x, 
+            background: '#1a1d21', border: '1px solid var(--secondary)', padding: '1rem', borderRadius: '1rem', 
+            zIndex: 2000, maxWidth: '300px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+            animation: 'fadeIn 0.2s ease-out'
+          }}>
+            <div style={{ color: 'var(--secondary)', fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '0.5rem', borderBottom: '1px solid rgba(251, 191, 36, 0.2)', paddingBottom: '0.25rem' }}>Ghi chú mới nhất</div>
+            <div style={{ fontSize: '0.9rem', color: 'white' }}>{hoveredNote.content}</div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-light)', marginTop: '0.5rem', textAlign: 'right' }}>Di chuột ra ngoài để đóng</div>
           </div>
         )}
 
