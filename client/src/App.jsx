@@ -20,7 +20,9 @@ import {
   LogOut,
   Lock,
   ShieldCheck,
-  Settings
+  Settings,
+  Sun,
+  Moon
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -386,7 +388,7 @@ function AppContent() {
               style={{ background: 'var(--card-bg)', border: '1px solid var(--glass-border)', padding: '0.6rem', borderRadius: '50%', cursor: 'pointer', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               title={isLightMode ? "Chế độ tối" : "Chế độ sáng"}
             >
-              {isLightMode ? <Lock size={20} /> : <ShieldCheck size={20} />}
+              {isLightMode ? <Moon size={20} /> : <Sun size={20} />}
             </button>
             <div className="user-profile">Chào, {user?.full_name} ({user?.role})</div>
           </div>
