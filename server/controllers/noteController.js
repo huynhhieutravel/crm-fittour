@@ -13,15 +13,18 @@ exports.getNotesByLeadId = async (req, res) => {
 };
 
 exports.addNote = async (req, res) => {
-    const { lead_id, content } = req.body;
+    const { lead_id, customer_id, content } = req.body;
     const created_by = req.user.id;
     try {
+        console.log('Adding Note - Body:', req.body);
         const result = await db.query(
-            'INSERT INTO lead_notes (lead_id, content, created_by) VALUES ($1, $2, $3) RETURNING *',
-            [lead_id, content, created_by]
+            'INSERT INTO lead_notes (lead_id, customer_id, content, created_by) VALUES ($1, $2, $3, $4) RETURNING *',
+            [lead_id || null, customer_id || null, content, created_by]
         );
+        console.log('Note added:', result.rows[0]);
         res.status(201).json(result.rows[0]);
     } catch (err) {
+        console.error('Add Note Error:', err);
         res.status(500).json({ message: err.message });
     }
 };

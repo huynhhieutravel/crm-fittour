@@ -20,10 +20,25 @@ exports.handleMessage = async (sender_psid, received_message) => {
         let leadId;
 
         if (convResult.rows.length === 0) {
-            // 2. Nếu chưa có, tạo Lead mới
+            // 2. Lấy thông tin profile từ Facebook (nếu có thể)
+            let senderName = `Messenger Guest ${sender_psid.substring(0, 5)}`;
+            try {
+                const dbToken = await getSetting('meta_page_access_token');
+                const token = dbToken || PAGE_ACCESS_TOKEN_ENV;
+                if (token) {
+                    const profileRes = await axios.get(`https://graph.facebook.com/v21.0/${sender_psid}?fields=first_name,last_name,profile_pic&access_token=${token}`);
+                    if (profileRes.data && (profileRes.data.first_name || profileRes.data.last_name)) {
+                        senderName = `${profileRes.data.first_name || ''} ${profileRes.data.last_name || ''}`.trim();
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching messenger profile:', err.response ? err.response.data : err.message);
+            }
+
+            // 3. Nếu chưa có, tạo Lead mới
             const leadResult = await db.query(
                 'INSERT INTO leads (name, source, status) VALUES ($1, $2, $3) RETURNING id',
-                [`Messenger Guest ${sender_psid.substring(0, 5)}`, 'messenger', 'new']
+                [senderName, 'messenger', 'new']
             );
             leadId = leadResult.rows[0].id;
 

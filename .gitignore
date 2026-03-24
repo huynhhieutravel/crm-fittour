@@ -1,8 +1,14 @@
+.DS_Store
+.apple
+._*
+*.log
+*.sqlite
 node_modules/
 .env
 dist/
 build/
-.DS_Store
-*.log
 client/node_modules/
 server/node_modules/
+global_errors.log
+loi_tao_lead.txt
+server.log
