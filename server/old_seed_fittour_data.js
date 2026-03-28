@@ -11,14 +11,13 @@ const pool = new Pool({
 async function seed() {
   const client = await pool.connect();
   try {
-    console.log('--- Cleaning old data ---');
-    // Clear all tables in reverse dependency order to avoid FK violations
-    await client.query("DELETE FROM lead_notes");
-    await client.query("DELETE FROM leads");
-    await client.query("DELETE FROM bookings");
-    await client.query("DELETE FROM tour_departures");
-    await client.query("DELETE FROM tour_templates");
-    await client.query("DELETE FROM customers");
+    console.log('--- Cleaning old data (optional) ---');
+    // Delete existing sample records to avoid clutter
+    await client.query("DELETE FROM lead_notes WHERE lead_id IN (SELECT id FROM leads WHERE name LIKE '%Sample%' OR name LIKE '%Nguyễn Văn Hùng%')");
+    await client.query("DELETE FROM leads WHERE name LIKE '%Sample%' OR name LIKE '%Nguyễn Văn Hùng%'");
+    await client.query("DELETE FROM bookings WHERE tour_id IN (SELECT id FROM tour_templates WHERE name LIKE '%Tour%')");
+    await client.query("DELETE FROM tour_departures WHERE tour_template_id IN (SELECT id FROM tour_templates WHERE name LIKE '%Tour%')");
+    await client.query("DELETE FROM tour_templates WHERE name LIKE '%Tour%'");
 
     console.log('--- Seeding Tour Templates ---');
     const templates = [
@@ -52,10 +51,11 @@ async function seed() {
       [templateIds['Tour Maroc 12N11Đ trọn gói – KS 4 sao'], '2026-03-20', '2026-03-31', 'Open', 15, 75000000],
       [templateIds['Tour Giang Nam 5 ngày – Khách sạn 4 sao, NO SHOPPING'], '2026-03-21', '2026-03-25', 'Open', 25, 15000000],
       [templateIds['Tour Bhutan 5N4Đ trọn gói – Bay thẳng từ TP.HCM'], '2026-03-25', '2026-03-29', 'Open', 15, 55000000],
+      
       [templateIds['Tour núi lửa Bromo 6 ngày 5 đêm – Hành trình Trekking'], '2026-04-03', '2026-04-08', 'Open', 12, 22000000],
       [templateIds['Tour Thổ Nhĩ Kỳ 10N9Đ trọn gói – Khách sạn 4-5 sao'], '2026-04-05', '2026-04-14', 'Open', 20, 45000000],
       [templateIds['Tour Nam Mỹ 14N13Đ cao cấp đi qua Brazil, Peru, Argentina'], '2026-04-21', '2026-05-04', 'Open', 10, 185000000],
-      [templateIds['Tour Chuyến Tàu Thanh Tặng 10N9Đ – Trạm căn cứ EBC'], '2026-04-23', '2026-05-02', 'Open', 15, 58000000]
+      [templateIds['Tour Chuyến Tàu Thanh Tạng 10N9Đ – Trạm căn cứ EBC'], '2026-04-23', '2026-05-02', 'Open', 15, 58000000]
     ];
 
     const departureIds = [];

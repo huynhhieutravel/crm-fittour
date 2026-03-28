@@ -1,5 +1,6 @@
 const axios = require('axios');
 const db = require('../db');
+const metaCapi = require('./metaCapiService');
 
 const PAGE_ACCESS_TOKEN_ENV = process.env.FB_PAGE_TOKEN;
 
@@ -35,12 +36,17 @@ exports.handleMessage = async (sender_psid, received_message) => {
                 console.error('Error fetching messenger profile:', err.response ? err.response.data : err.message);
             }
 
-            // 3. Nếu chưa có, tạo Lead mới
+            // 3. Nếu chưa có, tạo Lead mới (với facebook_psid)
             const leadResult = await db.query(
-                'INSERT INTO leads (name, source, status) VALUES ($1, $2, $3) RETURNING id',
-                [senderName, 'messenger', 'new']
+                'INSERT INTO leads (name, source, status, facebook_psid) VALUES ($1, $2, $3, $4) RETURNING *',
+                [senderName, 'messenger', 'new', sender_psid]
             );
             leadId = leadResult.rows[0].id;
+
+            // Fire CAPI Lead event (async, non-blocking)
+            metaCapi.sendLeadEvent(leadResult.rows[0]).catch(err => 
+                console.error('[CAPI] Error sending Lead event:', err.message)
+            );
 
             // 3. Tạo Hội thoại mới
             const newConv = await db.query(

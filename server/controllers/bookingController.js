@@ -1,4 +1,5 @@
 const db = require('../db');
+const { logActivity } = require('../utils/logger');
 
 exports.getAllBookings = async (req, res) => {
     try {
@@ -19,12 +20,32 @@ exports.getAllBookings = async (req, res) => {
 exports.createBooking = async (req, res) => {
     const { booking_code, customer_id, tour_id, tour_departure_id, start_date, pax_count, total_price, payment_status, booking_status, notes } = req.body;
     try {
-        // tour_id is kept for legacy/template reference, but tour_departure_id is the primary link
+        // Auto-generate booking code if missing
+        let finalCode = booking_code;
+        if (!finalCode || finalCode.trim() === '') {
+            const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            const rand = Math.floor(1000 + Math.random() * 9000);
+            finalCode = `FT-${dateStr}-${rand}`;
+        }
+
         const result = await db.query(
             'INSERT INTO bookings (booking_code, customer_id, tour_id, tour_departure_id, start_date, pax_count, total_price, payment_status, booking_status, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
-            [booking_code, customer_id, tour_id, tour_departure_id, start_date, pax_count, total_price, payment_status || 'unpaid', booking_status || 'pending', notes]
+            [finalCode, customer_id, tour_id || null, tour_departure_id || null, start_date || null, pax_count || 0, total_price || 0, payment_status || 'unpaid', booking_status || 'pending', notes || null]
         );
-        res.status(201).json(result.rows[0]);
+        
+        const newBooking = result.rows[0];
+
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'CREATE',
+            entity_type: 'BOOKING',
+            entity_id: newBooking.id,
+            details: `Tạo mới Booking: ${newBooking.booking_code}`,
+            new_data: newBooking
+        });
+
+        res.status(201).json(newBooking);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -48,24 +69,166 @@ exports.getBookingById = async (req, res) => {
 };
 
 exports.updateBooking = async (req, res) => {
-    const { tour_departure_id, start_date, pax_count, total_price, payment_status, booking_status, notes } = req.body;
+    const bookingId = req.params.id;
+    const client = await db.pool.connect();
     try {
-        const result = await db.query(
-            'UPDATE bookings SET tour_departure_id=$1, start_date=$2, pax_count=$3, total_price=$4, payment_status=$5, booking_status=$6, notes=$7 WHERE id=$8 RETURNING *',
-            [tour_departure_id, start_date, pax_count, total_price, payment_status, booking_status, notes, req.params.id]
-        );
-        if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy booking' });
-        res.json(result.rows[0]);
+        await client.query('BEGIN');
+
+        // 1. Get old data
+        const oldRes = await client.query('SELECT * FROM bookings WHERE id = $1', [bookingId]);
+        if (oldRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Không tìm thấy booking' });
+        }
+        const oldBooking = oldRes.rows[0];
+
+        // 2. Build Dynamic Update
+        const updates = req.body;
+        const updateFields = [];
+        const queryValues = [];
+        const allowedFields = [
+            'booking_code', 'customer_id', 'tour_id', 'tour_departure_id', 
+            'start_date', 'pax_count', 'total_price', 'payment_status', 
+            'booking_status', 'notes'
+        ];
+
+        Object.keys(updates).forEach(key => {
+            if (allowedFields.includes(key)) {
+                updateFields.push(`${key} = $${queryValues.length + 1}`);
+                queryValues.push(updates[key]);
+            }
+        });
+
+        if (updateFields.length > 0) {
+            queryValues.push(bookingId);
+            const updateQuery = `UPDATE bookings SET ${updateFields.join(', ')} WHERE id = $${queryValues.length} RETURNING *`;
+            const result = await client.query(updateQuery, queryValues);
+            const updatedBooking = result.rows[0];
+
+            // 3. LOG ACTIVITY
+            await logActivity({
+                user_id: req.user ? req.user.id : null,
+                action_type: 'UPDATE',
+                entity_type: 'BOOKING',
+                entity_id: bookingId,
+                details: `Cập nhật Booking: ${updatedBooking.booking_code}`,
+                old_data: oldBooking,
+                new_data: updatedBooking
+            });
+
+            await client.query('COMMIT');
+            res.json(updatedBooking);
+        } else {
+            await client.query('COMMIT');
+            res.json(oldBooking);
+        }
     } catch (err) {
+        await client.query('ROLLBACK');
         res.status(500).json({ message: err.message });
+    } finally {
+        client.release();
     }
 };
 
 exports.deleteBooking = async (req, res) => {
     try {
-        await db.query('DELETE FROM bookings WHERE id = $1', [req.params.id]);
+        const bookingId = req.params.id;
+        const resBook = await db.query('SELECT booking_code FROM bookings WHERE id = $1', [bookingId]);
+        if (resBook.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy booking' });
+
+        await db.query('DELETE FROM bookings WHERE id = $1', [bookingId]);
+
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'DELETE',
+            entity_type: 'BOOKING',
+            entity_id: bookingId,
+            details: `Đã xóa Booking: ${resBook.rows[0].booking_code}`
+        });
+
         res.json({ message: 'Đã xoá booking thành công' });
     } catch (err) {
         res.status(500).json({ message: err.message });
+    }
+};
+
+exports.createGroupBooking = async (req, res) => {
+    const { departure_id, group_name, passengers, total_price } = req.body;
+    const client = await db.pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // 1. Generate booking code
+        const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const rand = Math.floor(1000 + Math.random() * 9000);
+        const bookingCode = `GRP-${dateStr}-${rand}`;
+
+        // 2. Find or Create Representative Customer (first passenger)
+        const firstPax = passengers[0];
+        let customerId;
+        const custRes = await client.query('SELECT id FROM customers WHERE phone = $1', [firstPax.phone]);
+        if (custRes.rows.length > 0) {
+            customerId = custRes.rows[0].id;
+        } else {
+            const newCust = await client.query(
+                'INSERT INTO customers (name, phone) VALUES ($1, $2) RETURNING id',
+                [firstPax.name, firstPax.phone]
+            );
+            customerId = newCust.rows[0].id;
+        }
+
+        // 3. Create Booking
+        const bookingRes = await client.query(
+            `INSERT INTO bookings (
+                booking_code, customer_id, tour_departure_id, 
+                pax_count, total_price, booking_status, 
+                is_group, group_name, payment_status
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+            [
+                bookingCode, customerId, departure_id, 
+                passengers.length, total_price, 'confirmed', 
+                true, group_name, 'unpaid'
+            ]
+        );
+        const booking = bookingRes.rows[0];
+
+        // 4. Create Passengers
+        for (const pax of passengers) {
+            let paxCustomerId;
+            const pCustRes = await client.query('SELECT id FROM customers WHERE phone = $1', [pax.phone]);
+            if (pCustRes.rows.length > 0) {
+                paxCustomerId = pCustRes.rows[0].id;
+            } else {
+                const newPCust = await client.query(
+                    'INSERT INTO customers (name, phone) VALUES ($1, $2) RETURNING id',
+                    [pax.name, pax.phone]
+                );
+                paxCustomerId = newPCust.rows[0].id;
+            }
+
+            await client.query(
+                'INSERT INTO booking_passengers (booking_id, customer_id, pax_type, price) VALUES ($1, $2, $3, $4)',
+                [booking.id, paxCustomerId, pax.pax_type, pax.price]
+            );
+        }
+
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'CREATE',
+            entity_type: 'BOOKING',
+            entity_id: booking.id,
+            details: `Tạo mới Nhóm Booking: ${booking.booking_code} (${group_name})`,
+            new_data: booking
+        });
+
+        await client.query('COMMIT');
+        res.status(201).json(booking);
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Group Booking Error:', err);
+        res.status(500).json({ message: err.message });
+    } finally {
+        client.release();
     }
 };
