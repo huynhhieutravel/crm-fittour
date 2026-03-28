@@ -18,6 +18,11 @@ import DeparturesTab from './tabs/DeparturesTab';
 import DashboardTab from './tabs/DashboardTab';
 import LeadsTab from './tabs/LeadsTab';
 import GuidesTab from './tabs/GuidesTab';
+import AddLeadModal from './components/modals/AddLeadModal';
+import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
+import LeadNotesModal from './components/modals/LeadNotesModal';
+import { AddTemplateModal, AddDepartureModal } from './components/modals/TourModals';
+import GuideModal from './components/modals/GuideModal';
 
 import { 
   Users, 
@@ -1172,535 +1177,77 @@ function AppContent() {
     )}
   </main>
 
-      {showAddLeadModal && (
-        <div className="modal-overlay" onClick={() => setShowAddLeadModal(false)}>
-          <div className="modal-content animate-fade-in" style={{ maxWidth: '800px', position: 'relative', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={() => setShowAddLeadModal(false)}>
-              <X size={18} strokeWidth={3} />
-            </button>
-            <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Hệ thống Quản lý Lead</div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '1.5rem' }}>Thêm Lead Marketing Mới</h2>
-            
-            <form onSubmit={handleAddLead} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <div className="modal-form-group">
-                <label>TÊN KHÁCH HÀNG *</label>
-                <input className="modal-input" required value={newLead.name} onChange={e => setNewLead({...newLead, name: e.target.value})} placeholder="Nguyễn Văn A..." />
-              </div>
-              <div className="modal-form-group">
-                <label>SỐ ĐIỆN THOẠI</label>
-                <input className="modal-input" value={newLead.phone} onChange={e => setNewLead({...newLead, phone: e.target.value})} placeholder="0901 234..." />
-              </div>
+      <AddLeadModal 
+        showAddLeadModal={showAddLeadModal}
+        setShowAddLeadModal={setShowAddLeadModal}
+        handleAddLead={handleAddLead}
+        newLead={newLead}
+        setNewLead={setNewLead}
+        LEAD_SOURCES={LEAD_SOURCES}
+        LEAD_CLASSIFICATIONS={LEAD_CLASSIFICATIONS}
+        tours={tours}
+        users={users}
+      />
 
-              <div className="modal-form-group">
-                <label>GENDER / GIỚI TÍNH</label>
-                <select className="modal-select" value={newLead.gender} onChange={e => setNewLead({...newLead, gender: e.target.value})}>
-                  <option value="">-- Giới tính --</option>
-                  <option value="male">Nam</option>
-                  <option value="female">Nữ</option>
-                  <option value="other">Khác</option>
-                </select>
-              </div>
-              <div className="modal-form-group">
-                <label>EMAIL</label>
-                <input className="modal-input" type="email" value={newLead.email} onChange={e => setNewLead({...newLead, email: e.target.value})} placeholder="email@example.com" />
-              </div>
+      <AddCustomerModal 
+        showAddCustomerModal={showAddCustomerModal}
+        setShowAddCustomerModal={setShowAddCustomerModal}
+        handleAddCustomer={handleAddCustomer}
+        newCustomer={newCustomer}
+        setNewCustomer={setNewCustomer}
+        CITY_OPTIONS={CITY_OPTIONS}
+        CUSTOMER_ROLES={CUSTOMER_ROLES}
+        CUSTOMER_SEGMENTS={CUSTOMER_SEGMENTS}
+      />
 
-              <div className="modal-form-group">
-                <label>NGÀY SINH</label>
-                <input className="modal-input" type="date" value={newLead.birth_date} onChange={e => setNewLead({...newLead, birth_date: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>NGUỒN KHÁCH HÀNG</label>
-                <select className="modal-select" value={newLead.source} onChange={e => setNewLead({...newLead, source: e.target.value})}>
-                  {LEAD_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
+      <EditCustomerModal 
+        editingCustomer={editingCustomer}
+        setEditingCustomer={setEditingCustomer}
+        handleUpdateCustomer={handleUpdateCustomer}
+        CITY_OPTIONS={CITY_OPTIONS}
+        CUSTOMER_ROLES={CUSTOMER_ROLES}
+        CUSTOMER_SEGMENTS={CUSTOMER_SEGMENTS}
+        newCustomerNote={newCustomerNote}
+        setNewCustomerNote={setNewCustomerNote}
+        handleAddCustomerNote={handleAddCustomerNote}
+      />
 
-              <div className="modal-form-group">
-                <label>PHÂN LOẠI KHÁCH HÀNG</label>
-                <select className="modal-select" value={newLead.classification} onChange={e => setNewLead({...newLead, classification: e.target.value})}>
-                  {LEAD_CLASSIFICATIONS.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div className="modal-form-group">
-                <label>DỊCH VỤ QUAN TÂM</label>
-                <select className="modal-select" value={newLead.tour_id || ''} onChange={e => setNewLead({...newLead, tour_id: e.target.value})}>
-                  <option value="">Chọn tour...</option>
-                  {tours.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
-              </div>
+      <LeadNotesModal 
+        selectedLeadForNotes={selectedLeadForNotes}
+        setSelectedLeadForNotes={setSelectedLeadForNotes}
+        handleAddNote={handleAddNote}
+        newNote={newNote}
+        setNewNote={setNewNote}
+        leadNotes={leadNotes}
+      />
 
-              <div className="modal-form-group">
-                <label>TƯ VẤN VIÊN (CSKH)</label>
-                <select className="modal-select" value={newLead.assigned_to || ''} onChange={e => setNewLead({...newLead, assigned_to: e.target.value})}>
-                  <option value="">-- Chọn nhân viên --</option>
-                  {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
-                </select>
-              </div>
-              <div className="modal-form-group">
-                <label>NHÓM BU (TƯ VẤN)</label>
-                <select className="modal-select" value={newLead.bu_group || ''} onChange={e => setNewLead({...newLead, bu_group: e.target.value})}>
-                  <option value="">-- Chọn nhóm --</option>
-                  <option value="BU1">BU1</option>
-                  <option value="BU2">BU2</option>
-                  <option value="BU3">BU3</option>
-                  <option value="BU4">BU4</option>
-                </select>
-              </div>
-              
-              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
-                <label>THỜI GIAN LIÊN HỆ</label>
-                <input className="modal-input" type="datetime-local" value={newLead.last_contacted_at ? new Date(new Date(newLead.last_contacted_at).getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : ''} onChange={e => setNewLead({...newLead, last_contacted_at: e.target.value})} />
-              </div>
+      <AddTemplateModal 
+        showAddTemplateModal={showAddTemplateModal}
+        setShowAddTemplateModal={setShowAddTemplateModal}
+        handleAddTemplate={handleAddTemplate}
+        newTemplate={newTemplate}
+        setNewTemplate={setNewTemplate}
+      />
 
-              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
-                <label>GHI CHÚ BAN ĐẦU</label>
-                <textarea className="modal-textarea" value={newLead.consultation_note} onChange={e => setNewLead({...newLead, consultation_note: e.target.value})} placeholder="Nội dung tư vấn sơ bộ..." />
-              </div>
+      <AddDepartureModal 
+        showAddDepartureModal={showAddDepartureModal}
+        setShowAddDepartureModal={setShowAddDepartureModal}
+        handleAddDeparture={handleAddDeparture}
+        newDeparture={newDeparture}
+        setNewDeparture={setNewDeparture}
+        tourTemplates={tourTemplates}
+        guides={guides}
+      />
 
-              <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
-                <button type="submit" className="btn-pro-save">
-                  <PlusCircle size={18} strokeWidth={3} /> LƯU HỒ SƠ MỚI
-                </button>
-                <button type="button" className="btn-pro-cancel" onClick={() => setShowAddLeadModal(false)}>
-                  <LogOut size={18} strokeWidth={2.5} style={{ transform: 'rotate(180deg)' }} /> HỦY BỎ
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* Modal Thêm Khách Hàng */}
-      {showAddCustomerModal && (
-        <div className="modal-overlay">
-          <div className="modal-content animate-slide-up" style={{ maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>🧾 THÊM KHÁCH HÀNG MỚI</h2>
-              <button className="icon-btn" onClick={() => setShowAddCustomerModal(false)}><X size={24} /></button>
-            </div>
-            
-            <form onSubmit={handleAddCustomer} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
-                <label>HỌ TÊN KHÁCH HÀNG (VIẾT HOA) *</label>
-                <input className="modal-input" required 
-                  style={{ textTransform: 'uppercase', fontWeight: 700 }}
-                  value={newCustomer.name} 
-                  onChange={e => setNewCustomer({...newCustomer, name: e.target.value.toUpperCase()})} 
-                  placeholder="VÍ DỤ: NGUYỄN VĂN A"
-                />
-              </div>
-
-              <div className="modal-form-group">
-                <label>SỐ ĐIỆN THOẠI (unique) *</label>
-                <input className="modal-input" required value={newCustomer.phone} onChange={e => setNewCustomer({...newCustomer, phone: e.target.value})} placeholder="090..." />
-              </div>
-              <div className="modal-form-group">
-                <label>EMAIL</label>
-                <input className="modal-input" type="email" value={newCustomer.email} onChange={e => setNewCustomer({...newCustomer, email: e.target.value})} />
-              </div>
-
-              <div className="modal-form-group">
-                <label>QUỐC TỊCH</label>
-                <input className="modal-input" value={newCustomer.nationality} onChange={e => setNewCustomer({...newCustomer, nationality: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>NGÀY SINH</label>
-                <input className="modal-input" type="date" value={newCustomer.birth_date} onChange={e => setNewCustomer({...newCustomer, birth_date: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>GIỚI TÍNH</label>
-                <select className="modal-select" value={newCustomer.gender} onChange={e => setNewCustomer({...newCustomer, gender: e.target.value})}>
-                  <option value="">-- Giới tính --</option>
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
-                  <option value="Khác">Khác</option>
-                </select>
-              </div>
-
-              <div className="modal-form-group">
-                <label>CCCD / PASSPORT</label>
-                <input className="modal-input" value={newCustomer.id_card} onChange={e => setNewCustomer({...newCustomer, id_card: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>NGÀY HẾT HẠN PASSPORT</label>
-                <input className="modal-input" type="date" value={newCustomer.id_expiry} onChange={e => setNewCustomer({...newCustomer, id_expiry: e.target.value})} />
-              </div>
-
-              <div className="modal-form-group">
-                <label>NƠI ĐANG Ở *</label>
-                <select className="modal-select" required value={newCustomer.location_city} onChange={e => setNewCustomer({...newCustomer, location_city: e.target.value})}>
-                  <option value="">-- Chọn thành phố --</option>
-                  {CITY_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-
-              <div className="modal-form-group">
-                <label>ĐỊA CHỈ CHI TIẾT</label>
-                <input className="modal-input" value={newCustomer.address} onChange={e => setNewCustomer({...newCustomer, address: e.target.value})} />
-              </div>
-
-              <div className="nav-section-title" style={{ gridColumn: 'span 2', marginTop: '1rem' }}>Vai trò & Insight</div>
-
-              <div className="modal-form-group">
-                <label>VAI TRÒ</label>
-                <select className="modal-select" value={newCustomer.role} onChange={e => setNewCustomer({...newCustomer, role: e.target.value})}>
-                  {CUSTOMER_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
-              <div className="modal-form-group">
-                <label>PHÂN KHÚC</label>
-                <select className="modal-select" value={newCustomer.customer_segment} onChange={e => setNewCustomer({...newCustomer, customer_segment: e.target.value})}>
-                  {CUSTOMER_SEGMENTS.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-
-              <div className="modal-form-group">
-                <label>SỞ THÍCH TOUR (Insight)</label>
-                <input className="modal-input" value={newCustomer.tour_interests} onChange={e => setNewCustomer({...newCustomer, tour_interests: e.target.value})} placeholder="Trung Quốc, Tây Tạng, Mông Cổ..." />
-              </div>
-              <div className="modal-form-group">
-                <label>THỜI GIAN HAY ĐI (Tháng/Mùa)</label>
-                <input className="modal-input" value={newCustomer.travel_season || ''} onChange={e => setNewCustomer({...newCustomer, travel_season: e.target.value})} placeholder="Tháng 10, Mùa Thu..." />
-              </div>
-
-              <div className="nav-section-title" style={{ gridColumn: 'span 2', marginTop: '1rem' }}>Vận hành & Ghi chú</div>
-
-              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
-                <label>YÊU CẦU ĐẶC BIỆT (Ăn chay, Sức khỏe, Visa...)</label>
-                <textarea className="modal-textarea" value={newCustomer.special_requests} onChange={e => setNewCustomer({...newCustomer, special_requests: e.target.value})} placeholder="Ăn chay / dị ứng / cần chăm sóc đặc biệt..." />
-              </div>
-
-              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
-                <label>GHI CHÚ NỘI BỘ (Vũ khí bí mật)</label>
-                <textarea className="modal-textarea" value={newCustomer.internal_notes} onChange={e => setNewCustomer({...newCustomer, internal_notes: e.target.value})} placeholder="Tính cách: kỹ tính, khách VIP..." />
-              </div>
-
-              <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="submit" className="btn-pro-save" style={{ flex: 1 }}>LƯU HỒ SƠ KHÁCH HÀNG</button>
-                <button type="button" className="btn-pro-cancel" style={{ width: 'auto' }} onClick={() => setShowAddCustomerModal(false)}>HỦY</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Sửa Khách Hàng (Tương tự Thêm nhưng binding editingCustomer) */}
-      {editingCustomer && (
-        <div className="modal-overlay">
-          <div className="modal-content animate-slide-up" style={{ maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>📝 CHỈNH SỬA KHÁCH HÀNG</h2>
-              <button className="icon-btn" onClick={() => setEditingCustomer(null)}><X size={24} /></button>
-            </div>
-            
-            <form onSubmit={handleUpdateCustomer} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
-                <label>HỌ TÊN KHÁCH HÀNG (VIẾT HOA) *</label>
-                <input className="modal-input" required 
-                  style={{ textTransform: 'uppercase', fontWeight: 700 }}
-                  value={editingCustomer.name} 
-                  onChange={e => setEditingCustomer({...editingCustomer, name: e.target.value.toUpperCase()})} 
-                />
-              </div>
-
-              <div className="modal-form-group">
-                <label>SỐ ĐIỆN THOẠI *</label>
-                <input className="modal-input" required value={editingCustomer.phone} onChange={e => setEditingCustomer({...editingCustomer, phone: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>EMAIL</label>
-                <input className="modal-input" type="email" value={editingCustomer.email || ''} onChange={e => setEditingCustomer({...editingCustomer, email: e.target.value})} />
-              </div>
-
-              <div className="modal-form-group">
-                <label>QUỐC TỊCH</label>
-                <input className="modal-input" value={editingCustomer.nationality || ''} onChange={e => setEditingCustomer({...editingCustomer, nationality: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>NGÀY SINH</label>
-                <input className="modal-input" type="date" value={editingCustomer.birth_date ? editingCustomer.birth_date.split('T')[0] : ''} onChange={e => setEditingCustomer({...editingCustomer, birth_date: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>GIỚI TÍNH</label>
-                <select className="modal-select" value={editingCustomer.gender || ''} onChange={e => setEditingCustomer({...editingCustomer, gender: e.target.value})}>
-                  <option value="">-- Giới tính --</option>
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
-                  <option value="Khác">Khác</option>
-                </select>
-              </div>
-
-              <div className="modal-form-group">
-                <label>CCCD / PASSPORT</label>
-                <input className="modal-input" value={editingCustomer.id_card || ''} onChange={e => setEditingCustomer({...editingCustomer, id_card: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>NGÀY HẾT HẠN PASSPORT</label>
-                <input className="modal-input" type="date" value={editingCustomer.id_expiry ? editingCustomer.id_expiry.split('T')[0] : ''} onChange={e => setEditingCustomer({...editingCustomer, id_expiry: e.target.value})} />
-              </div>
-
-              <div className="modal-form-group">
-                <label>NƠI ĐANG Ở</label>
-                <select className="modal-select" value={editingCustomer.location_city || ''} onChange={e => setEditingCustomer({...editingCustomer, location_city: e.target.value})}>
-                  <option value="">-- Chọn thành phố --</option>
-                  {CITY_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-
-              <div className="modal-form-group">
-                <label>ĐỊA CHỈ CHI TIẾT</label>
-                <input className="modal-input" value={editingCustomer.address || ''} onChange={e => setEditingCustomer({...editingCustomer, address: e.target.value})} />
-              </div>
-
-              <div className="nav-section-title" style={{ gridColumn: 'span 2', marginTop: '1rem' }}>Vai trò & Insight</div>
-
-              <div className="modal-form-group">
-                <label>VAI TRÒ</label>
-                <select className="modal-select" value={editingCustomer.role || 'booker'} onChange={e => setEditingCustomer({...editingCustomer, role: e.target.value})}>
-                  {CUSTOMER_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
-              <div className="modal-form-group">
-                <label>PHÂN KHÚC</label>
-                <select className="modal-select" value={editingCustomer.customer_segment || 'New Customer'} onChange={e => setEditingCustomer({...editingCustomer, customer_segment: e.target.value})}>
-                  {CUSTOMER_SEGMENTS.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-
-              <div className="modal-form-group">
-                <label>SỞ THÍCH TOUR (Insight)</label>
-                <input className="modal-input" value={editingCustomer.tour_interests || ''} onChange={e => setEditingCustomer({...editingCustomer, tour_interests: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>THỜI GIAN HAY ĐI (Tháng/Mùa)</label>
-                <input className="modal-input" value={editingCustomer.travel_season || ''} onChange={e => setEditingCustomer({...editingCustomer, travel_season: e.target.value})} />
-              </div>
-
-              <div className="nav-section-title" style={{ gridColumn: 'span 2', marginTop: '1rem' }}>Lịch sử tư vấn & Chăm sóc (từ Lead)</div>
-              
-              <div style={{ gridColumn: 'span 2', background: '#f8fafc', padding: '1.5rem', borderRadius: '1rem' }}>
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', background: 'white', padding: '1rem', borderRadius: '0.75rem', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                  <input 
-                    className="modal-input" 
-                    style={{ flex: 1, border: '1px solid #e2e8f0' }} 
-                    placeholder="Nhập nội dung tư vấn mới cho khách hàng này..." 
-                    value={newCustomerNote} 
-                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomerNote(e); } }}
-                    onChange={e => setNewCustomerNote(e.target.value)} 
-                  />
-                  <button type="button" onClick={handleAddCustomerNote} className="login-btn" style={{ width: 'auto', padding: '0 1.5rem' }}>GỬI</button>
-                </div>
-                {editingCustomer.interaction_history && editingCustomer.interaction_history.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {editingCustomer.interaction_history.map(note => (
-                      <div key={note.id} style={{ padding: '0.75rem', background: 'white', borderRadius: '0.5rem', borderLeft: '3px solid #6366f1' }}>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem', display: 'flex', justifyContent: 'space-between' }}>
-                          <strong>{note.creator_name}</strong>
-                          <span>{new Date(note.created_at).toLocaleString('vi-VN')}</span>
-                        </div>
-                        <div style={{ fontSize: '0.85rem' }}>{note.content}</div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div style={{ textAlign: 'center', color: '#94a3b8' }}>Chưa có lịch sử chuyển đổi hoặc ghi chú cũ.</div>
-                )}
-              </div>
-
-              <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-                <button type="submit" className="btn-pro-save" style={{ flex: 1 }}>CẬP NHẬT THÔNG TIN</button>
-                <button type="button" className="btn-pro-cancel" style={{ width: 'auto' }} onClick={() => setEditingCustomer(null)}>ĐÓNG</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {selectedLeadForNotes && (
-        <div className="modal-overlay" onClick={() => setSelectedLeadForNotes(null)}>
-          <div className="modal-content animate-fade-in" style={{ maxWidth: '600px', position: 'relative', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={() => setSelectedLeadForNotes(null)}>
-              <X size={18} strokeWidth={3} />
-            </button>
-            <h3 style={{ marginBottom: '1.5rem' }}>Timeline: {selectedLeadForNotes.name}</h3>
-            <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
-              <form onSubmit={handleAddNote} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                <input className="filter-input" style={{ flex: 1 }} placeholder="Ghi chú mới..." value={newNote} onChange={e => setNewNote(e.target.value)} />
-                <button type="submit" className="login-btn" style={{ width: 'auto' }}>GỬI</button>
-              </form>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {leadNotes.map(note => (
-                  <div key={note.id} style={{ padding: '1rem', background: '#f8fafc', borderRadius: '0.75rem', borderLeft: '4px solid #6366f1' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                      <strong>{note.creator_name}</strong>
-                      <span>{new Date(note.created_at).toLocaleString('vi-VN')}</span>
-                    </div>
-                    <div style={{ fontSize: '0.9rem' }}>{note.content}</div>
-                  </div>
-                ))}
-                {leadNotes.length === 0 && <div style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem' }}>Chưa có lịch sử tư vấn.</div>}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-
-      {showAddTemplateModal && (
-        <div className="modal-overlay">
-          <div className="modal-content animate-slide-up" style={{ maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>📦 THIẾT KẾ SẢN PHẨM TOUR MỚI</h2>
-              <button className="icon-btn" onClick={() => setShowAddTemplateModal(false)}><X size={24} /></button>
-            </div>
-            <form onSubmit={handleAddTemplate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
-                <label>TÊN TOUR / SẢN PHẨM *</label>
-                <input className="modal-input" required value={newTemplate.name} onChange={e => setNewTemplate({...newTemplate, name: e.target.value})} placeholder="Vd: Tour Bắc Kinh - Thượng Hải - Hàng Châu" />
-              </div>
-              <div className="modal-form-group">
-                <label>ĐIỂM ĐẾN *</label>
-                <input className="modal-input" required value={newTemplate.destination} onChange={e => setNewTemplate({...newTemplate, destination: e.target.value})} placeholder="Vd: Trung Quốc" />
-              </div>
-              <div className="modal-form-group">
-                <label>THỜI LƯỢNG *</label>
-                <input className="modal-input" required value={newTemplate.duration} onChange={e => setNewTemplate({...newTemplate, duration: e.target.value})} placeholder="Vd: 6N5Đ" />
-              </div>
-              <div className="modal-form-group">
-                <label>LOẠI TOUR</label>
-                <select className="modal-select" value={newTemplate.tour_type} onChange={e => setNewTemplate({...newTemplate, tour_type: e.target.value})}>
-                  <option value="Premium">Premium</option>
-                  <option value="Standard">Standard</option>
-                  <option value="Budget">Budget</option>
-                </select>
-              </div>
-              <div className="modal-form-group">
-                <label>TAGS (CÁCH NHAU BẰNG DẤU PHẨY)</label>
-                <input className="modal-input" value={newTemplate.tags} onChange={e => setNewTemplate({...newTemplate, tags: e.target.value})} placeholder="Trekking, Văn hóa, Nghỉ dưỡng..." />
-              </div>
-              <div className="modal-form-group">
-                 <label>GIÁ NIÊM YẾT DỰ KIẾN</label>
-                 <input className="modal-input" type="number" value={newTemplate.base_price} onChange={e => setNewTemplate({...newTemplate, base_price: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                 <label>GIÁ COST NỘI BỘ</label>
-                 <input className="modal-input" type="number" value={newTemplate.internal_cost} onChange={e => setNewTemplate({...newTemplate, internal_cost: e.target.value})} />
-              </div>
-              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
-                <label>MÔ TẢ NGẮN / ĐIỂM NỔI BẬT</label>
-                <textarea className="modal-textarea" value={newTemplate.highlights} onChange={e => setNewTemplate({...newTemplate, highlights: e.target.value})} />
-              </div>
-              <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="submit" className="btn-pro-save" style={{ flex: 1 }}>LƯU THIẾT KẾ SẢN PHẨM</button>
-                <button type="button" className="btn-pro-cancel" style={{ width: 'auto' }} onClick={() => setShowAddTemplateModal(false)}>HỦY</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {showAddDepartureModal && (
-        <div className="modal-overlay">
-          <div className="modal-content animate-slide-up" style={{ maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>📅 LÊN LỊCH KHỞI HÀNH THỰC TẾ</h2>
-              <button className="icon-btn" onClick={() => setShowAddDepartureModal(false)}><X size={24} /></button>
-            </div>
-            <form onSubmit={handleAddDeparture} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
-                <label>SẢN PHẨM TOUR *</label>
-                <select className="modal-select" required value={newDeparture.tour_template_id} onChange={e => setNewDeparture({...newDeparture, tour_template_id: e.target.value})}>
-                  <option value="">-- Chọn sản phẩm thiết kế --</option>
-                  {tourTemplates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
-              </div>
-              <div className="modal-form-group">
-                <label>NGÀY KHỞI HÀNH *</label>
-                <input className="modal-input" type="date" required value={newDeparture.start_date} onChange={e => setNewDeparture({...newDeparture, start_date: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>NGÀY KẾT THÚC (DỰ KIẾN)</label>
-                <input className="modal-input" type="date" value={newDeparture.end_date} onChange={e => setNewDeparture({...newDeparture, end_date: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>GIÁ TOUR THỰC TẾ *</label>
-                <input className="modal-input" type="number" required value={newDeparture.actual_price} onChange={e => setNewDeparture({...newDeparture, actual_price: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                 <label>SỐ KHÁCH TỐI ĐA (CAPACITY)</label>
-                 <input className="modal-input" type="number" value={newDeparture.max_participants} onChange={e => setNewDeparture({...newDeparture, max_participants: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                 <label>ĐIỂM HÒA VỐN (PAX)</label>
-                 <input className="modal-input" type="number" value={newDeparture.break_even_pax} onChange={e => setNewDeparture({...newDeparture, break_even_pax: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                 <label>HƯỚNG DẪN VIÊN</label>
-                 <select className="modal-select" value={newDeparture.guide_id} onChange={e => setNewDeparture({...newDeparture, guide_id: e.target.value})}>
-                    <option value="">-- Chưa gán HDV --</option>
-                    {guides.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                 </select>
-              </div>
-              <div className="modal-form-group">
-                <label>TRẠNG THÁI VẬN HÀNH</label>
-                <select className="modal-select" value={newDeparture.status} onChange={e => setNewDeparture({...newDeparture, status: e.target.value})}>
-                  <option value="Open">Mở bán (Open)</option>
-                  <option value="Guaranteed">Chắc chắn đi (Guaranteed)</option>
-                  <option value="Full">Đã đầy (Full)</option>
-                  <option value="Cancelled">Hủy tour (Cancelled)</option>
-                </select>
-              </div>
-              <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="submit" className="btn-pro-save" style={{ flex: 1 }}>XÁC NHẬN KHỞI HÀNH</button>
-                <button type="button" className="btn-pro-cancel" style={{ width: 'auto' }} onClick={() => setShowAddDepartureModal(false)}>HỦY</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {showAddGuideModal && (
-        <div className="modal-overlay">
-          <div className="modal-content animate-slide-up" style={{ maxWidth: '600px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>👤 {editingGuide ? 'CẬP NHẬT' : 'THÊM'} HƯỚNG DẪN VIÊN</h2>
-              <button className="icon-btn" onClick={() => setShowAddGuideModal(false)}><X size={24} /></button>
-            </div>
-            <form onSubmit={editingGuide ? handleUpdateGuide : handleAddGuide} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div className="modal-form-group">
-                <label>HỌ VÀ TÊN HDV *</label>
-                <input className="modal-input" required value={newGuide.name} onChange={e => setNewGuide({...newGuide, name: e.target.value})} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="modal-form-group">
-                  <label>SỐ ĐIỆN THOẠI *</label>
-                  <input className="modal-input" required value={newGuide.phone} onChange={e => setNewGuide({...newGuide, phone: e.target.value})} />
-                </div>
-                <div className="modal-form-group">
-                  <label>EMAIL</label>
-                  <input className="modal-input" type="email" value={newGuide.email} onChange={e => setNewGuide({...newGuide, email: e.target.value})} />
-                </div>
-              </div>
-              <div className="modal-form-group">
-                <label>NGÔN NGỮ (CÁCH NHAU BẰNG DẤU PHẨY)</label>
-                <input className="modal-input" value={newGuide.languages} onChange={e => setNewGuide({...newGuide, languages: e.target.value})} placeholder="Tiếng Việt, Tiếng Trung, Tiếng Anh..." />
-              </div>
-              <div className="modal-form-group">
-                <label>TRẠNG THÁI</label>
-                <select className="modal-select" value={newGuide.status} onChange={e => setNewGuide({...newGuide, status: e.target.value})}>
-                  <option value="Available">Sẵn sàng (Available)</option>
-                  <option value="Busy">Đang dẫn tour (Busy)</option>
-                  <option value="Inactive">Tạm nghỉ (Inactive)</option>
-                </select>
-              </div>
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="submit" className="btn-pro-save" style={{ flex: 1 }}>{editingGuide ? 'CẬP NHẬT THÔNG TIN' : 'LƯU HỒ SƠ MỚI'}</button>
-                <button type="button" className="btn-pro-cancel" style={{ width: 'auto' }} onClick={() => setShowAddGuideModal(false)}>HỦY</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <GuideModal 
+        showAddGuideModal={showAddGuideModal}
+        setShowAddGuideModal={setShowAddGuideModal}
+        editingGuide={editingGuide}
+        handleUpdateGuide={handleUpdateGuide}
+        handleAddGuide={handleAddGuide}
+        newGuide={newGuide}
+        setNewGuide={setNewGuide}
+      />
 
       <div className="toast-container">
         {toasts.map(t => <div key={t.id} className="toast">{t.message}</div>)}
