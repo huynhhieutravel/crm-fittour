@@ -8,6 +8,17 @@ import {
   useNavigate,
   useLocation
 } from 'react-router-dom';
+
+import SettingsTab from './tabs/SettingsTab';
+import BookingsTab from './tabs/BookingsTab';
+import CustomersTab from './tabs/CustomersTab';
+import InboxTab from './tabs/InboxTab';
+import ToursTab from './tabs/ToursTab';
+import DeparturesTab from './tabs/DeparturesTab';
+import DashboardTab from './tabs/DashboardTab';
+import LeadsTab from './tabs/LeadsTab';
+import GuidesTab from './tabs/GuidesTab';
+
 import { 
   Users, 
   Map, 
@@ -157,30 +168,6 @@ function AppContent() {
   });
   const [guideFilters, setGuideFilters] = useState({ search: '', status: '', language: '' });
 
-  const getDaysInPeriod = (type, date, start, end) => {
-    const days = [];
-    let curr = new Date();
-    let last = new Date();
-
-    if (type === 'month') {
-      curr = new Date(date.getFullYear(), date.getMonth(), 1);
-      last = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-    } else if (type === 'quarter') {
-      const q = Math.floor(date.getMonth() / 3);
-      curr = new Date(date.getFullYear(), q * 3, 1);
-      last = new Date(date.getFullYear(), (q + 1) * 3, 0);
-    } else {
-      curr = new Date(start);
-      last = new Date(end);
-    }
-
-    const iter = new Date(curr);
-    while (iter <= last) {
-      days.push(new Date(iter));
-      iter.setDate(iter.getDate() + 1);
-    }
-    return days;
-  };
 
   const handleQuickUpdate = async (leadId, field, value) => {
     try {
@@ -1075,1051 +1062,115 @@ function AppContent() {
         ) : (
           <>
             {activeTab === 'dashboard' && (
-              <div className="animate-fade-in">
-                <div className="stats-grid">
-                  <div className="stat-card purple">
-                    <div className="stat-icon-bg"><UserPlus size={24} /></div>
-                    <div className="stat-content">
-                      <span className="stat-label">HỒ SƠ MỚI</span>
-                      <div className="stat-value">{leads.filter(l => l.status === 'Mới').length}</div>
-                    </div>
-                  </div>
-                  <div className="stat-card orange">
-                    <div className="stat-icon-bg"><MessageSquare size={24} /></div>
-                    <div className="stat-content">
-                      <span className="stat-label">ĐÃ LIÊN HỆ</span>
-                      <div className="stat-value">{leads.filter(l => l.status === 'Đã tư vấn' || l.status === 'Tư vấn lần 2').length}</div>
-                    </div>
-                  </div>
-                  <div className="stat-card teal">
-                    <div className="stat-icon-bg"><CheckCircle size={24} /></div>
-                    <div className="stat-content">
-                      <span className="stat-label">CHỐT ĐƠN</span>
-                      <div className="stat-value">{leads.filter(l => l.status === 'Chốt đơn').length}</div>
-                    </div>
-                  </div>
-                  <div className="stat-card pink" style={{ background: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)' }}>
-                    <div className="stat-icon-bg"><TrendingUp size={24} /></div>
-                    <div className="stat-content">
-                      <span className="stat-label">TỈ LỆ CHỐT ĐƠN</span>
-                      <div className="stat-value">
-                        {leads.length > 0 ? Math.round((leads.filter(l => l.status === 'Chốt đơn').length / leads.length) * 100) : 0}%
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="dashboard-grid">
-                  {/* Recent Activity Feed */}
-                  <div className="analytics-card">
-                    <h3><Clock size={20} color="#6366f1" /> Hoạt động gần đây</h3>
-                    <div className="activity-list">
-                      {leads.slice(0, 5).map(lead => (
-                        <div key={lead.id} className="activity-item" onClick={() => { setEditingLead(lead); }}>
-                          <div className="activity-icon" style={{ background: lead.status === 'Chốt đơn' ? '#dcfce7' : '#f1f5f9' }}>
-                            {lead.status === 'Chốt đơn' ? <CheckCircle size={20} color="#10b981" /> : <User size={20} color="#64748b" />}
-                          </div>
-                          <div className="activity-details">
-                            <div className="activity-name">{lead.name}</div>
-                            <div className="activity-meta">
-                              {lead.source} • {new Date(lead.created_at).toLocaleDateString('vi-VN')}
-                            </div>
-                          </div>
-                          <div className={`activity-status badge-${lead.status}`}>
-                            {lead.status}
-                          </div>
-                        </div>
-                      ))}
-                      {leads.length === 0 && <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Chưa có hoạt động nào.</div>}
-                    </div>
-                  </div>
-
-                  {/* Lead Source Distribution */}
-                  <div className="analytics-card">
-                    <h3><PieChart size={20} color="#f59e0b" /> Phân bổ nguồn khách</h3>
-                    <div className="source-distribution">
-                      {['Messenger', 'Zalo', 'Khách giới thiệu', 'Hotline'].map(source => {
-                        const count = leads.filter(l => l.source === source).length;
-                        const percent = leads.length > 0 ? (count / leads.length) * 100 : 0;
-                        const barColors = {
-                          'Messenger': '#3b82f6',
-                          'Zalo': '#2563eb',
-                          'Khách giới thiệu': '#10b981',
-                          'Hotline': '#f59e0b'
-                        };
-                        return (
-                          <div key={source} className="source-row">
-                            <div className="source-info">
-                              <span>{source}</span>
-                              <span>{count} ({Math.round(percent)}%)</span>
-                            </div>
-                            <div className="source-bar-bg">
-                              <div className="source-bar-fill" style={{ width: `${percent}%`, background: barColors[source] || '#64748b' }}></div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <DashboardTab 
+                leads={leads}
+                setEditingLead={setEditingLead}
+              />
             )}
 
             {activeTab === 'leads' && (
-              <>
-                <div className="stats-grid">
-                  <div className="stat-card purple">
-                    <div className="stat-icon-bg"><UserPlus size={24} /></div>
-                    <div className="stat-content">
-                      <span className="stat-label">HỒ SƠ MỚI</span>
-                      <div className="stat-value">{leads.filter(l => l.status === 'Mới').length}</div>
-                    </div>
-                  </div>
-                  <div className="stat-card orange">
-                    <div className="stat-icon-bg"><MessageSquare size={24} /></div>
-                    <div className="stat-content">
-                      <span className="stat-label">ĐÃ LIÊN HỆ</span>
-                      <div className="stat-value">{leads.filter(l => l.status === 'Đã tư vấn' || l.status === 'Tư vấn lần 2').length}</div>
-                    </div>
-                  </div>
-                  <div className="stat-card teal">
-                    <div className="stat-icon-bg"><CheckCircle size={24} /></div>
-                    <div className="stat-content">
-                      <span className="stat-label">CHỐT ĐƠN</span>
-                      <div className="stat-value">{leads.filter(l => l.status === 'Chốt đơn').length}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="filter-bar">
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr) auto', gap: '1rem', alignItems: 'end' }}>
-                    <div className="filter-group">
-                      <label>TÌM KIẾM</label>
-                      <div style={{ position: 'relative' }}>
-                        <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                        <input className="filter-input" style={{ width: '100%', paddingLeft: '36px' }} placeholder="Tìm tên, SĐT..." value={leadFilters.search} onChange={e => setLeadFilters({...leadFilters, search: e.target.value})} />
-                      </div>
-                    </div>
-                    <div className="filter-group">
-                      <label>TRẠNG THÁI</label>
-                      <select className="filter-select" value={leadFilters.status} onChange={e => setLeadFilters({...leadFilters, status: e.target.value})}>
-                        <option value="">-- Trạng thái --</option>
-                        {LEAD_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </div>
-                    <div className="filter-group">
-                      <label>NHÓM BU</label>
-                      <select className="filter-select" value={leadFilters.bu_group} onChange={e => setLeadFilters({...leadFilters, bu_group: e.target.value})}>
-                        <option value="">-- Nhóm BU --</option>
-                        <option value="BU1">BU1</option>
-                        <option value="BU2">BU2</option>
-                        <option value="BU3">BU3</option>
-                        <option value="BU4">BU4</option>
-                      </select>
-                    </div>
-                    <div className="filter-group">
-                      <label>TƯ VẤN VIÊN</label>
-                      <select className="filter-select" value={leadFilters.assigned_to} onChange={e => setLeadFilters({...leadFilters, assigned_to: e.target.value})}>
-                        <option value="">-- Tư vấn viên --</option>
-                        {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
-                      </select>
-                    </div>
-                    <button className="login-btn" style={{ 
-                      width: 'auto', 
-                      height: '42px', 
-                      padding: '0 1.5rem', 
-                      borderRadius: '8px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      gap: '8px', 
-                      background: '#2563eb', 
-                      color: 'white', 
-                      fontWeight: '800',
-                      border: 'none',
-                      boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
-                    }} onClick={() => setShowAddLeadModal(true)}>
-                      <Plus size={18} strokeWidth={3} /> <span style={{ letterSpacing: '0.5px' }}>THÊM LEAD</span>
-                    </button>
-                  </div>
-                  
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.85rem' }}>
-                    <span style={{ fontWeight: 600, color: '#64748b', marginRight: '0.5rem' }}>THỜI GIAN:</span>
-                    {[
-                      { id: 'all', label: 'Tất cả' },
-                      { id: 'today', label: 'Hôm nay' },
-                      { id: 'week', label: 'Tuần' },
-                      { id: 'month', label: 'Tháng' }
-                    ].map(p => (
-                      <button key={p.id} className={`preset-btn ${leadFilters.timeRange === p.id ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, timeRange: p.id})}>
-                        {p.label}
-                      </button>
-                    ))}
-                    <div style={{ marginLeft: 'auto', color: '#94a3b8', fontWeight: 600, background: '#f1f5f9', padding: '4px 12px', borderRadius: '6px' }}>{filteredLeads.length} Lead</div>
-                  </div>
-                </div>
-
-                <div className="data-table-container">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th className="col-date">NGÀY TẠO</th>
-                        <th className="col-info">THÔNG TIN LEAD</th>
-                        <th className="col-source">NGUỒN & NHÓM</th>
-                        <th className="col-staff">TƯ VẤN VIÊN</th>
-                        <th className="col-status">TRẠNG THÁI TƯ VẤN</th>
-                        <th className="col-contact">THỜI GIAN LIÊN HỆ</th>
-                        <th className="col-actions">THAO TÁC</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="fast-add-row">
-                        <td><div className="fast-add-tag"><Plus size={12} /> Nhanh</div></td>
-                        <td><input className="cell-input" style={{ width: '150px' }} placeholder="Tên..." value={fastLead.name} onChange={e => setFastLead({...fastLead, name: e.target.value})} onKeyDown={e => e.key === 'Enter' && handleFastAddLead()} /></td>
-                        <td style={{ display: 'flex', gap: '2px', padding: '1rem 4px' }}>
-                          <select className="cell-select" style={{ fontSize: '0.75rem', padding: '4px' }} value={fastLead.source} onChange={e => setFastLead({...fastLead, source: e.target.value})}>
-                            {LEAD_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
-                          </select>
-                          <select className="cell-select" style={{ fontSize: '0.75rem', padding: '4px' }} value={fastLead.bu_group} onChange={e => setFastLead({...fastLead, bu_group: e.target.value})}>
-                            <option value="">-- BU --</option>
-                            <option value="BU1">BU1</option>
-                            <option value="BU2">BU2</option>
-                            <option value="BU3">BU3</option>
-                            <option value="BU4">BU4</option>
-                          </select>
-                        </td>
-                        <td>
-                          <select className="cell-select" value={fastLead.assigned_to || ''} onChange={e => setFastLead({...fastLead, assigned_to: e.target.value})}>
-                            <option value="">-- Nhân viên --</option>
-                            {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
-                          </select>
-                        </td>
-                        <td>
-                          <select className="cell-select" value={fastLead.status} onChange={e => setFastLead({...fastLead, status: e.target.value})}>
-                            {LEAD_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                          </select>
-                        </td>
-                        <td>-</td>
-                        <td><button className="icon-btn primary" style={{ width: '100%', background: '#4f46e5' }} onClick={handleFastAddLead}>LƯU</button></td>
-                      </tr>
-
-                      {filteredLeads.map(lead => (
-                        <tr key={lead.id}>
-                          <td style={{ color: '#64748b', fontSize: '0.85rem' }}>{new Date(lead.created_at).toLocaleDateString('vi-VN')}</td>
-                          <td>
-                            <div className="lead-info">
-                              <span className="lead-name" style={{ fontWeight: 700 }}>
-                                {lead.name}
-                              </span>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                                <span className="lead-phone" style={{ color: '#6366f1', fontSize: '0.85rem' }}>{lead.phone || 'Chưa có SĐT'}</span>
-                                {Number(lead.notes_count) > 0 && (
-                                  <div 
-                                    className="note-icon-wrapper"
-                                    style={{ 
-                                      display: 'flex', 
-                                      alignItems: 'center', 
-                                      justifyContent: 'center',
-                                      position: 'relative',
-                                      cursor: 'pointer',
-                                      padding: '4px',
-                                      background: '#f1f5f9',
-                                      borderRadius: '6px',
-                                      transition: 'all 0.2s'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      const rect = e.currentTarget.getBoundingClientRect();
-                                      setHoveredNote({ 
-                                        id: lead.id, 
-                                        content: lead.latest_note, 
-                                        count: lead.notes_count,
-                                        date: lead.latest_note_at,
-                                        x: rect.left, 
-                                        y: rect.top 
-                                      });
-                                    }} 
-                                    onMouseLeave={() => setHoveredNote({ id: null, content: '', x: 0, y: 0 })}
-                                  >
-                                    <FileText size={16} color="#2563eb" strokeWidth={2.5} />
-                                    <div className="note-badge" style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#e11d48', color: 'white', fontSize: '10px', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', border: '2px solid white', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                                      {lead.notes_count}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                {getSourceIcon(lead.source)}
-                                <select className="table-select-ghost" value={lead.source} onChange={e => handleQuickUpdate(lead.id, 'source', e.target.value)}>
-                                  {['Messenger', 'Zalo', 'Khách giới thiệu', 'Hotline', 'Khác'].map(s => <option key={s} value={s}>{s}</option>)}
-                                </select>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <Package size={12} color="#6366f1" />
-                                <select className="table-select-ghost" style={{ color: '#6366f1', fontWeight: 600 }} value={lead.bu_group || ''} onChange={e => handleQuickUpdate(lead.id, 'bu_group', e.target.value)}>
-                                  <option value="">-- Nhóm --</option>
-                                  {['BU1', 'BU2', 'BU3', 'BU4'].map(g => <option key={g} value={g}>{g}</option>)}
-                                </select>
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <select className="table-select-ghost" style={{ fontWeight: 600 }} value={lead.assigned_to || ''} onChange={e => handleQuickUpdate(lead.id, 'assigned_to', e.target.value)}>
-                              <option value="">Chưa giao</option>
-                              {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
-                            </select>
-                          </td>
-                          <td>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                              <select className={`status-select badge-${lead.status}`} value={lead.status} onChange={e => handleQuickUpdate(lead.id, 'status', e.target.value)}>
-                                {LEAD_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                              </select>
-                              <select className={`table-select-ghost classification-${lead.classification}`} style={{ fontSize: '0.65rem', padding: '2px 6px', fontWeight: 700 }} value={lead.classification || 'Mới'} onChange={e => handleQuickUpdate(lead.id, 'classification', e.target.value)}>
-                                {LEAD_CLASSIFICATIONS.map(c => <option key={c} value={c}>{c}</option>)}
-                              </select>
-                            </div>
-                          </td>
-                          <td>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.75rem', color: '#64748b' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <Clock size={10} /> LH: {lead.last_contacted_at ? new Date(lead.last_contacted_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--'}
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <ArrowUpRight size={10} /> BOOK: {lead.won_at ? new Date(lead.won_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--'}
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div style={{ display: 'flex', gap: '0.4rem' }}>
-                              <button className="icon-btn-square" title="Chỉnh sửa" onClick={() => { setEditingLead(lead); }}><Edit3 size={14} /></button>
-                              <button className="icon-btn-square danger" title="Xóa" onClick={() => handleDeleteLead(lead.id)}><Trash2 size={14} /></button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {hoveredNote.id && (
-                  <div className="dark-tooltip animate-fade-in" style={{ 
-                    position: 'fixed',
-                    top: hoveredNote.y - 8,
-                    left: hoveredNote.x + 20,
-                    transform: 'translateY(-100%)',
-                    pointerEvents: 'none',
-                    zIndex: 9999
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem', paddingBottom: '0.85rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                      <FileText size={14} color="#3b82f6" strokeWidth={3} />
-                      <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#f8fafc', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ghi chú gần nhất ({hoveredNote.count})</span>
-                    </div>
-                    <div style={{ fontSize: '0.95rem', lineHeight: '1.6', color: '#e2e8f0', fontWeight: 400, whiteSpace: 'pre-wrap' }}>
-                      {hoveredNote.content || 'Không có nội dung ghi chú.'}
-                    </div>
-                    <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(hoveredNote.date).toLocaleString('vi-VN')}</span>
-                      <span style={{ fontSize: '0.75rem', color: '#3b82f6', fontWeight: 700 }}>FIT Tour CRM</span>
-                    </div>
-                  </div>
-                )}
-              </>
+              <LeadsTab 
+                leads={leads}
+                filteredLeads={filteredLeads}
+                leadFilters={leadFilters}
+                setLeadFilters={setLeadFilters}
+                setShowAddLeadModal={setShowAddLeadModal}
+                setEditingLead={setEditingLead}
+                handleDeleteLead={handleDeleteLead}
+                users={users}
+                fastLead={fastLead}
+                setFastLead={setFastLead}
+                handleFastAddLead={handleFastAddLead}
+                getSourceIcon={getSourceIcon}
+                handleQuickUpdate={handleQuickUpdate}
+                hoveredNote={hoveredNote}
+                setHoveredNote={setHoveredNote}
+                LEAD_STATUSES={LEAD_STATUSES}
+                LEAD_SOURCES={LEAD_SOURCES}
+                LEAD_CLASSIFICATIONS={LEAD_CLASSIFICATIONS}
+              />
             )}
 
         {activeTab === 'inbox' && (
-          <div className="animate-fade-in" style={{ height: 'calc(100vh - 220px)', background: 'white', borderRadius: '1.25rem', overflow: 'hidden', display: 'grid', gridTemplateColumns: '320px 1fr', border: '1px solid #eaeff4' }}>
-            <div style={{ borderRight: '1px solid #eaeff4', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ padding: '1.5rem', borderBottom: '1px solid #eaeff4', fontWeight: 700 }}>Hội thoại gần đây</div>
-              <div style={{ flex: 1, overflowY: 'auto' }}>
-                {conversations.map(conv => (
-                  <div key={conv.id} onClick={() => { setSelectedConv(conv); fetchMessages(conv.id); }} style={{ padding: '1.25rem', cursor: 'pointer', borderBottom: '1px solid #f8fafc', background: selectedConv?.id === conv.id ? '#f1f5f9' : 'transparent', borderLeft: selectedConv?.id === conv.id ? '4px solid #6366f1' : '4px solid transparent' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '4px' }}>{conv.lead_name || 'Khách Facebook'}</div>
-                    <div style={{ fontSize: '0.8rem', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{conv.last_message}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {selectedConv ? (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #eaeff4', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontWeight: 700 }}>{selectedConv.lead_name || 'Khách vãng lai'}</div>
-                  <button className="icon-btn" onClick={() => { setEditingLead(leads.find(l => l.id === selectedConv.lead_id)); }}><UserPlus size={16} /></button>
-                </div>
-                <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', background: '#f8fafc' }}>
-                  {messages.map(msg => (
-                    <div key={msg.id} style={{ marginBottom: '1.5rem', textAlign: msg.sender_type === 'customer' ? 'left' : 'right' }}>
-                      <div style={{ display: 'inline-block', padding: '0.75rem 1.25rem', borderRadius: '1rem', background: msg.sender_type === 'customer' ? 'white' : '#6366f1', color: msg.sender_type === 'customer' ? '#1e293b' : 'white', boxShadow: msg.sender_type === 'customer' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', maxWidth: '70%' }}>
-                        {msg.content}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <form onSubmit={handleSendMessage} style={{ padding: '1.25rem', background: 'white', borderTop: '1px solid #eaeff4', display: 'flex', gap: '1rem' }}>
-                  <input className="filter-input" style={{ flex: 1 }} placeholder="Nhập tin nhắn..." value={newMessage} onChange={e => setNewMessage(e.target.value)} />
-                  <button type="submit" className="login-btn" style={{ width: 'auto', padding: '0 1.5rem' }}>GỬI</button>
-                </form>
-              </div>
-            ) : <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>Chọn một hội thoại để xem tin nhắn</div>}
-          </div>
+          <InboxTab 
+            conversations={conversations}
+            selectedConv={selectedConv}
+            setSelectedConv={setSelectedConv}
+            fetchMessages={fetchMessages}
+            messages={messages}
+            setEditingLead={setEditingLead}
+            leads={leads}
+            handleSendMessage={handleSendMessage}
+            newMessage={newMessage}
+            setNewMessage={setNewMessage}
+          />
         )}
 
 
         {activeTab === 'tours' && (
-          <div className="animate-fade-in">
-            <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className="filter-group" style={{ flex: 1, maxWidth: '400px' }}>
-                <label>DANH MỤC SẢN PHẨM TOUR</label>
-                <div style={{ position: 'relative' }}>
-                  <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                  <input className="filter-input" style={{ width: '100%', paddingLeft: '36px' }} placeholder="Tìm tên tour, điểm đến..." value={tourFilters.search} onChange={e => setTourFilters({...tourFilters, search: e.target.value})} />
-                </div>
-              </div>
-              <button className="btn-pro-save" style={{ width: 'auto', padding: '0.75rem 1.5rem' }} onClick={() => setShowAddTemplateModal(true)}>
-                <Plus size={18} strokeWidth={3} /> THIẾT KẾ SẢN PHẨM MỚI
-              </button>
-            </div>
-            <div className="data-table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>TÊN SẢN PHẨM</th>
-                    <th>ĐIỂM ĐẾN</th>
-                    <th>THỜI LƯỢNG</th>
-                    <th>LOẠI TOUR</th>
-                    <th>GIÁ NIÊM YẾT</th>
-                    <th>TAGS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tourTemplates.filter(t => (t.name || '').toLowerCase().includes(tourFilters.search.toLowerCase())).map(template => (
-                    <tr key={template.id}>
-                      <td style={{ fontWeight: 700 }}>{template.name}</td>
-                      <td>{template.destination}</td>
-                      <td>{template.duration}</td>
-                      <td><span className="status-badge badge-potential" style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0' }}>{template.tour_type || 'Standard'}</span></td>
-                      <td style={{ color: 'var(--secondary)', fontWeight: 700 }}>{Number(template.base_price || template.price).toLocaleString('vi-VN')}đ</td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                          {(template.tags || '').split(',').map(tag => tag.trim() && (
-                            <span key={tag} style={{ fontSize: '0.7rem', padding: '2px 8px', background: '#eef2ff', color: '#6366f1', borderRadius: '4px', fontWeight: 600 }}>{tag}</span>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {tourTemplates.length === 0 && <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Chưa có sản phẩm tour nào. Hãy thiết kế sản phẩm đầu tiên!</td></tr>}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <ToursTab 
+            tourTemplates={tourTemplates}
+            tourFilters={tourFilters}
+            setTourFilters={setTourFilters}
+            setShowAddTemplateModal={setShowAddTemplateModal}
+          />
         )}
 
         {activeTab === 'departures' && (
-          <div className="animate-fade-in">
-             <div className="stats-grid" style={{ marginBottom: '2rem' }}>
-              <div className="stat-card purple">
-                <div className="stat-icon-bg"><Calendar size={24} /></div>
-                <div className="stat-content">
-                  <span className="stat-label">TOUR SẮP KHỞI HÀNH</span>
-                  <div className="stat-value">{tourDepartures.filter(d => new Date(d.start_date) > new Date()).length}</div>
-                </div>
-              </div>
-              <div className="stat-card teal">
-                <div className="stat-icon-bg"><TrendingUp size={24} /></div>
-                <div className="stat-content">
-                  <span className="stat-label">LOAD FACTOR TB</span>
-                  <div className="stat-value">
-                    {tourDepartures.length > 0 
-                      ? Math.round(tourDepartures.reduce((acc, d) => acc + (d.sold_pax / (d.max_participants || 1) * 100), 0) / tourDepartures.length) 
-                      : 0}%
-                  </div>
-                </div>
-              </div>
-              <div className="stat-card orange">
-                <div className="stat-icon-bg"><UserCheck size={24} /></div>
-                <div className="stat-content">
-                  <span className="stat-label">TOUR ĐÃ CHỐT (GUARANTEED)</span>
-                  <div className="stat-value">{tourDepartures.filter(d => d.status === 'Guaranteed').length}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className="filter-group" style={{ flex: 1, maxWidth: '400px' }}>
-                <label>LỊCH TRÌNH KHỞI HÀNH</label>
-                <div style={{ position: 'relative' }}>
-                  <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                  <input className="filter-input" style={{ width: '100%', paddingLeft: '36px' }} placeholder="Tìm theo tên tour..." value={tourFilters.search} onChange={e => setTourFilters({...tourFilters, search: e.target.value})} />
-                </div>
-              </div>
-              <button className="btn-pro-save" style={{ width: 'auto', padding: '0.75rem 1.5rem' }} onClick={() => setShowAddDepartureModal(true)}>
-                <PlusCircle size={18} strokeWidth={3} /> LÊN LỊCH KHỞI HÀNH
-              </button>
-            </div>
-
-            <div className="data-table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>NGÀY KHỞI HÀNH</th>
-                    <th>TOUR / SẢN PHẨM</th>
-                    <th>SL KHÁCH / MAX</th>
-                    <th>LOAD FACTOR</th>
-                    <th>HƯỚNG DẪN VIÊN</th>
-                    <th>TRẠNG THÁI</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tourDepartures.filter(d => (d.template_name || '').toLowerCase().includes(tourFilters.search.toLowerCase())).map(dep => {
-                    const lf = Math.round((dep.sold_pax / (dep.max_participants || 1)) * 100);
-                    return (
-                      <tr key={dep.id}>
-                        <td style={{ fontWeight: 800, color: '#1e293b' }}>{new Date(dep.start_date).toLocaleDateString('vi-VN')}</td>
-                        <td>
-                          <div style={{ fontWeight: 700 }}>{dep.template_name}</div>
-                          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{dep.template_duration}</div>
-                        </td>
-                        <td style={{ fontWeight: 700 }}>{dep.sold_pax} / {dep.max_participants}</td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ flex: 1, height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
-                              <div style={{ width: `${Math.min(lf, 100)}%`, height: '100%', background: lf >= 100 ? '#10b981' : (lf >= 70 ? '#3b82f6' : '#f59e0b') }}></div>
-                            </div>
-                            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: lf >= 70 ? '#10b981' : '#64748b' }}>{lf}%</span>
-                          </div>
-                          {dep.break_even_pax > 0 && (
-                            <div style={{ fontSize: '0.7rem', color: dep.sold_pax >= dep.break_even_pax ? '#10b981' : '#f59e0b', marginTop: '4px', fontWeight: 600 }}>
-                              {dep.sold_pax >= dep.break_even_pax ? '✓ ĐÃ HÒA VỐN' : `Thiếu ${dep.break_even_pax - dep.sold_pax} khách để hòa vốn`}
-                            </div>
-                          )}
-                        </td>
-                        <td>
-                          {dep.guide_name ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <div style={{ width: '24px', height: '24px', background: '#eef2ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 800, color: '#6366f1' }}>{dep.guide_name.charAt(0)}</div>
-                              <span style={{ fontWeight: 600 }}>{dep.guide_name}</span>
-                            </div>
-                          ) : <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Chưa gán HDV</span>}
-                        </td>
-                        <td>
-                          <div className={`status-badge badge-${dep.status === 'Open' ? 'potential' : (dep.status === 'Guaranteed' ? 'won' : 'lost')}`}>
-                            {dep.status === 'Open' ? 'Đang nhận khách' : (dep.status === 'Guaranteed' ? 'Chắc chắn khởi hành' : dep.status)}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <DeparturesTab 
+            tourDepartures={tourDepartures}
+            tourFilters={tourFilters}
+            setTourFilters={setTourFilters}
+            setShowAddDepartureModal={setShowAddDepartureModal}
+          />
         )}
 
-        {activeTab === 'guides' && (
-          <div className="animate-fade-in">
-            {/* Sub-navigation Tabs */}
-            <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
-              <button 
-                onClick={() => setGuideActiveTab('list')}
-                style={{ 
-                  background: 'none', border: 'none', padding: '0.5rem 0', cursor: 'pointer',
-                  fontWeight: 700, fontSize: '0.9rem', color: guideActiveTab === 'list' ? '#6366f1' : '#94a3b8',
-                  borderBottom: guideActiveTab === 'list' ? '2px solid #6366f1' : '2px solid transparent',
-                  transition: 'all 0.2s'
-                }}
-              >
-                DANH SÁCH HDV
-              </button>
-              <button 
-                onClick={() => { setGuideActiveTab('timeline'); fetchGuideTimeline(); }}
-                style={{ 
-                  background: 'none', border: 'none', padding: '0.5rem 0', cursor: 'pointer',
-                  fontWeight: 700, fontSize: '0.9rem', color: guideActiveTab === 'timeline' ? '#6366f1' : '#94a3b8',
-                  borderBottom: guideActiveTab === 'timeline' ? '2px solid #6366f1' : '2px solid transparent',
-                  transition: 'all 0.2s'
-                }}
-              >
-                LỊCH GANTT (TIMELINE)
-              </button>
-            </div>
-
-            {guideActiveTab === 'list' ? (
-              <>
-                <div className="filter-bar" style={{ display: 'grid', gridTemplateColumns: '1fr 200px 200px auto', gap: '1rem', alignItems: 'end' }}>
-                  <div className="filter-group">
-                    <label>DANH SÁCH HƯỚNG DẪN VIÊN</label>
-                    <div style={{ position: 'relative' }}>
-                      <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                      <input className="filter-input" style={{ width: '100%', paddingLeft: '36px' }} placeholder="Tìm tên, SĐT..." value={guideFilters.search} onChange={e => setGuideFilters({...guideFilters, search: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="filter-group">
-                    <label>TRẠNG THÁI</label>
-                    <select className="filter-select" value={guideFilters.status} onChange={e => setGuideFilters({...guideFilters, status: e.target.value})}>
-                      <option value="">-- Tất cả --</option>
-                      <option value="Available">Sẵn sàng</option>
-                      <option value="Busy">Đang đi tour</option>
-                    </select>
-                  </div>
-                  <div className="filter-group">
-                    <label>NGÔN NGỮ</label>
-                    <select className="filter-select" value={guideFilters.language} onChange={e => setGuideFilters({...guideFilters, language: e.target.value})}>
-                      <option value="">-- Tất cả --</option>
-                      <option value="Tiếng Việt">Tiếng Việt</option>
-                      <option value="Tiếng Anh">Tiếng Anh</option>
-                      <option value="Tiếng Pháp">Tiếng Pháp</option>
-                      <option value="Tiếng Nhật">Tiếng Nhật</option>
-                      <option value="Tiếng Trung">Tiếng Trung</option>
-                    </select>
-                  </div>
-                  <button className="btn-pro-save" style={{ width: 'auto', padding: '0.75rem 1.5rem' }} onClick={() => setShowAddGuideModal(true)}>
-                    <Plus size={18} strokeWidth={3} /> THÊM HDV MỚI
-                  </button>
-                </div>
-            <div className="data-table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>HỌ VÀ TÊN</th>
-                    <th>LIÊN HỆ</th>
-                    <th>ĐÁNH GIÁ</th>
-                    <th>TRẠNG THÁI</th>
-                    <th style={{ textAlign: 'right' }}>THAO TÁC</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {guides.filter(g => {
-                    const matchesSearch = (g.name || '').toLowerCase().includes(guideFilters.search.toLowerCase()) || (g.phone || '').includes(guideFilters.search);
-                    const matchesStatus = !guideFilters.status || g.status === guideFilters.status;
-                    const matchesLang = !guideFilters.language || (g.languages || '').includes(guideFilters.language);
-                    return matchesSearch && matchesStatus && matchesLang;
-                  }).map(guide => (
-                    <tr key={guide.id}>
-                      <td style={{ fontWeight: 700, fontSize: '0.9rem' }}>
-                        {guide.name}
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontWeight: 600 }}>{guide.phone}</span>
-                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{guide.email}</span>
-                        </div>
-                      </td>
-                      <td>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#f59e0b', fontWeight: 800 }}>
-                           <TrendingUp size={14} /> {guide.rating}
-                         </div>
-                      </td>
-                      <td>
-                        <div className={`status-badge badge-${guide.status === 'Available' ? 'won' : 'lost'}`}>
-                          {guide.status === 'Available' ? 'Sẵn sàng' : guide.status}
-                        </div>
-                      </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                          <button className="icon-btn-small btn-view" onClick={() => handleEditGuide(guide)} title="Sửa thông tin">
-                            <Eye size={14} />
-                          </button>
-                          <button className="icon-btn-small btn-edit" onClick={() => handleEditGuide(guide)} title="Sửa thông tin">
-                            <Edit2 size={14} />
-                          </button>
-                          <button className="icon-btn-small btn-delete" onClick={() => handleDeleteGuide(guide.id)} title="Xóa">
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-            ) : (
-              <div className="animate-fade-in">
-                {/* Timeline Controls */}
-                <div className="gantt-controls" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', background: 'rgba(255,255,255,0.7)', borderRadius: '12px', padding: '1rem', border: '1px solid rgba(255,255,255,0.3)', marginBottom: '1.5rem' }}>
-                  <div className="gantt-view-toggle" style={{ margin: 0 }}>
-                    {[
-                      { id: 'month', label: 'THÁNG' },
-                      { id: 'quarter', label: 'QUÝ' },
-                      { id: 'long_period', label: 'DÀI NGÀY' }
-                    ].map(v => (
-                      <button 
-                        key={v.id} 
-                        className={`gantt-view-btn ${guideTimeFilter.type === v.id ? 'active' : ''}`}
-                        onClick={() => setGuideTimeFilter({ ...guideTimeFilter, type: v.id })}
-                      >
-                        {v.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {guideTimeFilter.type === 'month' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <button className="gantt-nav-btn" onClick={() => {
-                        const d = new Date(guideTimeFilter.date);
-                        d.setMonth(d.getMonth() - 1);
-                        setGuideTimeFilter({ ...guideTimeFilter, date: d });
-                      }}><ChevronLeft size={18} /></button>
-                      <span style={{ fontWeight: 800, color: '#1e293b', minWidth: '150px', textAlign: 'center' }}>
-                        Tháng {guideTimeFilter.date.getMonth() + 1}, {guideTimeFilter.date.getFullYear()}
-                      </span>
-                      <button className="gantt-nav-btn" onClick={() => {
-                        const d = new Date(guideTimeFilter.date);
-                        d.setMonth(d.getMonth() + 1);
-                        setGuideTimeFilter({ ...guideTimeFilter, date: d });
-                      }}><ChevronRight size={18} /></button>
-                    </div>
-                  )}
-
-                  {guideTimeFilter.type === 'quarter' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <select 
-                        className="filter-select" 
-                        style={{ width: '100px' }}
-                        value={Math.floor(guideTimeFilter.date.getMonth() / 3)}
-                        onChange={(e) => {
-                          const d = new Date(guideTimeFilter.date);
-                          d.setMonth(parseInt(e.target.value) * 3);
-                          setGuideTimeFilter({ ...guideTimeFilter, date: d });
-                        }}
-                      >
-                        <option value="0">Quý 1</option>
-                        <option value="1">Quý 2</option>
-                        <option value="2">Quý 3</option>
-                        <option value="3">Quý 4</option>
-                      </select>
-                      <select 
-                        className="filter-select" 
-                        style={{ width: '100px' }}
-                        value={guideTimeFilter.date.getFullYear()}
-                        onChange={(e) => {
-                          const d = new Date(guideTimeFilter.date);
-                          d.setFullYear(parseInt(e.target.value));
-                          setGuideTimeFilter({ ...guideTimeFilter, date: d });
-                        }}
-                      >
-                        {[2024, 2025, 2026].map(y => <option key={y} value={y}>Năm {y}</option>)}
-                      </select>
-                    </div>
-                  )}
-
-                  {guideTimeFilter.type === 'long_period' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <input 
-                        type="date" 
-                        className="filter-input" 
-                        value={guideTimeFilter.startDate.toISOString().split('T')[0]} 
-                        onChange={(e) => setGuideTimeFilter({ ...guideTimeFilter, startDate: new Date(e.target.value) })}
-                      />
-                      <ChevronRight size={16} color="#94a3b8" />
-                      <input 
-                        type="date" 
-                        className="filter-input" 
-                        value={guideTimeFilter.endDate.toISOString().split('T')[0]} 
-                        onChange={(e) => setGuideTimeFilter({ ...guideTimeFilter, endDate: new Date(e.target.value) })}
-                      />
-                    </div>
-                  )}
-                  
-                  <button className="gantt-nav-btn" style={{ marginLeft: 'auto', width: 'auto', padding: '0 1rem' }} onClick={() => setGuideTimeFilter({ ...guideTimeFilter, date: new Date(), type: 'month' })}>HÔM NAY</button>
-                </div>
-
-                <div className="gantt-container" style={{ '--gantt-columns': getDaysInPeriod(guideTimeFilter.type, guideTimeFilter.date, guideTimeFilter.startDate, guideTimeFilter.endDate).length }}>
-                  <div className="gantt-header-row">
-                    <div className="gantt-sidebar-header">PHÒNG / CA</div>
-                    <div className="gantt-time-grid">
-                      {(() => {
-                        const days = getDaysInPeriod(guideTimeFilter.type, guideTimeFilter.date, guideTimeFilter.startDate, guideTimeFilter.endDate);
-                        const headerGroups = [];
-
-                        if (guideTimeFilter.type === 'month') {
-                          // Group into 5 weeks: 1-7, 8-14, 15-21, 22-28, 29+
-                          const weekRanges = [
-                            { start: 1, end: 7, label: 'TUẦN 1' },
-                            { start: 8, end: 14, label: 'TUẦN 2' },
-                            { start: 15, end: 21, label: 'TUẦN 3' },
-                            { start: 22, end: 28, label: 'TUẦN 4' },
-                            { start: 29, end: 31, label: 'TUẦN 5' }
-                          ];
-                          weekRanges.forEach((range, idx) => {
-                            const weekDays = days.filter(d => d.getDate() >= range.start && d.getDate() <= range.end);
-                            if (weekDays.length > 0) {
-                              headerGroups.push({
-                                label: range.label,
-                                subLabel: `${weekDays[0].getDate().toString().padStart(2, '0')} - ${weekDays[weekDays.length - 1].getDate().toString().padStart(2, '0')}`,
-                                span: weekDays.length
-                              });
-                            }
-                          });
-                        } else {
-                          // Group by month
-                          let lastHeaderKey = '';
-                          let currentSpan = 0;
-                          let firstDateInMonth = null;
-                          
-                          days.forEach((day, idx) => {
-                            const headerKey = `${day.getFullYear()}-${day.getMonth()}`;
-                            if (headerKey !== lastHeaderKey) {
-                              if (lastHeaderKey !== '') {
-                                headerGroups.push({
-                                  label: `THÁNG ${firstDateInMonth.getMonth() + 1}`,
-                                  subLabel: `NĂM ${firstDateInMonth.getFullYear()}`,
-                                  span: currentSpan
-                                });
-                              }
-                              lastHeaderKey = headerKey;
-                              currentSpan = 1;
-                              firstDateInMonth = day;
-                            } else {
-                              currentSpan++;
-                            }
-
-                            // Final month
-                            if (idx === days.length - 1) {
-                              headerGroups.push({
-                                label: `THÁNG ${day.getMonth() + 1}`,
-                                subLabel: `NĂM ${day.getFullYear()}`,
-                                span: currentSpan
-                              });
-                            }
-                          });
-                        }
-
-                        return headerGroups.map((group, idx) => (
-                          <div 
-                            key={idx} 
-                            className="gantt-header-group" 
-                            style={{ 
-                              gridColumn: `span ${group.span}`,
-                              borderLeft: idx > 0 ? '1px solid rgba(255,255,255,0.2)' : 'none',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              padding: '8px 0'
-                            }}
-                          >
-                            <div style={{ fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.05em' }}>{group.label}</div>
-                            <div style={{ fontSize: '0.65rem', opacity: 0.7, fontWeight: 500 }}>{group.subLabel}</div>
-                          </div>
-                        ));
-                      })()}
-                    </div>
-                  </div>
-                  
-                  <div className="gantt-time-grid-subheader">
-                    <div className="gantt-sidebar-header">HƯỚNG DẪN VIÊN</div>
-                    <div className="gantt-time-grid" style={{ height: 'auto', background: '#f8fafc' }}>
-                      {getDaysInPeriod(guideTimeFilter.type, guideTimeFilter.date, guideTimeFilter.startDate, guideTimeFilter.endDate).map((day, idx) => (
-                        <div key={idx} className="gantt-time-cell" style={{ 
-                          height: '30px', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          fontSize: '0.65rem', 
-                          fontWeight: 800,
-                          color: day.getDay() === 0 || day.getDay() === 6 ? '#ef4444' : '#64748b',
-                          background: day.toDateString() === new Date().toDateString() ? '#fef9c3' : 'transparent',
-                          borderLeft: '1px solid #e2e8f0'
-                        }}>
-                          {day.getDate()}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="gantt-body">
-                    {guides.map(guide => {
-                      const days = getDaysInPeriod(guideTimeFilter.type, guideTimeFilter.date, guideTimeFilter.startDate, guideTimeFilter.endDate);
-                      const guideAssignments = guideTimelineData.filter(a => a.guide_id === guide.id);
-                      
-                      return (
-                        <div key={guide.id} className="gantt-row">
-                          <div className="gantt-guide-cell">
-                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                               <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#6366f1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 800 }}>
-                                 {guide.name.charAt(0)}
-                               </div>
-                               <div style={{ overflow: 'hidden' }}>
-                                 <div style={{ fontWeight: 800, fontSize: '0.75rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{guide.name}</div>
-                                 <div style={{ fontSize: '0.6rem', color: '#94a3b8' }}>{guide.languages}</div>
-                               </div>
-                             </div>
-                          </div>
-                          <div className="gantt-content-cell">
-                            <div className="gantt-time-grid" style={{ position: 'relative', height: '100%' }}>
-                              {guideAssignments.map((asg, idx) => {
-                                const start = new Date(asg.start_date);
-                                const end = new Date(asg.end_date);
-                                
-                                // Calculate position
-                                const startIndex = days.findIndex(d => d.toDateString() === start.toDateString());
-                                const endIndex = days.findIndex(d => d.toDateString() === end.toDateString());
-                                
-                                if (startIndex === -1 && endIndex === -1) return null;
-                                
-                                const gridStart = startIndex === -1 ? 1 : startIndex + 1;
-                                const gridEnd = endIndex === -1 ? days.length + 1 : endIndex + 2;
-                                
-                                return (
-                                  <div 
-                                    key={idx}
-                                    className={`gantt-bar gantt-bar-${asg.status.toLowerCase()}`}
-                                    style={{ 
-                                      gridColumn: `${gridStart} / ${gridEnd}`,
-                                      zIndex: 10
-                                    }}
-                                    title={`${asg.tour_name} (${asg.status})`}
-                                  >
-                                    <div className="gantt-bar-content">
-                                      <span className="gantt-bar-label">{asg.tour_name}</span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
+            {activeTab === 'guides' && (
+              <GuidesTab 
+                guides={guides}
+                guideFilters={guideFilters}
+                setGuideFilters={setGuideFilters}
+                guideActiveTab={guideActiveTab}
+                setGuideActiveTab={setGuideActiveTab}
+                fetchGuideTimeline={fetchGuideTimeline}
+                setShowAddGuideModal={setShowAddGuideModal}
+                handleEditGuide={handleEditGuide}
+                handleDeleteGuide={handleDeleteGuide}
+                guideTimeFilter={guideTimeFilter}
+                setGuideTimeFilter={setGuideTimeFilter}
+                guideTimelineData={guideTimelineData}
+              />
             )}
-          </div>
-        )}
 
         {activeTab === 'bookings' && (
-          <div className="animate-fade-in">
-            <div className="filter-bar">
-              <div className="filter-group" style={{ flex: 1 }}>
-                <label>TÌM BOOKING</label>
-                <div style={{ position: 'relative' }}>
-                  <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                  <input className="filter-input" style={{ paddingLeft: '36px' }} placeholder="Mã booking, tên khách..." value={bookingFilters.search} onChange={e => setBookingFilters({...bookingFilters, search: e.target.value})} />
-                </div>
-              </div>
-            </div>
-            <div className="data-table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>MÃ ĐƠN</th>
-                    <th>KHÁCH HÀNG</th>
-                    <th>TOUR</th>
-                    <th>TỔNG TIỀN</th>
-                    <th>TRẠNG THÁI</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bookings.filter(b => (b.booking_code || '').toLowerCase().includes(bookingFilters.search.toLowerCase())).map(booking => (
-                    <tr key={booking.id}>
-                      <td style={{ fontWeight: 700, color: '#6366f1' }}>{booking.booking_code}</td>
-                      <td>{booking.customer_name}</td>
-                      <td>{booking.tour_name}</td>
-                      <td style={{ fontWeight: 700 }}>{Number(booking.total_price).toLocaleString('vi-VN')}đ</td>
-                      <td><div className={`status-badge badge-${booking.booking_status === 'confirmed' ? 'won' : 'potential'}`}>{booking.booking_status}</div></td>
-                    </tr>
-                  ))}
-                  {bookings.length === 0 && <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Chưa có dữ liệu booking.</td></tr>}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <BookingsTab 
+            bookings={bookings}
+            bookingFilters={bookingFilters}
+            setBookingFilters={setBookingFilters}
+          />
         )}
 
         {activeTab === 'customers' && (
-          <div className="animate-fade-in">
-            <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className="filter-group" style={{ flex: 1, maxWidth: '400px' }}>
-                <label>TÌM KHÁCH HÀNG</label>
-                <div style={{ position: 'relative' }}>
-                  <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                  <input className="filter-input" style={{ paddingLeft: '36px' }} placeholder="Tên, SĐT, Email..." value={customerFilters.search} onChange={e => setCustomerFilters({...customerFilters, search: e.target.value})} />
-                </div>
-              </div>
-              <button className="btn-pro-save" style={{ width: 'auto', padding: '0.75rem 1.5rem' }} onClick={() => setShowAddCustomerModal(true)}>
-                <UserPlus size={18} strokeWidth={3} /> THÊM KHÁCH HÀNG MỚI
-              </button>
-            </div>
-
-            <div className="data-table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>HỌ TÊN</th>
-                    <th>LIÊN HỆ / ĐỊA CHỈ</th>
-                    <th>PHÂN KHÚC</th>
-                    <th>LTV (TỔNG CHI)</th>
-                    <th>VAI TRÒ</th>
-                    <th>THAO TÁC</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {customers.filter(c => 
-                    (c.name || '').toLowerCase().includes(customerFilters.search.toLowerCase()) ||
-                    (c.phone || '').includes(customerFilters.search)
-                  ).map(customer => (
-                    <tr key={customer.id}>
-                      <td style={{ fontWeight: 700 }}>{customer.name}</td>
-                      <td>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontWeight: 600 }}>{customer.phone || 'N/A'}</span>
-                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{customer.email || ''}</span>
-                          <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{customer.address || ''}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className={`badge ${customer.customer_segment === 'VIP' ? 'badge-priority-high' : customer.customer_segment === 'Repeat Customer' ? 'badge-priority-medium' : 'badge-priority-low'}`}>
-                          {customer.customer_segment}
-                        </span>
-                      </td>
-                      <td style={{ fontWeight: 700, color: '#10b981' }}>
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(customer.total_spent || 0)}
-                      </td>
-                      <td style={{ fontSize: '0.85rem' }}>{customer.role || 'Booker'}</td>
-                      <td>
-                        <button className="icon-btn" onClick={() => setEditingCustomer(customer)}><Edit3 size={16} /></button>
-                      </td>
-                    </tr>
-                  ))}
-                  {customers.length === 0 && <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Chưa có dữ liệu khách hàng.</td></tr>}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <CustomersTab 
+            customers={customers}
+            customerFilters={customerFilters}
+            setCustomerFilters={setCustomerFilters}
+            setShowAddCustomerModal={setShowAddCustomerModal}
+            setEditingCustomer={setEditingCustomer}
+          />
         )}
 
         {activeTab === 'settings' && (
-          <div className="animate-fade-in" style={{ maxWidth: '800px' }}>
-            <div className="stat-card" style={{ background: 'white', color: '#1e293b', border: '1px solid #e2e8f0' }}>
-              <h3 style={{ marginBottom: '1.5rem' }}>Cấu hình Meta Webhook</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                <div className="modal-form-group">
-                  <label>APP ID</label>
-                  <input className="modal-input" value={metaSettings.meta_app_id} onChange={e => setMetaSettings({...metaSettings, meta_app_id: e.target.value})} />
-                </div>
-                <div className="modal-form-group">
-                  <label>APP SECRET</label>
-                  <input className="modal-input" type="password" value={metaSettings.meta_app_secret} onChange={e => setMetaSettings({...metaSettings, meta_app_secret: e.target.value})} />
-                </div>
-              </div>
-              <div className="modal-form-group" style={{ marginBottom: '1.5rem' }}>
-                <label>PAGE ACCESS TOKEN (LONGLIVED)</label>
-                <textarea className="modal-textarea" style={{ height: '100px' }} value={metaSettings.meta_page_access_token} onChange={e => setMetaSettings({...metaSettings, meta_page_access_token: e.target.value})} />
-              </div>
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <button className="login-btn" onClick={handleUpdateSettings}>LƯU CẤU HÌNH</button>
-                <button className="login-btn" style={{ background: '#f8fafc', color: '#6366f1', border: '1px solid #6366f1' }} onClick={handleTestMeta}>KÍCH HOẠT KẾT NỐI</button>
-              </div>
-            </div>
-          </div>
+          <SettingsTab 
+            metaSettings={metaSettings}
+            setMetaSettings={setMetaSettings}
+            handleUpdateSettings={handleUpdateSettings}
+            handleTestMeta={handleTestMeta}
+          />
         )}
-          </>
-        )}
-      </main>
+      </>
+    )}
+  </main>
 
       {showAddLeadModal && (
         <div className="modal-overlay" onClick={() => setShowAddLeadModal(false)}>
