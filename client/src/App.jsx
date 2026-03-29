@@ -902,26 +902,24 @@ function AppContent() {
     }
   };
 
-  const handleTestMeta = async () => {
-    if (!metaToken) {
-      addToast('Vui lòng dán Page Access Token vào ô bên dưới.');
-      return;
-    }
+  const handleTestMeta = async (type = 'messenger') => {
     setTestLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('/api/messages/test-meta', 
-        { token: metaToken },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const apiPath = type === 'capi' ? '/api/settings/test-capi' : '/api/messages/test-meta';
+      const payload = type === 'capi' ? {} : { token: metaToken };
+      
+      const res = await axios.post(apiPath, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
       if (res.data.success) {
-        addToast(res.data.note || 'Kích hoạt API thành công!');
+        addToast(res.data.message || 'Kiểm tra thành công!');
       } else {
-        addToast(res.data.message || 'Kích hoạt chưa hoàn tất.');
+        addToast(res.data.error || 'Kiểm tra thất bại.');
       }
     } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Lỗi kết nối Meta.';
-      addToast(errorMsg);
+      addToast(err.response?.data?.error || 'Lỗi kết nối Meta.');
     } finally {
       setTestLoading(false);
       fetchSettings();

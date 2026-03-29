@@ -156,35 +156,54 @@ const SettingsTab = ({
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem', width: '100%' }}>
             <div className="modal-form-group">
-              <label>APP ID</label>
+              <label>PIXEL ID (DATASET ID)</label>
               <input 
                 className="modal-input" 
-                value={metaSettings?.meta_app_id || ''} 
-                onChange={e => setMetaSettings({...metaSettings, meta_app_id: e.target.value})} 
+                placeholder="Ví dụ: 123456789012345"
+                value={metaSettings?.meta_dataset_id || ''} 
+                onChange={e => setMetaSettings({...metaSettings, meta_dataset_id: e.target.value})} 
               />
             </div>
             <div className="modal-form-group">
-              <label>APP SECRET</label>
+              <label>MÃ THỬ NGHIỆM (TEST EVENT CODE)</label>
               <input 
                 className="modal-input" 
-                type="password" 
-                value={metaSettings?.meta_app_secret || ''} 
-                onChange={e => setMetaSettings({...metaSettings, meta_app_secret: e.target.value})} 
+                placeholder="Ví dụ: TEST12345 (Nếu có)"
+                value={metaSettings?.meta_test_event_code || ''} 
+                onChange={e => setMetaSettings({...metaSettings, meta_test_event_code: e.target.value})} 
               />
             </div>
           </div>
-          <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%' }}>
-            <label>PAGE ACCESS TOKEN (LONGLIVED)</label>
-            <textarea 
-              className="modal-textarea" 
-              style={{ height: '80px' }} 
-              value={metaSettings?.meta_page_access_token || ''} 
-              onChange={e => setMetaSettings({...metaSettings, meta_page_access_token: e.target.value})} 
-            />
+          <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <label style={{ marginBottom: 0 }}>BẬT CONVERSIONS API (CAPI)</label>
+            <div 
+              onClick={() => setMetaSettings({...metaSettings, meta_capi_enabled: metaSettings?.meta_capi_enabled === 'true' ? 'false' : 'true'})}
+              style={{ 
+                width: '50px', 
+                height: '24px', 
+                background: metaSettings?.meta_capi_enabled === 'true' ? '#22c55e' : '#cbd5e1', 
+                borderRadius: '12px', 
+                position: 'relative', 
+                cursor: 'pointer',
+                transition: 'all 0.3s'
+              }}
+            >
+              <div style={{ 
+                width: '18px', 
+                height: '18px', 
+                background: 'white', 
+                borderRadius: '50%', 
+                position: 'absolute', 
+                top: '3px', 
+                left: metaSettings?.meta_capi_enabled === 'true' ? '29px' : '3px',
+                transition: 'all 0.3s'
+              }} />
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button className="login-btn" onClick={handleUpdateSettings}>LƯU CẤU HÌNH</button>
-            <button className="login-btn" style={{ background: '#f8fafc', color: '#6366f1', border: '1px solid #6366f1' }} onClick={handleTestMeta}>KÍCH HOẠT KẾT NỐI</button>
+            <button className="login-btn" style={{ background: '#f8fafc', color: '#6366f1', border: '1px solid #6366f1' }} onClick={handleTestMeta}>KÍCH HOẠT MESSENGER</button>
+            <button className="login-btn" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #16a34a' }} onClick={() => handleTestMeta('capi')}>KIỂM TRA CAPI</button>
           </div>
         </div>
       )}
