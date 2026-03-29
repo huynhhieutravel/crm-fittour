@@ -707,11 +707,11 @@ function AppContent() {
         headers: { Authorization: `Bearer ${token}` }
       });
       addToast('Đã xóa khách hàng thành công');
-      setCustomerToDelete(null);
-      fetchCustomers();
     } catch (err) {
       addToast('Lỗi khi xóa khách hàng: ' + (err.response?.data?.message || err.message));
     } finally {
+      setCustomerToDelete(null);
+      fetchCustomers();
       setLoading(false);
     }
   };
@@ -729,11 +729,11 @@ function AppContent() {
         headers: { Authorization: `Bearer ${token}` }
       });
       addToast('Đã xóa tour thành công');
-      setTourToDelete(null);
-      fetchTours();
     } catch (err) {
       addToast('Lỗi khi xóa tour: ' + (err.response?.data?.message || err.message));
     } finally {
+      setTourToDelete(null);
+      fetchTours();
       setLoading(false);
     }
   };
@@ -934,11 +934,11 @@ function AppContent() {
         headers: { Authorization: `Bearer ${token}` }
       });
       addToast('Đã xóa Lead thành công');
-      setLeadToDelete(null);
-      fetchLeads();
     } catch (err) {
       addToast('Lỗi khi xóa Lead: ' + (err.response?.data?.message || err.message));
     } finally {
+      setLeadToDelete(null);
+      fetchLeads();
       setLoading(false);
     }
   };
@@ -1579,6 +1579,7 @@ function AppContent() {
             <button 
               className="btn-pro-cancel" 
               style={{ flex: 1, border: '1px solid #e5e7eb', background: 'white' }}
+              disabled={loading}
               onClick={() => {
                 setLeadToDelete(null);
                 setCustomerToDelete(null);
@@ -1587,13 +1588,14 @@ function AppContent() {
             >HỦY BỎ</button>
             <button 
               className="btn-pro-save" 
-              style={{ flex: 1, background: '#ef4444' }}
+              style={{ flex: 1, background: '#ef4444', opacity: loading ? 0.7 : 1 }}
+              disabled={loading}
               onClick={() => {
                 if (leadToDelete) confirmDeleteLead();
                 if (customerToDelete) confirmDeleteCustomer();
                 if (tourToDelete) confirmDeleteTour();
               }}
-            >XÓA THỰC SỰ</button>
+            >{loading ? 'ĐANG XÓA...' : 'XÓA THỰC SỰ'}</button>
           </div>
         </div>
       </div>
