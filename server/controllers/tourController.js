@@ -16,21 +16,25 @@ exports.getAllTours = async (req, res) => {
 
 exports.createTour = async (req, res) => {
     const { 
-        name, destination, duration, price, max_pax, start_date, description,
-        tour_type, tags, itinerary, highlights, inclusions, exclusions,
-        base_price, internal_cost, expected_margin, schedule_link
+        name, destination, duration, price, max_pax, start_date, 
+        description, tour_type, tags, highlights, inclusions, 
+        exclusions, base_price, internal_cost, expected_margin, 
+        schedule_link, code, bu_group 
     } = req.body;
     try {
         const result = await db.query(
             `INSERT INTO tour_templates (
-                name, destination, duration, price, max_pax, start_date, description,
-                tour_type, tags, itinerary, highlights, inclusions, exclusions,
-                base_price, internal_cost, expected_margin, schedule_link
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
+                name, destination, duration, price, max_pax, start_date, 
+                description, tour_type, tags, highlights, inclusions, 
+                exclusions, base_price, internal_cost, expected_margin, 
+                schedule_link, code, bu_group
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) 
+            RETURNING *`,
             [
-                name, destination, duration, price || base_price, max_pax, start_date, description,
-                tour_type, tags, itinerary, highlights, inclusions, exclusions,
-                base_price || price, internal_cost, expected_margin, schedule_link
+                name, destination, duration, price || 0, max_pax || 0, start_date || null, 
+                description, tour_type, tags, highlights, inclusions, 
+                exclusions, base_price || 0, internal_cost || 0, expected_margin || 0, 
+                schedule_link, code, bu_group
             ]
         );
         res.status(201).json(result.rows[0]);
@@ -53,7 +57,7 @@ exports.updateTour = async (req, res) => {
     const { 
         name, destination, duration, price, max_pax, start_date, description, status,
         tour_type, tags, itinerary, highlights, inclusions, exclusions,
-        base_price, internal_cost, expected_margin, schedule_link
+        base_price, internal_cost, expected_margin, schedule_link, code, bu_group
     } = req.body;
     try {
         const result = await db.query(
@@ -61,13 +65,13 @@ exports.updateTour = async (req, res) => {
                 name=$1, destination=$2, duration=$3, price=$4, max_pax=$5, 
                 start_date=$6, description=$7, status=$8, tour_type=$9, tags=$10, 
                 itinerary=$11, highlights=$12, inclusions=$13, exclusions=$14, 
-                base_price=$15, internal_cost=$16, expected_margin=$17, schedule_link=$18 
-            WHERE id=$19 RETURNING *`,
+                base_price=$15, internal_cost=$16, expected_margin=$17, schedule_link=$18, code=$19, bu_group=$20
+            WHERE id=$21 RETURNING *`,
             [
                 name, destination, duration, price || base_price, max_pax, 
                 start_date, description, status, tour_type, tags, 
                 itinerary, highlights, inclusions, exclusions, 
-                base_price || price, internal_cost, expected_margin, schedule_link, req.params.id
+                base_price || price, internal_cost, expected_margin, schedule_link, code, req.params.id
             ]
         );
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy tour' });

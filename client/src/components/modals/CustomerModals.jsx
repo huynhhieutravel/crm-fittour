@@ -9,7 +9,8 @@ export const AddCustomerModal = ({
   setNewCustomer,
   CITY_OPTIONS,
   CUSTOMER_ROLES,
-  CUSTOMER_SEGMENTS
+  CUSTOMER_SEGMENTS,
+  users = []
 }) => {
   if (!showAddCustomerModal) return null;
 
@@ -53,9 +54,9 @@ export const AddCustomerModal = ({
             <label>GIỚI TÍNH</label>
             <select className="modal-select" value={newCustomer.gender} onChange={e => setNewCustomer({...newCustomer, gender: e.target.value})}>
               <option value="">-- Giới tính --</option>
-              <option value="Nam">Nam</option>
-              <option value="Nữ">Nữ</option>
-              <option value="Khác">Khác</option>
+              <option value="male">Nam</option>
+              <option value="female">Nữ</option>
+              <option value="other">Khác</option>
             </select>
           </div>
 
@@ -93,6 +94,20 @@ export const AddCustomerModal = ({
             <label>PHÂN KHÚC</label>
             <select className="modal-select" value={newCustomer.customer_segment} onChange={e => setNewCustomer({...newCustomer, customer_segment: e.target.value})}>
               {CUSTOMER_SEGMENTS.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          <div className="modal-form-group">
+            <label>NGÀY CHỐT ĐƠN ĐẦU TIÊN</label>
+            <input className="modal-input" type="date" value={newCustomer.first_deal_date ? newCustomer.first_deal_date.split('T')[0] : ''} onChange={e => setNewCustomer({...newCustomer, first_deal_date: e.target.value})} />
+          </div>
+          <div className="modal-form-group">
+            <label>NHÂN VIÊN CHĂM SÓC</label>
+            <select className="modal-select" value={newCustomer.assigned_to || ''} onChange={e => setNewCustomer({...newCustomer, assigned_to: e.target.value})}>
+              <option value="">-- Chọn nhân viên --</option>
+              {users.filter(u => u.is_active !== false && (u.role_name === 'sale' || u.role_name === 'admin' || u.role_name === 'manager' || u.permissions?.customers?.can_edit)).map(u => (
+                <option key={u.id} value={u.id}>{u.full_name} ({u.username})</option>
+              ))}
             </select>
           </div>
 
@@ -136,7 +151,8 @@ export const EditCustomerModal = ({
   CUSTOMER_SEGMENTS,
   newCustomerNote,
   setNewCustomerNote,
-  handleAddCustomerNote
+  handleAddCustomerNote,
+  users = []
 }) => {
   if (!editingCustomer) return null;
 
@@ -179,9 +195,9 @@ export const EditCustomerModal = ({
             <label>GIỚI TÍNH</label>
             <select className="modal-select" value={editingCustomer.gender || ''} onChange={e => setEditingCustomer({...editingCustomer, gender: e.target.value})}>
               <option value="">-- Giới tính --</option>
-              <option value="Nam">Nam</option>
-              <option value="Nữ">Nữ</option>
-              <option value="Khác">Khác</option>
+              <option value="male">Nam</option>
+              <option value="female">Nữ</option>
+              <option value="other">Khác</option>
             </select>
           </div>
 
@@ -219,6 +235,20 @@ export const EditCustomerModal = ({
             <label>PHÂN KHÚC</label>
             <select className="modal-select" value={editingCustomer.customer_segment || 'New Customer'} onChange={e => setEditingCustomer({...editingCustomer, customer_segment: e.target.value})}>
               {CUSTOMER_SEGMENTS.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          <div className="modal-form-group">
+            <label>NGÀY CHỐT ĐƠN ĐẦU TIÊN</label>
+            <input className="modal-input" type="date" value={editingCustomer.first_deal_date ? (typeof editingCustomer.first_deal_date === 'string' ? editingCustomer.first_deal_date.split('T')[0] : new Date(editingCustomer.first_deal_date).toISOString().split('T')[0]) : ''} onChange={e => setEditingCustomer({...editingCustomer, first_deal_date: e.target.value})} />
+          </div>
+          <div className="modal-form-group">
+            <label>NHÂN VIÊN CHĂM SÓC</label>
+            <select className="modal-select" value={editingCustomer.assigned_to || ''} onChange={e => setEditingCustomer({...editingCustomer, assigned_to: e.target.value})}>
+              <option value="">-- Chọn nhân viên --</option>
+              {users.filter(u => u.is_active !== false && (u.role_name === 'sale' || u.role_name === 'admin' || u.role_name === 'manager' || u.permissions?.customers?.can_edit)).map(u => (
+                <option key={u.id} value={u.id}>{u.full_name} ({u.username})</option>
+              ))}
             </select>
           </div>
 

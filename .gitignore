@@ -12,3 +12,6 @@ server/node_modules/
 global_errors.log
 loi_tao_lead.txt
 server.log
+tmp/
+*.bak
+.antigravity/

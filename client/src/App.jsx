@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { 
   BrowserRouter as Router,
@@ -18,10 +18,13 @@ import DeparturesTab from './tabs/DeparturesTab';
 import DashboardTab from './tabs/DashboardTab';
 import LeadsTab from './tabs/LeadsTab';
 import GuidesTab from './tabs/GuidesTab';
+import UsersTab from './tabs/UsersTab';
 import AddLeadModal from './components/modals/AddLeadModal';
+import EditLeadModal from './components/modals/EditLeadModal';
 import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
+import { AddUserModal, EditUserModal, ChangePasswordModal } from './components/modals/UserModals';
 import LeadNotesModal from './components/modals/LeadNotesModal';
-import { AddTemplateModal, AddDepartureModal } from './components/modals/TourModals';
+import { AddTemplateModal, AddDepartureModal, EditTemplateModal } from './components/modals/TourModals';
 import GuideModal from './components/modals/GuideModal';
 
 import { 
@@ -47,20 +50,20 @@ import {
   Search,
   PlusCircle,
   Send,
-  FileText,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  Settings,
   Package,
   ShoppingCart,
   UserCheck,
+  Settings,
+  AlertTriangle,
+  ChevronDown,
+  ChevronRight,
+  ChevronLeft,
+  Eye,
   MoreHorizontal,
-  X,
   User,
   Lock,
-  PieChart
+  PieChart,
+  FileText
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -79,7 +82,7 @@ function AppContent() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
-    const validTabs = ['dashboard', 'leads', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings'];
+    const validTabs = ['dashboard', 'leads', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -102,6 +105,10 @@ function AppContent() {
   const [toasts, setToasts] = useState([]);
   const [testLoading, setTestLoading] = useState(false);
   const [metaToken, setMetaToken] = useState('');
+  const [roles, setRoles] = useState([]);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [editingUserAccount, setEditingUserAccount] = useState(null);
+  const [userToChangePassword, setUserToChangePassword] = useState(null);
   const [metaSettings, setMetaSettings] = useState({
     meta_app_id: '',
     meta_app_secret: '',
@@ -110,7 +117,7 @@ function AppContent() {
     meta_page_id: ''
   });
   const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'all' });
-  const [tourFilters, setTourFilters] = useState({ search: '' });
+  const [tourFilters, setTourFilters] = useState({ search: '', tour_type: '', destination: '' });
   const [bookingFilters, setBookingFilters] = useState({ search: '', status: '' });
   const [customerFilters, setCustomerFilters] = useState({ search: '' });
   const [showAddLeadModal, setShowAddLeadModal] = useState(false);
@@ -118,11 +125,6 @@ function AppContent() {
     name: '', phone: '', email: '', gender: '', birth_date: '', 
     source: 'Messenger', tour_id: '', consultation_note: '', 
     bu_group: '', assigned_to: '', classification: 'Mới',
-    last_contacted_at: ''
-  });
-  const [fastLead, setFastLead] = useState({ 
-    name: '', phone: '', source: 'Messenger', tour_id: '', 
-    status: 'Mới', bu_group: '', assigned_to: '', classification: 'Mới',
     last_contacted_at: ''
   });
   const [selectedLeadForNotes, setSelectedLeadForNotes] = useState(null);
@@ -141,7 +143,16 @@ function AppContent() {
     location_city: '', travel_season: ''
   });
 
+  // Sidebar Submenu State
+  const [isToursMenuOpen, setIsToursMenuOpen] = useState(false);
+  const [hoveredMenu, setHoveredMenu] = useState(null);
+  const [hoveredRect, setHoveredRect] = useState(null);
+  const menuTimerRef = useRef(null);
+
+  const sidebarRef = useRef(null);
+
   const [showAddTemplateModal, setShowAddTemplateModal] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
   const [showAddDepartureModal, setShowAddDepartureModal] = useState(false);
   const [showAddGuideModal, setShowAddGuideModal] = useState(false);
 
@@ -172,6 +183,7 @@ function AppContent() {
     endDate: new Date(new Date().setDate(new Date().getDate() + 30))
   });
   const [guideFilters, setGuideFilters] = useState({ search: '', status: '', language: '' });
+  const [bus, setBus] = useState([]);
 
 
   const handleQuickUpdate = async (leadId, field, value) => {
@@ -198,9 +210,12 @@ function AppContent() {
   };
   const [isLightMode, setIsLightMode] = useState(true);
   const [editingLead, setEditingLead] = useState(null);
+  const [leadToDelete, setLeadToDelete] = useState(null);
+  const [customerToDelete, setCustomerToDelete] = useState(null);
+  const [tourToDelete, setTourToDelete] = useState(null);
 
   const LEAD_SOURCES = ['Messenger', 'Zalo', 'Khách giới thiệu', 'Hotline', 'Khác'];
-  const LEAD_STATUSES = ['Mới', 'Đã tư vấn', 'Tư vấn lần 2', 'Chốt đơn', 'Thất Bại'];
+  const LEAD_STATUSES = ['Mới', 'Đang liên hệ', 'Tiềm năng', 'Đặt cọc', 'Chốt đơn', 'Thất bại'];
   const LEAD_CLASSIFICATIONS = ['Mới', 'Tiềm Năng', 'Tiềm Năng Cao', 'Không Tiềm Năng'];
   const CUSTOMER_ROLES = ['Người đại diện (booker)', 'Khách đi kèm'];
   const CUSTOMER_SEGMENTS = ['New Customer', 'Repeat Customer', 'VIP'];
@@ -220,7 +235,7 @@ function AppContent() {
   // Sync activeTab with URL
   useEffect(() => {
     const path = location.pathname.substring(1);
-    const validTabs = ['dashboard', 'leads', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings'];
+    const validTabs = ['dashboard', 'leads', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {
@@ -266,8 +281,51 @@ function AppContent() {
       fetchUsers();
       fetchConversations();
       fetchSettings();
+      fetchBUs();
     }
   }, [isLoggedIn]);
+
+  const fetchBUs = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('/api/business-units', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setBus(res.data);
+    } catch (err) { console.error('Error fetching BUs:', err); }
+  };
+
+  const handleUpdateBU = async (id, payload) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/business-units/${id}`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchBUs();
+    } catch (err) { console.error('Error updating BU:', err); }
+  };
+
+  const handleReorderBUs = async (orders) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put('/api/business-units/reorder', { orders }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Cập nhật vị trí thành công!');
+      fetchBUs();
+    } catch (err) { addToast('Lỗi khi sắp xếp BU'); }
+  };
+
+  const handleCreateBU = async (payload) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('/api/business-units', payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Tạo BU mới thành công!');
+      fetchBUs();
+    } catch (err) { addToast('Lỗi khi tạo BU'); }
+  };
 
   const fetchTourTemplates = async () => {
     try {
@@ -354,12 +412,24 @@ function AppContent() {
       fetchTourTemplates();
       setShowAddTemplateModal(false);
       setNewTemplate({
-        name: '', destination: '', duration: '', tour_type: 'Standard', tags: '',
+        name: '', destination: '', duration: '', tour_type: 'Group Tour', tags: '',
         itinerary: '', highlights: '', inclusions: '', exclusions: '',
         base_price: 0, internal_cost: 0, expected_margin: 0
       });
       addToast('Đã thêm sản phẩm tour mới thành công!');
     } catch (err) { addToast('Lỗi khi thêm tour: ' + err.message); }
+  };
+
+  const handleUpdateTemplate = async (updatedData) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/tours/${updatedData.id}`, updatedData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchTourTemplates();
+      setEditingTemplate(null);
+      addToast('Đã cập nhật sản phẩm tour thành công!');
+    } catch (err) { addToast('Lỗi khi cập nhật tour: ' + err.message); }
   };
 
   const handleAddDeparture = async (e) => {
@@ -407,7 +477,7 @@ function AppContent() {
 
   useEffect(() => {
     if (editingLead) {
-      fetchLeadNotes(editingLead.id);
+      fetchNotes(editingLead.id);
     }
   }, [editingLead]);
 
@@ -442,6 +512,24 @@ function AppContent() {
     } catch (err) { console.error('Fetch users failed', err); }
   };
 
+  const fetchRoles = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('/api/users/roles', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRoles(res.data);
+    } catch (err) { console.error('Fetch roles failed', err); }
+  };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      if (user?.role === 'admin') {
+        fetchRoles();
+      }
+    }
+  }, [isLoggedIn, user]);
+
   const handleUpdateSettings = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -470,15 +558,6 @@ function AppContent() {
     });
   };
 
-  const handleFastAddLead = async () => {
-    if (!fastLead.name) { addToast('Vui lòng nhập tên khách'); return; }
-    await createLead(fastLead);
-    setFastLead({ 
-      name: '', phone: '', source: 'Messenger', tour_id: '', 
-      status: 'Mới', bu_group: '', assigned_to: '', classification: 'Mới',
-      last_contacted_at: ''
-    });
-  };
 
   const createLead = async (leadData) => {
     setLoading(true);
@@ -612,6 +691,50 @@ function AppContent() {
       addToast('Đã cập nhật thông tin khách hàng.');
     } catch (err) {
       addToast('Lỗi khi cập nhật khách hàng');
+    }
+  };
+
+  const handleDeleteCustomer = (id) => {
+    setCustomerToDelete(id);
+  };
+
+  const confirmDeleteCustomer = async () => {
+    if (!customerToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/customers/${customerToDelete}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã xóa khách hàng thành công');
+      setCustomerToDelete(null);
+      fetchCustomers();
+    } catch (err) {
+      addToast('Lỗi khi xóa khách hàng: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTour = (id) => {
+    setTourToDelete(id);
+  };
+
+  const confirmDeleteTour = async () => {
+    if (!tourToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/tours/${tourToDelete}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã xóa tour thành công');
+      setTourToDelete(null);
+      fetchTours();
+    } catch (err) {
+      addToast('Lỗi khi xóa tour: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -798,28 +921,81 @@ function AppContent() {
     navigate('/login');
   };
 
-  const handleDeleteLead = async (id) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa Lead này?')) return;
+  const handleDeleteLead = (id) => {
+    setLeadToDelete(id);
+  };
+
+  const confirmDeleteLead = async () => {
+    if (!leadToDelete) return;
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`/api/leads/${id}`, {
+      await axios.delete(`/api/leads/${leadToDelete}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       addToast('Đã xóa Lead thành công');
+      setLeadToDelete(null);
       fetchLeads();
     } catch (err) {
-      addToast('Lỗi khi xóa Lead');
+      addToast('Lỗi khi xóa Lead: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchLeadNotes = async (leadId) => {
+  const handleAddUser = async (userData) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`/api/notes/${leadId}`, {
+      await axios.post('/api/users', userData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setLeadNotes(res.data);
-    } catch (err) { console.error('Fetch notes failed', err); }
+      addToast('Thêm nhân viên mới thành công!');
+      setShowAddUserModal(false);
+      fetchUsers();
+    } catch (err) {
+      addToast(err.response?.data?.message || 'Lỗi khi thêm nhân viên');
+    }
+  };
+
+  const handleUpdateUser = async (id, userData) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/users/${id}`, userData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Cập nhật nhân viên thành công!');
+      setEditingUserAccount(null);
+      fetchUsers();
+    } catch (err) {
+      addToast(err.response?.data?.message || 'Lỗi khi cập nhật nhân viên');
+    }
+  };
+
+  const handleChangePasswordAdmin = async (id, newPassword) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/users/${id}/password`, { newPassword }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã đổi mật khẩu nhân viên.');
+      setUserToChangePassword(null);
+    } catch (err) {
+      addToast(err.response?.data?.message || 'Lỗi khi đổi mật khẩu');
+    }
+  };
+
+  const handleDeleteUser = async (id) => {
+    if (!window.confirm('CẢNH BÁO: Hành động này sẽ xóa vĩnh viễn tài khoản nhân viên. Bạn có chắc chắn?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã xóa nhân viên.');
+      fetchUsers();
+    } catch (err) {
+      addToast(err.response?.data?.message || 'Lỗi khi xóa nhân viên');
+    }
   };
 
   const handleAddNoteForLead = async (leadId) => {
@@ -836,7 +1012,17 @@ function AppContent() {
     } catch (err) { addToast('Lỗi khi thêm ghi chú'); }
   };
 
-  const renderDashboard = () => (
+  const renderDashboard = () => {
+    const currentUserFull = users.find(u => u.id === user?.id) || {};
+    const hasPerms = currentUserFull.permissions || {};
+    
+    const checkView = (mod) => {
+      if (user?.role === 'admin') return true;
+      if (hasPerms[mod]) return hasPerms[mod].can_view === true;
+      return false;
+    };
+
+    return (
     <div className="app-container">
       <aside className="sidebar">
         <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
@@ -845,48 +1031,149 @@ function AppContent() {
           </div>
           FIT TOUR
         </div>
-        
-        <div className="nav-section-title">Tổng quan</div>
-        <div className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => navigate('/dashboard')}>
-          <LayoutDashboard /> Dashboard
-        </div>
-        
-        <div className="nav-section-title">Marketing & Sales</div>
-        <div className={`nav-item ${activeTab === 'leads' ? 'active' : ''}`} onClick={() => navigate('/leads')}>
-          <Users /> Lead Marketing
-        </div>
-        <div className={`nav-item ${activeTab === 'inbox' ? 'active' : ''}`} onClick={() => navigate('/inbox')}>
-          <MessageSquare /> Messenger
-        </div>
 
-        <div className="nav-section-title">Nghiệp vụ lõi</div>
-        <div className={`nav-item ${activeTab === 'tours' ? 'active' : ''}`} onClick={() => navigate('/tours')}>
-          <Package /> Sản phẩm Tour
-        </div>
-        <div className={`nav-item ${activeTab === 'departures' ? 'active' : ''}`} onClick={() => navigate('/departures')}>
-          <Calendar /> Lịch khởi hành
-        </div>
-        <div className={`nav-item ${activeTab === 'guides' ? 'active' : ''}`} onClick={() => navigate('/guides')}>
-          <Users /> Hướng dẫn viên
-        </div>
-        <div className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`} onClick={() => navigate('/bookings')}>
-          <ShoppingCart /> Đơn hàng/Booking
-        </div>
-        <div className={`nav-item ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => navigate('/customers')}>
-          <UserCheck /> Khách hàng
-        </div>
+        <div className="sidebar-nav-scroll">
+          <div className="nav-section-title">Tổng quan</div>
+          <div className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => navigate('/dashboard')}>
+            <LayoutDashboard /> Dashboard
+          </div>
+          
+          {(checkView('leads') || checkView('tours')) && (
+            <>
+              <div className="nav-section-title">Marketing & Sales</div>
+              {checkView('leads') && (
+                <div className={`nav-item ${activeTab === 'leads' ? 'active' : ''}`} onClick={() => navigate('/leads')}>
+                  <Users /> Lead Marketing
+                </div>
+              )}
+              {checkView('leads') && (
+                <div className={`nav-item ${activeTab === 'inbox' ? 'active' : ''}`} onClick={() => navigate('/inbox')}>
+                  <MessageSquare /> Messenger
+                </div>
+              )}
+            </>
+          )}
 
-        <div className="nav-section-title">Hệ thống</div>
-        <div className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => navigate('/settings')}>
-          <Settings /> Cấu hình Meta
-        </div>
-        
-        <div style={{ marginTop: 'auto' }}>
-          <div className="nav-item" onClick={handleLogout} style={{ color: '#f87171' }}>
-            <LogOut /> Đăng xuất
+          {(checkView('tours') || checkView('departures') || checkView('guides')) && (
+            <>
+              <div className="nav-section-title">Nghiệp vụ Lõi</div>
+              
+              {checkView('tours') && (
+                <div 
+                  className={`nav-item ${activeTab === 'tours' || activeTab === 'bus' ? 'active-parent' : ''}`}
+                  onClick={() => navigate('/tours')}
+                  style={{ justifyContent: 'space-between' }}
+                  onMouseEnter={(e) => {
+                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHoveredRect(rect);
+                    setHoveredMenu('tours');
+                  }}
+                  onMouseLeave={() => {
+                    menuTimerRef.current = setTimeout(() => {
+                      setHoveredMenu(null);
+                    }, 150);
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Package /> Sản phẩm Tour
+                  </div>
+                  <ChevronRight size={14} opacity={0.5} />
+                </div>
+              )}
+
+              {checkView('departures') && (
+                <div className={`nav-item ${activeTab === 'departures' ? 'active' : ''}`} onClick={() => navigate('/departures')}>
+                  <Calendar /> Lịch khởi hành
+                </div>
+              )}
+              
+              {checkView('guides') && (
+                <div className={`nav-item ${activeTab === 'guides' ? 'active' : ''}`} onClick={() => navigate('/guides')}>
+                  <Map /> Hướng dẫn viên
+                </div>
+              )}
+            </>
+          )}
+
+          {(checkView('bookings') || checkView('customers')) && (
+            <>
+              {checkView('bookings') && (
+                <div className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`} onClick={() => navigate('/bookings')}>
+                  <ShoppingCart /> Đơn hàng/Booking
+                </div>
+              )}
+              {checkView('customers') && (
+                <div className={`nav-item ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => navigate('/customers')}>
+                  <UserCheck /> Khách hàng
+                </div>
+              )}
+            </>
+          )}
+
+          {(checkView('users') || checkView('settings')) && (
+            <>
+              <div className="nav-section-title">Hệ thống & Nhân sự</div>
+              {checkView('users') && (
+                <div className={`nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => navigate('/users')}>
+                  <UserCheck /> Quản lý Nhân sự
+                </div>
+              )}
+              {checkView('settings') && (
+                <div className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => navigate('/settings')}>
+                  <Settings /> Cấu hình Meta
+                </div>
+              )}
+            </>
+          )}
+
+          
+          <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <div className="nav-item" onClick={handleLogout} style={{ color: '#f87171', background: 'rgba(239, 68, 68, 0.05)' }}>
+              <LogOut size={18} /> <strong>ĐĂNG XUẤT</strong>
+            </div>
           </div>
         </div>
       </aside>
+
+      {/* Portal-like Flyout Menus */}
+      {hoveredMenu === 'tours' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('tours');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'tours' ? 'active' : ''}`} 
+            onClick={() => { navigate('/tours'); setHoveredMenu(null); }}
+          >
+            Danh sách Sản phẩm
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'bus' ? 'active' : ''}`} 
+            onClick={() => { navigate('/bus'); setHoveredMenu(null); }} 
+          >
+            Quản lý Khối BU
+          </div>
+        </div>
+      )}
 
       <main className="main-content">
         <div className="breadcrumb-container">
@@ -899,6 +1186,7 @@ function AppContent() {
           <h1>{
             activeTab === 'dashboard' ? 'Tổng quan hệ thống' : 
             activeTab === 'leads' ? 'Quản lý Lead Marketing' : 
+            activeTab === 'bus' ? 'Quản lý Khối Kinh doanh (BU)' :
             activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
           }</h1>
           <div className="user-profile">
@@ -911,159 +1199,22 @@ function AppContent() {
         </header>
 
         {(activeTab === 'dashboard' || activeTab === 'leads') && editingLead ? (
-          <div className="animate-fade-in" style={{ padding: '2rem', background: 'white', borderRadius: '1.5rem', border: '1px solid #e2e8f0', maxWidth: '900px', margin: '0 auto' }}>
-            <div style={{ color: '#64748b', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.5rem' }}>FIT Tour CRM / Leads</div>
-            <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>Chỉnh sửa Hồ sơ Lead</h2>
-            <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>Cập nhật tiến trình chăm sóc và thông tin tư vấn.</p>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-              <button className="btn-pro-cancel" style={{ width: 'auto', border: 'none', background: '#f8fafc', fontWeight: 800 }} onClick={() => setEditingLead(null)}>
-                <ChevronLeft size={18} strokeWidth={3} /> QUAY LẠI DANH SÁCH
-              </button>
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                <button type="button" className="btn-pro-save" style={{ width: 'auto', background: '#10b981' }} onClick={() => handleConvertLead(editingLead.id)}>
-                   <CheckCircle size={18} strokeWidth={3} /> CHỐT ĐƠN / CHUYỂN KHÁCH HÀNG
-                </button>
-                <button type="button" onClick={() => setEditingLead(null)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                  <X size={24} strokeWidth={3} />
-                </button>
-              </div>
-            </div>
-            
-            <form onSubmit={handleUpdateLead} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-              <div className="modal-form-group">
-                <label>HỌ VÀ TÊN *</label>
-                <input className="modal-input" required value={editingLead.name} onChange={e => setEditingLead({...editingLead, name: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>SỐ ĐIỆN THOẠI *</label>
-                <input className="modal-input" value={editingLead.phone} onChange={e => setEditingLead({...editingLead, phone: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>GIỚI TÍNH</label>
-                <select className="modal-select" value={editingLead.gender || ''} onChange={e => setEditingLead({...editingLead, gender: e.target.value})}>
-                  <option value="">-- Giới tính --</option>
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
-                  <option value="Khác">Khác</option>
-                </select>
-              </div>
-              <div className="modal-form-group">
-                <label>EMAIL</label>
-                <input className="modal-input" type="email" value={editingLead.email || ''} onChange={e => setEditingLead({...editingLead, email: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>NGÀY SINH</label>
-                <input className="modal-input" type="date" value={editingLead.birth_date ? (typeof editingLead.birth_date === 'string' ? editingLead.birth_date.split('T')[0] : '') : ''} onChange={e => setEditingLead({...editingLead, birth_date: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>NGUỒN KHÁCH HÀNG</label>
-                <select className="modal-select" value={editingLead.source || ''} onChange={e => setEditingLead({...editingLead, source: e.target.value})}>
-                  {LEAD_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div className="modal-form-group">
-                <label>PHÂN LOẠI KHÁCH HÀNG</label>
-                <select className="modal-select" value={editingLead.classification || ''} onChange={e => setEditingLead({...editingLead, classification: e.target.value})}>
-                  {LEAD_CLASSIFICATIONS.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div className="modal-form-group">
-                <label>DỊCH VỤ QUAN TÂM</label>
-                <select className="modal-select" value={editingLead.tour_id || ''} onChange={e => setEditingLead({...editingLead, tour_id: e.target.value})}>
-                  <option value="">Chọn tour...</option>
-                  {tours.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
-              </div>
-              <div className="modal-form-group">
-                <label>TƯ VẤN VIÊN (CSKH)</label>
-                <select className="modal-select" value={editingLead.assigned_to || ''} onChange={e => setEditingLead({...editingLead, assigned_to: e.target.value})}>
-                   <option value="">-- Chọn nhân viên --</option>
-                   {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
-                </select>
-              </div>
-              <div className="modal-form-group">
-                <label>NHÓM BU (TƯ VẤN)</label>
-                <select className="modal-select" value={editingLead.bu_group || ''} onChange={e => setEditingLead({...editingLead, bu_group: e.target.value})}>
-                   <option value="">-- Chọn nhóm --</option>
-                   <option value="BU1">BU1</option>
-                   <option value="BU2">BU2</option>
-                   <option value="BU3">BU3</option>
-                   <option value="BU4">BU4</option>
-                </select>
-              </div>
-              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
-                <label>GHI CHÚ CHI TIẾT</label>
-                <textarea className="modal-textarea" style={{ height: '100px' }} value={editingLead.consultation_note || ''} onChange={e => setEditingLead({...editingLead, consultation_note: e.target.value})} />
-              </div>
-
-              <div className="consultation-section animate-fade-in" style={{ gridColumn: 'span 2' }}>
-                <h2 className="consultation-title">Lịch sử tư vấn & Chăm sóc</h2>
-                <p className="consultation-subtitle">Theo dõi các lần trao đổi và ghi chú tiến trình với khách hàng.</p>
-                
-                <div className="note-input-container">
-                  <div className="note-input-label">
-                    <PlusCircle size={18} /> THÊM GHI CHÚ MỚI
-                  </div>
-                  <textarea 
-                    className="note-textarea" 
-                    placeholder="Nhập nội dung tư vấn..." 
-                    value={newNote} 
-                    onChange={e => setNewNote(e.target.value)}
-                  />
-                  <button type="button" className="note-submit-btn" onClick={() => handleAddNoteForLead(editingLead.id)}>
-                    <Send size={16} /> Gửi
-                  </button>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                  {leadNotes.map(note => (
-                    <div key={note.id} style={{ padding: '1.5rem', background: 'white', borderRadius: '1rem', border: '1px solid #eaeff4', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                      <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '24px', height: '24px', background: '#f1f5f9', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: '#6366f1' }}>
-                            {note.creator_name?.charAt(0) || 'U'}
-                          </div>
-                          <strong>{note.creator_name}</strong>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Clock size={12} />
-                          <span>{new Date(note.created_at).toLocaleString('vi-VN')}</span>
-                        </div>
-                      </div>
-                      <div style={{ fontSize: '0.95rem', color: '#1e293b', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{note.content}</div>
-                    </div>
-                  ))}
-                  {leadNotes.length === 0 && (
-                    <div style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8', border: '2px dashed #f1f5f9', borderRadius: '1rem' }}>
-                      <FileText size={40} style={{ marginBottom: '1rem', opacity: 0.2 }} />
-                      <div>Chưa có lịch sử tư vấn nào.</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="modal-form-group">
-                <label>THỜI GIAN LIÊN HỆ</label>
-                <input className="modal-input" type="datetime-local" value={editingLead.last_contacted_at ? new Date(new Date(editingLead.last_contacted_at).getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : ''} onChange={e => setEditingLead({...editingLead, last_contacted_at: e.target.value})} />
-              </div>
-              <div className="modal-form-group">
-                <label>THỜI GIAN CHỐT ĐƠN (BOOK)</label>
-                <input className="modal-input" type="datetime-local" value={editingLead.won_at ? new Date(new Date(editingLead.won_at).getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : ''} onChange={e => setEditingLead({...editingLead, won_at: e.target.value})} />
-              </div>
-
-              <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid #f1f5f9' }}>
-                <button type="submit" className="btn-pro-save">
-                  <CheckCircle size={18} strokeWidth={3} /> CẬP NHẬT HỒ SƠ
-                </button>
-                <button type="button" className="btn-pro-save" style={{ background: '#10b981' }} onClick={() => handleConvertLead(editingLead.id)}>
-                   <CheckCircle size={18} strokeWidth={3} /> CHỐT ĐƠN & CHUYỂN KHÁCH
-                </button>
-                <button type="button" className="btn-pro-cancel" onClick={() => setEditingLead(null)}>
-                  <LogOut size={18} strokeWidth={2.5} style={{ transform: 'rotate(180deg)' }} /> HỦY BỎ
-                </button>
-              </div>
-            </form>
-          </div>
+          <EditLeadModal 
+            editingLead={editingLead}
+            setEditingLead={setEditingLead}
+            handleUpdateLead={handleUpdateLead}
+            handleConvertLead={handleConvertLead}
+            LEAD_SOURCES={LEAD_SOURCES}
+            LEAD_CLASSIFICATIONS={LEAD_CLASSIFICATIONS}
+            LEAD_STATUSES={LEAD_STATUSES}
+            tours={tourTemplates}
+            users={users}
+            leadNotes={leadNotes}
+            newNote={newNote}
+            setNewNote={setNewNote}
+            handleAddNoteForLead={handleAddNoteForLead}
+            bus={bus.filter(b => b.is_active !== false || b.id === editingLead.bu_group)}
+          />
         ) : (
           <>
             {activeTab === 'dashboard' && (
@@ -1083,9 +1234,6 @@ function AppContent() {
                 setEditingLead={setEditingLead}
                 handleDeleteLead={handleDeleteLead}
                 users={users}
-                fastLead={fastLead}
-                setFastLead={setFastLead}
-                handleFastAddLead={handleFastAddLead}
                 getSourceIcon={getSourceIcon}
                 handleQuickUpdate={handleQuickUpdate}
                 hoveredNote={hoveredNote}
@@ -1093,6 +1241,8 @@ function AppContent() {
                 LEAD_STATUSES={LEAD_STATUSES}
                 LEAD_SOURCES={LEAD_SOURCES}
                 LEAD_CLASSIFICATIONS={LEAD_CLASSIFICATIONS}
+                tours={tourTemplates}
+                bus={bus}
               />
             )}
 
@@ -1118,6 +1268,9 @@ function AppContent() {
             tourFilters={tourFilters}
             setTourFilters={setTourFilters}
             setShowAddTemplateModal={setShowAddTemplateModal}
+            setEditingTemplate={setEditingTemplate}
+            handleDeleteTour={handleDeleteTour}
+            bus={bus}
           />
         )}
 
@@ -1162,6 +1315,20 @@ function AppContent() {
             setCustomerFilters={setCustomerFilters}
             setShowAddCustomerModal={setShowAddCustomerModal}
             setEditingCustomer={setEditingCustomer}
+            handleDeleteCustomer={handleDeleteCustomer}
+            users={users}
+          />
+        )}
+
+        {activeTab === 'users' && (user?.role === 'admin' || user?.role === 'manager') && (
+          <UsersTab 
+            users={users}
+            roles={roles}
+            currentUser={user}
+            onAddUser={() => setShowAddUserModal(true)}
+            onEditUser={(u) => setEditingUserAccount(u)}
+            onChangePassword={(u) => setUserToChangePassword(u)}
+            onDeleteUser={handleDeleteUser}
           />
         )}
 
@@ -1171,6 +1338,21 @@ function AppContent() {
             setMetaSettings={setMetaSettings}
             handleUpdateSettings={handleUpdateSettings}
             handleTestMeta={handleTestMeta}
+            bus={bus}
+            onUpdateBU={handleUpdateBU}
+            onReorderBUs={handleReorderBUs}
+            onCreateBU={handleCreateBU}
+          />
+        )}
+
+        {activeTab === 'bus' && (
+          <SettingsTab 
+            metaSettings={{}} 
+            bus={bus}
+            onUpdateBU={handleUpdateBU}
+            onReorderBUs={handleReorderBUs}
+            onCreateBU={handleCreateBU}
+            onlyBU={true}
           />
         )}
       </>
@@ -1185,8 +1367,10 @@ function AppContent() {
         setNewLead={setNewLead}
         LEAD_SOURCES={LEAD_SOURCES}
         LEAD_CLASSIFICATIONS={LEAD_CLASSIFICATIONS}
-        tours={tours}
+        LEAD_STATUSES={LEAD_STATUSES}
+        tours={tourTemplates}
         users={users}
+        bus={bus.filter(b => b.is_active !== false)}
       />
 
       <AddCustomerModal 
@@ -1198,6 +1382,7 @@ function AppContent() {
         CITY_OPTIONS={CITY_OPTIONS}
         CUSTOMER_ROLES={CUSTOMER_ROLES}
         CUSTOMER_SEGMENTS={CUSTOMER_SEGMENTS}
+        users={users}
       />
 
       <EditCustomerModal 
@@ -1210,6 +1395,7 @@ function AppContent() {
         newCustomerNote={newCustomerNote}
         setNewCustomerNote={setNewCustomerNote}
         handleAddCustomerNote={handleAddCustomerNote}
+        users={users}
       />
 
       <LeadNotesModal 
@@ -1227,6 +1413,14 @@ function AppContent() {
         handleAddTemplate={handleAddTemplate}
         newTemplate={newTemplate}
         setNewTemplate={setNewTemplate}
+        bus={bus.filter(b => b.is_active !== false)}
+      />
+
+      <EditTemplateModal 
+        template={editingTemplate}
+        onClose={() => setEditingTemplate(null)}
+        onUpdate={handleUpdateTemplate}
+        bus={bus.filter(b => b.is_active !== false || b.id === editingTemplate?.bu_group)}
       />
 
       <AddDepartureModal 
@@ -1249,14 +1443,36 @@ function AppContent() {
         setNewGuide={setNewGuide}
       />
 
+      <AddUserModal 
+        show={showAddUserModal}
+        onClose={() => setShowAddUserModal(false)}
+        onSave={handleAddUser}
+        roles={roles}
+      />
+
+      <EditUserModal 
+        user={editingUserAccount}
+        onClose={() => setEditingUserAccount(null)}
+        onSave={handleUpdateUser}
+        roles={roles}
+      />
+
+      <ChangePasswordModal 
+        user={userToChangePassword}
+        onClose={() => setUserToChangePassword(null)}
+        onSave={handleChangePasswordAdmin}
+      />
+
       <div className="toast-container">
         {toasts.map(t => <div key={t.id} className="toast">{t.message}</div>)}
       </div>
     </div>
-  );
+    );
+  };
 
   return (
-    <Routes>
+    <>
+      <Routes>
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/deletion" element={<DataDeletion />} />
@@ -1344,7 +1560,46 @@ function AppContent() {
       />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
-  );
+    {/* MODAL XÁC NHẬN XÓA (CUSTOM) */}
+    {(leadToDelete || customerToDelete || tourToDelete) && (
+      <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={() => {
+        setLeadToDelete(null);
+        setCustomerToDelete(null);
+        setTourToDelete(null);
+      }}>
+        <div className="modal-content animate-slide-up" style={{ maxWidth: '400px', textAlign: 'center', padding: '2.5rem' }} onClick={e => e.stopPropagation()}>
+          <div style={{ width: '60px', height: '60px', background: '#fee2e2', color: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+            <AlertTriangle size={32} />
+          </div>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.75rem', color: '#111827' }}>Xác nhận xóa dữ liệu?</h3>
+          <p style={{ color: '#6b7280', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '2rem' }}>
+            Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa bản ghi này khỏi hệ thống?
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button 
+              className="btn-pro-cancel" 
+              style={{ flex: 1, border: '1px solid #e5e7eb', background: 'white' }}
+              onClick={() => {
+                setLeadToDelete(null);
+                setCustomerToDelete(null);
+                setTourToDelete(null);
+              }}
+            >HỦY BỎ</button>
+            <button 
+              className="btn-pro-save" 
+              style={{ flex: 1, background: '#ef4444' }}
+              onClick={() => {
+                if (leadToDelete) confirmDeleteLead();
+                if (customerToDelete) confirmDeleteCustomer();
+                if (tourToDelete) confirmDeleteTour();
+              }}
+            >XÓA THỰC SỰ</button>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
+);
 }
 
 function App() {

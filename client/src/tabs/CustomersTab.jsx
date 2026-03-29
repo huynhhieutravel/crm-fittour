@@ -1,12 +1,14 @@
 import React from 'react';
-import { Search, UserPlus, Edit3 } from 'lucide-react';
+import { Search, UserPlus, Edit3, Trash2 } from 'lucide-react';
 
 const CustomersTab = ({ 
   customers, 
   customerFilters, 
   setCustomerFilters, 
   setShowAddCustomerModal, 
-  setEditingCustomer 
+  setEditingCustomer,
+  handleDeleteCustomer,
+  users = []
 }) => {
   return (
     <div className="animate-fade-in">
@@ -49,6 +51,8 @@ const CustomersTab = ({
               <th>HỌ TÊN</th>
               <th>LIÊN HỆ / ĐỊA CHỈ</th>
               <th>PHÂN KHÚC</th>
+              <th>GIA NHẬP</th>
+              <th>NHÂN VIÊN</th>
               <th>LTV (TỔNG CHI)</th>
               <th>VAI TRÒ</th>
               <th>THAO TÁC</th>
@@ -73,14 +77,25 @@ const CustomersTab = ({
                     {customer.customer_segment}
                   </span>
                 </td>
+                <td style={{ fontSize: '0.85rem' }}>
+                  {customer.first_deal_date ? new Date(customer.first_deal_date).toLocaleDateString('vi-VN') : 'N/A'}
+                </td>
+                <td style={{ fontSize: '0.85rem' }}>
+                  {users.find(u => u.id === customer.assigned_to)?.full_name || 'Chưa gán'}
+                </td>
                 <td style={{ fontWeight: 700, color: '#10b981' }}>
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(customer.total_spent || 0)}
                 </td>
                 <td style={{ fontSize: '0.85rem' }}>{customer.role || 'Booker'}</td>
                 <td>
-                  <button className="icon-btn" onClick={() => setEditingCustomer(customer)}>
-                    <Edit3 size={16} />
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="icon-btn" onClick={() => setEditingCustomer(customer)}>
+                      <Edit3 size={16} />
+                    </button>
+                    <button className="icon-btn danger" style={{ color: '#ef4444' }} onClick={() => handleDeleteCustomer(customer.id)}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

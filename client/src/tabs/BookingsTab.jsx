@@ -48,7 +48,9 @@ const BookingsTab = ({
               <tr key={booking.id}>
                 <td style={{ fontWeight: 700, color: '#6366f1' }}>{booking.booking_code}</td>
                 <td>{booking.customer_name}</td>
-                <td>{booking.tour_name}</td>
+                <td style={{ fontSize: '0.85rem' }}>
+                  {booking.tour_code ? `[${booking.tour_code}] ` : ''}{booking.tour_name}
+                </td>
                 <td style={{ fontWeight: 700 }}>{Number(booking.total_price).toLocaleString('vi-VN')}đ</td>
                 <td>
                   <div className={`status-badge badge-${booking.booking_status === 'confirmed' ? 'won' : 'potential'}`}>

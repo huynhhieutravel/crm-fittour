@@ -1,12 +1,12 @@
 import React from 'react';
-import { X } from 'lucide-react';
-
+import { X, Globe } from 'lucide-react';
 export const AddTemplateModal = ({
   showAddTemplateModal,
   setShowAddTemplateModal,
   handleAddTemplate,
   newTemplate,
-  setNewTemplate
+  setNewTemplate,
+  bus
 }) => {
   if (!showAddTemplateModal) return null;
 
@@ -18,13 +18,40 @@ export const AddTemplateModal = ({
           <button className="icon-btn" onClick={() => setShowAddTemplateModal(false)}><X size={24} /></button>
         </div>
         <form onSubmit={handleAddTemplate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-          <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
+          <div className="modal-form-group">
+            <label>MÃ TOUR / SẢN PHẨM *</label>
+            <input className="modal-input" required value={newTemplate.code || ''} onChange={e => setNewTemplate({...newTemplate, code: e.target.value})} placeholder="Vd: BK6N5D" />
+          </div>
+          <div className="modal-form-group">
             <label>TÊN TOUR / SẢN PHẨM *</label>
             <input className="modal-input" required value={newTemplate.name} onChange={e => setNewTemplate({...newTemplate, name: e.target.value})} placeholder="Vd: Tour Bắc Kinh - Thượng Hải - Hàng Châu" />
           </div>
           <div className="modal-form-group">
-            <label>ĐIỂM ĐẾN *</label>
-            <input className="modal-input" required value={newTemplate.destination} onChange={e => setNewTemplate({...newTemplate, destination: e.target.value})} placeholder="Vd: Trung Quốc" />
+            <label>KHỐI BU (BUSINESS UNIT) *</label>
+            <select 
+              className="modal-select" 
+              required 
+              value={newTemplate.bu_group || ''} 
+              onChange={e => setNewTemplate({...newTemplate, bu_group: e.target.value, destination: ''})}
+            >
+              <option value="">-- Chọn BU --</option>
+              {bus.map(bu => <option key={bu.id} value={bu.id}>{bu.label}</option>)}
+            </select>
+          </div>
+          <div className="modal-form-group">
+            <label>ĐIỂM ĐẾN (THEO BU) *</label>
+            <select 
+              className="modal-select" 
+              required 
+              disabled={!newTemplate.bu_group}
+              value={newTemplate.destination} 
+              onChange={e => setNewTemplate({...newTemplate, destination: e.target.value})}
+            >
+              <option value="">-- Chọn điểm đến --</option>
+              {newTemplate.bu_group && bus.find(b => b.id === newTemplate.bu_group)?.countries?.map(dest => (
+                <option key={dest} value={dest}>{dest}</option>
+              ))}
+            </select>
           </div>
           <div className="modal-form-group">
             <label>THỜI LƯỢNG *</label>
@@ -33,9 +60,10 @@ export const AddTemplateModal = ({
           <div className="modal-form-group">
             <label>LOẠI TOUR</label>
             <select className="modal-select" value={newTemplate.tour_type} onChange={e => setNewTemplate({...newTemplate, tour_type: e.target.value})}>
-              <option value="Premium">Premium</option>
-              <option value="Standard">Standard</option>
-              <option value="Budget">Budget</option>
+              <option value="Group Tour">Group Tour</option>
+              <option value="Private Tour">Private Tour</option>
+              <option value="Luxury Tour">Luxury Tour</option>
+              <option value="MICE Tour">MICE Tour</option>
             </select>
           </div>
           <div className="modal-form-group">
@@ -57,6 +85,99 @@ export const AddTemplateModal = ({
           <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
             <button type="submit" className="btn-pro-save" style={{ flex: 1 }}>LƯU THIẾT KẾ SẢN PHẨM</button>
             <button type="button" className="btn-pro-cancel" style={{ width: 'auto' }} onClick={() => setShowAddTemplateModal(false)}>HỦY</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export const EditTemplateModal = ({
+  template,
+  onClose,
+  onUpdate,
+  bus
+}) => {
+  const [formData, setFormData] = React.useState(template || {});
+
+  React.useEffect(() => {
+    if (template) setFormData(template);
+  }, [template]);
+
+  if (!template) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onUpdate(formData);
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content animate-slide-up" style={{ maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>⚙️ CHỈNH SỬA SẢN PHẨM TOUR</h2>
+          <button className="icon-btn" onClick={onClose}><X size={24} /></button>
+        </div>
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <div className="modal-form-group">
+            <label>MÃ TOUR *</label>
+            <input className="modal-input" required value={formData.code || ''} onChange={e => setFormData({...formData, code: e.target.value})} />
+          </div>
+          <div className="modal-form-group">
+            <label>TÊN SẢN PHẨM *</label>
+            <input className="modal-input" required value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
+          </div>
+          <div className="modal-form-group">
+            <label>KHỐI BU *</label>
+            <select 
+              className="modal-select" 
+              required 
+              value={formData.bu_group || ''} 
+              onChange={e => setFormData({...formData, bu_group: e.target.value, destination: ''})}
+            >
+              <option value="">-- Chọn BU --</option>
+              {bus.map(bu => <option key={bu.id} value={bu.id}>{bu.label}</option>)}
+            </select>
+          </div>
+          <div className="modal-form-group">
+            <label>ĐIỂM ĐẾN *</label>
+            <select 
+              className="modal-select" 
+              required 
+              disabled={!formData.bu_group}
+              value={formData.destination || ''} 
+              onChange={e => setFormData({...formData, destination: e.target.value})}
+            >
+              <option value="">-- Chọn điểm đến --</option>
+              {formData.bu_group && bus.find(b => b.id === formData.bu_group)?.countries?.map(dest => (
+                <option key={dest} value={dest}>{dest}</option>
+              ))}
+            </select>
+          </div>
+          <div className="modal-form-group">
+            <label>THỜI LƯỢNG *</label>
+            <input className="modal-input" required value={formData.duration || ''} onChange={e => setFormData({...formData, duration: e.target.value})} />
+          </div>
+          <div className="modal-form-group">
+            <label>LOẠI TOUR</label>
+            <select className="modal-select" value={formData.tour_type || 'Group Tour'} onChange={e => setFormData({...formData, tour_type: e.target.value})}>
+              <option value="Group Tour">Group Tour</option>
+              <option value="Private Tour">Private Tour</option>
+              <option value="Luxury Tour">Luxury Tour</option>
+              <option value="MICE Tour">MICE Tour</option>
+            </select>
+          </div>
+          <div className="modal-form-group">
+            <label>GIÁ NIÊM YẾT</label>
+            <input className="modal-input" type="number" value={formData.base_price || formData.price || 0} onChange={e => setFormData({...formData, base_price: e.target.value})} />
+          </div>
+          <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
+            <label>ĐIỂM NỔI BẬT</label>
+            <textarea className="modal-textarea" value={formData.highlights || ''} onChange={e => setFormData({...formData, highlights: e.target.value})} />
+          </div>
+          <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <button type="submit" className="btn-pro-save" style={{ flex: 1 }}>CẬP NHẬT SẢN PHẨM</button>
+            <button type="button" className="btn-pro-cancel" style={{ width: 'auto' }} onClick={onClose}>HỦY</button>
           </div>
         </form>
       </div>
@@ -87,7 +208,7 @@ export const AddDepartureModal = ({
             <label>SẢN PHẨM TOUR *</label>
             <select className="modal-select" required value={newDeparture.tour_template_id} onChange={e => setNewDeparture({...newDeparture, tour_template_id: e.target.value})}>
               <option value="">-- Chọn sản phẩm thiết kế --</option>
-              {tourTemplates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              {tourTemplates.map(t => <option key={t.id} value={t.id}>{t.code ? `[${t.code}] ` : ''}{t.name}</option>)}
             </select>
           </div>
           <div className="modal-form-group">

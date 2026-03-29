@@ -1,0 +1,180 @@
+import React, { useState } from 'react';
+import { Search, UserPlus, Shield, Edit3, Key, Trash2, Mail, Clock } from 'lucide-react';
+
+const UsersTab = ({ 
+  users, 
+  roles, 
+  currentUser,
+  onAddUser, 
+  onEditUser, 
+  onChangePassword, 
+  onDeleteUser 
+}) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredUsers = users.filter(u => 
+    u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getRoleColor = (roleName) => {
+    switch (roleName) {
+      case 'admin': return { bg: '#fee2e2', text: '#ef4444', icon: <Shield size={12} /> };
+      case 'manager': return { bg: '#fef3c7', text: '#d97706', icon: <Shield size={12} /> };
+      case 'sales': return { bg: '#dcfce7', text: '#22c55e', icon: <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} /> };
+      case 'marketing': return { bg: '#e0f2fe', text: '#0ea5e9', icon: <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0ea5e9' }} /> };
+      case 'operations': return { bg: '#f3e8ff', text: '#9333ea', icon: <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#9333ea' }} /> };
+      default: return { bg: '#f1f5f9', text: '#64748b', icon: null };
+    }
+  };
+
+  return (
+    <div className="animate-fade-in">
+      <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div className="filter-group" style={{ flex: 1, maxWidth: '400px' }}>
+          <label>DANH SÁCH NHÂN SỰ</label>
+          <div style={{ position: 'relative' }}>
+            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+            <input 
+              className="filter-input" 
+              style={{ paddingLeft: '36px', width: '100%' }} 
+              placeholder="Tìm tên, username, email..." 
+              value={searchTerm} 
+              onChange={e => setSearchTerm(e.target.value)} 
+            />
+          </div>
+        </div>
+        <button 
+          className="btn-pro-save" 
+          onClick={onAddUser}
+          style={{ width: 'auto', padding: '0.75rem 1.5rem', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)' }}
+        >
+          <UserPlus size={18} strokeWidth={3} /> THÊM THÀNH VIÊN MỚI
+        </button>
+      </div>
+
+      <div className="data-table-container shadow-sm" style={{ border: '1px solid #f1f5f9', borderRadius: '12px', overflow: 'hidden' }}>
+        <table className="data-table">
+          <thead style={{ background: '#f8fafc' }}>
+            <tr>
+              <th style={{ padding: '1rem 1.5rem' }}>THÔNG TIN THÀNH VIÊN</th>
+              <th>PHÂN QUYỀN</th>
+              <th>NGÀY GIA NHẬP</th>
+              <th style={{ textAlign: 'right', paddingRight: '2.5rem' }}>THAO TÁC</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredUsers.map(u => {
+              const roleStyle = getRoleColor(u.role_name);
+              const isTargetAdmin = u.role_name === 'admin';
+              const isCurrentUserReadOnly = currentUser?.role === 'manager' && isTargetAdmin;
+
+              return (
+                <tr key={u.id} style={{ opacity: u.is_active === false ? 0.6 : 1, filter: u.is_active === false ? 'grayscale(100%)' : 'none' }}>
+                  <td style={{ padding: '1rem 1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ 
+                        width: '40px', 
+                        height: '40px', 
+                        borderRadius: '10px', 
+                        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        color: '#64748b',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        {u.full_name?.charAt(0).toUpperCase()}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {u.full_name}
+                          {u.is_active === false && <span style={{ fontSize: '0.65rem', background: '#e2e8f0', color: '#475569', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>TẠM DỪNG</span>}
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: '#64748b' }}>
+                          <span style={{ fontWeight: 600, color: u.is_active === false ? '#64748b' : '#2563eb' }}>@{u.username}</span>
+                          {u.phone && (
+                            <>
+                              <span style={{ color: '#cbd5e1' }}>|</span>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>{u.phone}</span>
+                            </>
+                          )}
+                          {u.email && (
+                            <>
+                              <span style={{ color: '#cbd5e1' }}>|</span>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Mail size={10} /> {u.email}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      padding: '4px 10px', 
+                      borderRadius: '6px', 
+                      background: roleStyle.bg, 
+                      color: roleStyle.text,
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      textTransform: 'uppercase'
+                    }}>
+                      {roleStyle.icon}
+                      {u.role_name}
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#64748b' }}>
+                      <Clock size={14} />
+                      {new Date(u.created_at).toLocaleDateString('vi-VN')}
+                    </div>
+                  </td>
+                  <td>
+                    {!isCurrentUserReadOnly ? (
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', paddingRight: '1rem' }}>
+                        <button 
+                          className="icon-btn-square" 
+                          title="Sửa thông tin" 
+                          onClick={() => onEditUser(u)}
+                        ><Edit3 size={14} /></button>
+                        <button 
+                          className="icon-btn-square" 
+                          title="Đổi mật khẩu" 
+                          style={{ color: '#d97706' }}
+                          onClick={() => onChangePassword(u)}
+                        ><Key size={14} /></button>
+                        <button 
+                          className="icon-btn-square danger" 
+                          title="Xóa thành viên" 
+                          onClick={() => onDeleteUser(u.id)}
+                        ><Trash2 size={14} /></button>
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'right', paddingRight: '2rem', fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>
+                        Không có quyền sửa Admin
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+            {filteredUsers.length === 0 && (
+              <tr>
+                <td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                  Không tìm thấy thành viên phù hợp.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default UsersTab;

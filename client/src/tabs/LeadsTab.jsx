@@ -12,6 +12,7 @@ import {
   FileText, 
   Package 
 } from 'lucide-react';
+import SearchableSelect from '../components/common/SearchableSelect';
 
 const LeadsTab = ({ 
   leads, 
@@ -31,7 +32,9 @@ const LeadsTab = ({
   setHoveredNote, 
   LEAD_STATUSES, 
   LEAD_SOURCES, 
-  LEAD_CLASSIFICATIONS 
+  LEAD_CLASSIFICATIONS,
+  tours,
+  bus
 }) => {
   return (
     <>
@@ -84,11 +87,10 @@ const LeadsTab = ({
           <div className="filter-group">
             <label>NHÓM BU</label>
             <select className="filter-select" value={leadFilters.bu_group} onChange={e => setLeadFilters({...leadFilters, bu_group: e.target.value})}>
-              <option value="">-- Nhóm BU --</option>
-              <option value="BU1">BU1</option>
-              <option value="BU2">BU2</option>
-              <option value="BU3">BU3</option>
-              <option value="BU4">BU4</option>
+              <option value="">Khối: Tất cả</option>
+              {bus.filter(bu => bu.is_active !== false).map(bu => (
+                <option key={bu.id} value={bu.id}>{bu.label}</option>
+              ))}
             </select>
           </div>
           <div className="filter-group">
@@ -145,6 +147,7 @@ const LeadsTab = ({
             <tr>
               <th className="col-date">NGÀY TẠO</th>
               <th className="col-info">THÔNG TIN LEAD</th>
+              <th className="col-product">SẢN PHẨM QUAN TÂM</th>
               <th className="col-source">NGUỒN & NHÓM</th>
               <th className="col-staff">TƯ VẤN VIÊN</th>
               <th className="col-status">TRẠNG THÁI TƯ VẤN</th>
@@ -153,51 +156,6 @@ const LeadsTab = ({
             </tr>
           </thead>
           <tbody>
-            <tr className="fast-add-row">
-              <td><div className="fast-add-tag"><Plus size={12} /> Nhanh</div></td>
-              <td>
-                <input 
-                  className="cell-input" 
-                  style={{ width: '150px' }} 
-                  placeholder="Tên..." 
-                  value={fastLead.name} 
-                  onChange={e => setFastLead({...fastLead, name: e.target.value})} 
-                  onKeyDown={e => e.key === 'Enter' && handleFastAddLead()} 
-                />
-              </td>
-              <td style={{ display: 'flex', gap: '2px', padding: '1rem 4px' }}>
-                <select className="cell-select" style={{ fontSize: '0.75rem', padding: '4px' }} value={fastLead.source} onChange={e => setFastLead({...fastLead, source: e.target.value})}>
-                  {LEAD_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-                <select className="cell-select" style={{ fontSize: '0.75rem', padding: '4px' }} value={fastLead.bu_group} onChange={e => setFastLead({...fastLead, bu_group: e.target.value})}>
-                  <option value="">-- BU --</option>
-                  <option value="BU1">BU1</option>
-                  <option value="BU2">BU2</option>
-                  <option value="BU3">BU3</option>
-                  <option value="BU4">BU4</option>
-                </select>
-              </td>
-              <td>
-                <select className="cell-select" value={fastLead.assigned_to || ''} onChange={e => setFastLead({...fastLead, assigned_to: e.target.value})}>
-                  <option value="">-- Nhân viên --</option>
-                  {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
-                </select>
-              </td>
-              <td>
-                <select className="cell-select" value={fastLead.status} onChange={e => setFastLead({...fastLead, status: e.target.value})}>
-                  {LEAD_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </td>
-              <td>-</td>
-              <td>
-                <button 
-                  className="icon-btn primary" 
-                  style={{ width: '100%', background: '#4f46e5' }} 
-                  onClick={handleFastAddLead}
-                >LƯU</button>
-              </td>
-            </tr>
-
             {filteredLeads.map(lead => (
               <tr key={lead.id}>
                 <td style={{ color: '#64748b', fontSize: '0.85rem' }}>
@@ -212,6 +170,11 @@ const LeadsTab = ({
                       <span className="lead-phone" style={{ color: '#6366f1', fontSize: '0.85rem' }}>
                         {lead.phone || 'Chưa có SĐT'}
                       </span>
+                      {(lead.facebook_psid || lead.meta_lead_id) && (
+                        <div title="Đơn từ luồng tự động Meta" style={{ background: '#e0f2fe', color: '#0284c7', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                           META
+                        </div>
+                      )}
                       {Number(lead.notes_count) > 0 && (
                         <div 
                           className="note-icon-wrapper"
@@ -249,18 +212,36 @@ const LeadsTab = ({
                   </div>
                 </td>
                 <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <SearchableSelect 
+                      options={tours}
+                      value={lead.tour_id}
+                      onChange={(val) => handleQuickUpdate(lead.id, 'tour_id', val)}
+                      placeholder="Chọn tour..."
+                      style={{ 
+                        border: 'none', 
+                        background: 'transparent',
+                        padding: '0',
+                        minHeight: 'auto',
+                        fontSize: '0.85rem'
+                      }}
+                      className="table-searchable-select"
+                    />
+                  </div>
+                </td>
+                <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       {getSourceIcon(lead.source)}
                       <select className="table-select-ghost" value={lead.source} onChange={e => handleQuickUpdate(lead.id, 'source', e.target.value)}>
-                        {['Messenger', 'Zalo', 'Khách giới thiệu', 'Hotline', 'Khác'].map(s => <option key={s} value={s}>{s}</option>)}
+                        {LEAD_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Package size={12} color="#6366f1" />
                       <select className="table-select-ghost" style={{ color: '#6366f1', fontWeight: 600 }} value={lead.bu_group || ''} onChange={e => handleQuickUpdate(lead.id, 'bu_group', e.target.value)}>
                         <option value="">-- Nhóm --</option>
-                        {['BU1', 'BU2', 'BU3', 'BU4'].map(g => <option key={g} value={g}>{g}</option>)}
+                        {bus.filter(bu => bu.is_active !== false || bu.id === lead.bu_group).map(bu => <option key={bu.id} value={bu.id}>{bu.label}</option>)}
                       </select>
                     </div>
                   </div>
@@ -293,8 +274,8 @@ const LeadsTab = ({
                 </td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
-                    <button className="icon-btn-square" title="Chỉnh sửa" onClick={() => { setEditingLead(lead); }}><Edit3 size={14} /></button>
-                    <button className="icon-btn-square danger" title="Xóa" onClick={() => handleDeleteLead(lead.id)}><Trash2 size={14} /></button>
+                    <button type="button" className="icon-btn-square" title="Chỉnh sửa" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingLead(lead); }}><Edit3 size={14} /></button>
+                    <button type="button" className="icon-btn-square danger" title="Xóa" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteLead(lead.id); }}><Trash2 size={14} /></button>
                   </div>
                 </td>
               </tr>

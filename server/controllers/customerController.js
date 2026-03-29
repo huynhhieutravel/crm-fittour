@@ -23,8 +23,8 @@ exports.createCustomer = async (req, res) => {
                 name, phone, email, gender, birth_date, nationality, 
                 id_card, id_expiry, address, preferred_contact, role,
                 customer_segment, tour_interests, special_requests, internal_notes, 
-                lead_id, location_city, travel_season
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *`,
+                lead_id, location_city, travel_season, first_deal_date, assigned_to
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING *`,
             [
                 normalizedName, body.phone || null, body.email || null, body.gender || null, 
                 body.birth_date || null, body.nationality || 'Việt Nam', 
@@ -32,7 +32,9 @@ exports.createCustomer = async (req, res) => {
                 body.preferred_contact || 'Zalo', body.role || 'booker',
                 body.customer_segment || 'New Customer', body.tour_interests || null, 
                 body.special_requests || null, body.internal_notes || null, 
-                body.lead_id || null, body.location_city || null, body.travel_season || null
+                body.lead_id || null, body.location_city || null, body.travel_season || null,
+                body.first_deal_date || new Date(), // Mặc định là ngày tạo nếu không nhập
+                body.assigned_to || null
             ]
         );
 
@@ -99,7 +101,8 @@ exports.updateCustomer = async (req, res) => {
             'name', 'phone', 'email', 'gender', 'birth_date', 'nationality', 
             'id_card', 'id_expiry', 'address', 'preferred_contact', 'role',
             'customer_segment', 'tour_interests', 'special_requests', 
-            'internal_notes', 'location_city', 'travel_season'
+            'internal_notes', 'location_city', 'travel_season', 
+            'first_deal_date', 'assigned_to'
         ];
 
         Object.keys(updates).forEach(key => {

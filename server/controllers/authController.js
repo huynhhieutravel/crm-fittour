@@ -17,6 +17,10 @@ exports.login = async (req, res) => {
 
         const user = result.rows[0];
 
+        if (user.is_active === false) {
+             return res.status(403).json({ message: 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ Quản trị viên.' });
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
              return res.status(401).json({ message: 'Mật khẩu không chính xác' });

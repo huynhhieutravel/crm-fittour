@@ -101,7 +101,7 @@ const DeparturesTab = ({
                   </td>
                   <td>
                     <div style={{ fontWeight: 700 }}>{dep.template_name}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{dep.template_duration}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{dep.template_duration}</div>
                   </td>
                   <td style={{ fontWeight: 700 }}>{dep.sold_pax} / {dep.max_participants}</td>
                   <td>

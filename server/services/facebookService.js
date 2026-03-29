@@ -39,7 +39,7 @@ exports.handleMessage = async (sender_psid, received_message) => {
             // 3. Nếu chưa có, tạo Lead mới (với facebook_psid)
             const leadResult = await db.query(
                 'INSERT INTO leads (name, source, status, facebook_psid) VALUES ($1, $2, $3, $4) RETURNING *',
-                [senderName, 'messenger', 'new', sender_psid]
+                [senderName, 'Messenger', 'Mới', sender_psid]
             );
             leadId = leadResult.rows[0].id;
 
@@ -196,5 +196,58 @@ exports.getSubscribedApps = async (customToken) => {
     } catch (error) {
         console.error('Meta API connection test failed:', error.response ? error.response.data : error.message);
         throw error;
+    }
+};
+
+exports.handleLeadAd = async (leadgen_id, page_id) => {
+    try {
+        const dbToken = await getSetting('meta_page_access_token');
+        const token = dbToken || PAGE_ACCESS_TOKEN_ENV;
+        if (!token) {
+            console.error('FB_PAGE_TOKEN is not configured for Lead Ads');
+            return;
+        }
+
+        // Fetch lead details from Meta Graph API
+        const response = await axios.get(`https://graph.facebook.com/v21.0/${leadgen_id}?access_token=${token}`);
+        const leadData = response.data;
+        
+        console.log('Received Lead Ad Data:', JSON.stringify(leadData));
+
+        // Parse field_data
+        let name = 'Lead từ Quảng Cáo';
+        let phone = null;
+        let email = null;
+        
+        if (leadData.field_data) {
+            leadData.field_data.forEach(field => {
+                if (field.name === 'full_name' && field.values.length > 0) name = field.values[0];
+                if (field.name === 'phone_number' && field.values.length > 0) phone = field.values[0];
+                if (field.name === 'email' && field.values.length > 0) email = field.values[0];
+            });
+        }
+
+        // Check if lead already exists based on meta_lead_id
+        const existingLead = await db.query('SELECT * FROM leads WHERE meta_lead_id = $1', [leadgen_id]);
+        if (existingLead.rows.length === 0) {
+            const leadResult = await db.query(
+                'INSERT INTO leads (name, phone, email, source, status, meta_lead_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+                [name, phone, email, 'Khác', 'Mới', leadgen_id]
+            );
+            
+            // Log interaction
+            await db.query(`INSERT INTO lead_notes (lead_id, content, created_by) VALUES ($1, $2, $3)`, [
+                leadResult.rows[0].id,
+                `Khách hàng điền form Quảng cáo Facebook (Form ID: ${leadData.form_id || 'N/A'}, Page ID: ${page_id})`,
+                null
+            ]);
+
+            // Track CAPI (Mới -> Lead)
+            metaCapi.sendLeadEvent(leadResult.rows[0]).catch(err => 
+                console.error('[CAPI] Error sending Lead Ad event:', err.message)
+            );
+        }
+    } catch (error) {
+        console.error('Error handling lead ad webhook:', error.response ? error.response.data : error.message);
     }
 };

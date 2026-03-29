@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, PlusCircle, LogOut } from 'lucide-react';
+import SearchableSelect from '../common/SearchableSelect';
 
 const AddLeadModal = ({ 
   showAddLeadModal, 
@@ -9,8 +10,10 @@ const AddLeadModal = ({
   setNewLead, 
   LEAD_SOURCES, 
   LEAD_CLASSIFICATIONS, 
+  LEAD_STATUSES,
   tours, 
-  users 
+  users,
+  bus
 }) => {
   if (!showAddLeadModal) return null;
 
@@ -65,32 +68,47 @@ const AddLeadModal = ({
             </select>
           </div>
           <div className="modal-form-group">
-            <label>DỊCH VỤ QUAN TÂM</label>
-            <select className="modal-select" value={newLead.tour_id || ''} onChange={e => setNewLead({...newLead, tour_id: e.target.value})}>
-              <option value="">Chọn tour...</option>
-              {tours.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-            </select>
+            <label>SẢN PHẨM QUAN TÂM</label>
+            <SearchableSelect 
+              options={tours}
+              value={newLead.tour_id}
+              onChange={(val) => setNewLead({...newLead, tour_id: val})}
+              placeholder="Chọn tour quan tâm..."
+            />
           </div>
 
           <div className="modal-form-group">
             <label>TƯ VẤN VIÊN (CSKH)</label>
             <select className="modal-select" value={newLead.assigned_to || ''} onChange={e => setNewLead({...newLead, assigned_to: e.target.value})}>
               <option value="">-- Chọn nhân viên --</option>
-              {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
+              {users.filter(u => u.is_active !== false).map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
             </select>
           </div>
           <div className="modal-form-group">
             <label>NHÓM BU (TƯ VẤN)</label>
-            <select className="modal-select" value={newLead.bu_group || ''} onChange={e => setNewLead({...newLead, bu_group: e.target.value})}>
-              <option value="">-- Chọn nhóm --</option>
-              <option value="BU1">BU1</option>
-              <option value="BU2">BU2</option>
-              <option value="BU3">BU3</option>
-              <option value="BU4">BU4</option>
+            <select 
+              className="modal-select" 
+              value={newLead.bu_group} 
+              onChange={e => setNewLead({...newLead, bu_group: e.target.value})}
+            >
+              <option value="">-- Tất cả BU --</option>
+              {bus.map(bu => <option key={bu.id} value={bu.id}>{bu.label}</option>)}
             </select>
           </div>
           
-          <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
+          <div className="modal-form-group">
+            <label>TRẠNG THÁI HIỆN TẠI</label>
+            <select 
+              className="modal-select" 
+              style={{ border: '2px solid #e0e7ff', background: '#f5f7ff', fontWeight: 700 }}
+              value={newLead.status || ''} 
+              onChange={e => setNewLead({...newLead, status: e.target.value})}
+            >
+              {LEAD_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          <div className="modal-form-group">
             <label>THỜI GIAN LIÊN HỆ</label>
             <input 
               className="modal-input" 

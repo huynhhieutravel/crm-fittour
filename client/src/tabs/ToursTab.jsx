@@ -1,99 +1,164 @@
 import React from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Trash2, Edit3 } from 'lucide-react';
 
 const ToursTab = ({ 
   tourTemplates, 
   tourFilters, 
   setTourFilters, 
-  setShowAddTemplateModal 
+  setShowAddTemplateModal,
+  setEditingTemplate,
+  handleDeleteTour,
+  bus
 }) => {
+  const uniqueDestinations = [...new Set(tourTemplates.map(t => t.destination).filter(Boolean))].sort();
+  const tourTypes = ['Group Tour', 'Private Tour', 'Luxury Tour', 'MICE Tour'];
+
+  const filteredTours = tourTemplates.filter(t => {
+    const matchesSearch = (t.name || '').toLowerCase().includes(tourFilters.search.toLowerCase()) ||
+                        (t.code || '').toLowerCase().includes(tourFilters.search.toLowerCase()) ||
+                        (t.destination || '').toLowerCase().includes(tourFilters.search.toLowerCase()) ||
+                        (t.bu_group || '').toLowerCase().includes(tourFilters.search.toLowerCase());
+    const matchesType = !tourFilters.tour_type || t.tour_type === tourFilters.tour_type;
+    const matchesDest = !tourFilters.destination || t.destination === tourFilters.destination;
+    return matchesSearch && matchesType && matchesDest;
+  });
+
   return (
     <div className="animate-fade-in">
-      <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div className="filter-group" style={{ flex: 1, maxWidth: '400px' }}>
-          <label>DANH MỤC SẢN PHẨM TOUR</label>
+      <div className="filter-bar" style={{ 
+        display: 'flex', 
+        flexDirection: 'row',
+        flexWrap: 'wrap', 
+        gap: '1rem', 
+        alignItems: 'center', 
+        backgroundColor: 'white',
+        padding: '1.25rem',
+        borderRadius: '1rem',
+        boxShadow: 'var(--shadow)',
+        marginBottom: '2rem'
+      }}>
+        <div className="filter-group" style={{ flex: '1 1 300px', margin: 0 }}>
+          <label style={{ marginBottom: '8px', display: 'block' }}>TÌM KIẾM SẢN PHẨM</label>
           <div style={{ position: 'relative' }}>
-            <Search 
-              size={16} 
-              style={{ 
-                position: 'absolute', 
-                left: '12px', 
-                top: '50%', 
-                transform: 'translateY(-50%)', 
-                color: '#94a3b8' 
-              }} 
-            />
+            <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
             <input 
               className="filter-input" 
-              style={{ width: '100%', paddingLeft: '36px' }} 
-              placeholder="Tìm tên tour, điểm đến..." 
+              style={{ width: '100%', paddingLeft: '40px', height: '44px' }} 
+              placeholder="Tên tour, mã tour..." 
               value={tourFilters.search} 
               onChange={e => setTourFilters({...tourFilters, search: e.target.value})} 
             />
           </div>
         </div>
-        <button 
-          className="btn-pro-save" 
-          style={{ width: 'auto', padding: '0.75rem 1.5rem' }} 
-          onClick={() => setShowAddTemplateModal(true)}
-        >
-          <Plus size={18} strokeWidth={3} /> THIẾT KẾ SẢN PHẨM MỚI
-        </button>
+
+        <div className="filter-group" style={{ flex: '0 0 200px', margin: 0 }}>
+          <label style={{ marginBottom: '8px', display: 'block' }}>LOẠI TOUR</label>
+          <select 
+            className="filter-input"
+            style={{ width: '100%', height: '44px' }}
+            value={tourFilters.tour_type || ''}
+            onChange={e => setTourFilters({...tourFilters, tour_type: e.target.value})}
+          >
+            <option value="">-- Tất cả loại --</option>
+            {tourTypes.map(type => <option key={type} value={type}>{type}</option>)}
+          </select>
+        </div>
+
+        <div className="filter-group" style={{ flex: '0 0 200px', margin: 0 }}>
+          <label style={{ marginBottom: '8px', display: 'block' }}>ĐIỂM ĐẾN</label>
+          <select 
+            className="filter-input"
+            style={{ width: '100%', height: '44px' }}
+            value={tourFilters.destination || ''}
+            onChange={e => setTourFilters({...tourFilters, destination: e.target.value})}
+          >
+            <option value="">-- Tất cả điểm --</option>
+            {uniqueDestinations.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+        </div>
+
+        <div style={{ marginLeft: 'auto', paddingTop: '24px' }}>
+          <button 
+            className="btn-pro-save" 
+            style={{ height: '44px', padding: '0 1.5rem', whiteSpace: 'nowrap' }} 
+            onClick={() => setShowAddTemplateModal(true)}
+          >
+            <Plus size={18} strokeWidth={3} style={{ marginRight: '8px' }} /> SẢN PHẨM MỚI
+          </button>
+        </div>
       </div>
-      <div className="data-table-container">
+
+      <div className="data-table-container shadow-sm" style={{ border: '1px solid #f1f5f9', borderRadius: '12px', overflow: 'hidden' }}>
         <table className="data-table">
-          <thead>
+          <thead style={{ background: '#f8fafc' }}>
             <tr>
+              <th style={{ width: '120px' }}>MÃ TOUR</th>
+              <th>KHỐI BU</th>
               <th>TÊN SẢN PHẨM</th>
               <th>ĐIỂM ĐẾN</th>
               <th>THỜI LƯỢNG</th>
               <th>LOẠI TOUR</th>
               <th>GIÁ NIÊM YẾT</th>
-              <th>TAGS</th>
+              <th style={{ textAlign: 'right', paddingRight: '2rem' }}>THAO TÁC</th>
             </tr>
           </thead>
           <tbody>
-            {tourTemplates.filter(t => (t.name || '').toLowerCase().includes(tourFilters.search.toLowerCase())).map(template => (
+            {filteredTours.map(template => (
               <tr key={template.id}>
-                <td style={{ fontWeight: 700 }}>{template.name}</td>
-                <td>{template.destination}</td>
-                <td>{template.duration}</td>
+                <td style={{ fontSize: '0.8rem', fontWeight: 800, color: '#2563eb' }}>{template.code || '-'}</td>
                 <td>
-                  <span 
-                    className="status-badge badge-potential" 
-                    style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0' }}
-                  >
-                    {template.tour_type || 'Standard'}
+                  <span style={{ fontWeight: 700, color: '#64748b', fontSize: '0.8rem' }}>
+                    {bus.find(b => b.id === template.bu_group)?.label || template.bu_group || 'BU4'}
                   </span>
                 </td>
-                <td style={{ color: 'var(--secondary)', fontWeight: 700 }}>
-                  {Number(template.base_price || template.price).toLocaleString('vi-VN')}đ
+                <td style={{ fontSize: '0.85rem', fontWeight: 700, maxWidth: '250px' }}>{template.name}</td>
+                <td>{template.destination}</td>
+                <td style={{ fontSize: '0.75rem', color: '#64748b' }}>{template.duration}</td>
+                <td>
+                  <span 
+                    className="status-badge" 
+                    style={{ 
+                      background: template.tour_type === 'Luxury Tour' ? '#fef3c7' : 
+                                 template.tour_type === 'MICE Tour' ? '#f0fdf4' : 
+                                 template.tour_type === 'Private Tour' ? '#f5f3ff' : '#f1f5f9', 
+                      color: template.tour_type === 'Luxury Tour' ? '#b45309' : 
+                             template.tour_type === 'MICE Tour' ? '#15803d' : 
+                             template.tour_type === 'Private Tour' ? '#6d28d9' : '#475569', 
+                      fontSize: '0.7rem', 
+                      fontWeight: 700, 
+                      padding: '4px 8px' 
+                    }}
+                  >
+                    {(template.tour_type || 'Group Tour').toUpperCase()}
+                  </span>
+                </td>
+                <td style={{ color: 'var(--secondary)', fontWeight: 700, fontSize: '0.8rem' }}>
+                  {Number(template.base_price || template.price || 0).toLocaleString('vi-VN')}đ
                 </td>
                 <td>
-                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                    {(template.tags || '').split(',').map(tag => tag.trim() && (
-                      <span 
-                        key={tag} 
-                        style={{ 
-                          fontSize: '0.7rem', 
-                          padding: '2px 8px', 
-                          background: '#eef2ff', 
-                          color: '#6366f1', 
-                          borderRadius: '4px', 
-                          fontWeight: 600 
-                        }}
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', paddingRight: '1rem' }}>
+                    <button 
+                      className="icon-btn-square" 
+                      title="Sửa sản phẩm" 
+                      onClick={() => setEditingTemplate(template)}
+                    >
+                      <Edit3 size={14} />
+                    </button>
+                    <button 
+                      className="icon-btn-square danger" 
+                      title="Xoá sản phẩm" 
+                      onClick={() => handleDeleteTour(template.id)}
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 </td>
               </tr>
             ))}
-            {tourTemplates.length === 0 && (
+            {filteredTours.length === 0 && (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
-                  Chưa có sản phẩm tour nào. Hãy thiết kế sản phẩm đầu tiên!
+                <td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                  Không tìm thấy sản phẩm phù hợp.
                 </td>
               </tr>
             )}

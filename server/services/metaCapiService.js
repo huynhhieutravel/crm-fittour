@@ -174,10 +174,11 @@ exports.sendStatusChangeEvent = async (lead, newStatus, tourName = null, value =
   // Map CRM statuses to Meta event names (Optimized for Ads performance)
   const statusEventMap = {
     'Mới': 'Lead',
-    'Đã tư vấn': 'Contact',
-    'Tư vấn lần 2': 'QualifiedLead', // Custom Event or QualifiedLead
+    'Đang liên hệ': 'Contact',
+    'Tiềm năng': 'QualifiedLead',
     'Đặt cọc': 'InitiateCheckout',
     'Chốt đơn': 'Purchase',
+    'Thất bại': 'Rejected'
   };
 
   const eventName = statusEventMap[newStatus] || 'Other';
