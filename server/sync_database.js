@@ -13,6 +13,7 @@ const MIGRATION_FILES = [
   'migrate_customers.js',
   'migration_phase14.js',
   'migration_phase14_meta.js',
+  'temp_migrate_bus.js',
   'migrate_gender.js',
   'migrate_bu.js',
   'migrate_rbac.js',
