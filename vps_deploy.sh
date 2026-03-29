@@ -24,11 +24,20 @@ echo "📦 Đang cập nhật Backend..."
 cd server
 npm install
 
-# 4. Chạy các bản cập nhật Database (Migrations)
-echo "🗄️ Đang cập nhật cấu trúc Database..."
-node migration_phase10.js
-node migration_phase11.js
-node migration_phase12.js
+# 4. Sao lưu và Cập nhật cấu trúc Database
+echo "🗄️ Đang sao lưu Database..."
+mkdir -p ../backups
+if [ -f ".env" ]; then
+    set -a
+    source .env
+    set +a
+    pg_dump "$DATABASE_URL" -f "../backups/db_backup_$(date +%Y%m%d_%H%M%S).sql" || echo "⚠️ Lỗi khi sao lưu, tiếp tục triển khai..."
+else
+    echo "⚠️ Không tìm thấy file .env để lấy cấu hình kết nối Database!"
+fi
+
+echo "⚡ Đang đồng bộ cấu trúc Database (Universal Sync)..."
+node sync_database.js
 
 # 5. Cài đặt và Build Frontend
 echo "🏗️ Đang Build Frontend..."
