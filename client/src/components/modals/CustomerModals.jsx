@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Calendar, MapPin, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 
 export const AddCustomerModal = ({ 
   showAddCustomerModal, 
@@ -259,6 +259,61 @@ export const EditCustomerModal = ({
           <div className="modal-form-group">
             <label>THỜI GIAN HAY ĐI (Tháng/Mùa)</label>
             <input className="modal-input" value={editingCustomer.travel_season || ''} onChange={e => setEditingCustomer({...editingCustomer, travel_season: e.target.value})} />
+          </div>
+
+          <div className="nav-section-title" style={{ gridColumn: 'span 2', marginTop: '1rem' }}>Lịch sử đi Tour (Đã đặt)</div>
+          <div style={{ gridColumn: 'span 2', background: '#f8fafc', padding: '1.25rem', borderRadius: '1rem', border: '1px solid #e2e8f0' }}>
+            {editingCustomer.booking_history && editingCustomer.booking_history.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {editingCustomer.booking_history.map(booking => (
+                  <div key={booking.id} style={{ 
+                    background: 'white', 
+                    padding: '1rem', 
+                    borderRadius: '0.75rem', 
+                    border: '1px solid #e2e8f0',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                  }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '0.95rem' }}>
+                        {booking.tour_name}
+                      </div>
+                      <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: '#64748b' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Calendar size={12} /> {booking.departure_date ? new Date(booking.departure_date).toLocaleDateString('vi-VN') : 'Sắp diễn ra'}
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Users size={12} /> {booking.pax_count} khách
+                        </span>
+                        <span style={{ color: '#0f172a', fontWeight: 600 }}>
+                          #{booking.booking_code}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <span className={`badge-${booking.booking_status}`} style={{ 
+                        padding: '4px 12px', 
+                        borderRadius: '20px', 
+                        fontSize: '0.7rem', 
+                        fontWeight: 800,
+                        textTransform: 'uppercase'
+                      }}>
+                        {booking.booking_status === 'confirmed' ? 'Đã xác nhận' : 
+                         booking.booking_status === 'pending' ? 'Chờ thanh toán' : 
+                         booking.booking_status === 'cancelled' ? 'Đã hủy' : booking.booking_status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                <Clock size={32} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
+                <div>Khách hàng chưa có lịch sử đi tour.</div>
+              </div>
+            )}
           </div>
 
           <div className="nav-section-title" style={{ gridColumn: 'span 2', marginTop: '1rem' }}>Lịch sử tư vấn & Chăm sóc (từ Lead)</div>

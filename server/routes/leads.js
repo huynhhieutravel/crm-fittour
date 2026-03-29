@@ -6,6 +6,7 @@ const roleCheck = require('../middleware/roleCheck');
 
 const ALLOWED_LEAD_ROLES = ['admin', 'manager', 'sales', 'marketing'];
 
+router.get('/stats', authenticateToken, roleCheck(ALLOWED_LEAD_ROLES), leadController.getLeadStats);
 router.get('/', authenticateToken, roleCheck(ALLOWED_LEAD_ROLES), leadController.getAllLeads);
 router.post('/', authenticateToken, roleCheck(ALLOWED_LEAD_ROLES), leadController.createLead);
 router.get('/:id', authenticateToken, roleCheck(ALLOWED_LEAD_ROLES), leadController.getLeadById);

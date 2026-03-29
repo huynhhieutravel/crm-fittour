@@ -89,7 +89,7 @@ const CustomersTab = ({
                 <td style={{ fontSize: '0.85rem' }}>{customer.role || 'Booker'}</td>
                 <td>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button className="icon-btn" onClick={() => setEditingCustomer(customer)}>
+                    <button className="icon-btn" onClick={() => setEditingCustomer(customer.id)}>
                       <Edit3 size={16} />
                     </button>
                     <button className="icon-btn danger" style={{ color: '#ef4444' }} onClick={() => handleDeleteCustomer(customer.id)}>

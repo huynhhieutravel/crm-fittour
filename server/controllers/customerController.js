@@ -4,8 +4,17 @@ const { convertLeadToCustomer } = require('../services/conversionService');
 
 exports.getAllCustomers = async (req, res) => {
     try {
-        const result = await db.query('SELECT * FROM customers ORDER BY created_at DESC');
-        res.json(result.rows);
+        const result = await db.query(`
+            SELECT c.*, 
+                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0) as total_spent
+            FROM customers c
+            ORDER BY c.created_at DESC
+        `);
+        const customers = result.rows.map(c => ({
+            ...c,
+            total_spent: parseFloat(c.total_spent || 0)
+        }));
+        res.json(customers);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -58,7 +67,11 @@ exports.createCustomer = async (req, res) => {
 
 exports.getCustomerById = async (req, res) => {
     try {
-        const result = await db.query('SELECT * FROM customers WHERE id = $1', [req.params.id]);
+        const result = await db.query(`
+            SELECT c.*, 
+                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0)::numeric as total_spent
+            FROM customers c WHERE c.id = $1
+        `, [req.params.id]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
         
         const notes = await db.query(`
@@ -68,9 +81,20 @@ exports.getCustomerById = async (req, res) => {
             WHERE ln.customer_id = $1 
             ORDER BY ln.created_at DESC
         `, [req.params.id]);
+
+        const bookings = await db.query(`
+            SELECT b.*, tt.name as tour_name, td.start_date as departure_date, td.status as departure_status
+            FROM bookings b
+            LEFT JOIN tour_templates tt ON b.tour_id = tt.id
+            LEFT JOIN tour_departures td ON b.tour_departure_id = td.id
+            WHERE b.customer_id = $1
+            ORDER BY td.start_date DESC
+        `, [req.params.id]);
         
         const customer = result.rows[0];
+        customer.total_spent = parseFloat(customer.total_spent); 
         customer.interaction_history = notes.rows;
+        customer.booking_history = bookings.rows;
         
         res.json(customer);
     } catch (err) {

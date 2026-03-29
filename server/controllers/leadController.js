@@ -206,3 +206,121 @@ exports.deleteLead = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+exports.getLeadStats = async (req, res) => {
+    try {
+        const { startDate, endDate, buGroup } = req.query;
+        
+        let leadWhere = 'WHERE 1=1';
+        let joinLeadWhere = '1=1';
+        const params = [];
+
+        if (startDate) {
+            params.push(startDate);
+            leadWhere += ` AND created_at >= $${params.length}`;
+            joinLeadWhere += ` AND l.created_at >= $${params.length}`;
+        }
+        if (endDate) {
+            params.push(endDate + ' 23:59:59');
+            leadWhere += ` AND created_at <= $${params.length}`;
+            joinLeadWhere += ` AND l.created_at <= $${params.length}`;
+        }
+        if (buGroup) {
+            params.push(buGroup);
+            leadWhere += ` AND bu_group = $${params.length}`;
+            joinLeadWhere += ` AND l.bu_group = $${params.length}`;
+        }
+
+        // 1. Stats by Status
+        const statusStats = await db.query(`SELECT status, COUNT(*)::int as count FROM leads ${leadWhere} GROUP BY status`, params);
+        
+        // 2. Stats by Source
+        const sourceStats = await db.query(`SELECT source, COUNT(*)::int as count FROM leads ${leadWhere} GROUP BY source`, params);
+        
+        // 3. Stats by Staff (Performance)
+        const staffStats = await db.query(`
+            SELECT 
+                u.full_name as name,
+                COUNT(l.id)::int as total_leads,
+                COUNT(CASE WHEN l.status = 'Chốt đơn' THEN 1 END)::int as won_leads
+            FROM users u
+            LEFT JOIN leads l ON u.id = l.assigned_to AND ${joinLeadWhere}
+            WHERE u.role IN ('sale', 'sales', 'manager', 'admin', 'staff')
+            GROUP BY u.id, u.full_name
+            HAVING COUNT(l.id) > 0 OR u.role = 'sale'
+            ORDER BY total_leads DESC
+        `, params);
+
+        // 4. Distribution by Business Unit
+        const buStats = await db.query(`
+            SELECT 
+                COALESCE(bu_group, 'Chưa phân loại') as name,
+                COUNT(*)::int as count
+            FROM leads 
+            ${leadWhere}
+            GROUP BY bu_group
+        `, params);
+
+        // 5. Lead Distribution by Country/Destination
+        const destinationStats = await db.query(`
+            SELECT 
+                COALESCE(tt.destination, 'Chưa xác định') as name,
+                COUNT(l.id)::int as count
+            FROM leads l
+            LEFT JOIN tour_templates tt ON l.tour_id = tt.id
+            WHERE ${joinLeadWhere}
+            GROUP BY tt.destination
+            ORDER BY count DESC
+            LIMIT 10
+        `, params);
+
+        // 6. Care Status (Overdue vs Active)
+        const careStats = await db.query(`
+            SELECT 
+                CASE 
+                    WHEN last_contacted_at >= NOW() - INTERVAL '3 days' THEN 'Đang chăm sóc tốt'
+                    ELSE 'Cần chăm sóc ngay'
+                END as status,
+                COUNT(*)::int as count
+            FROM leads
+            ${leadWhere} AND status NOT IN ('Chốt đơn', 'Thất bại')
+            GROUP BY 1
+        `, params);
+
+        // 7. Recent Overdue Leads for action list
+        const overdueLeads = await db.query(`
+            SELECT l.id, l.name, l.phone, l.last_contacted_at, u.full_name as staff_name
+            FROM leads l
+            LEFT JOIN users u ON l.assigned_to = u.id
+            WHERE ${joinLeadWhere} 
+              AND l.status NOT IN ('Chốt đơn', 'Thất bại')
+              AND (l.last_contacted_at < NOW() - INTERVAL '3 days' OR l.last_contacted_at IS NULL)
+            ORDER BY l.last_contacted_at ASC NULLS FIRST
+            LIMIT 5
+        `, params);
+
+        // 8. Stats by Classification
+        const classificationStats = await db.query(`
+            SELECT 
+                COALESCE(classification, 'Chưa phân loại') as name,
+                COUNT(*)::int as count 
+            FROM leads 
+            ${leadWhere} 
+            GROUP BY classification
+        `, params);
+
+        res.json({
+            statusStats: statusStats.rows,
+            sourceStats: sourceStats.rows,
+            staffStats: staffStats.rows,
+            buStats: buStats.rows,
+            destinationStats: destinationStats.rows,
+            careStats: careStats.rows,
+            overdueLeads: overdueLeads.rows,
+            classificationStats: classificationStats.rows
+        });
+    } catch (err) {
+        console.error('Get Lead Stats Error:', err);
+        res.status(500).json({ message: err.message });
+    }
+};

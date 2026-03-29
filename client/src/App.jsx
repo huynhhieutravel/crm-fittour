@@ -17,6 +17,8 @@ import ToursTab from './tabs/ToursTab';
 import DeparturesTab from './tabs/DeparturesTab';
 import DashboardTab from './tabs/DashboardTab';
 import LeadsTab from './tabs/LeadsTab';
+import LeadsDashboardTab from './tabs/LeadsDashboardTab';
+import StaffPerformanceTab from './tabs/StaffPerformanceTab';
 import GuidesTab from './tabs/GuidesTab';
 import UsersTab from './tabs/UsersTab';
 import AddLeadModal from './components/modals/AddLeadModal';
@@ -82,7 +84,7 @@ function AppContent() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
-    const validTabs = ['dashboard', 'leads', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -235,7 +237,7 @@ function AppContent() {
   // Sync activeTab with URL
   useEffect(() => {
     const path = location.pathname.substring(1);
-    const validTabs = ['dashboard', 'leads', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {
@@ -674,6 +676,19 @@ function AppContent() {
     }
   };
 
+  const handleEditCustomer = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`/api/customers/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setEditingCustomer(res.data);
+    } catch (err) {
+      addToast('Lỗi khi tải thông tin khách hàng');
+      console.error(err);
+    }
+  };
+
   const handleUpdateCustomer = async (e) => {
     if (e) e.preventDefault();
     try {
@@ -1042,8 +1057,26 @@ function AppContent() {
             <>
               <div className="nav-section-title">Marketing & Sales</div>
               {checkView('leads') && (
-                <div className={`nav-item ${activeTab === 'leads' ? 'active' : ''}`} onClick={() => navigate('/leads')}>
-                  <Users /> Lead Marketing
+                <div 
+                  className={`nav-item ${activeTab === 'leads' || activeTab === 'leads-dashboard' ? 'active-parent' : ''}`} 
+                  onClick={() => navigate('/leads')}
+                  style={{ justifyContent: 'space-between' }}
+                  onMouseEnter={(e) => {
+                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHoveredRect(rect);
+                    setHoveredMenu('leads');
+                  }}
+                  onMouseLeave={() => {
+                    menuTimerRef.current = setTimeout(() => {
+                      setHoveredMenu(null);
+                    }, 150);
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Users /> Lead Marketing
+                  </div>
+                  <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
               {checkView('leads') && (
@@ -1175,6 +1208,50 @@ function AppContent() {
         </div>
       )}
 
+      {hoveredMenu === 'leads' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('leads');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'leads' ? 'active' : ''}`} 
+            onClick={() => { navigate('/leads'); setHoveredMenu(null); }}
+          >
+            Danh sách Lead
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'leads-dashboard' ? 'active' : ''}`} 
+            onClick={() => { navigate('/leads-dashboard'); setHoveredMenu(null); }} 
+          >
+            Dashboard Thống kê
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'staff-performance' ? 'active' : ''}`} 
+            onClick={() => { navigate('/staff-performance'); setHoveredMenu(null); }} 
+          >
+            Hiệu suất Nhân viên
+          </div>
+        </div>
+      )}
+
       <main className="main-content">
         <div className="breadcrumb-container">
           <div className="breadcrumb">CRM / {activeTab.toUpperCase()}</div>
@@ -1186,6 +1263,7 @@ function AppContent() {
           <h1>{
             activeTab === 'dashboard' ? 'Tổng quan hệ thống' : 
             activeTab === 'leads' ? 'Quản lý Lead Marketing' : 
+            activeTab === 'leads-dashboard' ? 'Dashboard Lead Marketing' :
             activeTab === 'bus' ? 'Quản lý Khối Kinh doanh (BU)' :
             activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
           }</h1>
@@ -1244,6 +1322,14 @@ function AppContent() {
                 tours={tourTemplates}
                 bus={bus}
               />
+            )}
+            {activeTab === 'leads-dashboard' && (
+              <LeadsDashboardTab 
+                setEditingLead={setEditingLead}
+              />
+            )}
+            {activeTab === 'staff-performance' && (
+              <StaffPerformanceTab />
             )}
 
         {activeTab === 'inbox' && (
@@ -1314,7 +1400,7 @@ function AppContent() {
             customerFilters={customerFilters}
             setCustomerFilters={setCustomerFilters}
             setShowAddCustomerModal={setShowAddCustomerModal}
-            setEditingCustomer={setEditingCustomer}
+            setEditingCustomer={handleEditCustomer}
             handleDeleteCustomer={handleDeleteCustomer}
             users={users}
           />
