@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   UserPlus, 
   MessageSquare, 
@@ -36,6 +36,22 @@ const LeadsTab = ({
   tours,
   bus
 }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [leadFilters]);
+
+  const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
+  const currentLeads = filteredLeads.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
   return (
     <>
       <div className="stats-grid">
@@ -165,7 +181,7 @@ const LeadsTab = ({
             </tr>
           </thead>
           <tbody>
-            {filteredLeads.map(lead => (
+            {currentLeads.map(lead => (
               <tr key={lead.id}>
                 <td style={{ color: '#64748b', fontSize: '0.85rem' }}>
                   {new Date(lead.created_at).toLocaleDateString('vi-VN')}
@@ -293,6 +309,31 @@ const LeadsTab = ({
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem', paddingBottom: '1rem' }}>
+          <button 
+            type="button"
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+            style={{ padding: '6px 12px', border: '1px solid #e2e8f0', background: currentPage === 1 ? '#f8fafc' : 'white', borderRadius: '6px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontWeight: 600, color: currentPage === 1 ? '#cbd5e1' : '#475569' }}
+          >
+            Trang trước
+          </button>
+          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>
+            Trang {currentPage} / {totalPages}
+          </div>
+          <button 
+            type="button"
+            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+            style={{ padding: '6px 12px', border: '1px solid #e2e8f0', background: currentPage === totalPages ? '#f8fafc' : 'white', borderRadius: '6px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontWeight: 600, color: currentPage === totalPages ? '#cbd5e1' : '#475569' }}
+          >
+            Trang sau
+          </button>
+        </div>
+      )}
+
       {hoveredNote.id && (
         <div className="dark-tooltip animate-fade-in" style={{ 
           position: 'fixed',
