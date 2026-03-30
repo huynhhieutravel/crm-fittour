@@ -24,8 +24,7 @@ exports.handleMessage = async (sender_psid, received_message) => {
             // 2. Lấy thông tin profile từ Facebook (nếu có thể)
             let senderName = `Messenger Guest ${sender_psid.substring(0, 5)}`;
             try {
-                const dbToken = await getSetting('meta_page_access_token');
-                const token = dbToken || PAGE_ACCESS_TOKEN_ENV;
+                const { token } = await getPageToken();
                 if (token) {
                     const profileRes = await axios.get(`https://graph.facebook.com/v25.0/${sender_psid}?fields=first_name,last_name,profile_pic&access_token=${token}`);
                     if (profileRes.data && (profileRes.data.first_name || profileRes.data.last_name)) {
@@ -86,23 +85,65 @@ exports.handlePostback = async (sender_psid, received_postback) => {
     await exports.callSendAPI(sender_psid, response);
 };
 
+// Cache for resolved page token (avoid calling /me/accounts every time)
+let _cachedPageToken = null;
+let _cachedPageId = null;
+let _cacheTime = 0;
+const CACHE_TTL = 3600000; // 1 hour
+
+const getPageToken = async () => {
+    // Return cached if fresh
+    if (_cachedPageToken && (Date.now() - _cacheTime) < CACHE_TTL) {
+        return { token: _cachedPageToken, pageId: _cachedPageId };
+    }
+
+    const dbToken = await getSetting('meta_page_access_token');
+    const token = dbToken || PAGE_ACCESS_TOKEN_ENV;
+    if (!token || token.includes('your_page_access_token_here')) {
+        return { token: null, pageId: null };
+    }
+
+    // Try to resolve page token from System User token
+    try {
+        const accountsRes = await axios.get(`https://graph.facebook.com/v25.0/me/accounts?access_token=${token}`);
+        if (accountsRes.data?.data?.length > 0) {
+            const page = accountsRes.data.data[0]; // Use first page
+            _cachedPageToken = page.access_token;
+            _cachedPageId = page.id;
+            _cacheTime = Date.now();
+            console.log(`[FB] Resolved Page Token for: ${page.name} (${page.id})`);
+            return { token: _cachedPageToken, pageId: _cachedPageId };
+        }
+    } catch (err) {
+        // Not a System User token or /me/accounts not available - use token directly
+        console.log('[FB] Could not resolve page accounts, using token directly');
+    }
+
+    // Fallback: use token as-is (regular Page Token)
+    return { token, pageId: null };
+};
+
 exports.callSendAPI = async (sender_psid, response) => {
     try {
-        const dbToken = await getSetting('meta_page_access_token');
-        const token = dbToken || PAGE_ACCESS_TOKEN_ENV;
+        const { token, pageId } = await getPageToken();
         
-        if (!token || token.includes('your_page_access_token_here')) {
-            console.error('FB_PAGE_TOKEN is not configured');
+        if (!token) {
+            console.error('[FB] Page Access Token is not configured');
             return;
         }
 
-        await axios.post(`https://graph.facebook.com/v25.0/me/messages?access_token=${token}`, {
+        // Use /{page_id}/messages if we have page_id, otherwise fallback to /me/messages
+        const endpoint = pageId 
+            ? `https://graph.facebook.com/v25.0/${pageId}/messages?access_token=${token}`
+            : `https://graph.facebook.com/v25.0/me/messages?access_token=${token}`;
+
+        await axios.post(endpoint, {
             recipient: { id: sender_psid },
             message: response
         });
-        console.log('Message sent!');
+        console.log('[FB] ✅ Message sent successfully!');
     } catch (error) {
-        console.error('Unable to send message:', error.response ? error.response.data : error.message);
+        console.error('[FB] ❌ Unable to send message:', error.response ? error.response.data : error.message);
     }
 };
 
