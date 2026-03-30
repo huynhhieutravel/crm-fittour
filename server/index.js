@@ -83,4 +83,8 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    
+    // Start FB Poller for Messenger Sync bypass
+    const facebookService = require('./services/facebookService');
+    facebookService.startPolling();
 });

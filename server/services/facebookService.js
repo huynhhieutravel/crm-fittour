@@ -296,3 +296,56 @@ exports.handleLeadAd = async (leadgen_id, page_id) => {
         console.error('Error handling lead ad webhook:', error.response ? error.response.data : error.message);
     }
 };
+
+// --- ALTERNATIVE POLLING SYSTEM (MESSENGER SYNC) ---
+// Bypasses Meta Webhooks blockages when Business AI holds the thread
+exports.syncRecentConversations = async () => {
+    try {
+        const { token, pageId } = await getPageToken();
+        if (!token || !pageId) return;
+
+        // Kéo 5 cuộc trò chuyện gần nhất để tìm khách hàng mới
+        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=participants{id,name}&limit=5&access_token=${token}`;
+        const res = await axios.get(endpoint);
+        
+        if (!res.data || !res.data.data) return;
+
+        for (const conv of res.data.data) {
+            const participants = conv.participants?.data || [];
+            // Tìm user (loại trừ Page hiện tại)
+            const user = participants.find(p => p.id !== pageId);
+            if (!user) continue;
+
+            const psid = user.id;
+
+            // Kiểm tra xem Lead đã tồn tại chưa
+            const existingLead = await db.query('SELECT id FROM leads WHERE facebook_psid = $1', [psid]);
+            
+            if (existingLead.rows.length === 0) {
+                console.log(`[FB POLLER] Phát hiện khách mới chat với Fanpage: ${user.name} (${psid}). Đang tạo Lead...`);
+                // Tạo Lead mới tinh
+                const leadResult = await db.query(
+                    'INSERT INTO leads (name, source, status, facebook_psid) VALUES ($1, $2, $3, $4) RETURNING *',
+                    [user.name, 'Messenger', 'Mới', psid]
+                );
+
+                // Kích hoạt CAPI
+                metaCapi.sendLeadEvent(leadResult.rows[0]).catch(err => 
+                    console.error('[CAPI] Lỗi khi gửi sự kiện Lead từ Poller:', err.message)
+                );
+            }
+        }
+    } catch (error) {
+        console.error('[FB POLLER] Lỗi đồng bộ cuộc trò chuyện:', error.message);
+    }
+};
+
+let pollerInterval;
+exports.startPolling = () => {
+    if (pollerInterval) clearInterval(pollerInterval);
+    // Quét mỗi 60 giây (1 phút) => Rất nhẹ, không đáng kể
+    pollerInterval = setInterval(exports.syncRecentConversations, 60 * 1000);
+    // Chạy thử ngay lần đầu tiên thiết lập
+    setTimeout(exports.syncRecentConversations, 5000);
+    console.log('[FB POLLER] Hệ thống tự động quét Lead Facebook đã khởi động (Chống kẹt Webhook).');
+};
