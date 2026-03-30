@@ -35,9 +35,9 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
                 console.error('Error fetching messenger profile:', err.response ? err.response.data : err.message);
             }
 
-            // 3. Nếu chưa có, tạo Lead mới (với facebook_psid)
+            // 3. Nếu chưa có, tạo Lead mới (với facebook_psid và last_contacted_at)
             const leadResult = await db.query(
-                'INSERT INTO leads (name, source, status, facebook_psid) VALUES ($1, $2, $3, $4) RETURNING *',
+                'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING *',
                 [senderName, 'Messenger', 'Mới', sender_psid]
             );
             leadId = leadResult.rows[0].id;
@@ -276,7 +276,7 @@ exports.handleLeadAd = async (leadgen_id, page_id) => {
         const existingLead = await db.query('SELECT * FROM leads WHERE meta_lead_id = $1', [leadgen_id]);
         if (existingLead.rows.length === 0) {
             const leadResult = await db.query(
-                'INSERT INTO leads (name, phone, email, source, status, meta_lead_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+                'INSERT INTO leads (name, phone, email, source, status, meta_lead_id, last_contacted_at) VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING *',
                 [name, phone, email, 'Khác', 'Mới', leadgen_id]
             );
             
@@ -330,7 +330,7 @@ exports.syncRecentConversations = async () => {
                 console.log(`[FB POLLER] Phát hiện khách mới chat với Fanpage: ${user.name} (${psid}). Đang tạo Lead...`);
                 // Tạo Lead mới tinh
                 const leadResult = await db.query(
-                    'INSERT INTO leads (name, source, status, facebook_psid, consultation_note) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+                    'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *',
                     [user.name, 'Messenger', 'Mới', psid, firstMessageNote]
                 );
 
