@@ -123,18 +123,27 @@ const LeadsTab = ({
           </button>
         </div>
         
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.85rem', marginTop: '1rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.85rem', marginTop: '1rem', flexWrap: 'wrap' }}>
           <span style={{ fontWeight: 600, color: '#64748b', marginRight: '0.5rem' }}>THỜI GIAN:</span>
           {[
-            { id: 'all', label: 'Tất cả' },
             { id: 'today', label: 'Hôm nay' },
-            { id: 'week', label: 'Tuần' },
-            { id: 'month', label: 'Tháng' }
+            { id: 'week', label: 'Tuần này' },
+            { id: 'month', label: 'Tháng này' },
+            { id: 'quarter', label: 'Quý này' },
+            { id: 'all', label: 'Tất cả' }
           ].map(p => (
-            <button key={p.id} className={`preset-btn ${leadFilters.timeRange === p.id ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, timeRange: p.id})}>
+            <button key={p.id} className={`preset-btn ${(leadFilters.timeRange === p.id && !leadFilters.startDate && !leadFilters.endDate) ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, timeRange: p.id, startDate: '', endDate: ''})}>
               {p.label}
             </button>
           ))}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
+            <span style={{ color: '#64748b', fontWeight: 600 }}>Tùy chọn:</span>
+            <input type="date" className="filter-input" style={{ padding: '4px 8px', height: '32px' }} value={leadFilters.startDate || ''} onChange={e => setLeadFilters({...leadFilters, timeRange: 'custom', startDate: e.target.value})} />
+            <span style={{ color: '#94a3b8' }}>-</span>
+            <input type="date" className="filter-input" style={{ padding: '4px 8px', height: '32px' }} value={leadFilters.endDate || ''} onChange={e => setLeadFilters({...leadFilters, timeRange: 'custom', endDate: e.target.value})} />
+          </div>
+
           <div style={{ marginLeft: 'auto', color: '#94a3b8', fontWeight: 600, background: '#f1f5f9', padding: '4px 12px', borderRadius: '6px' }}>
             {filteredLeads.length} Lead
           </div>
@@ -223,6 +232,7 @@ const LeadsTab = ({
                         background: 'transparent',
                         padding: '0',
                         minHeight: 'auto',
+                        minWidth: '220px',
                         fontSize: '0.85rem'
                       }}
                       className="table-searchable-select"

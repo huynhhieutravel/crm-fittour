@@ -118,7 +118,7 @@ function AppContent() {
     meta_page_access_token: '',
     meta_page_id: ''
   });
-  const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'all' });
+  const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'today', startDate: '', endDate: '' });
   const [tourFilters, setTourFilters] = useState({ search: '', tour_type: '', destination: '' });
   const [bookingFilters, setBookingFilters] = useState({ search: '', status: '' });
   const [customerFilters, setCustomerFilters] = useState({ search: '' });
@@ -779,7 +779,17 @@ function AppContent() {
     
     // Time range filtering
     let matchesTime = true;
-    if (leadFilters.timeRange !== 'all') {
+    if (leadFilters.startDate || leadFilters.endDate) {
+      const leadDate = new Date(lead.created_at);
+      if (leadFilters.startDate) {
+        matchesTime = matchesTime && leadDate >= new Date(leadFilters.startDate);
+      }
+      if (leadFilters.endDate) {
+        const endDate = new Date(leadFilters.endDate);
+        endDate.setHours(23, 59, 59, 999);
+        matchesTime = matchesTime && leadDate <= endDate;
+      }
+    } else if (leadFilters.timeRange !== 'all') {
       const now = new Date();
       const leadDate = new Date(lead.created_at);
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -787,13 +797,17 @@ function AppContent() {
       if (leadFilters.timeRange === 'today') {
         matchesTime = leadDate >= today;
       } else if (leadFilters.timeRange === 'week') {
-        const weekAgo = new Date(today);
-        weekAgo.setDate(today.getDate() - 7);
-        matchesTime = leadDate >= weekAgo;
+        const firstDayOfWeek = new Date(today);
+        const day = firstDayOfWeek.getDay() || 7; 
+        if(day !== 1) firstDayOfWeek.setHours(-24 * (day - 1));
+        matchesTime = leadDate >= firstDayOfWeek;
       } else if (leadFilters.timeRange === 'month') {
-        const monthAgo = new Date(today);
-        monthAgo.setMonth(today.getMonth() - 1);
-        matchesTime = leadDate >= monthAgo;
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        matchesTime = leadDate >= firstDayOfMonth;
+      } else if (leadFilters.timeRange === 'quarter') {
+        const quarter = Math.floor(now.getMonth() / 3);
+        const firstDayOfQuarter = new Date(now.getFullYear(), quarter * 3, 1);
+        matchesTime = leadDate >= firstDayOfQuarter;
       }
     }
 
