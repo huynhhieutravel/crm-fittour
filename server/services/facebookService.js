@@ -304,8 +304,8 @@ exports.syncRecentConversations = async () => {
         const { token, pageId } = await getPageToken();
         if (!token || !pageId) return;
 
-        // Kéo 5 cuộc trò chuyện gần nhất để tìm khách hàng mới
-        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=participants{id,name}&limit=5&access_token=${token}`;
+        // Kéo 5 cuộc trò chuyện gần nhất để tìm khách hàng mới kèm 5 tin nhắn cực gần đễ trích xuất ghi chú
+        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=participants{id,name},messages.limit(5){message,from}&limit=5&access_token=${token}`;
         const res = await axios.get(endpoint);
         
         if (!res.data || !res.data.data) return;
@@ -322,11 +322,16 @@ exports.syncRecentConversations = async () => {
             const existingLead = await db.query('SELECT id FROM leads WHERE facebook_psid = $1', [psid]);
             
             if (existingLead.rows.length === 0) {
+                // Trích xuất tin nhắn do chính User gửi (Bỏ qua tin nhắn do Page báo tự động như "Tác nhân AI...")
+                const messagesList = conv.messages?.data || [];
+                const userMsgObj = messagesList.find(m => m.from && m.from.id === psid);
+                const firstMessageNote = userMsgObj ? `Facebook Message: "${userMsgObj.message}"` : null;
+
                 console.log(`[FB POLLER] Phát hiện khách mới chat với Fanpage: ${user.name} (${psid}). Đang tạo Lead...`);
                 // Tạo Lead mới tinh
                 const leadResult = await db.query(
-                    'INSERT INTO leads (name, source, status, facebook_psid) VALUES ($1, $2, $3, $4) RETURNING *',
-                    [user.name, 'Messenger', 'Mới', psid]
+                    'INSERT INTO leads (name, source, status, facebook_psid, consultation_note) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+                    [user.name, 'Messenger', 'Mới', psid, firstMessageNote]
                 );
 
                 // Kích hoạt CAPI
