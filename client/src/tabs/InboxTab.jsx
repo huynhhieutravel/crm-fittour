@@ -8,8 +8,8 @@ import {
   CheckSquare,
   Trash2,
   User,
-  Send,
   Clock,
+  MessageCircle,
 } from "lucide-react";
 
 const InboxTab = ({ leads, setEditingLead }) => {
@@ -29,8 +29,6 @@ const InboxTab = ({ leads, setEditingLead }) => {
   // Bulk Delete States
   const [selectedIds, setSelectedIds] = useState([]);
 
-  // Send Message State
-  const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
 
   const fetchConversations = useCallback(async () => {
@@ -77,38 +75,6 @@ const InboxTab = ({ leads, setEditingLead }) => {
   const handleSelectConv = (conv) => {
     setSelectedConv(conv);
     fetchMessages(conv.id);
-  };
-
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !selectedConv) return;
-    try {
-      const token = localStorage.getItem("token");
-      const tempMsg = {
-        id: Date.now(),
-        sender_type: "user",
-        content: newMessage,
-        created_at: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, tempMsg]);
-      setNewMessage("");
-
-      await axios.post(
-        "/api/messages/send",
-        {
-          conversationId: selectedConv.id,
-          content: newMessage,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-
-      fetchConversations(); // refresh last message
-    } catch (err) {
-      console.error("Send Message Error:", err);
-      alert("Lỗi gửi tin nhắn: " + err.message);
-    }
   };
 
   const handleSearchSubmit = (e) => {
@@ -165,46 +131,36 @@ const InboxTab = ({ leads, setEditingLead }) => {
   };
 
   return (
-    <div className="animate-fade-in" style={{ height: "calc(100vh - 180px)" }}>
-      {/* Container */}
-      <div className="bg-white rounded-3xl h-full shadow-sm border border-slate-100 flex overflow-hidden">
+    <div className="inbox-wrapper">
+      <div className="inbox-container">
         {/* LEFT COLUMN: LIST */}
-        <div className="w-80 border-r border-slate-100 flex flex-col bg-slate-50 relative">
+        <div className="inbox-sidebar">
           {/* List Header */}
-          <div className="p-5 border-b border-slate-200 bg-white shadow-sm z-10">
-            <h2 className="text-lg font-black text-slate-800 tracking-tight flex items-center justify-between">
+          <div className="inbox-header">
+            <h2 className="title">
               Hộp thư đến
-              <span className="bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full text-xs">
-                {totalRows}
-              </span>
+              <span className="badge">{totalRows}</span>
             </h2>
-            <form onSubmit={handleSearchSubmit} className="mt-4 relative">
+            <form onSubmit={handleSearchSubmit} className="search-form">
               <input
                 type="text"
                 placeholder="Tìm tin nhắn, tên khách..."
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 outline-none transition-all"
+                className="search-input"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
               />
-              <Search
-                size={15}
-                className="absolute left-3 top-2.5 text-slate-400"
-              />
+              <Search size={15} className="search-icon" />
             </form>
           </div>
 
           {/* Conversations List */}
-          <div className="flex-1 overflow-y-auto px-3 py-3 relative">
+          <div className="conv-list">
             {loading && conversations.length === 0 ? (
-              <div className="text-center py-10 text-slate-400 text-sm font-medium">
-                Đang tải...
-              </div>
+              <div className="empty-state">Đang tải...</div>
             ) : conversations.length === 0 ? (
-              <div className="text-center py-10 text-slate-400 text-sm font-medium">
-                Không tìm thấy hội thoại.
-              </div>
+              <div className="empty-state">Không tìm thấy hội thoại.</div>
             ) : (
-              <div className="flex flex-col gap-1.5">
+              <div className="conv-items">
                 {conversations.map((conv) => {
                   const isSelected = selectedConv?.id === conv.id;
                   const isChecked = selectedIds.includes(conv.id);
@@ -212,54 +168,41 @@ const InboxTab = ({ leads, setEditingLead }) => {
                     <div
                       key={conv.id}
                       onClick={() => handleSelectConv(conv)}
-                      className={`
-                        p-3 rounded-2xl cursor-pointer transition-all border group
-                        ${isSelected ? "bg-indigo-50/50 border-indigo-200 shadow-sm" : "bg-white border-transparent hover:border-slate-200 hover:shadow-sm"}
-                      `}
+                      className={`conv-item ${isSelected ? "active" : ""}`}
                     >
-                      <div className="flex items-start gap-3">
-                        {/* Checkbox wrapper */}
+                      {/* Checkbox wrapper */}
+                      <div
+                        className="checkbox-wrapper"
+                        onClick={(e) => toggleSelect(e, conv.id)}
+                      >
                         <div
-                          className="pt-1 select-none"
-                          onClick={(e) => toggleSelect(e, conv.id)}
+                          className={`checkbox ${isChecked ? "checked" : ""}`}
                         >
-                          <div
-                            className={`w-4 h-4 rounded flex items-center justify-center transition-colors border ${isChecked ? "bg-indigo-500 border-indigo-500" : "border-slate-300 group-hover:border-slate-400"}`}
-                          >
-                            {isChecked && (
-                              <CheckSquare size={12} color="white" />
+                          {isChecked && <CheckSquare size={12} color="white" />}
+                        </div>
+                      </div>
+
+                      {/* Avatar */}
+                      <div className={`avatar ${isSelected ? "active" : ""}`}>
+                        {(conv.lead_name || "K").charAt(0).toUpperCase()}
+                      </div>
+
+                      {/* Info */}
+                      <div className="conv-info">
+                        <div className="info-row">
+                          <h4 className={`name ${isSelected ? "active" : ""}`}>
+                            {conv.lead_name || "Khách vãng lai"}
+                          </h4>
+                          <span className="time">
+                            {new Date(conv.updated_at).toLocaleDateString(
+                              "vi-VN",
+                              { day: "2-digit", month: "2-digit" },
                             )}
-                          </div>
+                          </span>
                         </div>
-
-                        {/* Avatar */}
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${isSelected ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"}`}
-                        >
-                          {(conv.lead_name || "K").charAt(0).toUpperCase()}
-                        </div>
-
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-baseline mb-0.5">
-                            <h4
-                              className={`text-sm truncate pr-2 ${isSelected ? "font-bold text-indigo-900" : "font-semibold text-slate-700"}`}
-                            >
-                              {conv.lead_name || "Khách vãng lai"}
-                            </h4>
-                            <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap shrink-0">
-                              {new Date(conv.updated_at).toLocaleDateString(
-                                "vi-VN",
-                                { day: "2-digit", month: "2-digit" },
-                              )}
-                            </span>
-                          </div>
-                          <p
-                            className={`text-xs truncate ${isSelected ? "text-indigo-600 font-medium" : "text-slate-500"}`}
-                          >
-                            {conv.last_message || "..."}
-                          </p>
-                        </div>
+                        <p className={`msg ${isSelected ? "active" : ""}`}>
+                          {conv.last_message || "..."}
+                        </p>
                       </div>
                     </div>
                   );
@@ -270,35 +213,30 @@ const InboxTab = ({ leads, setEditingLead }) => {
 
           {/* Bulk Action Bar (Floating) */}
           {selectedIds.length > 0 && (
-            <div className="absolute bottom-16 left-3 right-3 bg-slate-800 text-white p-3 rounded-2xl shadow-xl flex items-center justify-between z-20 animate-fade-in">
-              <span className="text-xs font-bold pl-2">
-                Đã chọn {selectedIds.length}
-              </span>
-              <button
-                onClick={handleBulkDelete}
-                className="text-rose-400 bg-slate-700 hover:bg-rose-500 hover:text-white p-1.5 rounded-xl transition-colors"
-              >
+            <div className="bulk-action-bar">
+              <span className="count">Đã chọn {selectedIds.length}</span>
+              <button onClick={handleBulkDelete} className="delete-btn">
                 <Trash2 size={16} />
               </button>
             </div>
           )}
 
           {/* Pagination */}
-          <div className="p-3 border-t border-slate-200 bg-white flex items-center justify-between text-sm font-medium">
+          <div className="pagination">
             <button
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
-              className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30 transition-colors"
+              className="page-btn"
             >
               <ChevronLeft size={18} />
             </button>
-            <span className="text-slate-500 text-xs font-bold">
+            <span className="page-text">
               Trang {page} / {totalPages || 1}
             </span>
             <button
               disabled={page >= totalPages}
               onClick={() => setPage(page + 1)}
-              className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30 transition-colors"
+              className="page-btn"
             >
               <ChevronRight size={18} />
             </button>
@@ -306,22 +244,21 @@ const InboxTab = ({ leads, setEditingLead }) => {
         </div>
 
         {/* RIGHT COLUMN: CHAT PANEL */}
-        <div className="flex-1 flex flex-col bg-slate-50 relative">
+        <div className="inbox-chat">
           {selectedConv ? (
             <>
               {/* Chat Header */}
-              <div className="h-[76px] px-6 border-b border-slate-200 bg-white/80 backdrop-blur-md flex items-center justify-between z-10 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-indigo-200">
+              <div className="chat-header">
+                <div className="chat-title-group">
+                  <div className="chat-avatar">
                     {(selectedConv.lead_name || "K").charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h2 className="text-lg font-black text-slate-800 leading-tight">
+                    <h2 className="chat-name">
                       {selectedConv.lead_name || "Khách vãng lai"}
                     </h2>
-                    <div className="text-xs text-indigo-500 font-bold flex items-center gap-1 mt-0.5">
-                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>{" "}
-                      Meta Messenger
+                    <div className="chat-source">
+                      <span className="dot"></span> Meta Messenger
                     </div>
                   </div>
                 </div>
@@ -338,40 +275,24 @@ const InboxTab = ({ leads, setEditingLead }) => {
                         "Khách hàng này chưa được gán Lead ID nào. Vui lòng tạo lead mới.",
                       );
                   }}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                  className="lead-btn"
                 >
                   <User size={15} /> XEM HỒ SƠ LEAD
                 </button>
               </div>
 
               {/* Messages Area */}
-              <div
-                className="flex-1 overflow-y-auto px-6 py-6"
-                style={{
-                  backgroundImage:
-                    "radial-gradient(#e2e8f0 1px, transparent 1px)",
-                  backgroundSize: "24px 24px",
-                }}
-              >
-                <div className="flex flex-col gap-6">
+              <div className="chat-messages">
+                <div className="messages-list">
                   {messages.map((msg, idx) => {
                     const isStaff = msg.sender_type !== "customer";
                     return (
                       <div
                         key={idx}
-                        className={`flex flex-col ${isStaff ? "items-end" : "items-start"}`}
+                        className={`msg-wrapper ${isStaff ? "staff" : "customer"}`}
                       >
-                        <div
-                          className={`
-                            relative max-w-[75%] px-5 py-3.5 rounded-3xl shadow-sm text-[14px] leading-relaxed
-                            ${isStaff ? "bg-indigo-600 text-white rounded-tr-sm" : "bg-white text-slate-800 rounded-tl-sm border border-slate-100"}
-                          `}
-                        >
-                          {msg.content}
-                        </div>
-                        <div
-                          className={`text-[10px] font-bold text-slate-400 mt-1.5 px-2 flex items-center gap-1 ${isStaff ? "flex-row-reverse" : ""}`}
-                        >
+                        <div className="msg-bubble">{msg.content}</div>
+                        <div className="msg-time">
                           <Clock size={10} /> {formatTime(msg.created_at)}
                         </div>
                       </div>
@@ -380,46 +301,499 @@ const InboxTab = ({ leads, setEditingLead }) => {
                   <div ref={messagesEndRef} />
                 </div>
               </div>
-
-              {/* Chat Input */}
-              <div className="p-5 bg-white border-t border-slate-100">
-                <form
-                  onSubmit={handleSendMessage}
-                  className="flex items-center gap-3"
-                >
-                  <div className="flex-1 relative">
-                    <input
-                      className="w-full bg-slate-50 border border-slate-200 rounded-full px-6 py-4 text-sm font-medium text-slate-800 focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 outline-none transition-all placeholder-slate-400 shadow-inner"
-                      placeholder="Viết tin nhắn phản hồi..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={!newMessage.trim()}
-                    className="w-14 h-14 shrink-0 bg-indigo-600 disabled:bg-slate-300 text-white rounded-full flex items-center justify-center hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
-                  >
-                    <Send size={20} className="ml-1" />
-                  </button>
-                </form>
-              </div>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-300">
-              <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
-                <Send size={40} className="text-slate-300" />
+            <div className="empty-chat">
+              <div className="icon-wrapper">
+                <MessageCircle size={40} className="icon" />
               </div>
-              <h3 className="text-xl font-black text-slate-400">
-                Chưa chọn hội thoại
-              </h3>
-              <p className="text-sm font-medium mt-2">
-                Nhấp vào một khách hàng bên trái để bắt đầu chat
+              <h3 className="title">Chưa chọn hội thoại</h3>
+              <p className="subtitle">
+                Nhấp vào một khách hàng bên trái để xem lịch sử gửi nhận.
               </p>
             </div>
           )}
         </div>
       </div>
+
+      <style>{`
+        .inbox-wrapper {
+          height: calc(100vh - 180px);
+          animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .inbox-container {
+          background-color: white;
+          border-radius: 20px;
+          height: 100%;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+          border: 1px solid #e2e8f0;
+          display: flex;
+          overflow: hidden;
+        }
+
+        /* LEFT SIDEBAR */
+        .inbox-sidebar {
+          width: 340px;
+          border-right: 1px solid #e2e8f0;
+          display: flex;
+          flex-direction: column;
+          background-color: #f8fafc;
+          position: relative;
+        }
+
+        .inbox-header {
+          padding: 20px;
+          border-bottom: 1px solid #e2e8f0;
+          background-color: white;
+          z-index: 10;
+        }
+
+        .inbox-header .title {
+          font-size: 1.125rem;
+          font-weight: 900;
+          color: #1e293b;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 12px;
+        }
+
+        .inbox-header .badge {
+          background-color: #e0e7ff;
+          color: #4f46e5;
+          padding: 2px 10px;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          font-weight: bold;
+        }
+
+        .search-form {
+          position: relative;
+        }
+
+        .search-input {
+          width: 100%;
+          padding: 8px 12px 8px 36px;
+          background-color: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          font-size: 0.875rem;
+          outline: none;
+          transition: all 0.2s;
+        }
+
+        .search-input:focus {
+          background-color: white;
+          border-color: #818cf8;
+          box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #94a3b8;
+        }
+
+        .conv-list {
+          flex: 1;
+          overflow-y: auto;
+          padding: 12px;
+          position: relative;
+        }
+
+        .empty-state {
+          text-align: center;
+          padding: 40px 0;
+          color: #94a3b8;
+          font-size: 0.875rem;
+          font-weight: 500;
+        }
+
+        .conv-items {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .conv-item {
+          padding: 12px;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+          border: 1px solid transparent;
+          background-color: white;
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+        }
+
+        .conv-item:hover {
+          border-color: #e2e8f0;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .conv-item.active {
+          background-color: #eef2ff;
+          border-color: #c7d2fe;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .checkbox-wrapper {
+          padding-top: 4px;
+        }
+
+        .checkbox {
+          width: 16px;
+          height: 16px;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid #cbd5e1;
+          transition: all 0.2s;
+        }
+
+        .conv-item:hover .checkbox {
+          border-color: #94a3b8;
+        }
+
+        .checkbox.checked {
+          background-color: #6366f1;
+          border-color: #6366f1;
+        }
+
+        .avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.875rem;
+          font-weight: bold;
+          flex-shrink: 0;
+          background-color: #e2e8f0;
+          color: #475569;
+        }
+
+        .avatar.active {
+          background-color: #4f46e5;
+          color: white;
+        }
+
+        .conv-info {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          margin-bottom: 2px;
+        }
+
+        .info-row .name {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #334155;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          padding-right: 8px;
+        }
+
+        .info-row .name.active {
+          font-weight: 700;
+          color: #312e81;
+        }
+
+        .info-row .time {
+          font-size: 0.65rem;
+          color: #94a3b8;
+          font-weight: 500;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+
+        .conv-info .msg {
+          font-size: 0.75rem;
+          color: #64748b;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .conv-info .msg.active {
+          color: #4f46e5;
+          font-weight: 500;
+        }
+
+        .bulk-action-bar {
+          position: absolute;
+          bottom: 60px;
+          left: 12px;
+          right: 12px;
+          background-color: #1e293b;
+          color: white;
+          padding: 12px;
+          border-radius: 12px;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          z-index: 20;
+          animation: fadeIn 0.2s ease-out;
+        }
+
+        .bulk-action-bar .count {
+          font-size: 0.75rem;
+          font-weight: bold;
+          padding-left: 8px;
+        }
+
+        .bulk-action-bar .delete-btn {
+          color: #fb7185;
+          background-color: #334155;
+          padding: 6px;
+          border-radius: 8px;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .bulk-action-bar .delete-btn:hover {
+          background-color: #e11d48;
+          color: white;
+        }
+
+        .pagination {
+          padding: 12px;
+          border-top: 1px solid #e2e8f0;
+          background-color: white;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .page-btn {
+          padding: 6px;
+          border-radius: 6px;
+          color: #64748b;
+          transition: all 0.2s;
+        }
+
+        .page-btn:hover:not(:disabled) {
+          background-color: #f1f5f9;
+        }
+
+        .page-btn:disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+        }
+
+        .page-text {
+          font-size: 0.75rem;
+          font-weight: bold;
+          color: #64748b;
+        }
+
+        /* RIGHT CHAT PANEL */
+        .inbox-chat {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          background-color: #f8fafc;
+          position: relative;
+        }
+
+        .chat-header {
+          height: 76px;
+          padding: 0 24px;
+          border-bottom: 1px solid #e2e8f0;
+          background-color: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(8px);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          z-index: 10;
+          box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.05);
+        }
+
+        .chat-title-group {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .chat-avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 24px;
+          background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+          font-size: 1.125rem;
+          box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+        }
+
+        .chat-name {
+          font-size: 1.125rem;
+          font-weight: 900;
+          color: #1e293b;
+          margin-bottom: 2px;
+        }
+
+        .chat-source {
+          font-size: 0.75rem;
+          color: #6366f1;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .chat-source .dot {
+          width: 8px;
+          height: 8px;
+          background-color: #10b981;
+          border-radius: 4px;
+          animation: pulse 2s infinite;
+        }
+
+        .lead-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 16px;
+          background-color: #eef2ff;
+          color: #4338ca;
+          border-radius: 10px;
+          font-size: 0.75rem;
+          font-weight: bold;
+          transition: all 0.2s;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .lead-btn:hover {
+          background-color: #4f46e5;
+          color: white;
+        }
+
+        .chat-messages {
+          flex: 1;
+          overflow-y: auto;
+          padding: 24px;
+          background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+          background-size: 24px 24px;
+        }
+
+        .messages-list {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        .msg-wrapper {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .msg-wrapper.staff {
+          align-items: flex-end;
+        }
+
+        .msg-wrapper.customer {
+          align-items: flex-start;
+        }
+
+        .msg-bubble {
+          max-width: 75%;
+          padding: 14px 20px;
+          border-radius: 24px;
+          font-size: 0.875rem;
+          line-height: 1.5;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .msg-wrapper.staff .msg-bubble {
+          background-color: #4f46e5;
+          color: white;
+          border-top-right-radius: 4px;
+        }
+
+        .msg-wrapper.customer .msg-bubble {
+          background-color: white;
+          color: #1e293b;
+          border-top-left-radius: 4px;
+          border: 1px solid #f1f5f9;
+        }
+
+        .msg-time {
+          font-size: 0.65rem;
+          font-weight: bold;
+          color: #94a3b8;
+          margin-top: 6px;
+          padding: 0 8px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .msg-wrapper.staff .msg-time {
+          flex-direction: row-reverse;
+        }
+
+        .empty-chat {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          color: #cbd5e1;
+        }
+
+        .empty-chat .icon-wrapper {
+          width: 96px;
+          height: 96px;
+          background-color: #f1f5f9;
+          border-radius: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 24px;
+        }
+
+        .empty-chat .title {
+          font-size: 1.25rem;
+          font-weight: 900;
+          color: #94a3b8;
+        }
+
+        .empty-chat .subtitle {
+          font-size: 0.875rem;
+          font-weight: 500;
+          margin-top: 8px;
+          color: #94a3b8;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 };
