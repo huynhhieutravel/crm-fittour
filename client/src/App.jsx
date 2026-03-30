@@ -1295,7 +1295,7 @@ function AppContent() {
           </div>
         </header>
 
-        {(activeTab === 'dashboard' || activeTab === 'leads') && editingLead ? (
+        {(activeTab === 'dashboard' || activeTab === 'leads' || activeTab === 'inbox') && editingLead ? (
           <EditLeadModal 
             editingLead={editingLead}
             setEditingLead={setEditingLead}

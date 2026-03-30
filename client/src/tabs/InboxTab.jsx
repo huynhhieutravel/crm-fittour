@@ -90,6 +90,37 @@ const InboxTab = ({ leads, setEditingLead }) => {
     );
   };
 
+  const handleDeleteSingle = async () => {
+    if (!selectedConv) return;
+    if (
+      !window.confirm(
+        `Bạn có chắc chắn muốn xóa hội thoại của khách hàng này? Mọi tin nhắn sẽ bị xóa vĩnh viễn.`,
+      )
+    )
+      return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        "/api/messages/conversations/delete",
+        { ids: [selectedConv.id] },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      // Remove from selected list if there
+      if(selectedIds.includes(selectedConv.id)) {
+        setSelectedIds(prev => prev.filter(x => x !== selectedConv.id));
+      }
+      setSelectedConv(null);
+      setMessages([]);
+      fetchConversations();
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi xóa: " + err.message);
+    }
+  };
+
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
     if (
@@ -263,22 +294,27 @@ const InboxTab = ({ leads, setEditingLead }) => {
                   </div>
                 </div>
 
-                {/* Lead Connect Button */}
-                <button
-                  onClick={() => {
-                    const leadLink = leads.find(
-                      (l) => l.id === selectedConv.lead_id,
-                    );
-                    if (leadLink) setEditingLead(leadLink);
-                    else
-                      alert(
-                        "Khách hàng này chưa được gán Lead ID nào. Vui lòng tạo lead mới.",
+                {/* Action Buttons */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button onClick={handleDeleteSingle} className="inbox-danger-btn">
+                    <Trash2 size={15} /> XÓA
+                  </button>
+                  <button
+                    onClick={() => {
+                      const leadLink = leads.find(
+                        (l) => l.id === selectedConv.lead_id,
                       );
-                  }}
-                  className="lead-btn"
-                >
-                  <User size={15} /> XEM HỒ SƠ LEAD
-                </button>
+                      if (leadLink) setEditingLead(leadLink);
+                      else
+                        alert(
+                          "Khách hàng này chưa được gán Lead ID nào. Vui lòng tạo lead mới.",
+                        );
+                    }}
+                    className="inbox-action-btn"
+                  >
+                    <User size={15} /> XEM HỒ SƠ LEAD
+                  </button>
+                </div>
               </div>
 
               {/* Messages Area */}
@@ -668,23 +704,46 @@ const InboxTab = ({ leads, setEditingLead }) => {
           animation: pulse 2s infinite;
         }
 
-        .lead-btn {
+        .inbox-action-btn {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 10px 16px;
-          background-color: #eef2ff;
-          color: #4338ca;
-          border-radius: 10px;
+          padding: 8px 14px;
+          background-color: #f1f5f9;
+          color: #334155;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
           font-size: 0.75rem;
           font-weight: bold;
           transition: all 0.2s;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+          cursor: pointer;
         }
 
-        .lead-btn:hover {
-          background-color: #4f46e5;
+        .inbox-action-btn:hover {
+          background-color: #6366f1;
           color: white;
+          border-color: #6366f1;
+        }
+
+        .inbox-danger-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 14px;
+          background-color: transparent;
+          color: #ef4444;
+          border: 1px dashed #fca5a5;
+          border-radius: 8px;
+          font-size: 0.75rem;
+          font-weight: bold;
+          transition: all 0.2s;
+          cursor: pointer;
+        }
+
+        .inbox-danger-btn:hover {
+          background-color: #ef4444;
+          color: white;
+          border-style: solid;
         }
 
         .chat-messages {
