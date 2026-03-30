@@ -27,7 +27,7 @@ exports.handleMessage = async (sender_psid, received_message) => {
                 const dbToken = await getSetting('meta_page_access_token');
                 const token = dbToken || PAGE_ACCESS_TOKEN_ENV;
                 if (token) {
-                    const profileRes = await axios.get(`https://graph.facebook.com/v21.0/${sender_psid}?fields=first_name,last_name,profile_pic&access_token=${token}`);
+                    const profileRes = await axios.get(`https://graph.facebook.com/v25.0/${sender_psid}?fields=first_name,last_name,profile_pic&access_token=${token}`);
                     if (profileRes.data && (profileRes.data.first_name || profileRes.data.last_name)) {
                         senderName = `${profileRes.data.first_name || ''} ${profileRes.data.last_name || ''}`.trim();
                     }
@@ -72,7 +72,7 @@ exports.handleMessage = async (sender_psid, received_message) => {
     }
 
     // Gửi phản hồi qua Graph API
-    await this.callSendAPI(sender_psid, response);
+    await exports.callSendAPI(sender_psid, response);
 };
 
 exports.handlePostback = async (sender_psid, received_postback) => {
@@ -83,7 +83,7 @@ exports.handlePostback = async (sender_psid, received_postback) => {
         response = { "text": "Chào mừng bạn đến với FIT Tour! Bạn đang quan tâm đến tour du lịch nào?" };
     }
 
-    await this.callSendAPI(sender_psid, response);
+    await exports.callSendAPI(sender_psid, response);
 };
 
 exports.callSendAPI = async (sender_psid, response) => {
@@ -96,7 +96,7 @@ exports.callSendAPI = async (sender_psid, response) => {
             return;
         }
 
-        await axios.post(`https://graph.facebook.com/v21.0/me/messages?access_token=${token}`, {
+        await axios.post(`https://graph.facebook.com/v25.0/me/messages?access_token=${token}`, {
             recipient: { id: sender_psid },
             message: response
         });
@@ -115,7 +115,7 @@ exports.getSubscribedApps = async (customToken) => {
         try {
             // 1. Thử gọi trực tiếp (Dành cho Page Token)
             console.log('Attempting direct subscribed_apps call...');
-            const response = await axios.get(`https://graph.facebook.com/v21.0/me/subscribed_apps?access_token=${token}`);
+            const response = await axios.get(`https://graph.facebook.com/v25.0/me/subscribed_apps?access_token=${token}`);
             return response.data;
         } catch (pageError) {
             // 2. Nếu lỗi (có thể là User Token), thử lấy danh sách Page
@@ -124,7 +124,7 @@ exports.getSubscribedApps = async (customToken) => {
             if (isUserTokenError) {
                 console.log('Detected User Token, trying to fetch Page Accounts...');
                 try {
-                    const accountsRes = await axios.get(`https://graph.facebook.com/v21.0/me/accounts?access_token=${token}`);
+                    const accountsRes = await axios.get(`https://graph.facebook.com/v25.0/me/accounts?access_token=${token}`);
                     const pages = accountsRes.data.data;
                     console.log(`Found ${pages ? pages.length : 0} pages associated with this token.`);
                     
@@ -136,27 +136,27 @@ exports.getSubscribedApps = async (customToken) => {
                                 const pageToken = page.access_token;
                                 
                                 // 1. Quyền pages_manage_metadata (BẮT BUỘC PHẢI DÙNG POST ĐỂ ĐĂNG KÝ)
-                                const subRes = await axios.post(`https://graph.facebook.com/v21.0/me/subscribed_apps?access_token=${pageToken}`, {
+                                const subRes = await axios.post(`https://graph.facebook.com/v25.0/me/subscribed_apps?access_token=${pageToken}`, {
                                     subscribed_fields: ['messages', 'messaging_postbacks', 'messaging_optins', 'message_deliveries']
                                 });
                                 console.log(`- Subscribed Apps POST: SUCCESS (${JSON.stringify(subRes.data)})`);
                                 
                                 // 2. Quyền pages_read_engagement & public_profile
-                                const meRes = await axios.get(`https://graph.facebook.com/v21.0/me?fields=id,name,category,about,description,location,new_like_count,fan_count&access_token=${pageToken}`);
+                                const meRes = await axios.get(`https://graph.facebook.com/v25.0/me?fields=id,name,category,about,description,location,new_like_count,fan_count&access_token=${pageToken}`);
                                 console.log(`- Page Info GET: SUCCESS (${meRes.data.name})`);
                                 
                                 // 3. Quyền pages_messaging & pages_utility_messaging
-                                const convRes = await axios.get(`https://graph.facebook.com/v21.0/me/conversations?access_token=${pageToken}`);
+                                const convRes = await axios.get(`https://graph.facebook.com/v25.0/me/conversations?access_token=${pageToken}`);
                                 console.log(`- Conversations GET: SUCCESS (Found ${convRes.data.data ? convRes.data.data.length : 0} threads)`);
                                 
                                 if (convRes.data.data && convRes.data.data.length > 0) {
                                     const firstThread = convRes.data.data[0];
                                     // Lấy PSID từ thread
-                                    const threadDetail = await axios.get(`https://graph.facebook.com/v21.0/${firstThread.id}?fields=participants&access_token=${pageToken}`);
+                                    const threadDetail = await axios.get(`https://graph.facebook.com/v25.0/${firstThread.id}?fields=participants&access_token=${pageToken}`);
                                     const psid = threadDetail.data.participants.data[0].id;
                                     
                                     console.log(`- Found Real PSID: ${psid}. Sending Test Message...`);
-                                    await axios.post(`https://graph.facebook.com/v21.0/me/messages?access_token=${pageToken}`, {
+                                    await axios.post(`https://graph.facebook.com/v25.0/me/messages?access_token=${pageToken}`, {
                                         recipient: { id: psid },
                                         message: { text: "Meta Review Test: FIT Tour CRM messaging integration is working perfectly." }
                                     });
@@ -188,7 +188,7 @@ exports.getSubscribedApps = async (customToken) => {
                 }
                 
                 // Fallback cuối cùng
-                const resMe = await axios.get(`https://graph.facebook.com/v21.0/me?fields=id,name&access_token=${token}`);
+                const resMe = await axios.get(`https://graph.facebook.com/v25.0/me?fields=id,name&access_token=${token}`);
                 return { ...resMe.data, note: 'Kích hoạt Profile cá nhân thành công' };
             }
             throw pageError;
@@ -209,7 +209,7 @@ exports.handleLeadAd = async (leadgen_id, page_id) => {
         }
 
         // Fetch lead details from Meta Graph API
-        const response = await axios.get(`https://graph.facebook.com/v21.0/${leadgen_id}?access_token=${token}`);
+        const response = await axios.get(`https://graph.facebook.com/v25.0/${leadgen_id}?access_token=${token}`);
         const leadData = response.data;
         
         console.log('Received Lead Ad Data:', JSON.stringify(leadData));

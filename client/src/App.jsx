@@ -907,8 +907,16 @@ function AppContent() {
     try {
       const token = localStorage.getItem('token');
       const apiPath = type === 'capi' ? '/api/settings/test-capi' : '/api/messages/test-meta';
-      const payload = type === 'capi' ? {} : { token: metaToken };
+      // Always use current metaSettings value, not stale metaToken state
+      const currentPageToken = metaSettings?.meta_page_access_token || metaToken;
+      const payload = type === 'capi' ? {} : { token: currentPageToken };
       
+      if (type !== 'capi' && !currentPageToken) {
+        addToast('Vui lòng nhập Page Access Token trước khi kiểm tra!');
+        setTestLoading(false);
+        return;
+      }
+
       const res = await axios.post(apiPath, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -919,7 +927,7 @@ function AppContent() {
         addToast(res.data.error || 'Kiểm tra thất bại.');
       }
     } catch (err) {
-      addToast(err.response?.data?.error || 'Lỗi kết nối Meta.');
+      addToast(err.response?.data?.error || err.response?.data?.message || 'Lỗi kết nối Meta.');
     } finally {
       setTestLoading(false);
       fetchSettings();
