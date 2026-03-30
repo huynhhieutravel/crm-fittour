@@ -403,12 +403,19 @@ const StaffPerformanceTab = () => {
                 <tbody>
                   {staffData.map((s, idx) => (
                     <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
-                      <td className="py-3 font-bold text-slate-700">{s.name}</td>
+                      <td className="py-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${idx < 3 ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'}`}>
+                            {idx + 1}
+                          </div>
+                          <div className="font-bold text-slate-700">{s.name}</div>
+                        </div>
+                      </td>
                       <td className="py-3 text-center text-slate-500 font-medium">{s.total_leads}</td>
                       <td className="py-3 text-center text-teal-600 font-bold">{s.won_leads}</td>
                       <td className="py-3 text-right">
-                        <span className={`px-2 py-1 rounded-lg font-bold text-xs ${parseFloat(s.conversion) > 20 ? 'bg-teal-50 text-teal-600' :
-                            parseFloat(s.conversion) > 10 ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-400'
+                        <span className={`px-2 py-1.5 rounded-xl font-bold text-[11px] ${parseFloat(s.conversion) > 20 ? 'bg-emerald-100 text-emerald-700' :
+                            parseFloat(s.conversion) > 10 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'
                           }`}>
                           {s.conversion}%
                         </span>
@@ -568,6 +575,7 @@ const StaffPerformanceTab = () => {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: 1.5rem;
+          margin-bottom: 3.5rem;
         }
         .stat-card.premium {
           padding: 2rem;
@@ -635,7 +643,8 @@ const StaffPerformanceTab = () => {
         .analytics-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 2rem;
+          gap: 2.5rem;
+          margin-bottom: 2.5rem;
         }
 
         @media (max-width: 1200px) {

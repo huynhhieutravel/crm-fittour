@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 import {
   Users,
   TrendingUp,
@@ -14,8 +14,9 @@ import {
   Globe,
   Briefcase,
   CheckCircle,
-  Activity
-} from 'lucide-react';
+  Activity,
+  Phone,
+} from "lucide-react";
 import {
   PieChart,
   Pie,
@@ -28,107 +29,121 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  LabelList
-} from 'recharts';
+  LabelList,
+} from "recharts";
 
 const LeadsDashboardTab = ({ setEditingLead }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dateFilter, setDateFilter] = useState('month');
+  const [dateFilter, setDateFilter] = useState("month");
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-  const [selectedQuarter, setSelectedQuarter] = useState(Math.floor(new Date().getMonth() / 3) + 1);
+  const [selectedQuarter, setSelectedQuarter] = useState(
+    Math.floor(new Date().getMonth() / 3) + 1,
+  );
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [customRange, setCustomRange] = useState({
-    startDate: '',
-    endDate: ''
+    startDate: "",
+    endDate: "",
   });
 
-  const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+  const COLORS = [
+    "#6366f1",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#ec4899",
+    "#06b6d4",
+    "#f97316",
+  ];
 
   const formatLocalDate = (date) => {
     if (!date || isNaN(new Date(date).getTime())) return "";
     try {
       const d = new Date(date);
       const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
     } catch (e) {
       return "";
     }
   };
 
-  const getDateRange = useCallback((filter) => {
-    const now = new Date();
-    let start = new Date();
-    let end = new Date();
+  const getDateRange = useCallback(
+    (filter) => {
+      const now = new Date();
+      let start = new Date();
+      let end = new Date();
 
-    switch (filter) {
-      case 'today':
-        start.setHours(0, 0, 0, 0);
-        break;
-      case 'yesterday':
-        start.setDate(start.getDate() - 1);
-        start.setHours(0, 0, 0, 0);
-        end.setDate(end.getDate() - 1);
-        end.setHours(23, 59, 59, 999);
-        break;
-      case 'week':
-        const day = start.getDay() || 7;
-        if (day !== 1) start.setHours(-24 * (day - 1));
-        start.setHours(0, 0, 0, 0);
-        break;
-      case 'month':
-        start = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
-      case 'month-select':
-        start = new Date(selectedYear, selectedMonth, 1);
-        end = new Date(selectedYear, selectedMonth + 1, 0);
-        break;
-      case 'quarter':
-        start = new Date(selectedYear, (selectedQuarter - 1) * 3, 1);
-        const qEndMonth = (selectedQuarter - 1) * 3 + 3;
-        end = new Date(selectedYear, qEndMonth, 0);
-        break;
-      case 'year':
-        start = new Date(selectedYear, 0, 1);
-        end = new Date(selectedYear, 12, 0);
-        break;
-      case 'custom':
-        return customRange;
-      default:
-        return { startDate: '', endDate: '' };
-    }
+      switch (filter) {
+        case "today":
+          start.setHours(0, 0, 0, 0);
+          break;
+        case "yesterday":
+          start.setDate(start.getDate() - 1);
+          start.setHours(0, 0, 0, 0);
+          end.setDate(end.getDate() - 1);
+          end.setHours(23, 59, 59, 999);
+          break;
+        case "week":
+          const day = start.getDay() || 7;
+          if (day !== 1) start.setHours(-24 * (day - 1));
+          start.setHours(0, 0, 0, 0);
+          break;
+        case "month":
+          start = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+        case "month-select":
+          start = new Date(selectedYear, selectedMonth, 1);
+          end = new Date(selectedYear, selectedMonth + 1, 0);
+          break;
+        case "quarter":
+          start = new Date(selectedYear, (selectedQuarter - 1) * 3, 1);
+          const qEndMonth = (selectedQuarter - 1) * 3 + 3;
+          end = new Date(selectedYear, qEndMonth, 0);
+          break;
+        case "year":
+          start = new Date(selectedYear, 0, 1);
+          end = new Date(selectedYear, 12, 0);
+          break;
+        case "custom":
+          return customRange;
+        default:
+          return { startDate: "", endDate: "" };
+      }
 
-    return {
-      startDate: formatLocalDate(start),
-      endDate: formatLocalDate(end)
-    };
-  }, [customRange, selectedMonth, selectedYear, selectedQuarter]);
+      return {
+        startDate: formatLocalDate(start),
+        endDate: formatLocalDate(end),
+      };
+    },
+    [customRange, selectedMonth, selectedYear, selectedQuarter],
+  );
 
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const { startDate, endDate } = getDateRange(dateFilter);
 
       const params = new URLSearchParams();
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
+      if (startDate) params.append("startDate", startDate);
+      if (endDate) params.append("endDate", endDate);
 
       const res = await axios.get(`/api/leads/stats?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setStats(res.data);
     } catch (err) {
-      console.error('Error fetching lead stats:', err);
+      console.error("Error fetching lead stats:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const quickFilters = ['today', 'yesterday', 'week', 'month'];
+    const quickFilters = ["today", "yesterday", "week", "month"];
     if (quickFilters.includes(dateFilter)) {
       fetchStats();
     }
@@ -143,25 +158,43 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
       <div className="flex items-center justify-center min-h-[400px] text-slate-400 font-medium bg-slate-900/10 rounded-3xl m-8">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
-          <span className="text-indigo-500 font-bold tracking-wider">ĐANG TẢI DỮ LIỆU DASHBOARD...</span>
+          <span className="text-indigo-500 font-bold tracking-wider">
+            ĐANG TẢI DỮ LIỆU DASHBOARD...
+          </span>
         </div>
       </div>
     );
   }
 
   // Calculate derived stats
-  const totalLeads = stats.statusStats.reduce((acc, curr) => acc + curr.count, 0);
-  const wonLeads = stats.statusStats.find(s => s.status === 'Chốt đơn')?.count || 0;
-  const conversionRate = totalLeads > 0 ? ((wonLeads / totalLeads) * 100).toFixed(1) : 0;
-  const newLeads = stats.statusStats.find(s => s.status === 'Mới')?.count || 0;
+  const totalLeads = stats.statusStats.reduce(
+    (acc, curr) => acc + curr.count,
+    0,
+  );
+  const wonLeads =
+    stats.statusStats.find((s) => s.status === "Chốt đơn")?.count || 0;
+  const conversionRate =
+    totalLeads > 0 ? ((wonLeads / totalLeads) * 100).toFixed(1) : 0;
+  const newLeads =
+    stats.statusStats.find((s) => s.status === "Mới")?.count || 0;
 
   const monthOptions = [
-    "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
-    "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+    "Tháng 1",
+    "Tháng 2",
+    "Tháng 3",
+    "Tháng 4",
+    "Tháng 5",
+    "Tháng 6",
+    "Tháng 7",
+    "Tháng 8",
+    "Tháng 9",
+    "Tháng 10",
+    "Tháng 11",
+    "Tháng 12",
   ];
 
-  const quickFilters = ['today', 'yesterday', 'week', 'month'];
-  const advancedFilters = ['month-select', 'quarter', 'year', 'custom'];
+  const quickFilters = ["today", "yesterday", "week", "month"];
+  const advancedFilters = ["month-select", "quarter", "year", "custom"];
 
   return (
     <div className="dashboard-content">
@@ -175,11 +208,15 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                 <button
                   key={f}
                   onClick={() => setDateFilter(f)}
-                  className={`segment-btn ${dateFilter === f ? 'active' : ''}`}
+                  className={`segment-btn ${dateFilter === f ? "active" : ""}`}
                 >
-                  {f === 'today' ? 'Hôm nay' :
-                    f === 'yesterday' ? 'Hôm qua' :
-                    f === 'week' ? 'Tuần này' : 'Tháng này'}
+                  {f === "today"
+                    ? "Hôm nay"
+                    : f === "yesterday"
+                      ? "Hôm qua"
+                      : f === "week"
+                        ? "Tuần này"
+                        : "Tháng này"}
                 </button>
               ))}
             </div>
@@ -193,63 +230,80 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                 <button
                   key={f}
                   onClick={() => setDateFilter(f)}
-                  className={`segment-btn ${dateFilter === f ? 'active' : ''}`}
+                  className={`segment-btn ${dateFilter === f ? "active" : ""}`}
                 >
-                  {f === 'month-select' ? 'Tháng' :
-                    f === 'quarter' ? 'Quý' :
-                      f === 'year' ? 'Năm' : 'Tùy chọn'}
+                  {f === "month-select"
+                    ? "Tháng"
+                    : f === "quarter"
+                      ? "Quý"
+                      : f === "year"
+                        ? "Năm"
+                        : "Tùy chọn"}
                 </button>
               ))}
             </div>
 
             {/* Dynamic Inputs (Flattened) */}
-            {dateFilter === 'month-select' && (
+            {dateFilter === "month-select" && (
               <div className="executive-select-wrapper">
                 <select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
                 >
                   {monthOptions.map((m, i) => (
-                    <option key={i} value={i}>{m}</option>
+                    <option key={i} value={i}>
+                      {m}
+                    </option>
                   ))}
                 </select>
               </div>
             )}
 
-            {dateFilter === 'quarter' && (
+            {dateFilter === "quarter" && (
               <div className="executive-select-wrapper">
                 <select
                   value={selectedQuarter}
                   onChange={(e) => setSelectedQuarter(parseInt(e.target.value))}
                 >
-                  {[1, 2, 3, 4].map(q => (
-                    <option key={q} value={q}>Quý {q}</option>
+                  {[1, 2, 3, 4].map((q) => (
+                    <option key={q} value={q}>
+                      Quý {q}
+                    </option>
                   ))}
                 </select>
               </div>
             )}
 
-            {(dateFilter === 'month-select' || dateFilter === 'quarter' || dateFilter === 'year') && (
+            {(dateFilter === "month-select" ||
+              dateFilter === "quarter" ||
+              dateFilter === "year") && (
               <div className="executive-select-wrapper">
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(parseInt(e.target.value))}
                 >
-                  {[2023, 2024, 2025, 2026].map(y => (
-                    <option key={y} value={y}>Năm {y}</option>
+                  {[2023, 2024, 2025, 2026].map((y) => (
+                    <option key={y} value={y}>
+                      Năm {y}
+                    </option>
                   ))}
                 </select>
               </div>
             )}
 
-            {dateFilter === 'custom' && (
+            {dateFilter === "custom" && (
               <div className="flex flex-row flex-nowrap items-center gap-3">
                 <div className="date-input-group premium">
                   <Calendar size={13} className="text-indigo-500" />
                   <input
                     type="date"
                     value={customRange.startDate}
-                    onChange={e => setCustomRange({ ...customRange, startDate: e.target.value })}
+                    onChange={(e) =>
+                      setCustomRange({
+                        ...customRange,
+                        startDate: e.target.value,
+                      })
+                    }
                   />
                 </div>
                 <span className="text-slate-300 font-bold">→</span>
@@ -258,7 +312,12 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                   <input
                     type="date"
                     value={customRange.endDate}
-                    onChange={e => setCustomRange({ ...customRange, endDate: e.target.value })}
+                    onChange={(e) =>
+                      setCustomRange({
+                        ...customRange,
+                        endDate: e.target.value,
+                      })
+                    }
                   />
                 </div>
               </div>
@@ -266,10 +325,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
 
             {/* Final Action */}
             {advancedFilters.includes(dateFilter) && (
-              <button
-                onClick={fetchStats}
-                className="confirm-btn-premium"
-              >
+              <button onClick={fetchStats} className="confirm-btn-premium">
                 <Filter size={14} />
                 <span>Xác nhận</span>
               </button>
@@ -284,7 +340,9 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
           <div className="stat-content">
             <div className="stat-header">
               <span className="stat-label">TỔNG LEADS</span>
-              <div className="stat-icon-glass"><Users size={20} /></div>
+              <div className="stat-icon-glass">
+                <Users size={20} />
+              </div>
             </div>
             <div className="stat-value">{totalLeads}</div>
             <div className="stat-footer">
@@ -298,7 +356,9 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
           <div className="stat-content">
             <div className="stat-header">
               <span className="stat-label">TY LỆ CHỐT</span>
-              <div className="stat-icon-glass"><TrendingUp size={20} /></div>
+              <div className="stat-icon-glass">
+                <TrendingUp size={20} />
+              </div>
             </div>
             <div className="stat-value">{conversionRate}%</div>
             <div className="stat-footer">
@@ -312,7 +372,9 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
           <div className="stat-content">
             <div className="stat-header">
               <span className="stat-label">LEAD MỚI</span>
-              <div className="stat-icon-glass"><Target size={20} /></div>
+              <div className="stat-icon-glass">
+                <Target size={20} />
+              </div>
             </div>
             <div className="stat-value">{newLeads}</div>
             <div className="stat-footer">
@@ -326,7 +388,9 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
           <div className="stat-content">
             <div className="stat-header">
               <span className="stat-label">LEAD THÀNH CÔNG</span>
-              <div className="stat-icon-glass"><CheckCircle size={20} /></div>
+              <div className="stat-icon-glass">
+                <CheckCircle size={20} />
+              </div>
             </div>
             <div className="stat-value">{wonLeads}</div>
             <div className="stat-footer">
@@ -347,9 +411,9 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
             </div>
             <PieChartIcon size={20} className="text-indigo-500" />
           </div>
-          <div className="mt-6" style={{ height: '320px', width: '100%' }}>
+          <div className="mt-6" style={{ height: "320px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+              <PieChart margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
                 <Pie
                   data={stats.statusStats}
                   cx="50%"
@@ -360,14 +424,25 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                   dataKey="count"
                   nameKey="status"
                   isAnimationActive={false}
-                  label={({ status, percent }) => `${status}: ${(percent * 100).toFixed(0)}%`}
+                  label={({ status, percent }) =>
+                    `${status}: ${(percent * 100).toFixed(0)}%`
+                  }
                 >
                   {stats.statusStats.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cornerRadius={8} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                      cornerRadius={8}
+                    />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', padding: '12px' }}
+                  contentStyle={{
+                    borderRadius: "16px",
+                    border: "none",
+                    boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+                    padding: "12px",
+                  }}
                 />
                 <Legend verticalAlign="bottom" height={36} iconType="circle" />
               </PieChart>
@@ -379,13 +454,15 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
           <div className="card-header">
             <div>
               <h3>Phân bổ theo Khối (BU)</h3>
-              <p className="card-subtitle">Hiệu suất theo từng đơn vị kinh doanh</p>
+              <p className="card-subtitle">
+                Hiệu suất theo từng đơn vị kinh doanh
+              </p>
             </div>
             <Briefcase size={20} className="text-violet-500" />
           </div>
-          <div className="mt-6" style={{ height: '320px', width: '100%' }}>
+          <div className="mt-6" style={{ height: "320px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+              <PieChart margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
                 <Pie
                   data={stats.buStats}
                   cx="50%"
@@ -396,14 +473,25 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                   dataKey="count"
                   nameKey="name"
                   isAnimationActive={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) =>
+                    `${name}: ${(percent * 100).toFixed(0)}%`
+                  }
                 >
                   {stats.buStats.map((entry, index) => (
-                    <Cell key={`cell-bu-${index}`} fill={COLORS[(index + 4) % COLORS.length]} cornerRadius={8} />
+                    <Cell
+                      key={`cell-bu-${index}`}
+                      fill={COLORS[(index + 4) % COLORS.length]}
+                      cornerRadius={8}
+                    />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', padding: '12px' }}
+                  contentStyle={{
+                    borderRadius: "16px",
+                    border: "none",
+                    boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+                    padding: "12px",
+                  }}
                 />
                 <Legend verticalAlign="bottom" height={36} iconType="circle" />
               </PieChart>
@@ -422,29 +510,59 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
             </div>
             <BarChart3 size={20} className="text-amber-500" />
           </div>
-          <div className="mt-8" style={{ height: '350px', width: '100%' }}>
+          <div className="mt-8" style={{ height: "350px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.sourceStats} layout="vertical" margin={{ left: 20, right: 30, top: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
+              <BarChart
+                data={stats.sourceStats}
+                layout="vertical"
+                margin={{ left: 20, right: 30, top: 10 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  horizontal={true}
+                  vertical={false}
+                  stroke="#f1f5f9"
+                />
                 <XAxis type="number" hide />
                 <YAxis
                   type="category"
                   dataKey="source"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fontWeight: 700, fill: '#475569' }}
+                  tick={{ fontSize: 12, fontWeight: 700, fill: "#475569" }}
                   width={100}
                 />
                 <Tooltip
-                  cursor={{ fill: '#f8fafc' }}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}
-                  formatter={(value) => [`${value} leads`, 'Số lượng']}
+                  cursor={{ fill: "#f8fafc" }}
+                  contentStyle={{
+                    borderRadius: "12px",
+                    border: "none",
+                    boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+                  }}
+                  formatter={(value) => [`${value} leads`, "Số lượng"]}
                 />
-                <Bar dataKey="count" fill="#f59e0b" radius={[0, 8, 8, 0]} barSize={24} isAnimationActive={false}>
+                <Bar
+                  dataKey="count"
+                  fill="#f59e0b"
+                  radius={[0, 8, 8, 0]}
+                  barSize={24}
+                  isAnimationActive={false}
+                >
                   {stats.sourceStats.map((entry, index) => (
-                    <Cell key={`cell-source-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-source-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
-                  <LabelList dataKey="count" position="right" style={{ fontSize: '11px', fontWeight: 'bold', fill: '#64748b' }} />
+                  <LabelList
+                    dataKey="count"
+                    position="right"
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: "bold",
+                      fill: "#64748b",
+                    }}
+                  />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -455,29 +573,58 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
           <div className="card-header">
             <div>
               <h3>Phân bổ theo Quốc gia</h3>
-              <p className="card-subtitle">Sức hút theo từng địa điểm du lịch</p>
+              <p className="card-subtitle">
+                Sức hút theo từng địa điểm du lịch
+              </p>
             </div>
             <Globe size={20} className="text-cyan-500" />
           </div>
-          <div className="mt-8" style={{ height: '350px', width: '100%' }}>
+          <div className="mt-8" style={{ height: "350px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.destinationStats} layout="vertical" margin={{ left: 20, right: 30, top: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
+              <BarChart
+                data={stats.destinationStats}
+                layout="vertical"
+                margin={{ left: 20, right: 30, top: 10 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  horizontal={true}
+                  vertical={false}
+                  stroke="#f1f5f9"
+                />
                 <XAxis type="number" hide />
                 <YAxis
                   type="category"
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fontWeight: 700, fill: '#475569' }}
+                  tick={{ fontSize: 12, fontWeight: 700, fill: "#475569" }}
                   width={100}
                 />
                 <Tooltip
-                  cursor={{ fill: '#f8fafc' }}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}
+                  cursor={{ fill: "#f8fafc" }}
+                  contentStyle={{
+                    borderRadius: "12px",
+                    border: "none",
+                    boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+                  }}
                 />
-                <Bar dataKey="count" fill="#06b6d4" radius={[0, 8, 8, 0]} barSize={24} isAnimationActive={false}>
-                  <LabelList dataKey="count" position="right" style={{ fontSize: '11px', fontWeight: 'bold', fill: '#64748b' }} />
+                <Bar
+                  dataKey="count"
+                  fill="#06b6d4"
+                  radius={[0, 8, 8, 0]}
+                  barSize={24}
+                  isAnimationActive={false}
+                >
+                  <LabelList
+                    dataKey="count"
+                    position="right"
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: "bold",
+                      fill: "#64748b",
+                    }}
+                  />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -491,13 +638,15 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
           <div className="card-header">
             <div>
               <h3>Phân loại Chất lượng Lead</h3>
-              <p className="card-subtitle">Tiềm năng vs Thực tế (Nóng/Ấm/Lạnh/Mới)</p>
+              <p className="card-subtitle">
+                Tiềm năng vs Thực tế (Nóng/Ấm/Lạnh/Mới)
+              </p>
             </div>
             <Target size={20} className="text-rose-500" />
           </div>
-          <div className="mt-6" style={{ height: '320px', width: '100%' }}>
+          <div className="mt-6" style={{ height: "320px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+              <PieChart margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
                 <Pie
                   data={stats.classificationStats}
                   cx="50%"
@@ -513,16 +662,25 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                     <Cell
                       key={`cell-quality-${index}`}
                       fill={
-                        entry.name === 'Nóng' ? '#ef4444' :
-                          entry.name === 'Tiềm năng' ? '#10b981' :
-                            entry.name === 'Ấm' ? '#f59e0b' :
-                              entry.name === 'Lạnh' ? '#6366f1' : COLORS[index % COLORS.length]
+                        entry.name === "Nóng"
+                          ? "#ef4444"
+                          : entry.name === "Tiềm năng"
+                            ? "#10b981"
+                            : entry.name === "Ấm"
+                              ? "#f59e0b"
+                              : entry.name === "Lạnh"
+                                ? "#6366f1"
+                                : COLORS[index % COLORS.length]
                       }
                     />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}
+                  contentStyle={{
+                    borderRadius: "16px",
+                    border: "none",
+                    boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+                  }}
                 />
                 <Legend iconType="circle" />
               </PieChart>
@@ -538,37 +696,68 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
             </div>
             <PieChartIcon size={20} className="text-emerald-500" />
           </div>
-          <div className="mt-8" style={{ height: '350px', width: '100%' }}>
+          <div className="mt-8" style={{ height: "350px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.classificationStats} layout="vertical" margin={{ left: 20, right: 30, top: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
+              <BarChart
+                data={stats.classificationStats}
+                layout="vertical"
+                margin={{ left: 20, right: 30, top: 10 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  horizontal={true}
+                  vertical={false}
+                  stroke="#f1f5f9"
+                />
                 <XAxis type="number" hide />
                 <YAxis
                   type="category"
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fontWeight: 700, fill: '#475569' }}
+                  tick={{ fontSize: 12, fontWeight: 700, fill: "#475569" }}
                   width={100}
                 />
                 <Tooltip
-                  cursor={{ fill: '#f8fafc' }}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}
-                  formatter={(value) => [`${value} leads`, 'Số lượng']}
+                  cursor={{ fill: "#f8fafc" }}
+                  contentStyle={{
+                    borderRadius: "12px",
+                    border: "none",
+                    boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+                  }}
+                  formatter={(value) => [`${value} leads`, "Số lượng"]}
                 />
-                <Bar dataKey="count" radius={[0, 8, 8, 0]} barSize={24} isAnimationActive={false}>
+                <Bar
+                  dataKey="count"
+                  radius={[0, 8, 8, 0]}
+                  barSize={24}
+                  isAnimationActive={false}
+                >
                   {stats.classificationStats.map((entry, index) => (
                     <Cell
                       key={`cell-bar-quality-${index}`}
                       fill={
-                        entry.name === 'Nóng' ? '#ef4444' :
-                          entry.name === 'Tiềm năng' ? '#10b981' :
-                            entry.name === 'Ấm' ? '#f59e0b' :
-                              entry.name === 'Lạnh' ? '#6366f1' : COLORS[index % COLORS.length]
+                        entry.name === "Nóng"
+                          ? "#ef4444"
+                          : entry.name === "Tiềm năng"
+                            ? "#10b981"
+                            : entry.name === "Ấm"
+                              ? "#f59e0b"
+                              : entry.name === "Lạnh"
+                                ? "#6366f1"
+                                : COLORS[index % COLORS.length]
                       }
                     />
                   ))}
-                  <LabelList dataKey="count" position="right" style={{ fontSize: '11px', fontWeight: 'bold', fill: '#64748b' }} />
+                  <LabelList
+                    dataKey="count"
+                    position="right"
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: "bold",
+                      fill: "#64748b",
+                    }}
+                  />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -582,56 +771,79 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
             </div>
             <Activity size={20} className="text-blue-500" />
           </div>
-          <div className="mt-6 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-slate-400 border-b border-slate-50">
-                    <th className="text-left py-3 font-bold text-[10px] uppercase">Khách hàng</th>
-                    <th className="text-left py-3 font-bold text-[10px] uppercase">Trạng thái</th>
-                    <th className="text-right py-3 font-bold text-[10px] uppercase">Thời gian</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.recentLeads && stats.recentLeads.length > 0 ? (
-                    stats.recentLeads.map((lead, idx) => (
-                      <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => setEditingLead(lead)}>
-                        <td className="py-3 pr-2">
-                          <div className="font-bold text-slate-700">{lead.name}</div>
-                          <div className="text-[10px] text-slate-400">{lead.phone || 'Không có SĐT'} • {lead.source || 'Khác'}</div>
-                        </td>
-                        <td className="py-3">
-                          <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
-                            lead.status === 'Mới' ? 'bg-blue-100 text-blue-700' :
-                            lead.status === 'Đang xử lý' ? 'bg-amber-100 text-amber-700' :
-                            lead.status === 'Chốt đơn' ? 'bg-green-100 text-green-700' :
-                            lead.status === 'Thất bại' ? 'bg-red-100 text-red-700' :
-                            'bg-slate-100 text-slate-700'
-                          }`}>
-                            {lead.status}
+          <div className="mt-6">
+            <div className="flex flex-col gap-3">
+              {stats.recentLeads && stats.recentLeads.length > 0 ? (
+                stats.recentLeads.map((lead, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center p-4 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all cursor-pointer border border-transparent hover:border-slate-200"
+                    onClick={() => setEditingLead(lead)}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0 shadow-inner">
+                        {lead.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-800 text-sm">
+                          {lead.name}
+                        </div>
+                        <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-1 font-medium">
+                          {lead.phone || "Không có SĐT"} •{" "}
+                          <span className="text-blue-500">
+                            {lead.source || "Khác"}
                           </span>
-                        </td>
-                        <td className="py-3 text-right">
-                          <div className="text-slate-500 font-medium text-[11px]">
-                            {new Date(lead.created_at).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="3" className="py-10 text-center text-slate-400 font-medium italic">
-                        Chưa có hoạt động mới.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                        <span
+                          className={`px-3 py-1.5 rounded-xl text-[11px] font-bold shadow-sm ${
+                            lead.status === "Mới"
+                              ? "bg-blue-100 text-blue-700"
+                              : lead.status === "Đang xử lý"
+                                ? "bg-amber-100 text-amber-700"
+                                : lead.status === "Chốt đơn"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : lead.status === "Thất bại"
+                                    ? "bg-rose-100 text-rose-700"
+                                    : "bg-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {lead.status}
+                        </span>
+                      </div>
+                      <div className="text-right flex flex-col items-end min-w-[70px]">
+                        <span className="text-[12px] font-bold text-slate-700">
+                          {new Date(lead.created_at).toLocaleString("vi-VN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                        <span className="text-[10px] font-semibold text-slate-400 mt-0.5 uppercase">
+                          {new Date(lead.created_at).toLocaleString("vi-VN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-10 text-center bg-slate-50 border border-slate-100 rounded-2xl">
+                  <Activity size={24} className="text-slate-300 mx-auto mb-2" />
+                  <div className="text-slate-400 font-medium text-sm">
+                    Chưa có hoạt động mới
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-
       <style>{`
         .dashboard-content {
           padding: 1.5rem 0 4rem 0;
@@ -778,6 +990,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 1.5rem;
+          margin-bottom: 3.5rem;
         }
         .stat-card.premium {
           padding: 1.75rem;
