@@ -143,6 +143,7 @@ const LeadsTab = ({
           <span style={{ fontWeight: 600, color: '#64748b', marginRight: '0.5rem' }}>THỜI GIAN:</span>
           {[
             { id: 'today', label: 'Hôm nay' },
+            { id: 'yesterday', label: 'Hôm qua' },
             { id: 'week', label: 'Tuần này' },
             { id: 'month', label: 'Tháng này' },
             { id: 'quarter', label: 'Quý này' },

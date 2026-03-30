@@ -12,7 +12,9 @@ import {
   Clock,
   Filter,
   Globe,
-  Briefcase
+  Briefcase,
+  CheckCircle,
+  Activity
 } from 'lucide-react';
 import {
   PieChart,
@@ -64,6 +66,12 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
     switch (filter) {
       case 'today':
         start.setHours(0, 0, 0, 0);
+        break;
+      case 'yesterday':
+        start.setDate(start.getDate() - 1);
+        start.setHours(0, 0, 0, 0);
+        end.setDate(end.getDate() - 1);
+        end.setHours(23, 59, 59, 999);
         break;
       case 'week':
         const day = start.getDay() || 7;
@@ -120,7 +128,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
   };
 
   useEffect(() => {
-    const quickFilters = ['today', 'week', 'month'];
+    const quickFilters = ['today', 'yesterday', 'week', 'month'];
     if (quickFilters.includes(dateFilter)) {
       fetchStats();
     }
@@ -146,14 +154,13 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
   const wonLeads = stats.statusStats.find(s => s.status === 'Chốt đơn')?.count || 0;
   const conversionRate = totalLeads > 0 ? ((wonLeads / totalLeads) * 100).toFixed(1) : 0;
   const newLeads = stats.statusStats.find(s => s.status === 'Mới')?.count || 0;
-  const overdueCount = stats.overdueLeads?.length || 0;
 
   const monthOptions = [
     "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
     "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
   ];
 
-  const quickFilters = ['today', 'week', 'month'];
+  const quickFilters = ['today', 'yesterday', 'week', 'month'];
   const advancedFilters = ['month-select', 'quarter', 'year', 'custom'];
 
   return (
@@ -171,6 +178,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                   className={`segment-btn ${dateFilter === f ? 'active' : ''}`}
                 >
                   {f === 'today' ? 'Hôm nay' :
+                    f === 'yesterday' ? 'Hôm qua' :
                     f === 'week' ? 'Tuần này' : 'Tháng này'}
                 </button>
               ))}
@@ -317,13 +325,13 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
         <div className="stat-card premium rose">
           <div className="stat-content">
             <div className="stat-header">
-              <span className="stat-label">CẦN CHĂM SÓC</span>
-              <div className="stat-icon-glass"><AlertCircle size={20} /></div>
+              <span className="stat-label">LEAD THÀNH CÔNG</span>
+              <div className="stat-icon-glass"><CheckCircle size={20} /></div>
             </div>
-            <div className="stat-value">{overdueCount}</div>
+            <div className="stat-value">{wonLeads}</div>
             <div className="stat-footer">
-              <AlertCircle size={14} />
-              <span>Ưu tiên liên hệ</span>
+              <CheckCircle size={14} />
+              <span>Đã chốt đơn</span>
             </div>
           </div>
         </div>
@@ -483,7 +491,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
           <div className="card-header">
             <div>
               <h3>Phân loại Chất lượng Lead</h3>
-              <p className="card-subtitle">Tiềm năng vs Thực tế (Nóng/Ấm/Lạnh)</p>
+              <p className="card-subtitle">Tiềm năng vs Thực tế (Nóng/Ấm/Lạnh/Mới)</p>
             </div>
             <Target size={20} className="text-rose-500" />
           </div>
@@ -525,10 +533,54 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
         <div className="analytics-card professional flex-1">
           <div className="card-header">
             <div>
-              <h3>Cần chăm sóc ngay (Top 5)</h3>
-              <p className="card-subtitle">Danh sách Lead quá hạn liên hệ</p>
+              <h3>Phân loại Lead (Chi tiết)</h3>
+              <p className="card-subtitle">Tỷ lệ theo đánh giá của nhân viên</p>
             </div>
-            <AlertCircle size={20} className="text-red-600" />
+            <PieChartIcon size={20} className="text-emerald-500" />
+          </div>
+          <div className="mt-8" style={{ height: '350px', width: '100%' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stats.classificationStats} layout="vertical" margin={{ left: 20, right: 30, top: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
+                <XAxis type="number" hide />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fontWeight: 700, fill: '#475569' }}
+                  width={100}
+                />
+                <Tooltip
+                  cursor={{ fill: '#f8fafc' }}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}
+                  formatter={(value) => [`${value} leads`, 'Số lượng']}
+                />
+                <Bar dataKey="count" radius={[0, 8, 8, 0]} barSize={24} isAnimationActive={false}>
+                  {stats.classificationStats.map((entry, index) => (
+                    <Cell
+                      key={`cell-bar-quality-${index}`}
+                      fill={
+                        entry.name === 'Nóng' ? '#ef4444' :
+                          entry.name === 'Tiềm năng' ? '#10b981' :
+                            entry.name === 'Ấm' ? '#f59e0b' :
+                              entry.name === 'Lạnh' ? '#6366f1' : COLORS[index % COLORS.length]
+                      }
+                    />
+                  ))}
+                  <LabelList dataKey="count" position="right" style={{ fontSize: '11px', fontWeight: 'bold', fill: '#64748b' }} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        <div className="analytics-card professional flex-1">
+          <div className="card-header">
+            <div>
+              <h3>Lead Vừa Đăng Ký</h3>
+              <p className="card-subtitle">Hoạt động khách hàng mới nhất</p>
+            </div>
+            <Activity size={20} className="text-blue-500" />
           </div>
           <div className="mt-6 overflow-hidden">
             <div className="overflow-x-auto">
@@ -536,22 +588,32 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-50">
                     <th className="text-left py-3 font-bold text-[10px] uppercase">Khách hàng</th>
-                    <th className="text-left py-3 font-bold text-[10px] uppercase">Nhân viên</th>
-                    <th className="text-right py-3 font-bold text-[10px] uppercase">Liên hệ lần cuối</th>
+                    <th className="text-left py-3 font-bold text-[10px] uppercase">Trạng thái</th>
+                    <th className="text-right py-3 font-bold text-[10px] uppercase">Thời gian</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {stats.overdueLeads && stats.overdueLeads.length > 0 ? (
-                    stats.overdueLeads.map((lead, idx) => (
-                      <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-red-50 transition-colors cursor-pointer" onClick={() => setEditingLead(lead)}>
+                  {stats.recentLeads && stats.recentLeads.length > 0 ? (
+                    stats.recentLeads.map((lead, idx) => (
+                      <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => setEditingLead(lead)}>
                         <td className="py-3 pr-2">
                           <div className="font-bold text-slate-700">{lead.name}</div>
-                          <div className="text-[10px] text-slate-400">{lead.phone || 'Không có SĐT'}</div>
+                          <div className="text-[10px] text-slate-400">{lead.phone || 'Không có SĐT'} • {lead.source || 'Khác'}</div>
                         </td>
-                        <td className="py-3 text-slate-600 font-medium">{lead.staff_name || 'Chưa giao'}</td>
+                        <td className="py-3">
+                          <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
+                            lead.status === 'Mới' ? 'bg-blue-100 text-blue-700' :
+                            lead.status === 'Đang xử lý' ? 'bg-amber-100 text-amber-700' :
+                            lead.status === 'Chốt đơn' ? 'bg-green-100 text-green-700' :
+                            lead.status === 'Thất bại' ? 'bg-red-100 text-red-700' :
+                            'bg-slate-100 text-slate-700'
+                          }`}>
+                            {lead.status}
+                          </span>
+                        </td>
                         <td className="py-3 text-right">
-                          <div className="text-red-500 font-bold text-[11px]">
-                            {lead.last_contacted_at ? new Date(lead.last_contacted_at).toLocaleDateString() : 'N/A'}
+                          <div className="text-slate-500 font-medium text-[11px]">
+                            {new Date(lead.created_at).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
                           </div>
                         </td>
                       </tr>
@@ -559,7 +621,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                   ) : (
                     <tr>
                       <td colSpan="3" className="py-10 text-center text-slate-400 font-medium italic">
-                        Tuyệt vời! Không có lead quá hạn.
+                        Chưa có hoạt động mới.
                       </td>
                     </tr>
                   )}
@@ -776,15 +838,23 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
           border: 1px solid #f1f5f9;
           box-shadow: 0 4px 20px rgba(0,0,0,0.02);
         }
+        .card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 0.5rem;
+        }
         .card-header h3 {
           font-size: 1.125rem;
           font-weight: 900;
           color: #1e293b;
+          padding-left: 2px;
         }
         .analytics-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 2rem;
+          gap: 2.5rem;
+          margin-bottom: 2.5rem;
         }
 
         @media (max-width: 1200px) {

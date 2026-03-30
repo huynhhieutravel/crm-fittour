@@ -796,6 +796,10 @@ function AppContent() {
       
       if (leadFilters.timeRange === 'today') {
         matchesTime = leadDate >= today;
+      } else if (leadFilters.timeRange === 'yesterday') {
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        matchesTime = leadDate >= yesterday && leadDate < today;
       } else if (leadFilters.timeRange === 'week') {
         const firstDayOfWeek = new Date(today);
         const day = firstDayOfWeek.getDay() || 7; 

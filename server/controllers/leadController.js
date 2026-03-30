@@ -287,15 +287,13 @@ exports.getLeadStats = async (req, res) => {
             GROUP BY 1
         `, params);
 
-        // 7. Recent Overdue Leads for action list
-        const overdueLeads = await db.query(`
-            SELECT l.id, l.name, l.phone, l.last_contacted_at, u.full_name as staff_name
+        // 7. Recent Leads Activity
+        const recentLeads = await db.query(`
+            SELECT l.*, u.full_name as staff_name
             FROM leads l
             LEFT JOIN users u ON l.assigned_to = u.id
-            WHERE ${joinLeadWhere} 
-              AND l.status NOT IN ('Chốt đơn', 'Thất bại')
-              AND (l.last_contacted_at < NOW() - INTERVAL '3 days' OR l.last_contacted_at IS NULL)
-            ORDER BY l.last_contacted_at ASC NULLS FIRST
+            WHERE ${joinLeadWhere}
+            ORDER BY l.created_at DESC
             LIMIT 5
         `, params);
 
@@ -316,7 +314,7 @@ exports.getLeadStats = async (req, res) => {
             buStats: buStats.rows,
             destinationStats: destinationStats.rows,
             careStats: careStats.rows,
-            overdueLeads: overdueLeads.rows,
+            recentLeads: recentLeads.rows,
             classificationStats: classificationStats.rows
         });
     } catch (err) {
