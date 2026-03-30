@@ -9,11 +9,11 @@ const getSetting = async (key) => {
     return res.rows.length > 0 ? res.rows[0].value : null;
 };
 
-exports.handleMessage = async (sender_psid, received_message) => {
+exports.handleMessage = async (sender_psid, received_message, isStandby = false) => {
     let response;
 
     if (received_message.text) {
-        console.log(`Received message from ${sender_psid}: ${received_message.text}`);
+        console.log(`Received ${isStandby ? 'standby' : 'primary'} message from ${sender_psid}: ${received_message.text}`);
         
         // 1. Kiểm tra xem hội thoại đã tồn tại chưa
         let convResult = await db.query('SELECT * FROM conversations WHERE external_id = $1', [sender_psid]);
@@ -70,8 +70,12 @@ exports.handleMessage = async (sender_psid, received_message) => {
         };
     }
 
-    // Gửi phản hồi qua Graph API
-    await exports.callSendAPI(sender_psid, response);
+    // Gửi phản hồi qua Graph API (only if not standby)
+    if (!isStandby && response) {
+        await exports.callSendAPI(sender_psid, response);
+    } else if (isStandby) {
+        console.log('[FB] Standby event: Not sending auto-reply (another app has thread control).');
+    }
 };
 
 exports.handlePostback = async (sender_psid, received_postback) => {

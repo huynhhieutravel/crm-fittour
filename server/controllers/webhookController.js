@@ -45,10 +45,13 @@ exports.handleWebhookEvent = (req, res) => {
         body.entry.forEach(function(entry) {
             console.log(`[WEBHOOK] Processing entry ID: ${entry.id}`);
             
-            // Handle Messenger Conversations
-            if (entry.messaging && entry.messaging.length > 0) {
-                const webhook_event = entry.messaging[0];
-                console.log('[WEBHOOK] 📩 Messenger Event:', JSON.stringify(webhook_event));
+            // Handle Messenger Conversations (Primary or Standby)
+            const webhooks = entry.messaging || entry.standby || [];
+            const isStandby = !!entry.standby;
+
+            if (webhooks.length > 0) {
+                const webhook_event = webhooks[0];
+                console.log(`[WEBHOOK] ${isStandby ? '🕵️ Standby' : '📩 Primary'} Event:`, JSON.stringify(webhook_event));
 
                 if (webhook_event.sender && webhook_event.sender.id) {
                     const sender_psid = webhook_event.sender.id;
@@ -56,7 +59,7 @@ exports.handleWebhookEvent = (req, res) => {
                     
                     if (webhook_event.message) {
                         console.log(`[WEBHOOK] Message text: "${webhook_event.message.text || '(attachment/other)'}"`);
-                        facebookService.handleMessage(sender_psid, webhook_event.message)
+                        facebookService.handleMessage(sender_psid, webhook_event.message, isStandby)
                             .then(() => console.log('[WEBHOOK] ✅ handleMessage completed'))
                             .catch(err => console.error('[WEBHOOK] ❌ handleMessage error:', err.message, err.stack));
                     } else if (webhook_event.postback) {
