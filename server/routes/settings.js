@@ -37,19 +37,39 @@ router.post('/update', auth, async (req, res) => {
 // 3. Test CAPI Connection
 router.post('/test-capi', auth, async (req, res) => {
     try {
-        console.log('[CAPI] Manual test triggered from UI');
-        const result = await metaCapi.sendEvent('Lead', {
-            email: 'test@example.com',
+        console.log('[CAPI] Manual test triggered from UI - Sending Test Suite (Lead, Contact, Purchase)');
+        
+        const testUser = {
+            email: 'test@fittour.com',
             phone: '0901234567',
             facebook_psid: 'test_psid_123'
-        }, {
-            note: 'Test event from CRM Settings UI'
-        });
+        };
 
-        if (result.success) {
-            res.json({ success: true, message: 'Gửi sự kiện test thành công! Kiểm tra tab Thử nghiệm sự kiện trên Meta.' });
+        const results = [];
+
+        // 1. Sent Lead 
+        const leadRes = await metaCapi.sendEvent('Lead', testUser, { note: 'Test Lead from CRM' });
+        results.push({ event: 'Lead', success: leadRes.success });
+
+        // 2. Sent Contact
+        const contactRes = await metaCapi.sendEvent('Contact', testUser, { note: 'Test Contact from CRM' });
+        results.push({ event: 'Contact', success: contactRes.success });
+
+        // 3. Sent Purchase
+        const purchaseRes = await metaCapi.sendEvent('Purchase', testUser, { 
+            note: 'Test Purchase from CRM',
+            value: 25000000,
+            currency: 'VND',
+            content_name: 'Tour Test Châu Âu'
+        });
+        results.push({ event: 'Purchase', success: purchaseRes.success });
+
+        const allSuccess = results.every(r => r.success);
+
+        if (allSuccess) {
+            res.json({ success: true, message: 'Gửi thành công chuỗi sự kiện test (Lead, Contact, Purchase)! Hãy kiểm tra payload trong Terminal và tab Diagnostics trên Meta.' });
         } else {
-            res.status(400).json({ success: false, error: result.error || 'Gửi thất bại' });
+            res.status(400).json({ success: false, error: 'Có lỗi khi gửi một hoặc nhiều sự kiện', details: results });
         }
     } catch (err) {
         res.status(500).json({ error: err.message });

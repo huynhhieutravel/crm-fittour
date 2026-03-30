@@ -109,11 +109,12 @@ exports.sendEvent = async (eventName, userData = {}, customData = {}, eventSourc
     // 6. Send to Meta
     const url = `https://graph.facebook.com/${API_VERSION}/${datasetId}/events?access_token=${accessToken}`;
     
-    console.log(`[CAPI] Sending event: ${eventName}`, {
-      user_data_keys: Object.keys(user_data),
-      custom_data: customData,
-      test_mode: !!testEventCode
-    });
+    console.log(`[CAPI] CAPI Payload for event: ${eventName}`);
+    console.log(JSON.stringify({
+      event_name: eventName,
+      user_data: user_data,
+      custom_data: eventPayload.custom_data
+    }, null, 2));
 
     const response = await axios.post(url, requestBody);
 

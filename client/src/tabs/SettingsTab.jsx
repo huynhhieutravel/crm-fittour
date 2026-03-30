@@ -174,6 +174,15 @@ const SettingsTab = ({
               />
             </div>
           </div>
+          <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%' }}>
+            <label>ACCESS TOKEN (CONVERSIONS API)</label>
+            <input 
+              className="modal-input" 
+              placeholder="Paste token dài được tạo từ Events Manager..."
+              value={metaSettings?.meta_capi_access_token || ''} 
+              onChange={e => setMetaSettings({...metaSettings, meta_capi_access_token: e.target.value})} 
+            />
+          </div>
           <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%', display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <label style={{ marginBottom: 0 }}>BẬT CONVERSIONS API (CAPI)</label>
             <div 
@@ -202,8 +211,49 @@ const SettingsTab = ({
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button className="login-btn" onClick={handleUpdateSettings}>LƯU CẤU HÌNH</button>
-            <button className="login-btn" style={{ background: '#f8fafc', color: '#6366f1', border: '1px solid #6366f1' }} onClick={handleTestMeta}>KÍCH HOẠT MESSENGER</button>
             <button className="login-btn" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #16a34a' }} onClick={() => handleTestMeta('capi')}>KIỂM TRA CAPI</button>
+          </div>
+        </div>
+      )}
+
+      {/* Meta Webhook receiver area */}
+      {!onlyBU && (
+        <div className="stat-card" style={{ 
+          background: 'white', 
+          color: '#1e293b', 
+          border: '1px solid #e2e8f0', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'flex-start',
+          padding: '2rem'
+        }}>
+          <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Globe size={20} color="#0ea5e9" /> Nhận Khách & Tin nhắn từ Messenger
+          </h3>
+          <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
+            Cấu hình Cổng nối (Webhook) để tự động đưa Lead mới (từ Quảng cáo/Tin nhắn) vào CRM.
+          </p>
+          <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%' }}>
+            <label>PAGE ACCESS TOKEN (MÃ TRUY CẬP TRANG)</label>
+            <input 
+              className="modal-input" 
+              placeholder="Paste EAAP... token được tạo từ Graph API Explorer..."
+              value={metaSettings?.meta_page_access_token || ''} 
+              onChange={e => setMetaSettings({...metaSettings, meta_page_access_token: e.target.value})} 
+            />
+          </div>
+          <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%' }}>
+            <label>VERIFY TOKEN (MÃ XÁC THỰC WEBHOOK)</label>
+            <input 
+              className="modal-input" 
+              placeholder="Nhập mã bí mật tự chọn (VD: FITTOUR_SECURE_2026)"
+              value={metaSettings?.meta_verify_token || ''} 
+              onChange={e => setMetaSettings({...metaSettings, meta_verify_token: e.target.value})} 
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button className="login-btn" style={{ background: '#0ea5e9' }} onClick={handleUpdateSettings}>LƯU CẤU HÌNH WEBHOOK</button>
+            <button className="login-btn" style={{ background: '#f8fafc', color: '#0ea5e9', border: '1px solid #0ea5e9' }} onClick={handleTestMeta}>TEST KIỂM TRA QUYỀN TRANG</button>
           </div>
         </div>
       )}
