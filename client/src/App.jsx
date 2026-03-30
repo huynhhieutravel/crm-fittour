@@ -99,10 +99,6 @@ function AppContent() {
   const [bookings, setBookings] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [users, setUsers] = useState([]);
-  const [conversations, setConversations] = useState([]);
-  const [selectedConv, setSelectedConv] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [testLoading, setTestLoading] = useState(false);
@@ -281,7 +277,6 @@ function AppContent() {
       fetchBookings();
       fetchCustomers();
       fetchUsers();
-      fetchConversations();
       fetchSettings();
       fetchBUs();
     }
@@ -1358,16 +1353,8 @@ function AppContent() {
 
         {activeTab === 'inbox' && (
           <InboxTab 
-            conversations={conversations}
-            selectedConv={selectedConv}
-            setSelectedConv={setSelectedConv}
-            fetchMessages={fetchMessages}
-            messages={messages}
             setEditingLead={setEditingLead}
             leads={leads}
-            handleSendMessage={handleSendMessage}
-            newMessage={newMessage}
-            setNewMessage={setNewMessage}
           />
         )}
 

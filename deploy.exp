@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn ssh -o StrictHostKeyChecking=no root@64.176.85.168 "cd /var/www/fittour-crm && bash vps_deploy.sh"
+expect "*?assword:*"
+send "#Aa2,zdf87a@Q{3q\r"
+expect eof

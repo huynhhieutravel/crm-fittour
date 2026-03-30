@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn ssh -o StrictHostKeyChecking=no root@64.176.85.168 "sed -i 's/    if (mode && token) {/    if (mode \\&\\& token) {\\n        if (mode === \\x27subscribe\\x27 \\&\\& token === VERIFY_TOKEN) {\\n            console.log(\\x27WEBHOOK_VERIFIED\\x27);\\n            res.status(200).send(challenge);\\n        } else {\\n            res.sendStatus(403);\\n        }\\n    } else {\\n        res.status(400).send(\\x27Error: Missing mode or token. This is an API endpoint, not a web page.\\x27);\\n    }\\n\\/\\//g' /var/www/fittour-crm/server/controllers/webhookController.js && pm2 restart crm-fittour"
+expect "*?assword:*"
+send "#Aa2,zdf87a@Q{3q\r"
+expect eof

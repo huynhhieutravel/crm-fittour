@@ -4,17 +4,81 @@ const db = require('../db');
 const auth = require('../middleware/auth');
 const facebookService = require('../services/facebookService');
 
-// 1. Lấy danh sách hội thoại
+// 1. Lấy danh sách hội thoại có phân trang và tìm kiếm
 router.get('/conversations', auth, async (req, res) => {
     try {
-        const result = await db.query(`
+        const { page = 1, limit = 20, search = '' } = req.query;
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const offset = (pageNum - 1) * limitNum;
+
+        let queryArgs = [];
+        let whereClause = '';
+
+        if (search) {
+            queryArgs.push(`%${search}%`);
+            whereClause = `WHERE l.name ILIKE $1 OR c.last_message ILIKE $1`;
+        }
+
+        // Đếm tổng số lượng
+        const countQuery = `
+            SELECT COUNT(c.id) 
+            FROM conversations c 
+            LEFT JOIN leads l ON c.lead_id = l.id 
+            ${whereClause}
+        `;
+        const countResult = await db.query(countQuery, queryArgs);
+        const totalRows = parseInt(countResult.rows[0].count);
+
+        // Lấy dữ liệu
+        const dataQueryArgs = [...queryArgs, limitNum, offset];
+        const dataQuery = `
             SELECT c.*, l.name as lead_name, l.status as lead_status
             FROM conversations c
             LEFT JOIN leads l ON c.lead_id = l.id
+            ${whereClause}
             ORDER BY c.updated_at DESC
-        `);
-        res.json(result.rows);
+            LIMIT $${queryArgs.length + 1} OFFSET $${queryArgs.length + 2}
+        `;
+        const result = await db.query(dataQuery, dataQueryArgs);
+
+        res.json({
+            data: result.rows,
+            pagination: {
+                total: totalRows,
+                page: pageNum,
+                limit: limitNum,
+                totalPages: Math.ceil(totalRows / limitNum)
+            }
+        });
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 1.5 Xóa hàng loạt hội thoại (Cùng tin nhắn liên quan)
+router.post('/conversations/delete', auth, async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: 'Mảng IDs trống' });
+        }
+
+        // Bắt đầu transaction đảm bảo an toàn
+        await db.query('BEGIN');
+        
+        // 1. Xóa các tin nhắn chứa trong hội thoại (nếu không có ON DELETE CASCADE)
+        await db.query('DELETE FROM messages WHERE conversation_id = ANY($1::int[])', [ids]);
+        
+        // 2. Xóa các hội thoại
+        await db.query('DELETE FROM conversations WHERE id = ANY($1::int[])', [ids]);
+        
+        await db.query('COMMIT');
+        
+        res.json({ success: true, message: `Đã xóa ${ids.length} hội thoại thành công!` });
+    } catch (err) {
+        await db.query('ROLLBACK');
+        console.error('Delete Conversations Error:', err);
         res.status(500).json({ error: err.message });
     }
 });

@@ -1,0 +1,18 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn ssh -o StrictHostKeyChecking=no root@64.176.85.168 "node -e \"
+const { Client } = require('pg');
+const bcrypt = require('bcryptjs');
+(async () => {
+    const client = new Client({ connectionString: process.env.DATABASE_URL || 'postgresql://crmfittour:hiEufiTT0Ur168@64.176.85.168:5432/crmfittour_db' });
+    await client.connect();
+    const hash = await bcrypt.hash('admin123', 10);
+    await client.query('UPDATE users SET password = \\\$1, is_active = true WHERE username = \\\$2', [hash, 'admin']);
+    const res = await client.query('SELECT username, is_active FROM users WHERE username = \\\$1', ['admin']);
+    console.log('RESET OK:', res.rows[0]);
+    await client.end();
+})();
+\""
+expect "*?assword:*"
+send "#Aa2,zdf87a@Q{3q\r"
+expect eof
