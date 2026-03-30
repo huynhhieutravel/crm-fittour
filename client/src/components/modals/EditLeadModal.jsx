@@ -110,6 +110,10 @@ const EditLeadModal = ({
           <input className="modal-input" type="email" value={editingLead.email || ''} onChange={e => setEditingLead({...editingLead, email: e.target.value})} />
         </div>
         <div className="modal-form-group">
+          <label>FACEBOOK ID (PSID)</label>
+          <input className="modal-input" disabled value={editingLead.facebook_psid || ''} style={{ background: '#f8fafc', color: '#94a3b8', cursor: 'not-allowed' }} />
+        </div>
+        <div className="modal-form-group">
           <label>GIỚI TÍNH</label>
           <select className="modal-select" value={editingLead.gender || ''} onChange={e => setEditingLead({...editingLead, gender: e.target.value})}>
             <option value="">-- Giới tính --</option>

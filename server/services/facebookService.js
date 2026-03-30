@@ -334,11 +334,25 @@ exports.syncRecentConversations = async () => {
                     [user.name, 'Messenger', 'Mới', psid, firstMessageNote]
                 );
 
+                // --- Đưa tin nhắn vào Module Messenger để tư vấn viên xem được ---
+                if (userMsgObj) {
+                    const newConv = await db.query(
+                        'INSERT INTO conversations (source, external_id, lead_id, last_message) VALUES ($1, $2, $3, $4) RETURNING id',
+                        ['messenger', psid, leadResult.rows[0].id, userMsgObj.message]
+                    );
+                    const conversationId = newConv.rows[0].id;
+                    await db.query(
+                        'INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)',
+                        [conversationId, 'customer', userMsgObj.message]
+                    );
+                }
+
                 // Kích hoạt CAPI
                 metaCapi.sendLeadEvent(leadResult.rows[0]).catch(err => 
                     console.error('[CAPI] Lỗi khi gửi sự kiện Lead từ Poller:', err.message)
                 );
             }
+
         }
     } catch (error) {
         console.error('[FB POLLER] Lỗi đồng bộ cuộc trò chuyện:', error.message);
