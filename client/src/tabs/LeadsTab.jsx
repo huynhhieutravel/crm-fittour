@@ -13,7 +13,7 @@ import {
   Package 
 } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
-
+import axios from 'axios';
 const LeadsTab = ({ 
   leads, 
   filteredLeads, 
@@ -34,10 +34,61 @@ const LeadsTab = ({
   LEAD_SOURCES, 
   LEAD_CLASSIFICATIONS,
   tours,
-  bus
+  bus,
+  fetchLeads
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+
+  const [selectedLeadIds, setSelectedLeadIds] = useState([]);
+  const [bulkActionStatus, setBulkActionStatus] = useState('');
+  const [bulkActionClass, setBulkActionClass] = useState('');
+  const [isTourDropdownOpen, setIsTourDropdownOpen] = useState(false);
+
+  const toggleTour = (id) => {
+    const currentTours = leadFilters.tours || [];
+    if (currentTours.includes(id)) {
+      setLeadFilters({ ...leadFilters, tours: currentTours.filter(t => t !== id) });
+    } else {
+      setLeadFilters({ ...leadFilters, tours: [...currentTours, id] });
+    }
+  };
+
+  const handleBulkUpdate = async () => {
+    if (selectedLeadIds.length === 0) return;
+    if (!bulkActionStatus && !bulkActionClass) {
+        alert("Vui lòng chọn trạng thái hoặc phân loại để cập nhật!");
+        return;
+    }
+    
+    const updates = {};
+    if (bulkActionStatus) updates.status = bulkActionStatus;
+    if (bulkActionClass) updates.classification = bulkActionClass;
+
+    if (!window.confirm(`Xác nhận cập nhật dữ liệu cho ${selectedLeadIds.length} hồ sơ?`)) return;
+
+    try {
+        const token = localStorage.getItem('token');
+        await axios.post('/api/leads/bulk-update', {
+            ids: selectedLeadIds,
+            updates: updates
+        }, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setSelectedLeadIds([]);
+        setBulkActionStatus('');
+        setBulkActionClass('');
+        if (fetchLeads) {
+            await fetchLeads();
+        } else {
+            window.location.reload();
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Lỗi: ' + (err.response?.data?.message || err.message));
+    }
+  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -79,7 +130,7 @@ const LeadsTab = ({
       </div>
 
       <div className="filter-bar">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr) auto', gap: '1rem', alignItems: 'end' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr) auto', gap: '1rem', alignItems: 'end' }}>
           <div className="filter-group">
             <label>TÌM KIẾM</label>
             <div style={{ position: 'relative' }}>
@@ -108,6 +159,30 @@ const LeadsTab = ({
                 <option key={bu.id} value={bu.id}>{bu.label}</option>
               ))}
             </select>
+          </div>
+          <div className="filter-group" style={{ position: 'relative' }}>
+            <label>SẢN PHẨM / TOUR</label>
+            <div 
+              className="filter-select" 
+              style={{ cursor: 'pointer', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', background: 'white' }}
+              onClick={() => setIsTourDropdownOpen(!isTourDropdownOpen)}
+            >
+              {(leadFilters.tours && leadFilters.tours.length > 0) ? `Đã chọn: ${leadFilters.tours.length}` : '-- Tất cả Tour --'}
+            </div>
+            {isTourDropdownOpen && (
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', zIndex: 100, maxHeight: '250px', overflowY: 'auto', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                <div style={{ padding: '8px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: '#fef2f2' }} onClick={() => toggleTour('NO_TOUR')}>
+                  <input type="checkbox" checked={leadFilters.tours?.includes('NO_TOUR') || false} readOnly />
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ef4444' }}>[Chưa chọn Tour]</span>
+                </div>
+                {tours.map(tour => (
+                  <div key={tour.id} style={{ padding: '8px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => toggleTour(String(tour.id))}>
+                    <input type="checkbox" checked={leadFilters.tours?.includes(String(tour.id)) || false} readOnly />
+                    <span style={{ fontSize: '0.85rem' }}>{tour.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <div className="filter-group">
             <label>TƯ VẤN VIÊN</label>
@@ -171,6 +246,17 @@ const LeadsTab = ({
         <table className="data-table">
           <thead>
             <tr>
+              <th style={{ width: '40px', textAlign: 'center' }}>
+                <input 
+                  type="checkbox" 
+                  checked={currentLeads.length > 0 && selectedLeadIds.length === currentLeads.length}
+                  onChange={(e) => {
+                    if (e.target.checked) setSelectedLeadIds(currentLeads.map(l => l.id));
+                    else setSelectedLeadIds([]);
+                  }}
+                  style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                />
+              </th>
               <th className="col-date">NGÀY TẠO</th>
               <th className="col-info">THÔNG TIN LEAD</th>
               <th className="col-product">SẢN PHẨM QUAN TÂM</th>
@@ -183,7 +269,18 @@ const LeadsTab = ({
           </thead>
           <tbody>
             {currentLeads.map(lead => (
-              <tr key={lead.id}>
+              <tr key={lead.id} className={selectedLeadIds.includes(lead.id) ? "selected-row" : ""}>
+                <td style={{ textAlign: 'center' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={selectedLeadIds.includes(lead.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) setSelectedLeadIds([...selectedLeadIds, lead.id]);
+                      else setSelectedLeadIds(selectedLeadIds.filter(id => id !== lead.id));
+                    }}
+                    style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                  />
+                </td>
                 <td style={{ color: '#64748b', fontSize: '0.85rem' }}>
                   {new Date(lead.created_at).toLocaleDateString('vi-VN')}
                 </td>
@@ -332,6 +429,22 @@ const LeadsTab = ({
           >
             Trang sau
           </button>
+        </div>
+      )}
+
+      {selectedLeadIds.length > 0 && (
+        <div style={{ position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', background: '#1e293b', color: 'white', padding: '12px 24px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', zIndex: 9999, animation: 'fadeIn 0.2s ease-out' }}>
+          <div style={{ fontWeight: 800 }}>Đã chọn {selectedLeadIds.length} lead</div>
+          <div style={{ height: '24px', width: '1px', background: 'rgba(255,255,255,0.2)' }}></div>
+          <select value={bulkActionStatus} onChange={e => setBulkActionStatus(e.target.value)} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '6px', outline: 'none' }}>
+            <option value="" style={{ color: 'black' }}>-- Đổi trạng thái --</option>
+            {LEAD_STATUSES.map(s => <option key={s} value={s} style={{ color: 'black' }}>{s}</option>)}
+          </select>
+          <select value={bulkActionClass} onChange={e => setBulkActionClass(e.target.value)} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '6px', outline: 'none' }}>
+            <option value="" style={{ color: 'black' }}>-- Đổi phân loại --</option>
+            {LEAD_CLASSIFICATIONS.map(c => <option key={c} value={c} style={{ color: 'black' }}>{c}</option>)}
+          </select>
+          <button onClick={handleBulkUpdate} style={{ background: '#3b82f6', color: 'white', padding: '8px 16px', borderRadius: '6px', fontWeight: 800, border: 'none', cursor: 'pointer' }}>CẬP NHẬT</button>
         </div>
       )}
 

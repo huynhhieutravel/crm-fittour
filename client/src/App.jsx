@@ -114,7 +114,7 @@ function AppContent() {
     meta_page_access_token: '',
     meta_page_id: ''
   });
-  const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'today', startDate: '', endDate: '' });
+  const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'today', startDate: '', endDate: '', tours: [] });
   const [tourFilters, setTourFilters] = useState({ search: '', tour_type: '', destination: '' });
   const [bookingFilters, setBookingFilters] = useState({ search: '', status: '' });
   const [customerFilters, setCustomerFilters] = useState({ search: '' });
@@ -810,7 +810,16 @@ function AppContent() {
       }
     }
 
-    return matchesStatus && matchesSource && matchesSearch && matchesBU && matchesStaff && matchesTime;
+    let matchesTours = true;
+    if (leadFilters.tours && leadFilters.tours.length > 0) {
+      if (leadFilters.tours.includes('NO_TOUR')) {
+        matchesTours = !lead.tour_id || leadFilters.tours.includes(String(lead.tour_id));
+      } else {
+        matchesTours = leadFilters.tours.includes(String(lead.tour_id));
+      }
+    }
+
+    return matchesStatus && matchesSource && matchesSearch && matchesBU && matchesStaff && matchesTime && matchesTours;
   });
 
   const fetchConversations = async () => {
@@ -1340,6 +1349,7 @@ function AppContent() {
                 LEAD_CLASSIFICATIONS={LEAD_CLASSIFICATIONS}
                 tours={tourTemplates}
                 bus={bus}
+                fetchLeads={fetchLeads}
               />
             )}
             {activeTab === 'leads-dashboard' && (

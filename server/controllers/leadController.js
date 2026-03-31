@@ -322,3 +322,71 @@ exports.getLeadStats = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+exports.bulkUpdateLeads = async (req, res) => {
+    const { ids, updates } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ message: 'Danh sách Lead ID trống' });
+    }
+
+    const client = await db.pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        let successCount = 0;
+        const allowedFields = ['status', 'classification']; 
+        // Currently only status and classification makes sense for bulk updating, according to the plan.
+
+        for (const leadId of ids) {
+            const oldLeadRes = await client.query('SELECT * FROM leads WHERE id = $1', [leadId]);
+            if (oldLeadRes.rows.length === 0) continue;
+            
+            const oldLead = oldLeadRes.rows[0];
+            const updateFields = [];
+            const queryValues = [];
+            
+            Object.keys(updates).forEach(key => {
+                if (allowedFields.includes(key)) {
+                    let val = updates[key];
+                    if (key === 'status' && val === 'Chốt đơn' && !oldLead.won_at) {
+                        updateFields.push(`won_at = $${queryValues.length + 1}`);
+                        queryValues.push(new Date());
+                    }
+                    updateFields.push(`${key} = $${queryValues.length + 1}`);
+                    queryValues.push(val);
+                }
+            });
+
+            if (updateFields.length > 0) {
+                queryValues.push(leadId);
+                const updateQuery = `UPDATE leads SET ${updateFields.join(', ')}, updated_at = NOW() WHERE id = $${queryValues.length} RETURNING *`;
+                const result = await client.query(updateQuery, queryValues);
+                const updatedLead = result.rows[0];
+
+                if (updates.status === 'Chốt đơn' || updatedLead.status === 'Chốt đơn') {
+                    await convertLeadToCustomer(client, leadId, req.user ? req.user.id : null);
+                }
+
+                await logActivity({
+                    user_id: req.user ? req.user.id : null,
+                    action_type: 'UPDATE',
+                    entity_type: 'LEAD',
+                    entity_id: leadId,
+                    details: `Cập nhật hàng loạt (Bulk Update): Đã thay đổi các trường dữ liệu.`,
+                    old_data: oldLead,
+                    new_data: updatedLead
+                });
+                successCount++;
+            }
+        }
+
+        await client.query('COMMIT');
+        res.json({ message: `Đã cập nhật hàng loạt thành công ${successCount} khách hàng.` });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Bulk Update Leads Error:', err);
+        res.status(500).json({ message: err.message });
+    } finally {
+        client.release();
+    }
+};
