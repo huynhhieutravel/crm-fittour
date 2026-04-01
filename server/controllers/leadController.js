@@ -99,8 +99,11 @@ exports.updateLead = async (req, res) => {
             'facebook_psid', 'meta_lead_id', 'fbclid'
         ];
 
+        let autoWonAtAdded = false;
         Object.keys(updates).forEach(key => {
             if (allowedFields.includes(key)) {
+                if (key === 'won_at' && autoWonAtAdded) return; // Bỏ qua nếu đã được thêm tự động
+
                 let val = updates[key];
                 
                 // Normalization
@@ -109,9 +112,10 @@ exports.updateLead = async (req, res) => {
                 if (key === 'assigned_to' && val === '') val = null;
                 
                 // Set won_at automatically if status changed to Chốt đơn
-                if (key === 'status' && val === 'Chốt đơn' && !oldLead.won_at) {
+                if (key === 'status' && val === 'Chốt đơn' && !oldLead.won_at && updates.won_at === undefined) {
                     updateFields.push(`won_at = $${queryValues.length + 1}`);
                     queryValues.push(new Date());
+                    autoWonAtAdded = true;
                 }
 
                 updateFields.push(`${key} = $${queryValues.length + 1}`);
@@ -121,7 +125,7 @@ exports.updateLead = async (req, res) => {
 
         if (updateFields.length > 0) {
             queryValues.push(leadId);
-            const updateQuery = `UPDATE leads SET ${updateFields.join(', ')}, updated_at = NOW() WHERE id = $${queryValues.length} RETURNING *`;
+            console.log('QUERY IS: ', `UPDATE leads SET ${updateFields.join(', ')}`); const updateQuery = `UPDATE leads SET ${updateFields.join(', ')}, updated_at = NOW() WHERE id = $${queryValues.length} RETURNING *`;
             const result = await client.query(updateQuery, queryValues);
             const updatedLead = result.rows[0];
 
@@ -359,7 +363,7 @@ exports.bulkUpdateLeads = async (req, res) => {
 
             if (updateFields.length > 0) {
                 queryValues.push(leadId);
-                const updateQuery = `UPDATE leads SET ${updateFields.join(', ')}, updated_at = NOW() WHERE id = $${queryValues.length} RETURNING *`;
+                console.log('QUERY IS: ', `UPDATE leads SET ${updateFields.join(', ')}`); const updateQuery = `UPDATE leads SET ${updateFields.join(', ')}, updated_at = NOW() WHERE id = $${queryValues.length} RETURNING *`;
                 const result = await client.query(updateQuery, queryValues);
                 const updatedLead = result.rows[0];
 

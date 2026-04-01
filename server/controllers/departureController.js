@@ -77,9 +77,13 @@ exports.createDeparture = async (req, res) => {
             [
                 generatedCode, tour_template_id, start_date, end_date, max_participants, status || 'Open',
                 actual_price, discount_price,
-                final_guide, final_operator, supplier_info, min_participants, break_even_pax,
+                final_guide, final_operator, 
+                typeof supplier_info === 'object' ? JSON.stringify(supplier_info) : (supplier_info || '{}'), 
+                min_participants, break_even_pax,
                 deadline_booking, deadline_visa, deadline_payment,
-                price_rules ? JSON.stringify(price_rules) : '[]', additional_services ? JSON.stringify(additional_services) : '[]', notes
+                typeof price_rules === 'object' ? JSON.stringify(price_rules) : (price_rules || '[]'), 
+                typeof additional_services === 'object' ? JSON.stringify(additional_services) : (additional_services || '[]'), 
+                notes
             ]
         );
         res.status(201).json(result.rows[0]);
@@ -177,7 +181,7 @@ exports.updateDeparture = async (req, res) => {
             if (value === '' && ['guide_id', 'operator_id', 'break_even_pax', 'max_participants'].includes(key)) {
                 finalValue = null;
             }
-            if (['price_rules', 'additional_services'].includes(key)) {
+            if (['price_rules', 'additional_services', 'supplier_info'].includes(key)) {
                 finalValue = typeof value === 'string' ? value : JSON.stringify(value);
             }
 

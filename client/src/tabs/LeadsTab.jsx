@@ -45,6 +45,28 @@ const LeadsTab = ({
   const [bulkActionStatus, setBulkActionStatus] = useState('');
   const [bulkActionClass, setBulkActionClass] = useState('');
   const [isTourDropdownOpen, setIsTourDropdownOpen] = useState(false);
+  const [editingPhoneId, setEditingPhoneId] = useState(null);
+  const [tempPhone, setTempPhone] = useState('');
+
+  const handlePhoneEdit = (lead) => {
+    setEditingPhoneId(lead.id);
+    setTempPhone(lead.phone || '');
+  };
+
+  const handlePhoneSave = (id) => {
+    if (tempPhone.trim() !== '') {
+       handleQuickUpdate(id, 'phone', tempPhone.trim());
+    }
+    setEditingPhoneId(null);
+  };
+
+  const handlePhoneKeyDown = (e, id) => {
+    if (e.key === 'Enter') {
+      handlePhoneSave(id);
+    } else if (e.key === 'Escape') {
+      setEditingPhoneId(null);
+    }
+  };
 
   const toggleTour = (id) => {
     const currentTours = leadFilters.tours || [];
@@ -187,10 +209,14 @@ const LeadsTab = ({
           </div>
           <div className="filter-group">
             <label>TƯ VẤN VIÊN</label>
-            <select className="filter-select" value={leadFilters.assigned_to} onChange={e => setLeadFilters({...leadFilters, assigned_to: e.target.value})}>
-              <option value="">-- Tư vấn viên --</option>
-              {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
-            </select>
+            <SearchableSelect 
+              options={users.map(u => ({ id: u.id, name: u.full_name }))}
+              value={leadFilters.assigned_to}
+              onChange={val => setLeadFilters({...leadFilters, assigned_to: val})}
+              placeholder="-- Tư vấn viên --"
+              className="filter-select"
+              style={{ border: 'none', padding: 0 }}
+            />
           </div>
           <button 
             className="login-btn" 
@@ -291,9 +317,35 @@ const LeadsTab = ({
                       {lead.name}
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                      <span className="lead-phone" style={{ color: '#6366f1', fontSize: '0.85rem' }}>
-                        {lead.phone || 'Chưa có SĐT'}
-                      </span>
+                      {editingPhoneId === lead.id ? (
+                        <input 
+                          type="text" 
+                          value={tempPhone}
+                          onChange={e => setTempPhone(e.target.value)}
+                          onBlur={() => handlePhoneSave(lead.id)}
+                          onKeyDown={e => handlePhoneKeyDown(e, lead.id)}
+                          autoFocus
+                          style={{ 
+                            fontSize: '0.85rem', 
+                            padding: '2px 6px', 
+                            border: '1px solid #6366f1', 
+                            borderRadius: '4px', 
+                            width: '120px',
+                            outline: 'none',
+                            color: '#6366f1',
+                            fontWeight: 600
+                          }} 
+                        />
+                      ) : (
+                        <span 
+                          className="lead-phone" 
+                          style={{ color: '#6366f1', fontSize: '0.85rem', cursor: 'text', borderBottom: '1px dashed #cbd5e1' }}
+                          title="Nhấn để sửa số điện thoại"
+                          onClick={(e) => { e.stopPropagation(); handlePhoneEdit(lead); }}
+                        >
+                          {lead.phone || 'Chưa định danh SĐT...'}
+                        </span>
+                      )}
                       {(lead.facebook_psid || lead.meta_lead_id) && (
                         <div title="Đơn từ luồng tự động Meta" style={{ background: '#e0f2fe', color: '#0284c7', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '3px' }}>
                            META
@@ -372,10 +424,22 @@ const LeadsTab = ({
                   </div>
                 </td>
                 <td>
-                  <select className="table-select-ghost" style={{ fontWeight: 600 }} value={lead.assigned_to || ''} onChange={e => handleQuickUpdate(lead.id, 'assigned_to', e.target.value)}>
-                    <option value="">Chưa giao</option>
-                    {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
-                  </select>
+                  <SearchableSelect 
+                    options={users.map(u => ({ id: u.id, name: u.full_name }))}
+                    value={lead.assigned_to}
+                    onChange={(val) => handleQuickUpdate(lead.id, 'assigned_to', val)}
+                    placeholder="Chưa giao"
+                    style={{ 
+                      border: 'none', 
+                      background: 'transparent',
+                      padding: '0',
+                      minHeight: 'auto',
+                      minWidth: '150px',
+                      fontSize: '0.85rem',
+                      fontWeight: 600
+                    }}
+                    className="table-searchable-select"
+                  />
                 </td>
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

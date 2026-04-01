@@ -1,0 +1,5 @@
+TRUNCATE TABLE "business_units" CASCADE;
+INSERT INTO "business_units" ("id","label","countries","description","created_at","updated_at","is_active","sort_order") VALUES ('BU1','BU1','["Trung Quốc","Đài Loan"]',NULL,'2026-03-30T02:44:20.686Z','2026-03-30T14:58:15.484Z',TRUE,0);
+INSERT INTO "business_units" ("id","label","countries","description","created_at","updated_at","is_active","sort_order") VALUES ('BU2','BU2','["Pháp","Ý","Thụy Sĩ","Mỹ","Úc","Nam Mỹ","Châu Âu","Nhật Bản","Mông Cổ","Tây Á","Maroc","Hàn Quốc","Châu Á","Ai Cập","Châu Mỹ","Tây Á / Trung Đông","Châu Âu / Long Haul","Pakistan"]',NULL,'2026-03-30T02:44:20.692Z','2026-04-01T06:57:38.555Z',TRUE,0);
+INSERT INTO "business_units" ("id","label","countries","description","created_at","updated_at","is_active","sort_order") VALUES ('BU3','BU3','["Mice Tour","Sự Kiện"]',NULL,'2026-03-30T02:44:20.693Z','2026-03-30T14:59:39.044Z',TRUE,0);
+INSERT INTO "business_units" ("id","label","countries","description","created_at","updated_at","is_active","sort_order") VALUES ('BU4','BU4','["Ladakh","Bromo-Bali","Bhutan","Tây Tạng","Indonesia"]',NULL,'2026-03-30T02:44:20.696Z','2026-03-30T14:59:41.744Z',TRUE,0);

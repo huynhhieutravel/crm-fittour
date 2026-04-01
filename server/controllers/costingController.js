@@ -61,18 +61,19 @@ exports.saveCosting = async (req, res) => {
     try {
         const check = await db.query('SELECT id FROM tour_costings WHERE tour_departure_id = $1', [tour_departure_id]);
         
-        let result;
+        let costData = typeof costs === 'object' ? JSON.stringify(costs) : (costs || '[]');
+
         if (check.rows.length > 0) {
             // UPDATE
             result = await db.query(
                 'UPDATE tour_costings SET costs = $1, total_cost = $2, status = $3, updated_at = CURRENT_TIMESTAMP WHERE tour_departure_id = $4 RETURNING *',
-                [JSON.stringify(costs), total_cost, status || 'Draft', tour_departure_id]
+                [costData, total_cost, status || 'Draft', tour_departure_id]
             );
         } else {
             // INSERT
             result = await db.query(
                 'INSERT INTO tour_costings (tour_departure_id, costs, total_cost, status) VALUES ($1, $2, $3, $4) RETURNING *',
-                [tour_departure_id, JSON.stringify(costs), total_cost, status || 'Draft']
+                [tour_departure_id, costData, total_cost, status || 'Draft']
             );
         }
 

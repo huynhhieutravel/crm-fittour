@@ -32,8 +32,12 @@ exports.createTour = async (req, res) => {
             RETURNING *`,
             [
                 name, destination, duration, price || 0, max_pax || 0, start_date || null, 
-                description, tour_type, tags, highlights, inclusions, 
-                exclusions, base_price || 0, internal_cost || 0, expected_margin || 0, 
+                description, tour_type, 
+                typeof tags === 'object' ? JSON.stringify(tags) : tags, 
+                typeof highlights === 'object' ? JSON.stringify(highlights) : highlights, 
+                typeof inclusions === 'object' ? JSON.stringify(inclusions) : inclusions, 
+                typeof exclusions === 'object' ? JSON.stringify(exclusions) : exclusions, 
+                base_price || 0, internal_cost || 0, expected_margin || 0, 
                 schedule_link, code, bu_group, image_url, website_link, is_active
             ]
         );
@@ -76,8 +80,12 @@ exports.updateTour = async (req, res) => {
             WHERE id=$24 RETURNING *`,
             [
                 name, destination, duration, price || base_price, max_pax, 
-                start_date, description, status, tour_type, tags, 
-                itinerary, highlights, inclusions, exclusions, 
+                start_date || null, description, status, tour_type, 
+                typeof tags === 'object' ? JSON.stringify(tags) : tags, 
+                typeof itinerary === 'object' ? JSON.stringify(itinerary) : itinerary, 
+                typeof highlights === 'object' ? JSON.stringify(highlights) : highlights, 
+                typeof inclusions === 'object' ? JSON.stringify(inclusions) : inclusions, 
+                typeof exclusions === 'object' ? JSON.stringify(exclusions) : exclusions, 
                 base_price || price, internal_cost, expected_margin, schedule_link, code, bu_group, image_url, website_link, is_active, req.params.id
             ]
         );
