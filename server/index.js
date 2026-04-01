@@ -39,6 +39,8 @@ const tourTypeRoutes = require('./routes/settings');
 const webhookRoutes = require('./routes/webhook');
 const activityRoutes = require('./routes/activity');
 const buRoutes = require('./routes/buRoutes');
+const catalogRoutes = require('./routes/catalog');
+const costingRoutes = require('./routes/costings');
 
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/auth', authRoutes);
@@ -54,6 +56,8 @@ app.use('/api/notes', noteRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/business-units', buRoutes);
+app.use('/api/meta/catalog', catalogRoutes);
+app.use('/api/costings', costingRoutes);
 
 app.get('/', (req, res) => {
     res.send('FIT Tour CRM API is running...');

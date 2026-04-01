@@ -105,7 +105,7 @@ const LeadsTab = ({
 
   return (
     <>
-      <div className="stats-grid">
+      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
         <div className="stat-card purple">
           <div className="stat-icon-bg"><UserPlus size={24} /></div>
           <div className="stat-content">

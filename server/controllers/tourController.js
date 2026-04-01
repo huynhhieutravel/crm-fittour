@@ -19,7 +19,7 @@ exports.createTour = async (req, res) => {
         name, destination, duration, price, max_pax, start_date, 
         description, tour_type, tags, highlights, inclusions, 
         exclusions, base_price, internal_cost, expected_margin, 
-        schedule_link, code, bu_group 
+        schedule_link, code, bu_group, image_url, website_link, is_active
     } = req.body;
     try {
         const result = await db.query(
@@ -27,17 +27,23 @@ exports.createTour = async (req, res) => {
                 name, destination, duration, price, max_pax, start_date, 
                 description, tour_type, tags, highlights, inclusions, 
                 exclusions, base_price, internal_cost, expected_margin, 
-                schedule_link, code, bu_group
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) 
+                schedule_link, code, bu_group, image_url, website_link, is_active
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, COALESCE($21, true)) 
             RETURNING *`,
             [
                 name, destination, duration, price || 0, max_pax || 0, start_date || null, 
                 description, tour_type, tags, highlights, inclusions, 
                 exclusions, base_price || 0, internal_cost || 0, expected_margin || 0, 
-                schedule_link, code, bu_group
+                schedule_link, code, bu_group, image_url, website_link, is_active
             ]
         );
-        res.status(201).json(result.rows[0]);
+        
+        const newTour = result.rows[0];
+
+        // Background Meta Sync đã được gỡ bỏ theo yêu cầu của user. 
+        // Sync sẽ chỉ diễn ra thủ công thông qua nút Đồng bộ Toàn bộ ở Cài đặt.
+
+        res.status(201).json(newTour);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -57,7 +63,8 @@ exports.updateTour = async (req, res) => {
     const { 
         name, destination, duration, price, max_pax, start_date, description, status,
         tour_type, tags, itinerary, highlights, inclusions, exclusions,
-        base_price, internal_cost, expected_margin, schedule_link, code, bu_group
+        base_price, internal_cost, expected_margin, schedule_link, code, bu_group,
+        image_url, website_link, is_active
     } = req.body;
     try {
         const result = await db.query(
@@ -65,17 +72,22 @@ exports.updateTour = async (req, res) => {
                 name=$1, destination=$2, duration=$3, price=$4, max_pax=$5, 
                 start_date=$6, description=$7, status=$8, tour_type=$9, tags=$10, 
                 itinerary=$11, highlights=$12, inclusions=$13, exclusions=$14, 
-                base_price=$15, internal_cost=$16, expected_margin=$17, schedule_link=$18, code=$19, bu_group=$20
-            WHERE id=$21 RETURNING *`,
+                base_price=$15, internal_cost=$16, expected_margin=$17, schedule_link=$18, code=$19, bu_group=$20, image_url=$21, website_link=$22, is_active=COALESCE($23, is_active)
+            WHERE id=$24 RETURNING *`,
             [
                 name, destination, duration, price || base_price, max_pax, 
                 start_date, description, status, tour_type, tags, 
                 itinerary, highlights, inclusions, exclusions, 
-                base_price || price, internal_cost, expected_margin, schedule_link, code, req.params.id
+                base_price || price, internal_cost, expected_margin, schedule_link, code, bu_group, image_url, website_link, is_active, req.params.id
             ]
         );
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy tour' });
-        res.json(result.rows[0]);
+        
+        const updatedTour = result.rows[0];
+
+        // Background Meta Sync đã được gỡ bỏ theo yêu cầu.
+
+        res.json(updatedTour);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

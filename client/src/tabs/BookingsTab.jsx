@@ -4,11 +4,12 @@ import { Search } from 'lucide-react';
 const BookingsTab = ({ 
   bookings, 
   bookingFilters, 
-  setBookingFilters 
+  setBookingFilters,
+  setShowAddBookingModal
 }) => {
   return (
     <div className="animate-fade-in">
-      <div className="filter-bar">
+      <div className="filter-bar" style={{ display: 'flex', gap: '1rem', alignItems: 'end' }}>
         <div className="filter-group" style={{ flex: 1 }}>
           <label>TÌM BOOKING</label>
           <div style={{ position: 'relative' }}>
@@ -31,6 +32,28 @@ const BookingsTab = ({
             />
           </div>
         </div>
+        <button 
+          className="login-btn" 
+          style={{ 
+            width: 'auto', 
+            height: '42px', 
+            padding: '0 1.5rem', 
+            borderRadius: '8px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            gap: '8px', 
+            background: '#2563eb', 
+            color: 'white', 
+            fontWeight: '800',
+            border: 'none',
+            boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)',
+            marginLeft: 'auto'
+          }} 
+          onClick={() => setShowAddBookingModal && setShowAddBookingModal(true)}
+        >
+          <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>+</span> <span style={{ letterSpacing: '0.5px' }}>TẠO MỚI BOOKING</span>
+        </button>
       </div>
       <div className="data-table-container">
         <table className="data-table">

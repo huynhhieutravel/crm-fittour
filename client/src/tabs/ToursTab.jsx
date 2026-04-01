@@ -8,6 +8,7 @@ const ToursTab = ({
   setShowAddTemplateModal,
   setEditingTemplate,
   handleDeleteTour,
+  handleUpdateTemplate,
   bus
 }) => {
   const uniqueDestinations = [...new Set(tourTemplates.map(t => t.destination).filter(Boolean))].sort();
@@ -77,7 +78,16 @@ const ToursTab = ({
           </select>
         </div>
 
-        <div style={{ marginLeft: 'auto', paddingTop: '24px' }}>
+        <div style={{ marginLeft: 'auto', paddingTop: '24px', display: 'flex', gap: '1rem' }}>
+          <a 
+            href={`${window.location.origin}/api/meta/catalog/feed.csv`}
+            target="_blank"
+            rel="noreferrer"
+            className="login-btn" 
+            style={{ height: '44px', padding: '0 1.5rem', background: '#fffbeb', color: '#d97706', border: '1px solid #f59e0b', textDecoration: 'none', display: 'flex', alignItems: 'center', fontWeight: 'bold' }}
+          >
+            📥 TẢI DỮ LIỆU CÀO FACEBOOK (CSV)
+          </a>
           <button 
             className="btn-pro-save" 
             style={{ height: '44px', padding: '0 1.5rem', whiteSpace: 'nowrap' }} 
@@ -96,8 +106,8 @@ const ToursTab = ({
               <th>KHỐI BU</th>
               <th>TÊN SẢN PHẨM</th>
               <th>ĐIỂM ĐẾN</th>
-              <th>THỜI LƯỢNG</th>
               <th>LOẠI TOUR</th>
+              <th>TRẠNG THÁI</th>
               <th>GIÁ NIÊM YẾT</th>
               <th style={{ textAlign: 'right', paddingRight: '2rem' }}>THAO TÁC</th>
             </tr>
@@ -112,8 +122,7 @@ const ToursTab = ({
                   </span>
                 </td>
                 <td style={{ fontSize: '0.85rem', fontWeight: 700, maxWidth: '250px' }}>{template.name}</td>
-                <td>{template.destination}</td>
-                <td style={{ fontSize: '0.75rem', color: '#64748b' }}>{template.duration}</td>
+                <td style={{ fontSize: '0.8rem', width: '15%' }}>{template.destination}</td>
                 <td>
                   <span 
                     className="status-badge" 
@@ -124,13 +133,37 @@ const ToursTab = ({
                       color: template.tour_type === 'Luxury Tour' ? '#b45309' : 
                              template.tour_type === 'MICE Tour' ? '#15803d' : 
                              template.tour_type === 'Private Tour' ? '#6d28d9' : '#475569', 
-                      fontSize: '0.7rem', 
+                      fontSize: '0.65rem', 
                       fontWeight: 700, 
-                      padding: '4px 8px' 
+                      padding: '4px 8px',
+                      whiteSpace: 'nowrap'
                     }}
                   >
                     {(template.tour_type || 'Group Tour').toUpperCase()}
                   </span>
+                </td>
+                <td>
+                  <button 
+                    onClick={() => {
+                        if (window.confirm(`Bạn muốn ${template.is_active !== false ? 'TẠM NGƯNG' : 'MỞ LẠI'} tour này trên hệ thống Facebook Ads?`)) {
+                            handleUpdateTemplate({...template, is_active: template.is_active === false ? true : false});
+                        }
+                    }}
+                    title="Bấm để bật/tắt quảng cáo tour này trên Facebook"
+                    style={{ 
+                      padding: '4px 10px', 
+                      borderRadius: '20px', 
+                      fontSize: '0.7rem', 
+                      fontWeight: 700, 
+                      backgroundColor: template.is_active !== false ? '#dcfce7' : '#fee2e2', 
+                      color: template.is_active !== false ? '#166534' : '#991b1b',
+                      display: 'inline-block',
+                      border: 'none',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap'
+                  }}>
+                    {template.is_active !== false ? '● ĐANG MỞ' : '○ TẠM NGƯNG'}
+                  </button>
                 </td>
                 <td style={{ color: 'var(--secondary)', fontWeight: 700, fontSize: '0.8rem' }}>
                   {Number(template.base_price || template.price || 0).toLocaleString('vi-VN')}đ

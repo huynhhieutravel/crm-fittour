@@ -251,22 +251,77 @@ const SettingsTab = ({
               onChange={e => setMetaSettings({...metaSettings, meta_verify_token: e.target.value})} 
             />
           </div>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <button className="login-btn" style={{ background: '#0ea5e9' }} onClick={handleUpdateSettings}>LƯU CẤU HÌNH WEBHOOK</button>
-            <button className="login-btn" style={{ background: '#f8fafc', color: '#0ea5e9', border: '1px solid #0ea5e9' }} onClick={handleTestMeta}>TEST KIỂM TRA QUYỀN TRANG</button>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+            <button className="login-btn" style={{ background: '#0ea5e9', width: 'auto', padding: '0 2rem' }} onClick={handleUpdateSettings}>LƯU CẤU HÌNH WEBHOOK</button>
+            <button className="login-btn" style={{ background: '#f8fafc', color: '#0ea5e9', border: '1px solid #0ea5e9', width: 'auto', padding: '0 2rem' }} onClick={() => handleTestMeta('webhook')}>TEST KIỂM TRA QUYỀN</button>
+          </div>
+        </div>
+      )}
+
+      {/* Meta Commerce Catalog area */}
+      {!onlyBU && (
+        <div className="stat-card" style={{ 
+          background: 'white', 
+          color: '#1e293b', 
+          border: '1px solid #e2e8f0', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'flex-start',
+          padding: '2rem'
+        }}>
+          <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Package size={20} color="#f59e0b" /> Cấu hình Meta Commerce Catalog (Sản phẩm Tour)
+          </h3>
+          <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
+            Tích hợp với dữ liệu Facebook qua Real-time Graph Batch API. (Lưu ý: Bạn vẫn có thể tải CSV ở màn hình Tour).
+          </p>
+          <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%' }}>
+            <label>DESTINATION CATALOG ID</label>
+            <input 
+              className="modal-input" 
+              placeholder="Ví dụ: 9876543210"
+              value={metaSettings?.meta_catalog_id || ''} 
+              onChange={e => setMetaSettings({...metaSettings, meta_catalog_id: e.target.value})} 
+            />
+          </div>
+          <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%' }}>
+            <label>META SYSTEM USER ACCESS TOKEN</label>
+            <input 
+              className="modal-input" 
+              placeholder="Paste EAAP... token được tạo từ Graph API Explorer..."
+              value={metaSettings?.meta_system_user_token || ''} 
+              onChange={e => setMetaSettings({...metaSettings, meta_system_user_token: e.target.value})} 
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', width: '100%' }}>
+            <button className="login-btn" style={{ background: '#f59e0b', width: 'auto', padding: '0 2rem' }} onClick={handleUpdateSettings}>LƯU CẤU HÌNH API</button>
+            <button 
+              className="login-btn" 
+              style={{ background: '#fffbeb', color: '#d97706', border: '1px solid #f59e0b', width: 'auto', padding: '0 2rem', textDecoration: 'none', display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center' }}
+              onClick={() => {
+                if(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    alert('Chức năng Đồng bộ API Meta bị khóa trên Localhost để tránh ghi đè dữ liệu thật. Vui lòng thao tác trên crm.tournuocngoai.com.');
+                    return;
+                }
+                handleTestMeta('catalog');
+              }}
+            >
+              <span style={{ fontSize: '1.2rem' }}>⚡</span> ĐỒNG BỘ TOÀN BỘ (API)
+            </button>
           </div>
         </div>
       )}
 
       {/* BU Management - Redesigned to be FULL WIDTH and VERTICAL STACK */}
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: '1rem', 
-        width: '100%', 
-        background: 'transparent'
-      }}>
-        <div style={{ marginBottom: '1rem' }}>
+      {onlyBU && (
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '1rem', 
+          width: '100%', 
+          background: 'transparent'
+        }}>
+          <div style={{ marginBottom: '1rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
             <div>
               <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e293b', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -437,13 +492,14 @@ const SettingsTab = ({
           })}
         </div>
         
-        <div style={{ marginTop: '2rem', padding: '1.5rem', background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '12px', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <Info size={24} color="#d97706" />
-          <span style={{ fontSize: '0.95rem', color: '#92400e' }}>
-            <strong>Quản lý:</strong> Di chuyển BU lên/xuống để thay đổi thứ tự hiển thị. Các BU "Đã tạm dừng" sẽ không xuất hiện trong bộ lọc của Sản phẩm và Lead.
-          </span>
+          <div style={{ marginTop: '2rem', padding: '1.5rem', background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '12px', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <Info size={24} color="#d97706" />
+            <span style={{ fontSize: '0.95rem', color: '#92400e' }}>
+              <strong>Quản lý:</strong> Di chuyển BU lên/xuống để thay đổi thứ tự hiển thị. Các BU "Đã tạm dừng" sẽ không xuất hiện trong bộ lọc của Sản phẩm và Lead.
+            </span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

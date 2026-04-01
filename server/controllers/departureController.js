@@ -44,11 +44,11 @@ exports.getAllDepartures = async (req, res) => {
 
 exports.createDeparture = async (req, res) => {
     const { 
-        tour_template_id, start_date, end_date, max_participants, status,
-        actual_price, discount_price, single_room_supplement, visa_fee, tip_fee,
+        code, tour_template_id, start_date, end_date, max_participants, status,
+        actual_price, discount_price,
         guide_id, operator_id, supplier_info, min_participants, break_even_pax,
         deadline_booking, deadline_visa, deadline_payment,
-        price_adult, price_child_6_11, price_child_2_5, price_infant
+        price_rules, additional_services, notes
     } = req.body;
     try {
         // Check for guide overlap
@@ -61,20 +61,25 @@ exports.createDeparture = async (req, res) => {
             }
         }
 
+        // Sanitize
+        const final_guide = guide_id === '' ? null : guide_id;
+        const final_operator = operator_id === '' ? null : operator_id;
+
+        const generatedCode = code || ('DEP-' + (start_date ? new Date(start_date).toISOString().slice(2,10).replace(/-/g, '') : new Date().toISOString().slice(2,10).replace(/-/g, '')) + '-' + Math.random().toString(36).substring(2, 6).toUpperCase());
         const result = await db.query(
             `INSERT INTO tour_departures (
-                tour_template_id, start_date, end_date, max_participants, status,
-                actual_price, discount_price, single_room_supplement, visa_fee, tip_fee,
+                code, tour_template_id, start_date, end_date, max_participants, status,
+                actual_price, discount_price, 
                 guide_id, operator_id, supplier_info, min_participants, break_even_pax,
                 deadline_booking, deadline_visa, deadline_payment,
-                price_adult, price_child_6_11, price_child_2_5, price_infant
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) RETURNING *`,
+                price_rules, additional_services, notes
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *`,
             [
-                tour_template_id, start_date, end_date, max_participants, status || 'Open',
-                actual_price, discount_price, single_room_supplement, visa_fee, tip_fee,
-                guide_id, operator_id, supplier_info, min_participants, break_even_pax,
+                generatedCode, tour_template_id, start_date, end_date, max_participants, status || 'Open',
+                actual_price, discount_price,
+                final_guide, final_operator, supplier_info, min_participants, break_even_pax,
                 deadline_booking, deadline_visa, deadline_payment,
-                price_adult, price_child_6_11, price_child_2_5, price_infant
+                price_rules ? JSON.stringify(price_rules) : '[]', additional_services ? JSON.stringify(additional_services) : '[]', notes
             ]
         );
         res.status(201).json(result.rows[0]);
@@ -157,19 +162,28 @@ exports.updateDeparture = async (req, res) => {
         const values = [];
         let index = 1;
 
-        for (const [key, value] of Object.entries(fields)) {
+        for (const [key, value] of Object.entries(updates)) {
             // Only allow valid columns
             const validColumns = [
-                'start_date', 'end_date', 'max_participants', 'status',
-                'actual_price', 'discount_price', 'single_room_supplement', 
-                'visa_fee', 'tip_fee', 'guide_id', 'operator_id', 
+                'code', 'start_date', 'end_date', 'max_participants', 'status',
+                'actual_price', 'discount_price',
+                'guide_id', 'operator_id', 
                 'supplier_info', 'min_participants', 'break_even_pax',
                 'deadline_booking', 'deadline_visa', 'deadline_payment',
-                'price_adult', 'price_child_6_11', 'price_child_2_5', 'price_infant'
+                'price_rules', 'additional_services', 'notes'
             ];
+            // Format empty string to null for specific fields
+            let finalValue = value;
+            if (value === '' && ['guide_id', 'operator_id', 'break_even_pax', 'max_participants'].includes(key)) {
+                finalValue = null;
+            }
+            if (['price_rules', 'additional_services'].includes(key)) {
+                finalValue = typeof value === 'string' ? value : JSON.stringify(value);
+            }
+
             if (validColumns.includes(key)) {
                 setClause.push(`${key} = $${index}`);
-                values.push(value);
+                values.push(finalValue);
                 index++;
             }
         }
@@ -191,9 +205,27 @@ exports.updateDeparture = async (req, res) => {
 
 exports.deleteDeparture = async (req, res) => {
     try {
+        // Cascade delete associated bookings to prevent FK constraints
+        await db.query('DELETE FROM bookings WHERE tour_departure_id = $1', [req.params.id]);
+
         const result = await db.query('DELETE FROM tour_departures WHERE id = $1 RETURNING *', [req.params.id]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy lịch khởi hành' });
         res.json({ message: 'Đã xoá lịch khởi hành thành công' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getDepartureBookings = async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT b.*, c.name as customer_name, c.phone as customer_phone
+            FROM bookings b
+            JOIN customers c ON b.customer_id = c.id
+            WHERE b.tour_departure_id = $1
+            ORDER BY b.created_at DESC
+        `, [req.params.id]);
+        res.json(result.rows);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -205,16 +237,18 @@ exports.duplicateDeparture = async (req, res) => {
         if (original.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy lịch khởi hành' });
         
         const dep = original.rows[0];
+        const generatedCode = 'DEP-' + (dep.start_date ? new Date(dep.start_date).toISOString().slice(2,10).replace(/-/g, '') : new Date().toISOString().slice(2,10).replace(/-/g, '')) + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        
         const result = await db.query(
             `INSERT INTO tour_departures (
-                tour_template_id, start_date, end_date, max_participants, status,
+                code, tour_template_id, start_date, end_date, max_participants, status,
                 actual_price, discount_price, single_room_supplement, visa_fee, tip_fee,
                 guide_id, operator_id, supplier_info, min_participants, break_even_pax,
                 deadline_booking, deadline_visa, deadline_payment,
                 price_adult, price_child_6_11, price_child_2_5, price_infant
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) RETURNING *`,
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23) RETURNING *`,
             [
-                dep.tour_template_id, dep.start_date, dep.end_date, dep.max_participants, 'Open',
+                generatedCode, dep.tour_template_id, dep.start_date, dep.end_date, dep.max_participants, 'Open',
                 dep.actual_price, dep.discount_price, dep.single_room_supplement, dep.visa_fee, dep.tip_fee,
                 dep.guide_id, dep.operator_id, dep.supplier_info, dep.min_participants, dep.break_even_pax,
                 dep.deadline_booking, dep.deadline_visa, dep.deadline_payment,

@@ -11,6 +11,7 @@ import {
 
 import SettingsTab from './tabs/SettingsTab';
 import BookingsTab from './tabs/BookingsTab';
+import CostingsTab from './tabs/CostingsTab';
 import CustomersTab from './tabs/CustomersTab';
 import InboxTab from './tabs/InboxTab';
 import ToursTab from './tabs/ToursTab';
@@ -24,9 +25,10 @@ import UsersTab from './tabs/UsersTab';
 import AddLeadModal from './components/modals/AddLeadModal';
 import EditLeadModal from './components/modals/EditLeadModal';
 import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
+import { AddBookingModal } from './components/modals/BookingModals';
 import { AddUserModal, EditUserModal, ChangePasswordModal } from './components/modals/UserModals';
 import LeadNotesModal from './components/modals/LeadNotesModal';
-import { AddTemplateModal, AddDepartureModal, EditTemplateModal } from './components/modals/TourModals';
+import { AddTemplateModal, AddDepartureModal, EditTemplateModal, EditDepartureModal } from './components/modals/TourModals';
 import GuideModal from './components/modals/GuideModal';
 
 import { 
@@ -65,7 +67,8 @@ import {
   User,
   Lock,
   PieChart,
-  FileText
+  FileText,
+  DollarSign
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -84,7 +87,7 @@ function AppContent() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -115,10 +118,11 @@ function AppContent() {
     meta_page_id: ''
   });
   const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'today', startDate: '', endDate: '', tours: [] });
-  const [tourFilters, setTourFilters] = useState({ search: '', tour_type: '', destination: '' });
+  const [tourFilters, setTourFilters] = useState({ search: '', tour_type: '', destination: '', status: '', guide_id: '', timeRange: 'all', startDate: '', endDate: '' });
   const [bookingFilters, setBookingFilters] = useState({ search: '', status: '' });
   const [customerFilters, setCustomerFilters] = useState({ search: '' });
   const [showAddLeadModal, setShowAddLeadModal] = useState(false);
+  const [showAddBookingModal, setShowAddBookingModal] = useState(false);
   const [newLead, setNewLead] = useState({ 
     name: '', phone: '', email: '', gender: '', birth_date: '', 
     source: 'Messenger', tour_id: '', consultation_note: '', 
@@ -152,7 +156,10 @@ function AppContent() {
   const [showAddTemplateModal, setShowAddTemplateModal] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [showAddDepartureModal, setShowAddDepartureModal] = useState(false);
+  const [showEditDepartureModal, setShowEditDepartureModal] = useState(false);
+  const [editingDeparture, setEditingDeparture] = useState(null);
   const [showAddGuideModal, setShowAddGuideModal] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const [newTemplate, setNewTemplate] = useState({
     name: '', destination: '', duration: '', tour_type: 'Standard', tags: '',
@@ -162,8 +169,15 @@ function AppContent() {
 
   const [newDeparture, setNewDeparture] = useState({
     tour_template_id: '', start_date: '', end_date: '', max_participants: 20, status: 'Open',
-    actual_price: 0, discount_price: 0, single_room_supplement: 0, visa_fee: 0, tip_fee: 0,
-    guide_id: '', operator_id: '', min_participants: 10, break_even_pax: 12
+    actual_price: 0, discount_price: 0,
+    guide_id: '', operator_id: '', min_participants: 10, break_even_pax: 12,
+    price_rules: [
+      { id: Math.random().toString(36).substring(7), name: 'Người lớn', price: 0, is_default: true },
+      { id: Math.random().toString(36).substring(7), name: 'Trẻ em (06-11 tuổi)', price: 0, is_default: false },
+      { id: Math.random().toString(36).substring(7), name: 'Trẻ em (< 02 tuổi)', price: 0, is_default: false }
+    ],
+    additional_services: [],
+    notes: ''
   });
 
   const [newGuide, setNewGuide] = useState({
@@ -211,6 +225,7 @@ function AppContent() {
   const [leadToDelete, setLeadToDelete] = useState(null);
   const [customerToDelete, setCustomerToDelete] = useState(null);
   const [tourToDelete, setTourToDelete] = useState(null);
+  const [departureToDelete, setDepartureToDelete] = useState(null);
 
   const LEAD_SOURCES = ['Messenger', 'Zalo', 'Khách giới thiệu', 'Hotline', 'Khác'];
   const LEAD_STATUSES = ['Mới', 'Đang liên hệ', 'Tiềm năng', 'Đặt cọc', 'Chốt đơn', 'Thất bại'];
@@ -223,6 +238,26 @@ function AppContent() {
   const addToast = (msg) => addToastGlobal(msg, setToasts);
 
   useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.response && [401, 403].includes(error.response.status)) {
+          if (error.config && error.config.url !== '/api/auth/login') {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setIsLoggedIn(false);
+            setUser(null);
+            navigate('/login');
+            // addToastGlobal('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', setToasts);
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+    return () => axios.interceptors.response.eject(interceptor);
+  }, [navigate]);
+
+  useEffect(() => {
     if (isLightMode) {
       document.body.classList.add('light-mode');
     } else {
@@ -233,7 +268,7 @@ function AppContent() {
   // Sync activeTab with URL
   useEffect(() => {
     const path = location.pathname.substring(1);
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {
@@ -440,11 +475,75 @@ function AppContent() {
       setShowAddDepartureModal(false);
       setNewDeparture({
         tour_template_id: '', start_date: '', end_date: '', max_participants: 20, status: 'Open',
-        actual_price: 0, discount_price: 0, single_room_supplement: 0, visa_fee: 0, tip_fee: 0,
-        guide_id: '', operator_id: '', min_participants: 10, break_even_pax: 12
+        actual_price: 0, discount_price: 0,
+        guide_id: '', operator_id: '', min_participants: 10, break_even_pax: 12,
+        price_rules: [
+          { id: Math.random().toString(36).substring(7), name: 'Người lớn', price: 0, is_default: true },
+          { id: Math.random().toString(36).substring(7), name: 'Trẻ em (06-11 tuổi)', price: 0, is_default: false },
+          { id: Math.random().toString(36).substring(7), name: 'Trẻ em (< 02 tuổi)', price: 0, is_default: false }
+        ],
+        additional_services: [],
+        notes: ''
       });
       addToast('Đã lên lịch khởi hành mới thành công!');
-    } catch (err) { addToast('Lỗi khi thêm lịch khởi hành: ' + err.message); }
+    } catch (err) { addToast('Lỗi khi thêm lịch khởi hành: ' + (err.response?.data?.message || err.message)); }
+  };
+
+  const handleEditDeparture = (dep) => {
+    setEditingDeparture(dep);
+    setShowEditDepartureModal(true);
+  };
+
+  const handleUpdateDeparture = async (updatedData) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/departures/${updatedData.id}`, updatedData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchTourDepartures();
+      setShowEditDepartureModal(false);
+      setEditingDeparture(null);
+      addToast('Đã cập nhật lịch khởi hành thành công!');
+      return null;
+    } catch (err) { 
+      const errorStr = err.response?.data?.message || err.message;
+      addToast('Lỗi khi cập nhật lịch khởi hành: ' + errorStr); 
+      return errorStr;
+    }
+  };
+
+  const handleDeleteDeparture = (id) => {
+    setDepartureToDelete(id);
+  };
+
+  const confirmDeleteDeparture = async () => {
+    if (!departureToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/departures/${departureToDelete}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchTourDepartures();
+      addToast('Đã xoá lịch khởi hành.');
+      setDepartureToDelete(null);
+    } catch (err) { 
+      addToast('Lỗi khi xoá: ' + (err.response?.data?.message || err.message)); 
+      setDepartureToDelete(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDuplicateDeparture = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`/api/departures/${id}/duplicate`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchTourDepartures();
+      addToast('Đã nhân bản lịch khởi hành thành công!');
+    } catch (err) { addToast('Lỗi khi nhân bản: ' + (err.response?.data?.message || err.message)); }
   };
 
   const handleAddGuide = async (e) => {
@@ -928,12 +1027,19 @@ function AppContent() {
     setTestLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const apiPath = type === 'capi' ? '/api/settings/test-capi' : '/api/messages/test-meta';
-      // Always use current metaSettings value, not stale metaToken state
+      let apiPath = '/api/messages/test-meta';
       const currentPageToken = metaSettings?.meta_page_access_token || metaToken;
-      const payload = type === 'capi' ? {} : { token: currentPageToken };
-      
-      if (type !== 'capi' && !currentPageToken) {
+      let payload = { token: currentPageToken };
+
+      if (type === 'capi') {
+        apiPath = '/api/settings/test-capi';
+        payload = {};
+      } else if (type === 'catalog') {
+        apiPath = '/api/meta/catalog/sync-all';
+        payload = {};
+      }
+
+      if (type === 'messenger' && !currentPageToken) {
         addToast('Vui lòng nhập Page Access Token trước khi kiểm tra!');
         setTestLoading(false);
         return;
@@ -1144,8 +1250,26 @@ function AppContent() {
               )}
 
               {checkView('departures') && (
-                <div className={`nav-item ${activeTab === 'departures' ? 'active' : ''}`} onClick={() => navigate('/departures')}>
-                  <Calendar /> Lịch khởi hành
+                <div 
+                  className={`nav-item ${activeTab === 'departures' || activeTab === 'costings' ? 'active-parent' : ''}`}
+                  onClick={() => navigate('/departures')}
+                  style={{ justifyContent: 'space-between' }}
+                  onMouseEnter={(e) => {
+                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHoveredRect(rect);
+                    setHoveredMenu('departures');
+                  }}
+                  onMouseLeave={() => {
+                    menuTimerRef.current = setTimeout(() => {
+                      setHoveredMenu(null);
+                    }, 150);
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Calendar /> Lịch khởi hành
+                  </div>
+                  <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
               
@@ -1280,6 +1404,46 @@ function AppContent() {
         </div>
       )}
 
+      {hoveredMenu === 'departures' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('departures');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'departures' ? 'active' : ''}`} 
+            onClick={() => { navigate('/departures'); setHoveredMenu(null); }}
+          >
+            Lịch khởi hành
+          </div>
+          {(user?.role === 'admin' || user?.role === 'operations' || user?.role === 'manager') && (
+            <div 
+              className={`submenu-item ${activeTab === 'costings' ? 'active' : ''}`} 
+              onClick={() => { navigate('/costings'); setHoveredMenu(null); }} 
+            >
+              Bảng Dự Toán Tour
+            </div>
+          )}
+        </div>
+      )}
+
       <main className="main-content">
         <div className="breadcrumb-container">
           <div className="breadcrumb">CRM / {activeTab.toUpperCase()}</div>
@@ -1377,6 +1541,7 @@ function AppContent() {
             setShowAddTemplateModal={setShowAddTemplateModal}
             setEditingTemplate={setEditingTemplate}
             handleDeleteTour={handleDeleteTour}
+            handleUpdateTemplate={handleUpdateTemplate}
             bus={bus}
           />
         )}
@@ -1387,6 +1552,11 @@ function AppContent() {
             tourFilters={tourFilters}
             setTourFilters={setTourFilters}
             setShowAddDepartureModal={setShowAddDepartureModal}
+            handleEditDeparture={handleEditDeparture}
+            handleDeleteDeparture={handleDeleteDeparture}
+            handleDuplicateDeparture={handleDuplicateDeparture}
+            handleUpdateDeparture={handleUpdateDeparture}
+            guides={guides}
           />
         )}
 
@@ -1412,7 +1582,12 @@ function AppContent() {
             bookings={bookings}
             bookingFilters={bookingFilters}
             setBookingFilters={setBookingFilters}
+            setShowAddBookingModal={setShowAddBookingModal}
           />
+        )}
+
+        {activeTab === 'costings' && (
+          <CostingsTab user={user} />
         )}
 
         {activeTab === 'customers' && (
@@ -1480,6 +1655,41 @@ function AppContent() {
         bus={bus.filter(b => b.is_active !== false)}
       />
 
+      <AddBookingModal
+        show={showAddBookingModal}
+        onClose={() => setShowAddBookingModal(false)}
+        onSave={async (bookingData) => {
+          try {
+            let finalCustomerId = bookingData.customer_id;
+            
+            if (bookingData.is_new_customer) {
+              const custRes = await axios.post('/api/customers', {
+                name: bookingData.new_customer_info.name,
+                phone: bookingData.new_customer_info.phone,
+                preferred_contact: 'Zalo',
+                role: 'booker'
+              });
+              finalCustomerId = custRes.data.id;
+            }
+
+            const res = await axios.post('/api/bookings', {
+              ...bookingData,
+              customer_id: finalCustomerId
+            });
+            
+            const updatedBookings = await axios.get('/api/bookings');
+            setBookings(updatedBookings.data);
+            setShowAddBookingModal(false);
+            addToastGlobal('Lưu đơn hàng thành công!', setToasts);
+          } catch (err) {
+            console.error(err);
+            alert('Lỗi tạo đơn hàng: ' + (err.response?.data?.message || err.message));
+          }
+        }}
+        customers={customers}
+        departures={tourDepartures}
+      />
+
       <AddCustomerModal 
         showAddCustomerModal={showAddCustomerModal}
         setShowAddCustomerModal={setShowAddCustomerModal}
@@ -1536,6 +1746,16 @@ function AppContent() {
         handleAddDeparture={handleAddDeparture}
         newDeparture={newDeparture}
         setNewDeparture={setNewDeparture}
+        tourTemplates={tourTemplates}
+        guides={guides}
+      />
+
+      <EditDepartureModal 
+        showEditDepartureModal={showEditDepartureModal}
+        setShowEditDepartureModal={setShowEditDepartureModal}
+        handleUpdateDeparture={handleUpdateDeparture}
+        editingDeparture={editingDeparture}
+        setEditingDeparture={setEditingDeparture}
         tourTemplates={tourTemplates}
         guides={guides}
       />
@@ -1668,11 +1888,12 @@ function AppContent() {
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
     {/* MODAL XÁC NHẬN XÓA (CUSTOM) */}
-    {(leadToDelete || customerToDelete || tourToDelete) && (
+    {(leadToDelete || customerToDelete || tourToDelete || departureToDelete) && (
       <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={() => {
         setLeadToDelete(null);
         setCustomerToDelete(null);
         setTourToDelete(null);
+        setDepartureToDelete(null);
       }}>
         <div className="modal-content animate-slide-up" style={{ maxWidth: '400px', textAlign: 'center', padding: '2.5rem' }} onClick={e => e.stopPropagation()}>
           <div style={{ width: '60px', height: '60px', background: '#fee2e2', color: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
@@ -1691,6 +1912,7 @@ function AppContent() {
                 setLeadToDelete(null);
                 setCustomerToDelete(null);
                 setTourToDelete(null);
+                setDepartureToDelete(null);
               }}
             >HỦY BỎ</button>
             <button 
@@ -1701,6 +1923,7 @@ function AppContent() {
                 if (leadToDelete) confirmDeleteLead();
                 if (customerToDelete) confirmDeleteCustomer();
                 if (tourToDelete) confirmDeleteTour();
+                if (departureToDelete) confirmDeleteDeparture();
               }}
             >{loading ? 'ĐANG XÓA...' : 'XÓA THỰC SỰ'}</button>
           </div>

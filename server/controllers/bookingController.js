@@ -18,7 +18,7 @@ exports.getAllBookings = async (req, res) => {
 };
 
 exports.createBooking = async (req, res) => {
-    const { booking_code, customer_id, tour_id, tour_departure_id, start_date, pax_count, total_price, payment_status, booking_status, notes } = req.body;
+    const { booking_code, customer_id, tour_id, tour_departure_id, start_date, pax_count, total_price, payment_status, booking_status, notes, pax_details, service_details } = req.body;
     try {
         // Auto-generate booking code if missing
         let finalCode = booking_code;
@@ -29,8 +29,14 @@ exports.createBooking = async (req, res) => {
         }
 
         const result = await db.query(
-            'INSERT INTO bookings (booking_code, customer_id, tour_id, tour_departure_id, start_date, pax_count, total_price, payment_status, booking_status, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
-            [finalCode, customer_id, tour_id || null, tour_departure_id || null, start_date || null, pax_count || 0, total_price || 0, payment_status || 'unpaid', booking_status || 'pending', notes || null]
+            'INSERT INTO bookings (booking_code, customer_id, tour_id, tour_departure_id, start_date, pax_count, total_price, payment_status, booking_status, notes, pax_details, service_details) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
+            [
+              finalCode, customer_id, tour_id || null, tour_departure_id || null, 
+              start_date || null, pax_count || 0, total_price || 0, payment_status || 'unpaid', 
+              booking_status || 'pending', notes || null, 
+              pax_details ? JSON.stringify(pax_details) : '[]', 
+              service_details ? JSON.stringify(service_details) : '[]'
+            ]
         );
         
         const newBooking = result.rows[0];
@@ -89,13 +95,17 @@ exports.updateBooking = async (req, res) => {
         const allowedFields = [
             'booking_code', 'customer_id', 'tour_id', 'tour_departure_id', 
             'start_date', 'pax_count', 'total_price', 'payment_status', 
-            'booking_status', 'notes'
+            'booking_status', 'notes', 'pax_details', 'service_details'
         ];
 
         Object.keys(updates).forEach(key => {
             if (allowedFields.includes(key)) {
                 updateFields.push(`${key} = $${queryValues.length + 1}`);
-                queryValues.push(updates[key]);
+                if (['pax_details', 'service_details'].includes(key) && typeof updates[key] !== 'string') {
+                    queryValues.push(JSON.stringify(updates[key]));
+                } else {
+                    queryValues.push(updates[key]);
+                }
             }
         });
 
