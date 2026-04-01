@@ -1,4 +1,5 @@
 import React from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 import { 
   Search, 
   Plus, 
@@ -7,13 +8,17 @@ import {
   Edit2, 
   Trash2, 
   ChevronLeft, 
-  ChevronRight 
+  ChevronRight,
+  Activity,
+  Calendar,
+  MapPin,
+  CheckCircle
 } from 'lucide-react';
 
 const GuidesTab = ({ 
   guides, 
-  guideFilters, 
-  setGuideFilters, 
+  guideFilters,
+  setGuideFilters,
   guideActiveTab, 
   setGuideActiveTab, 
   fetchGuideTimeline, 
@@ -22,8 +27,84 @@ const GuidesTab = ({
   handleDeleteGuide, 
   guideTimeFilter, 
   setGuideTimeFilter, 
-  guideTimelineData 
+  guideTimelineData,
+  guideStats,
+  fetchGuideStats,
+  hoveredNote,
+  setHoveredNote,
+  tourDepartures,
+  handleEditDeparture
 }) => {
+  const [dashFilter, setDashFilter] = React.useState({ timeRange: 'this_month', startDate: '', endDate: '' });
+  const [localStats, setLocalStats] = React.useState(null);
+
+  React.useEffect(() => {
+    if (guideActiveTab === 'dashboard') {
+      let calcStart = '', calcEnd = '';
+      const today = new Date();
+      if (dashFilter.timeRange === 'all') {
+         calcStart = '2000-01-01';
+         calcEnd = '2100-12-31';
+      } else if (dashFilter.timeRange === 'this_month') {
+         calcStart = new Date(today.getFullYear(), today.getMonth(), 1).toLocaleDateString('en-CA');
+         calcEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0).toLocaleDateString('en-CA');
+      } else if (dashFilter.timeRange === 'next_month') {
+         calcStart = new Date(today.getFullYear(), today.getMonth() + 1, 1).toLocaleDateString('en-CA');
+         calcEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0).toLocaleDateString('en-CA');
+      } else if (dashFilter.timeRange === 'this_quarter') {
+         const q = Math.floor(today.getMonth() / 3);
+         calcStart = new Date(today.getFullYear(), q * 3, 1).toLocaleDateString('en-CA');
+         calcEnd = new Date(today.getFullYear(), (q + 1) * 3, 0).toLocaleDateString('en-CA');
+      } else if (dashFilter.timeRange === 'upcoming') {
+         calcStart = new Date().toLocaleDateString('en-CA');
+         calcEnd = new Date(today.setDate(today.getDate() + 30)).toLocaleDateString('en-CA');
+      } else if (dashFilter.timeRange === 'custom') {
+         if (dashFilter.startDate && dashFilter.endDate) {
+           calcStart = dashFilter.startDate;
+           calcEnd = dashFilter.endDate;
+         }
+      }
+      
+      if (calcStart && calcEnd) {
+         try {
+            const activeCount = guides ? guides.filter(g => g.status === 'Active').length : 0;
+            const inRangeTours = tourDepartures ? tourDepartures.filter(td => {
+                 if (!td.start_date) return false;
+                 const sd = td.start_date.split('T')[0];
+                 return sd >= calcStart && sd <= calcEnd;
+            }) : [];
+            const tCount = inRangeTours.length;
+            
+            const gMap = {};
+            inRangeTours.forEach(td => {
+               if (td.guide_id) {
+                  gMap[td.guide_id] = (gMap[td.guide_id] || 0) + 1;
+               }
+            });
+            let cData = Object.keys(gMap).map(gid => {
+               const gItem = guides.find(g => g.id === parseInt(gid));
+               return {
+                  name: gItem ? gItem.name : `HDV #${gid}`,
+                  tours_count: gMap[gid]
+               };
+            }).sort((a,b) => b.tours_count - a.tours_count).slice(0, 15);
+            
+            setLocalStats({
+               totalActiveGuides: activeCount,
+               totalTours: tCount,
+               chartData: cData
+            });
+         } catch(err) {
+            setLocalStats({ error: err.message });
+         }
+      }
+    }
+  }, [guideActiveTab, dashFilter, guides, tourDepartures]);
+
+  React.useEffect(() => {
+    fetchGuideTimeline();
+  }, [fetchGuideTimeline]);
+
   const getDaysInPeriod = (type, date, start, end) => {
     const days = [];
     let curr = new Date();
@@ -51,35 +132,11 @@ const GuidesTab = ({
 
   return (
     <div className="animate-fade-in">
-      {/* Sub-navigation Tabs */}
-      <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
-        <button 
-          onClick={() => setGuideActiveTab('list')}
-          style={{ 
-            background: 'none', border: 'none', padding: '0.5rem 0', cursor: 'pointer',
-            fontWeight: 700, fontSize: '0.9rem', color: guideActiveTab === 'list' ? '#6366f1' : '#94a3b8',
-            borderBottom: guideActiveTab === 'list' ? '2px solid #6366f1' : '2px solid transparent',
-            transition: 'all 0.2s'
-          }}
-        >
-          DANH SÁCH HDV
-        </button>
-        <button 
-          onClick={() => { setGuideActiveTab('timeline'); fetchGuideTimeline(); }}
-          style={{ 
-            background: 'none', border: 'none', padding: '0.5rem 0', cursor: 'pointer',
-            fontWeight: 700, fontSize: '0.9rem', color: guideActiveTab === 'timeline' ? '#6366f1' : '#94a3b8',
-            borderBottom: guideActiveTab === 'timeline' ? '2px solid #6366f1' : '2px solid transparent',
-            transition: 'all 0.2s'
-          }}
-        >
-          LỊCH GANTT (TIMELINE)
-        </button>
-      </div>
+
 
       {guideActiveTab === 'list' ? (
         <>
-          <div className="filter-bar" style={{ display: 'grid', gridTemplateColumns: '1fr 200px 200px auto', gap: '1rem', alignItems: 'end' }}>
+          <div className="filter-bar" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) 130px 150px 150px 180px auto', gap: '1rem', alignItems: 'end' }}>
             <div className="filter-group">
               <label>DANH SÁCH HƯỚNG DẪN VIÊN</label>
               <div style={{ position: 'relative' }}>
@@ -88,23 +145,31 @@ const GuidesTab = ({
                   className="filter-input" 
                   style={{ width: '100%', paddingLeft: '36px' }} 
                   placeholder="Tìm tên, SĐT..." 
-                  value={guideFilters.search} 
+                  value={guideFilters.search || ''} 
                   onChange={e => setGuideFilters({...guideFilters, search: e.target.value})} 
                 />
               </div>
             </div>
             <div className="filter-group">
-              <label>TRẠNG THÁI</label>
-              <select className="filter-select" value={guideFilters.status} onChange={e => setGuideFilters({...guideFilters, status: e.target.value})}>
+              <label>TÌNH TRẠNG</label>
+              <select className="filter-select" value={guideFilters.status || ''} onChange={e => setGuideFilters({...guideFilters, status: e.target.value})}>
                 <option value="">-- Tất cả --</option>
-                <option value="Available">Sẵn sàng</option>
-                <option value="Busy">Đang đi tour</option>
+                <option value="Active">Hoạt động</option>
+                <option value="Inactive">Tạm nghỉ</option>
+              </select>
+            </div>
+            <div className="filter-group">
+              <label>GIAO VIỆC</label>
+              <select className="filter-select" value={guideFilters.assignment || ''} onChange={e => setGuideFilters({...guideFilters, assignment: e.target.value})}>
+                <option value="">-- Thuộc tính --</option>
+                <option value="has_tour">Có tour đang/sắp chạy</option>
+                <option value="no_tour">Đang rảnh / Chưa có tour</option>
               </select>
             </div>
             <div className="filter-group">
               <label>NGÔN NGỮ</label>
-              <select className="filter-select" value={guideFilters.language} onChange={e => setGuideFilters({...guideFilters, language: e.target.value})}>
-                <option value="">-- Tất cả --</option>
+              <select className="filter-select" value={guideFilters.language || ''} onChange={e => setGuideFilters({...guideFilters, language: e.target.value})}>
+                <option value="">-- Loại ngôn ngữ --</option>
                 <option value="Tiếng Việt">Tiếng Việt</option>
                 <option value="Tiếng Anh">Tiếng Anh</option>
                 <option value="Tiếng Pháp">Tiếng Pháp</option>
@@ -113,45 +178,91 @@ const GuidesTab = ({
               </select>
             </div>
             <button className="btn-pro-save" style={{ width: 'auto', padding: '0.75rem 1.5rem' }} onClick={() => setShowAddGuideModal(true)}>
-              <Plus size={18} strokeWidth={3} /> THÊM HDV MỚI
+              <Plus size={18} strokeWidth={3} /> THÊM MỚI
             </button>
           </div>
           <div className="data-table-container">
-            <table className="data-table">
+            <table className="data-table mt-4">
               <thead>
                 <tr>
                   <th>HỌ VÀ TÊN</th>
-                  <th>LIÊN HỆ</th>
-                  <th>ĐÁNH GIÁ</th>
-                  <th>TRẠNG THÁI</th>
+                  <th>NGÔN NGỮ & LIÊN HỆ</th>
+                  <th>TOUR ĐANG/SẮP CHẠY</th>
+                  <th style={{ textAlign: 'center' }}>SỐ LƯỢT</th>
                   <th style={{ textAlign: 'right' }}>THAO TÁC</th>
                 </tr>
               </thead>
               <tbody>
                 {guides.filter(g => {
-                  const matchesSearch = (g.name || '').toLowerCase().includes(guideFilters.search.toLowerCase()) || (g.phone || '').includes(guideFilters.search);
-                  const matchesStatus = !guideFilters.status || g.status === guideFilters.status;
+                  const safeSearch = guideFilters.search || '';
+                  const matchesSearch = (g.name || '').toLowerCase().includes(safeSearch.toLowerCase()) || (g.phone || '').includes(safeSearch);
                   const matchesLang = !guideFilters.language || (g.languages || '').includes(guideFilters.language);
-                  return matchesSearch && matchesStatus && matchesLang;
-                }).map(guide => (
-                  <tr key={guide.id}>
-                    <td style={{ fontWeight: 700, fontSize: '0.9rem' }}>
+                  const matchesStatus = !guideFilters.status || g.status === guideFilters.status;
+
+                  let matchesAssignment = true;
+                  if (guideFilters.assignment === 'has_tour') matchesAssignment = !!g.next_tour;
+                  if (guideFilters.assignment === 'no_tour') matchesAssignment = !g.next_tour;
+
+                  return matchesSearch && matchesStatus && matchesLang && matchesAssignment;
+                }).map(guide => {
+                  const now = new Date();
+                  const isBusyWithTour = guide.next_tour && new Date(guide.next_tour.start_date) <= now && new Date(guide.next_tour.end_date) >= now;
+
+                  return (
+                  <tr key={guide.id} style={{ opacity: guide.status === 'Inactive' ? 0.6 : 1 }}>
+                    <td 
+                      style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1e293b', position: 'relative' }}
+                      onMouseEnter={() => setHoveredNote && setHoveredNote(guide.id)}
+                      onMouseLeave={() => setHoveredNote && setHoveredNote(null)}
+                    >
                       {guide.name}
+                      {guide.bio && (
+                         <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#e2e8f0', color: '#64748b', borderRadius: '50%', width: '16px', height: '16px', fontSize: '10px', marginLeft: '6px', cursor: 'help' }}>i</div>
+                      )}
+                      {hoveredNote === guide.id && guide.bio && (
+                        <div className="hover-note" style={{
+                           position: 'absolute', top: '100%', left: 0, zIndex: 100,
+                           background: 'white', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px',
+                           boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', width: '250px',
+                           fontSize: '0.8rem', fontWeight: 500, color: '#475569'
+                        }}>
+                          <strong>📝 Ghi chú / Tiểu sử:</strong><br/>
+                          {guide.bio}
+                        </div>
+                      )}
                     </td>
                     <td>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontWeight: 600 }}>{guide.phone}</span>
-                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{guide.email}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          {(guide.languages || '').split(',').map((l, i) => l.trim() && (
+                            <span key={i} style={{ background: '#f1f5f9', color: '#475569', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>{l.trim()}</span>
+                          ))}
+                        </div>
+                        <span style={{ fontWeight: 600, fontSize: '0.8rem' }}>{guide.phone}</span>
+                        <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{guide.email}</span>
                       </div>
                     </td>
                     <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#f59e0b', fontWeight: 800 }}>
-                          <TrendingUp size={14} /> {guide.rating}
+                      {guide.next_tour ? (
+                        <div style={{ background: '#fdf4ff', border: '1px solid #fbcfe8', padding: '0.5rem', borderRadius: '8px', maxWidth: '280px' }}>
+                          <div style={{ fontWeight: 700, color: '#be185d', fontSize: '0.8rem', marginBottom: '4px', display: 'flex', alignItems: 'flex-start', gap: '4px' }}>
+                            <MapPin size={12} style={{ marginTop: '2px', flexShrink: 0 }} /> 
+                            <span style={{ lineHeight: '1.2' }}>{guide.next_tour.name}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#831843', fontWeight: 600 }}>
+                            <Calendar size={12} /> 
+                            {new Date(guide.next_tour.start_date).toLocaleDateString('vi-VN')} - {new Date(guide.next_tour.end_date).toLocaleDateString('vi-VN')}
+                          </div>
                         </div>
+                      ) : (
+                        <div style={{ color: '#94a3b8', fontSize: '0.8rem', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <CheckCircle size={14} /> Chưa nhận lịch mới
+                        </div>
+                      )}
                     </td>
-                    <td>
-                      <div className={`status-badge badge-${guide.status === 'Available' ? 'won' : 'lost'}`}>
-                        {guide.status === 'Available' ? 'Sẵn sàng' : guide.status}
+                    <td style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#e0e7ff', color: '#4f46e5', minWidth: '28px', padding: '0 8px', height: '28px', borderRadius: '8px', fontWeight: 800, fontSize: '0.8rem' }}>
+                        {guide.total_tours || 0}
                       </div>
                     </td>
                     <td style={{ textAlign: 'right' }}>
@@ -168,11 +279,132 @@ const GuidesTab = ({
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </>
+      ) : guideActiveTab === 'dashboard' ? (
+        <div className="animate-fade-in">
+          {/* Dashboard Timeline Controls Duplicate */}
+          <div className="gantt-controls" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(255,255,255,0.7)', borderRadius: '12px', padding: '1.5rem', border: '1px solid rgba(255,255,255,0.3)', marginBottom: '1.5rem' }}>
+            <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '1rem' }}>THỜI GIAN KHỞI HÀNH:</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+              {[
+                { id: 'all', label: 'Tất cả' },
+                { id: 'this_month', label: 'Tháng này' },
+                { id: 'next_month', label: 'Tháng sau' },
+                { id: 'this_quarter', label: 'Quý này' },
+                { id: 'upcoming', label: 'Sắp tới (30 ngày)' }
+              ].map(p => (
+                <button 
+                  key={p.id} 
+                  className={`preset-btn ${(dashFilter.timeRange === p.id && !dashFilter.startDate && !dashFilter.endDate) ? 'active' : ''}`} 
+                  onClick={() => setDashFilter({...dashFilter, timeRange: p.id, startDate: '', endDate: ''})}
+                  style={{
+                    padding: '8px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', border: '1px solid #e2e8f0',
+                    background: dashFilter.timeRange === p.id && !dashFilter.startDate ? '#3b82f6' : 'white',
+                    color: dashFilter.timeRange === p.id && !dashFilter.startDate ? 'white' : '#475569'
+                  }}
+                >
+                  {p.label}
+                </button>
+              ))}
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
+                <span style={{ color: '#64748b', fontWeight: 600 }}>Tùy chọn:</span>
+                <input type="date" className="filter-input" style={{ padding: '8px 12px', height: '38px', borderRadius: '8px', border: '1px solid #cbd5e1' }} value={dashFilter.startDate || ''} onChange={e => setDashFilter({...dashFilter, timeRange: 'custom', startDate: e.target.value})} />
+                <span style={{ color: '#94a3b8' }}>-</span>
+                <input type="date" className="filter-input" style={{ padding: '8px 12px', height: '38px', borderRadius: '8px', border: '1px solid #cbd5e1' }} value={dashFilter.endDate || ''} onChange={e => setDashFilter({...dashFilter, timeRange: 'custom', endDate: e.target.value})} />
+              </div>
+            </div>
+          </div>
+
+          {localStats && localStats.error && (
+            <div style={{ padding: '1rem', background: '#fee2e2', color: '#b91c1c', borderRadius: '8px', marginBottom: '1rem', fontWeight: 600 }}>
+              🔴 Lỗi Tính Toán: {localStats.error}.
+            </div>
+          )}
+          {(!localStats || JSON.stringify(localStats) === '{}') && (
+            <div style={{ padding: '1rem', background: '#fef3c7', color: '#b45309', borderRadius: '8px', marginBottom: '1rem', fontWeight: 600 }}>
+              ⚠️ Đang lọc dữ liệu từ Local...
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <div className="stat-card" style={{ flex: 1, background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', color: 'white', padding: '1.5rem', borderRadius: '1.25rem' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, opacity: 0.8, marginBottom: '8px' }}>TỔNG HDV ACTIVE</div>
+              <div style={{ fontSize: '2rem', fontWeight: 900 }}>{localStats?.totalActiveGuides !== undefined ? localStats.totalActiveGuides : '-'}</div>
+            </div>
+            <div className="stat-card" style={{ flex: 1, background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)', color: 'white', padding: '1.5rem', borderRadius: '1.25rem' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, opacity: 0.8, marginBottom: '8px' }}>TOUR TRONG KỲ NÀY</div>
+              <div style={{ fontSize: '2rem', fontWeight: 900 }}>{localStats?.totalTours !== undefined ? localStats.totalTours : '-'}</div>
+            </div>
+            <div className="stat-card" style={{ flex: 1, background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', color: 'white', padding: '1.5rem', borderRadius: '1.25rem' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, opacity: 0.8, marginBottom: '8px' }}>SỐ TOUR CAO NHẤT (1 HDV)</div>
+              <div style={{ fontSize: '2rem', fontWeight: 900 }}>
+                {localStats?.chartData?.length > 0 ? (
+                  <>{localStats.chartData[0].tours_count}</>
+                ) : '-'}
+              </div>
+            </div>
+          </div>
+
+          <div className="analytics-card" style={{ padding: '2rem' }}>
+             <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1.5rem', color: '#1e293b' }}>
+                KHỐI LƯỢNG CÔNG VIỆC THEO HƯỚNG DẪN VIÊN
+             </h3>
+             <div style={{ height: '500px', width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                   <BarChart 
+                     data={localStats ? localStats.chartData : []}
+                     margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                   >
+                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                     <XAxis 
+                       dataKey="name" 
+                       tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
+                       axisLine={false}
+                       tickLine={false}
+                       interval={0}
+                       angle={-45}
+                       textAnchor="end"
+                     />
+                     <YAxis 
+                       tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }}
+                       axisLine={false}
+                       tickLine={false}
+                       allowDecimals={false}
+                     />
+                     <RechartsTooltip 
+                       cursor={{ fill: '#f1f5f9' }}
+                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                       labelStyle={{ fontWeight: 800, color: '#1e293b', marginBottom: '4px' }}
+                     />
+                     <Bar dataKey="tours_count" name="Số lượng Tour" radius={[6, 6, 0, 0]}>
+                        {localStats && Array.isArray(localStats.chartData) && localStats.chartData.map((entry, index) => (
+                           <Cell key={`cell-${index}`} fill={`url(#colorG${index % 3})`} />
+                        ))}
+                     </Bar>
+                     <defs>
+                        <linearGradient id="colorG0" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.9}/>
+                          <stop offset="95%" stopColor="#818cf8" stopOpacity={0.9}/>
+                        </linearGradient>
+                        <linearGradient id="colorG1" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.9}/>
+                          <stop offset="95%" stopColor="#34d399" stopOpacity={0.9}/>
+                        </linearGradient>
+                        <linearGradient id="colorG2" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.9}/>
+                          <stop offset="95%" stopColor="#fbbf24" stopOpacity={0.9}/>
+                        </linearGradient>
+                     </defs>
+                   </BarChart>
+                </ResponsiveContainer>
+             </div>
+          </div>
+        </div>
       ) : (
         <div className="animate-fade-in">
           {/* Timeline Controls */}
@@ -368,7 +600,8 @@ const GuidesTab = ({
             <div className="gantt-body">
               {guides.map(guide => {
                 const days = getDaysInPeriod(guideTimeFilter.type, guideTimeFilter.date, guideTimeFilter.startDate, guideTimeFilter.endDate);
-                const guideAssignments = guideTimelineData.filter(a => a.guide_id === guide.id);
+                const myData = guideTimelineData.find(d => d.id === guide.id);
+                const guideAssignments = myData ? myData.assignments : [];
                 
                 return (
                   <div key={guide.id} className="gantt-row">
@@ -386,8 +619,8 @@ const GuidesTab = ({
                     <div className="gantt-content-cell">
                       <div className="gantt-time-grid" style={{ position: 'relative', height: '100%' }}>
                         {guideAssignments.map((asg, idx) => {
-                          const start = new Date(asg.start_date);
-                          const end = new Date(asg.end_date);
+                          const start = new Date(asg.start);
+                          const end = new Date(asg.end);
                           
                           const startIndex = days.findIndex(d => d.toDateString() === start.toDateString());
                           const endIndex = days.findIndex(d => d.toDateString() === end.toDateString());
@@ -400,15 +633,27 @@ const GuidesTab = ({
                           return (
                             <div 
                               key={idx}
-                              className={`gantt-bar gantt-bar-${asg.status.toLowerCase()}`}
+                              className={`gantt-bar gantt-bar-${(asg.status || 'draft').toLowerCase()}`}
                               style={{ 
                                 gridColumn: `${gridStart} / ${gridEnd}`,
-                                zIndex: 10
+                                zIndex: 10,
+                                cursor: 'pointer'
                               }}
-                              title={`${asg.tour_name} (${asg.status})`}
+                              onClick={() => {
+                                const dep = tourDepartures.find(d => d.id === asg.id);
+                                if (dep && handleEditDeparture) handleEditDeparture(dep);
+                              }}
                             >
                               <div className="gantt-bar-content">
-                                <span className="gantt-bar-label">{asg.tour_name}</span>
+                                <span className="gantt-bar-label">{asg.tourName}</span>
+                              </div>
+                              <div className="gantt-tooltip">
+                                <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '0.8rem', color: '#60a5fa' }}>{asg.status.toUpperCase()}</div>
+                                <div style={{ fontWeight: 600, marginBottom: '6px' }}>{asg.tourName}</div>
+                                <div style={{ color: '#94a3b8', fontSize: '0.7rem' }}>
+                                  <span style={{ color: '#cbd5e1' }}>Khởi hành: </span> 
+                                  {start.toLocaleDateString('vi-VN')} - {end.toLocaleDateString('vi-VN')}
+                                </div>
                               </div>
                             </div>
                           );

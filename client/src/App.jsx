@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { 
   BrowserRouter as Router,
@@ -87,6 +87,7 @@ function AppContent() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
+    if (path.startsWith('guides')) return 'guides';
     const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
@@ -186,8 +187,14 @@ function AppContent() {
   const [editingGuide, setEditingGuide] = useState(null);
 
   // Gantt Chart / Timeline State
-  const [guideActiveTab, setGuideActiveTab] = useState('list');
+  const [guideActiveTab, setGuideActiveTab] = useState(() => {
+    const p = window.location.pathname.substring(1);
+    if (p === 'guides/timeline') return 'timeline';
+    if (p === 'guides/dashboard') return 'dashboard';
+    return 'list';
+  });
   const [guideTimelineData, setGuideTimelineData] = useState([]);
+  const [guideStats, setGuideStats] = useState(null);
   const [guideTimeFilter, setGuideTimeFilter] = useState({
     type: 'month',
     date: new Date(),
@@ -223,6 +230,7 @@ function AppContent() {
   const [isLightMode, setIsLightMode] = useState(true);
   const [editingLead, setEditingLead] = useState(null);
   const [leadToDelete, setLeadToDelete] = useState(null);
+  const [leadToConvert, setLeadToConvert] = useState(null); // Fix popup close
   const [customerToDelete, setCustomerToDelete] = useState(null);
   const [tourToDelete, setTourToDelete] = useState(null);
   const [departureToDelete, setDepartureToDelete] = useState(null);
@@ -387,15 +395,30 @@ function AppContent() {
     } catch (err) { console.error(err); }
   };
 
-  const fetchGuideTimeline = async () => {
+  const fetchGuideTimeline = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('/api/guides/timeline', {
+      const response = await axios.get('/api/guides/timeline/data', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setGuideTimelineData(response.data);
     } catch (err) { console.error(err); }
-  };
+  }, []);
+
+  const fetchGuideStats = useCallback(async (start, end) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('/api/guides/stats', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { startDate: start, endDate: end }
+      });
+      setGuideStats(response.data);
+    } catch (err) { 
+      console.error(err); 
+      setGuideStats({ error: err.response?.data?.message || err.message });
+      addToast(err.response?.data?.message || err.message, 'error');
+    }
+  }, []);
 
   const handleEditGuide = (guide) => {
     setEditingGuide(guide);
@@ -1274,8 +1297,26 @@ function AppContent() {
               )}
               
               {checkView('guides') && (
-                <div className={`nav-item ${activeTab === 'guides' ? 'active' : ''}`} onClick={() => navigate('/guides')}>
-                  <Map /> Hướng dẫn viên
+                <div 
+                  className={`nav-item ${activeTab === 'guides' ? 'active-parent' : ''}`} 
+                  onClick={() => { navigate('/guides'); setActiveTab('guides'); setGuideActiveTab('list'); }}
+                  style={{ justifyContent: 'space-between' }}
+                  onMouseEnter={(e) => {
+                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHoveredRect(rect);
+                    setHoveredMenu('guides');
+                  }}
+                  onMouseLeave={() => {
+                    menuTimerRef.current = setTimeout(() => {
+                      setHoveredMenu(null);
+                    }, 150);
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Map /> Hướng dẫn viên
+                  </div>
+                  <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
             </>
@@ -1444,6 +1485,50 @@ function AppContent() {
         </div>
       )}
 
+      {hoveredMenu === 'guides' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('guides');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'guides' && guideActiveTab === 'list' ? 'active' : ''}`} 
+            onClick={() => { navigate('/guides'); setActiveTab('guides'); setGuideActiveTab('list'); setHoveredMenu(null); }}
+          >
+            Danh sách HDV
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'guides' && guideActiveTab === 'timeline' ? 'active' : ''}`} 
+            onClick={() => { navigate('/guides/timeline'); setActiveTab('guides'); setGuideActiveTab('timeline'); setHoveredMenu(null); }}
+          >
+            Lịch phân công
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'guides' && guideActiveTab === 'dashboard' ? 'active' : ''}`} 
+            onClick={() => { navigate('/guides/dashboard'); setActiveTab('guides'); setGuideActiveTab('dashboard'); setHoveredMenu(null); }}
+          >
+            Dashboard Thống kê
+          </div>
+        </div>
+      )}
+
       <main className="main-content">
         <div className="breadcrumb-container">
           <div className="breadcrumb">CRM / {activeTab.toUpperCase()}</div>
@@ -1473,7 +1558,7 @@ function AppContent() {
             editingLead={editingLead}
             setEditingLead={setEditingLead}
             handleUpdateLead={handleUpdateLead}
-            handleConvertLead={handleConvertLead}
+            handleConvertLead={(leadId) => setLeadToConvert(leads.find(l => l.id === leadId))}
             LEAD_SOURCES={LEAD_SOURCES}
             LEAD_CLASSIFICATIONS={LEAD_CLASSIFICATIONS}
             LEAD_STATUSES={LEAD_STATUSES}
@@ -1514,6 +1599,7 @@ function AppContent() {
                 tours={tourTemplates}
                 bus={bus}
                 fetchLeads={fetchLeads}
+                handleConvertLead={(leadId) => setLeadToConvert(leads.find(l => l.id === leadId))}
               />
             )}
             {activeTab === 'leads-dashboard' && (
@@ -1574,6 +1660,12 @@ function AppContent() {
                 guideTimeFilter={guideTimeFilter}
                 setGuideTimeFilter={setGuideTimeFilter}
                 guideTimelineData={guideTimelineData}
+                guideStats={guideStats}
+                fetchGuideStats={fetchGuideStats}
+                hoveredNote={hoveredNote}
+                setHoveredNote={setHoveredNote}
+                tourDepartures={tourDepartures}
+                handleEditDeparture={handleEditDeparture}
               />
             )}
 
@@ -1768,6 +1860,9 @@ function AppContent() {
         handleAddGuide={handleAddGuide}
         newGuide={newGuide}
         setNewGuide={setNewGuide}
+        guideTimelineData={guideTimelineData}
+        tourDepartures={tourDepartures}
+        handleEditDeparture={handleEditDeparture}
       />
 
       <AddUserModal 
@@ -1882,11 +1977,49 @@ function AppContent() {
         element={isLoggedIn ? renderDashboard() : <Navigate to="/login" />} 
       />
       <Route 
+        path="/:tab/:subtab" 
+        element={isLoggedIn ? renderDashboard() : <Navigate to="/login" />} 
+      />
+      <Route 
         path="/" 
         element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" />} 
       />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
+    {/* MODAL XÁC NHẬN CHUYỂN ĐỔI LEAD SANG KHÁCH HÀNG */}
+    {leadToConvert && (
+      <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={() => setLeadToConvert(null)}>
+        <div className="modal-content animate-slide-up" style={{ maxWidth: '400px', textAlign: 'center', padding: '2.5rem' }} onClick={e => e.stopPropagation()}>
+          <div style={{ width: '60px', height: '60px', background: '#d1fae5', color: '#10b981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+            <UserPlus size={32} />
+          </div>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.75rem', color: '#111827' }}>Chuyển đổi thành Khách Hàng?</h3>
+          <p style={{ color: '#6b7280', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '2rem' }}>
+            Bạn đang chuyển <strong>{leadToConvert.name}</strong> sang dạng Khách Hàng chính thức. Trạng thái tư vấn của Lead này sẽ được tự động đổi sang "Chốt đơn".
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button 
+              className="btn-pro-cancel" 
+              style={{ flex: 1, border: '1px solid #e5e7eb', background: 'white' }}
+              disabled={loading}
+              onClick={() => setLeadToConvert(null)}
+            >HỦY BỎ</button>
+            <button 
+              className="btn-pro-save" 
+              style={{ flex: 1, background: '#10b981', opacity: loading ? 0.7 : 1 }}
+              disabled={loading}
+              onClick={async () => {
+                setLoading(true);
+                await handleConvertLead(leadToConvert.id);
+                setLeadToConvert(null);
+                setLoading(false);
+              }}
+            >{loading ? 'ĐANG CHUYỂN...' : 'CHUYỂN ĐỔI'}</button>
+          </div>
+        </div>
+      </div>
+    )}
+
     {/* MODAL XÁC NHẬN XÓA (CUSTOM) */}
     {(leadToDelete || customerToDelete || tourToDelete || departureToDelete) && (
       <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={() => {

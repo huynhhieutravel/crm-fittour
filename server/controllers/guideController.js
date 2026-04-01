@@ -2,22 +2,38 @@ const db = require('../db');
 
 exports.getAllGuides = async (req, res) => {
     try {
-        const result = await db.query('SELECT * FROM guides ORDER BY name ASC');
+        const result = await db.query(`
+            SELECT g.*, 
+                   COUNT(td.id)::int as total_tours,
+                   (
+                       SELECT json_build_object('name', tt.name, 'start_date', td2.start_date, 'end_date', td2.end_date, 'status', td2.status)
+                       FROM tour_departures td2
+                       JOIN tour_templates tt ON td2.tour_template_id = tt.id
+                       WHERE td2.guide_id = g.id AND td2.end_date >= CURRENT_DATE
+                       ORDER BY td2.start_date ASC
+                       LIMIT 1
+                   ) as next_tour
+            FROM guides g
+            LEFT JOIN tour_departures td ON g.id = td.guide_id
+            GROUP BY g.id
+            ORDER BY g.name ASC;
+        `);
         res.json(result.rows);
     } catch (err) {
+        console.error('Lỗi lấy Guides:', err);
         res.status(500).json({ message: err.message });
     }
 };
 
 exports.createGuide = async (req, res) => {
-    const { name, phone, email, languages, rating, status, experience, bio, specialties, avatar_url, dob, address } = req.body;
+    const { name, phone, email, languages, rating, status, experience, bio, specialties, avatar_url, dob, address, gender, passport } = req.body;
     try {
         const result = await db.query(
             'INSERT INTO guides (name, phone, email, languages, rating, status, experience, bio, specialties, avatar_url, dob, address, gender, passport) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *',
             [
                 name, phone, email, languages, 
                 rating || 5, 
-                status || 'Available', 
+                status || 'Active', 
                 parseInt(experience) || 0, 
                 bio, specialties, avatar_url, 
                 (dob && dob.trim() !== '') ? dob : null, 
@@ -51,7 +67,7 @@ exports.updateGuide = async (req, res) => {
             [
                 name, phone, email, languages || '', 
                 rating || null, 
-                status || 'Available', 
+                status || 'Active', 
                 parseInt(experience) || 0, 
                 bio || '', specialties || '', avatar_url || '', 
                 (dob && dob.trim() !== '') ? dob : null, 
@@ -122,3 +138,4 @@ exports.deleteGuide = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+

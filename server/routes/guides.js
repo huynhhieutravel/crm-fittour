@@ -8,6 +8,7 @@ const ALLOWED_GUIDE_ROLES = ['admin', 'manager', 'operations'];
 
 router.get('/', authenticateToken, roleCheck(ALLOWED_GUIDE_ROLES), guideController.getAllGuides);
 router.post('/', authenticateToken, roleCheck(ALLOWED_GUIDE_ROLES), guideController.createGuide);
+
 router.get('/:id', authenticateToken, roleCheck(ALLOWED_GUIDE_ROLES), guideController.getGuideById);
 router.put('/:id', authenticateToken, roleCheck(ALLOWED_GUIDE_ROLES), guideController.updateGuide);
 router.delete('/:id', authenticateToken, roleCheck(['admin', 'manager']), guideController.deleteGuide);

@@ -35,10 +35,11 @@ const LeadsTab = ({
   LEAD_CLASSIFICATIONS,
   tours,
   bus,
-  fetchLeads
+  fetchLeads,
+  handleConvertLead
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const itemsPerPage = 30;
 
   const [selectedLeadIds, setSelectedLeadIds] = useState([]);
   const [bulkActionStatus, setBulkActionStatus] = useState('');
@@ -110,21 +111,21 @@ const LeadsTab = ({
           <div className="stat-icon-bg"><UserPlus size={24} /></div>
           <div className="stat-content">
             <span className="stat-label">HỒ SƠ MỚI</span>
-            <div className="stat-value">{leads.filter(l => l.status === 'Mới').length}</div>
+            <div className="stat-value">{filteredLeads.filter(l => l.status === 'Mới').length}</div>
           </div>
         </div>
         <div className="stat-card orange">
           <div className="stat-icon-bg"><MessageSquare size={24} /></div>
           <div className="stat-content">
             <span className="stat-label">ĐÃ LIÊN HỆ</span>
-            <div className="stat-value">{leads.filter(l => l.status === 'Đã tư vấn' || l.status === 'Tư vấn lần 2').length}</div>
+            <div className="stat-value">{filteredLeads.filter(l => ['Đang liên hệ', 'Tiềm năng', 'Đặt cọc'].includes(l.status)).length}</div>
           </div>
         </div>
         <div className="stat-card teal">
           <div className="stat-icon-bg"><CheckCircle size={24} /></div>
           <div className="stat-content">
             <span className="stat-label">CHỐT ĐƠN</span>
-            <div className="stat-value">{leads.filter(l => l.status === 'Chốt đơn').length}</div>
+            <div className="stat-value">{filteredLeads.filter(l => l.status === 'Chốt đơn').length}</div>
           </div>
         </div>
       </div>
@@ -398,6 +399,19 @@ const LeadsTab = ({
                 </td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <button 
+                      type="button" 
+                      className="icon-btn-square" 
+                      style={{ color: '#10b981', background: '#d1fae5', border: 'none' }} 
+                      title="Chuyển thành Khách Hàng (Chốt đơn)" 
+                      onClick={(e) => { 
+                        e.preventDefault(); 
+                        e.stopPropagation(); 
+                        handleConvertLead(lead.id);
+                      }}
+                    >
+                      <UserPlus size={14} />
+                    </button>
                     <button type="button" className="icon-btn-square" title="Chỉnh sửa" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingLead(lead); }}><Edit3 size={14} /></button>
                     <button type="button" className="icon-btn-square danger" title="Xóa" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteLead(lead.id); }}><Trash2 size={14} /></button>
                   </div>
