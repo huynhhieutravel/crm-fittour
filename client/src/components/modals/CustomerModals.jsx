@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { X, Calendar, MapPin, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 
 const DESTINATION_OPTIONS = [
@@ -178,6 +179,25 @@ export const EditCustomerModal = ({
   users = []
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [showMiniEventForm, setShowMiniEventForm] = useState(false);
+  const [miniEvent, setMiniEvent] = useState({ title: '', event_type: 'CALL', event_date: '', description: '' });
+
+  const handleCreateMiniEvent = async () => {
+    if (!miniEvent.title || !miniEvent.event_date) return alert('Vui lòng nhập tên và ngày hẹn báo trước!');
+    try {
+      await axios.post('/api/customers/events', {
+        ...miniEvent,
+        customer_id: editingCustomer.id,
+      }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      alert('Đã LÊN LỊCH CHĂM SÓC thành công! Lịch sẽ xuất hiện trên màn hình Bảng theo dõi.');
+      setShowMiniEventForm(false);
+      setMiniEvent({ title: '', event_type: 'CALL', event_date: '', description: '' });
+    } catch (err) {
+      alert('Lỗi tạo lịch: ' + (err.response?.data?.message || err.message));
+    }
+  };
 
   if (!editingCustomer) return null;
 
@@ -564,12 +584,39 @@ export const EditCustomerModal = ({
 
               {/* Cột Tương tác */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1rem', color: '#1e293b' }}>Ghi chú & Tương tác</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ margin: 0, fontSize: '1rem', color: '#1e293b' }}>Ghi chú & Tương tác</h3>
+                  <button type="button" onClick={() => setShowMiniEventForm(!showMiniEventForm)} className="btn-outline" style={{ padding: '6px 12px', fontSize: '0.75rem', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                    <Calendar size={14} /> {showMiniEventForm ? 'Đóng form hẹn' : '+ LÊN LỊCH HẸN'}
+                  </button>
+                </div>
+
+                {showMiniEventForm && (
+                  <div style={{ padding: '0.75rem', background: '#eff6ff', borderRadius: '0.5rem', border: '1px solid #bfdbfe', display: 'flex', flexDirection: 'column', gap: '0.5rem', animation: 'slideDown 0.2s ease-out' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#1d4ed8', marginBottom: '4px' }}>Tạo Lịch Chăm Sóc cho Khách Này</div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <select style={{ flex: 1, padding: '4px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #93c5fd', outline: 'none' }} value={miniEvent.event_type} onChange={e => setMiniEvent({...miniEvent, event_type: e.target.value})}>
+                        <option value="CALL">📞 Gọi điện</option>
+                        <option value="MEETING">🤝 Hẹn gặp mặt</option>
+                        <option value="PAYMENT">💰 Nhắc thanh toán</option>
+                        <option value="EMAIL">✉️ Gửi Email/TN</option>
+                      </select>
+                      <input type="date" required style={{ flex: 1, padding: '4px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #93c5fd', outline: 'none' }} value={miniEvent.event_date} onChange={e => setMiniEvent({...miniEvent, event_date: e.target.value})} />
+                    </div>
+                    <input type="text" required placeholder="Tiêu đề (Vd: Gọi tư vấn Tour TBN)..." style={{ padding: '6px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #93c5fd', outline: 'none' }} value={miniEvent.title} onChange={e => setMiniEvent({...miniEvent, title: e.target.value})} />
+                    <textarea placeholder="Ghi chú thêm... (không bắt buộc)" style={{ padding: '6px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #93c5fd', outline: 'none', resize: 'none' }} rows={2} value={miniEvent.description} onChange={e => setMiniEvent({...miniEvent, description: e.target.value})} />
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '4px' }}>
+                      <button type="button" onClick={() => setShowMiniEventForm(false)} style={{ padding: '4px 12px', fontSize: '0.75rem', cursor: 'pointer', background: 'transparent', border: 'none', color: '#64748b' }}>Hủy</button>
+                      <button type="button" onClick={handleCreateMiniEvent} style={{ padding: '6px 16px', fontSize: '0.75rem', cursor: 'pointer', background: '#3b82f6', color: 'white', borderRadius: '4px', border: 'none', fontWeight: 600 }}>TẠO LỊCH</button>
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <input 
                     className="modal-input" 
                     style={{ flex: 1 }} 
-                    placeholder="Nhập nội dung mới..." 
+                    placeholder="Nhập ghi chú nhanh..." 
                     value={newCustomerNote} 
                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomerNote(e); } }}
                     onChange={e => setNewCustomerNote(e.target.value)} 

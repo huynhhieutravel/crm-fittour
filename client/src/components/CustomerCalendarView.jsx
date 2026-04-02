@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Phone, MapPin, Search } from 'lucide-react';
 
-const CustomerCalendarView = ({ users = [], onCustomerClick }) => {
+const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [newEvent, setNewEvent] = useState({ customer_id: '', title: '', event_type: 'CALL', event_date: '', description: '' });
+  const [customerSearch, setCustomerSearch] = useState('');
 
   useEffect(() => {
     fetchEvents();
@@ -76,6 +79,22 @@ const CustomerCalendarView = ({ users = [], onCustomerClick }) => {
     }
   };
 
+  const handleCreateEvent = async (e) => {
+    e.preventDefault();
+    if (!newEvent.customer_id || !newEvent.title || !newEvent.event_date) return alert('Vui lòng điền đủ thông tin bắt buộc!');
+    try {
+      await axios.post('/api/customers/events', newEvent, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setShowEventModal(false);
+      setNewEvent({ customer_id: '', title: '', event_type: 'CALL', event_date: '', description: '' });
+      setCustomerSearch('');
+      fetchEvents();
+    } catch (err) {
+      alert('Lỗi tạo sự kiện: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
   const monthNames = [
     "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
     "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
@@ -100,15 +119,25 @@ const CustomerCalendarView = ({ users = [], onCustomerClick }) => {
       color = '#166534';
       borderColor = '#bbf7d0';
     } else if (ev.event_type === 'MEETING') {
-      bgColor = '#fae8ff';
-      color = '#a21caf';
-      borderColor = '#f5d0fe';
+      bgColor = '#fce7f3';
+      color = '#be185d';
+      borderColor = '#fbcfe8';
       icon = '🤝';
     } else if (ev.event_type === 'CALL') {
-      bgColor = '#ffedd5';
-      color = '#c2410c';
-      borderColor = '#fed7aa';
+      bgColor = '#e0f2fe';
+      color = '#0369a1';
+      borderColor = '#bae6fd';
       icon = '📞';
+    } else if (ev.event_type === 'PAYMENT') {
+      bgColor = '#fef2f2';
+      color = '#b91c1c';
+      borderColor = '#fecaca';
+      icon = '💰';
+    } else if (ev.event_type === 'EMAIL') {
+      bgColor = '#dcfce7';
+      color = '#15803d';
+      borderColor = '#bbf7d0';
+      icon = '✉️';
     }
 
     return (
@@ -161,7 +190,7 @@ const CustomerCalendarView = ({ users = [], onCustomerClick }) => {
           <CalendarIcon size={20} className="text-secondary" />
           {monthNames[currentDate.getMonth()]} năm {currentDate.getFullYear()}
         </h3>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button className="btn btn-outline" onClick={prevMonth} style={{ padding: '6px 10px' }}>
             <ChevronLeft size={16} />
           </button>
@@ -170,6 +199,9 @@ const CustomerCalendarView = ({ users = [], onCustomerClick }) => {
           </button>
           <button className="btn btn-outline" onClick={nextMonth} style={{ padding: '6px 10px' }}>
             <ChevronRight size={16} />
+          </button>
+          <button className="btn-pro-save" style={{ padding: '6px 16px', marginLeft: '12px' }} onClick={() => setShowEventModal(true)}>
+            + LÊN LỊCH NHẮC NHỞ
           </button>
         </div>
       </div>
@@ -236,6 +268,76 @@ const CustomerCalendarView = ({ users = [], onCustomerClick }) => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {showEventModal && (
+        <div className="modal-overlay" style={{ zIndex: 1100 }}>
+          <div className="modal-content animate-slide-up" style={{ maxWidth: '600px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CalendarIcon size={24} color="#3b82f6" /> THÊM LỊCH CHĂM SÓC
+              </h2>
+              <button className="icon-btn" onClick={() => setShowEventModal(false)}><X size={24} /></button>
+            </div>
+            
+            <form onSubmit={handleCreateEvent} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div className="modal-form-group">
+                <label>CHỌN KHÁCH HÀNG *</label>
+                <input 
+                  type="text" 
+                  className="modal-input" 
+                  placeholder="Tìm kiếm khách hàng (Tên, SĐT)..." 
+                  value={customerSearch}
+                  onChange={e => setCustomerSearch(e.target.value)}
+                  style={{ marginBottom: '8px' }}
+                />
+                <select 
+                  className="modal-select" 
+                  size={4}
+                  required 
+                  value={newEvent.customer_id} 
+                  onChange={e => setNewEvent({...newEvent, customer_id: e.target.value})}
+                >
+                  <option value="" disabled>-- Nhấp để chọn khách hàng ở dưới --</option>
+                  {customers.filter(c => (c.name || '').toLowerCase().includes(customerSearch.toLowerCase()) || (c.phone || '').includes(customerSearch)).map(c => (
+                    <option key={c.id} value={c.id}>{c.name} - {c.phone}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="modal-form-group">
+                  <label>LOẠI SỰ KIỆN *</label>
+                  <select className="modal-select" required value={newEvent.event_type} onChange={e => setNewEvent({...newEvent, event_type: e.target.value})}>
+                    <option value="CALL">📞 Gọi điện chăm sóc</option>
+                    <option value="MEETING">🤝 Hẹn gặp mặt</option>
+                    <option value="PAYMENT">💰 Nhắc thanh toán</option>
+                    <option value="EMAIL">✉️ Gửi Email/Tài liệu</option>
+                  </select>
+                </div>
+                <div className="modal-form-group">
+                  <label>NGÀY HẸN *</label>
+                  <input className="modal-input" type="date" required value={newEvent.event_date} onChange={e => setNewEvent({...newEvent, event_date: e.target.value})} />
+                </div>
+              </div>
+
+              <div className="modal-form-group">
+                <label>TIÊU ĐỀ NGẮN GỌN (Hiện trên lịch) *</label>
+                <input className="modal-input" required value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} placeholder="Vd: Gọi hỏi thăm sức khỏe sau tour" />
+              </div>
+
+              <div className="modal-form-group">
+                <label>GHI CHÚ CHI TIẾT</label>
+                <textarea className="modal-textarea" value={newEvent.description} onChange={e => setNewEvent({...newEvent, description: e.target.value})} placeholder="Nội dung cần trao đổi với khách..." rows={3} />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button type="submit" className="btn-pro-save" style={{ flex: 1 }}>LƯU LỊCH HẸN</button>
+                <button type="button" className="btn-pro-cancel" onClick={() => setShowEventModal(false)}>HỦY</button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
