@@ -13,14 +13,14 @@ const CustomersTab = ({
   setShowAddCustomerModal, 
   setEditingCustomer,
   handleDeleteCustomer,
-  users = []
+  users = [],
+  customerActiveTab = 'list'
 }) => {
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [selectedCustomerFull, setSelectedCustomerFull] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [showDuplicateManager, setShowDuplicateManager] = useState(false);
   const [hoveredNoteId, setHoveredNoteId] = useState(null);
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
 
   // Lọc nâng cao locally 
   const [localFilters, setLocalFilters] = useState({ segment: '', birthdayOnly: false, minSpent: '', source: '' });
@@ -133,31 +133,6 @@ const CustomersTab = ({
         </div>
         
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div style={{ display: 'flex', backgroundColor: '#f1f5f9', padding: '4px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-            <button
-              className={`btn ${viewMode === 'list' ? 'btn-primary' : 'btn-ghost'}`}
-              style={{ padding: '8px 16px', border: 'none', boxShadow: viewMode === 'list' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', display: 'flex', gap: '6px', alignItems: 'center', fontWeight: '600' }}
-              onClick={() => setViewMode('list')}
-            >
-              <ListIcon size={18} /> Danh Sách
-            </button>
-            <button
-              className={`btn ${viewMode === 'calendar' ? 'btn-primary' : 'btn-ghost'}`}
-              style={{ padding: '8px 16px', border: 'none', boxShadow: viewMode === 'calendar' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', color: viewMode === 'calendar' ? '#fff' : '#64748b', display: 'flex', gap: '6px', alignItems: 'center', fontWeight: '600' }}
-              onClick={() => setViewMode('calendar')}
-            >
-              <CalendarIcon size={18} /> Xem Lịch
-            </button>
-          </div>
-
-          <button 
-            className="btn-pro-save" 
-            style={{ width: 'auto', padding: '0.75rem 1.5rem', backgroundColor: '#fef08a', color: '#854d0e', border: '1px solid #fde047' }} 
-            onClick={() => setShowDuplicateManager(true)}
-            title="Quét Dữ Liệu Rác"
-          >
-            <Network size={18} strokeWidth={3} /> QUÉT RÁC
-          </button>
           <button 
             className="btn-pro-save" 
             style={{ width: 'auto', padding: '0.75rem 1.5rem' }} 
@@ -168,7 +143,7 @@ const CustomersTab = ({
         </div>
       </div>
 
-      {viewMode === 'calendar' ? (
+      {customerActiveTab === 'calendar' ? (
         <CustomerCalendarView users={users} onCustomerClick={handleViewProfile} />
       ) : (
         <div className="data-table-container">

@@ -231,6 +231,7 @@ function AppContent() {
     endDate: new Date(new Date().setDate(new Date().getDate() + 30))
   });
   const [guideFilters, setGuideFilters] = useState({ search: '', status: '', language: '' });
+  const [customerActiveTab, setCustomerActiveTab] = useState('list');
   const [bus, setBus] = useState([]);
 
 
@@ -1368,8 +1369,26 @@ function AppContent() {
                 </div>
               )}
               {checkView('customers') && (
-                <div className={`nav-item ${activeTab === 'customers' ? 'active' : ''}`} onClick={() => navigate('/customers')}>
-                  <UserCheck /> Khách hàng
+                <div 
+                  className={`nav-item ${activeTab === 'customers' ? 'active-parent' : ''}`} 
+                  onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('list'); }}
+                  style={{ justifyContent: 'space-between' }}
+                  onMouseEnter={(e) => {
+                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHoveredRect(rect);
+                    setHoveredMenu('customers');
+                  }}
+                  onMouseLeave={() => {
+                    menuTimerRef.current = setTimeout(() => {
+                      setHoveredMenu(null);
+                    }, 150);
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <UserCheck /> Khách hàng
+                  </div>
+                  <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
             </>
@@ -1573,6 +1592,44 @@ function AppContent() {
         </div>
       )}
 
+      {hoveredMenu === 'customers' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('customers');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'customers' && customerActiveTab === 'list' ? 'active' : ''}`} 
+            onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('list'); setHoveredMenu(null); }}
+          >
+            Danh sách Khách hàng
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'customers' && customerActiveTab === 'calendar' ? 'active' : ''}`} 
+            onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('calendar'); setHoveredMenu(null); }}
+          >
+            Lịch Chăm sóc
+          </div>
+        </div>
+      )}
+
       <main className="main-content">
         <div className="breadcrumb-container">
           <div className="breadcrumb">CRM / {activeTab.toUpperCase()}</div>
@@ -1744,6 +1801,7 @@ function AppContent() {
             setEditingCustomer={handleEditCustomer}
             handleDeleteCustomer={handleDeleteCustomer}
             users={users}
+            customerActiveTab={customerActiveTab}
           />
         )}
 
