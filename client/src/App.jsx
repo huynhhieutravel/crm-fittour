@@ -39,6 +39,7 @@ import {
   LayoutDashboard, 
   MessageSquare, 
   Calendar, 
+  CalendarClock,
   CheckCircle,
   TrendingUp,
   UserPlus,
@@ -1321,6 +1322,17 @@ function AppContent() {
                     <Calendar /> Lịch khởi hành
                   </div>
                   <ChevronRight size={14} opacity={0.5} />
+                </div>
+              )}
+              
+              {checkView('departures') && (
+                <div 
+                  className={`nav-item ${activeTab === 'reminders' ? 'active-parent' : ''}`} 
+                  onClick={() => { navigate('/reminders'); setActiveTab('reminders'); }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <CalendarClock /> Tiến độ Chăm sóc
+                  </div>
                 </div>
               )}
               

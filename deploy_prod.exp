@@ -1,0 +1,37 @@
+#!/usr/bin/expect -f
+set timeout 300
+
+spawn ssh -o StrictHostKeyChecking=no root@64.176.85.168
+expect "*?assword:*"
+send "#Aa2,zdf87a@Q{3q\r"
+
+expect "~#"
+send "su - postgres -c \"psql -d fittour_crm -c \\\"ALTER TABLE departure_reminders ADD COLUMN IF NOT EXISTS custom_title VARCHAR(255);\\\"\"\r"
+
+expect "~#"
+send "cd /var/www/fittour-crm\r"
+
+expect "#"
+send "git pull origin main\r"
+
+expect "#"
+send "cd server\r"
+
+expect "#"
+send "npm install\r"
+
+expect "#"
+send "pm2 restart all\r"
+
+expect "#"
+send "cd ../client\r"
+
+expect "#"
+send "npm install\r"
+
+expect "#"
+send "npm run build\r"
+
+expect "#"
+send "exit\r"
+expect eof

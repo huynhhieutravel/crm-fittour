@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout 300
+spawn ssh -o StrictHostKeyChecking=no root@64.176.85.168 "su - postgres -c \"psql -d postgres -c \\\"ALTER TABLE departure_reminders ADD COLUMN custom_title VARCHAR(255);\\\"\"; cd /root/crm-fittour && git pull origin main && cd server && npm install && pm2 restart all && cd ../client && npm install && npm run build"
+expect "*?assword:*"
+send "#Aa2,zdf87a@Q{3q\r"
+expect eof

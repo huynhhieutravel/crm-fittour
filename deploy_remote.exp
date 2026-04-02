@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout 600
+spawn /bin/bash -c "ssh -o StrictHostKeyChecking=no root@64.176.85.168 < deploy_script.sh"
+expect "*?assword:*"
+send "#Aa2,zdf87a@Q{3q\r"
+expect eof
