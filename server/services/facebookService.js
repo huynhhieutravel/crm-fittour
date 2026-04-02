@@ -330,8 +330,8 @@ exports.syncRecentConversations = async () => {
                 console.log(`[FB POLLER] Phát hiện khách mới chat với Fanpage: ${user.name} (${psid}). Đang tạo Lead...`);
                 // Tạo Lead mới tinh (Kèm kiểm tra PSID dò Khách Quen)
                 const leadResult = await db.query(
-                    'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id) VALUES ($1, $2, $3, $4, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4 LIMIT 1)) RETURNING *',
-                    [user.name, 'Messenger', 'Mới', psid, firstMessageNote]
+                    'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id) VALUES ($1, $2, $3, $4, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $6 LIMIT 1)) RETURNING *',
+                    [user.name, 'Messenger', 'Mới', psid, firstMessageNote, psid]
                 );
 
                 // --- Đưa tin nhắn vào Module Messenger để tư vấn viên xem được ---
