@@ -117,3 +117,25 @@ exports.updateEventStatus = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+exports.updateEvent = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, event_type, event_date, description } = req.body;
+        
+        // Cập nhật và lấy thông tin creator
+        const result = await db.query(`
+            UPDATE customer_events 
+            SET title = $1, event_type = $2, event_date = $3, description = $4
+            WHERE id = $5 
+            RETURNING *
+        `, [title, event_type, event_date, description, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Không tìm thấy sự kiện' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

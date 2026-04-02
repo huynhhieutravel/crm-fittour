@@ -154,10 +154,31 @@ exports.getCustomerById = async (req, res) => {
             ORDER BY td.start_date DESC
         `, [req.params.id]);
         
+        const events = await db.query(`
+            SELECT ce.*, u.full_name as creator_name
+            FROM customer_events ce
+            LEFT JOIN users u ON ce.created_by = u.id
+            WHERE ce.customer_id = $1
+            ORDER BY ce.event_date DESC
+        `, [req.params.id]);
+        
         const customer = result.rows[0];
         customer.total_spent = parseFloat(customer.total_spent); 
         customer.interaction_history = notes.rows;
         customer.booking_history = bookings.rows;
+        
+        let allEvents = [...events.rows];
+        if (customer.birth_date) {
+            const bDate = new Date(customer.birth_date);
+            const currentYear = new Date().getFullYear();
+            const bThisYear = new Date(currentYear, bDate.getMonth(), bDate.getDate());
+            const bNextYear = new Date(currentYear + 1, bDate.getMonth(), bDate.getDate());
+            allEvents.push({ id: 'b1', event_date: bThisYear, event_type: 'BIRTHDAY', title: `Sinh nhật ${customer.name}` });
+            allEvents.push({ id: 'b2', event_date: bNextYear, event_type: 'BIRTHDAY', title: `Sinh nhật ${customer.name}` });
+            allEvents.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+        }
+        
+        customer.events = allEvents;
         
         res.json(customer);
     } catch (err) {

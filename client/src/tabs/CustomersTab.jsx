@@ -169,7 +169,7 @@ const CustomersTab = ({
       </div>
 
       {customerActiveTab === 'calendar' ? (
-        <CustomerCalendarView users={users} onCustomerClick={handleViewProfile} />
+        <CustomerCalendarView users={users} customers={customers} onCustomerClick={handleViewProfile} />
       ) : (
         <div className="data-table-container">
           <table className="data-table">

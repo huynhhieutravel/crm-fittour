@@ -7,20 +7,46 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
   const [activeTab, setActiveTab] = useState('overview');
   const [newNote, setNewNote] = useState('');
   const [newEvent, setNewEvent] = useState({ title: '', event_type: 'CALL', event_date: '' });
+  const [editingEventId, setEditingEventId] = useState(null);
+  const [localEvents, setLocalEvents] = React.useState(customer?.events || []);
+  
+  React.useEffect(() => {
+    setLocalEvents(customer?.events || []);
+  }, [customer]);
 
   const handleAddEventSubmit = async () => {
     if (!newEvent.title || !newEvent.event_date) return alert('Vui lòng nhập đủ thông tin');
     try {
-      await axios.post('/api/customers/events', {
-        customer_id: customer.id,
-        ...newEvent
-      }, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
-      alert('Tạo lịch hẹn thành công!');
+      if (editingEventId) {
+        const res = await axios.put(`/api/customers/events/${editingEventId}`, newEvent, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        alert('Cập nhật sự kiện thành công!');
+        setLocalEvents(localEvents.map(ev => ev.id === editingEventId ? { ...ev, ...res.data } : ev));
+        setEditingEventId(null);
+      } else {
+        const res = await axios.post('/api/customers/events', {
+          customer_id: customer.id,
+          ...newEvent
+        }, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+        alert('Tạo lịch hẹn thành công!');
+        setLocalEvents([res.data, ...localEvents]);
+      }
       setNewEvent({ title: '', event_type: 'CALL', event_date: '' });
-      // Would refresh but we can just let calendar auto fetch when toggled
     } catch (err) {
       console.error(err);
-      alert('Lỗi tạo sự kiện');
+      alert('Lỗi lưu sự kiện');
+    }
+  };
+
+  const handleUpdateEventStatus = async (eventId, newStatus) => {
+    try {
+      await axios.put(`/api/customers/events/${eventId}/status`, { status: newStatus }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setLocalEvents(localEvents.map(ev => ev.id === eventId ? { ...ev, status: newStatus } : ev));
+    } catch (err) {
+      alert('Lỗi cập nhật trạng thái: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -277,10 +303,10 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
           )}
 
           {activeTab === 'events' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%' }}>
               <div style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <CalendarPlus size={16} /> Lên lịch nhắc nhở / Hẹn khách
+                  <CalendarPlus size={16} /> {editingEventId ? 'Chỉnh sửa lịch hẹn' : 'Lên lịch nhắc nhở / Hẹn khách'}
                 </h3>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <input type="text" className="modal-input" placeholder="Tên sự kiện..." style={{ flex: 2 }} value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} />
@@ -289,9 +315,67 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                     <option value="MEETING">Hẹn gặp</option>
                     <option value="OTHER">Khác</option>
                   </select>
-                  <input type="date" className="modal-input" style={{ flex: 1 }} value={newEvent.event_date} onChange={e => setNewEvent({...newEvent, event_date: e.target.value})} />
-                  <button className="btn-pro-save" onClick={handleAddEventSubmit}>Tạo</button>
+                  <input type="date" className="modal-input" style={{ flex: 1 }} value={newEvent.event_date ? new Date(newEvent.event_date).toISOString().split('T')[0] : ''} onChange={e => setNewEvent({...newEvent, event_date: e.target.value})} />
+                  <button className="btn-pro-save" onClick={handleAddEventSubmit}>{editingEventId ? 'Lưu' : 'Tạo'}</button>
+                  {editingEventId && (
+                    <button className="btn-ghost" style={{ padding: '0 12px' }} onClick={() => { setEditingEventId(null); setNewEvent({ title: '', event_type: 'CALL', event_date: '' }); }}>Hủy</button>
+                  )}
                 </div>
+              </div>
+              
+              <div style={{ flex: 1, overflowY: 'auto' }}>
+                <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', color: '#1e293b' }}>Lịch sử sự kiện / Nhắc nhở</h3>
+                {!localEvents || localEvents.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Chưa có sự kiện nào.</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {localEvents.map(event => (
+                      <div key={event.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '12px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                            <span style={{ fontWeight: 600, color: '#1e293b' }}>
+                              {event.event_type === 'BIRTHDAY' ? '🎂 ' : event.event_type === 'CALL' ? '📞 ' : event.event_type === 'MEETING' ? '☕ ' : '📌 '}
+                              {event.title}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', backgroundColor: event.status === 'completed' ? '#dcfce7' : '#fef3c7', color: event.status === 'completed' ? '#166534' : '#92400e' }}>
+                              {event.status === 'completed' ? 'Hoàn thành' : 'Đang hẹn'}
+                            </span>
+                          </div>
+                          {event.description && <p style={{ margin: '0 0 4px 0', fontSize: '0.85rem', color: '#64748b' }}>{event.description}</p>}
+                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', gap: '16px' }}>
+                            <span>📅 {new Date(event.event_date).toLocaleDateString('vi-VN')}</span>
+                            {event.creator_name && <span>👤 Tạo bởi: {event.creator_name}</span>}
+                          </div>
+                        </div>
+                        {event.event_type !== 'BIRTHDAY' && (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button 
+                              style={{ padding: '6px 12px', backgroundColor: '#e2e8f0', color: '#475569', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                              onClick={() => {
+                                setEditingEventId(event.id);
+                                setNewEvent({
+                                  title: event.title,
+                                  event_type: event.event_type,
+                                  event_date: event.event_date
+                                });
+                              }}
+                            >
+                              Sửa
+                            </button>
+                            {event.status !== 'completed' && (
+                              <button 
+                                style={{ padding: '6px 12px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                onClick={() => handleUpdateEventStatus(event.id, 'completed')}
+                              >
+                                Xác nhận Xong
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

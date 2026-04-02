@@ -19,6 +19,7 @@ router.post('/utils/merge', authenticateToken, roleCheck(['admin', 'manager']), 
 router.get('/events/all', authenticateToken, roleCheck(ALLOWED_CUSTOMER_ROLES), customerEventController.getEvents);
 router.post('/events', authenticateToken, roleCheck(ALLOWED_CUSTOMER_ROLES), customerEventController.createEvent);
 router.put('/events/:id/status', authenticateToken, roleCheck(ALLOWED_CUSTOMER_ROLES), customerEventController.updateEventStatus);
+router.put('/events/:id', authenticateToken, roleCheck(ALLOWED_CUSTOMER_ROLES), customerEventController.updateEvent);
 router.delete('/events/:id', authenticateToken, roleCheck(ALLOWED_CUSTOMER_ROLES), customerEventController.deleteEvent);
 
 router.get('/:id', authenticateToken, roleCheck(ALLOWED_CUSTOMER_ROLES), customerController.getCustomerById);

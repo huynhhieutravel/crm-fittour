@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Phone, MapPin, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Phone, MapPin, Search, X } from 'lucide-react';
+import SearchableSelect from './common/SearchableSelect';
 
 const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -79,9 +80,15 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
     }
   };
 
+  const [formError, setFormError] = useState('');
+
   const handleCreateEvent = async (e) => {
     e.preventDefault();
-    if (!newEvent.customer_id || !newEvent.title || !newEvent.event_date) return alert('Vui lòng điền đủ thông tin bắt buộc!');
+    setFormError('');
+    if (!newEvent.customer_id || !newEvent.title || !newEvent.event_date) {
+      setFormError('Vui lòng điền đủ thông tin bắt buộc (Khách hàng, Tiêu đề, Ngày)!');
+      return;
+    }
     try {
       await axios.post('/api/customers/events', newEvent, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -91,7 +98,7 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
       setCustomerSearch('');
       fetchEvents();
     } catch (err) {
-      alert('Lỗi tạo sự kiện: ' + (err.response?.data?.message || err.message));
+      setFormError('Lỗi từ Server: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -138,6 +145,16 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
       color = '#15803d';
       borderColor = '#bbf7d0';
       icon = '✉️';
+    } else if (ev.event_type === 'BIRTHDAY') {
+      bgColor = '#fef3c7';
+      color = '#d97706';
+      borderColor = '#fde68a';
+      icon = '🎂';
+    } else {
+      bgColor = '#f3f4f6';
+      color = '#4b5563';
+      borderColor = '#e5e7eb';
+      icon = '🤔';
     }
 
     return (
@@ -163,14 +180,8 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
         }}
         onClick={(e) => {
           e.stopPropagation();
-          // Provide options to mark complete or view customer
-          if (!isBirthday) {
-            const btn = window.prompt("Gõ '1' để cập nhật Hoàn Thành. Gõ '2' để xem Khách hàng", "2");
-            if (btn === '1') handleUpdateStatus(ev.id, 'completed');
-            if (btn === '2') onCustomerClick(ev.customer_id);
-          } else {
-            onCustomerClick(ev.customer_id);
-          }
+          // Directly open customer profile instead of ugly window.prompt
+          onCustomerClick(ev.customer_id);
         }}
         title={`${ev.title}\n${ev.description || ''}`}
       >
@@ -281,29 +292,20 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
               <button className="icon-btn" onClick={() => setShowEventModal(false)}><X size={24} /></button>
             </div>
             
-            <form onSubmit={handleCreateEvent} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {formError && (
+                <div style={{ padding: '0.75rem', backgroundColor: '#fef2f2', color: '#dc2626', borderRadius: '8px', fontSize: '0.875rem' }}>
+                  {formError}
+                </div>
+              )}
               <div className="modal-form-group">
                 <label>CHỌN KHÁCH HÀNG *</label>
-                <input 
-                  type="text" 
-                  className="modal-input" 
-                  placeholder="Tìm kiếm khách hàng (Tên, SĐT)..." 
-                  value={customerSearch}
-                  onChange={e => setCustomerSearch(e.target.value)}
-                  style={{ marginBottom: '8px' }}
+                <SearchableSelect 
+                  options={customers.map(c => ({ id: c.id, name: `${c.name} - ${c.phone || 'Chưa có SĐT'}` }))}
+                  value={newEvent.customer_id}
+                  onChange={(val) => setNewEvent({...newEvent, customer_id: val})}
+                  placeholder="-- Nhấp để chọn hoặc tìm kiếm khách hàng --"
                 />
-                <select 
-                  className="modal-select" 
-                  size={4}
-                  required 
-                  value={newEvent.customer_id} 
-                  onChange={e => setNewEvent({...newEvent, customer_id: e.target.value})}
-                >
-                  <option value="" disabled>-- Nhấp để chọn khách hàng ở dưới --</option>
-                  {customers.filter(c => (c.name || '').toLowerCase().includes(customerSearch.toLowerCase()) || (c.phone || '').includes(customerSearch)).map(c => (
-                    <option key={c.id} value={c.id}>{c.name} - {c.phone}</option>
-                  ))}
-                </select>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -314,6 +316,7 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
                     <option value="MEETING">🤝 Hẹn gặp mặt</option>
                     <option value="PAYMENT">💰 Nhắc thanh toán</option>
                     <option value="EMAIL">✉️ Gửi Email/Tài liệu</option>
+                    <option value="OTHER">🤔 Khác</option>
                   </select>
                 </div>
                 <div className="modal-form-group">
@@ -332,11 +335,11 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
                 <textarea className="modal-textarea" value={newEvent.description} onChange={e => setNewEvent({...newEvent, description: e.target.value})} placeholder="Nội dung cần trao đổi với khách..." rows={3} />
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="submit" className="btn-pro-save" style={{ flex: 1 }}>LƯU LỊCH HẸN</button>
-                <button type="button" className="btn-pro-cancel" onClick={() => setShowEventModal(false)}>HỦY</button>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }}>
+                <button type="button" className="btn-pro-save" style={{ flex: 1 }} onClick={handleCreateEvent}>LƯU LỊCH HẸN</button>
+                <button type="button" className="btn-pro-cancel" style={{ width: 'auto' }} onClick={() => setShowEventModal(false)}>HỦY</button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
