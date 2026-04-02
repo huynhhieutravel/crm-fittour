@@ -55,8 +55,9 @@ const CustomersTab = ({
   };
 
   return (
-    <div className="animate-fade-in">
-      <div className="filter-bar" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+    <>
+      <div className="animate-fade-in">
+        <div className="filter-bar" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Filter size={18} className="text-secondary" /> BỘ LỌC TÌM KIẾM
@@ -297,6 +298,7 @@ const CustomersTab = ({
         </table>
       </div>
       )}
+      </div>
 
       <CustomerProfileSlider 
         customer={selectedCustomerFull} 
@@ -314,7 +316,7 @@ const CustomersTab = ({
           }} 
         />
       )}
-    </div>
+    </>
   );
 };
 

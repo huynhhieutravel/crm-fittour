@@ -13,4 +13,8 @@ router.get('/:id', authenticateToken, roleCheck(ALLOWED_BOOKING_ROLES), bookingC
 router.put('/:id', authenticateToken, roleCheck(['admin', 'manager', 'sales']), bookingController.updateBooking);
 router.delete('/:id', authenticateToken, roleCheck(['admin', 'manager']), bookingController.deleteBooking);
 
+// Sub-resources
+router.post('/:id/transactions', authenticateToken, roleCheck(['admin', 'manager', 'sales', 'accountant']), bookingController.addTransaction);
+router.put('/passengers/:paxId', authenticateToken, roleCheck(ALLOWED_BOOKING_ROLES), bookingController.updatePassenger);
+
 module.exports = router;

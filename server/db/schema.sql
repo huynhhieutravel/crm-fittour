@@ -116,3 +116,25 @@ CREATE TABLE lead_notes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER REFERENCES users(id)
 );
+
+-- Bảng lưu giao dịch thanh toán cho từng phần của Booking
+CREATE TABLE IF NOT EXISTS booking_transactions (
+    id SERIAL PRIMARY KEY,
+    booking_id INTEGER REFERENCES bookings(id) ON DELETE CASCADE,
+    amount NUMERIC NOT NULL,
+    payment_method VARCHAR(50) DEFAULT 'CASH',
+    transaction_date DATE NOT NULL,
+    notes TEXT,
+    created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Mở rộng thông tin Passsenger (Khách đi tour thực tế)
+-- ALTER TABLE booking_passengers ADD COLUMN IF NOT EXISTS full_name VARCHAR(255);
+-- ALTER TABLE booking_passengers ADD COLUMN IF NOT EXISTS passport_number VARCHAR(100);
+-- ALTER TABLE booking_passengers ADD COLUMN IF NOT EXISTS passport_expired DATE;
+-- ALTER TABLE booking_passengers ADD COLUMN IF NOT EXISTS visa_status VARCHAR(50) DEFAULT 'NOT_APPLIED';
+-- ALTER TABLE booking_passengers ADD COLUMN IF NOT EXISTS special_requests TEXT;
+
+-- 2026-04-03 Nâng Cấp Form Bookings
+ALTER TABLE bookings ADD COLUMN discount NUMERIC(12,2) DEFAULT 0;

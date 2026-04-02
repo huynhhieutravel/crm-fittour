@@ -37,8 +37,8 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
 
             // 3. Nếu chưa có, tạo Lead mới (với facebook_psid, last_contacted_at và dò lại Khách VIP)
             const leadResult = await db.query(
-                'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4 LIMIT 1)) RETURNING *',
-                [senderName, 'Messenger', 'Mới', sender_psid]
+                'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $5 LIMIT 1)) RETURNING *',
+                [senderName, 'Messenger', 'Mới', sender_psid, sender_psid]
             );
             leadId = leadResult.rows[0].id;
 

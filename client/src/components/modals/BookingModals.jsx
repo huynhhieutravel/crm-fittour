@@ -14,7 +14,11 @@ export const AddBookingModal = ({
     tour_departure_id: '',
     notes: '',
     payment_status: 'unpaid',
-    booking_status: 'pending'
+    booking_status: 'pending',
+    discount: 0,
+    initial_deposit_amount: '',
+    initial_deposit_method: 'CASH',
+    initial_deposit_date: new Date().toISOString().slice(0, 10)
   });
   
   const [paxDetails, setPaxDetails] = useState([]);
@@ -27,7 +31,8 @@ export const AddBookingModal = ({
   useEffect(() => {
     if (show) {
       setFormData({
-        customer_id: '', tour_departure_id: '', notes: '', payment_status: 'unpaid', booking_status: 'pending'
+        customer_id: '', tour_departure_id: '', notes: '', payment_status: 'unpaid', booking_status: 'pending',
+        discount: 0, initial_deposit_amount: '', initial_deposit_method: 'CASH', initial_deposit_date: new Date().toISOString().slice(0, 10)
       });
       setPaxDetails([]);
       setServiceDetails([]);
@@ -67,9 +72,9 @@ export const AddBookingModal = ({
 
   const calculateTotal = () => {
     let total = 0;
-    paxDetails.forEach(p => total += p.price * (p.qty || 0));
-    serviceDetails.forEach(s => total += s.price * (s.qty || 0));
-    return total;
+    paxDetails.forEach(p => total += (p.price || 0) * (p.qty || 0));
+    serviceDetails.forEach(s => total += (s.price || 0) * (s.qty || 0));
+    return Math.max(0, total - (formData.discount || 0));
   };
   
   const totalPaxCount = paxDetails.reduce((sum, p) => sum + (p.qty || 0), 0);
@@ -173,15 +178,35 @@ export const AddBookingModal = ({
                   <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748b', marginBottom: '0.5rem' }}>BẢNG GIÁ VÉ</h4>
                   {paxDetails.length > 0 ? (
                     <table className="data-table" style={{ fontSize: '0.9rem' }}>
-                      <thead style={{ background: '#f8fafc' }}><tr><th style={{textAlign:'left'}}>Loại giá</th><th style={{textAlign:'right'}}>Đơn giá (VND)</th><th style={{textAlign:'center', width:'100px'}}>Số lượng</th><th style={{textAlign:'right'}}>Thành tiền</th></tr></thead>
+                      <thead style={{ background: '#f8fafc' }}><tr><th style={{textAlign:'left', width: '35%'}}>Loại vé / Phụ thu</th><th style={{textAlign:'right'}}>Đơn giá (VND)</th><th style={{textAlign:'center', width:'80px'}}>Số lượng</th><th style={{textAlign:'right'}}>Thành tiền</th><th style={{width: '30px'}}></th></tr></thead>
                       <tbody>
                         {paxDetails.map((pax, idx) => (
                           <tr key={idx}>
-                            <td style={{ fontWeight: 600 }}>{pax.type}</td>
-                            <td style={{ textAlign: 'right' }}>{Number(pax.price).toLocaleString('vi-VN')}</td>
+                            <td>
+                              <input 
+                                type="text" className="modal-input" style={{ width: '100%', height: '32px', fontWeight: 600, padding: '4px 8px' }}
+                                value={pax.type || ''}
+                                onChange={(e) => {
+                                  const newPax = [...paxDetails];
+                                  newPax[idx].type = e.target.value;
+                                  setPaxDetails(newPax);
+                                }}
+                              />
+                            </td>
+                            <td>
+                              <input 
+                                type="number" className="modal-input" style={{ width: '100%', height: '32px', textAlign: 'right', padding: '4px 8px' }}
+                                value={pax.price}
+                                onChange={(e) => {
+                                  const newPax = [...paxDetails];
+                                  newPax[idx].price = Number(e.target.value);
+                                  setPaxDetails(newPax);
+                                }}
+                              />
+                            </td>
                             <td style={{ padding: '4px' }}>
                               <input 
-                                type="number" min="0" className="modal-input" style={{ textAlign: 'center', height: '32px' }}
+                                type="number" min="0" className="modal-input" style={{ textAlign: 'center', height: '32px', width: '100%' }}
                                 value={pax.qty || 0}
                                 onChange={(e) => {
                                   const newPax = [...paxDetails];
@@ -190,8 +215,11 @@ export const AddBookingModal = ({
                                 }}
                               />
                             </td>
-                            <td style={{ textAlign: 'right', fontWeight: 600, color: '#f59e0b' }}>
+                            <td style={{ textAlign: 'right', fontWeight: 600, color: '#f59e0b', verticalAlign: 'middle' }}>
                               {Number(pax.price * (pax.qty || 0)).toLocaleString('vi-VN')}
+                            </td>
+                            <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                               <button type="button" onClick={() => setPaxDetails(paxDetails.filter((_, i) => i !== idx))} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><X size={16}/></button>
                             </td>
                           </tr>
                         ))}
@@ -200,6 +228,7 @@ export const AddBookingModal = ({
                   ) : (
                     <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Lịch trình này chưa thiết lập cấu trúc giá.</p>
                   )}
+                  <button type="button" onClick={() => setPaxDetails([...paxDetails, { type: 'Vé tùy chỉnh', price: 0, qty: 1 }])} className="btn-secondary" style={{ marginTop: '8px', fontSize: '0.8rem', padding: '4px 12px' }}>+ Thêm loại vé mới</button>
                 </div>
 
                 {/* Additional Services Table */}
@@ -207,15 +236,35 @@ export const AddBookingModal = ({
                   <div>
                     <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748b', marginBottom: '0.5rem' }}>DỊCH VỤ KÈM THEO</h4>
                     <table className="data-table" style={{ fontSize: '0.9rem' }}>
-                      <thead style={{ background: '#f8fafc' }}><tr><th style={{textAlign:'left'}}>Dịch vụ</th><th style={{textAlign:'right'}}>Đơn vị / Đơn giá</th><th style={{textAlign:'center', width:'100px'}}>Số lượng</th><th style={{textAlign:'right'}}>Thành tiền</th></tr></thead>
+                      <thead style={{ background: '#f8fafc' }}><tr><th style={{textAlign:'left', width: '35%'}}>Dịch vụ</th><th style={{textAlign:'right'}}>Đơn giá (VND)</th><th style={{textAlign:'center', width:'80px'}}>Số lượng</th><th style={{textAlign:'right'}}>Thành tiền</th><th style={{width: '30px'}}></th></tr></thead>
                       <tbody>
                         {serviceDetails.map((svc, idx) => (
                           <tr key={idx}>
-                            <td style={{ fontWeight: 600 }}>{svc.service}</td>
-                            <td style={{ textAlign: 'right' }}>{Number(svc.price).toLocaleString('vi-VN')}</td>
+                            <td>
+                              <input 
+                                type="text" className="modal-input" style={{ width: '100%', height: '32px', fontWeight: 600, padding: '4px 8px' }}
+                                value={svc.service || ''}
+                                onChange={(e) => {
+                                  const newSvcs = [...serviceDetails];
+                                  newSvcs[idx].service = e.target.value;
+                                  setServiceDetails(newSvcs);
+                                }}
+                              />
+                            </td>
+                            <td>
+                              <input 
+                                type="number" className="modal-input" style={{ width: '100%', height: '32px', textAlign: 'right', padding: '4px 8px' }}
+                                value={svc.price}
+                                onChange={(e) => {
+                                  const newSvcs = [...serviceDetails];
+                                  newSvcs[idx].price = Number(e.target.value);
+                                  setServiceDetails(newSvcs);
+                                }}
+                              />
+                            </td>
                             <td style={{ padding: '4px' }}>
                               <input 
-                                type="number" min="0" className="modal-input" style={{ textAlign: 'center', height: '32px' }}
+                                type="number" min="0" className="modal-input" style={{ textAlign: 'center', height: '32px', width: '100%' }}
                                 value={svc.qty || 0}
                                 onChange={(e) => {
                                   const newSvcs = [...serviceDetails];
@@ -224,29 +273,87 @@ export const AddBookingModal = ({
                                 }}
                               />
                             </td>
-                            <td style={{ textAlign: 'right', fontWeight: 600, color: '#f59e0b' }}>
+                            <td style={{ textAlign: 'right', fontWeight: 600, color: '#f59e0b', verticalAlign: 'middle' }}>
                               {Number(svc.price * (svc.qty || 0)).toLocaleString('vi-VN')}
+                            </td>
+                            <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                               <button type="button" onClick={() => setServiceDetails(serviceDetails.filter((_, i) => i !== idx))} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><X size={16}/></button>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
+                    <button type="button" onClick={() => setServiceDetails([...serviceDetails, { service: 'Dịch vụ tuỳ chỉnh', price: 0, qty: 1 }])} className="btn-secondary" style={{ marginTop: '8px', fontSize: '0.8rem', padding: '4px 12px' }}>+ Thêm dịch vụ mới</button>
                   </div>
+                )}
+                {serviceDetails.length === 0 && (
+                   <button type="button" onClick={() => setServiceDetails([{ service: 'Dịch vụ tuỳ chỉnh', price: 0, qty: 1 }])} className="btn-secondary" style={{ fontSize: '0.8rem', padding: '4px 12px', alignSelf: 'flex-start' }}>+ Thêm dịch vụ kèm theo</button>
                 )}
                 
                 {/* Total Summary */}
-                <div style={{ background: '#fffbeb', padding: '1rem', borderRadius: '8px', border: '1px dashed #f59e0b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid #e2e8f0', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ fontSize: '0.9rem', color: '#64748b' }}>Chiết khấu / Khuyến mãi (VND):</div>
+                    <input 
+                      type="number" 
+                      className="modal-input" 
+                      style={{ width: '150px', textAlign: 'right', color: '#dc2626', fontWeight: 600 }} 
+                      value={formData.discount || ''} 
+                      onChange={e => setFormData({...formData, discount: Number(e.target.value)})}
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                <div style={{ background: '#fffbeb', padding: '1.5rem', borderRadius: '8px', border: '1px dashed #f59e0b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div style={{ fontSize: '0.85rem', color: '#d97706', fontWeight: 700 }}>TỔNG CHỖ BÁN: {totalPaxCount} khách</div>
+                    <div style={{ fontSize: '0.9rem', color: '#d97706', fontWeight: 700 }}>TỔNG CHỖ BÁN: {totalPaxCount} khách</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.85rem', color: '#64748b' }}>TỔNG THANH TOÁN</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#dc2626' }}>{calculateTotal().toLocaleString('vi-VN')} đ</div>
+                    <div style={{ fontSize: '0.85rem', color: '#64748b', textTransform: 'uppercase' }}>TỔNG THANH TOÁN (Sau Khuyến Mãi)</div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#dc2626' }}>{calculateTotal().toLocaleString('vi-VN')} ₫</div>
                   </div>
                 </div>
 
               </div>
             </div>
+          )}
+
+          {/* Section: Đóng Cọc Tiền Mặt Lập Tức */}
+          {formData.tour_departure_id && (
+             <div style={{ background: '#f0fdf4', padding: '1rem', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
+               <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#166534', marginBottom: '1rem' }}>💸 Ghi nhận thu Cọc Đơn Hàng ngay</h4>
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                  <div className="modal-form-group">
+                    <label style={{ color: '#15803d' }}>SỐ TIỀN CỌC (VND)</label>
+                    <input 
+                      type="number" 
+                      className="modal-input" 
+                      placeholder="Ví dụ: 5000000 (Để trống nếu chưa thu)" 
+                      value={formData.initial_deposit_amount}
+                      onChange={e => setFormData({...formData, initial_deposit_amount: e.target.value})}
+                    />
+                  </div>
+                  <div className="modal-form-group">
+                    <label style={{ color: '#15803d' }}>PHƯƠNG THỨC</label>
+                    <select className="modal-select" value={formData.initial_deposit_method} onChange={e => setFormData({...formData, initial_deposit_method: e.target.value})}>
+                      <option value="CASH">Tiền mặt</option>
+                      <option value="BANK_TRANSFER">Chuyển khoản</option>
+                      <option value="CARD">Quẹt thẻ</option>
+                    </select>
+                  </div>
+                  <div className="modal-form-group">
+                    <label style={{ color: '#15803d' }}>NGÀY THU CỌC</label>
+                    <input 
+                      type="date" 
+                      className="modal-input" 
+                      value={formData.initial_deposit_date}
+                      onChange={e => setFormData({...formData, initial_deposit_date: e.target.value})}
+                    />
+                  </div>
+               </div>
+               <p style={{ marginTop: '8px', fontSize: '0.8rem', color: '#16a34a', fontStyle: 'italic' }}>*Hệ thống sẽ tự động cập nhật Trạng thái Thanh Toán mà không cần bạn làm thủ công nếu bạn nhập Khung này.</p>
+             </div>
           )}
 
           {/* Section: Bổ sung */}

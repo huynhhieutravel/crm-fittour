@@ -18,7 +18,12 @@ exports.getAllBookings = async (req, res) => {
 };
 
 exports.createBooking = async (req, res) => {
-    const { booking_code, customer_id, tour_id, tour_departure_id, start_date, pax_count, total_price, payment_status, booking_status, notes, pax_details, service_details } = req.body;
+    const { 
+        booking_code, customer_id, tour_id, tour_departure_id, start_date, 
+        pax_count, total_price, payment_status, booking_status, notes, 
+        pax_details, service_details, discount, 
+        initial_deposit_amount, initial_deposit_method, initial_deposit_date 
+    } = req.body;
     try {
         // Auto-generate booking code if missing
         let finalCode = booking_code;
@@ -29,17 +34,45 @@ exports.createBooking = async (req, res) => {
         }
 
         const result = await db.query(
-            'INSERT INTO bookings (booking_code, customer_id, tour_id, tour_departure_id, start_date, pax_count, total_price, payment_status, booking_status, notes, pax_details, service_details) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
+            'INSERT INTO bookings (booking_code, customer_id, tour_id, tour_departure_id, start_date, pax_count, total_price, payment_status, booking_status, notes, pax_details, service_details, discount) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *',
             [
               finalCode, customer_id, tour_id || null, tour_departure_id || null, 
               start_date || null, pax_count || 0, total_price || 0, payment_status || 'unpaid', 
               booking_status || 'pending', notes || null, 
               typeof pax_details === 'object' ? JSON.stringify(pax_details) : (pax_details || '[]'), 
-              typeof service_details === 'object' ? JSON.stringify(service_details) : (service_details || '[]')
+              typeof service_details === 'object' ? JSON.stringify(service_details) : (service_details || '[]'),
+              discount || 0
             ]
         );
         
         const newBooking = result.rows[0];
+
+        // Process Initial Deposit if any
+        if (initial_deposit_amount && Number(initial_deposit_amount) > 0) {
+            await db.query(`
+                INSERT INTO booking_transactions (booking_id, amount, payment_method, transaction_date, notes, created_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            `, [
+                newBooking.id, 
+                Number(initial_deposit_amount), 
+                initial_deposit_method || 'CASH', 
+                initial_deposit_date || new Date(), 
+                'Thu cọc lúc khởi tạo Đơn hàng',
+                req.user ? req.user.id : null
+            ]);
+            
+            // Re-evaluate payment status dynamically
+            const depositAmt = Number(initial_deposit_amount);
+            const tPrice = Number(newBooking.total_price);
+            let finalStatus = 'unpaid';
+            if (depositAmt >= tPrice && tPrice > 0) finalStatus = 'paid';
+            else if (depositAmt > 0) finalStatus = 'partial';
+
+            if (finalStatus !== newBooking.payment_status) {
+                await db.query("UPDATE bookings SET payment_status = $1 WHERE id = $2", [finalStatus, newBooking.id]);
+                newBooking.payment_status = finalStatus;
+            }
+        }
 
         // LOG ACTIVITY
         await logActivity({
@@ -60,7 +93,7 @@ exports.createBooking = async (req, res) => {
 exports.getBookingById = async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT b.*, c.name as customer_name, tt.name as tour_name
+            SELECT b.*, c.name as customer_name, c.phone as customer_phone, c.email as customer_email, tt.name as tour_name
             FROM bookings b
             LEFT JOIN customers c ON b.customer_id = c.id
             LEFT JOIN tour_departures td ON b.tour_departure_id = td.id
@@ -68,7 +101,33 @@ exports.getBookingById = async (req, res) => {
             WHERE b.id = $1
         `, [req.params.id]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy booking' });
-        res.json(result.rows[0]);
+        
+        const booking = result.rows[0];
+        
+        // Fetch Passengers 
+        // Note: fallback to the c_name if full_name is empty (migrating data)
+        const paxResult = await db.query(`
+            SELECT bp.*, c.name as c_name, c.phone as c_phone 
+            FROM booking_passengers bp 
+            LEFT JOIN customers c ON bp.customer_id = c.id
+            WHERE bp.booking_id = $1
+        `, [req.params.id]);
+        booking.passengers = paxResult.rows.map(p => ({
+            ...p,
+            display_name: p.full_name || p.c_name || 'Khách chưa có tên'
+        }));
+
+        // Fetch Transactions
+        const txResult = await db.query(`
+            SELECT bt.*, u.full_name as creator_name
+            FROM booking_transactions bt
+            LEFT JOIN users u ON bt.created_by = u.id
+            WHERE bt.booking_id = $1
+            ORDER BY bt.transaction_date ASC, bt.created_at ASC
+        `, [req.params.id]);
+        booking.transactions = txResult.rows;
+
+        res.json(booking);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -95,7 +154,7 @@ exports.updateBooking = async (req, res) => {
         const allowedFields = [
             'booking_code', 'customer_id', 'tour_id', 'tour_departure_id', 
             'start_date', 'pax_count', 'total_price', 'payment_status', 
-            'booking_status', 'notes', 'pax_details', 'service_details'
+            'booking_status', 'notes', 'pax_details', 'service_details', 'discount'
         ];
 
         Object.keys(updates).forEach(key => {
@@ -240,5 +299,73 @@ exports.createGroupBooking = async (req, res) => {
         res.status(500).json({ message: err.message });
     } finally {
         client.release();
+    }
+};
+
+exports.addTransaction = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { amount, payment_method, transaction_date, notes } = req.body;
+        
+        // 1. Check if booking exists
+        const bRes = await db.query('SELECT total_price FROM bookings WHERE id = $1', [id]);
+        if (bRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy booking' });
+
+        // 2. Insert transaction
+        const result = await db.query(`
+            INSERT INTO booking_transactions (booking_id, amount, payment_method, transaction_date, notes, created_by)
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING *
+        `, [id, amount, payment_method, transaction_date || new Date(), notes, req.user ? req.user.id : null]);
+        
+        const newTx = result.rows[0];
+
+        // 3. Update payment_status if fully paid
+        const sumRes = await db.query('SELECT SUM(amount) as total_paid FROM booking_transactions WHERE booking_id = $1', [id]);
+        const totalPaid = parseFloat(sumRes.rows[0].total_paid || 0);
+        const totalPrice = parseFloat(bRes.rows[0].total_price || 0);
+        
+        if (totalPaid >= totalPrice && totalPrice > 0) {
+            await db.query("UPDATE bookings SET payment_status = 'paid' WHERE id = $1", [id]);
+        } else if (totalPaid > 0 && totalPaid < totalPrice) {
+            await db.query("UPDATE bookings SET payment_status = 'partial' WHERE id = $1", [id]);
+        }
+
+        // 4. Log
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'PAYMENT',
+            entity_type: 'BOOKING',
+            entity_id: id,
+            details: `Thêm giao dịch thanh toán: ${amount.toLocaleString('vi-VN')}đ`,
+            new_data: newTx
+        });
+
+        res.status(201).json(newTx);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.updatePassenger = async (req, res) => {
+    try {
+        const { paxId } = req.params;
+        const { full_name, passport_number, passport_expired, visa_status, special_requests } = req.body;
+        
+        const result = await db.query(`
+            UPDATE booking_passengers 
+            SET full_name = COALESCE($1, full_name), 
+                passport_number = COALESCE($2, passport_number), 
+                passport_expired = COALESCE($3, passport_expired), 
+                visa_status = COALESCE($4, visa_status), 
+                special_requests = COALESCE($5, special_requests),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $6 RETURNING *
+        `, [full_name, passport_number, passport_expired, visa_status, special_requests, paxId]);
+        
+        if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy khách' });
+        
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 };
