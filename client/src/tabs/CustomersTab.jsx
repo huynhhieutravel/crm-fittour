@@ -102,7 +102,7 @@ const CustomersTab = ({
             </div>
           </div>
           
-          <div className="filter-group" style={{ flex: 1, minWidth: '150px', margin: 0 }}>
+          <div className="filter-group" style={{ flex: '0 0 auto', width: '150px', margin: 0 }}>
             <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '6px' }}>LỌC THEO HẠNG KHÁCH</label>
             <select 
               className="filter-select"
@@ -112,6 +112,7 @@ const CustomersTab = ({
             >
               <option value="">Tất cả</option>
               <option value="VIP">🌟 VIP</option>
+              <option value="VVIP">👑 VVIP</option>
               <option value="Platinum">💎 Platinum</option>
               <option value="Repeat Customer">🔄 Khách hàng cũ</option>
               <option value="New Customer">✨ Khách hàng mới</option>
@@ -133,7 +134,7 @@ const CustomersTab = ({
             </select>
           </div>
 
-          <div className="filter-group" style={{ flex: 1, minWidth: '150px', margin: 0 }}>
+          <div className="filter-group" style={{ flex: '0 0 auto', width: '150px', margin: 0 }}>
             <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '6px' }}>NGUỒN KHÁCH</label>
             <select 
               className="filter-select"
@@ -238,7 +239,10 @@ const CustomersTab = ({
                 </td>
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span className={`badge ${customer.customer_segment === 'VIP' ? 'badge-priority-high' : customer.customer_segment === 'Repeat Customer' ? 'badge-priority-medium' : 'badge-priority-low'}`}>
+                    <span 
+                      className={`badge ${customer.customer_segment === 'VVIP' ? '' : customer.customer_segment === 'VIP' ? 'badge-priority-high' : customer.customer_segment === 'Repeat Customer' ? 'badge-priority-medium' : 'badge-priority-low'}`}
+                      style={customer.customer_segment === 'VVIP' ? { background: 'linear-gradient(135deg, #a855f7 0%, #db2777 100%)', color: 'white', fontWeight: 700, border: 'none', padding: '4px 8px' } : {}}
+                    >
                       {customer.customer_segment}
                     </span>
                     {customer.lead_source && (
@@ -249,7 +253,7 @@ const CustomersTab = ({
                   </div>
                 </td>
                 <td style={{ fontSize: '0.85rem' }}>
-                  {customer.first_deal_date ? new Date(customer.first_deal_date).toLocaleDateString('vi-VN') : 'N/A'}
+                  {customer.created_at ? new Date(customer.created_at).toLocaleDateString('vi-VN') : 'N/A'}
                 </td>
                 <td style={{ fontSize: '0.85rem' }}>
                   {users.find(u => u.id === customer.assigned_to)?.full_name || 'Chưa gán'}
