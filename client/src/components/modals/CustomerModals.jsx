@@ -128,8 +128,8 @@ export const AddCustomerModal = ({
             <label>NHÂN VIÊN CHĂM SÓC</label>
             <select className="modal-select" value={newCustomer.assigned_to || ''} onChange={e => setNewCustomer({...newCustomer, assigned_to: e.target.value})}>
               <option value="">-- Chọn nhân viên --</option>
-              {users.filter(u => u.is_active !== false && (u.role_name === 'sale' || u.role_name === 'admin' || u.role_name === 'manager' || u.permissions?.customers?.can_edit)).map(u => (
-                <option key={u.id} value={u.id}>{u.full_name} ({u.username})</option>
+              {users.filter(u => u.is_active !== false).map(u => (
+                <option key={u.id} value={u.id}>{u.full_name} ({u.role_name})</option>
               ))}
             </select>
           </div>
@@ -339,8 +339,8 @@ export const EditCustomerModal = ({
                   <label>NHÂN VIÊN CHĂM SÓC</label>
                   <select className="modal-select" value={editingCustomer.assigned_to || ''} onChange={e => setEditingCustomer({...editingCustomer, assigned_to: e.target.value})}>
                     <option value="">-- Chọn nhân viên --</option>
-                    {users.filter(u => u.is_active !== false && (u.role_name === 'sale' || u.role_name === 'admin' || u.role_name === 'manager' || u.permissions?.customers?.can_edit)).map(u => (
-                      <option key={u.id} value={u.id}>{u.full_name} ({u.username})</option>
+                    {users.filter(u => u.is_active !== false).map(u => (
+                      <option key={u.id} value={u.id}>{u.full_name} ({u.role_name})</option>
                     ))}
                   </select>
                 </div>
