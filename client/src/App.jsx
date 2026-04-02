@@ -269,7 +269,7 @@ function AppContent() {
   const LEAD_STATUSES = ['Mới', 'Đang liên hệ', 'Tiềm năng', 'Đặt cọc', 'Chốt đơn', 'Thất bại'];
   const LEAD_CLASSIFICATIONS = ['Mới', 'Tiềm Năng', 'Tiềm Năng Cao', 'Không Tiềm Năng'];
   const CUSTOMER_ROLES = ['Người đại diện (booker)', 'Khách đi kèm'];
-  const CUSTOMER_SEGMENTS = ['New Customer', 'Repeat Customer', 'VIP'];
+  const CUSTOMER_SEGMENTS = ['New Customer', 'Repeat Customer', 'VIP', 'VVIP', 'Platinum'];
   const CONTACT_METHODS = ['Zalo', 'Call', 'Email'];
   const CITY_OPTIONS = ['TP. Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng', 'Khác'];
 
