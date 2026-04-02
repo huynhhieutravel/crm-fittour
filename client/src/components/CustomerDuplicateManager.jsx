@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { Network, Check, X, AlertTriangle } from 'lucide-react';
 
@@ -46,11 +47,11 @@ const CustomerDuplicateManager = ({ onClose, onMerged }) => {
     }
   };
 
-  return (
+  return createPortal(
     <div className="modal-overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="modal-content animate-fade-in" style={{ width: '800px', maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center' }}>
-          <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
             <Network className="text-orange-500" /> Quản lý Dữ liệu Trùng lặp
           </h2>
           <button onClick={onClose} className="icon-btn"><X size={20} /></button>
@@ -102,7 +103,7 @@ const CustomerDuplicateManager = ({ onClose, onMerged }) => {
         )}
       </div>
     </div>
-  );
+  , document.body);
 };
 
 export default CustomerDuplicateManager;

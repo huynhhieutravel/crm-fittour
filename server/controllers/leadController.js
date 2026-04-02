@@ -9,10 +9,14 @@ exports.getAllLeads = async (req, res) => {
             SELECT l.*, tt.name as tour_name, u.full_name as assigned_to_name,
                    (SELECT COUNT(*)::int FROM lead_notes WHERE lead_id = l.id) as notes_count,
                    (SELECT content FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note,
-                   (SELECT created_at FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note_at
+                   (SELECT created_at FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note_at,
+                   c.id as returning_customer_id,
+                   (SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed')::numeric as total_spent,
+                   CASE WHEN c.id IS NOT NULL THEN true ELSE false END as is_returning_customer
             FROM leads l 
             LEFT JOIN tour_templates tt ON l.tour_id = tt.id 
             LEFT JOIN users u ON l.assigned_to = u.id 
+            LEFT JOIN customers c ON l.customer_id = c.id
             ORDER BY l.created_at DESC
         `);
         res.json(result.rows);
@@ -31,16 +35,26 @@ exports.createLead = async (req, res) => {
         const finalEmail = (email && email.trim() !== '') ? email.trim() : null;
         const finalTourId = (tour_id === '' || !tour_id) ? null : tour_id;
         const finalAssignedTo = (assigned_to === '' || !assigned_to) ? null : assigned_to;
-        const finalStatus = 'Mới';
+        // Auto-link retroactively: Check if customer exists by phone or facebook_psid
+        let customerIdStr = null;
+        if (finalPhone || facebook_psid) {
+            const custRes = await db.query(
+                `SELECT id FROM customers WHERE (phone = $1 AND $1 IS NOT NULL) OR (facebook_psid = $2 AND $2 IS NOT NULL) LIMIT 1`, 
+                [finalPhone, facebook_psid]
+            );
+            if (custRes.rows.length > 0) {
+                customerIdStr = custRes.rows[0].id;
+            }
+        }
 
         const result = await db.query(
-            'INSERT INTO leads (name, phone, email, source, tour_id, assigned_to, status, consultation_note, bu_group, gender, birth_date, classification, last_contacted_at, facebook_psid, meta_lead_id, fbclid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *',
+            'INSERT INTO leads (name, phone, email, source, tour_id, assigned_to, status, consultation_note, bu_group, gender, birth_date, classification, last_contacted_at, facebook_psid, meta_lead_id, fbclid, customer_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *',
             [
                 normalizedName, finalPhone, finalEmail, source || 'Messenger', 
                 finalTourId, finalAssignedTo, finalStatus, 
                 consultation_note || null, bu_group || null, gender || null, 
                 birth_date || null, classification || 'Mới', last_contacted_at || new Date(),
-                facebook_psid || null, meta_lead_id || null, fbclid || null
+                facebook_psid || null, meta_lead_id || null, fbclid || null, customerIdStr
             ]
         );
 
@@ -123,11 +137,34 @@ exports.updateLead = async (req, res) => {
             }
         });
 
-        if (updateFields.length > 0) {
+            if (updateFields.length > 0) {
             queryValues.push(leadId);
             console.log('QUERY IS: ', `UPDATE leads SET ${updateFields.join(', ')}`); const updateQuery = `UPDATE leads SET ${updateFields.join(', ')}, updated_at = NOW() WHERE id = $${queryValues.length} RETURNING *`;
             const result = await client.query(updateQuery, queryValues);
-            const updatedLead = result.rows[0];
+            let updatedLead = result.rows[0];
+
+            // 2.5 Retroactive link if phone or facebook_psid was updated
+            if (updates.phone !== undefined || updates.facebook_psid !== undefined) {
+                const phoneToCheck = updates.phone !== undefined ? updates.phone : updatedLead.phone;
+                const psidToCheck = updates.facebook_psid !== undefined ? updates.facebook_psid : updatedLead.facebook_psid;
+                
+                if (phoneToCheck || psidToCheck) {
+                    const custRes = await client.query(
+                        `SELECT id FROM customers WHERE (phone = $1 AND $1 IS NOT NULL AND $1 != '') OR (facebook_psid = $2 AND $2 IS NOT NULL AND $2 != '') LIMIT 1`, 
+                        [phoneToCheck, psidToCheck]
+                    );
+                    if (custRes.rows.length > 0) {
+                        await client.query(`UPDATE leads SET customer_id = $1 WHERE id = $2`, [custRes.rows[0].id, leadId]);
+                        updatedLead.customer_id = custRes.rows[0].id;
+                    } else {
+                        await client.query(`UPDATE leads SET customer_id = NULL WHERE id = $1`, [leadId]);
+                        updatedLead.customer_id = null;
+                    }
+                } else {
+                    await client.query(`UPDATE leads SET customer_id = NULL WHERE id = $1`, [leadId]);
+                    updatedLead.customer_id = null;
+                }
+            }
 
             // 3. AUTO-CONVERT TO CUSTOMER if status is 'Chốt đơn'
             if (updates.status === 'Chốt đơn' || updatedLead.status === 'Chốt đơn') {

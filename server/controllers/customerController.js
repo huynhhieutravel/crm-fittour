@@ -63,6 +63,16 @@ exports.createCustomer = async (req, res) => {
         // Normalize
         const normalizedName = body.name ? body.name.toUpperCase().trim() : 'KHÁCH HÀNG MỚI';
         
+        // 1. Check for duplicate phone
+        if (body.phone && body.phone.trim() !== '') {
+            const existingCust = await db.query('SELECT name FROM customers WHERE phone = $1', [body.phone.trim()]);
+            if (existingCust.rows.length > 0) {
+                return res.status(409).json({ 
+                    message: `Số điện thoại này đã tồn tại ở khách hàng mang tên "${existingCust.rows[0].name}". Vui lòng kiểm tra lại danh bạ Khách Hàng thay vì tạo mới!`
+                });
+            }
+        }
+
         const result = await db.query(
             `INSERT INTO customers (
                 name, phone, email, gender, birth_date, nationality, 
@@ -89,6 +99,18 @@ exports.createCustomer = async (req, res) => {
         );
 
         const newCustomer = result.rows[0];
+
+        // 2. Retroactive Lead Claiming
+        if (newCustomer.phone || newCustomer.facebook_psid) {
+            await db.query(`
+                UPDATE leads 
+                SET customer_id = $1 
+                WHERE customer_id IS NULL AND (
+                    (phone = $2 AND $2 IS NOT NULL AND $2 != '') OR 
+                    (facebook_psid = $3 AND $3 IS NOT NULL AND $3 != '')
+                )
+            `, [newCustomer.id, newCustomer.phone, newCustomer.facebook_psid]);
+        }
 
         // LOG ACTIVITY
         await logActivity({
@@ -188,6 +210,23 @@ exports.updateCustomer = async (req, res) => {
             const updateQuery = `UPDATE customers SET ${updateFields.join(', ')} WHERE id = $${queryValues.length} RETURNING *`;
             const result = await client.query(updateQuery, queryValues);
             const updatedCustomer = result.rows[0];
+
+            // 2.5 Retroactive Lead Claiming after Update
+            if (updates.phone !== undefined || updates.facebook_psid !== undefined) {
+                const phoneToCheck = updates.phone !== undefined ? updates.phone : updatedCustomer.phone;
+                const psidToCheck = updates.facebook_psid !== undefined ? updates.facebook_psid : updatedCustomer.facebook_psid;
+                
+                if (phoneToCheck || psidToCheck) {
+                    await client.query(`
+                        UPDATE leads 
+                        SET customer_id = $1 
+                        WHERE customer_id IS NULL AND (
+                            (phone = $2 AND $2 IS NOT NULL AND $2 != '') OR 
+                            (facebook_psid = $3 AND $3 IS NOT NULL AND $3 != '')
+                        )
+                    `, [updatedCustomer.id, phoneToCheck, psidToCheck]);
+                }
+            }
 
             // 3. LOG ACTIVITY
             await logActivity({

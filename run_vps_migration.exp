@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no root@64.176.85.168 "su - postgres -c \"psql -d crm_fittour -c \\\"ALTER TABLE leads ADD COLUMN IF NOT EXISTS customer_id INTEGER REFERENCES customers(id); ALTER TABLE customers ADD COLUMN IF NOT EXISTS facebook_psid VARCHAR(255) UNIQUE; UPDATE leads SET customer_id = customers.id FROM customers WHERE leads.phone = customers.phone AND leads.phone IS NOT NULL AND leads.phone != '';\\\"\""
+expect "*?assword:*"
+send "#Aa2,zdf87a@Q{3q\r"
+expect eof

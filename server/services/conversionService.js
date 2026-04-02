@@ -25,34 +25,34 @@ async function convertLeadToCustomer(client, leadId, userId) {
 
     let customer;
     if (existingRes.rows.length > 0) {
-        // Update existing customer
+        // Update existing customer WITHOUT overwriting original lead_id
         const res = await client.query(
             `UPDATE customers SET 
                 name = $1, email = $2, gender = $3, birth_date = $4, 
-                lead_id = $5, nationality = COALESCE(nationality, $6),
-                assigned_to = COALESCE(assigned_to, $7)
-             WHERE id = $8 RETURNING *`,
+                nationality = COALESCE(nationality, $5),
+                facebook_psid = COALESCE(facebook_psid, $6)
+             WHERE id = $7 RETURNING *`,
             [
                 normalizedName, 
                 lead.email, 
                 lead.gender, 
                 lead.birth_date, 
-                leadId, 
                 lead.nationality || 'Việt Nam', 
-                lead.assigned_to, // Map assigned staff from Lead
+                lead.facebook_psid || null,
                 existingRes.rows[0].id
             ]
         );
         customer = res.rows[0];
+        customer.was_existing_customer = true;
     } else {
         // Create new customer
         const res = await client.query(
             `INSERT INTO customers (
                 name, phone, email, gender, birth_date, lead_id, 
                 notes, preferred_contact, nationality, role, 
-                customer_segment, first_deal_date, assigned_to
+                customer_segment, first_deal_date, assigned_to, facebook_psid
             ) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
             [
                 normalizedName, 
                 lead.phone, 
@@ -66,7 +66,8 @@ async function convertLeadToCustomer(client, leadId, userId) {
                 'Người đại diện',
                 'New Customer',
                 new Date(), // first_deal_date
-                lead.assigned_to // assigned_to (Sales staff)
+                lead.assigned_to, // assigned_to (Sales staff)
+                lead.facebook_psid || null
             ]
         );
         customer = res.rows[0];

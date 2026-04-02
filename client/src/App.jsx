@@ -818,7 +818,11 @@ function AppContent() {
       });
       addToast('Đã thêm khách hàng mới thành công.');
     } catch (err) {
-      addToast(err.response?.data?.message || 'Lỗi khi thêm khách hàng');
+      if (err.response && err.response.status === 409) {
+        alert('⚠️ LỖI TRÙNG DỮ LIỆU: ' + err.response.data.message);
+      } else {
+        addToast(err.response?.data?.message || 'Lỗi khi thêm khách hàng');
+      }
     }
   };
 
@@ -902,13 +906,18 @@ function AppContent() {
   const handleConvertLead = async (leadId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post('/api/customers/convert', { leadId }, {
+      const res = await axios.post('/api/customers/convert', { leadId }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchCustomers();
       fetchLeads();
       setEditingLead(null);
-      addToast('Đã chuyển đổi Lead thành Khách hàng thành công!');
+      if (res.data && res.data.customer && res.data.customer.was_existing_customer) {
+        alert('TING TING 🌱 - Gắn KPI thành công!\n\nLưu ý: Hệ thống phát hiện đây là Khách Hàng Cũ quay lại nên đã tự động gộp Nhật Ký Tư Vấn và Thông tin đơn hàng mới vào Hồ Sơ Gốc của khách này để tăng LTV (Không tạo thêm Khách rác). Quá tuyệt vời!');
+        addToast('Đã gộp Lead vào Khách quen thành công!');
+      } else {
+        addToast('Đã chuyển đổi Lead thành Khách hàng mới thành công!');
+      }
     } catch (err) {
       addToast(err.response?.data?.message || 'Lỗi khi chuyển đổi Lead');
     }

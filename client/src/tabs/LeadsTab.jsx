@@ -313,8 +313,27 @@ const LeadsTab = ({
                 </td>
                 <td>
                   <div className="lead-info">
-                    <span className="lead-name" style={{ fontWeight: 700 }}>
+                    <span className="lead-name" style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {lead.name}
+                      {lead.is_returning_customer && (
+                        <span 
+                          style={{ 
+                            fontSize: '0.65rem', 
+                            background: '#f3e8ff', 
+                            color: '#9333ea', 
+                            padding: '2px 6px', 
+                            borderRadius: '4px', 
+                            fontWeight: 800,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            whiteSpace: 'nowrap'
+                          }}
+                          title="Khách VVIP đã từng booking."
+                        >
+                          🎖️ KHÁCH QUEN {lead.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(lead.total_spent)}đ)` : ''}
+                        </span>
+                      )}
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
                       {editingPhoneId === lead.id ? (

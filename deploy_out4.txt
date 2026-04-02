@@ -1,0 +1,121 @@
+spawn /bin/bash -c ssh -o StrictHostKeyChecking=no root@64.176.85.168 < deploy_script2.sh
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-173-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Thu Apr  2 01:34:46 PM +07 2026
+
+  System load:             0.03
+  Usage of /:              86.0% of 22.88GB
+  Memory usage:            40%
+  Swap usage:              8%
+  Processes:               171
+  Users logged in:         0
+  IPv4 address for enp1s0: 64.176.85.168
+  IPv6 address for enp1s0: 2401:c080:1400:55d5:5400:5ff:fed3:5a4c
+
+  => / is using 86.0% of 22.88GB
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+Expanded Security Maintenance for Applications is not enabled.
+
+29 updates can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+1 additional security update can be applied with ESM Apps.
+Learn more about enabling ESM Apps service at https://ubuntu.com/esm
+
+New release '24.04.4 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+No local changes to save
+From https://github.com/huynhhieutravel/crm-fittour
+ * branch            main       -> FETCH_HEAD
+   5c95905..6e017c5  main       -> origin/main
+Updating 5c95905..6e017c5
+Fast-forward
+ client/src/components/CustomerCalendarView.jsx     | 245 +++++++++++++++++++++
+ client/src/components/CustomerDuplicateManager.jsx | 108 +++++++++
+ client/src/components/CustomerProfileSlider.jsx    |  44 +++-
+ client/src/tabs/CustomersTab.jsx                   | 145 +++++++++---
+ create_customer_events_table.sql                   |  11 +
+ deploy_out3.txt                                    | 106 +++++++++
+ server/controllers/customerController.js           |  61 ++++-
+ server/controllers/customerEventController.js      | 119 ++++++++++
+ server/routes/customers.js                         |  12 +
+ server/test_leads_schema.js                        |   8 +
+ test_vps.exp                                       |   6 +
+ test_vps.sql                                       |   1 +
+ vps_sql.out                                        |   6 +
+ 13 files changed, 834 insertions(+), 38 deletions(-)
+ create mode 100644 client/src/components/CustomerCalendarView.jsx
+ create mode 100644 client/src/components/CustomerDuplicateManager.jsx
+ create mode 100644 create_customer_events_table.sql
+ create mode 100644 deploy_out3.txt
+ create mode 100644 server/controllers/customerEventController.js
+ create mode 100644 server/test_leads_schema.js
+ create mode 100644 test_vps.exp
+ create mode 100644 test_vps.sql
+ create mode 100644 vps_sql.out
+
+up to date, audited 153 packages in 2s
+
+44 packages are looking for funding
+  run `npm fund` for details
+
+2 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [all](ids: [ 0 ])
+[PM2] [crm-fittour](0) ✓
+┌────┬────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name           │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ crm-fittour    │ default     │ 1.0.0   │ fork    │ 321542   │ 0s     │ 65   │ online    │ 0%       │ 16.5mb   │ root     │ disabled │
+└────┴────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+
+up to date, audited 365 packages in 4s
+
+117 packages are looking for funding
+  run `npm fund` for details
+
+4 vulnerabilities (1 moderate, 3 high)
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+
+> client@0.0.0 build
+> vite build
+
+vite v6.4.1 building for production...
+transforming...
+✓ 2380 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.46 kB │ gzip:   0.30 kB
+dist/assets/index-BQjezX7Q.css     29.59 kB │ gzip:   6.57 kB
+dist/assets/index-C6onjdGS.js   1,095.20 kB │ gzip: 303.34 kB
+✓ built in 25.35s
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+send: spawn id exp6 not open
+    while executing
+"send "#Aa2,zdf87a@Q{3q\r""
+    (file "./deploy_remote.exp" line 5)
