@@ -137,4 +137,6 @@ CREATE TABLE IF NOT EXISTS booking_transactions (
 -- ALTER TABLE booking_passengers ADD COLUMN IF NOT EXISTS special_requests TEXT;
 
 -- 2026-04-03 Nâng Cấp Form Bookings
-ALTER TABLE bookings ADD COLUMN discount NUMERIC(12,2) DEFAULT 0;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount NUMERIC(12,2) DEFAULT 0;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS pax_details JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS service_details JSONB DEFAULT '[]'::jsonb;

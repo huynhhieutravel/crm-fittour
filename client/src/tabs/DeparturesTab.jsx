@@ -22,6 +22,7 @@ const DeparturesTab = ({
   handleDuplicateDeparture,
   handleUpdateDeparture,
   handleViewDeparture,
+  handleViewBookingsForDeparture,
   guides
 }) => {
   const [hoveredNotePath, setHoveredNotePath] = useState(null);
@@ -247,19 +248,27 @@ const DeparturesTab = ({
                         đến {new Date(dep.end_date).toLocaleDateString('vi-VN')}
                       </div>
                     )}
-                    <div style={{ 
-                      marginTop: '4px',
-                      display: 'inline-block',
-                      padding: '1px 4px', 
-                      background: '#f1f5f9', 
-                      color: '#64748b', 
-                      borderRadius: '4px', 
-                      fontSize: '0.65rem', 
-                      fontWeight: 700,
-                      border: '1px solid #e2e8f0',
-                      letterSpacing: '-0.3px',
-                      whiteSpace: 'nowrap'
-                    }}>{dep.code || 'N/A'}</div>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleViewBookingsForDeparture(dep.code); }}
+                      style={{ 
+                        marginTop: '4px',
+                        display: 'inline-block',
+                        padding: '2px 6px', 
+                        background: '#f8fafc', 
+                        color: '#2563eb', 
+                        borderRadius: '4px', 
+                        fontSize: '0.7rem', 
+                        fontWeight: 800,
+                        border: '1px solid #bfdbfe',
+                        letterSpacing: '-0.3px',
+                        whiteSpace: 'nowrap',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseOver={e => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.borderColor = '#60a5fa'; }}
+                      onMouseOut={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#bfdbfe'; }}
+                      title="Nhấn để Lọc và Xem danh sách Khách hàng trong Lịch khởi hành này"
+                    >{dep.code || 'N/A'}</button>
                   </td>
                   <td>
                     <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>{dep.template_name}</div>

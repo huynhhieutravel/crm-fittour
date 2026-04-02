@@ -124,7 +124,9 @@ function AppContent() {
   });
   const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'today', startDate: '', endDate: '', tours: [] });
   const [tourFilters, setTourFilters] = useState({ search: '', tour_type: '', destination: '', status: '', guide_id: '', timeRange: 'all', startDate: '', endDate: '' });
-  const [bookingFilters, setBookingFilters] = useState({ search: '', status: '' });
+  const [bookingFilters, setBookingFilters] = useState({ search: '', status: '', bookingStatus: '', paymentStatus: '' });
+  const [bookingCurrentPage, setBookingCurrentPage] = useState(1);
+  const [bookingTotalPages, setBookingTotalPages] = useState(1);
   const [customerFilters, setCustomerFilters] = useState({ search: '' });
   const [showAddLeadModal, setShowAddLeadModal] = useState(false);
   const [showAddBookingModal, setShowAddBookingModal] = useState(false);
@@ -169,6 +171,12 @@ function AppContent() {
   const handleViewDeparture = (dep) => {
     const depId = dep.id || dep.tour_departure_id;
     navigate(`/departures/view/${depId}`);
+  };
+
+  const handleViewBookingsForDeparture = (depCode) => {
+    setBookingFilters({ search: depCode, bookingStatus: '', paymentStatus: '' });
+    setActiveTab('bookings');
+    navigate('/bookings');
   };
 
   const handleOpenCustomer = async (customerId) => {
@@ -264,6 +272,8 @@ function AppContent() {
   const [customerToDelete, setCustomerToDelete] = useState(null);
   const [tourToDelete, setTourToDelete] = useState(null);
   const [departureToDelete, setDepartureToDelete] = useState(null);
+  const [bookingToDelete, setBookingToDelete] = useState(null);
+  const [bookingToEdit, setBookingToEdit] = useState(null);
 
   const LEAD_SOURCES = ['Messenger', 'Zalo', 'Khách giới thiệu', 'Hotline', 'Khác'];
   const LEAD_STATUSES = ['Mới', 'Đang liên hệ', 'Tiềm năng', 'Đặt cọc', 'Chốt đơn', 'Thất bại'];
@@ -276,23 +286,38 @@ function AppContent() {
   const addToast = (msg) => addToastGlobal(msg, setToasts);
 
   useEffect(() => {
-    const interceptor = axios.interceptors.response.use(
+    const reqInterceptor = axios.interceptors.request.use(
+      config => {
+        const token = localStorage.getItem('token');
+        if (token && config.url !== '/api/auth/login') {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      error => Promise.reject(error)
+    );
+
+    const resInterceptor = axios.interceptors.response.use(
       response => response,
       error => {
-        if (error.response && [401, 403].includes(error.response.status)) {
+        // Do not auto logout on 403 (Permission Denied). Only logout on 401 (Unauthorized/Token Expired)
+        if (error.response && [401].includes(error.response.status)) {
           if (error.config && error.config.url !== '/api/auth/login') {
+            console.error('Logout triggered by 401 on URL:', error.config.url);
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             setIsLoggedIn(false);
             setUser(null);
             navigate('/login');
-            // addToastGlobal('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', setToasts);
           }
         }
         return Promise.reject(error);
       }
     );
-    return () => axios.interceptors.response.eject(interceptor);
+    return () => {
+      axios.interceptors.request.eject(reqInterceptor);
+      axios.interceptors.response.eject(resInterceptor);
+    };
   }, [navigate]);
 
   useEffect(() => {
@@ -567,6 +592,34 @@ function AppContent() {
 
   const handleDeleteDeparture = (id) => {
     setDepartureToDelete(id);
+  };
+
+  const handleEditBooking = (booking) => {
+    setBookingToEdit(booking);
+    setShowAddBookingModal(true);
+  };
+
+  const handleDeleteBooking = (id) => {
+    setBookingToDelete(id);
+  };
+
+  const confirmDeleteBooking = async () => {
+    if (!bookingToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/bookings/${bookingToDelete}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchBookings();
+      addToast('Đã xoá đơn hàng.');
+      setBookingToDelete(null);
+    } catch (err) { 
+      addToast('Lỗi khi xoá: ' + (err.response?.data?.message || err.message)); 
+      setBookingToDelete(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const confirmDeleteDeparture = async () => {
@@ -1047,15 +1100,36 @@ function AppContent() {
     } catch (err) { console.error(err); }
   };
 
-  const fetchBookings = async () => {
+  const fetchBookings = async (page = bookingCurrentPage, filters = bookingFilters) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('/api/bookings', {
+      const qs = new URLSearchParams();
+      qs.append('page', page);
+      qs.append('limit', 30);
+      if (filters.search) qs.append('search', filters.search);
+      if (filters.bookingStatus) qs.append('status', filters.bookingStatus);
+      if (filters.paymentStatus) qs.append('payment_status', filters.paymentStatus);
+
+      const res = await axios.get(`/api/bookings?${qs.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setBookings(res.data);
+      if (Array.isArray(res.data)) {
+        setBookings(res.data);
+      } else {
+        setBookings(res.data.data);
+        setBookingTotalPages(res.data.totalPages);
+        setBookingCurrentPage(res.data.page);
+      }
     } catch (err) { console.error(err); }
   };
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const timer = setTimeout(() => {
+      fetchBookings(bookingCurrentPage, bookingFilters);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [bookingFilters, bookingCurrentPage, isLoggedIn]);
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -1750,6 +1824,7 @@ function AppContent() {
             handleDuplicateDeparture={handleDuplicateDeparture}
             handleUpdateDeparture={handleUpdateDeparture}
             handleViewDeparture={handleViewDeparture}
+            handleViewBookingsForDeparture={handleViewBookingsForDeparture}
             guides={guides}
           />
         )}
@@ -1782,7 +1857,12 @@ function AppContent() {
             bookings={bookings}
             bookingFilters={bookingFilters}
             setBookingFilters={setBookingFilters}
+            bookingCurrentPage={bookingCurrentPage}
+            setBookingCurrentPage={setBookingCurrentPage}
+            bookingTotalPages={bookingTotalPages}
             setShowAddBookingModal={setShowAddBookingModal}
+            handleDeleteBooking={handleDeleteBooking}
+            handleEditBooking={handleEditBooking}
           />
         )}
 
@@ -1862,7 +1942,11 @@ function AppContent() {
 
       <AddBookingModal
         show={showAddBookingModal}
-        onClose={() => setShowAddBookingModal(false)}
+        bookingToEdit={bookingToEdit}
+        onClose={() => {
+          setShowAddBookingModal(false);
+          setBookingToEdit(null);
+        }}
         onSave={async (bookingData) => {
           try {
             let finalCustomerId = bookingData.customer_id;
@@ -1873,22 +1957,31 @@ function AppContent() {
                 phone: bookingData.new_customer_info.phone,
                 preferred_contact: 'Zalo',
                 role: 'booker'
-              });
+              }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
               finalCustomerId = custRes.data.id;
             }
 
-            const res = await axios.post('/api/bookings', {
-              ...bookingData,
-              customer_id: finalCustomerId
-            });
+            if (bookingToEdit) {
+              await axios.put(`/api/bookings/${bookingToEdit.id}`, {
+                ...bookingData,
+                customer_id: finalCustomerId
+              }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+              addToastGlobal('Cập nhật đơn hàng thành công!', setToasts);
+            } else {
+              await axios.post('/api/bookings', {
+                ...bookingData,
+                customer_id: finalCustomerId
+              }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+              addToastGlobal('Lưu đơn hàng thành công!', setToasts);
+            }
             
-            const updatedBookings = await axios.get('/api/bookings');
+            const updatedBookings = await axios.get('/api/bookings', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
             setBookings(updatedBookings.data);
             setShowAddBookingModal(false);
-            addToastGlobal('Lưu đơn hàng thành công!', setToasts);
+            setBookingToEdit(null);
           } catch (err) {
             console.error(err);
-            alert('Lỗi tạo đơn hàng: ' + (err.response?.data?.message || err.message));
+            alert('Lỗi lưu đơn hàng: ' + (err.response?.data?.message || err.message));
           }
         }}
         customers={customers}
@@ -2139,12 +2232,13 @@ function AppContent() {
     )}
 
     {/* MODAL XÁC NHẬN XÓA (CUSTOM) */}
-    {(leadToDelete || customerToDelete || tourToDelete || departureToDelete) && (
+    {(leadToDelete || customerToDelete || tourToDelete || departureToDelete || bookingToDelete) && (
       <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={() => {
         setLeadToDelete(null);
         setCustomerToDelete(null);
         setTourToDelete(null);
         setDepartureToDelete(null);
+        setBookingToDelete(null);
       }}>
         <div className="modal-content animate-slide-up" style={{ maxWidth: '400px', textAlign: 'center', padding: '2.5rem' }} onClick={e => e.stopPropagation()}>
           <div style={{ width: '60px', height: '60px', background: '#fee2e2', color: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
@@ -2164,6 +2258,7 @@ function AppContent() {
                 setCustomerToDelete(null);
                 setTourToDelete(null);
                 setDepartureToDelete(null);
+                setBookingToDelete(null);
               }}
             >HỦY BỎ</button>
             <button 
@@ -2175,6 +2270,7 @@ function AppContent() {
                 if (customerToDelete) confirmDeleteCustomer();
                 if (tourToDelete) confirmDeleteTour();
                 if (departureToDelete) confirmDeleteDeparture();
+                if (bookingToDelete) confirmDeleteBooking();
               }}
             >{loading ? 'ĐANG XÓA...' : 'XÓA THỰC SỰ'}</button>
           </div>

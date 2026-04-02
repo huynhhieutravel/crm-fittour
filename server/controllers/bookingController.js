@@ -3,14 +3,93 @@ const { logActivity } = require('../utils/logger');
 
 exports.getAllBookings = async (req, res) => {
     try {
+        const { page, limit, search, status, payment_status } = req.query;
+        
+        let whereClauses = [];
+        let params = [];
+        let paramCount = 1;
+
+        if (search) {
+            whereClauses.push(`(b.booking_code ILIKE $${paramCount} OR c.name ILIKE $${paramCount} OR c.phone ILIKE $${paramCount} OR tt.code ILIKE $${paramCount} OR td.code ILIKE $${paramCount})`);
+            params.push(`%${search}%`);
+            paramCount++;
+        }
+        if (status) {
+            whereClauses.push(`b.booking_status = $${paramCount}`);
+            params.push(status);
+            paramCount++;
+        }
+        if (payment_status) {
+            whereClauses.push(`b.payment_status = $${paramCount}`);
+            params.push(payment_status);
+            paramCount++;
+        }
+
+        const whereString = whereClauses.length > 0 ? 'WHERE ' + whereClauses.join(' AND ') : '';
+
+        // Pagination
+        if (page && limit) {
+            const pageNum = parseInt(page);
+            const limitNum = parseInt(limit);
+            const offset = (pageNum - 1) * limitNum;
+
+            const countResult = await db.query(`
+                SELECT COUNT(*) 
+                FROM bookings b
+                LEFT JOIN customers c ON b.customer_id = c.id
+                LEFT JOIN tour_departures td ON b.tour_departure_id = td.id
+                LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+                ${whereString}
+            `, params);
+            
+            const totalRows = parseInt(countResult.rows[0].count);
+
+            params.push(limitNum);
+            params.push(offset);
+            
+            const result = await db.query(`
+                SELECT 
+                    b.*, 
+                    c.name as customer_name,
+                    c.phone as customer_phone,
+                    tt.name as tour_name,
+                    tt.code as tour_code,
+                    td.code as departure_code,
+                    COALESCE((SELECT SUM(amount) FROM booking_transactions WHERE booking_id = b.id), 0) as paid_amount
+                FROM bookings b 
+                LEFT JOIN customers c ON b.customer_id = c.id 
+                LEFT JOIN tour_departures td ON b.tour_departure_id = td.id
+                LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+                ${whereString}
+                ORDER BY b.created_at DESC
+                LIMIT $${paramCount} OFFSET $${paramCount + 1}
+            `, params);
+            
+            return res.json({
+                data: result.rows,
+                total: totalRows,
+                page: pageNum,
+                totalPages: Math.ceil(totalRows / limitNum)
+            });
+        }
+
+        // Return all if no pagination params (for backwards compatibility)
         const result = await db.query(`
-            SELECT b.*, c.name as customer_name, tt.name as tour_name 
+            SELECT 
+                b.*, 
+                c.name as customer_name, 
+                c.phone as customer_phone,
+                tt.name as tour_name,
+                tt.code as tour_code,
+                td.code as departure_code,
+                COALESCE((SELECT SUM(amount) FROM booking_transactions WHERE booking_id = b.id), 0) as paid_amount
             FROM bookings b 
             LEFT JOIN customers c ON b.customer_id = c.id 
             LEFT JOIN tour_departures td ON b.tour_departure_id = td.id
             LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+            ${whereString}
             ORDER BY b.created_at DESC
-        `);
+        `, params);
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ message: err.message });

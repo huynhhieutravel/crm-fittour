@@ -1,0 +1,1 @@
+import React from 'react'; import { renderToString } from 'react-dom/server'; import { AddBookingModal } from './components/modals/BookingModals'; console.log(renderToString(<AddBookingModal show={true} onClose={()=>{}} onSave={()=>{}} customers={[]} departures={[]} />));
