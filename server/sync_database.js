@@ -17,7 +17,8 @@ const MIGRATION_FILES = [
   'migrate_gender.js',
   'migrate_bu.js',
   'migrate_rbac.js',
-  'seed_users.js'
+  'seed_users.js',
+  'migration_add_pax_details_to_bookings.js'
 ];
 
 console.log('🌟 Bắt Đầu Tiến Trình Đồng Bộ Cơ Sở Dữ Liệu (Universal Sync) 🌟');
