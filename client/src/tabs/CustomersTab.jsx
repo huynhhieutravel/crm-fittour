@@ -22,8 +22,7 @@ const CustomersTab = ({
   const [showDuplicateManager, setShowDuplicateManager] = useState(false);
   const [hoveredNoteId, setHoveredNoteId] = useState(null);
 
-  // Lọc nâng cao locally 
-  const [localFilters, setLocalFilters] = useState({ segment: '', birthdayOnly: false, minSpent: '', source: '' });
+  const [localFilters, setLocalFilters] = useState({ segment: '', minSpent: '', source: '', assignedTo: '' });
 
   const handleViewProfile = async (id) => {
     try {
@@ -57,10 +56,37 @@ const CustomersTab = ({
 
   return (
     <div className="animate-fade-in">
-      <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: '300px' }}>
-          <div className="filter-group" style={{ flex: 1, maxWidth: '400px', margin: 0 }}>
-            <label>TÌM KHÁCH HÀNG</label>
+      <div className="filter-bar" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Filter size={18} className="text-secondary" /> BỘ LỌC TÌM KIẾM
+          </h3>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            {Object.values(localFilters).some(v => v !== '') || customerFilters?.search ? (
+              <button 
+                className="btn btn-ghost"
+                style={{ padding: '0.5rem 1rem', color: '#ef4444' }}
+                onClick={() => {
+                  setLocalFilters({ segment: '', minSpent: '', source: '', assignedTo: '' });
+                  setCustomerFilters({ search: '' });
+                }}
+              >
+                Xóa lọc
+              </button>
+            ) : null}
+            <button 
+              className="btn-pro-save" 
+              style={{ width: 'auto', padding: '0.5rem 1rem' }} 
+              onClick={() => setShowAddCustomerModal(true)}
+            >
+              <UserPlus size={16} strokeWidth={3} /> THÊM KHÁCH HÀNG
+            </button>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div className="filter-group" style={{ flex: 1, minWidth: '250px', margin: 0 }}>
+            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '6px' }}>TỪ KHÓA TÌM KIẾM</label>
             <div style={{ position: 'relative' }}>
               <Search 
                 size={16} 
@@ -68,47 +94,50 @@ const CustomersTab = ({
               />
               <input 
                 className="filter-input" 
-                style={{ paddingLeft: '36px' }} 
-                placeholder="Tên, SĐT, Email..." 
+                style={{ paddingLeft: '36px', height: '42px', borderRadius: '8px' }} 
+                placeholder="Nhập tên, SĐT, Email..." 
                 value={customerFilters?.search || ''} 
                 onChange={e => setCustomerFilters({...customerFilters, search: e.target.value})} 
               />
             </div>
           </div>
           
-          <div className="filter-group" style={{ margin: 0 }}>
-            <label>PHÂN KHÚC</label>
+          <div className="filter-group" style={{ flex: 1, minWidth: '150px', margin: 0 }}>
+            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '6px' }}>LỌC THEO HẠNG KHÁCH</label>
             <select 
               className="filter-select"
+              style={{ height: '42px', borderRadius: '8px' }}
               value={localFilters.segment}
               onChange={e => setLocalFilters({...localFilters, segment: e.target.value})}
             >
               <option value="">Tất cả</option>
-              <option value="VIP">VIP</option>
-              <option value="Platinum">Platinum</option>
-              <option value="Repeat Customer">Khách hàng cũ</option>
-              <option value="New Customer">Khách hàng mới</option>
+              <option value="VIP">🌟 VIP</option>
+              <option value="Platinum">💎 Platinum</option>
+              <option value="Repeat Customer">🔄 Khách hàng cũ</option>
+              <option value="New Customer">✨ Khách hàng mới</option>
             </select>
           </div>
 
-          <div className="filter-group" style={{ margin: 0 }}>
-            <label>TỔNG CHI TIÊU</label>
+          <div className="filter-group" style={{ flex: 1, minWidth: '150px', margin: 0 }}>
+            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '6px' }}>TỔNG CHI TIÊU</label>
             <select 
               className="filter-select"
+              style={{ height: '42px', borderRadius: '8px' }}
               value={localFilters.minSpent}
               onChange={e => setLocalFilters({...localFilters, minSpent: e.target.value})}
             >
               <option value="">Mọi mức chi</option>
-              <option value="10000000">&gt; 10 Triệu</option>
-              <option value="50000000">&gt; 50 Triệu</option>
-              <option value="100000000">&gt; 100 Triệu</option>
+              <option value="10000000">&gt; 10.000.000đ</option>
+              <option value="50000000">&gt; 50.000.000đ</option>
+              <option value="100000000">&gt; 100.000.000đ</option>
             </select>
           </div>
 
-          <div className="filter-group" style={{ margin: 0 }}>
-            <label>NGUỒN KHÁCH</label>
+          <div className="filter-group" style={{ flex: 1, minWidth: '150px', margin: 0 }}>
+            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '6px' }}>NGUỒN KHÁCH</label>
             <select 
               className="filter-select"
+              style={{ height: '42px', borderRadius: '8px' }}
               value={localFilters.source}
               onChange={e => setLocalFilters({...localFilters, source: e.target.value})}
             >
@@ -121,25 +150,20 @@ const CustomersTab = ({
             </select>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            <button 
-              className={`btn ${localFilters.birthdayOnly ? 'btn-priority-medium' : 'btn-outline'}`}
-              style={{ height: '42px', display: 'flex', alignItems: 'center', gap: '8px' }}
-              onClick={() => setLocalFilters({...localFilters, birthdayOnly: !localFilters.birthdayOnly})}
+          <div className="filter-group" style={{ flex: 1, minWidth: '180px', margin: 0 }}>
+            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '6px' }}>NHÂN VIÊN CHĂM SÓC</label>
+            <select 
+              className="filter-select"
+              style={{ height: '42px', borderRadius: '8px' }}
+              value={localFilters.assignedTo}
+              onChange={e => setLocalFilters({...localFilters, assignedTo: e.target.value})}
             >
-              🎂 SN Tuần này
-            </button>
+              <option value="">Tất cả nhân viên</option>
+              {users.map(u => (
+                <option key={u.id} value={u.id}>{u.full_name}</option>
+              ))}
+            </select>
           </div>
-        </div>
-        
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <button 
-            className="btn-pro-save" 
-            style={{ width: 'auto', padding: '0.75rem 1.5rem' }} 
-            onClick={() => setShowAddCustomerModal(true)}
-          >
-            <UserPlus size={18} strokeWidth={3} /> THÊM KHÁCH HÀNG
-          </button>
         </div>
       </div>
 
@@ -165,9 +189,9 @@ const CustomersTab = ({
               ((c.name || '').toLowerCase().includes((customerFilters?.search || '').toLowerCase()) ||
                (c.phone || '').includes(customerFilters?.search || '')) &&
               (localFilters.segment ? c.customer_segment === localFilters.segment : true) &&
-              (localFilters.birthdayOnly ? c.is_birthday_this_week === true : true) &&
               (localFilters.minSpent ? (c.total_spent || 0) >= parseInt(localFilters.minSpent) : true) &&
-              (localFilters.source ? (c.lead_source || '').toLowerCase() === localFilters.source.toLowerCase() : true)
+              (localFilters.source ? (c.lead_source || '').toLowerCase() === localFilters.source.toLowerCase() : true) &&
+              (localFilters.assignedTo ? c.assigned_to === parseInt(localFilters.assignedTo) : true)
             ).map(customer => (
               <tr key={customer.id}>
                 <td>
@@ -203,7 +227,6 @@ const CustomersTab = ({
                         )}
                       </div>
                     )}
-                    {customer.is_birthday_this_week && <span title="Sinh nhật vào tuần này">🎂</span>}
                   </div>
                 </td>
                 <td>
