@@ -8,7 +8,8 @@ import {
   Edit2,
   Trash2,
   Copy,
-  FileText
+  FileText,
+  Eye
 } from 'lucide-react';
 
 const DeparturesTab = ({ 
@@ -20,6 +21,7 @@ const DeparturesTab = ({
   handleDeleteDeparture,
   handleDuplicateDeparture,
   handleUpdateDeparture,
+  handleViewDeparture,
   guides
 }) => {
   const [hoveredNotePath, setHoveredNotePath] = useState(null);
@@ -340,6 +342,15 @@ const DeparturesTab = ({
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                      <button 
+                        type="button"
+                        className="icon-btn" 
+                        style={{ color: '#0284c7', background: '#e0f2fe' }}
+                        onClick={(e) => { e.stopPropagation(); handleViewDeparture(dep); }} 
+                        title="Xem chi tiết & Khách"
+                      >
+                        <Eye size={16} />
+                      </button>
                       <button 
                         type="button"
                         className="icon-btn edit" 

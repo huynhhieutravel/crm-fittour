@@ -1,18 +1,62 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   UserPlus, 
   MessageSquare, 
   CheckCircle, 
   TrendingUp, 
   Clock, 
-  User, 
-  PieChart 
+  PieChart,
+  Bell,
+  CalendarCheck,
+  User
 } from 'lucide-react';
+import axios from 'axios';
 
 const DashboardTab = ({ 
   leads, 
   setEditingLead 
 }) => {
+  const [reminders, setReminders] = useState([]);
+
+  useEffect(() => {
+    fetchReminders();
+  }, []);
+
+  const fetchReminders = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('/api/reminders/today', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setReminders(res.data);
+    } catch (err) {
+      console.error('Lỗi khi tải nhắc nhở:', err);
+    }
+  };
+
+  const markReminderDone = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/reminders/${id}/done`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchReminders();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const getReminderLabel = (type) => {
+    switch(type) {
+      case 'PREPARE_DOCS': return 'Nhắc chuẩn bị giấy tờ/Visa';
+      case 'PAYMENT': return 'Nhắc thanh toán & Hành lý';
+      case 'ITINERARY': return 'Gửi Lịch trình chi tiết';
+      case 'FEEDBACK': return 'Xin Feedback chuyến đi';
+      case 'REBOOK': return 'Chăm sóc / Gợi ý Upsell';
+      default: return 'Nhắc nhở khác';
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="stats-grid">
@@ -131,6 +175,42 @@ const DashboardTab = ({
               );
             })}
           </div>
+        </div>
+      </div>
+      
+      <div className="dashboard-grid" style={{ marginTop: '24px' }}>
+        <div className="analytics-card" style={{ gridColumn: 'span 2' }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Bell size={20} color="#f59e0b" /> Lịch Chăm Sóc Hôm Nay ⚡</h3>
+          {reminders.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8', fontSize: '1rem' }}>
+              Bạn đã hoàn thành mọi task chăm sóc hôm nay. Quá tuyệt vời! 🎉
+            </div>
+          ) : (
+            <div className="activity-list" style={{ marginTop: '1rem' }}>
+              {reminders.map(r => (
+                <div key={r.id} className="activity-item" style={{ cursor: 'default', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div className="activity-icon" style={{ background: '#fef3c7', flexShrink: 0 }}>
+                      <CalendarCheck size={20} color="#d97706" />
+                    </div>
+                    <div className="activity-details">
+                      <div className="activity-name" style={{ color: '#0f172a', fontWeight: 'bold' }}>{getReminderLabel(r.type)}</div>
+                      <div className="activity-meta" style={{ marginTop: '4px', lineHeight: '1.5' }}>
+                        <strong style={{color:'#64748b'}}>Khách:</strong> {r.customer_name} ({r.customer_phone}) &nbsp;•&nbsp; <strong style={{color:'#64748b'}}>Tour:</strong> {r.tour_name} &nbsp;•&nbsp; <strong style={{color:'#64748b'}}>Code:</strong> {r.booking_code}
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    className="btn-pro-save" 
+                    style={{ width: 'auto', padding: '0.6rem 1.2rem', fontSize: '0.875rem' }}
+                    onClick={() => markReminderDone(r.id)}
+                  >
+                    Đã xong ✅
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

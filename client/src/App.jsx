@@ -16,6 +16,7 @@ import CustomersTab from './tabs/CustomersTab';
 import InboxTab from './tabs/InboxTab';
 import ToursTab from './tabs/ToursTab';
 import DeparturesTab from './tabs/DeparturesTab';
+import RemindersTab from './tabs/RemindersTab';
 import DashboardTab from './tabs/DashboardTab';
 import LeadsTab from './tabs/LeadsTab';
 import LeadsDashboardTab from './tabs/LeadsDashboardTab';
@@ -30,6 +31,7 @@ import { AddUserModal, EditUserModal, ChangePasswordModal } from './components/m
 import LeadNotesModal from './components/modals/LeadNotesModal';
 import { AddTemplateModal, AddDepartureModal, EditTemplateModal, EditDepartureModal } from './components/modals/TourModals';
 import GuideModal from './components/modals/GuideModal';
+import ViewDeparturePage from './pages/ViewDeparturePage';
 
 import { 
   Users, 
@@ -85,6 +87,7 @@ const addToastGlobal = (message, setToasts) => {
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
+  const pathParts = location.pathname.split('/').filter(Boolean);
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
     if (path.startsWith('guides')) return 'guides';
@@ -143,7 +146,7 @@ function AppContent() {
     nationality: 'Việt Nam', id_card: '', id_expiry: '', address: '', 
     preferred_contact: 'Zalo', role: 'booker', customer_segment: 'New Customer',
     tour_interests: '', special_requests: '', internal_notes: '',
-    location_city: '', travel_season: ''
+    location_city: '', travel_season: '', created_at: new Date().toISOString().split('T')[0]
   });
 
   // Sidebar Submenu State
@@ -159,6 +162,31 @@ function AppContent() {
   const [showAddDepartureModal, setShowAddDepartureModal] = useState(false);
   const [showEditDepartureModal, setShowEditDepartureModal] = useState(false);
   const [editingDeparture, setEditingDeparture] = useState(null);
+  const [viewingDeparture, setViewingDeparture] = useState(null);
+  const [showViewDepartureModal, setShowViewDepartureModal] = useState(false);
+
+  const handleViewDeparture = (dep) => {
+    const depId = dep.id || dep.tour_departure_id;
+    navigate(`/departures/view/${depId}`);
+  };
+
+  const handleOpenCustomer = async (customerId) => {
+    let cust = customers.find(c => c.id === customerId);
+    if (!cust) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`/api/customers/${customerId}`, { headers: { Authorization: `Bearer ${token}` } });
+        cust = res.data;
+      } catch (err) {
+        console.error("Lỗi khi tải thông tin Khách hàng:", err);
+        return;
+      }
+    }
+    if (cust) {
+      setEditingCustomer(cust);
+    }
+  };
+
   const [showAddGuideModal, setShowAddGuideModal] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
@@ -275,8 +303,8 @@ function AppContent() {
 
   // Sync activeTab with URL
   useEffect(() => {
-    const path = location.pathname.substring(1);
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings'];
+    const path = location.pathname.substring(1).split('/')[0];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {
@@ -785,7 +813,7 @@ function AppContent() {
         nationality: 'Việt Nam', id_card: '', id_expiry: '', address: '', 
         preferred_contact: 'Zalo', role: 'booker', customer_segment: 'New Customer',
         tour_interests: '', special_requests: '', internal_notes: '',
-        location_city: '', travel_season: ''
+        location_city: '', travel_season: '', created_at: new Date().toISOString().split('T')[0]
       });
       addToast('Đã thêm khách hàng mới thành công.');
     } catch (err) {
@@ -1482,6 +1510,12 @@ function AppContent() {
               Bảng Dự Toán Tour
             </div>
           )}
+          <div 
+            className={`submenu-item ${activeTab === 'reminders' ? 'active' : ''}`} 
+            onClick={() => { navigate('/reminders'); setHoveredMenu(null); }}
+          >
+            Tour Care / Nhắc nhở
+          </div>
         </div>
       )}
 
@@ -1632,7 +1666,11 @@ function AppContent() {
           />
         )}
 
-        {activeTab === 'departures' && (
+        {activeTab === 'departures' && pathParts[1] === 'view' && pathParts[2] && (
+          <ViewDeparturePage departureId={pathParts[2]} handleOpenCustomer={handleOpenCustomer} guides={guides} handleEditDeparture={handleEditDeparture} />
+        )}
+
+        {activeTab === 'departures' && (!pathParts[1]) && (
           <DeparturesTab 
             tourDepartures={tourDepartures}
             tourFilters={tourFilters}
@@ -1642,6 +1680,7 @@ function AppContent() {
             handleDeleteDeparture={handleDeleteDeparture}
             handleDuplicateDeparture={handleDuplicateDeparture}
             handleUpdateDeparture={handleUpdateDeparture}
+            handleViewDeparture={handleViewDeparture}
             guides={guides}
           />
         )}
@@ -1680,6 +1719,10 @@ function AppContent() {
 
         {activeTab === 'costings' && (
           <CostingsTab user={user} />
+        )}
+
+        {activeTab === 'reminders' && (
+          <RemindersTab handleViewDeparture={handleViewDeparture} />
         )}
 
         {activeTab === 'customers' && (
@@ -1850,6 +1893,7 @@ function AppContent() {
         setEditingDeparture={setEditingDeparture}
         tourTemplates={tourTemplates}
         guides={guides}
+        handleOpenCustomer={handleOpenCustomer}
       />
 
       <GuideModal 
@@ -1978,6 +2022,10 @@ function AppContent() {
       />
       <Route 
         path="/:tab/:subtab" 
+        element={isLoggedIn ? renderDashboard() : <Navigate to="/login" />} 
+      />
+      <Route 
+        path="/:tab/:subtab/:id" 
         element={isLoggedIn ? renderDashboard() : <Navigate to="/login" />} 
       />
       <Route 

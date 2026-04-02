@@ -6,14 +6,48 @@ exports.getAllCustomers = async (req, res) => {
     try {
         const result = await db.query(`
             SELECT c.*, 
-                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0) as total_spent
+                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0) as total_spent,
+                   (SELECT content FROM lead_notes WHERE customer_id = c.id ORDER BY created_at DESC LIMIT 1) as latest_note
             FROM customers c
             ORDER BY c.created_at DESC
         `);
-        const customers = result.rows.map(c => ({
-            ...c,
-            total_spent: parseFloat(c.total_spent || 0)
-        }));
+        
+        const currentYear = new Date().getFullYear();
+        const now = new Date();
+        // Lấy ngày thứ 2 của tuần hiện tại
+        const startOfWeek = new Date(now);
+        const day = startOfWeek.getDay() || 7; // Convert Chủ nhật (0) thành 7
+        startOfWeek.setDate(startOfWeek.getDate() - day + 1);
+        startOfWeek.setHours(0,0,0,0);
+        
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(endOfWeek.getDate() + 6);
+        endOfWeek.setHours(23,59,59,999);
+
+        const customers = result.rows.map(c => {
+            let segment = c.customer_segment;
+            const spent = parseFloat(c.total_spent || 0);
+            if (spent >= 50000000) segment = 'VIP';
+            else if (spent >= 10000000) segment = 'Platinum';
+            else if (spent > 0) segment = 'Repeat Customer';
+            
+            let is_birthday_this_week = false;
+            if (c.birth_date) {
+                const bDate = new Date(c.birth_date);
+                // Tạo ngày sinh nhật của năm nay
+                const bThisYear = new Date(currentYear, bDate.getMonth(), bDate.getDate());
+                if (bThisYear >= startOfWeek && bThisYear <= endOfWeek) {
+                    is_birthday_this_week = true;
+                }
+            }
+            
+            return {
+                ...c,
+                total_spent: spent,
+                customer_segment: segment,
+                is_birthday_this_week
+            };
+        });
         res.json(customers);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -32,8 +66,9 @@ exports.createCustomer = async (req, res) => {
                 name, phone, email, gender, birth_date, nationality, 
                 id_card, id_expiry, address, preferred_contact, role,
                 customer_segment, tour_interests, special_requests, internal_notes, 
-                lead_id, location_city, travel_season, first_deal_date, assigned_to
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING *`,
+                lead_id, location_city, travel_season, first_deal_date, assigned_to,
+                destinations, experiences, travel_styles, created_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *`,
             [
                 normalizedName, body.phone || null, body.email || null, body.gender || null, 
                 body.birth_date || null, body.nationality || 'Việt Nam', 
@@ -43,7 +78,11 @@ exports.createCustomer = async (req, res) => {
                 body.special_requests || null, body.internal_notes || null, 
                 body.lead_id || null, body.location_city || null, body.travel_season || null,
                 body.first_deal_date || new Date(), // Mặc định là ngày tạo nếu không nhập
-                body.assigned_to || null
+                body.assigned_to || null,
+                body.destinations ? JSON.stringify(body.destinations) : '[]',
+                body.experiences ? JSON.stringify(body.experiences) : '[]',
+                body.travel_styles ? JSON.stringify(body.travel_styles) : '[]',
+                body.created_at || new Date()
             ]
         );
 
@@ -126,13 +165,16 @@ exports.updateCustomer = async (req, res) => {
             'id_card', 'id_expiry', 'address', 'preferred_contact', 'role',
             'customer_segment', 'tour_interests', 'special_requests', 
             'internal_notes', 'location_city', 'travel_season', 
-            'first_deal_date', 'assigned_to'
+            'first_deal_date', 'assigned_to', 'destinations', 'experiences', 'travel_styles', 'created_at'
         ];
 
         Object.keys(updates).forEach(key => {
             if (allowedFields.includes(key)) {
                 let val = updates[key];
                 if (key === 'name' && val) val = val.toUpperCase().trim();
+                if (['destinations', 'experiences', 'travel_styles'].includes(key)) {
+                    val = JSON.stringify(val || []);
+                }
                 
                 updateFields.push(`${key} = $${queryValues.length + 1}`);
                 queryValues.push(val);
@@ -209,5 +251,49 @@ exports.convertLeadToCustomer = async (req, res) => {
         res.status(500).json({ message: err.message });
     } finally {
         client.release();
+    }
+};
+
+exports.addNote = async (req, res) => {
+    try {
+        const customerId = req.params.id;
+        const { content } = req.body;
+        
+        const result = await db.query(
+            'INSERT INTO lead_notes (customer_id, content, created_by) VALUES ($1, $2, $3) RETURNING *',
+            [customerId, content, req.user ? req.user.id : null]
+        );
+        
+        const noteWithUser = await db.query(
+            'SELECT ln.*, u.full_name as creator_name FROM lead_notes ln LEFT JOIN users u ON ln.created_by = u.id WHERE ln.id = $1',
+            [result.rows[0].id]
+        );
+        
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'CREATE_NOTE',
+            entity_type: 'CUSTOMER',
+            entity_id: customerId,
+            details: `Thêm ghi chú cho Khách hàng: ${content.substring(0, 50)}...`
+        });
+        
+        res.status(201).json(noteWithUser.rows[0]);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getUpcomingBirthdays = async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT id, name, phone, email, birth_date, customer_segment, assigned_to
+            FROM customers
+            WHERE birth_date IS NOT NULL 
+              AND EXTRACT(MONTH FROM birth_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+            ORDER BY EXTRACT(DAY FROM birth_date) ASC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 };

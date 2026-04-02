@@ -446,7 +446,8 @@ export const EditDepartureModal = ({
   editingDeparture,
   setEditingDeparture,
   tourTemplates,
-  guides
+  guides,
+  handleOpenCustomer
 }) => {
   const [errorMsg, setErrorMsg] = React.useState('');
   const [loadingBookings, setLoadingBookings] = React.useState(false);
@@ -694,31 +695,60 @@ export const EditDepartureModal = ({
           ) : linkedBookings.length === 0 ? (
             <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>Chưa có khách hàng/booking nào cho tuyến này.</div>
           ) : (
-            <table className="data-table" style={{ margin: 0, fontSize: '0.9rem' }}>
-              <thead>
+            <table className="data-table" style={{ margin: 0, fontSize: '0.9rem', tableLayout: 'fixed' }}>
+              <thead style={{ background: '#f1f5f9' }}>
                 <tr>
-                  <th style={{ padding: '8px 12px' }}>MÃ / KHÁCH ÁP ĐẶT</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'center' }}>PAX</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'right' }}>TRẠNG THÁI</th>
+                  <th style={{ padding: '10px 12px', width: '22%' }}>MÃ BOOKING / ĐẠI DIỆN</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'center', width: '10%' }}>SỐ PAX</th>
+                  <th style={{ padding: '10px 12px', width: '53%' }}>GHI CHÚ / YÊU CẦU ĐẶC BIỆT (TỰ ĐỘNG LƯU)</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'right', width: '15%' }}>THANH TOÁN</th>
                 </tr>
               </thead>
               <tbody>
                 {linkedBookings.map(bk => (
                   <tr key={bk.id}>
                     <td style={{ padding: '12px' }}>
-                      <div style={{ fontWeight: 700, color: '#3b82f6' }}>{bk.booking_code}</div>
-                      <div style={{ fontWeight: 600, color: '#1e293b' }}>{bk.customer_name}</div>
+                      <div style={{ fontWeight: 800, color: '#3b82f6' }}>{bk.booking_code}</div>
+                      <div 
+                        style={{ fontWeight: 600, color: '#10b981', cursor: 'pointer', textDecoration: 'underline' }}
+                        onClick={() => handleOpenCustomer && handleOpenCustomer(bk.customer_id)}
+                      >
+                        {bk.customer_name}
+                      </div>
                       <div style={{ color: '#64748b', fontSize: '0.8rem' }}>{bk.customer_phone}</div>
                     </td>
-                    <td style={{ padding: '12px', textAlign: 'center', fontWeight: 700 }}>{bk.pax_count}</td>
+                    <td style={{ padding: '12px', textAlign: 'center', fontWeight: 700, color: '#334155' }}>
+                      <span style={{ background: '#e2e8f0', padding: '4px 10px', borderRadius: '16px' }}>{bk.pax_count}</span>
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                       <textarea 
+                          placeholder="Ghi chú chỗ ngồi, ăn mặc, hỗ trợ riêng biệt..." 
+                          defaultValue={bk.notes || ''}
+                          onBlur={e => {
+                             if(e.target.value !== bk.notes) {
+                               handleUpdateNote(bk.id, e.target.value);
+                             }
+                          }}
+                          style={{ 
+                             width: '100%', 
+                             minHeight: '60px', 
+                             maxHeight: '120px', 
+                             resize: 'vertical',
+                             padding: '8px', 
+                             borderRadius: '6px', 
+                             border: '1px solid #cbd5e1', 
+                             fontSize: '0.85rem',
+                             fontFamily: 'inherit',
+                             background: '#f8fafc'
+                          }} 
+                       />
+                    </td>
                     <td style={{ padding: '12px', textAlign: 'right' }}>
                       <span style={{ 
-                        padding: '4px 8px', 
-                        borderRadius: '4px', 
-                        fontSize: '0.75rem', 
-                        fontWeight: 700,
+                        padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700,
                         background: bk.payment_status === 'paid' ? '#dcfce7' : '#fef9c3',
-                        color: bk.payment_status === 'paid' ? '#166534' : '#854d0e'
+                        color: bk.payment_status === 'paid' ? '#166534' : '#854d0e',
+                        display: 'inline-block'
                       }}>
                         {bk.payment_status === 'paid' ? 'Đã Thanh Toán' : 'Chưa thu'}
                       </span>
@@ -741,3 +771,4 @@ export const EditDepartureModal = ({
     </div>
   );
 };
+

@@ -41,6 +41,7 @@ const activityRoutes = require('./routes/activity');
 const buRoutes = require('./routes/buRoutes');
 const catalogRoutes = require('./routes/catalog');
 const costingRoutes = require('./routes/costings');
+const reminderRoutes = require('./routes/reminderRoutes');
 
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/auth', authRoutes);
@@ -58,6 +59,7 @@ app.use('/api/activity', activityRoutes);
 app.use('/api/business-units', buRoutes);
 app.use('/api/meta/catalog', catalogRoutes);
 app.use('/api/costings', costingRoutes);
+app.use('/api/reminders', reminderRoutes);
 
 app.get('/', (req, res) => {
     res.send('FIT Tour CRM API is running...');
@@ -91,4 +93,8 @@ server.listen(PORT, () => {
     // Start FB Poller for Messenger Sync bypass
     const facebookService = require('./services/facebookService');
     facebookService.startPolling();
+
+    // Start Tour Care Reminder Cron Engine
+    const { startCronJobs } = require('./cron/reminderEngine');
+    startCronJobs();
 });

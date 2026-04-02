@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn ssh -o StrictHostKeyChecking=no root@64.176.85.168 "pg_dump -U postgres --clean --if-exists --column-inserts postgres > /tmp/latest_dump.sql"
+expect "*?assword:*"
+send "#Aa2,zdf87a@Q{3q\r"
+expect eof
+
+spawn scp -o StrictHostKeyChecking=no root@64.176.85.168:/tmp/latest_dump.sql ./latest_production_dump.sql
+expect "*?assword:*"
+send "#Aa2,zdf87a@Q{3q\r"
+expect eof
