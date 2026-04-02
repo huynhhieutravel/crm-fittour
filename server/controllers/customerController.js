@@ -7,8 +7,10 @@ exports.getAllCustomers = async (req, res) => {
         const result = await db.query(`
             SELECT c.*, 
                    COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0) as total_spent,
-                   (SELECT content FROM lead_notes WHERE customer_id = c.id ORDER BY created_at DESC LIMIT 1) as latest_note
+                   (SELECT content FROM lead_notes WHERE customer_id = c.id ORDER BY created_at DESC LIMIT 1) as latest_note,
+                   l.source as lead_source
             FROM customers c
+            LEFT JOIN leads l ON c.lead_id = l.id
             ORDER BY c.created_at DESC
         `);
         
@@ -294,6 +296,63 @@ exports.getUpcomingBirthdays = async (req, res) => {
         `);
         res.json(result.rows);
     } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getDuplicates = async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT phone, COUNT(*) as count, array_agg(id) as customer_ids
+            FROM customers
+            WHERE phone IS NOT NULL AND phone != ''
+            GROUP BY phone
+            HAVING COUNT(*) > 1
+        `);
+        
+        const duplicateGroups = [];
+        for (const group of result.rows) {
+            const ids = group.customer_ids;
+            const customersResult = await db.query(`SELECT * FROM customers WHERE id = ANY($1)`, [ids]);
+            duplicateGroups.push({
+                phone: group.phone,
+                count: group.count,
+                customers: customersResult.rows
+            });
+        }
+        res.json(duplicateGroups);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.mergeCustomers = async (req, res) => {
+    const { primaryId, secondaryIds } = req.body;
+    if (!primaryId || !secondaryIds || secondaryIds.length === 0) {
+        return res.status(400).json({ message: 'Missing primaryId or secondaryIds' });
+    }
+    
+    try {
+        await db.query('BEGIN');
+        
+        // 1. Move bookings
+        await db.query(`UPDATE bookings SET customer_id = $1 WHERE customer_id = ANY($2)`, [primaryId, secondaryIds]);
+        
+        // 2. Move lead notes
+        await db.query(`UPDATE lead_notes SET customer_id = $1 WHERE customer_id = ANY($2)`, [primaryId, secondaryIds]);
+        
+        // 3. Move events
+        await db.query(`UPDATE customer_events SET customer_id = $1 WHERE customer_id = ANY($2)`, [primaryId, secondaryIds]);
+        
+        // 4. Delete subordinate customers
+        await db.query(`DELETE FROM customers WHERE id = ANY($1)`, [secondaryIds]);
+        
+        await db.query('COMMIT');
+        
+        logActivity(req.user.userId, 'MERGE_CUSTOMERS', `Merged ${secondaryIds.length} into customer ${primaryId}`);
+        res.json({ message: 'Merge successful' });
+    } catch (err) {
+        await db.query('ROLLBACK');
         res.status(500).json({ message: err.message });
     }
 };

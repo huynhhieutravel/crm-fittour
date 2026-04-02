@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Search, UserPlus, Edit3, Trash2, Eye, Filter, MessageSquareText } from 'lucide-react';
+import axios from 'axios';
 import CustomerProfileSlider from '../components/CustomerProfileSlider';
+import CustomerCalendarView from '../components/CustomerCalendarView';
+import CustomerDuplicateManager from '../components/CustomerDuplicateManager';
+import { Calendar as CalendarIcon, List as ListIcon, Network } from 'lucide-react';
 
 const CustomersTab = ({ 
   customers, 
@@ -14,21 +18,19 @@ const CustomersTab = ({
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [selectedCustomerFull, setSelectedCustomerFull] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [showDuplicateManager, setShowDuplicateManager] = useState(false);
   const [hoveredNoteId, setHoveredNoteId] = useState(null);
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
 
-  // Lọc nâng cao locally nếu needed or combine with state
-  const [localFilters, setLocalFilters] = useState({ segment: '', birthdayOnly: false });
+  // Lọc nâng cao locally 
+  const [localFilters, setLocalFilters] = useState({ segment: '', birthdayOnly: false, minSpent: '', source: '' });
 
   const handleViewProfile = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5001/api/customers/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const res = await axios.get(`/api/customers/${id}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
-      if (!res.ok) throw new Error('Cannot load customer profile');
-      const data = await res.json();
-      setSelectedCustomerFull(data);
+      setSelectedCustomerFull(res.data);
       setSelectedCustomerId(id);
     } catch (err) {
       console.error(err);
@@ -38,16 +40,11 @@ const CustomersTab = ({
 
   const handleAddNote = async (customerId, content) => {
     try {
-      const res = await fetch(`http://localhost:5001/api/customers/${customerId}/notes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ content })
-      });
-      if (!res.ok) throw new Error('Cannot add note');
-      const newNote = await res.json();
+      const res = await axios.post(`/api/customers/${customerId}/notes`, 
+        { content },
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+      );
+      const newNote = res.data;
       setSelectedCustomerFull(prev => ({
         ...prev,
         interaction_history: [newNote, ...(prev.interaction_history || [])]
@@ -94,7 +91,37 @@ const CustomersTab = ({
             </select>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <div className="filter-group" style={{ margin: 0 }}>
+            <label>TỔNG CHI TIÊU</label>
+            <select 
+              className="filter-select"
+              value={localFilters.minSpent}
+              onChange={e => setLocalFilters({...localFilters, minSpent: e.target.value})}
+            >
+              <option value="">Mọi mức chi</option>
+              <option value="10000000">&gt; 10 Triệu</option>
+              <option value="50000000">&gt; 50 Triệu</option>
+              <option value="100000000">&gt; 100 Triệu</option>
+            </select>
+          </div>
+
+          <div className="filter-group" style={{ margin: 0 }}>
+            <label>NGUỒN KHÁCH</label>
+            <select 
+              className="filter-select"
+              value={localFilters.source}
+              onChange={e => setLocalFilters({...localFilters, source: e.target.value})}
+            >
+              <option value="">Tất cả nguồn</option>
+              <option value="facebook">Facebook Ads</option>
+              <option value="zalo">Zalo OA</option>
+              <option value="website">Website</option>
+              <option value="referral">Khách quen giới thiệu</option>
+              <option value="other">Khác</option>
+            </select>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <button 
               className={`btn ${localFilters.birthdayOnly ? 'btn-priority-medium' : 'btn-outline'}`}
               style={{ height: '42px', display: 'flex', alignItems: 'center', gap: '8px' }}
@@ -104,23 +131,53 @@ const CustomersTab = ({
             </button>
           </div>
         </div>
+        
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', backgroundColor: '#f1f5f9', padding: '4px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+            <button
+              className={`btn ${viewMode === 'list' ? 'btn-primary' : 'btn-ghost'}`}
+              style={{ padding: '8px 16px', border: 'none', boxShadow: viewMode === 'list' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', display: 'flex', gap: '6px', alignItems: 'center', fontWeight: '600' }}
+              onClick={() => setViewMode('list')}
+            >
+              <ListIcon size={18} /> Danh Sách
+            </button>
+            <button
+              className={`btn ${viewMode === 'calendar' ? 'btn-primary' : 'btn-ghost'}`}
+              style={{ padding: '8px 16px', border: 'none', boxShadow: viewMode === 'calendar' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', color: viewMode === 'calendar' ? '#fff' : '#64748b', display: 'flex', gap: '6px', alignItems: 'center', fontWeight: '600' }}
+              onClick={() => setViewMode('calendar')}
+            >
+              <CalendarIcon size={18} /> Xem Lịch
+            </button>
+          </div>
 
-        <button 
-          className="btn-pro-save" 
-          style={{ width: 'auto', padding: '0.75rem 1.5rem' }} 
-          onClick={() => setShowAddCustomerModal(true)}
-        >
-          <UserPlus size={18} strokeWidth={3} /> THÊM KHÁCH HÀNG
-        </button>
+          <button 
+            className="btn-pro-save" 
+            style={{ width: 'auto', padding: '0.75rem 1.5rem', backgroundColor: '#fef08a', color: '#854d0e', border: '1px solid #fde047' }} 
+            onClick={() => setShowDuplicateManager(true)}
+            title="Quét Dữ Liệu Rác"
+          >
+            <Network size={18} strokeWidth={3} /> QUÉT RÁC
+          </button>
+          <button 
+            className="btn-pro-save" 
+            style={{ width: 'auto', padding: '0.75rem 1.5rem' }} 
+            onClick={() => setShowAddCustomerModal(true)}
+          >
+            <UserPlus size={18} strokeWidth={3} /> THÊM KHÁCH HÀNG
+          </button>
+        </div>
       </div>
 
-      <div className="data-table-container">
-        <table className="data-table">
+      {viewMode === 'calendar' ? (
+        <CustomerCalendarView users={users} onCustomerClick={handleViewProfile} />
+      ) : (
+        <div className="data-table-container">
+          <table className="data-table">
           <thead>
             <tr>
               <th>HỌ TÊN</th>
               <th>LIÊN HỆ / ĐỊA CHỈ</th>
-              <th>PHÂN KHÚC</th>
+              <th>PHÂN KHÚC & NGUỒN</th>
               <th>GIA NHẬP</th>
               <th>NHÂN VIÊN</th>
               <th>LTV (TỔNG CHI)</th>
@@ -133,7 +190,9 @@ const CustomersTab = ({
               ((c.name || '').toLowerCase().includes((customerFilters?.search || '').toLowerCase()) ||
                (c.phone || '').includes(customerFilters?.search || '')) &&
               (localFilters.segment ? c.customer_segment === localFilters.segment : true) &&
-              (localFilters.birthdayOnly ? c.is_birthday_this_week === true : true)
+              (localFilters.birthdayOnly ? c.is_birthday_this_week === true : true) &&
+              (localFilters.minSpent ? (c.total_spent || 0) >= parseInt(localFilters.minSpent) : true) &&
+              (localFilters.source ? (c.lead_source || '').toLowerCase() === localFilters.source.toLowerCase() : true)
             ).map(customer => (
               <tr key={customer.id}>
                 <td>
@@ -180,9 +239,16 @@ const CustomersTab = ({
                   </div>
                 </td>
                 <td>
-                  <span className={`badge ${customer.customer_segment === 'VIP' ? 'badge-priority-high' : customer.customer_segment === 'Repeat Customer' ? 'badge-priority-medium' : 'badge-priority-low'}`}>
-                    {customer.customer_segment}
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span className={`badge ${customer.customer_segment === 'VIP' ? 'badge-priority-high' : customer.customer_segment === 'Repeat Customer' ? 'badge-priority-medium' : 'badge-priority-low'}`}>
+                      {customer.customer_segment}
+                    </span>
+                    {customer.lead_source && (
+                      <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>
+                        {customer.lead_source}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td style={{ fontSize: '0.85rem' }}>
                   {customer.first_deal_date ? new Date(customer.first_deal_date).toLocaleDateString('vi-VN') : 'N/A'}
@@ -219,6 +285,7 @@ const CustomersTab = ({
           </tbody>
         </table>
       </div>
+      )}
 
       <CustomerProfileSlider 
         customer={selectedCustomerFull} 
@@ -226,6 +293,16 @@ const CustomersTab = ({
         onClose={() => { setSelectedCustomerId(null); setSelectedCustomerFull(null); }} 
         onAddNote={handleAddNote}
       />
+
+      {showDuplicateManager && (
+        <CustomerDuplicateManager 
+          onClose={() => setShowDuplicateManager(false)} 
+          onMerged={() => {
+            // Trigger parent refresh if needed, but for now we can just let user refresh manually or we refresh state
+            window.location.reload(); 
+          }} 
+        />
+      )}
     </div>
   );
 };

@@ -1,10 +1,28 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, User, Phone, Mail, MapPin, Calendar, Briefcase, FileText, Send, Clock, CreditCard, Tag } from 'lucide-react';
+import { X, User, Phone, Mail, MapPin, Calendar, Briefcase, FileText, Send, Clock, CreditCard, Tag, CalendarPlus } from 'lucide-react';
+import axios from 'axios';
 
 const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [newNote, setNewNote] = useState('');
+  const [newEvent, setNewEvent] = useState({ title: '', event_type: 'CALL', event_date: '' });
+
+  const handleAddEventSubmit = async () => {
+    if (!newEvent.title || !newEvent.event_date) return alert('Vui lòng nhập đủ thông tin');
+    try {
+      await axios.post('/api/customers/events', {
+        customer_id: customer.id,
+        ...newEvent
+      }, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+      alert('Tạo lịch hẹn thành công!');
+      setNewEvent({ title: '', event_type: 'CALL', event_date: '' });
+      // Would refresh but we can just let calendar auto fetch when toggled
+    } catch (err) {
+      console.error(err);
+      alert('Lỗi tạo sự kiện');
+    }
+  };
 
   if (!customer) return null;
 
@@ -77,7 +95,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
 
         {/* Tabs */}
         <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', backgroundColor: '#fff', padding: '0 1.5rem' }}>
-          {['overview', 'bookings', 'interactions'].map(tab => (
+          {['overview', 'bookings', 'events', 'interactions'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -92,7 +110,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                 textTransform: 'capitalize'
               }}
             >
-              {tab === 'overview' ? 'Tổng quan' : tab === 'bookings' ? 'Mua hàng' : 'Tương tác'}
+              {tab === 'overview' ? 'Tổng quan' : tab === 'bookings' ? 'Mua hàng' : tab === 'events' ? 'Sự kiện' : 'Tương tác'}
             </button>
           ))}
         </div>
@@ -255,6 +273,26 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                   </div>
                 ))
               )}
+            </div>
+          )}
+
+          {activeTab === 'events' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CalendarPlus size={16} /> Lên lịch nhắc nhở / Hẹn khách
+                </h3>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input type="text" className="modal-input" placeholder="Tên sự kiện..." style={{ flex: 2 }} value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} />
+                  <select className="modal-input" style={{ flex: 1 }} value={newEvent.event_type} onChange={e => setNewEvent({...newEvent, event_type: e.target.value})}>
+                    <option value="CALL">Gọi điện</option>
+                    <option value="MEETING">Hẹn gặp</option>
+                    <option value="OTHER">Khác</option>
+                  </select>
+                  <input type="date" className="modal-input" style={{ flex: 1 }} value={newEvent.event_date} onChange={e => setNewEvent({...newEvent, event_date: e.target.value})} />
+                  <button className="btn-pro-save" onClick={handleAddEventSubmit}>Tạo</button>
+                </div>
+              </div>
             </div>
           )}
 
