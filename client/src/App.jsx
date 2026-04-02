@@ -846,9 +846,11 @@ function AppContent() {
       const token = localStorage.getItem('token');
       const dataToSend = {
         ...editingCustomer,
-        birth_date: editingCustomer.birth_date || null,
-        id_expiry: editingCustomer.id_expiry || null
       };
+      if (dataToSend.created_at && dataToSend.created_at.includes('T')) delete dataToSend.created_at;
+      if (dataToSend.first_deal_date && dataToSend.first_deal_date.includes('T')) delete dataToSend.first_deal_date;
+      if (dataToSend.birth_date) dataToSend.birth_date = dataToSend.birth_date.split('T')[0];
+      if (dataToSend.id_expiry) dataToSend.id_expiry = dataToSend.id_expiry.split('T')[0];
       await axios.put(`/api/customers/${editingCustomer.id}`, dataToSend, {
         headers: { Authorization: `Bearer ${token}` }
       });
