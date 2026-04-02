@@ -1325,17 +1325,6 @@ function AppContent() {
                 </div>
               )}
               
-              {checkView('departures') && (
-                <div 
-                  className={`nav-item ${activeTab === 'reminders' ? 'active-parent' : ''}`} 
-                  onClick={() => { navigate('/reminders'); setActiveTab('reminders'); }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <CalendarClock /> Tiến độ Chăm sóc
-                  </div>
-                </div>
-              )}
-              
               {checkView('guides') && (
                 <div 
                   className={`nav-item ${activeTab === 'guides' ? 'active-parent' : ''}`} 
@@ -1526,7 +1515,7 @@ function AppContent() {
             className={`submenu-item ${activeTab === 'reminders' ? 'active' : ''}`} 
             onClick={() => { navigate('/reminders'); setHoveredMenu(null); }}
           >
-            Tour Care / Nhắc nhở
+            Tiến độ Chăm sóc (Tour Care)
           </div>
         </div>
       )}

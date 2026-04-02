@@ -39,6 +39,8 @@ Run 'do-release-upgrade' to upgrade to it.
 su: user postgres does not exist or the user entry does not contain all the required fields
 From https://github.com/huynhhieutravel/crm-fittour
  * branch            main       -> FETCH_HEAD
+   4e709d7..20e7edc  main       -> origin/main
+Updating 12aa3b3..20e7edc
 error: Your local changes to the following files would be overwritten by merge:
 	client/src/tabs/LeadsTab.jsx
 	server/services/metaCatalogService.js
@@ -48,7 +50,6 @@ error: The following untracked working tree files would be overwritten by merge:
 	sync_bus.sql
 	sync_tours_no_guide.sql
 Please move or remove them before you merge.
-Updating 12aa3b3..4e709d7
 Aborting
 
 up to date, audited 129 packages in 2s
@@ -68,7 +69,7 @@ Use --update-env to update environment variables
 ┌────┬────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
 │ id │ name           │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
 ├────┼────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
-│ 0  │ crm-fittour    │ default     │ 1.0.0   │ fork    │ 319586   │ 0s     │ 61   │ online    │ 0%       │ 16.4mb   │ root     │ disabled │
+│ 0  │ crm-fittour    │ default     │ 1.0.0   │ fork    │ 319729   │ 0s     │ 62   │ online    │ 0%       │ 780.0kb  │ root     │ disabled │
 └────┴────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
 
 up to date, audited 365 packages in 3s
@@ -88,3 +89,19 @@ Run `npm audit` for details.
 
 vite v6.4.1 building for production...
 transforming...
+✓ 2375 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.46 kB │ gzip:   0.30 kB
+dist/assets/index-DtCIZGih.css     28.74 kB │ gzip:   6.39 kB
+dist/assets/index-trapo7tP.js   1,016.33 kB │ gzip: 285.73 kB
+✓ built in 22.28s
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+send: spawn id exp6 not open
+    while executing
+"send "#Aa2,zdf87a@Q{3q\r""
+    (file "./deploy_remote.exp" line 5)

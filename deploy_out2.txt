@@ -1,0 +1,188 @@
+spawn /bin/bash -c ssh -o StrictHostKeyChecking=no root@64.176.85.168 < deploy_script2.sh
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-173-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Thu Apr  2 12:04:30 PM +07 2026
+
+  System load:             0.08
+  Usage of /:              85.9% of 22.88GB
+  Memory usage:            35%
+  Swap usage:              8%
+  Processes:               174
+  Users logged in:         0
+  IPv4 address for enp1s0: 64.176.85.168
+  IPv6 address for enp1s0: 2401:c080:1400:55d5:5400:5ff:fed3:5a4c
+
+  => / is using 85.9% of 22.88GB
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+Expanded Security Maintenance for Applications is not enabled.
+
+29 updates can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+1 additional security update can be applied with ESM Apps.
+Learn more about enabling ESM Apps service at https://ubuntu.com/esm
+
+New release '24.04.4 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+Saved working directory and index state WIP on main: 12aa3b3 Refactor Guide Dashboard to local mapping, separate Routes for Guide Submenus, fix Leads statistics and pagination limit
+Removing backups/
+Removing server/facebookService.js
+Removing server/messages.js
+Removing server/scripts/sync_all_messenger_leads.js
+Removing sync_bus.sql
+Removing sync_tours_no_guide.sql
+From https://github.com/huynhhieutravel/crm-fittour
+ * branch            main       -> FETCH_HEAD
+Updating 12aa3b3..20e7edc
+Fast-forward
+ So_Tay_Van_Hanh/01_Facebook_System_User.md         |    30 +
+ So_Tay_Van_Hanh/02_Xu_Ly_Ngay_Gio.md               |    20 +
+ So_Tay_Van_Hanh/03_Dong_Bo_Tin_Nhan_Tu_Trang.md    |    30 +
+ So_Tay_Van_Hanh/04_Quy_Trinh_Nang_Cap_Giao_Dien.md |    32 +
+ client/src/App.jsx                                 |    70 +-
+ client/src/components/CustomerProfileSlider.jsx    |   308 +
+ client/src/components/modals/CustomerModals.jsx    |   508 +-
+ client/src/components/modals/GuideModal.jsx        |   177 +-
+ client/src/components/modals/TourModals.jsx        |    59 +-
+ client/src/index.css                               |    72 +-
+ client/src/pages/ViewDeparturePage.jsx             |   507 +
+ client/src/tabs/CustomersTab.jsx                   |   177 +-
+ client/src/tabs/DashboardTab.jsx                   |    86 +-
+ client/src/tabs/DeparturesTab.jsx                  |    13 +-
+ client/src/tabs/LeadsTab.jsx                       |    86 +-
+ client/src/tabs/RemindersTab.jsx                   |   340 +
+ deploy_out.txt                                     |    90 +
+ deploy_prod.exp                                    |    37 +
+ deploy_remote.exp                                  |     6 +
+ deploy_script.sh                                   |     9 +
+ deploy_temp.exp                                    |     6 +
+ docs/SYSTEM_KNOWLEDGE.md                           |    35 +
+ dump_prod.exp                                      |    11 +
+ fittour_crm_backup_2026_04_01.sql                  | 10993 +++++++++++++++++++
+ get_env.exp                                        |     6 +
+ server/controllers/authController.js               |     2 +-
+ server/controllers/bookingController.js            |     4 +-
+ server/controllers/costingController.js            |     7 +-
+ server/controllers/customerController.js           |   104 +-
+ server/controllers/departureController.js          |    10 +-
+ server/controllers/leadController.js               |    10 +-
+ server/controllers/reminderController.js           |   168 +
+ server/controllers/tourController.js               |    16 +-
+ server/cron/reminderEngine.js                      |    77 +
+ server/db_seed.js                                  |    69 +
+ server/export_tours_only.js                        |    85 +
+ server/index.js                                    |     6 +
+ server/package-lock.json                           |   335 +-
+ server/package.json                                |     4 +-
+ server/routes/customers.js                         |     2 +
+ server/routes/reminderRoutes.js                    |    14 +
+ server/scripts/clear_data.js                       |    23 +
+ server/scripts/scrape_coguu.js                     |   235 +
+ server/scripts/seedLocalData.js                    |    67 +
+ server/scripts/sync_all_messenger_leads.js         |   129 +
+ server/scripts/test_price.js                       |    22 +
+ server/services/metaCatalogService.js              |    96 +-
+ server/test_api.js                                 |    12 +
+ server/tools/assign_random_guides.js               |    39 +
+ server/tools/clear_guides.js                       |    18 +
+ sync_bus.sql                                       |     5 +
+ sync_tours_no_guide.sql                            |   131 +
+ 52 files changed, 15061 insertions(+), 337 deletions(-)
+ create mode 100644 So_Tay_Van_Hanh/01_Facebook_System_User.md
+ create mode 100644 So_Tay_Van_Hanh/02_Xu_Ly_Ngay_Gio.md
+ create mode 100644 So_Tay_Van_Hanh/03_Dong_Bo_Tin_Nhan_Tu_Trang.md
+ create mode 100644 So_Tay_Van_Hanh/04_Quy_Trinh_Nang_Cap_Giao_Dien.md
+ create mode 100644 client/src/components/CustomerProfileSlider.jsx
+ create mode 100644 client/src/pages/ViewDeparturePage.jsx
+ create mode 100644 client/src/tabs/RemindersTab.jsx
+ create mode 100644 deploy_out.txt
+ create mode 100644 deploy_prod.exp
+ create mode 100644 deploy_remote.exp
+ create mode 100644 deploy_script.sh
+ create mode 100644 deploy_temp.exp
+ create mode 100644 docs/SYSTEM_KNOWLEDGE.md
+ create mode 100644 dump_prod.exp
+ create mode 100644 fittour_crm_backup_2026_04_01.sql
+ create mode 100644 get_env.exp
+ create mode 100644 server/controllers/reminderController.js
+ create mode 100644 server/cron/reminderEngine.js
+ create mode 100644 server/db_seed.js
+ create mode 100644 server/export_tours_only.js
+ create mode 100644 server/routes/reminderRoutes.js
+ create mode 100644 server/scripts/clear_data.js
+ create mode 100644 server/scripts/scrape_coguu.js
+ create mode 100644 server/scripts/seedLocalData.js
+ create mode 100644 server/scripts/sync_all_messenger_leads.js
+ create mode 100644 server/scripts/test_price.js
+ create mode 100644 server/test_api.js
+ create mode 100644 server/tools/assign_random_guides.js
+ create mode 100644 server/tools/clear_guides.js
+ create mode 100644 sync_bus.sql
+ create mode 100644 sync_tours_no_guide.sql
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 24 packages, changed 2 packages, and audited 153 packages in 4s
+
+44 packages are looking for funding
+  run `npm fund` for details
+
+2 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [all](ids: [ 0 ])
+[PM2] [crm-fittour](0) ✓
+┌────┬────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name           │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ crm-fittour    │ default     │ 1.0.0   │ fork    │ 320108   │ 0s     │ 63   │ online    │ 0%       │ 3.3mb    │ root     │ disabled │
+└────┴────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+
+up to date, audited 365 packages in 4s
+
+117 packages are looking for funding
+  run `npm fund` for details
+
+4 vulnerabilities (1 moderate, 3 high)
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+
+> client@0.0.0 build
+> vite build
+
+vite v6.4.1 building for production...
+transforming...
+✓ 2378 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.46 kB │ gzip:   0.30 kB
+dist/assets/index-BQjezX7Q.css     29.59 kB │ gzip:   6.57 kB
+dist/assets/index-DrUly0Gj.js   1,081.86 kB │ gzip: 300.22 kB
+✓ built in 24.25s
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+send: spawn id exp6 not open
+    while executing
+"send "#Aa2,zdf87a@Q{3q\r""
+    (file "./deploy_remote.exp" line 5)
