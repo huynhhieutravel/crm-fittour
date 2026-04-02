@@ -177,7 +177,7 @@ const CustomersTab = ({
             <tr>
               <th>HỌ TÊN</th>
               <th>LIÊN HỆ / ĐỊA CHỈ</th>
-              <th>PHÂN KHÚC & NGUỒN</th>
+              <th>PHÂN KHÚC</th>
               <th>GIA NHẬP</th>
               <th>NHÂN VIÊN</th>
               <th>LTV (TỔNG CHI)</th>
@@ -238,16 +238,25 @@ const CustomersTab = ({
                   </div>
                 </td>
                 <td>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
                     <span 
-                      className={`badge ${customer.customer_segment === 'VVIP' ? '' : customer.customer_segment === 'VIP' ? 'badge-priority-high' : customer.customer_segment === 'Repeat Customer' ? 'badge-priority-medium' : 'badge-priority-low'}`}
-                      style={customer.customer_segment === 'VVIP' ? { background: 'linear-gradient(135deg, #a855f7 0%, #db2777 100%)', color: 'white', fontWeight: 700, border: 'none', padding: '4px 8px' } : {}}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        ...(customer.customer_segment === 'VVIP' ? { background: 'linear-gradient(135deg, #a855f7 0%, #db2777 100%)', color: 'white', border: 'none' } : 
+                            customer.customer_segment === 'VIP' ? { background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' } : 
+                            customer.customer_segment === 'Platinum' ? { background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0' } : 
+                            customer.customer_segment === 'Repeat Customer' ? { background: '#dbeafe', color: '#2563eb', border: '1px solid #bfdbfe' } : 
+                            { background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0' }) // New Customer
+                      }}
                     >
-                      {customer.customer_segment}
+                      {customer.customer_segment || 'New Customer'}
                     </span>
                     {customer.lead_source && (
-                      <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>
-                        {customer.lead_source}
+                      <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                        Nguồn: {customer.lead_source}
                       </span>
                     )}
                   </div>

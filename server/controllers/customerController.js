@@ -11,7 +11,7 @@ exports.getAllCustomers = async (req, res) => {
                    l.source as lead_source
             FROM customers c
             LEFT JOIN leads l ON c.lead_id = l.id
-            ORDER BY c.created_at DESC
+            ORDER BY c.created_at DESC, c.id DESC
         `);
         
         const currentYear = new Date().getFullYear();
