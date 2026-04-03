@@ -309,7 +309,10 @@ const LeadsTab = ({
                   />
                 </td>
                 <td style={{ color: '#64748b', fontSize: '0.85rem' }}>
-                  {new Date(lead.created_at).toLocaleDateString('vi-VN')}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <span style={{ fontWeight: 600, color: '#334155' }}>{new Date(lead.created_at).toLocaleDateString('vi-VN')}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(lead.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
                 </td>
                 <td>
                   <div className="lead-info">
