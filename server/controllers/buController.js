@@ -40,19 +40,22 @@ exports.reorderBUs = async (req, res) => {
         return res.status(400).json({ message: 'Dữ liệu không hợp lệ' });
     }
 
+    const client = await db.pool.connect();
     try {
-        await db.query('BEGIN');
+        await client.query('BEGIN');
         for (const item of orders) {
             console.log(`[BU_DEBUG] Setting ${item.id} -> order ${item.sort_order}`);
-            await db.query('UPDATE business_units SET sort_order = $1 WHERE id = $2', [item.sort_order, item.id]);
+            await client.query('UPDATE business_units SET sort_order = $1 WHERE id = $2', [item.sort_order, item.id]);
         }
-        await db.query('COMMIT');
+        await client.query('COMMIT');
         console.log(`[BU_DEBUG] REORDER COMMIT SUCCESS`);
         res.json({ message: 'Sắp xếp thành công' });
     } catch (err) {
-        await db.query('ROLLBACK');
+        await client.query('ROLLBACK');
         console.error(`[BU_DEBUG] REORDER FAILED:`, err);
         res.status(500).json({ message: 'Lỗi khi sắp xếp BU' });
+    } finally {
+        client.release();
     }
 };
 

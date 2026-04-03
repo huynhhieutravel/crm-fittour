@@ -1,5 +1,6 @@
 const db = require('../db');
 const bcrypt = require('bcryptjs');
+const { logActivity } = require('../utils/logger');
 
 exports.getAllUsers = async (req, res) => {
     try {
@@ -58,6 +59,11 @@ exports.getRoles = async (req, res) => {
 exports.createUser = async (req, res) => {
     const { username, password, full_name, email, role_id, phone, is_active } = req.body;
     try {
+        // Password policy: tối thiểu 6 ký tự
+        if (!password || password.length < 6) {
+            return res.status(400).json({ message: 'Mật khẩu phải có ít nhất 6 ký tự.' });
+        }
+
         // Check if username exists
         const userExists = await db.query('SELECT id FROM users WHERE username = $1', [username]);
         if (userExists.rows.length > 0) {
@@ -115,6 +121,17 @@ exports.updateUser = async (req, res) => {
         }
 
         await client.query('COMMIT');
+
+        // Ghi Audit Log khi thay đổi quyền / thông tin nhân sự
+        logActivity({
+            user_id: req.user.id,
+            action_type: 'UPDATE',
+            entity_type: 'USER',
+            entity_id: parseInt(id),
+            details: `Admin/Manager cập nhật thông tin nhân sự #${id} (role_id: ${role_id}, is_active: ${is_active})`,
+            new_data: JSON.stringify({ full_name, email, role_id, phone, is_active, permissions: permissions ? Object.keys(permissions) : [] })
+        });
+
         res.json({ message: 'Cập nhật nhân viên thành công.' });
     } catch (err) {
         await client.query('ROLLBACK');
@@ -129,6 +146,11 @@ exports.changePassword = async (req, res) => {
     const { id } = req.params;
     const { newPassword } = req.body;
     try {
+        // Password policy: tối thiểu 6 ký tự
+        if (!newPassword || newPassword.length < 6) {
+            return res.status(400).json({ message: 'Mật khẩu mới phải có ít nhất 6 ký tự.' });
+        }
+
         // Safeguard: Managers cannot change Admin password
         if (req.user.role === 'manager') {
             const targetUser = await db.query('SELECT r.name as role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = $1', [id]);
@@ -161,8 +183,18 @@ exports.deleteUser = async (req, res) => {
             }
         }
 
-        await db.query('DELETE FROM users WHERE id = $1', [id]);
-        res.json({ message: 'Xóa nhân viên thành công.' });
+        // Soft-delete: vô hiệu hóa tài khoản thay vì xóa cứng (tránh lỗi FK constraint)
+        await db.query('UPDATE users SET is_active = false WHERE id = $1', [id]);
+
+        logActivity({
+            user_id: req.user.id,
+            action_type: 'DELETE',
+            entity_type: 'USER',
+            entity_id: parseInt(id),
+            details: `Vô hiệu hóa tài khoản nhân sự #${id}`
+        });
+
+        res.json({ message: 'Đã vô hiệu hóa nhân viên thành công. Tài khoản sẽ không thể đăng nhập.' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
