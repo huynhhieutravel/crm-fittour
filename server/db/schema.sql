@@ -140,3 +140,20 @@ CREATE TABLE IF NOT EXISTS booking_transactions (
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount NUMERIC(12,2) DEFAULT 0;
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS pax_details JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS service_details JSONB DEFAULT '[]'::jsonb;
+
+-- 2026-04-03 Bảng Dự Toán - Tour Costings
+CREATE TABLE IF NOT EXISTS tour_costings (
+    id SERIAL PRIMARY KEY,
+    tour_departure_id INTEGER NOT NULL REFERENCES tour_departures(id) ON DELETE CASCADE,
+    total_revenue NUMERIC(15, 2) DEFAULT 0,
+    total_estimated_cost NUMERIC(15, 2) DEFAULT 0,
+    total_actual_cost NUMERIC(15, 2) DEFAULT 0,
+    total_deposit NUMERIC(15, 2) DEFAULT 0,
+    costs JSONB DEFAULT '[]'::jsonb,
+    status VARCHAR(50) DEFAULT 'Draft',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(tour_departure_id)
+);
+CREATE INDEX IF NOT EXISTS idx_tour_costings_departure_id ON tour_costings(tour_departure_id);
