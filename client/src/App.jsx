@@ -23,6 +23,7 @@ import LeadsDashboardTab from './tabs/LeadsDashboardTab';
 import StaffPerformanceTab from './tabs/StaffPerformanceTab';
 import GuidesTab from './tabs/GuidesTab';
 import UsersTab from './tabs/UsersTab';
+import ManualTab from './tabs/ManualTab';
 import AddLeadModal from './components/modals/AddLeadModal';
 import EditLeadModal from './components/modals/EditLeadModal';
 import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
@@ -71,7 +72,8 @@ import {
   Lock,
   PieChart,
   FileText,
-  DollarSign
+  DollarSign,
+  BookOpen
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -92,7 +94,8 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
     if (path.startsWith('guides')) return 'guides';
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings'];
+    if (path.startsWith('manual')) return 'manual';
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -509,7 +512,23 @@ function AppContent() {
       });
       fetchGuides();
       addToast('Đã xoá hướng dẫn viên!');
-    } catch (err) { addToast('Lỗi khi xoá: ' + err.message); }
+    } catch (err) {
+      // 409 = HDV đang gắn với tour, hỏi lại lần nữa
+      if (err.response && err.response.status === 409 && err.response.data.has_deps) {
+        if (window.confirm(`⚠️ ${err.response.data.message}\n\nBạn vẫn muốn xóa?`)) {
+          try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`/api/guides/${id}?force=true`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchGuides();
+            addToast('Đã xoá hướng dẫn viên!');
+          } catch (err2) { addToast('Lỗi khi xoá: ' + (err2.response?.data?.message || err2.message)); }
+        }
+      } else {
+        addToast('Lỗi khi xoá: ' + (err.response?.data?.message || err.message));
+      }
+    }
   };
 
   const handleAddTemplate = async (e) => {
@@ -614,9 +633,23 @@ function AppContent() {
       fetchBookings();
       addToast('Đã xoá đơn hàng.');
       setBookingToDelete(null);
-    } catch (err) { 
-      addToast('Lỗi khi xoá: ' + (err.response?.data?.message || err.message)); 
-      setBookingToDelete(null);
+    } catch (err) {
+      if (err.response && err.response.status === 409 && err.response.data.has_transactions) {
+        if (window.confirm(`⚠️ ${err.response.data.message}\n\nBạn vẫn muốn xóa?`)) {
+          try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`/api/bookings/${bookingToDelete}?force=true`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchBookings();
+            addToast('Đã xoá đơn hàng.');
+          } catch (err2) { addToast('Lỗi khi xoá: ' + (err2.response?.data?.message || err2.message)); }
+        }
+        setBookingToDelete(null);
+      } else {
+        addToast('Lỗi khi xoá: ' + (err.response?.data?.message || err.message)); 
+        setBookingToDelete(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -1486,7 +1519,23 @@ function AppContent() {
             </>
           )}
 
-          
+          <div className="nav-section-title">Trợ giúp & Hướng dẫn</div>
+          <div className={`nav-item ${activeTab === 'manual' && (!pathParts[1] || pathParts[1] === 'overview') ? 'active' : ''}`} onClick={() => navigate('/manual/overview')}>
+            <BookOpen size={18} /> Phân quyền & Giới thiệu
+          </div>
+          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'leads' ? 'active' : ''}`} onClick={() => navigate('/manual/leads')} style={{ paddingLeft: '2.5rem' }}>
+            <Target size={16} opacity={0.7} /> Lead Marketing
+          </div>
+          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'customers' ? 'active' : ''}`} onClick={() => navigate('/manual/customers')} style={{ paddingLeft: '2.5rem' }}>
+            <Users size={16} opacity={0.7} /> Danh mục Khách hàng
+          </div>
+          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'bookings' ? 'active' : ''}`} onClick={() => navigate('/manual/bookings')} style={{ paddingLeft: '2.5rem' }}>
+            <ShoppingCart size={16} opacity={0.7} /> Đơn hàng & Dòng tiền
+          </div>
+          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'tours' ? 'active' : ''}`} onClick={() => navigate('/manual/tours')} style={{ paddingLeft: '2.5rem' }}>
+            <Map size={16} opacity={0.7} /> Điều hành & Tour
+          </div>
+
           <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <div className="nav-item" onClick={handleLogout} style={{ color: '#f87171', background: 'rgba(239, 68, 68, 0.05)' }}>
               <LogOut size={18} /> <strong>ĐĂNG XUẤT</strong>
@@ -1719,6 +1768,7 @@ function AppContent() {
             activeTab === 'leads' ? 'Quản lý Lead Marketing' : 
             activeTab === 'leads-dashboard' ? 'Dashboard Lead Marketing' :
             activeTab === 'bus' ? 'Quản lý Khối Kinh doanh (BU)' :
+            activeTab === 'manual' ? 'Sổ tay HDSD CRM' :
             activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
           }</h1>
           <div className="user-profile">
@@ -1755,6 +1805,8 @@ function AppContent() {
                 setEditingLead={setEditingLead}
               />
             )}
+
+            {activeTab === 'manual' && <ManualTab />}
 
             {activeTab === 'leads' && (
               <LeadsTab 
