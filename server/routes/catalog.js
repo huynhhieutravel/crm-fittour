@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 const metaCatalogService = require('../services/metaCatalogService');
 
 // Retrieve Meta Configurations for the service
@@ -49,7 +50,7 @@ router.get('/feed.csv', async (req, res) => {
 });
 
 // 3. Thực thi đồng bộ toàn bộ Data đang có sang META API (Chạy ngầm)
-router.post('/sync-all', auth, async (req, res) => {
+router.post('/sync-all', auth, admin, async (req, res) => {
     try {
         const settings = await getSettings();
         const catalogId = settings['meta_catalog_id'];

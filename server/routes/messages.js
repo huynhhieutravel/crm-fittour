@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 const facebookService = require('../services/facebookService');
 
 // 1. Lấy danh sách hội thoại có phân trang và tìm kiếm
@@ -56,8 +57,8 @@ router.get('/conversations', auth, async (req, res) => {
     }
 });
 
-// 1.5 Xóa hàng loạt hội thoại (Cùng tin nhắn liên quan)
-router.post('/conversations/delete', auth, async (req, res) => {
+// 1.5 Xóa hàng loạt hội thoại (Cùng tin nhắn liên quan - Admin/Manager only)
+router.post('/conversations/delete', auth, admin, async (req, res) => {
     const client = await db.pool.connect();
     try {
         const { ids } = req.body;

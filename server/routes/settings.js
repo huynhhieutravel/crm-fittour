@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 const metaCapi = require('../services/metaCapiService');
 
-// 1. Lấy tất cả cài đặt
-router.get('/', auth, async (req, res) => {
+// 1. Lấy tất cả cài đặt (Admin/Manager only)
+router.get('/', auth, admin, async (req, res) => {
     try {
         const result = await db.query('SELECT key, value, description FROM settings');
         const settings = {};
@@ -19,7 +20,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // 2. Cập nhật cài đặt
-router.post('/update', auth, async (req, res) => {
+router.post('/update', auth, admin, async (req, res) => {
     const { settings } = req.body; // { key: value, ... }
     try {
         for (const [key, value] of Object.entries(settings)) {
@@ -35,7 +36,7 @@ router.post('/update', auth, async (req, res) => {
 });
 
 // 3. Test CAPI Connection
-router.post('/test-capi', auth, async (req, res) => {
+router.post('/test-capi', auth, admin, async (req, res) => {
     try {
         console.log('[CAPI] Manual test triggered from UI - Sending Test Suite (Lead, Contact, Purchase)');
         
