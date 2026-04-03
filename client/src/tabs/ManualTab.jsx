@@ -83,51 +83,101 @@ const ManualOverview = () => (
   </>
 );
 
+const StepBadge = ({ num }) => (
+  <div style={{ minWidth: '36px', height: '36px', borderRadius: '50%', background: '#8b5cf6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.2rem', boxShadow: '0 4px 10px rgba(139, 92, 246, 0.4)', flexShrink: 0 }}>
+    {num}
+  </div>
+);
+
 const ManualLeads = () => (
   <>
     <div style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(139, 92, 246, 0.4)' }}>
-      <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.5px' }}>Quản lý Lead Marketing</h1>
-      <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '600px', lineHeight: 1.6 }}>
-        Nơi tập trung 100% data khách hàng tiềm năng. Không để lọt bất kì tin nhắn nào từ Facebook/Zalo, tối ưu hóa quy trình tư vấn và tăng tỉ lệ chốt đơn (Conversion Rate).
+      <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.5px' }}>Nghiệp Vụ: Quản Lý Lead Marketing</h1>
+      <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '650px', lineHeight: 1.6 }}>
+        Đây là quy trình chuẩn để các bạn Sale xử lý Data (Khách tiềm năng). Giúp bạn không bỏ sót bất kỳ ai, theo dõi được tiến độ chốt sale và tạo tệp khách hàng sạch sẽ.
       </p>
     </div>
     
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
+      {/* STEP 1 */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>1. Phễu Khách Hàng & Bộ Lọc Nâng Cao</h2>
-        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Ngay khi truy cập, bạn sẽ thấy <strong>Biểu đồ Phễu</strong> thể hiện sức khỏe kinh doanh: Dòng khách Mới đổ về, lượng Đang tư vấn, và số lượng Chốt đơn thành công. 
-        </p>
-        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', color: '#475569', fontSize: '1.05rem', marginBottom: '1.5rem' }}>
-          <li><strong>Bộ lọc đa chiều:</strong> Tìm nhanh Lead theo Trạng thái, Nhóm Kinh doanh (BU), Thời gian (Hôm nay, Tháng này, Tùy chọn).</li>
-          <li><strong>Tìm kiếm thần tốc:</strong> Nhập số điện thoại, tên khách, hoặc tên Sale đang chăm để tra cứu ngay lập tức.</li>
-        </ul>
-        <img src="/manual_images/leads_page_full_1775228553928.png" style={{ width: '100%', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} alt="Giao diện danh sách Lead" />
-      </section>
-
-      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>2. Tư vấn & Nhật ký chăm sóc (Notes)</h2>
-        <div style={{ padding: '1rem', background: '#f8fafc', borderLeft: '4px solid #3b82f6', borderRadius: '4px', color: '#334155', marginBottom: '1.5rem' }}>
-          <em>Tính năng quan trọng nhất của Sale: Ghi lại MỌI CHUẨN ĐOÁN & THỎA THUẬN với khách.</em>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="1" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Thêm mới Khách Tiềm Năng (Tạo Lead)</h2>
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Nhấn vào icon <strong>Chat (Ghi chú)</strong> trên mỗi Lead để mở bảng nhật ký. Khi bạn Telesale xong, hãy tóm tắt nội dung vào đây. Điểm hay là bất kỳ quản lý nào nhìn vào cũng nắm bắt tiến độ mà không cần hỏi lại Sale. 
+          Ngay khi nhận được thông tin khách hàng (từ gọi điện thoại trực tiếp, nhắn tin Zalo cá nhân, v.v.), bạn cần mở tab <strong>Lead Marketing</strong> và nhấn nút <strong>"THÊM MỚI"</strong> ở góc phải màn hình.
         </p>
+        <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '250px', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ color: '#0f172a', fontWeight: 700, marginBottom: '0.5rem' }}>Các trường bắt buộc nhập:</h3>
+            <ul style={{ paddingLeft: '1.2rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <li><strong>Tên khách hàng:</strong> Nhập tên thật để tiện giao tiếp.</li>
+              <li><strong>Số điện thoại:</strong> Rất quan trọng để tránh trùng lặp.</li>
+              <li><strong>Nguồn (Source):</strong> Chọn <em>Zalo</em>, <em>Hotline</em>, <em>Tiktok</em>... để đo lường.</li>
+              <li><strong>Sản phẩm quan tâm:</strong> Chọn Tour mà khách đang hỏi.</li>
+            </ul>
+          </div>
+          <div style={{ flex: 1, minWidth: '250px', background: '#f0fdf4', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+            <h3 style={{ color: '#166534', fontWeight: 700, marginBottom: '0.5rem' }}>💡 Tính năng Auto-Capture:</h3>
+            <p style={{ color: '#166534', fontSize: '0.95rem' }}>Hệ thống đã kết nối trực tiếp với <strong>Fanpage Meta</strong>. Bất cứ khi nào có khách hàng nhắn tin tới Fanpage, hệ thống sẽ <strong>tự động đẻ ra 1 dòng Lead mới</strong> với phân loại "MESSENGER". Bạn không cần nhập tay các khách này!</p>
+          </div>
+        </div>
+      </section>
+
+      {/* STEP 2 */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="2" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Cách đọc Bảng dữ liệu Lead</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Danh sách Lead đưa cho bạn cái nhìn tổng quan. Nếu ảnh chụp bên dưới quá nhỏ, bạn có thể cuộn trang ngay bên trong khung ảnh để xem.
+        </p>
+
+        {/* CROP ẢNH BẰNG OBJECT-FIT COVER THAY VÌ SCROLL BOX */}
+        <div style={{ height: '350px', overflow: 'hidden', borderRadius: '12px', border: '1px solid #cbd5e1', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.05)', marginBottom: '1.5rem' }}>
+          <img src="/manual_images/leads_page_full_1775228553928.png" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} alt="Giao diện danh sách Lead" />
+        </div>
+
+        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', color: '#475569', fontSize: '1.05rem' }}>
+          <li><strong>Trạng thái (Status):</strong> Bạn có thể đổi trạng thái nhanh trực tiếp trên bảng. Khách dạo hỏi giá {'->'} <em>Im Lặng</em>. Khách đang cấn tiền {'->'} <em>Đang Follow</em>.</li>
+          <li><strong>Chấm đỏ thông báo:</strong> Khi khách Facebook nhắn tin lại cho bạn, hệ thống sẽ tự nổi nhãn <em>"Có thay đổi mới"</em> cho Lead đó để bạn biết đường vào tư vấn tiếp.</li>
+        </ul>
+      </section>
+
+      {/* STEP 3 */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="3" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Ghi chú Tư Vấn (Take Notes)</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Ở cột ngoài cùng bên phải chữ <strong>Thao tác</strong>, hãy ấn vào biểu tượng 💬 (Hình tin nhắn) để mở Cửa sổ Ghi chú (Notes).
+        </p>
+        <div style={{ padding: '1rem 1.5rem', background: '#f8fafc', borderLeft: '4px solid #3b82f6', borderRadius: '4px', color: '#334155', marginBottom: '1.5rem' }}>
+          <strong>Lệnh bắt buộc:</strong> Bất kể bạn tư vấn điện thoại hay Zalo, sau khi kết thúc bạn <strong>phải tóm tắt</strong> nhu cầu khách vào Note này. <em>Ví dụ: "Khách hỏi Tour Nhật, đang đợi rủ Theam building công ty, hẹn thứ 6 gọi lại"</em>. 
+        </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
-          Hệ thống sẽ <strong>tự động đổi trạng thái</strong> Lead dựa trên tương tác (VD: Có tin nhắn mới từ khách Fanpage sẽ nổi chữ "Có thay đổi mới", sau 30 ngày im lặng tự gán "Hết hạn").
+          Quản lý sẽ xem lịch sử Notes để đánh giá độ nỗ lực của Sale. Lịch sử Notes sẽ không bao giờ bị xóa.
         </p>
       </section>
 
+      {/* STEP 4 */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>3. Chuyển đổi thành Khách Hàng (Convert Lead)</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="4" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Chốt Đơn & Chuyển đổi thành Khách Hàng</h2>
+        </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Thanh kiếm sắc bén nhất nằm ở nút mũi tên <strong>Chuyển sang Khách Hàng</strong> (Icon hình người dấu cộng).
+          Khi khách đồng ý chốt đi Tour và chuần bị chuyển khoản cọc, đây là lúc bạn <strong>Convert (Chuyển đổi)</strong> Lead này. 
         </p>
-        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', color: '#475569', fontSize: '1.05rem' }}>
-          <li>Khi Deal đã chốt, nhấn nút này. Lead bị khóa lại thành trạng thái <strong>Chốt đơn</strong> và tự động gửi dữ kiện lên CAPI Meta chạy báo cáo Ads thông minh.</li>
-          <li>Đồng thời, toàn bộ Note ghi chú, Số điện thoại được bê nguyên xi sang khu vực <strong>Danh Mục Khách Hàng</strong> để bên Điều hành lập Đơn hàng/Thu tiền.</li>
-          <li>Bạn KHÔNG phải nhập lại thông tin. Đây là đỉnh cao của Dữ liệu liền mạch!</li>
+        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#475569', fontSize: '1.05rem' }}>
+          <li>Nhấn vào biểu tượng <strong>👤+ (Hình người có dấu cộng)</strong> ở cột cuối cùng.</li>
+          <li>Hệ thống khóa trạng thái Lead này vĩnh viễn hành <strong>"Chốt đơn"</strong>.</li>
+          <li>Đồng thời, hệ thống tự động bốc tất cả dữ liệu (Số điện thoại, Notes, Profile Facebook) và đẻ ra 1 Hồ Sơ mới tại bảng <strong>Danh Mục Khách Hàng</strong>.</li>
+          <li>Từ lúc này, bạn chuyển sang bộ phận Điều hành / Kế toán tạo Đơn hàng (Booking) mà hoàn toàn không cần phải nhập tay lại thông tin khách.</li>
         </ul>
       </section>
 
