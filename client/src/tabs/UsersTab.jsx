@@ -11,12 +11,22 @@ const UsersTab = ({
   onDeleteUser 
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedRole, setSelectedRole] = useState('ALL');
+  const [selectedStatus, setSelectedStatus] = useState('ALL');
 
-  const filteredUsers = users.filter(u => 
-    u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter(u => {
+    const matchSearch = u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        u.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchRole = selectedRole === 'ALL' ? true : u.role_name === selectedRole;
+    
+    let matchStatus = true;
+    if (selectedStatus === 'ACTIVE') matchStatus = u.is_active !== false;
+    if (selectedStatus === 'INACTIVE') matchStatus = u.is_active === false;
+
+    return matchSearch && matchRole && matchStatus;
+  });
 
   const getRoleColor = (roleName) => {
     switch (roleName) {
@@ -31,18 +41,47 @@ const UsersTab = ({
 
   return (
     <div className="animate-fade-in">
-      <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <div className="filter-group" style={{ flex: 1, maxWidth: '400px' }}>
-          <label>DANH SÁCH NHÂN SỰ</label>
-          <div style={{ position: 'relative' }}>
-            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-            <input 
-              className="filter-input" 
-              style={{ paddingLeft: '36px', width: '100%' }} 
-              placeholder="Tìm tên, username, email..." 
-              value={searchTerm} 
-              onChange={e => setSearchTerm(e.target.value)} 
-            />
+      <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: '300px', flexWrap: 'wrap' }}>
+          <div className="filter-group" style={{ flex: 2, minWidth: '200px' }}>
+            <label>TÌM THÀNH VIÊN</label>
+            <div style={{ position: 'relative' }}>
+              <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              <input 
+                className="filter-input" 
+                style={{ paddingLeft: '36px', width: '100%' }} 
+                placeholder="Tên, username, email..." 
+                value={searchTerm} 
+                onChange={e => setSearchTerm(e.target.value)} 
+              />
+            </div>
+          </div>
+          <div className="filter-group" style={{ flex: 1, minWidth: '150px' }}>
+            <label>PHÂN QUYỀN</label>
+            <select 
+              className="filter-input"
+              value={selectedRole}
+              onChange={e => setSelectedRole(e.target.value)}
+              style={{ width: '100%' }}
+            >
+              <option value="ALL">-- Tất cả --</option>
+              {roles.map(r => (
+                <option key={r.id} value={r.name}>{r.name.toUpperCase()}</option>
+              ))}
+            </select>
+          </div>
+          <div className="filter-group" style={{ flex: 1, minWidth: '150px' }}>
+            <label>TRẠNG THÁI</label>
+            <select 
+              className="filter-input"
+              value={selectedStatus}
+              onChange={e => setSelectedStatus(e.target.value)}
+              style={{ width: '100%' }}
+            >
+              <option value="ALL">-- Tất cả --</option>
+              <option value="ACTIVE">Đang hoạt động</option>
+              <option value="INACTIVE">Tạm dừng (Khóa)</option>
+            </select>
           </div>
         </div>
         <button 
