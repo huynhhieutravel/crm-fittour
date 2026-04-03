@@ -208,15 +208,40 @@ exports.updateDeparture = async (req, res) => {
 };
 
 exports.deleteDeparture = async (req, res) => {
+    const client = await db.pool.connect();
     try {
-        // Cascade delete associated bookings to prevent FK constraints
-        await db.query('DELETE FROM bookings WHERE tour_departure_id = $1', [req.params.id]);
+        await client.query('BEGIN');
 
-        const result = await db.query('DELETE FROM tour_departures WHERE id = $1 RETURNING *', [req.params.id]);
-        if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy lịch khởi hành' });
+        const depId = req.params.id;
+
+        // 1. Xóa booking_passengers & booking_transactions (con của bookings)
+        await client.query(`
+            DELETE FROM booking_passengers WHERE booking_id IN (SELECT id FROM bookings WHERE tour_departure_id = $1)
+        `, [depId]);
+        await client.query(`
+            DELETE FROM booking_transactions WHERE booking_id IN (SELECT id FROM bookings WHERE tour_departure_id = $1)
+        `, [depId]);
+
+        // 2. Xóa bookings
+        await client.query('DELETE FROM bookings WHERE tour_departure_id = $1', [depId]);
+
+        // 3. Xóa departure_reminders
+        await client.query('DELETE FROM departure_reminders WHERE tour_departure_id = $1', [depId]);
+
+        // 4. Xóa departure (tour_costings sẽ tự cascade nhờ ON DELETE CASCADE)
+        const result = await client.query('DELETE FROM tour_departures WHERE id = $1 RETURNING *', [depId]);
+        if (result.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Không tìm thấy lịch khởi hành' });
+        }
+
+        await client.query('COMMIT');
         res.json({ message: 'Đã xoá lịch khởi hành thành công' });
     } catch (err) {
+        await client.query('ROLLBACK');
         res.status(500).json({ message: err.message });
+    } finally {
+        client.release();
     }
 };
 
@@ -246,17 +271,19 @@ exports.duplicateDeparture = async (req, res) => {
         const result = await db.query(
             `INSERT INTO tour_departures (
                 code, tour_template_id, start_date, end_date, max_participants, status,
-                actual_price, discount_price, single_room_supplement, visa_fee, tip_fee,
+                actual_price, discount_price,
                 guide_id, operator_id, supplier_info, min_participants, break_even_pax,
                 deadline_booking, deadline_visa, deadline_payment,
-                price_adult, price_child_6_11, price_child_2_5, price_infant
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23) RETURNING *`,
+                price_rules, additional_services, notes
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *`,
             [
                 generatedCode, dep.tour_template_id, dep.start_date, dep.end_date, dep.max_participants, 'Open',
-                dep.actual_price, dep.discount_price, dep.single_room_supplement, dep.visa_fee, dep.tip_fee,
+                dep.actual_price, dep.discount_price,
                 dep.guide_id, dep.operator_id, dep.supplier_info, dep.min_participants, dep.break_even_pax,
                 dep.deadline_booking, dep.deadline_visa, dep.deadline_payment,
-                dep.price_adult, dep.price_child_6_11, dep.price_child_2_5, dep.price_infant
+                typeof dep.price_rules === 'object' ? JSON.stringify(dep.price_rules) : (dep.price_rules || '[]'),
+                typeof dep.additional_services === 'object' ? JSON.stringify(dep.additional_services) : (dep.additional_services || '[]'),
+                dep.notes
             ]
         );
         

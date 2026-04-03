@@ -22,6 +22,8 @@ const MIGRATION_FILES = [
   'migration_performance_indexes.js',
   'migration_meta_catalog.js',
   'migration_cascade_delete_leads.js',
+  'migrations/migration_departures_core.js',
+  'migrate_code.js',
   'migrations/migration_dynamic_pricing.js',
   'migrations/migration_phase15_costings.js'
 ];

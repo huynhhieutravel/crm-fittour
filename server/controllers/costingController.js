@@ -65,6 +65,10 @@ exports.getCostingByDeparture = async (req, res) => {
         // Always return the freshest revenue and pax explicitly
         data.total_revenue = parseFloat(currentRevenue);
         data.sold_pax = parseInt(currentPax);
+        // Parse all NUMERIC fields (pg driver returns strings for NUMERIC type)
+        data.total_estimated_cost = parseFloat(data.total_estimated_cost) || 0;
+        data.total_actual_cost = parseFloat(data.total_actual_cost) || 0;
+        data.total_deposit = parseFloat(data.total_deposit) || 0;
         
         res.json(data);
     } catch (err) {

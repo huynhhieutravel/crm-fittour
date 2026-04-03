@@ -390,10 +390,10 @@ const DeparturesTab = ({
                 </tr>
               );
             })}
-            {tourDepartures.length === 0 && (
+            {filteredDepartures.length === 0 && (
               <tr>
                 <td colSpan="8" style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
-                  Chưa có lịch khởi hành nào.
+                  {tourDepartures.length === 0 ? 'Chưa có lịch khởi hành nào.' : 'Không tìm thấy lịch khởi hành phù hợp với bộ lọc.'}
                 </td>
               </tr>
             )}
