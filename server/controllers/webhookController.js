@@ -50,26 +50,27 @@ exports.handleWebhookEvent = (req, res) => {
             const isStandby = !!entry.standby;
 
             if (webhooks.length > 0) {
-                const webhook_event = webhooks[0];
-                console.log(`[WEBHOOK] ${isStandby ? '🕵️ Standby' : '📩 Primary'} Event:`, JSON.stringify(webhook_event));
+                for (const webhook_event of webhooks) {
+                    console.log(`[WEBHOOK] ${isStandby ? '🕵️ Standby' : '📩 Primary'} Event:`, JSON.stringify(webhook_event));
 
-                if (webhook_event.sender && webhook_event.sender.id) {
-                    const sender_psid = webhook_event.sender.id;
-                    console.log(`[WEBHOOK] Sender PSID: ${sender_psid}`);
-                    
-                    if (webhook_event.message) {
-                        console.log(`[WEBHOOK] Message text: "${webhook_event.message.text || '(attachment/other)'}"`);
-                        facebookService.handleMessage(sender_psid, webhook_event.message, isStandby)
-                            .then(() => console.log('[WEBHOOK] ✅ handleMessage completed'))
-                            .catch(err => console.error('[WEBHOOK] ❌ handleMessage error:', err.message, err.stack));
-                    } else if (webhook_event.postback) {
-                        console.log(`[WEBHOOK] Postback payload: ${webhook_event.postback.payload}`);
-                        facebookService.handlePostback(sender_psid, webhook_event.postback)
-                            .then(() => console.log('[WEBHOOK] ✅ handlePostback completed'))
-                            .catch(err => console.error('[WEBHOOK] ❌ handlePostback error:', err.message, err.stack));
+                    if (webhook_event.sender && webhook_event.sender.id) {
+                        const sender_psid = webhook_event.sender.id;
+                        console.log(`[WEBHOOK] Sender PSID: ${sender_psid}`);
+                        
+                        if (webhook_event.message) {
+                            console.log(`[WEBHOOK] Message text: "${webhook_event.message.text || '(attachment/other)'}"`);
+                            facebookService.handleMessage(sender_psid, webhook_event.message, isStandby)
+                                .then(() => console.log('[WEBHOOK] ✅ handleMessage completed'))
+                                .catch(err => console.error('[WEBHOOK] ❌ handleMessage error:', err.message, err.stack));
+                        } else if (webhook_event.postback) {
+                            console.log(`[WEBHOOK] Postback payload: ${webhook_event.postback.payload}`);
+                            facebookService.handlePostback(sender_psid, webhook_event.postback)
+                                .then(() => console.log('[WEBHOOK] ✅ handlePostback completed'))
+                                .catch(err => console.error('[WEBHOOK] ❌ handlePostback error:', err.message, err.stack));
+                        }
+                    } else {
+                        console.log('[WEBHOOK] ⚠️  No sender info in messaging event');
                     }
-                } else {
-                    console.log('[WEBHOOK] ⚠️  No sender info in messaging event');
                 }
             } else {
                 console.log('[WEBHOOK] No messaging array in this entry');

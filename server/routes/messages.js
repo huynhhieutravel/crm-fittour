@@ -58,28 +58,32 @@ router.get('/conversations', auth, async (req, res) => {
 
 // 1.5 Xóa hàng loạt hội thoại (Cùng tin nhắn liên quan)
 router.post('/conversations/delete', auth, async (req, res) => {
+    const client = await db.pool.connect();
     try {
         const { ids } = req.body;
         if (!Array.isArray(ids) || ids.length === 0) {
+            client.release();
             return res.status(400).json({ error: 'Mảng IDs trống' });
         }
 
-        // Bắt đầu transaction đảm bảo an toàn
-        await db.query('BEGIN');
+        // Transaction trên cùng 1 client (đảm bảo isolation)
+        await client.query('BEGIN');
         
-        // 1. Xóa các tin nhắn chứa trong hội thoại (nếu không có ON DELETE CASCADE)
-        await db.query('DELETE FROM messages WHERE conversation_id = ANY($1::int[])', [ids]);
+        // 1. Xóa các tin nhắn chứa trong hội thoại
+        await client.query('DELETE FROM messages WHERE conversation_id = ANY($1::int[])', [ids]);
         
         // 2. Xóa các hội thoại
-        await db.query('DELETE FROM conversations WHERE id = ANY($1::int[])', [ids]);
+        await client.query('DELETE FROM conversations WHERE id = ANY($1::int[])', [ids]);
         
-        await db.query('COMMIT');
+        await client.query('COMMIT');
         
         res.json({ success: true, message: `Đã xóa ${ids.length} hội thoại thành công!` });
     } catch (err) {
-        await db.query('ROLLBACK');
+        await client.query('ROLLBACK');
         console.error('Delete Conversations Error:', err);
         res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
     }
 });
 

@@ -8,8 +8,8 @@ const pool = new Pool({
 });
 
 // Chống lỗi Lệch múi giờ Z (Timezone Shift) trên VPS
-pool.on('connect', (client) => {
-  client.query("SET timezone = 'Asia/Ho_Chi_Minh'");
+pool.on('connect', async (client) => {
+  await client.query("SET timezone = 'Asia/Ho_Chi_Minh'");
 });
 
 module.exports = {
