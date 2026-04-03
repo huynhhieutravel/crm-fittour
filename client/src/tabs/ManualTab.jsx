@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { BookOpen, Shield, Target, FileText, Users, Map, ShoppingCart } from 'lucide-react';
+import { BookOpen, Shield, Target, FileText, Users, Map, ShoppingCart, CheckCircle, XCircle, AlertTriangle, Filter, BarChart2, Search, Edit3, Copy } from 'lucide-react';
 
 const ManualOverview = () => (
   <>
@@ -89,12 +89,12 @@ const StepBadge = ({ num }) => (
   </div>
 );
 
-const ManualLeads = () => (
+const ManualLeadsSOP = () => (
   <>
     <div style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(139, 92, 246, 0.4)' }}>
-      <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.5px' }}>Nghiệp Vụ: Quản Lý Lead Marketing</h1>
+      <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.5px' }}>Sổ tay Nghiệp Vụ: LEAD MARKETING</h1>
       <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '650px', lineHeight: 1.6 }}>
-        Đây là quy trình chuẩn để các bạn Sale xử lý Data (Khách tiềm năng). Giúp bạn không bỏ sót bất kỳ ai, theo dõi được tiến độ chốt sale và tạo tệp khách hàng sạch sẽ.
+        Tài liệu chuẩn hóa SOP (Standard Operating Procedure) bắt buộc đối với toàn bộ đội ngũ Sales. Quy trình này sẽ được bộ phận Quản lý kiểm duyệt chéo hàng ngày để đánh giá KPI.
       </p>
     </div>
     
@@ -104,25 +104,31 @@ const ManualLeads = () => (
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
           <StepBadge num="1" />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Thêm mới Khách Tiềm Năng (Tạo Lead)</h2>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Nguyên Tắc Đầu Vào & Tạo Lead Mới</h2>
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Ngay khi nhận được thông tin khách hàng (từ gọi điện thoại trực tiếp, nhắn tin Zalo cá nhân, v.v.), bạn cần mở tab <strong>Lead Marketing</strong> và nhấn nút <strong>"THÊM MỚI"</strong> ở góc phải màn hình.
+          Khách hàng tiềm năng đổ về hệ thống sẽ qua 2 luồng chính:
         </p>
-        <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '250px', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ color: '#0f172a', fontWeight: 700, marginBottom: '0.5rem' }}>Các trường bắt buộc nhập:</h3>
-            <ul style={{ paddingLeft: '1.2rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <li><strong>Tên khách hàng:</strong> Nhập tên thật để tiện giao tiếp.</li>
-              <li><strong>Số điện thoại:</strong> Rất quan trọng để tránh trùng lặp.</li>
-              <li><strong>Nguồn (Source):</strong> Chọn <em>Zalo</em>, <em>Hotline</em>, <em>Tiktok</em>... để đo lường.</li>
-              <li><strong>Sản phẩm quan tâm:</strong> Chọn Tour mà khách đang hỏi.</li>
-            </ul>
-          </div>
-          <div style={{ flex: 1, minWidth: '250px', background: '#f0fdf4', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
-            <h3 style={{ color: '#166534', fontWeight: 700, marginBottom: '0.5rem' }}>💡 Tính năng Auto-Capture:</h3>
-            <p style={{ color: '#166534', fontSize: '0.95rem' }}>Hệ thống đã kết nối trực tiếp với <strong>Fanpage Meta</strong>. Bất cứ khi nào có khách hàng nhắn tin tới Fanpage, hệ thống sẽ <strong>tự động đẻ ra 1 dòng Lead mới</strong> với phân loại "MESSENGER". Bạn không cần nhập tay các khách này!</p>
-          </div>
+
+        <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
+          <h3 style={{ color: '#0f172a', fontWeight: 700, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertTriangle size={20} color="#eab308" /> 1. Auto-Capture (Hệ thống tự động bắt)
+          </h3>
+          <p style={{ margin: 0, color: '#475569', lineHeight: 1.6 }}>
+            Bất cứ vị khách nào nhắn tin thẳng vào <strong>Fanpage Facebook (Meta)</strong>, Capi của hệ thống sẽ TỰ ĐỘNG sinh ra 1 Lead với nhãn gốc màu xanh chữ <strong>MESSENGER</strong>. 
+            <br /><em>Luật ngầm:</em> <strong>KHÔNG BAO GIỜ</strong> tạo thủ công Lead bằng tay nếu khách đến từ Facebook Message để tránh vỡ báo cáo luồng Ads của MKT.
+          </p>
+        </div>
+
+        <div style={{ background: '#f0fdf4', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bbf7d0', marginBottom: '1.5rem' }}>
+          <h3 style={{ color: '#166534', fontWeight: 700, marginBottom: '0.75rem' }}>2. Tạo Lead Thủ Công (Click-by-Click)</h3>
+          <p style={{ margin: 0, color: '#166534', lineHeight: 1.6, marginBottom: '1rem' }}>Sử dụng tính năng này KHI khách liên hệ qua Zalo cá nhân, Hotline, hoặc khách quen giới thiệu.</p>
+          <ul style={{ paddingLeft: '1.2rem', color: '#15803d', display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: 0 }}>
+            <li>Bấm nút <strong>[+ THÊM MỚI]</strong> màu xanh dương góc phải trên cùng.</li>
+            <li><strong>Tên khách:</strong> Nhập chính xác tên Zalo/tên xưng hô.</li>
+            <li><strong>Số điện thoại:</strong> <em>TRƯỜNG BẮT BUỘC</em>. Hệ thống sẽ check trùng SDT để chặn những case Sale khác đang chăm.</li>
+            <li><strong>Nguồn (Source):</strong> Chọn đúng phễu (Zalo / Hotline / Tiktok...).</li>
+          </ul>
         </div>
       </section>
 
@@ -130,55 +136,221 @@ const ManualLeads = () => (
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
           <StepBadge num="2" />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Cách đọc Bảng dữ liệu Lead</h2>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Chuẩn Hóa Phân Loại "Trạng Thái" Lead</h2>
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Danh sách Lead đưa cho bạn cái nhìn tổng quan. Nếu ảnh chụp bên dưới quá nhỏ, bạn có thể cuộn trang ngay bên trong khung ảnh để xem.
+          Để bộ lọc trên Bảng điều khiển hoạt động chính xác, Sale TỰ GIÁC cập nhật trạng thái ngay sau mỗi chu kỳ giao tiếp.
         </p>
 
-        {/* CROP ẢNH BẰNG OBJECT-FIT COVER THAY VÌ SCROLL BOX */}
-        <div style={{ height: '550px', overflow: 'hidden', borderRadius: '12px', border: '1px solid #cbd5e1', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.05)', marginBottom: '1.5rem' }}>
-          <img src="/manual_images/leads_page_full_1775228553928.png" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} alt="Giao diện danh sách Lead" />
+        <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700 }}>Trạng thái</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700 }}>Định nghĩa & Ngữ cảnh áp dụng</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px' }}><span style={{ padding: '4px 8px', borderRadius: '4px', background: '#e0e7ff', color: '#4338ca', fontSize: '0.85rem', fontWeight: 600 }}>Mới</span></td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Khách vừa vào hệ thống, chưa sale nào chạm mặt trả lời/chào hỏi.</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px' }}><span style={{ padding: '4px 8px', borderRadius: '4px', background: '#fef08a', color: '#854d0e', fontSize: '0.85rem', fontWeight: 600 }}>Đang tư vấn</span></td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Đã nhắn tin qua lại, đã bốc máy gọi điện, đã gửi Brochure báo giá.</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px' }}><span style={{ padding: '4px 8px', borderRadius: '4px', background: '#ffedd5', color: '#c2410c', fontSize: '0.85rem', fontWeight: 600 }}>Đang Follow</span></td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Khách hẹn tháng sau đi, đợi xin nghỉ phép, đợi rủ bạn. Ngâm dài ngày.</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px' }}><span style={{ padding: '4px 8px', borderRadius: '4px', background: '#bbf7d0', color: '#166534', fontSize: '0.85rem', fontWeight: 600 }}>Sắp chốt</span></td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Khách đã hỏi phương thức thanh toán, xin Số tài khoản chuyển cọc.</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px' }}><span style={{ padding: '4px 8px', borderRadius: '4px', background: '#d1d5db', color: '#374151', fontSize: '0.85rem', fontWeight: 600 }}>Thất bại</span></td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Trượt giá, khách chê đắt, bom cuộc gọi nhiều lần, báo đi bên khác.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
-        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', color: '#475569', fontSize: '1.05rem' }}>
-          <li><strong>Trạng thái (Status):</strong> Bạn có thể đổi trạng thái nhanh trực tiếp trên bảng. Khách dạo hỏi giá {'->'} <em>Im Lặng</em>. Khách đang cấn tiền {'->'} <em>Đang Follow</em>.</li>
-          <li><strong>Chấm đỏ thông báo:</strong> Khi khách Facebook nhắn tin lại cho bạn, hệ thống sẽ tự nổi nhãn <em>"Có thay đổi mới"</em> cho Lead đó để bạn biết đường vào tư vấn tiếp.</li>
-        </ul>
       </section>
 
       {/* STEP 3 */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
           <StepBadge num="3" />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Ghi chú Tư Vấn (Take Notes)</h2>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Nhật Ký "Take Notes" (BẮT BUỘC)</h2>
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Ở cột ngoài cùng bên phải chữ <strong>Thao tác</strong>, hãy ấn vào biểu tượng 💬 (Hình tin nhắn) để mở Cửa sổ Ghi chú (Notes).
+          Tìm ở cột ngoài cùng bảng Lead, ấn vào biểu tượng 💬 <strong>(Chat/Note)</strong>. Mọi chẩn đoán bệnh đồ và deal với khách đều phải nằm ở đây. Giám đốc sẽ kiểm tra định kỳ bảng này.
         </p>
-        <div style={{ padding: '1rem 1.5rem', background: '#f8fafc', borderLeft: '4px solid #3b82f6', borderRadius: '4px', color: '#334155', marginBottom: '1.5rem' }}>
-          <strong>Lệnh bắt buộc:</strong> Bất kể bạn tư vấn điện thoại hay Zalo, sau khi kết thúc bạn <strong>phải tóm tắt</strong> nhu cầu khách vào Note này. <em>Ví dụ: "Khách hỏi Tour Nhật, đang đợi rủ Theam building công ty, hẹn thứ 6 gọi lại"</em>. 
+
+        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '250px', background: '#f0fdf4', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+            <h3 style={{ color: '#166534', fontWeight: 700, marginBottom: '1rem', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <CheckCircle size={20} /> DO (Nên Làm)
+            </h3>
+            <ul style={{ paddingLeft: '1.2rem', color: '#15803d', display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: 0 }}>
+              <li>Ghi theo cấu trúc: <strong>[Tình trạng] - [Vấn đề mắc phải] - [Hành động tiếp theo]</strong>.</li>
+              <li><em>Ví dụ: "Đã gọi. Khách ưng Tour Nhật nhưng cấn lịch bay con nhỏ. HẸN LẠI SÁNG THỨ 6 GỌI."</em></li>
+            </ul>
+          </div>
+
+          <div style={{ flex: 1, minWidth: '250px', background: '#fef2f2', padding: '1.5rem', borderRadius: '12px', border: '1px solid #fecaca' }}>
+            <h3 style={{ color: '#991b1b', fontWeight: 700, marginBottom: '1rem', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <XCircle size={20} /> DON'T (Tuyệt Đối Cấm)
+            </h3>
+            <ul style={{ paddingLeft: '1.2rem', color: '#b91c1c', display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: 0 }}>
+              <li>Viết cẩu thả, vô hồn chỉ để lấy KPI.</li>
+              <li><em>Ví dụ SAI: "Đã gọi", "Đang bận", "Có số điện thoại", "Zalo ko rep".</em> Mọi Note vô nghĩa sẽ bị hệ thống đánh dấu Zero Effort.</li>
+            </ul>
+          </div>
         </div>
-        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
-          Quản lý sẽ xem lịch sử Notes để đánh giá độ nỗ lực của Sale. Lịch sử Notes sẽ không bao giờ bị xóa.
-        </p>
       </section>
 
       {/* STEP 4 */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
           <StepBadge num="4" />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Chốt Đơn & Chuyển đổi thành Khách Hàng</h2>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Convert Chuyển Đổi (CHỐT ĐƠN)</h2>
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Khi khách đồng ý chốt đi Tour và chuần bị chuyển khoản cọc, đây là lúc bạn <strong>Convert (Chuyển đổi)</strong> Lead này. 
+          Bước cuối cùng và quan trọng nhất của Sale. Nút Convert (Icon 👤+ Mũi tên chéo) là vạch đích của dây chuyền Lead.
         </p>
+
+        <div style={{ padding: '1rem 1.5rem', background: '#eff6ff', borderLeft: '4px solid #3b82f6', borderRadius: '4px', color: '#1e3a8a', marginBottom: '1.5rem' }}>
+          <strong>LƯU Ý NGHIÊM NGẶT:</strong> Chỉ BẤM Convert khi Khách chắc chắn đi và <strong>ĐÃ CHUYỂN KHOẢN CỌC</strong> hoặc xuất mã Pay. KHÔNG ĐƯỢC bấm Convert để "dọn dẹp" bảng Lead. Làm vậy Kế toán sẽ réo tên bạn.
+        </div>
+
         <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#475569', fontSize: '1.05rem' }}>
-          <li>Nhấn vào biểu tượng <strong>👤+ (Hình người có dấu cộng)</strong> ở cột cuối cùng.</li>
-          <li>Hệ thống khóa trạng thái Lead này vĩnh viễn hành <strong>"Chốt đơn"</strong>.</li>
-          <li>Đồng thời, hệ thống tự động bốc tất cả dữ liệu (Số điện thoại, Notes, Profile Facebook) và đẻ ra 1 Hồ Sơ mới tại bảng <strong>Danh Mục Khách Hàng</strong>.</li>
-          <li>Từ lúc này, bạn chuyển sang bộ phận Điều hành / Kế toán tạo Đơn hàng (Booking) mà hoàn toàn không cần phải nhập tay lại thông tin khách.</li>
+          <li>Khi bấm Convert, dữ kiện này ngay lập tức bắn tít sang CAPI của mạng Meta Facebook để <strong>máy học AI chạy Ads tìm người tương tự</strong>.</li>
+          <li>Đồng thời, Lead sẽ bị Niêm Phong, không ai được chỉnh sửa nữa. Khách biến hình 100% sang <strong>Danh Mục Khách Hàng Cơ Sở</strong> cùng toàn bộ SĐT, Note, Facebook Link cũ. Dữ liệu trôi chảy hoàn hảo.</li>
         </ul>
+      </section>
+
+    </div>
+  </>
+);
+
+const ManualLeadsGuide = () => (
+  <>
+    <div style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.4)' }}>
+      <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.5px' }}>HDSD: Tính Năng Lead Marketing</h1>
+      <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '650px', lineHeight: 1.6 }}>
+        Cẩm nang khám phá mọi ngóc ngách tính năng của bảng Lead. Dành cho nhân viên mới để làm quen với giao diện, các bộ lọc, và thao tác nhanh (phím tắt, click inline).
+      </p>
+    </div>
+
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      
+      {/* PHẦN 1 */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="1" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Cách đọc Bảng Điều Khiển (Dashboard)</h2>
+        </div>
+        
+        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+          <div style={{ flex: 1, minWidth: '300px' }}>
+            <h3 style={{ color: '#0f172a', fontWeight: 700, margin: '0 0 1rem 0', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <BarChart2 size={20} color="#3b82f6" /> Biểu Đồ Phễu
+            </h3>
+            <p style={{ color: '#475569', lineHeight: 1.6 }}>
+              Phía trên cùng màn hình là 4 hộp số liệu. Chúng hoạt động như một cái "Phễu Gà Đẻ Trứng Vàng":
+              <br/><br/>
+              - <strong>Tổng Lead:</strong> Đầu vào của phễu.<br/>
+              - <strong>Mới & Đang tư vấn:</strong> Ruột phễu, nơi bạn đang gồng mình cày kéo.<br/>
+              - <strong>Đã Chốt:</strong> Đầu ra của phễu (Tiền!). Cố gắng đẩy cái phễu này càng to càng tốt.
+            </p>
+          </div>
+          <div style={{ flex: 1, minWidth: '300px' }}>
+            <h3 style={{ color: '#0f172a', fontWeight: 700, margin: '0 0 1rem 0', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <Search size={20} color="#8b5cf6" /> Thanh Công Cụ (Toolbar)
+            </h3>
+            <p style={{ color: '#475569', lineHeight: 1.6 }}>
+              Ngay dưới biểu đồ là dải Thanh công cụ. Ở đây bạn có nút Export Excel (Chỉ Quản lý mới dùng được) và ô Tìm kiếm thần tốc.<br/><br/>
+              <strong>Mẹo tìm kiếm:</strong> Bạn có thể gõ lỳ số điện thoại (VD: 0988) hoặc gõ thẳng tên khách (VD: Chú Hoàng) vào để tra. Nó nhảy ra kết quả ngay lập tức không cần bấm nút Enter!
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* PHẦN 2 */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="2" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Sức Mạnh Của "Bộ Lọc Đa Chiều"</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Tuyệt chiêu để lọc 1000 khách rác ra còn 10 khách ruột. Bấm vào nút <Filter size={18} style={{display: 'inline-block', verticalAlign: 'middle', margin: '0 4px'}} /> <strong>Bộ Lọc</strong> ở góc phải.
+        </p>
+
+        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#475569', fontSize: '1.05rem', marginBottom: '1.5rem' }}>
+          <li><strong>Lọc theo Thời Khoảng (Date range):</strong> Mặc định nó chỉ hiện tháng này. Bạn dùng chức năng "Tùy chọn" để chọn lịch từ năm trước đến năm sau nếu muốn xới củ lại khách cũ.</li>
+          <li><strong>Lọc theo Trạng thái:</strong> Rất hiệu quả! Bạn check vào "Đang tư vấn" và "Sắp chốt" để nó in ra cục tệp nóng nhất cần xử lý ngay hôm nay. Bỏ tích "Thất bại" để đỡ chướng mắt.</li>
+          <li><strong>Lọc theo Sale chăm sóc:</strong> Trưởng phòng có thể vào xem trộm nhân viên của mình đang lưu những ai, gọi được mấy khách.</li>
+        </ul>
+      </section>
+
+      {/* PHẦN 3 */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="3" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Thao Tác Nhanh (Inline-Actions)</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Dành riêng cho các Cỗ máy Sale múa phím. Không cần mở form điền nặng nề, bạn có thể:
+        </p>
+
+        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '300px', background: '#eff6ff', padding: '1.5rem', borderRadius: '12px' }}>
+            <h3 style={{ color: '#1e3a8a', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <Edit3 size={18} color="#2563eb" /> Sửa Trực Tiếp (Inline Edit)
+            </h3>
+            <p style={{ color: '#1e40af', margin: 0, fontSize: '0.95rem' }}>
+              Bạn có thể nhấp đúp vào ô <strong>Số Điện Thoại</strong> hoặc dropdown <strong>Trạng thái</strong> ngay trên cái bảng (giống hệt xài Excel). Sửa xong nó hiện dấu tick xanh lưu luôn cái vèo!
+            </p>
+          </div>
+          <div style={{ flex: 1, minWidth: '300px', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ color: '#0f172a', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <Copy size={18} color="#475569" /> Copy Nhanh Mọi Thứ
+            </h3>
+            <p style={{ color: '#475569', margin: 0, fontSize: '0.95rem' }}>
+              Mỗi dòng Số điện thoại đều có icon vuông nhỏ bên cạnh. Bấm vào là máy tự động chép số người đó vào bộ nhớ. Bạn dán ra zalo search khách siêu tốc.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* PHẦN 4 */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="4" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Giải Nghĩa 4 Phím Ma Thuật (Cột Cuối)</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Bên cột ngoài cùng là khu căn cứ điểm của Sale, nó gồm 4 chức năng chính:
+        </p>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+          <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <strong>🖊️ (Chỉnh sửa Form)</strong><br/>
+            Dùng khi bạn muốn vào hẳn hồ sơ to để sửa Email, Facebook URL, Cấp độ, Sản phẩm quan tâm, hoặc gán khách này cho sếp chăm.
+          </div>
+          <div style={{ background: '#fdf4ff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #fbcfe8' }}>
+            <strong>💬 (Nhật Ký - Notes)</strong><br/>
+            Dùng để bật nhanh Modal chat để viết ghi chú tình hình con bệnh. Lịch sử ko bị xóa bao giờ.
+          </div>
+          <div style={{ background: '#f0fdf4', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+            <strong>👤+ (Convert Chốt Đơn)</strong><br/>
+            Nút NGUY HIỂM. Bấm vào là trôi mất dữ kiện bay thẳng sang Data Khách Hàng cho Kế toán bắt đầu thu cọc.
+          </div>
+          <div style={{ background: '#fef2f2', padding: '1.5rem', borderRadius: '12px', border: '1px solid #fecaca' }}>
+            <strong>🗑️ (Xóa / Ẩn Vĩnh Viễn)</strong><br/>
+            Nếu là Lead Rác (Khách mắng, Khách ảo nhắn sai số), bấm xóa cái rụp đi cho nhẹ bảng báo cáo.
+          </div>
+        </div>
       </section>
 
     </div>
@@ -348,7 +520,9 @@ const ManualTab = () => {
 
   const renderContent = () => {
     switch (subtab) {
-      case 'leads': return <ManualLeads />;
+      case 'leads':
+      case 'leads-sop': return <ManualLeadsSOP />;
+      case 'leads-guide': return <ManualLeadsGuide />;
       case 'customers': return <ManualCustomers />;
       case 'bookings': return <ManualBookings />;
       case 'tours': return <ManualTours />;

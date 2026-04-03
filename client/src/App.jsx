@@ -335,7 +335,7 @@ function AppContent() {
   // Sync activeTab with URL
   useEffect(() => {
     const path = location.pathname.substring(1).split('/')[0];
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {
@@ -1524,8 +1524,11 @@ function AppContent() {
           <div className={`nav-item ${activeTab === 'manual' && (!pathParts[1] || pathParts[1] === 'overview') ? 'active' : ''}`} onClick={() => navigate('/manual/overview')}>
             <BookOpen size={18} /> Phân quyền & Giới thiệu
           </div>
-          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'leads' ? 'active' : ''}`} onClick={() => navigate('/manual/leads')} style={{ paddingLeft: '2.5rem' }}>
-            <Target size={16} opacity={0.7} /> Lead Marketing
+          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'leads-sop' ? 'active' : ''}`} onClick={() => navigate('/manual/leads-sop')} style={{ paddingLeft: '2.5rem' }}>
+            <Shield size={16} opacity={0.7} /> Lead - Quy Định (SOP)
+          </div>
+          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'leads-guide' ? 'active' : ''}`} onClick={() => navigate('/manual/leads-guide')} style={{ paddingLeft: '2.5rem' }}>
+            <Target size={16} opacity={0.7} /> Lead - HD Sử Dụng
           </div>
           <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'customers' ? 'active' : ''}`} onClick={() => navigate('/manual/customers')} style={{ paddingLeft: '2.5rem' }}>
             <Users size={16} opacity={0.7} /> Danh mục Khách hàng
