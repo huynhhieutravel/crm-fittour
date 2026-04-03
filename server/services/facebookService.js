@@ -61,11 +61,11 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
             const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [currentLeadId]);
             if (leadRes.rows.length > 0) {
                 const oldLead = leadRes.rows[0];
-                const createdDaysAgo = (Date.now() - new Date(oldLead.created_at).getTime()) / (1000 * 3600 * 24);
 
-                // NẾU LUỒNG CŨ ĐÃ ĐÓNG (Chốt đơn/Thất bại) HOẶC ĐÃ QUÁ LÂU (>30 ngày) -> TƯỞNG CẬP LÀ DEAL MỚI!
-                if (['Chốt đơn', 'Thất bại'].includes(oldLead.status) || createdDaysAgo > 30) {
-                    console.log(`[WEBHOOK] Khách quen nhắn lại: ${oldLead.name}. Đang tạo Lead mới...`);
+                // NẾU LUỒNG CŨ ĐÃ ĐÓNG (Chốt đơn/Thất bại) -> TẠO DEAL MỚI
+                // (Bỏ logic 30 ngày — nếu khách cũ nhắn lại mà lead vẫn active thì chỉ cập nhật)
+                if (['Chốt đơn', 'Thất bại'].includes(oldLead.status)) {
+                    console.log(`[WEBHOOK] Khách quen nhắn lại (Lead đã đóng): ${oldLead.name}. Đang tạo Lead mới...`);
                     const newLeadResult = await db.query(
                         'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4 LIMIT 1), $5, $6) RETURNING *',
                         [oldLead.name, 'Messenger', 'Mới', sender_psid, oldLead.phone, oldLead.email]
@@ -79,7 +79,6 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
                 } else {
                     // LUỒNG VẪN ĐANG ACTIVE -> Chỉ cập nhật ngày tháng
                     leadId = currentLeadId;
-                    // Mẹo: Cập nhật created_at lên NOW() để nó nhảy hẳn lên ĐẦU danh sách Lead cho Sale thấy
                     await db.query('UPDATE leads SET created_at = NOW(), last_contacted_at = NOW() WHERE id = $1', [leadId]);
                     await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [received_message.text, conversationId]);
                 }
@@ -340,86 +339,92 @@ exports.syncRecentConversations = async () => {
         if (!res.data || !res.data.data) return;
 
         for (const conv of res.data.data) {
-            const participants = conv.participants?.data || [];
-            // Tìm user (loại trừ Page hiện tại)
-            const user = participants.find(p => p.id !== pageId);
-            if (!user) continue;
+            try {
+                const participants = conv.participants?.data || [];
+                // Tìm user (loại trừ Page hiện tại)
+                const user = participants.find(p => p.id !== pageId);
+                if (!user) continue;
 
-            const psid = user.id;
+                const psid = user.id;
+                const userName = user.name || 'Khách hàng Messenger';
 
-            // Trích xuất tin nhắn do chính User gửi để phòng hờ chặn Webhook
-            const messagesList = conv.messages?.data || [];
-            const userMsgObj = messagesList.find(m => m.from && m.from.id === psid);
-            const firstMessageNote = userMsgObj ? `Facebook Message: "${userMsgObj.message}"` : null;
+                // Trích xuất tin nhắn do chính User gửi để phòng hờ chặn Webhook
+                const messagesList = conv.messages?.data || [];
+                const userMsgObj = messagesList.find(m => m.from && m.from.id === psid);
+                const actualMessageText = userMsgObj && userMsgObj.message ? userMsgObj.message : '(Hình ảnh/Đính kèm)';
+                const firstMessageNote = userMsgObj ? `Facebook Message: "${actualMessageText}"` : null;
 
-            // Kéo hội thoại từ DB xem đã có chưa
-            const convRes = await db.query('SELECT * FROM conversations WHERE external_id = $1', [psid]);
-            
-            if (convRes.rows.length === 0) {
-                console.log(`[FB POLLER] Phát hiện khách mới chat với Fanpage: ${user.name}. Đang tạo Lead...`);
-                // Tạo Lead mới tinh (Kèm kiểm tra PSID dò Khách Quen)
-                const leadResult = await db.query(
-                    'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id) VALUES ($1, $2, $3, $4, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $6 LIMIT 1)) RETURNING *',
-                    [user.name, 'Messenger', 'Mới', psid, firstMessageNote, psid]
-                );
+                // Kéo hội thoại từ DB xem đã có chưa
+                const convRes = await db.query('SELECT * FROM conversations WHERE external_id = $1', [psid]);
+                
+                if (convRes.rows.length === 0) {
+                    console.log(`[FB POLLER] Phát hiện khách mới chat với Fanpage: ${userName}. Đang tạo Lead...`);
+                    // Tạo Lead mới tinh (Kèm kiểm tra PSID dò Khách Quen)
+                    const leadResult = await db.query(
+                        'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id) VALUES ($1, $2, $3, $4, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $6 LIMIT 1)) RETURNING *',
+                        [userName, 'Messenger', 'Mới', psid, firstMessageNote, psid]
+                    );
 
-                // --- Đưa tin nhắn vào Module Messenger để tư vấn viên xem được ---
-                if (userMsgObj) {
+                    // --- LUÔN tạo Conversation để tránh tạo Lead trùng lặp mỗi lần poll ---
+                    const messageForConv = actualMessageText || '(Khách mới nhắn tin)';
                     const newConv = await db.query(
                         'INSERT INTO conversations (source, external_id, lead_id, last_message) VALUES ($1, $2, $3, $4) RETURNING id',
-                        ['messenger', psid, leadResult.rows[0].id, userMsgObj.message]
+                        ['messenger', psid, leadResult.rows[0].id, messageForConv]
                     );
                     const conversationId = newConv.rows[0].id;
-                    await db.query(
-                        'INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)',
-                        [conversationId, 'customer', userMsgObj.message]
+                    if (userMsgObj) {
+                        await db.query(
+                            'INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)',
+                            [conversationId, 'customer', actualMessageText]
+                        );
+                    }
+
+                    // Kích hoạt CAPI
+                    metaCapi.sendLeadEvent(leadResult.rows[0]).catch(err => 
+                        console.error('[CAPI] Lỗi khi gửi sự kiện Lead từ Poller:', err.message)
                     );
-                }
-
-                // Kích hoạt CAPI
-                metaCapi.sendLeadEvent(leadResult.rows[0]).catch(err => 
-                    console.error('[CAPI] Lỗi khi gửi sự kiện Lead từ Poller:', err.message)
-                );
-            } else {
-                // ĐÃ CÓ CONVERSATION
-                const oldConv = convRes.rows[0];
-                
-                // Cờ kiểm tra: Nếu user Msg cuối cùng không khớp Last message (tức là webhook bị nghẽn chưa catch)
-                if (userMsgObj && userMsgObj.message !== oldConv.last_message) {
+                } else {
+                    // ĐÃ CÓ CONVERSATION
+                    const oldConv = convRes.rows[0];
                     
-                    const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [oldConv.lead_id]);
-                    if (leadRes.rows.length > 0) {
-                        const oldLead = leadRes.rows[0];
-                        const createdDaysAgo = (Date.now() - new Date(oldLead.created_at).getTime()) / (1000 * 3600 * 24);
+                    // Cờ kiểm tra: Nếu user Msg cuối cùng không khớp Last message (tức là webhook bị nghẽn chưa catch)
+                    if (userMsgObj && actualMessageText !== oldConv.last_message) {
+                        
+                        const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [oldConv.lead_id]);
+                        if (leadRes.rows.length > 0) {
+                            const oldLead = leadRes.rows[0];
 
-                        if (['Chốt đơn', 'Thất bại'].includes(oldLead.status) || createdDaysAgo > 30) {
-                            console.log(`[FB POLLER] Phát hiện KHÁCH QUEN CŨ nhắn Fanpage: ${user.name}. Tạo vòng đời Lead mới...`);
-                            const newLeadResult = await db.query(
-                                'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4 LIMIT 1), $5, $6) RETURNING *',
-                                [user.name, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email]
-                            );
-                            
-                            await db.query('UPDATE conversations SET lead_id = $1, last_message = $2, updated_at = NOW() WHERE id = $3', [newLeadResult.rows[0].id, userMsgObj.message, oldConv.id]);
-                            await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', userMsgObj.message]);
+                            // Chỉ tạo Lead mới nếu Lead cũ ĐÃ ĐÓNG (Chốt đơn / Thất bại)
+                            if (['Chốt đơn', 'Thất bại'].includes(oldLead.status)) {
+                                console.log(`[FB POLLER] Phát hiện KHÁCH QUEN CŨ (Lead đã đóng) nhắn Fanpage: ${userName}. Tạo Lead mới...`);
+                                const newLeadResult = await db.query(
+                                    'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4 LIMIT 1), $5, $6) RETURNING *',
+                                    [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email]
+                                );
+                                
+                                await db.query('UPDATE conversations SET lead_id = $1, last_message = $2, updated_at = NOW() WHERE id = $3', [newLeadResult.rows[0].id, actualMessageText, oldConv.id]);
+                                await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', actualMessageText]);
 
-                            metaCapi.sendLeadEvent(newLeadResult.rows[0]).catch(err => console.error(err));
+                                metaCapi.sendLeadEvent(newLeadResult.rows[0]).catch(err => console.error(err));
+                            } else {
+                                // Lead vẫn Active => Nổi lên đầu mảng
+                                await db.query('UPDATE leads SET created_at = NOW(), last_contacted_at = NOW() WHERE id = $1', [oldLead.id]);
+                                await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [actualMessageText, oldConv.id]);
+                                await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', actualMessageText]);
+                            }
                         } else {
-                            // Lead vẫn Active => Nổi lên đầu mảng
-                            await db.query('UPDATE leads SET created_at = NOW(), last_contacted_at = NOW() WHERE id = $1', [oldLead.id]);
-                            await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [userMsgObj.message, oldConv.id]);
-                            await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', userMsgObj.message]);
+                            // Kẹt lead, update bình thường
+                            await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [actualMessageText, oldConv.id]);
+                            await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', actualMessageText]);
                         }
-                    } else {
-                        // Kẹt lead, update bình thường
-                        await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [userMsgObj.message, oldConv.id]);
-                        await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', userMsgObj.message]);
                     }
                 }
+            } catch (innerError) {
+                console.error('[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp:', innerError.message);
             }
-
         }
     } catch (error) {
-        console.error('[FB POLLER] Lỗi đồng bộ cuộc trò chuyện:', error.message);
+        console.error('[FB POLLER] Lỗi tổng lấy dữ liệu Facebook API:', error.message);
     }
 };
 
