@@ -47,6 +47,8 @@ exports.createLead = async (req, res) => {
             }
         }
 
+        const finalStatus = req.body.status || 'Mới';
+
         const result = await db.query(
             'INSERT INTO leads (name, phone, email, source, tour_id, assigned_to, status, consultation_note, bu_group, gender, birth_date, classification, last_contacted_at, facebook_psid, meta_lead_id, fbclid, customer_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *',
             [
@@ -139,7 +141,7 @@ exports.updateLead = async (req, res) => {
 
             if (updateFields.length > 0) {
             queryValues.push(leadId);
-            console.log('QUERY IS: ', `UPDATE leads SET ${updateFields.join(', ')}`); const updateQuery = `UPDATE leads SET ${updateFields.join(', ')}, updated_at = NOW() WHERE id = $${queryValues.length} RETURNING *`;
+            const updateQuery = `UPDATE leads SET ${updateFields.join(', ')}, updated_at = NOW() WHERE id = $${queryValues.length} RETURNING *`;
             const result = await client.query(updateQuery, queryValues);
             let updatedLead = result.rows[0];
 
@@ -250,7 +252,7 @@ exports.deleteLead = async (req, res) => {
 
 exports.getLeadStats = async (req, res) => {
     try {
-        const { startDate, endDate, buGroup } = req.query;
+        const { startDate, endDate, buGroup, groupBy } = req.query;
         
         let leadWhere = 'WHERE 1=1';
         let joinLeadWhere = '1=1';
@@ -348,6 +350,61 @@ exports.getLeadStats = async (req, res) => {
             GROUP BY classification
         `, params);
 
+        // 9. Time Series Stats (Grouped by Period and Status)
+        let timeSeriesStats = [];
+        if (groupBy) {
+            const { tsStartDate, tsEndDate } = req.query;
+            let tsJoinWhere = '1=1';
+            const tsParams = [];
+            const actualTsStart = tsStartDate || startDate;
+            const actualTsEnd = tsEndDate || endDate;
+
+            if (actualTsStart) {
+                tsParams.push(actualTsStart);
+                tsJoinWhere += ` AND l.created_at >= $${tsParams.length}`;
+            }
+            if (actualTsEnd) {
+                tsParams.push(actualTsEnd + ' 23:59:59');
+                tsJoinWhere += ` AND l.created_at <= $${tsParams.length}`;
+            }
+            if (buGroup) {
+                tsParams.push(buGroup);
+                tsJoinWhere += ` AND l.bu_group = $${tsParams.length}`;
+            }
+
+            let periodSQL = "TO_CHAR(DATE(l.created_at), 'YYYY-MM-DD')";
+            if (groupBy === 'week') {
+                periodSQL = "TO_CHAR(DATE_TRUNC('week', l.created_at), 'YYYY-MM-DD')";
+            } else if (groupBy === 'month') {
+                periodSQL = "TO_CHAR(DATE_TRUNC('month', l.created_at), 'YYYY-MM')";
+            }
+            
+            const tsQuery = `
+                SELECT 
+                    ${periodSQL} as period,
+                    l.status,
+                    COUNT(*)::int as count
+                FROM leads l
+                WHERE ${tsJoinWhere}
+                GROUP BY 1, l.status
+                ORDER BY 1
+            `;
+            const tsRes = await db.query(tsQuery, tsParams);
+            
+            // Pivot the data by period
+            const pivotMap = {};
+            tsRes.rows.forEach(row => {
+                if (!pivotMap[row.period]) {
+                    pivotMap[row.period] = { period: row.period };
+                }
+                const statusName = row.status || 'Chưa xác định';
+                pivotMap[row.period][statusName] = row.count;
+                // Accumulate totals
+                pivotMap[row.period].totalCount = (pivotMap[row.period].totalCount || 0) + row.count;
+            });
+            timeSeriesStats = Object.values(pivotMap);
+        }
+
         res.json({
             statusStats: statusStats.rows,
             sourceStats: sourceStats.rows,
@@ -356,7 +413,8 @@ exports.getLeadStats = async (req, res) => {
             destinationStats: destinationStats.rows,
             careStats: careStats.rows,
             recentLeads: recentLeads.rows,
-            classificationStats: classificationStats.rows
+            classificationStats: classificationStats.rows,
+            timeSeriesStats: timeSeriesStats
         });
     } catch (err) {
         console.error('Get Lead Stats Error:', err);
@@ -400,7 +458,7 @@ exports.bulkUpdateLeads = async (req, res) => {
 
             if (updateFields.length > 0) {
                 queryValues.push(leadId);
-                console.log('QUERY IS: ', `UPDATE leads SET ${updateFields.join(', ')}`); const updateQuery = `UPDATE leads SET ${updateFields.join(', ')}, updated_at = NOW() WHERE id = $${queryValues.length} RETURNING *`;
+                const updateQuery = `UPDATE leads SET ${updateFields.join(', ')}, updated_at = NOW() WHERE id = $${queryValues.length} RETURNING *`;
                 const result = await client.query(updateQuery, queryValues);
                 const updatedLead = result.rows[0];
 

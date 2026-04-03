@@ -61,6 +61,10 @@ app.use('/api/meta/catalog', catalogRoutes);
 app.use('/api/costings', costingRoutes);
 app.use('/api/reminders', reminderRoutes);
 
+const dashboardRoutes = require('./routes/dashboard');
+
+app.use('/api/dashboard', dashboardRoutes);
+
 app.get('/', (req, res) => {
     res.send('FIT Tour CRM API is running...');
 });

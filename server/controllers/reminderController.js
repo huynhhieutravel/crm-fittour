@@ -6,14 +6,21 @@ exports.getTodayReminders = async (req, res) => {
         // Chúng ta lấy nhắc nhở cho sale cụ thể, mà due_date tới hạn (<= hôm nay) và chưa completed
         const result = await db.query(`
             SELECT br.*, 
-                   b.booking_code,
-                   c.name as customer_name, c.phone as customer_phone,
-                   td.start_date, td.end_date, t.name as tour_name
-            FROM booking_reminders br
-            JOIN bookings b ON br.booking_id = b.id
-            JOIN customers c ON br.customer_id = c.id
-            JOIN tour_departures td ON b.tour_departure_id = td.id
-            JOIN tour_templates t ON td.tour_template_id = t.id
+                   tt.name as tour_name,
+                   td.start_date, td.end_date,
+                   COALESCE(td.code, CONCAT('DEP-', td.id)) as booking_code,
+                   COALESCE(first_cust.name, 'Chưa có khách') as customer_name,
+                   COALESCE(first_cust.phone, '') as customer_phone
+            FROM departure_reminders br
+            JOIN tour_departures td ON br.tour_departure_id = td.id
+            JOIN tour_templates tt ON td.tour_template_id = tt.id
+            LEFT JOIN LATERAL (
+                SELECT c.name, c.phone 
+                FROM bookings b 
+                JOIN customers c ON b.customer_id = c.id 
+                WHERE b.tour_departure_id = td.id 
+                LIMIT 1
+            ) first_cust ON true
             WHERE br.assigned_to = $1 
               AND br.status = 'PENDING'
               AND br.due_date <= CURRENT_DATE

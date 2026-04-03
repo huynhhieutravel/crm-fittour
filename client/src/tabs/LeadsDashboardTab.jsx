@@ -24,12 +24,16 @@ import {
   ResponsiveContainer,
   Tooltip,
   Legend,
+  ComposedChart,
+  Line,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   LabelList,
+  AreaChart,
+  Area
 } from "recharts";
 
 const LeadsDashboardTab = ({ setEditingLead }) => {
@@ -88,11 +92,15 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
           break;
         case "week":
           const day = start.getDay() || 7;
-          if (day !== 1) start.setHours(-24 * (day - 1));
+          start.setDate(start.getDate() - (day - 1));
           start.setHours(0, 0, 0, 0);
+          end = new Date(start);
+          end.setDate(end.getDate() + 6);
+          end.setHours(23, 59, 59, 999);
           break;
         case "month":
           start = new Date(now.getFullYear(), now.getMonth(), 1);
+          end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
           break;
         case "month-select":
           start = new Date(selectedYear, selectedMonth, 1);
@@ -131,6 +139,18 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
       if (startDate) params.append("startDate", startDate);
       if (endDate) params.append("endDate", endDate);
 
+      // Determine groupBy based on dateFilter
+      let groupBy = "day";
+      if (["quarter", "year"].includes(dateFilter)) groupBy = "month";
+      params.append("groupBy", groupBy);
+
+      if (dateFilter === "today" || dateFilter === "yesterday") {
+        const d = new Date(endDate.split(' ')[0]);
+        d.setDate(d.getDate() - 6);
+        params.append("tsStartDate", formatLocalDate(d));
+        params.append("tsEndDate", endDate);
+      }
+
       const res = await axios.get(`/api/leads/stats?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -143,14 +163,15 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
   };
 
   useEffect(() => {
-    const quickFilters = ["today", "yesterday", "week", "month"];
-    if (quickFilters.includes(dateFilter)) {
+    if (dateFilter !== "custom") {
       fetchStats();
     }
-  }, [dateFilter]);
+  }, [dateFilter, selectedMonth, selectedQuarter, selectedYear]);
 
   useEffect(() => {
-    fetchStats();
+    if (dateFilter === "custom") {
+      fetchStats();
+    }
   }, []);
 
   if (loading || !stats) {
@@ -177,6 +198,83 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
     totalLeads > 0 ? ((wonLeads / totalLeads) * 100).toFixed(1) : 0;
   const newLeads =
     stats.statusStats.find((s) => s.status === "Mới")?.count || 0;
+
+  // Process time series for chart and fill gaps
+  const { startDate, endDate } = getDateRange(dateFilter);
+  let rawTimeSeries = stats.timeSeriesStats || [];
+  
+  let chartStartDate = startDate;
+  let chartEndDate = endDate;
+
+  if (dateFilter === "today" || dateFilter === "yesterday") {
+      const d = new Date(endDate.split(' ')[0]);
+      d.setDate(d.getDate() - 6);
+      chartStartDate = formatLocalDate(d);
+  }
+
+  if (chartStartDate && chartEndDate && ["today", "yesterday", "week", "month", "month-select", "custom"].includes(dateFilter)) {
+    const filled = [];
+    let current = new Date(chartStartDate + 'T00:00:00');
+    const end = new Date(chartEndDate.split(' ')[0] + 'T00:00:00');
+    const rawMap = {};
+    rawTimeSeries.forEach(r => rawMap[r.period] = r);
+    
+    while (current <= end) {
+      const pStr = formatLocalDate(current);
+      if (rawMap[pStr]) {
+        filled.push(rawMap[pStr]);
+      } else {
+        filled.push({ period: pStr, totalCount: 0 });
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    rawTimeSeries = filled;
+  } else if (chartStartDate && chartEndDate && ["quarter", "year"].includes(dateFilter)) {
+    const filled = [];
+    let current = new Date(chartStartDate + 'T00:00:00');
+    current.setDate(1);
+    const end = new Date(chartEndDate.split(' ')[0] + 'T00:00:00');
+    end.setDate(1);
+    const rawMap = {};
+    rawTimeSeries.forEach(r => rawMap[r.period] = r);
+    
+    while (current <= end) {
+      const y = current.getFullYear();
+      const m = String(current.getMonth() + 1).padStart(2, '0');
+      const pStr = `${y}-${m}`;
+      if (rawMap[pStr]) {
+        filled.push(rawMap[pStr]);
+      } else {
+        filled.push({ period: pStr, totalCount: 0 });
+      }
+      current.setMonth(current.getMonth() + 1);
+    }
+    rawTimeSeries = filled;
+  }
+  
+  const processedTimeSeries = rawTimeSeries;
+  const statusKeys = new Set();
+  processedTimeSeries.forEach(item => {
+    Object.keys(item).forEach(k => {
+      if (k !== 'period' && k !== 'totalCount') statusKeys.add(k);
+    });
+  });
+  // Sort statuses to make 'Mới' appear first (bottom of stack)
+  const sortedStatuses = Array.from(statusKeys).sort((a,b) => {
+    if(a === 'Mới') return -1;
+    if(b === 'Mới') return 1;
+    return a.localeCompare(b);
+  });
+  
+  const STATUS_COLORS = {
+    "Mới": "#3b82f6", // blue
+    "Đang tư vấn": "#f59e0b", // yellow
+    "Chốt đơn": "#10b981", // green
+    "Thất bại": "#ef4444", // red
+    "Chăm sóc lại": "#8b5cf6", // purple
+    "Chưa tiếp cận": "#ec4899", // pink
+    "Chưa xác định": "#94a3b8" // slate
+  };
 
   const monthOptions = [
     "Tháng 1",
@@ -324,7 +422,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
             )}
 
             {/* Final Action */}
-            {advancedFilters.includes(dateFilter) && (
+            {dateFilter === "custom" && (
               <button onClick={fetchStats} className="confirm-btn-premium">
                 <Filter size={14} />
                 <span>Xác nhận</span>
@@ -397,6 +495,101 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
               <CheckCircle size={14} />
               <span>Đã chốt đơn</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Analytics Grid - Row 0: Time Series Chart */}
+      <div className="mb-16 flex w-full">
+        <div className="analytics-card professional flex-1 w-full">
+          <div className="card-header">
+            <div>
+              <h3>Xu hướng Lead theo thời gian {
+                dateFilter === 'month-select' ? `(Tháng ${selectedMonth}/${selectedYear})` : 
+                dateFilter === 'month' ? `(Tháng ${new Date().getMonth() + 1}/${new Date().getFullYear()})` : 
+                dateFilter === 'quarter' ? `(Quý ${selectedQuarter}/${selectedYear})` :
+                dateFilter === 'year' ? `(Năm ${selectedYear})` : ''
+              }</h3>
+              <p className="card-subtitle">So sánh tốc độ thu thập Lead qua các {dateFilter === 'quarter' || dateFilter === 'year' ? 'tháng' : 'ngày'}</p>
+            </div>
+            <BarChart3 size={20} className="text-blue-500" />
+          </div>
+          <div className="mt-6" style={{ height: "350px", width: "100%" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart
+                data={processedTimeSeries}
+                margin={{ top: 30, right: 30, left: 10, bottom: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis 
+                  dataKey="period" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 12, fill: "#64748b" }} 
+                  dy={10}
+                  interval={0}
+                  tickFormatter={(val) => {
+                    if (!val) return "";
+                    if (typeof val === 'string' && val.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                      const d = new Date(val);
+                      const parts = val.split('-');
+                      if (['month', 'month-select'].includes(dateFilter)) {
+                        return parseInt(parts[2], 10).toString();
+                      } else {
+                        const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+                        const dayName = days[d.getDay()];
+                        return `${dayName} (${parts[2]}/${parts[1]})`;
+                      }
+                    }
+                    if (typeof val === 'string' && val.match(/^\d{4}-\d{2}$/)) {
+                       const parts = val.split('-');
+                       return `Tháng ${parts[1]}/${parts[0]}`;
+                    }
+                    return val;
+                  }}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 12, fill: "#64748b" }} 
+                />
+                <Tooltip 
+                  cursor={{ fill: "#f8fafc" }}
+                  contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)" }}
+                />
+                <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: "13px", fontWeight: "500", color: "#475569" }}/>
+                {sortedStatuses.map((status, idx) => (
+                  <Bar 
+                    key={status} 
+                    dataKey={status} 
+                    name={status} 
+                    stackId="a" 
+                    fill={STATUS_COLORS[status] || COLORS[idx % COLORS.length]} 
+                    radius={idx === sortedStatuses.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                    maxBarSize={60}
+                    isAnimationActive={false}
+                  />
+                ))}
+                
+                {/* Invisible line solely for rendering total values on top of the stacked bars */}
+                <Line 
+                  type="monotone" 
+                  dataKey="totalCount" 
+                  stroke="transparent" 
+                  dot={false} 
+                  activeDot={false} 
+                  isAnimationActive={false}
+                  tooltipType="none"
+                >
+                  <LabelList 
+                    dataKey="totalCount" 
+                    position="top" 
+                    fill="#334155" 
+                    style={{ fontSize: "13px", fontWeight: "800" }}
+                  />
+                </Line>
+              </ComposedChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
