@@ -19,7 +19,11 @@ const MIGRATION_FILES = [
   'migrate_rbac.js',
   'seed_users.js',
   'migration_add_pax_details_to_bookings.js',
-  'migration_performance_indexes.js'
+  'migration_performance_indexes.js',
+  'migration_meta_catalog.js',
+  'migration_cascade_delete_leads.js',
+  'migrations/migration_dynamic_pricing.js',
+  'migrations/migration_phase15_costings.js'
 ];
 
 console.log('🌟 Bắt Đầu Tiến Trình Đồng Bộ Cơ Sở Dữ Liệu (Universal Sync) 🌟');

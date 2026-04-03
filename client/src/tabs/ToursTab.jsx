@@ -83,10 +83,12 @@ const ToursTab = ({
             href={`${window.location.origin}/api/meta/catalog/feed.csv`}
             target="_blank"
             rel="noreferrer"
-            className="login-btn" 
-            style={{ height: '44px', padding: '0 1.5rem', background: '#fffbeb', color: '#d97706', border: '1px solid #f59e0b', textDecoration: 'none', display: 'flex', alignItems: 'center', fontWeight: 'bold' }}
+            title="Tải dữ liệu CSV cho Facebook Catalog"
+            style={{ height: '44px', padding: '0 10px', background: '#f8fafc', color: '#94a3b8', border: '1px solid #e2e8f0', borderRadius: '6px', textDecoration: 'none', display: 'flex', alignItems: 'center', fontSize: '0.75rem', fontWeight: 500, gap: '4px', transition: 'all 0.2s' }}
+            onMouseOver={e => { e.currentTarget.style.color = '#d97706'; e.currentTarget.style.borderColor = '#f59e0b'; }}
+            onMouseOut={e => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
           >
-            📥 TẢI DỮ LIỆU CÀO FACEBOOK (CSV)
+            📥 CSV
           </a>
           <button 
             className="btn-pro-save" 
@@ -190,7 +192,7 @@ const ToursTab = ({
             ))}
             {filteredTours.length === 0 && (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                <td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
                   Không tìm thấy sản phẩm phù hợp.
                 </td>
               </tr>

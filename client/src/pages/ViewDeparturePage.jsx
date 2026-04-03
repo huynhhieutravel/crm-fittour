@@ -10,6 +10,9 @@ const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEdit
   const [linkedBookings, setLinkedBookings] = useState([]);
   const [fullDeparture, setFullDeparture] = useState(null);
   
+  // Costing stats for Financial Box
+  const [costingStats, setCostingStats] = useState(null);
+
   // Reminders state
   const [reminders, setReminders] = useState([]);
   const [loadingReminders, setLoadingReminders] = useState(true);
@@ -42,6 +45,12 @@ const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEdit
     }).then(res => setFullDeparture(res.data))
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
+
+    // Fetch Costings for Financial Dashboard
+    axios.get(`/api/costings/${departureId}`, {
+       headers: { Authorization: `Bearer ${token}` }
+    }).then(res => setCostingStats(res.data))
+      .catch(err => console.error(err));
 
     // Fetch reminders
     setLoadingReminders(true);
@@ -175,21 +184,37 @@ const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEdit
           <ChevronLeft size={20} /> Quay lại danh sách Lịch khởi hành
         </button>
         
-        {handleEditDeparture && (
+        <div style={{ display: 'flex', gap: '10px' }}>
           <button 
-            onClick={() => handleEditDeparture(currentDep)}
-            style={{ 
-              display: 'flex', alignItems: 'center', gap: '6px', 
-              background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px',
-              color: '#334155', fontWeight: 600, fontSize: '0.85rem',
-              cursor: 'pointer', padding: '6px 12px', transition: 'all 0.2s'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = '#e2e8f0'}
-            onMouseLeave={e => e.currentTarget.style.background = '#f1f5f9'}
+             onClick={() => navigate('/costings', { state: { autoOpenDepId: currentDep.id } })}
+             style={{ 
+               display: 'flex', alignItems: 'center', gap: '6px', 
+               background: '#10b981', border: 'none', borderRadius: '6px',
+               color: '#fff', fontWeight: 600, fontSize: '0.85rem',
+               cursor: 'pointer', padding: '6px 12px', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(16,185,129,0.2)'
+             }}
+             onMouseEnter={e => e.currentTarget.style.background = '#059669'}
+             onMouseLeave={e => e.currentTarget.style.background = '#10b981'}
           >
-            <Edit2 size={16} /> Chỉnh sửa thông tin
+             💰 Bảng Dự Toán - P&L
           </button>
-        )}
+          
+          {handleEditDeparture && (
+            <button 
+              onClick={() => handleEditDeparture(currentDep)}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '6px', 
+                background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px',
+                color: '#334155', fontWeight: 600, fontSize: '0.85rem',
+                cursor: 'pointer', padding: '6px 12px', transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = '#e2e8f0'}
+              onMouseLeave={e => e.currentTarget.style.background = '#f1f5f9'}
+            >
+              <Edit2 size={16} /> Chỉnh sửa thông tin
+            </button>
+          )}
+        </div>
       </div>
 
       <div style={{ background: '#fff', borderRadius: '12px', padding: '2rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}>
@@ -238,16 +263,43 @@ const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEdit
             )}
           </div>
           
-          <div>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }}>SỐ KHÁCH (PAX)</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#334155' }}>
-              <span style={{ color: '#3b82f6' }}>{currentDep.sold_pax || 0}</span> 
-              <span style={{ color: '#cbd5e1', margin: '0 6px' }}>/</span> 
-              <span style={{ color: '#64748b' }}>{currentDep.max_participants || '?'} Tối đa</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div>
+              <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }}>TỔNG THU & SỐ KHÁCH (PAX)</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>
+                  <span style={{ color: '#3b82f6' }}>{currentDep.sold_pax || 0}</span> 
+                  <span style={{ color: '#cbd5e1', margin: '0 6px' }}>/</span> 
+                  <span style={{ color: '#64748b' }}>{currentDep.max_participants || '?'}</span> <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#94a3b8' }}>Pax</span>
+                </span>
+                {costingStats && (
+                  <span style={{ color: '#10b981', fontSize: '1.1rem' }}>
+                    {costingStats.total_revenue.toLocaleString('vi-VN')} đ
+                  </span>
+                )}
+              </div>
             </div>
-            <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '4px', fontWeight: 600 }}>
-               Hòa vốn: {currentDep.break_even_pax || '?'} Pax
-            </div>
+            
+            {costingStats ? (
+               <div style={{ background: '#fff', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
+                 <div>
+                   <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600 }}>Dự toán LPL (Lãi/Lỗ):</div>
+                   <div style={{ fontWeight: 700, color: (costingStats.total_revenue - costingStats.total_estimated_cost) >= 0 ? '#10b981' : '#ef4444' }}>
+                     {((costingStats.total_revenue - costingStats.total_estimated_cost) >= 0 ? '+' : '')}{(costingStats.total_revenue - costingStats.total_estimated_cost).toLocaleString('vi-VN')} đ
+                   </div>
+                 </div>
+                 <div style={{ textAlign: 'right' }}>
+                   <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600 }}>Hòa vốn (Pax):</div>
+                   <div style={{ fontWeight: 700, color: '#f59e0b' }}>
+                     {currentDep.break_even_pax || '?'}
+                   </div>
+                 </div>
+               </div>
+            ) : (
+              <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '4px', fontWeight: 600 }}>
+                 Hòa vốn: {currentDep.break_even_pax || '?'} Pax
+              </div>
+            )}
           </div>
 
           <div>

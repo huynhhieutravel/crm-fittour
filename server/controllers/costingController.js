@@ -85,15 +85,16 @@ exports.saveCosting = async (req, res) => {
     
     if (costs && Array.isArray(costs)) {
         costs.forEach(c => {
+            const exchangeRate = Number(c.exchange_rate) || 1;
             const estPrice = Number(c.estimated_price) || 0;
             const estQty = Number(c.estimated_qty) || 0;
             const actualPrice = Number(c.actual_price) || 0;
             const actualQty = Number(c.actual_qty) || 0;
             const deposit = Number(c.deposit) || 0;
 
-            total_estimated_cost += (estPrice * estQty);
-            total_actual_cost += (actualPrice * actualQty);
-            total_deposit += deposit;
+            total_estimated_cost += (estPrice * estQty * exchangeRate);
+            total_actual_cost += (actualPrice * actualQty * exchangeRate);
+            total_deposit += (deposit * exchangeRate);
         });
         costData = JSON.stringify(costs);
     }
