@@ -73,7 +73,8 @@ import {
   PieChart,
   FileText,
   DollarSign,
-  BookOpen
+  BookOpen,
+  Target
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
