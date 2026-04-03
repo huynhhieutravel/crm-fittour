@@ -351,7 +351,8 @@ exports.syncRecentConversations = async () => {
                 // Trích xuất tin nhắn do chính User gửi để phòng hờ chặn Webhook
                 const messagesList = conv.messages?.data || [];
                 const userMsgObj = messagesList.find(m => m.from && m.from.id === psid);
-                const actualMessageText = userMsgObj && userMsgObj.message ? userMsgObj.message : '(Hình ảnh/Đính kèm)';
+                const rawMsgText = userMsgObj && userMsgObj.message ? userMsgObj.message : null;
+                const actualMessageText = (rawMsgText && rawMsgText.trim() !== '') ? rawMsgText : '(Hình ảnh/Đính kèm)';
                 const firstMessageNote = userMsgObj ? `Facebook Message: "${actualMessageText}"` : null;
 
                 // Kéo hội thoại từ DB xem đã có chưa
@@ -402,20 +403,23 @@ exports.syncRecentConversations = async () => {
                                     [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email]
                                 );
                                 
-                                await db.query('UPDATE conversations SET lead_id = $1, last_message = $2, updated_at = NOW() WHERE id = $3', [newLeadResult.rows[0].id, actualMessageText, oldConv.id]);
-                                await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', actualMessageText]);
+                                const safeMsg1 = actualMessageText || '(Hình ảnh/Đính kèm)';
+                                await db.query('UPDATE conversations SET lead_id = $1, last_message = $2, updated_at = NOW() WHERE id = $3', [newLeadResult.rows[0].id, safeMsg1, oldConv.id]);
+                                await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', safeMsg1]);
 
                                 metaCapi.sendLeadEvent(newLeadResult.rows[0]).catch(err => console.error(err));
                             } else {
                                 // Lead vẫn Active => Nổi lên đầu mảng
+                                const safeMsg2 = actualMessageText || '(Hình ảnh/Đính kèm)';
                                 await db.query('UPDATE leads SET created_at = NOW(), last_contacted_at = NOW() WHERE id = $1', [oldLead.id]);
-                                await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [actualMessageText, oldConv.id]);
-                                await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', actualMessageText]);
+                                await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [safeMsg2, oldConv.id]);
+                                await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', safeMsg2]);
                             }
                         } else {
                             // Kẹt lead, update bình thường
-                            await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [actualMessageText, oldConv.id]);
-                            await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', actualMessageText]);
+                            const safeMsg3 = actualMessageText || '(Hình ảnh/Đính kèm)';
+                            await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [safeMsg3, oldConv.id]);
+                            await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', safeMsg3]);
                         }
                     }
                 }

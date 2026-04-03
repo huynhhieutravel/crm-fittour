@@ -48,7 +48,7 @@ exports.getAllReminders = async (req, res) => {
             JOIN tour_departures td ON br.tour_departure_id = td.id
             JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN users u ON br.assigned_to = u.id
-            WHERE br.assigned_to = $1 OR br.assigned_to IS NULL OR ((SELECT role FROM users WHERE id = $1) IN ('admin', 'manager', 'operations'))
+            WHERE br.assigned_to = $1 OR br.assigned_to IS NULL OR ((SELECT r.name FROM users u2 JOIN roles r ON u2.role_id = r.id WHERE u2.id = $1) IN ('admin', 'manager', 'operations'))
             ORDER BY br.status DESC, br.due_date ASC
         `, [userId]);
         
@@ -65,7 +65,7 @@ exports.markDone = async (req, res) => {
         const result = await db.query(`
             UPDATE departure_reminders 
             SET status = 'COMPLETED', resolved_at = CURRENT_TIMESTAMP
-            WHERE id = $1 AND (assigned_to = $2 OR assigned_to IS NULL OR (SELECT role FROM users WHERE id = $2) IN ('admin', 'manager', 'operations'))
+            WHERE id = $1 AND (assigned_to = $2 OR assigned_to IS NULL OR (SELECT r.name FROM users u2 JOIN roles r ON u2.role_id = r.id WHERE u2.id = $2) IN ('admin', 'manager', 'operations'))
             RETURNING *
         `, [id, req.user.id]);
         

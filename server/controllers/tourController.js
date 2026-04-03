@@ -103,7 +103,27 @@ exports.updateTour = async (req, res) => {
 
 exports.deleteTour = async (req, res) => {
     try {
-        const result = await db.query('DELETE FROM tour_templates WHERE id = $1 RETURNING *', [req.params.id]);
+        const tourId = req.params.id;
+
+        // FK Guard: Check tour_departures
+        const depsCount = await db.query('SELECT COUNT(*)::int as c FROM tour_departures WHERE tour_template_id = $1', [tourId]);
+        if (depsCount.rows[0].c > 0) {
+            return res.status(409).json({
+                message: `Tour này đang có ${depsCount.rows[0].c} lịch khởi hành. Vui lòng xóa các lịch khởi hành trước.`,
+                has_deps: true
+            });
+        }
+
+        // FK Guard: Check leads referencing this tour
+        const leadsCount = await db.query('SELECT COUNT(*)::int as c FROM leads WHERE tour_id = $1', [tourId]);
+        if (leadsCount.rows[0].c > 0) {
+            return res.status(409).json({
+                message: `Tour này đang có ${leadsCount.rows[0].c} Lead liên kết. Vui lòng hủy liên kết Lead với Tour trước khi xóa.`,
+                has_leads: true
+            });
+        }
+
+        const result = await db.query('DELETE FROM tour_templates WHERE id = $1 RETURNING *', [tourId]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy tour' });
         res.json({ message: 'Đã xoá tour thành công' });
     } catch (err) {

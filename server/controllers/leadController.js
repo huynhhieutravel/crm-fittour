@@ -287,10 +287,11 @@ exports.getLeadStats = async (req, res) => {
                 COUNT(l.id)::int as total_leads,
                 COUNT(CASE WHEN l.status = 'Chốt đơn' THEN 1 END)::int as won_leads
             FROM users u
+            JOIN roles r ON u.role_id = r.id
             LEFT JOIN leads l ON u.id = l.assigned_to AND ${joinLeadWhere}
-            WHERE u.role IN ('sale', 'sales', 'manager', 'admin', 'staff')
+            WHERE r.name IN ('sales', 'manager', 'admin', 'marketing', 'operations')
             GROUP BY u.id, u.full_name
-            HAVING COUNT(l.id) > 0 OR u.role = 'sale'
+            HAVING COUNT(l.id) > 0 OR r.name = 'sales'
             ORDER BY total_leads DESC
         `, params);
 
