@@ -137,7 +137,7 @@ const ManualLeads = () => (
         </p>
 
         {/* CROP ẢNH BẰNG OBJECT-FIT COVER THAY VÌ SCROLL BOX */}
-        <div style={{ height: '350px', overflow: 'hidden', borderRadius: '12px', border: '1px solid #cbd5e1', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.05)', marginBottom: '1.5rem' }}>
+        <div style={{ height: '550px', overflow: 'hidden', borderRadius: '12px', border: '1px solid #cbd5e1', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.05)', marginBottom: '1.5rem' }}>
           <img src="/manual_images/leads_page_full_1775228553928.png" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} alt="Giao diện danh sách Lead" />
         </div>
 
@@ -188,49 +188,68 @@ const ManualLeads = () => (
 const ManualCustomers = () => (
   <>
     <div style={{ background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(2, 132, 199, 0.4)' }}>
-      <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.5px' }}>Danh Mục Khách Hàng (CRM Core)</h1>
-      <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '600px', lineHeight: 1.6 }}>
-        Hồ sơ trọn đời của tất cả hành khách đã giao dịch. Không còn tình trạng "Khách mua tour 3 lần nhưng Sale không biết khách cũ". Dữ liệu tại đây là tài sản quý giá nhất của công ty.
+      <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.5px' }}>Nghiệp Vụ: Danh Mục Khách Hàng</h1>
+      <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '650px', lineHeight: 1.6 }}>
+        Trái tim của hệ thống CRM. Nơi quản lý dữ liệu vĩnh viễn của hành khách, tự động phát hiện số điện thoại trùng lặp và lưu vết lịch sử mọi giao dịch.
       </p>
     </div>
 
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
+      {/* STEP 1 */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>1. Tầm nhìn 360 Độ về Khách hàng</h2>
-        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Mỗi hồ sơ lưu giữ chi chít thông tin có cấu trúc: Tên, SĐT, Passport, Ngày hết hạn, Lưu ý Y tế (dị ứng, ăn dặm, wheelchair), và cả Sở thích Du lịch.
-        </p>
-        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
-          Khi nhấn sâu vào một khách, hệ thống hiển thị toàn bộ <strong>Lịch sử Đơn hàng (Booking History)</strong> mà người đó từng cọc tiền, bao nhiêu tour đã đi thành công. Mọi Ghi chú từ ngày còn làm Lead cũng hiển thị tại đây như một cuốn chiếu phim thời gian.
-        </p>
-      </section>
-
-      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-          <div style={{ padding: '8px', background: '#fef2f2', color: '#ef4444', borderRadius: '10px' }}>
-            <Users size={20} />
-          </div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>2. Sức mạnh: Thu gom & Chống trùng lặp tự động</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="1" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Tạo Khách Hàng & Nguồn Gốc Dữ Liệu</h2>
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Tệ nạn lớn nhất của Excel là 1 khách hàng bị tạo file 5 lần bởi 5 bạn Sale khác nhau. Tại FIT TOUR CRM, điều đó là bất khả thi!
+          Khách hàng trong danh mục này xuất phát từ hai nguồn chính:
         </p>
         <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', color: '#475569', fontSize: '1.05rem', marginBottom: '1.5rem' }}>
-          <li>Khi thêm 1 khách mới, hệ thống tự động <strong>dò quét Số điện thoại</strong> của 10.000 khách cũ trong chưa tới 1 giây.</li>
-          <li>Nếu phát hiện SĐT bị trùng, hệ thống CẢNH BÁO màu đỏ "Số điện thoại đã tồn tại ở khách hàng X".</li>
-          <li>Bạn có chế độ click 1 phát: <strong>"Merge Data (Gộp dữ liệu)"</strong> — Tức là lấy thông tin mới cập nhật bù trừ vào hồ sơ cũ, không đẻ thêm rác data.</li>
+          <li><strong>Thêm trực tiếp:</strong> Dùng cho người đại diện hoặc thành viên đoàn khi tạo Đơn hàng (Booking).</li>
+          <li><strong>Chuyển đổi từ Lead:</strong> Nút Convert bên bảng Lead sẽ tự đẩy toàn bộ thông tin (Tên, SĐT, Ghi chú) sang đây, tiết kiệm 100% thời gian nhập liệu.</li>
         </ul>
+        <div style={{ background: '#eff6ff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bfdbfe' }}>
+          <h3 style={{ color: '#1e3a8a', fontWeight: 700, marginBottom: '0.5rem' }}>Hồ Sơ 360 Độ:</h3>
+          <p style={{ color: '#1e40af', fontSize: '1rem', margin: 0 }}>
+            Mỗi khách hàng mang một <strong>Hồ sơ trọn đời</strong>. Bạn có thể lưu Passport, Visa, Ghi chú y tế (Dị ứng, ăn dặm). Bất cứ Sale nào bấm vào khách hàng này đều thấy toàn bộ <strong>Lịch sử Đơn Hàng (Booking)</strong> mà họ từng tham gia trong quá khứ!
+          </p>
+        </div>
       </section>
 
+      {/* STEP 2 */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>3. Bảo Vệ Dòng Tiền & Soft-Block</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="2" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Cơ Chế Chống Trùng Lặp (Anti-Duplicate)</h2>
+        </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Tại sao bảng Khách hàng không có nút "Xóa" hẳn người chơi? 
+          Đây là siêu năng lực của CRM giúp dẹp bỏ tình trạng "Một khách có 5 file Excel khác nhau". CRM lấy <strong>Số Điện Thoại (SĐT)</strong> làm định danh gốc.
+        </p>
+        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '250px', background: '#fef2f2', padding: '1.5rem', borderRadius: '12px', border: '1px solid #fecaca' }}>
+            <h3 style={{ color: '#991b1b', fontWeight: 700, marginBottom: '0.5rem' }}>🚨 Báo Động Đỏ:</h3>
+            <p style={{ color: '#991b1b', margin: 0, fontSize: '0.95rem' }}>Hãy thử tạo một Khách hàng với SĐT đã có sẵn. Hệ thống sẽ cạch mặt bạn ngay lập tức với cảnh báo đỏ chót "Số điện thoại này đã tồn tại ở khách hàng ABC".</p>
+          </div>
+          <div style={{ flex: 1, minWidth: '250px', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ color: '#0f172a', fontWeight: 700, marginBottom: '0.5rem' }}>Tự Động Gộp (Merge):</h3>
+            <p style={{ color: '#475569', margin: 0, fontSize: '0.95rem' }}>Thay vì tạo thùng rác data, bạn chọn chức năng <strong>Gộp (Merge)</strong>. Dữ liệu mới nhất sẽ được vá vào hồ sơ cũ, giữ cho data của công ty luôn sạch sẽ.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* STEP 3 */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="3" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Nguyên Tắc Dữ Liệu "Tiền Trảm Hậu Tấu"</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Rất nhiều người thắc mắc: <em>Tại sao tôi không thấy nút <strong>Xóa hẳn</strong> Khách hàng?</em>
         </p>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
-          Bởi khách hàng là một phần của <em>Đơn hàng (Booking) / Lịch khởi hành / Giao dịch kế toán</em>. Để bảo toàn lịch sử kế toán, hệ thống áp dụng cơ chế <strong>Tiền trảm hậu tấu</strong> bằng Soft-delete (Lệnh Khóa - Biểu tượng màu xám). 
-          Khi một khách hàng bị "Khóa", họ sẽ biến mất khỏi danh sách chọn khi tạo Booking mới, nhưng báo cáo quá khứ vẫn còn nguyên vẹn. Chỉ Admin mới có quyền phục hồi lại.
+          Lý do là vì Khách hàng có liên kết rễ má với Đơn hàng và Lịch khởi hành. Nếu xóa mất, Kế toán sẽ không biết khoản tiền kia là của ai. <br/>
+          Thay vào đó, FIT TOUR áp dụng cơ chế <strong>Xóa Mềm (Soft-delete)</strong>. Bạn bấm vào nút [Khóa] màu xám, khách hàng đó sẽ tàng hình khỏi danh sách chọn khi Sales tạo Booking, nhưng lịch sử dòng tiền Kế toán xuất ra vẫn giữ nguyên vẹn.
         </p>
       </section>
 
