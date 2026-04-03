@@ -290,7 +290,7 @@ exports.getLeadStats = async (req, res) => {
             JOIN roles r ON u.role_id = r.id
             LEFT JOIN leads l ON u.id = l.assigned_to AND ${joinLeadWhere}
             WHERE r.name IN ('sales', 'manager', 'admin', 'marketing', 'operations')
-            GROUP BY u.id, u.full_name
+            GROUP BY u.id, u.full_name, r.name
             HAVING COUNT(l.id) > 0 OR r.name = 'sales'
             ORDER BY total_leads DESC
         `, params);
