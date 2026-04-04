@@ -120,6 +120,7 @@ function AppContent() {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [editingUserAccount, setEditingUserAccount] = useState(null);
   const [userToChangePassword, setUserToChangePassword] = useState(null);
+  const [showChangeMyPassword, setShowChangeMyPassword] = useState(false);
   const [metaSettings, setMetaSettings] = useState({
     meta_app_id: '',
     meta_app_secret: '',
@@ -1545,6 +1546,9 @@ function AppContent() {
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <div className="nav-item" onClick={() => setShowChangeMyPassword(true)} style={{ color: '#0ea5e9', background: 'rgba(14, 165, 233, 0.05)', marginBottom: '5px' }}>
+              <Key size={18} /> <strong>ĐỔI MẬT KHẨU</strong>
+            </div>
             <div className="nav-item" onClick={handleLogout} style={{ color: '#f87171', background: 'rgba(239, 68, 68, 0.05)' }}>
               <LogOut size={18} /> <strong>ĐĂNG XUẤT</strong>
             </div>
@@ -2217,9 +2221,27 @@ function AppContent() {
       />
 
       <ChangePasswordModal 
-        user={userToChangePassword}
-        onClose={() => setUserToChangePassword(null)}
-        onSave={handleChangePasswordAdmin}
+        user={showChangeMyPassword ? currentUser : userToChangePassword}
+        onClose={() => {
+          setUserToChangePassword(null);
+          setShowChangeMyPassword(false);
+        }}
+        onSave={async (id, newPassword) => {
+          if (showChangeMyPassword) {
+            try {
+              const token = localStorage.getItem('token');
+              await axios.put(`/api/users/${id}/password`, { newPassword }, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              addToast('Đã đổi mật khẩu cá nhân thành công.');
+              setShowChangeMyPassword(false);
+            } catch (err) {
+              addToast(err.response?.data?.message || 'Lỗi khi đổi mật khẩu');
+            }
+          } else {
+            handleChangePasswordAdmin(id, newPassword);
+          }
+        }}
       />
 
       <div className="toast-container">

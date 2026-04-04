@@ -151,6 +151,11 @@ exports.changePassword = async (req, res) => {
             return res.status(400).json({ message: 'Mật khẩu mới phải có ít nhất 6 ký tự.' });
         }
 
+        // Kiểm tra quyền (phải là Admin/Manager hoặc chính chủ)
+        if (req.user.role !== 'admin' && req.user.role !== 'manager' && req.user.id !== parseInt(id)) {
+            return res.status(403).json({ message: 'Bạn không có quyền thực hiện thao tác này.' });
+        }
+
         // Safeguard: Managers cannot change Admin password
         if (req.user.role === 'manager') {
             const targetUser = await db.query('SELECT r.name as role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = $1', [id]);
