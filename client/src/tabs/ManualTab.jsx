@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { BookOpen, Shield, Target, FileText, Users, Map, ShoppingCart, CheckCircle, XCircle, AlertTriangle, Filter, BarChart2, Search, Edit3, Copy, ArrowUpRight } from 'lucide-react';
+import { BookOpen, Shield, Target, FileText, Users, Map, ShoppingCart, CheckCircle, XCircle, AlertTriangle, Filter, BarChart2, Search, Edit3, Copy, ArrowUpRight, Calendar, DollarSign } from 'lucide-react';
 
 const ManualOverview = () => (
   <>
@@ -682,6 +682,120 @@ const ManualToursGuide = () => (
   </>
 );
 
+const ManualDeparturesSOP = () => (
+  <>
+    <div style={{ background: 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(185, 28, 28, 0.4)' }}>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1rem' }}>
+        <Shield size={36} color="#fca5a5" />
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>Lịch Khởi Hành (Departures): Quy Định Khắc Khe</h1>
+      </div>
+      <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '650px', lineHeight: 1.6 }}>
+        Đây là xương sống của lợi nhuận. Mọi tác vụ ở Lịch Khởi Hành ảnh hưởng trực tiếp đến BCTC (Báo Cáo Tài Chính) và Doanh thu thực nhận. Đề nghị tuân thủ quy tắc 100%.
+      </p>
+    </div>
+
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="1" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Nguyên Tắc Bất Di Bất Dịch Về Quỹ Chỗ (Slots)</h2>
+        </div>
+        <div style={{ padding: '1.5rem', background: '#fef2f2', borderLeft: '5px solid #ef4444', borderRadius: '4px', color: '#991b1b', marginBottom: '1.5rem' }}>
+          <h3 style={{ fontWeight: 800, margin: '0 0 10px 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertTriangle size={18} /> QUY TẮC "DƯƠNG VÔ HẠN, ÂM THÌ CẤM"
+          </h3>
+          Khi set up số chỗ trống (Total Slots), bạn có quyền bán Over-book nếu có thương lượng với hãng xe. Nhưng bạn <strong>không bao giờ được phép Bóp số lượng Slots Nhỏ hơn Số Khách (Bookings) hiện tại</strong>.<br/>
+          Hệ thống sẽ nảy lỗi nếu bạn báo đoàn có 20 ghế nhưng đã có 21 khách vào cọc.
+        </div>
+      </section>
+
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="2" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Bảng Dự Toán (Costing) Lập Trước, Bán Sau</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Việc ban hành Lịch khởi hành mà không có Bảng Dự Toán (Land Tour, Khách Sạn, Xe, Máy bay) là <strong>tối kỵ</strong>. Bộ phận Sales cần nhìn vào Bảng Costing để biết giá Sàn được phép bán bao nhiêu để không âm vốn.
+        </p>
+        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#475569', fontSize: '1.05rem' }}>
+          <li>Điều hành viên BẮT BUỘC lên Dự Toán (Costings) trước khi bật trạng thái ACTIVE (Cho bán) cho Lịch Khởi Hành.</li>
+          <li>Tuyệt đối không chốt đoàn khi chưa cập nhật Chi phí Phụ khoản (bảo hiểm, hoa hồng tài xế).</li>
+        </ul>
+      </section>
+
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="3" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Quy Trình Chốt (Locking) Chuyến Đi</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
+          Quá trình "Chốt đoàn" (Status: In Progress ➡️ Completed) yêu cầu:
+          <br/>1. Đã ghép Hướng Dẫn Viên.
+          <br/>2. Số lượng Khách hàng thực tế khớp với Danh sách Thu chi.
+          <br/>Một khi đã chuyển Completed, Lịch Khởi Hành sẽ thuộc quyền kiểm soát của Kế toán để quyết toán, Điều hành sẽ bị khóa nút sửa xóa.
+        </p>
+      </section>
+    </div>
+  </>
+);
+
+const ManualDeparturesGuide = () => (
+  <>
+    <div style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.4)' }}>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1rem' }}>
+        <Calendar size={36} color="#bfdbfe" />
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>Lịch Khởi Hành: Bảng Điều Khiển Tổng Cục</h1>
+      </div>
+      <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '600px', lineHeight: 1.6 }}>
+        Nơi biến các Khung Tour thành Hiện Thực. Mỗi Lịch là một Chuyến Bay/Chuyến Xe có số ghế, thu chi, và khách hàng thật sự tham gia.
+      </p>
+    </div>
+
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>A. Giao Diện Calendar & List View</h2>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Bạn có thể thay đổi cách nhìn Lịch trình giữa 2 chế độ:
+          <br/>- <strong>List View</strong>: Cung cấp cột thông tin chi tiết về Slot (Chỗ) hiện tại, tình trạng ghép Booking nhanh chóng.
+          <br/>- <strong>Calendar View</strong>: Xem khối lượng công việc tổng quan theo ngày, tối ưu khi xếp lịch cho Hướng dẫn viên.
+        </p>
+        <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '10px' }}>
+             <img src="/manual_images/full_departures_list_1775200193242.png" style={{ flex: '1', minWidth: '400px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} alt="Giao diện List" />
+             <img src="/manual_images/departures_calendar_view_1775229184698.png" style={{ flex: '1', minWidth: '400px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} alt="Giao diện Calendar" />
+        </div>
+      </section>
+
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>B. Khung Quản Trị Chi Tiết Bắt Buộc (Detail View)</h2>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Khi bấm vào 1 Lịch Khởi Hành, màn hình trượt ra cung cấp góc nhìn **Tất cả trong 1**. Phía trên hiện thanh Tiến độ (Status: Khởi Tạo ➡️ Đang Nhận Khách ➡️ Đã Chốt).
+        </p>
+        <img src="/manual_images/departure_detail_view_1775197750860.png" style={{ width: '100%', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} alt="Chi tiết Tuyến Đi" />
+      </section>
+
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
+           <DollarSign size={28} color="#059669" />
+           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>C. Modun Dự Toán Chi Phí (Costings)</h2>
+        </div>
+        <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '300px' }}>
+            <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1rem' }}>
+              Mỗi Lịch khởi hành đi kèm chức năng <strong>Lập Dự Toán Costing</strong> (Landtour, Nhà Hàng, Xe 45 chỗ...). 
+            </p>
+            <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
+              Bạn sẽ Thêm Hàng (Add Row), nhập Số Lượng và Đơn Giá. Hệ thống Tự Động Kẻ Form xuất ra con số Lãi/Lỗ Dự Kiến. Giao diện thiết kế gọn y như trang Excel truyền thống.
+            </p>
+          </div>
+          <div style={{ flex: 1, minWidth: '400px' }}>
+            <img src="/manual_images/costings_modal_content_check_1775184834222.png" style={{ width: '100%', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} alt="Bảng Costings" />
+          </div>
+        </div>
+      </section>
+    </div>
+  </>
+);
+
 const ManualTab = () => {
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
@@ -695,6 +809,8 @@ const ManualTab = () => {
       case 'customers-sop': return <ManualCustomersSOP />;
       case 'customers-guide': return <ManualCustomersGuide />;
       case 'bookings': return <ManualBookings />;
+      case 'departures-sop': return <ManualDeparturesSOP />;
+      case 'departures-guide': return <ManualDeparturesGuide />;
       case 'tours-sop': return <ManualToursSOP />;
       case 'tours-guide': return <ManualToursGuide />;
       case 'overview':

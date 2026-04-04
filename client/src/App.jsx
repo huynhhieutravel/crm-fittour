@@ -1546,6 +1546,12 @@ function AppContent() {
           <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'tours-guide' ? 'active' : ''}`} onClick={() => navigate('/manual/tours-guide')} style={{ paddingLeft: '2.5rem' }}>
             <Map size={16} opacity={0.7} /> Tour - HD Sử Dụng
           </div>
+          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'departures-sop' ? 'active' : ''}`} onClick={() => navigate('/manual/departures-sop')} style={{ paddingLeft: '2.5rem' }}>
+            <Shield size={16} opacity={0.7} /> Lịch Khởi Hành (SOP)
+          </div>
+          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'departures-guide' ? 'active' : ''}`} onClick={() => navigate('/manual/departures-guide')} style={{ paddingLeft: '2.5rem' }}>
+            <Calendar size={16} opacity={0.7} /> Lịch KH - HD Sử Dụng
+          </div>
 
           <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <div className="nav-item" onClick={handleLogout} style={{ color: '#f87171', background: 'rgba(239, 68, 68, 0.05)' }}>
