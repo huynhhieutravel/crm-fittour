@@ -74,7 +74,8 @@ import {
   FileText,
   DollarSign,
   BookOpen,
-  Target
+  Target,
+  Shield
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
