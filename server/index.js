@@ -42,6 +42,7 @@ const buRoutes = require('./routes/buRoutes');
 const catalogRoutes = require('./routes/catalog');
 const costingRoutes = require('./routes/costings');
 const reminderRoutes = require('./routes/reminderRoutes');
+const hotelRoutes = require('./routes/hotels');
 
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/auth', authRoutes);
@@ -58,6 +59,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/business-units', buRoutes);
 app.use('/api/meta/catalog', catalogRoutes);
+app.use('/api/hotels', hotelRoutes);
 app.use('/api/costings', costingRoutes);
 app.use('/api/reminders', reminderRoutes);
 

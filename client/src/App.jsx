@@ -17,6 +17,7 @@ import InboxTab from './tabs/InboxTab';
 import ToursTab from './tabs/ToursTab';
 import DeparturesTab from './tabs/DeparturesTab';
 import RemindersTab from './tabs/RemindersTab';
+import HotelsTab from './tabs/HotelsTab';
 import DashboardTab from './tabs/DashboardTab';
 import LeadsTab from './tabs/LeadsTab';
 import LeadsDashboardTab from './tabs/LeadsDashboardTab';
@@ -1503,6 +1504,29 @@ function AppContent() {
             </>
           )}
 
+          <div className="nav-section-title">Đối tác & Dịch vụ</div>
+          <div 
+            className={`nav-item ${activeTab === 'hotels' ? 'active-parent' : ''}`} 
+            onClick={() => { navigate('/hotels'); setActiveTab('hotels'); }}
+            style={{ justifyContent: 'space-between' }}
+            onMouseEnter={(e) => {
+              if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+              const rect = e.currentTarget.getBoundingClientRect();
+              setHoveredRect(rect);
+              setHoveredMenu('suppliers');
+            }}
+            onMouseLeave={() => {
+              menuTimerRef.current = setTimeout(() => {
+                setHoveredMenu(null);
+              }, 150);
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Package /> Nhà cung cấp
+            </div>
+            <ChevronRight size={14} opacity={0.5} />
+          </div>
+
           {(checkView('users') || checkView('settings')) && (
             <>
               <div className="nav-section-title">Hệ thống & Nhân sự</div>
@@ -1760,6 +1784,38 @@ function AppContent() {
             onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('calendar'); setHoveredMenu(null); }}
           >
             Lịch Chăm sóc
+          </div>
+        </div>
+      )}
+
+      {hoveredMenu === 'suppliers' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('suppliers');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'hotels' ? 'active' : ''}`} 
+            onClick={() => { navigate('/hotels'); setActiveTab('hotels'); setHoveredMenu(null); }}
+          >
+            Quản lý Khách sạn
           </div>
         </div>
       )}
@@ -2054,6 +2110,10 @@ function AppContent() {
             onCreateBU={handleCreateBU}
             onlyBU={true}
           />
+        )}
+
+        {activeTab === 'hotels' && (
+          <HotelsTab currentUser={user} />
         )}
       </>
     )}
