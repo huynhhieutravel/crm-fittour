@@ -123,18 +123,7 @@ export const AddCustomerModal = ({
               {CUSTOMER_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
-          <div className="modal-form-group">
-            <label>SỐ CHUYẾN ĐÃ ĐI (trước CRM)</label>
-            <input className="modal-input" type="number" min="0" value={newCustomer.past_trip_count || 0} onChange={e => setNewCustomer({...newCustomer, past_trip_count: parseInt(e.target.value) || 0})} />
-            {(() => {
-              const tier = computeVipTier(parseInt(newCustomer.past_trip_count || 0));
-              return (
-                <div style={{ marginTop: '8px', padding: '6px 12px', borderRadius: '8px', background: tier.bg, border: `1px solid ${tier.border}`, color: tier.color, fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Award size={14} /> {tier.badge} {tier.label}
-                </div>
-              );
-            })()}
-          </div>
+
 
           <div className="modal-form-group">
             <label>NGÀY CHỐT ĐƠN ĐẦU TIÊN</label>
