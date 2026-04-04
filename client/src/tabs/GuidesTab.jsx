@@ -267,10 +267,7 @@ const GuidesTab = ({
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                        <button className="icon-btn-small btn-view" onClick={() => handleEditGuide(guide)} title="Sửa thông tin">
-                          <Eye size={14} />
-                        </button>
-                        <button className="icon-btn-small btn-edit" onClick={() => handleEditGuide(guide)} title="Sửa thông tin">
+                        <button className="icon-btn-small btn-edit" onClick={() => handleEditGuide(guide)} title="Xem & Sửa thông tin">
                           <Edit2 size={14} />
                         </button>
                         <button className="icon-btn-small btn-delete" onClick={() => handleDeleteGuide(guide.id)} title="Xóa">
@@ -470,7 +467,7 @@ const GuidesTab = ({
                     setGuideTimeFilter({ ...guideTimeFilter, date: d });
                   }}
                 >
-                  {[2024, 2025, 2026].map(y => <option key={y} value={y}>Năm {y}</option>)}
+                  {Array.from({length: 5}, (_, i) => new Date().getFullYear() - 1 + i).map(y => <option key={y} value={y}>Năm {y}</option>)}
                 </select>
               </div>
             )}
@@ -648,7 +645,7 @@ const GuidesTab = ({
                                 <span className="gantt-bar-label">{asg.tourName}</span>
                               </div>
                               <div className="gantt-tooltip">
-                                <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '0.8rem', color: '#60a5fa' }}>{asg.status.toUpperCase()}</div>
+                                <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '0.8rem', color: '#60a5fa' }}>{(asg.status || 'N/A').toUpperCase()}</div>
                                 <div style={{ fontWeight: 600, marginBottom: '6px' }}>{asg.tourName}</div>
                                 <div style={{ color: '#94a3b8', fontSize: '0.7rem' }}>
                                   <span style={{ color: '#cbd5e1' }}>Khởi hành: </span> 

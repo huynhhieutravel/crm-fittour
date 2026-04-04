@@ -105,8 +105,21 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
               </div>
               <div>
                 <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#1e293b' }}>{customer.name}</h2>
-                <span className={`badge ${customer.customer_segment === 'VIP' ? 'badge-priority-high' : customer.customer_segment === 'Platinum' ? 'badge-priority-medium' : 'badge-priority-low'}`}>
-                  {customer.customer_segment || 'N/A'}
+                <span style={{
+                  padding: '3px 10px',
+                  borderRadius: '12px',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  ...(customer.customer_segment === 'VIP 1' ? { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' } :
+                      customer.customer_segment === 'VIP 2' ? { background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' } :
+                      customer.customer_segment === 'VIP 3' ? { background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' } :
+                      customer.customer_segment === 'Repeat Customer' ? { background: '#dbeafe', color: '#2563eb', border: '1px solid #bfdbfe' } :
+                      { background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0' })
+                }}>
+                  {customer.customer_segment === 'VIP 1' ? '⭐⭐⭐ VIP 1' :
+                   customer.customer_segment === 'VIP 2' ? '⭐⭐ VIP 2' :
+                   customer.customer_segment === 'VIP 3' ? '⭐ VIP 3' :
+                   customer.customer_segment || 'New Customer'}
                 </span>
                 {customer.is_birthday_this_week && (
                   <span className="badge" style={{ backgroundColor: '#fef08a', color: '#854d0e', marginLeft: '8px' }}>

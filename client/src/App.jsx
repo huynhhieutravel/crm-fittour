@@ -284,7 +284,7 @@ function AppContent() {
   const LEAD_STATUSES = ['Mới', 'Đang liên hệ', 'Tiềm năng', 'Đặt cọc', 'Chốt đơn', 'Thất bại'];
   const LEAD_CLASSIFICATIONS = ['Mới', 'Tiềm Năng', 'Tiềm Năng Cao', 'Không Tiềm Năng'];
   const CUSTOMER_ROLES = ['Người đại diện (booker)', 'Khách đi kèm'];
-  const CUSTOMER_SEGMENTS = ['New Customer', 'Repeat Customer', 'VIP', 'VVIP', 'Platinum'];
+  const CUSTOMER_SEGMENTS = ['New Customer', 'Repeat Customer', 'VIP 3', 'VIP 2', 'VIP 1'];
   const CONTACT_METHODS = ['Zalo', 'Call', 'Email'];
   const CITY_OPTIONS = ['TP. Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng', 'Khác'];
 
@@ -1017,8 +1017,8 @@ function AppContent() {
   const filteredLeads = leads.filter(lead => {
     const matchesStatus = !leadFilters.status || lead.status === leadFilters.status;
     const matchesSource = !leadFilters.source || lead.source === leadFilters.source;
-    const matchesBU = !leadFilters.bu_group || lead.bu_group === leadFilters.bu_group;
-    const matchesStaff = !leadFilters.assigned_to || lead.assigned_to === Number(leadFilters.assigned_to);
+    const matchesBU = !leadFilters.bu_group || (leadFilters.bu_group === 'NO_BU' ? !lead.bu_group : lead.bu_group === leadFilters.bu_group);
+    const matchesStaff = !leadFilters.assigned_to || (leadFilters.assigned_to === 'NO_STAFF' ? !lead.assigned_to : lead.assigned_to === Number(leadFilters.assigned_to));
     const matchesSearch = !leadFilters.search || 
       (lead.name?.toLowerCase().includes(leadFilters.search.toLowerCase())) ||
       (lead.phone?.includes(leadFilters.search));

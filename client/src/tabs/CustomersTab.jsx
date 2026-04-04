@@ -112,11 +112,11 @@ const CustomersTab = ({
               onChange={e => setLocalFilters({...localFilters, segment: e.target.value})}
             >
               <option value="">Tất cả</option>
-              <option value="VIP">🌟 VIP</option>
-              <option value="VVIP">👑 VVIP</option>
-              <option value="Platinum">💎 Platinum</option>
-              <option value="Repeat Customer">🔄 Khách hàng cũ</option>
-              <option value="New Customer">✨ Khách hàng mới</option>
+              <option value="VIP 1">⭐⭐⭐ VIP 1</option>
+              <option value="VIP 2">⭐⭐ VIP 2</option>
+              <option value="VIP 3">⭐ VIP 3</option>
+              <option value="Repeat Customer">🔄 Repeat Customer</option>
+              <option value="New Customer">🆕 New Customer</option>
             </select>
           </div>
 
@@ -161,6 +161,7 @@ const CustomersTab = ({
               onChange={e => setLocalFilters({...localFilters, assignedTo: e.target.value})}
             >
               <option value="">Tất cả nhân viên</option>
+              <option value="NO_STAFF">⚠ Chưa giao ai</option>
               {users.map(u => (
                 <option key={u.id} value={u.id}>{u.full_name}</option>
               ))}
@@ -178,7 +179,6 @@ const CustomersTab = ({
             <tr>
               <th>HỌ TÊN</th>
               <th>LIÊN HỆ / ĐỊA CHỈ</th>
-              <th>PHÂN KHÚC</th>
               <th>GIA NHẬP</th>
               <th>NHÂN VIÊN</th>
               <th>LTV (TỔNG CHI)</th>
@@ -193,73 +193,72 @@ const CustomersTab = ({
               (localFilters.segment ? c.customer_segment === localFilters.segment : true) &&
               (localFilters.minSpent ? (c.total_spent || 0) >= parseInt(localFilters.minSpent) : true) &&
               (localFilters.source ? (c.lead_source || '').toLowerCase() === localFilters.source.toLowerCase() : true) &&
-              (localFilters.assignedTo ? c.assigned_to === parseInt(localFilters.assignedTo) : true)
+              (localFilters.assignedTo ? (localFilters.assignedTo === 'NO_STAFF' ? !c.assigned_to : c.assigned_to === parseInt(localFilters.assignedTo)) : true)
             ).map(customer => (
               <tr key={customer.id}>
                 <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontWeight: 700, color: '#1e293b' }}>{customer.name}</span>
-                    {customer.latest_note && (
-                      <div 
-                        style={{ position: 'relative', display: 'inline-flex', cursor: 'pointer' }}
-                        onMouseEnter={() => setHoveredNoteId(customer.id)}
-                        onMouseLeave={() => setHoveredNoteId(null)}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontWeight: 700, color: '#1e293b' }}>{customer.name}</span>
+                      {customer.latest_note && (
+                        <div 
+                          style={{ position: 'relative', display: 'inline-flex', cursor: 'pointer' }}
+                          onMouseEnter={() => setHoveredNoteId(customer.id)}
+                          onMouseLeave={() => setHoveredNoteId(null)}
+                        >
+                          <MessageSquareText size={16} color="#f59e0b" />
+                          {hoveredNoteId === customer.id && (
+                            <div style={{
+                              position: 'absolute',
+                              left: '24px',
+                              top: '-50%',
+                              width: '260px',
+                              background: '#1e293b',
+                              color: '#f8fafc',
+                              padding: '12px',
+                              borderRadius: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: 500,
+                              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.2)',
+                              zIndex: 100,
+                              whiteSpace: 'pre-wrap',
+                              lineHeight: '1.4'
+                            }}>
+                              <div style={{ fontWeight: 700, marginBottom: '4px', color: '#fbbf24' }}>GHI CHÚ MỚI NHẤT</div>
+                              {customer.latest_note}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      <span 
+                        style={{
+                          padding: '2px 8px',
+                          borderRadius: '10px',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          ...(customer.customer_segment === 'VIP 1' ? { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' } : 
+                              customer.customer_segment === 'VIP 2' ? { background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' } : 
+                              customer.customer_segment === 'VIP 3' ? { background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' } : 
+                              customer.customer_segment === 'Repeat Customer' ? { background: '#dbeafe', color: '#2563eb', border: '1px solid #bfdbfe' } : 
+                              { background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0' })
+                        }}
                       >
-                        <MessageSquareText size={16} color="#f59e0b" />
-                        {hoveredNoteId === customer.id && (
-                          <div style={{
-                            position: 'absolute',
-                            left: '24px',
-                            top: '-50%',
-                            width: '260px',
-                            background: '#1e293b',
-                            color: '#f8fafc',
-                            padding: '12px',
-                            borderRadius: '6px',
-                            fontSize: '0.75rem',
-                            fontWeight: 500,
-                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.2)',
-                            zIndex: 100,
-                            whiteSpace: 'pre-wrap',
-                            lineHeight: '1.4'
-                          }}>
-                            <div style={{ fontWeight: 700, marginBottom: '4px', color: '#fbbf24' }}>GHI CHÚ MỚI NHẤT</div>
-                            {customer.latest_note}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </td>
-                <td>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontWeight: 600 }}>{customer.phone || 'N/A'}</span>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{customer.email || ''}</span>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{customer.address || ''}</span>
-                  </div>
-                </td>
-                <td>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
-                    <span 
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: '12px',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        ...(customer.customer_segment === 'VVIP' ? { background: 'linear-gradient(135deg, #a855f7 0%, #db2777 100%)', color: 'white', border: 'none' } : 
-                            customer.customer_segment === 'VIP' ? { background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' } : 
-                            customer.customer_segment === 'Platinum' ? { background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0' } : 
-                            customer.customer_segment === 'Repeat Customer' ? { background: '#dbeafe', color: '#2563eb', border: '1px solid #bfdbfe' } : 
-                            { background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0' }) // New Customer
-                      }}
-                    >
-                      {customer.customer_segment || 'New Customer'}
-                    </span>
-                    {customer.lead_source && (
-                      <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
-                        Nguồn: {customer.lead_source}
+                        {customer.customer_segment === 'VIP 1' ? '⭐⭐⭐ VIP 1' :
+                         customer.customer_segment === 'VIP 2' ? '⭐⭐ VIP 2' :
+                         customer.customer_segment === 'VIP 3' ? '⭐ VIP 3' :
+                         customer.customer_segment || 'New Customer'}
                       </span>
-                    )}
+                      <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600 }}>
+                        {(customer.total_trip_count || 0)} chuyến
+                      </span>
+                      {customer.lead_source && (
+                        <span style={{ fontSize: '0.6rem', color: '#94a3b8', fontWeight: 600 }}>
+                          · {customer.lead_source}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </td>
                 <td style={{ fontSize: '0.85rem' }}>
@@ -289,7 +288,7 @@ const CustomersTab = ({
             ))}
             {customers.length === 0 && (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
                   Chưa có dữ liệu khách hàng.
                 </td>
               </tr>

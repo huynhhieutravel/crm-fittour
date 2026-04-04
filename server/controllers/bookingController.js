@@ -284,6 +284,16 @@ exports.deleteBooking = async (req, res) => {
         const resBook = await db.query('SELECT booking_code FROM bookings WHERE id = $1', [bookingId]);
         if (resBook.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy booking' });
 
+        // Kiểm tra giao dịch thanh toán trước khi xóa
+        const txCount = await db.query('SELECT COUNT(*)::int as c FROM booking_transactions WHERE booking_id = $1', [bookingId]);
+        if (txCount.rows[0].c > 0 && req.query.force !== 'true') {
+            return res.status(409).json({
+                message: `Đơn hàng ${resBook.rows[0].booking_code} có ${txCount.rows[0].c} giao dịch thanh toán. Xóa sẽ mất toàn bộ lịch sử thu tiền.`,
+                has_transactions: true,
+                tx_count: txCount.rows[0].c
+            });
+        }
+
         await db.query('DELETE FROM bookings WHERE id = $1', [bookingId]);
 
         // LOG ACTIVITY
@@ -303,6 +313,12 @@ exports.deleteBooking = async (req, res) => {
 
 exports.createGroupBooking = async (req, res) => {
     const { departure_id, group_name, passengers, total_price } = req.body;
+    
+    // Validate passengers
+    if (!passengers || !Array.isArray(passengers) || passengers.length === 0) {
+        return res.status(400).json({ message: 'Cần ít nhất 1 hành khách trong nhóm' });
+    }
+    
     const client = await db.pool.connect();
     try {
         await client.query('BEGIN');
@@ -415,7 +431,7 @@ exports.addTransaction = async (req, res) => {
             action_type: 'PAYMENT',
             entity_type: 'BOOKING',
             entity_id: id,
-            details: `Thêm giao dịch thanh toán: ${amount.toLocaleString('vi-VN')}đ`,
+            details: `Thêm giao dịch thanh toán: ${Number(amount).toLocaleString('vi-VN')}đ`,
             new_data: newTx
         });
 

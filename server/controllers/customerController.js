@@ -2,11 +2,21 @@ const db = require('../db');
 const { logActivity } = require('../utils/logger');
 const { convertLeadToCustomer } = require('../services/conversionService');
 
+// Helper: Tính phân khúc VIP tự động dựa trên tổng số chuyến đi
+function computeVipTier(totalTrips) {
+    if (totalTrips >= 7) return 'VIP 1';
+    if (totalTrips >= 4) return 'VIP 2';
+    if (totalTrips >= 3) return 'VIP 3';
+    if (totalTrips >= 2) return 'Repeat Customer';
+    return 'New Customer';
+}
+
 exports.getAllCustomers = async (req, res) => {
     try {
         const result = await db.query(`
             SELECT c.*, 
                    COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0) as total_spent,
+                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0) as crm_trip_count,
                    (SELECT content FROM lead_notes WHERE customer_id = c.id ORDER BY created_at DESC LIMIT 1) as latest_note,
                    l.source as lead_source
             FROM customers c
@@ -16,9 +26,8 @@ exports.getAllCustomers = async (req, res) => {
         
         const currentYear = new Date().getFullYear();
         const now = new Date();
-        // Lấy ngày thứ 2 của tuần hiện tại
         const startOfWeek = new Date(now);
-        const day = startOfWeek.getDay() || 7; // Convert Chủ nhật (0) thành 7
+        const day = startOfWeek.getDay() || 7;
         startOfWeek.setDate(startOfWeek.getDate() - day + 1);
         startOfWeek.setHours(0,0,0,0);
         
@@ -27,16 +36,14 @@ exports.getAllCustomers = async (req, res) => {
         endOfWeek.setHours(23,59,59,999);
 
         const customers = result.rows.map(c => {
-            let segment = c.customer_segment;
-            const spent = parseFloat(c.total_spent || 0);
-            if (spent >= 50000000) segment = 'VIP';
-            else if (spent >= 10000000) segment = 'Platinum';
-            else if (spent > 0) segment = 'Repeat Customer';
+            const pastTrips = parseInt(c.past_trip_count || 0);
+            const crmTrips = parseInt(c.crm_trip_count || 0);
+            const totalTrips = pastTrips + crmTrips;
+            const segment = computeVipTier(totalTrips);
             
             let is_birthday_this_week = false;
             if (c.birth_date) {
                 const bDate = new Date(c.birth_date);
-                // Tạo ngày sinh nhật của năm nay
                 const bThisYear = new Date(currentYear, bDate.getMonth(), bDate.getDate());
                 if (bThisYear >= startOfWeek && bThisYear <= endOfWeek) {
                     is_birthday_this_week = true;
@@ -45,7 +52,10 @@ exports.getAllCustomers = async (req, res) => {
             
             return {
                 ...c,
-                total_spent: spent,
+                total_spent: parseFloat(c.total_spent || 0),
+                past_trip_count: pastTrips,
+                crm_trip_count: crmTrips,
+                total_trip_count: totalTrips,
                 customer_segment: segment,
                 is_birthday_this_week
             };
@@ -79,8 +89,8 @@ exports.createCustomer = async (req, res) => {
                 id_card, id_expiry, address, preferred_contact, role,
                 customer_segment, tour_interests, special_requests, internal_notes, 
                 lead_id, location_city, travel_season, first_deal_date, assigned_to,
-                destinations, experiences, travel_styles, created_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *`,
+                destinations, experiences, travel_styles, created_at, past_trip_count
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25) RETURNING *`,
             [
                 normalizedName, body.phone || null, body.email || null, body.gender || null, 
                 body.birth_date || null, body.nationality || 'Việt Nam', 
@@ -89,12 +99,13 @@ exports.createCustomer = async (req, res) => {
                 body.customer_segment || 'New Customer', body.tour_interests || null, 
                 body.special_requests || null, body.internal_notes || null, 
                 body.lead_id || null, body.location_city || null, body.travel_season || null,
-                body.first_deal_date || new Date(), // Mặc định là ngày tạo nếu không nhập
+                body.first_deal_date || new Date(),
                 body.assigned_to || null,
                 body.destinations ? JSON.stringify(body.destinations) : '[]',
                 body.experiences ? JSON.stringify(body.experiences) : '[]',
                 body.travel_styles ? JSON.stringify(body.travel_styles) : '[]',
-                body.created_at || new Date()
+                body.created_at || new Date(),
+                parseInt(body.past_trip_count) || 0
             ]
         );
 
@@ -132,7 +143,8 @@ exports.getCustomerById = async (req, res) => {
     try {
         const result = await db.query(`
             SELECT c.*, 
-                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0)::numeric as total_spent
+                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0)::numeric as total_spent,
+                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0) as crm_trip_count
             FROM customers c WHERE c.id = $1
         `, [req.params.id]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
@@ -163,7 +175,13 @@ exports.getCustomerById = async (req, res) => {
         `, [req.params.id]);
         
         const customer = result.rows[0];
-        customer.total_spent = parseFloat(customer.total_spent); 
+        customer.total_spent = parseFloat(customer.total_spent);
+        const pastTrips = parseInt(customer.past_trip_count || 0);
+        const crmTrips = parseInt(customer.crm_trip_count || 0);
+        customer.past_trip_count = pastTrips;
+        customer.crm_trip_count = crmTrips;
+        customer.total_trip_count = pastTrips + crmTrips;
+        customer.customer_segment = computeVipTier(customer.total_trip_count);
         customer.interaction_history = notes.rows;
         customer.booking_history = bookings.rows;
         
@@ -210,7 +228,8 @@ exports.updateCustomer = async (req, res) => {
             'id_card', 'id_expiry', 'address', 'preferred_contact', 'role',
             'customer_segment', 'tour_interests', 'special_requests', 
             'internal_notes', 'location_city', 'travel_season', 
-            'first_deal_date', 'assigned_to', 'destinations', 'experiences', 'travel_styles', 'created_at'
+            'first_deal_date', 'assigned_to', 'destinations', 'experiences', 'travel_styles', 'created_at',
+            'past_trip_count'
         ];
 
         Object.keys(updates).forEach(key => {
@@ -281,6 +300,15 @@ exports.deleteCustomer = async (req, res) => {
         const resCust = await db.query('SELECT name FROM customers WHERE id = $1', [custId]);
         if (resCust.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
 
+        // Kiểm tra booking liên kết
+        const bCount = await db.query('SELECT COUNT(*)::int as c FROM bookings WHERE customer_id = $1', [custId]);
+        if (bCount.rows[0].c > 0) {
+            return res.status(409).json({
+                message: `Khách hàng "${resCust.rows[0].name}" có ${bCount.rows[0].c} đơn hàng liên kết. Không thể xóa trực tiếp.`,
+                has_bookings: true
+            });
+        }
+
         await db.query('DELETE FROM customers WHERE id = $1', [custId]);
 
         // LOG ACTIVITY
@@ -321,6 +349,10 @@ exports.addNote = async (req, res) => {
         const customerId = req.params.id;
         const { content } = req.body;
         
+        if (!content || content.trim() === '') {
+            return res.status(400).json({ message: 'Nội dung ghi chú không được để trống' });
+        }
+        
         const result = await db.query(
             'INSERT INTO lead_notes (customer_id, content, created_by) VALUES ($1, $2, $3) RETURNING *',
             [customerId, content, req.user ? req.user.id : null]
@@ -336,7 +368,7 @@ exports.addNote = async (req, res) => {
             action_type: 'CREATE_NOTE',
             entity_type: 'CUSTOMER',
             entity_id: customerId,
-            details: `Thêm ghi chú cho Khách hàng: ${content.substring(0, 50)}...`
+            details: `Thêm ghi chú cho Khách hàng: ${(content || '').substring(0, 50)}...`
         });
         
         res.status(201).json(noteWithUser.rows[0]);
@@ -392,27 +424,43 @@ exports.mergeCustomers = async (req, res) => {
         return res.status(400).json({ message: 'Missing primaryId or secondaryIds' });
     }
     
+    const client = await db.pool.connect();
     try {
-        await db.query('BEGIN');
+        await client.query('BEGIN');
         
         // 1. Move bookings
-        await db.query(`UPDATE bookings SET customer_id = $1 WHERE customer_id = ANY($2)`, [primaryId, secondaryIds]);
+        await client.query(`UPDATE bookings SET customer_id = $1 WHERE customer_id = ANY($2)`, [primaryId, secondaryIds]);
         
-        // 2. Move lead notes
-        await db.query(`UPDATE lead_notes SET customer_id = $1 WHERE customer_id = ANY($2)`, [primaryId, secondaryIds]);
+        // 2. Move booking passengers
+        await client.query(`UPDATE booking_passengers SET customer_id = $1 WHERE customer_id = ANY($2)`, [primaryId, secondaryIds]);
         
-        // 3. Move events
-        await db.query(`UPDATE customer_events SET customer_id = $1 WHERE customer_id = ANY($2)`, [primaryId, secondaryIds]);
+        // 3. Move lead notes
+        await client.query(`UPDATE lead_notes SET customer_id = $1 WHERE customer_id = ANY($2)`, [primaryId, secondaryIds]);
         
-        // 4. Delete subordinate customers
-        await db.query(`DELETE FROM customers WHERE id = ANY($1)`, [secondaryIds]);
+        // 4. Move events
+        await client.query(`UPDATE customer_events SET customer_id = $1 WHERE customer_id = ANY($2)`, [primaryId, secondaryIds]);
         
-        await db.query('COMMIT');
+        // 5. Move leads
+        await client.query(`UPDATE leads SET customer_id = $1 WHERE customer_id = ANY($2)`, [primaryId, secondaryIds]);
         
-        logActivity(req.user.userId, 'MERGE_CUSTOMERS', `Merged ${secondaryIds.length} into customer ${primaryId}`);
+        // 6. Delete subordinate customers
+        await client.query(`DELETE FROM customers WHERE id = ANY($1)`, [secondaryIds]);
+        
+        await client.query('COMMIT');
+        
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'MERGE',
+            entity_type: 'CUSTOMER',
+            entity_id: primaryId,
+            details: `Gộp ${secondaryIds.length} khách hàng vào #${primaryId}`
+        });
+        
         res.json({ message: 'Merge successful' });
     } catch (err) {
-        await db.query('ROLLBACK');
+        await client.query('ROLLBACK');
         res.status(500).json({ message: err.message });
+    } finally {
+        client.release();
     }
 };

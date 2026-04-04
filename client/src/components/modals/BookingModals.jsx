@@ -190,7 +190,7 @@ export const AddBookingModal = ({
                     options={customerOptions}
                     value={currCustomerValue}
                     onChange={(opt) => setFormData({...formData, customer_id: opt ? opt.value : ''})}
-                    placeholder="Tìm theo tên nặc số điện thoại..."
+                    placeholder="Tìm theo tên hoặc số điện thoại..."
                     isClearable
                     styles={{ control: (base) => ({ ...base, minHeight: '42px', borderRadius: '8px', border: '1px solid #cbd5e1' }) }}
                   />

@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { X, Calendar, MapPin, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { X, Calendar, MapPin, Users, CheckCircle, Clock, AlertCircle, Award } from 'lucide-react';
+
+// Helper: Tính phân khúc VIP tự động
+function computeVipTier(totalTrips) {
+    if (totalTrips >= 7) return { label: 'VIP 1', badge: '⭐⭐⭐', color: '#dc2626', bg: '#fef2f2', border: '#fecaca' };
+    if (totalTrips >= 4) return { label: 'VIP 2', badge: '⭐⭐', color: '#d97706', bg: '#fffbeb', border: '#fde68a' };
+    if (totalTrips >= 3) return { label: 'VIP 3', badge: '⭐', color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe' };
+    if (totalTrips >= 2) return { label: 'Repeat Customer', badge: '🔄', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' };
+    return { label: 'New Customer', badge: '🆕', color: '#64748b', bg: '#f8fafc', border: '#e2e8f0' };
+}
 
 const DESTINATION_OPTIONS = [
   'Nhật Bản 🇯🇵', 'Hàn Quốc 🇰🇷', 'Trung Quốc 🇨🇳', 'Châu Âu 🇪🇺',
@@ -115,10 +124,16 @@ export const AddCustomerModal = ({
             </select>
           </div>
           <div className="modal-form-group">
-            <label>PHÂN KHÚC</label>
-            <select className="modal-select" value={newCustomer.customer_segment} onChange={e => setNewCustomer({...newCustomer, customer_segment: e.target.value})}>
-              {CUSTOMER_SEGMENTS.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+            <label>SỐ CHUYẾN ĐÃ ĐI (trước CRM)</label>
+            <input className="modal-input" type="number" min="0" value={newCustomer.past_trip_count || 0} onChange={e => setNewCustomer({...newCustomer, past_trip_count: parseInt(e.target.value) || 0})} />
+            {(() => {
+              const tier = computeVipTier(parseInt(newCustomer.past_trip_count || 0));
+              return (
+                <div style={{ marginTop: '8px', padding: '6px 12px', borderRadius: '8px', background: tier.bg, border: `1px solid ${tier.border}`, color: tier.color, fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Award size={14} /> {tier.badge} {tier.label}
+                </div>
+              );
+            })()}
           </div>
 
           <div className="modal-form-group">
@@ -346,10 +361,35 @@ export const EditCustomerModal = ({
                   </select>
                 </div>
                 <div className="modal-form-group">
-                  <label>PHÂN KHÚC</label>
-                  <select className="modal-select" value={editingCustomer.customer_segment || 'New Customer'} onChange={e => setEditingCustomer({...editingCustomer, customer_segment: e.target.value})}>
-                    {CUSTOMER_SEGMENTS.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <label>PHÂN KHÚC KHÁCH HÀNG</label>
+                  {(() => {
+                    const pastTrips = parseInt(editingCustomer.past_trip_count || 0);
+                    const crmTrips = parseInt(editingCustomer.crm_trip_count || 0);
+                    const totalTrips = pastTrips + crmTrips;
+                    const tier = computeVipTier(totalTrips);
+                    return (
+                      <div style={{ padding: '12px', borderRadius: '10px', background: tier.bg, border: `1.5px solid ${tier.border}` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                          <Award size={18} color={tier.color} />
+                          <span style={{ fontWeight: 800, fontSize: '1.1rem', color: tier.color }}>{tier.badge} {tier.label}</span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', fontSize: '0.8rem' }}>
+                          <div style={{ background: 'white', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
+                            <div style={{ color: '#94a3b8', fontWeight: 600, marginBottom: '2px' }}>Trước CRM</div>
+                            <input type="number" min="0" value={pastTrips} onChange={e => setEditingCustomer({...editingCustomer, past_trip_count: parseInt(e.target.value) || 0})} style={{ width: '100%', textAlign: 'center', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '4px', fontWeight: 800, fontSize: '1.1rem', color: '#1e293b', outline: 'none' }} />
+                          </div>
+                          <div style={{ background: 'white', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
+                            <div style={{ color: '#94a3b8', fontWeight: 600, marginBottom: '2px' }}>Trong CRM</div>
+                            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b', padding: '4px' }}>{crmTrips}</div>
+                          </div>
+                          <div style={{ background: 'white', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
+                            <div style={{ color: '#94a3b8', fontWeight: 600, marginBottom: '2px' }}>Tổng</div>
+                            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: tier.color, padding: '4px' }}>{totalTrips} chuyến</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div className="modal-form-group">
                   <label>NGÀY CHỐT ĐƠN ĐẦU</label>

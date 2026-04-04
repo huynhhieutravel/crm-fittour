@@ -10,7 +10,8 @@ import {
   Edit3, 
   Trash2, 
   FileText, 
-  Package 
+  Package,
+  X 
 } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
 import axios from 'axios';
@@ -178,6 +179,7 @@ const LeadsTab = ({
             <label>NHÓM BU</label>
             <select className="filter-select" value={leadFilters.bu_group} onChange={e => setLeadFilters({...leadFilters, bu_group: e.target.value})}>
               <option value="">Khối: Tất cả</option>
+              <option value="NO_BU">⚠ Chưa chọn BU</option>
               {bus.filter(bu => bu.is_active !== false).map(bu => (
                 <option key={bu.id} value={bu.id}>{bu.label}</option>
               ))}
@@ -209,14 +211,11 @@ const LeadsTab = ({
           </div>
           <div className="filter-group">
             <label>TƯ VẤN VIÊN</label>
-            <SearchableSelect 
-              options={users.map(u => ({ id: u.id, name: u.full_name }))}
-              value={leadFilters.assigned_to}
-              onChange={val => setLeadFilters({...leadFilters, assigned_to: val})}
-              placeholder="-- Tư vấn viên --"
-              className="filter-select"
-              style={{ border: 'none', padding: 0 }}
-            />
+            <select className="filter-select" value={leadFilters.assigned_to} onChange={e => setLeadFilters({...leadFilters, assigned_to: e.target.value})}>
+              <option value="">-- Tất cả --</option>
+              <option value="NO_STAFF">⚠ Chưa giao ai</option>
+              {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
+            </select>
           </div>
           <button 
             className="login-btn" 
@@ -263,8 +262,25 @@ const LeadsTab = ({
             <input type="date" className="filter-input" style={{ padding: '4px 8px', height: '32px' }} value={leadFilters.endDate || ''} onChange={e => setLeadFilters({...leadFilters, timeRange: 'custom', endDate: e.target.value})} />
           </div>
 
-          <div style={{ marginLeft: 'auto', color: '#94a3b8', fontWeight: 600, background: '#f1f5f9', padding: '4px 12px', borderRadius: '6px' }}>
-            {filteredLeads.length} Lead
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {(leadFilters.status || leadFilters.bu_group || leadFilters.assigned_to || leadFilters.search || (leadFilters.tours && leadFilters.tours.length > 0) || leadFilters.startDate || leadFilters.endDate) && (
+              <button 
+                type="button"
+                onClick={() => setLeadFilters({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'all', startDate: '', endDate: '', tours: [] })}
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca', 
+                  padding: '4px 12px', borderRadius: '6px', cursor: 'pointer', 
+                  fontWeight: 700, fontSize: '0.8rem',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <X size={12} strokeWidth={3} /> Xóa bộ lọc
+              </button>
+            )}
+            <div style={{ color: '#94a3b8', fontWeight: 600, background: '#f1f5f9', padding: '4px 12px', borderRadius: '6px' }}>
+              {filteredLeads.length} Lead
+            </div>
           </div>
         </div>
       </div>

@@ -131,6 +131,19 @@ exports.getGuideTimeline = async (req, res) => {
 
 exports.deleteGuide = async (req, res) => {
     try {
+        // Kiểm tra HDV đang gắn với bao nhiêu lịch khởi hành
+        const deps = await db.query('SELECT COUNT(*)::int as count FROM tour_departures WHERE guide_id = $1', [req.params.id]);
+        const depCount = deps.rows[0].count;
+        
+        // Nếu có tour gắn VÀ client chưa xác nhận force=true → cảnh báo
+        if (depCount > 0 && req.query.force !== 'true') {
+            return res.status(409).json({ 
+                message: `HDV này đang gắn với ${depCount} lịch khởi hành. Xóa sẽ hủy liên kết HDV khỏi các tour đó.`,
+                has_deps: true,
+                dep_count: depCount
+            });
+        }
+        
         const result = await db.query('DELETE FROM guides WHERE id = $1 RETURNING *', [req.params.id]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy hướng dẫn viên' });
         res.json({ message: 'Đã xoá hướng dẫn viên thành công' });
