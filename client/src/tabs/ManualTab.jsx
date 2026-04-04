@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { BookOpen, Shield, Target, FileText, Users, Map, ShoppingCart, CheckCircle, XCircle, AlertTriangle, Filter, BarChart2, Search, Edit3, Copy } from 'lucide-react';
+import { BookOpen, Shield, Target, FileText, Users, Map, ShoppingCart, CheckCircle, XCircle, AlertTriangle, Filter, BarChart2, Search, Edit3, Copy, ArrowUpRight } from 'lucide-react';
 
 const ManualOverview = () => (
   <>
