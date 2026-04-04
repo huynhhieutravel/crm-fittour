@@ -73,14 +73,18 @@ exports.getHotelDetails = async (req, res) => {
 };
 
 exports.createHotel = async (req, res) => {
+    const client = await db.pool.connect();
     try {
         const { 
             code, name, tax_id, build_year, phone, email, country, province, 
             address, notes, star_rate, website, hotel_class, project_name, 
-            bank_account_name, bank_account_number, bank_name, market 
+            bank_account_name, bank_account_number, bank_name, market,
+            contacts, services, allotments
         } = req.body;
 
-        const result = await db.query(
+        await client.query('BEGIN');
+
+        const result = await client.query(
             `INSERT INTO hotels (
                 code, name, tax_id, build_year, phone, email, country, province, 
                 address, notes, star_rate, website, hotel_class, project_name, 
@@ -88,37 +92,116 @@ exports.createHotel = async (req, res) => {
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *`,
             [code, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market]
         );
+        const newHotelId = result.rows[0].id;
+
+        // Xử lý Contacts
+        if (contacts && Array.isArray(contacts)) {
+            for (const c of contacts) {
+                await client.query(
+                    'INSERT INTO hotel_contacts (hotel_id, name, position, dob, phone, email) VALUES ($1, $2, $3, $4, $5, $6)',
+                    [newHotelId, c.name, c.position, c.dob || null, c.phone, c.email]
+                );
+            }
+        }
+
+        // Tạo 1 Hợp Đồng chung tĩnh (Vì form nhập cũ không có khái niệm tạo nhiều hợp đồng riêng)
+        let defaultContractId = null;
+        if ((services && services.length > 0) || (allotments && allotments.length > 0)) {
+            const contractRes = await client.query(
+                `INSERT INTO hotel_contracts (hotel_id, contract_name, status) VALUES ($1, $2, $3) RETURNING id`,
+                [newHotelId, 'Hợp đồng Hệ thống mặc định', 'active']
+            );
+            defaultContractId = contractRes.rows[0].id;
+        }
+
+        // Xử lý Services (Phòng + Giá)
+        if (services && Array.isArray(services)) {
+            for (const s of services) {
+                // Upsert Room Type by SKU
+                let roomRes = await client.query('SELECT id FROM hotel_room_types WHERE hotel_id = $1 AND sku = $2', [newHotelId, s.sku || 'N/A']);
+                let roomId;
+                if (roomRes.rows.length === 0) {
+                    const insertRoom = await client.query(
+                        'INSERT INTO hotel_room_types (hotel_id, sku, name) VALUES ($1, $2, $3) RETURNING id',
+                        [newHotelId, s.sku || 'N/A', s.name || 'Dịch vụ chưa đặt tên']
+                    );
+                    roomId = insertRoom.rows[0].id;
+                } else {
+                    roomId = roomRes.rows[0].id;
+                }
+
+                await client.query(
+                    `INSERT INTO hotel_contract_rates 
+                    (contract_id, room_type_id, start_date, end_date, day_type, contract_price, net_price, sell_price, description, notes) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                    [defaultContractId, roomId, s.start_date || new Date(), s.end_date || new Date(), s.day_type || 'Ngày thường', s.contract_price || 0, s.net_price || 0, s.sell_price || 0, s.description, s.notes]
+                );
+            }
+        }
+
+        // Xử lý Allotments
+        if (allotments && Array.isArray(allotments)) {
+            for (const a of allotments) {
+                let roomRes = await client.query('SELECT id FROM hotel_room_types WHERE hotel_id = $1 AND sku = $2', [newHotelId, a.sku || 'N/A']);
+                let roomId;
+                if (roomRes.rows.length === 0) {
+                    const insertRoom = await client.query(
+                        'INSERT INTO hotel_room_types (hotel_id, sku, name) VALUES ($1, $2, $3) RETURNING id',
+                        [newHotelId, a.sku || 'N/A', a.name || 'Dịch vụ chưa đặt tên']
+                    );
+                    roomId = insertRoom.rows[0].id;
+                } else {
+                    roomId = roomRes.rows[0].id;
+                }
+
+                await client.query(
+                    `INSERT INTO hotel_allotments 
+                    (hotel_id, room_type_id, start_date, end_date, day_type, allotment_count, cut_off_days, net_price, sell_price, description, notes) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                    [newHotelId, roomId, a.start_date || new Date(), a.end_date || new Date(), a.day_type || 'Ngày thường', a.allotment_count || 0, a.cut_off_days || 0, a.net_price || 0, a.sell_price || 0, a.description, a.notes]
+                );
+            }
+        }
+
+        await client.query('COMMIT');
 
         if (req.user) {
             await logActivity({
                 user_id: req.user.id,
                 action_type: 'CREATE',
                 entity_type: 'HOTEL',
-                entity_id: result.rows[0].id,
+                entity_id: newHotelId,
                 details: `Đã thêm mới Khách sạn: ${name}`
             });
         }
 
         res.status(201).json(result.rows[0]);
     } catch (err) {
+        await client.query('ROLLBACK');
         if (err.code === '23505') {
             return res.status(400).json({ message: 'Mã Nhà cung cấp đã tồn tại!' });
         }
         console.error(err);
         res.status(500).json({ message: err.message });
+    } finally {
+        client.release();
     }
 };
 
 exports.updateHotel = async (req, res) => {
+    const client = await db.pool.connect();
     try {
         const { id } = req.params;
         const { 
             code, name, tax_id, build_year, phone, email, country, province, 
             address, notes, star_rate, website, hotel_class, project_name, 
-            bank_account_name, bank_account_number, bank_name, market 
+            bank_account_name, bank_account_number, bank_name, market,
+            contacts, services, allotments
         } = req.body;
 
-        const result = await db.query(
+        await client.query('BEGIN');
+
+        const result = await client.query(
             `UPDATE hotels SET 
                 code=$1, name=$2, tax_id=$3, build_year=$4, phone=$5, email=$6, country=$7, province=$8, 
                 address=$9, notes=$10, star_rate=$11, website=$12, hotel_class=$13, project_name=$14, 
@@ -127,20 +210,107 @@ exports.updateHotel = async (req, res) => {
             [code, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market, id]
         );
 
+        // Update Contacts (Xóa cũ, Thêm mới)
+        if (contacts !== undefined) {
+            await client.query('DELETE FROM hotel_contacts WHERE hotel_id = $1', [id]);
+            for (const c of contacts) {
+                if (c.name && c.name.trim() !== '') {
+                    await client.query(
+                        'INSERT INTO hotel_contacts (hotel_id, name, position, dob, phone, email) VALUES ($1, $2, $3, $4, $5, $6)',
+                        [id, c.name, c.position, c.dob || null, c.phone, c.email]
+                    );
+                }
+            }
+        }
+
+        // Lấy hoặc tạo Default Contract
+        let contractRes = await client.query("SELECT id FROM hotel_contracts WHERE hotel_id = $1 AND contract_name = 'Hợp đồng Hệ thống mặc định'", [id]);
+        let defaultContractId;
+        if (contractRes.rows.length === 0) {
+            const insertCont = await client.query(
+                `INSERT INTO hotel_contracts (hotel_id, contract_name, status) VALUES ($1, $2, $3) RETURNING id`,
+                [id, 'Hợp đồng Hệ thống mặc định', 'active']
+            );
+            defaultContractId = insertCont.rows[0].id;
+        } else {
+            defaultContractId = contractRes.rows[0].id;
+        }
+
+        // Update Services
+        if (services !== undefined) {
+            await client.query('DELETE FROM hotel_contract_rates WHERE contract_id = $1', [defaultContractId]);
+            for (const s of services) {
+                if (!s.name && !s.sku) continue; // Skip empty rows
+                
+                let roomRes = await client.query('SELECT id FROM hotel_room_types WHERE hotel_id = $1 AND sku = $2', [id, s.sku || 'N/A']);
+                let roomId;
+                if (roomRes.rows.length === 0) {
+                    const insertRoom = await client.query(
+                        'INSERT INTO hotel_room_types (hotel_id, sku, name) VALUES ($1, $2, $3) RETURNING id',
+                        [id, s.sku || 'N/A', s.name || 'Dịch vụ chưa đặt tên']
+                    );
+                    roomId = insertRoom.rows[0].id;
+                } else {
+                    roomId = roomRes.rows[0].id;
+                    // Update name in case changed
+                    await client.query('UPDATE hotel_room_types SET name = $1 WHERE id = $2', [s.name, roomId]);
+                }
+
+                await client.query(
+                    `INSERT INTO hotel_contract_rates 
+                    (contract_id, room_type_id, start_date, end_date, day_type, contract_price, net_price, sell_price, description, notes) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                    [defaultContractId, roomId, s.start_date || new Date(), s.end_date || new Date(), s.day_type || 'Ngày thường', s.contract_price || 0, s.net_price || 0, s.sell_price || 0, s.description, s.notes]
+                );
+            }
+        }
+
+        // Update Allotments
+        if (allotments !== undefined) {
+            await client.query('DELETE FROM hotel_allotments WHERE hotel_id = $1', [id]);
+            for (const a of allotments) {
+                if (!a.name && !a.sku) continue; 
+
+                let roomRes = await client.query('SELECT id FROM hotel_room_types WHERE hotel_id = $1 AND sku = $2', [id, a.sku || 'N/A']);
+                let roomId;
+                if (roomRes.rows.length === 0) {
+                    const insertRoom = await client.query(
+                        'INSERT INTO hotel_room_types (hotel_id, sku, name) VALUES ($1, $2, $3) RETURNING id',
+                        [id, a.sku || 'N/A', a.name || 'Dịch vụ chưa đặt tên']
+                    );
+                    roomId = insertRoom.rows[0].id;
+                } else {
+                    roomId = roomRes.rows[0].id;
+                }
+
+                await client.query(
+                    `INSERT INTO hotel_allotments 
+                    (hotel_id, room_type_id, start_date, end_date, day_type, allotment_count, cut_off_days, net_price, sell_price, description, notes) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                    [id, roomId, a.start_date || new Date(), a.end_date || new Date(), a.day_type || 'Ngày thường', a.allotment_count || 0, a.cut_off_days || 0, a.net_price || 0, a.sell_price || 0, a.description, a.notes]
+                );
+            }
+        }
+
+        await client.query('COMMIT');
+
         if (req.user) {
             await logActivity({
                 user_id: req.user.id,
                 action_type: 'UPDATE',
                 entity_type: 'HOTEL',
                 entity_id: id,
-                details: `Cập nhật thông tin Khách sạn: ${name}`
+                details: `Cập nhật thông tin Khách sạn & Bảng giá: ${name}`
             });
         }
 
         res.json(result.rows[0]);
     } catch (err) {
+        await client.query('ROLLBACK');
         console.error(err);
         res.status(500).json({ message: err.message });
+    } finally {
+        client.release();
     }
 };
 
