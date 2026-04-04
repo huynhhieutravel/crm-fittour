@@ -262,6 +262,13 @@ const CustomersTab = ({
                   </div>
                 </td>
                 <td style={{ fontSize: '0.85rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <span style={{ fontWeight: 600 }}>{customer.phone || 'Chưa cập nhật SĐT'}</span>
+                    <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Giới tính: {customer.gender || 'N/A'}</span>
+                    {customer.email && <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{customer.email}</span>}
+                  </div>
+                </td>
+                <td style={{ fontSize: '0.85rem' }}>
                   {customer.created_at ? new Date(customer.created_at).toLocaleDateString('vi-VN') : 'N/A'}
                 </td>
                 <td style={{ fontSize: '0.85rem' }}>
