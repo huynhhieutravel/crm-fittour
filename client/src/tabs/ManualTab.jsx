@@ -295,13 +295,13 @@ const ManualLeadsGuide = () => (
           Tuyệt chiêu để lọc 1000 khách rác ra còn 10 khách ruột. Bấm vào nút <Filter size={18} style={{display: 'inline-block', verticalAlign: 'middle', margin: '0 4px'}} /> <strong>Bộ Lọc</strong> ở góc phải.
         </p>
 
-        {/* MCP WebP Demo Embed */}
+        {/* MCP WebP Demo Embed 
         <div style={{ borderRadius: '12px', border: '2px solid #3b82f6', overflow: 'hidden', marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(59, 130, 246, 0.2)' }}>
           <div style={{ background: '#eff6ff', padding: '0.75rem 1rem', borderBottom: '1px solid #bfdbfe', color: '#1e3a8a', fontWeight: 600, fontSize: '0.9rem' }}>
             🎥 Màn Hình Minh Họa: Mở dropdown Bộ lọc
           </div>
           <img src="/manual_images/leads_filter_demo.webp" style={{ width: '100%', display: 'block' }} alt="Cận cảnh mở menu Filter" />
-        </div>
+        </div> */}
 
         <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#475569', fontSize: '1.05rem', marginBottom: '1.5rem' }}>
           <li><strong>Lọc theo Thời Khoảng (Date range):</strong> Mặc định nó chỉ hiện tháng này. Bạn dùng chức năng "Tùy chọn" để chọn lịch từ năm trước đến năm sau nếu muốn xới củ lại khách cũ.</li>
@@ -359,9 +359,11 @@ const ManualLeadsGuide = () => (
           <div style={{ background: '#fdf4ff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #fbcfe8' }}>
             <strong>💬 (Nhật Ký - Notes)</strong><br/>
             Dùng để bật nhanh Modal chat để viết ghi chú tình hình con bệnh. Lịch sử ko bị xóa bao giờ.
+            {/* 
             <div style={{ marginTop: '1rem', borderRadius: '8px', overflow: 'hidden', border: '1px solid #f9a8d4' }}>
                <img src="/manual_images/leads_form_and_notes.webp" style={{ width: '100%', display: 'block' }} alt="Mở Chat Notes" />
             </div>
+            */}
           </div>
           <div style={{ background: '#f0fdf4', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
             <strong>👤+ (Convert Chốt Đơn)</strong><br/>
@@ -378,79 +380,156 @@ const ManualLeadsGuide = () => (
   </>
 );
 
-const ManualCustomers = () => (
+const ManualCustomersSOP = () => (
   <>
-    <div style={{ background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(2, 132, 199, 0.4)' }}>
-      <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.5px' }}>Nghiệp Vụ: Danh Mục Khách Hàng</h1>
+    <div style={{ background: 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(185, 28, 28, 0.4)' }}>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1rem' }}>
+        <Shield size={36} color="#fca5a5" />
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>Khách Hàng: Quy Định (SOP)</h1>
+      </div>
       <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '650px', lineHeight: 1.6 }}>
-        Trái tim của hệ thống CRM. Nơi quản lý dữ liệu vĩnh viễn của hành khách, tự động phát hiện số điện thoại trùng lặp và lưu vết lịch sử mọi giao dịch.
+        Bảng Khách Hàng (Customer) là "bất khả xâm phạm". Mọi hành vi làm bẩn dữ liệu tại đây sẽ dẫn tới hậu quả sai lệch Phễu Marketing năm sau. Tuyệt đối tuân thủ 3 thiết quân luật dưới đây!
       </p>
     </div>
 
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
-      {/* STEP 1 */}
+      {/* LUẬT 1 */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
           <StepBadge num="1" />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Tạo Khách Hàng & Nguồn Gốc Dữ Liệu</h2>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Luật Vàng: Chống Trùng Lặp 100% (Anti-Duplicate)</h2>
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Khách hàng trong danh mục này xuất phát từ hai nguồn chính:
+          Dữ liệu tại bảng Khách hàng không giống như Lead (xóa đi bốc lại được). CRM dùng <strong>Số Điện Thoại (SĐT)</strong> làm định danh chốt sống.
         </p>
-        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', color: '#475569', fontSize: '1.05rem', marginBottom: '1.5rem' }}>
-          <li><strong>Thêm trực tiếp:</strong> Dùng cho người đại diện hoặc thành viên đoàn khi tạo Đơn hàng (Booking).</li>
-          <li><strong>Chuyển đổi từ Lead:</strong> Nút Convert bên bảng Lead sẽ tự đẩy toàn bộ thông tin (Tên, SĐT, Ghi chú) sang đây, tiết kiệm 100% thời gian nhập liệu.</li>
-        </ul>
-        <div style={{ background: '#eff6ff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bfdbfe' }}>
-          <h3 style={{ color: '#1e3a8a', fontWeight: 700, marginBottom: '0.5rem' }}>Hồ Sơ 360 Độ:</h3>
-          <p style={{ color: '#1e40af', fontSize: '1rem', margin: 0 }}>
-            Mỗi khách hàng mang một <strong>Hồ sơ trọn đời</strong>. Bạn có thể lưu Passport, Visa, Ghi chú y tế (Dị ứng, ăn dặm). Bất cứ Sale nào bấm vào khách hàng này đều thấy toàn bộ <strong>Lịch sử Đơn Hàng (Booking)</strong> mà họ từng tham gia trong quá khứ!
-          </p>
+
+        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+          <div style={{ flex: 1, minWidth: '250px', background: '#fef2f2', padding: '1.5rem', borderRadius: '12px', border: '1px solid #fecaca' }}>
+            <h3 style={{ color: '#991b1b', fontWeight: 700, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertTriangle size={20} /> 🚨 NGHIÊM CẤM "MÁNH KHÓE"
+            </h3>
+            <p style={{ color: '#991b1b', margin: 0, fontSize: '0.95rem', lineHeight: 1.6 }}>
+              Nếu hệ thống ném thẳng mặt cảnh báo: <strong>"Số điện thoại này đã tồn tại ở khách hàng ABC"</strong>. Lập tức dừng tay! <br/><br/>
+              <b>Cấm tuyệt đối:</b> Cố tình chèn thêm số 0, hoặc đổi đầu số (+84 thành 0) để tạo thành 1 dòng data mới hòng cướp khách hoặc tính KPI ảo. Mọi hồ sơ có SĐT sai định dạng sẽ bị admin rà soát và phạt nặng.
+            </p>
+          </div>
+          <div style={{ flex: 1, minWidth: '250px', background: '#f0fdf4', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+            <h3 style={{ color: '#166534', fontWeight: 700, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CheckCircle size={20} /> CÁCH XỬ LÝ (GỘP MERGE)
+            </h3>
+            <p style={{ color: '#15803d', margin: 0, fontSize: '0.95rem', lineHeight: 1.6 }}>
+              Khi bị báo trùng, tức là khách đó đã là "Khách cũ" từng đi Tour với công ty. Bạn phải dùng công cụ <strong>TÌM KIẾM</strong> số điện thoại đó để xới lại hồ sơ gốc.<br/><br/>
+              Khách mua thêm chuyến đi mới? Tuyệt vời, chỉ cần tạo Giao dịch (Booking) mới dán chung vào Hồ sơ cũ đó. Tiếng vang của khách này sẽ được cộng dồn (Trở thành Khách VVIP).
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* STEP 2 */}
+      {/* LUẬT 2 */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
           <StepBadge num="2" />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Cơ Chế Chống Trùng Lặp (Anti-Duplicate)</h2>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Nguyên Tắc Bóc Tách Khách Nhóm (Group Bookings)</h2>
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Đây là siêu năng lực của CRM giúp dẹp bỏ tình trạng "Một khách có 5 file Excel khác nhau". CRM lấy <strong>Số Điện Thoại (SĐT)</strong> làm định danh gốc.
+          Một câu hỏi cực kỳ phổ biến của Sale khi xử lý Khách theo nhóm/gia đình lớn.
         </p>
-        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '250px', background: '#fef2f2', padding: '1.5rem', borderRadius: '12px', border: '1px solid #fecaca' }}>
-            <h3 style={{ color: '#991b1b', fontWeight: 700, marginBottom: '0.5rem' }}>🚨 Báo Động Đỏ:</h3>
-            <p style={{ color: '#991b1b', margin: 0, fontSize: '0.95rem' }}>Hãy thử tạo một Khách hàng với SĐT đã có sẵn. Hệ thống sẽ cạch mặt bạn ngay lập tức với cảnh báo đỏ chót "Số điện thoại này đã tồn tại ở khách hàng ABC".</p>
-          </div>
-          <div style={{ flex: 1, minWidth: '250px', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ color: '#0f172a', fontWeight: 700, marginBottom: '0.5rem' }}>Tự Động Gộp (Merge):</h3>
-            <p style={{ color: '#475569', margin: 0, fontSize: '0.95rem' }}>Thay vì tạo thùng rác data, bạn chọn chức năng <strong>Gộp (Merge)</strong>. Dữ liệu mới nhất sẽ được vá vào hồ sơ cũ, giữ cho data của công ty luôn sạch sẽ.</p>
+
+        <div style={{ padding: '1.5rem', background: '#fffbeb', borderLeft: '5px solid #f59e0b', borderRadius: '4px', color: '#92400e' }}>
+          <h3 style={{ fontWeight: 800, margin: '0 0 10px 0', fontSize: '1.1rem' }}>❓ Kịch Bản: 1 Người Đóng Tiền Cho 5 Người Đi</h3>
+          <em>"Nếu ông Chú đại diện chuyển 50 triệu mua tour cho 5 người bạn, em mở 1 hồ sơ tên ông Chú rồi Note 'SL: 5' cho nhanh được không?"</em>
+          
+          <div style={{ marginTop: '1rem', padding: '1rem', background: 'white', borderRadius: '8px', border: '1px dashed #fbbf24' }}>
+            <strong>✅ TRẢ LỜI CỦA CÔNG TY: TUYỆT ĐỐI KHÔNG! BẮT BUỘC NHẬP HẾT CẢ 5 HỒ SƠ KHÁCH HÀNG.</strong>
+            <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.2rem', lineHeight: 1.6 }}>
+              <li>Ông Chú trả tiền là <strong>Người thanh toán</strong>, nhưng 5 người kia MỚI LÀ CÁC THỰC THỂ đã trải nghiệm dịch vụ của công ty ta!</li>
+              <li>Họ chính là đối tượng để phòng Marketing gửi Zalo/SMS chúc mừng sinh nhật, rủ đi Tour mùa thu năm sau!</li>
+              <li>Việc gộp chung 5 người thành 1 hồ sơ nghĩa là bạn đã nhẫn tâm <strong>Vứt hẳn 4 Data Vàng</strong> của công ty vào sọt rác. Hành động này sẽ gây thiệt hại hệ thống cực lớn!</li>
+            </ul>
           </div>
         </div>
       </section>
 
-      {/* STEP 3 */}
+      {/* LUẬT 3 */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
           <StepBadge num="3" />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Nguyên Tắc Nhóm (Group Buys) & Dữ Liệu</h2>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Luật "Tiền Trảm Hậu Tấu" - Không Nút Xóa</h2>
+        </div>
+        
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Rất nhiều người rà tìm nút Thùng Rác (Xóa) Khách Hàng. Xin thưa: <strong>Nút đó không tồn tại ở bảng Khách hàng!</strong>
+        </p>
+
+        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#475569', fontSize: '1.05rem' }}>
+          <li><strong>Vì sao?</strong> Khách hàng có liên kết rễ má chặt chẽ Mạng lưới Đơn hàng (Booking) và Dòng Tiền (Cọc, Thanh toán). Nếu bạn xóa 1 khách hàng, Kế toán sẽ không bao giờ biết khoản 20 triệu hôm qua là thanh toán cho ai (Dữ liệu bị Orphan/Bồ côi).</li>
+          <li><strong>Giải pháp thay thế (XÓA MỀM - SOFT DELETE):</strong> Đổi trạng thái khách thành <strong>Khóa (Lock)</strong> bằng thao tác chỉnh sửa. Khách đó sẽ tàng hình khỏi các danh sách trỏ xuống khi Sales mới tạo Booking, nhưng toàn bộ Lịch sử quá khứ của Kế Toán xuất ra file Excel vẫn Giữ Nguyên Vẹn. An toàn 100%.</li>
+        </ul>
+      </section>
+
+    </div>
+  </>
+);
+
+const ManualCustomersGuide = () => (
+  <>
+    <div style={{ background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(2, 132, 199, 0.4)' }}>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1rem' }}>
+        <Users size={36} color="#bae6fd" />
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>Khách Hàng: Hướng Dẫn Sử Dụng</h1>
+      </div>
+      <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '650px', lineHeight: 1.6 }}>
+        Bảng điều khiển đỉnh cao lưu trữ <strong>Hồ Sơ 360 độ</strong> trọn đời của Khách Hàng. Trải nghiệm sự liên thông mượt mà giữa Các khối dữ liệu.
+      </p>
+    </div>
+
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      
+      {/* TÍNH NĂNG 1 */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="1" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Cơ Chế Khởi Tạo & Bơm Data (CAPI)</h2>
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Tuyệt đối chú ý nguyên tắc dữ liệu đối với các trường hợp đặt Tour theo nhóm.
+          Bạn hiếm khi phải Bấm nút "Thêm Mới" Khách hàng theo cách nhập tay khổ sai như ngày xưa. CRM có cơ chế mớm data tự động (Pipeline):
         </p>
 
-        <div style={{ padding: '1rem 1.5rem', background: '#f0fdf4', borderLeft: '4px solid #22c55e', borderRadius: '4px', color: '#166534', marginBottom: '1.5rem' }}>
-          <strong>CASE DIỂN HÌNH - KHÁCH ĐẶT CHUNG (5 bạn thân mua chung):</strong><br/>
-          Nếu 1 khách hàng đại diện thanh toán 50 triệu cho 5 người bạn. <strong>TUYỆT ĐỐI KHÔNG</strong> khai báo 1 khách rồi ghi "SL: 5" vào Note. Bạn <strong>BẮT BUỘC PHẢI KHAI BÁO CẢ 5 HỒ SƠ KHÁCH</strong>.
-          <br/><br/>
-          Lý do: Cả 5 người đó đều đi tour nhà bạn. Sau này họ sẽ là ngòi nổ Marketing cho năm sau. Mất 4 số data là bạn bay thẳng 4 khách nóng tiềm năng vô sọt rác!
+        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '300px', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ color: '#0f172a', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <ArrowUpRight size={18} color="#6366f1" /> Từ Mạng Luới Lead
+            </h3>
+            <p style={{ color: '#475569', margin: 0, fontSize: '0.95rem' }}>
+              90% Hồ sơ khách hàng nằm ở đây được phôi thai từ danh sách bên bảng <strong>Lead Marketing</strong>. Ngay khi Sale bóp cò bấm nút Convert (Chuyển Đổi), hồ sơ sẽ nhảy sang bảng Khách hàng đầy đủ thông tin Tên, SĐT, Kênh tìm đến và Lịch sử Note.
+            </p>
+          </div>
+          <div style={{ flex: 1, minWidth: '300px', background: '#eff6ff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bfdbfe' }}>
+            <h3 style={{ color: '#1e3a8a', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <Users size={18} color="#2563eb" /> Nhập thêm Người Nhà
+            </h3>
+            <p style={{ color: '#1e40af', margin: 0, fontSize: '0.95rem' }}>
+              Ngõ thứ 2 là khi bạn trực tiếp tạo Đơn Booking (Tour). Sẽ có nút mở Popup Thêm Nhanh các thành viên (con cái, người già đi chung) vào hồ sơ mạng lưới Khách hàng. Nhập cái lưu liền cho nóng!
+            </p>
+          </div>
         </div>
+      </section>
 
-        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
-          Và với chức năng <strong>Xóa Mềm (Soft-delete)</strong> thay vì Xóa hẳn, Kế toán sẽ luôn truy vết được dòng tiền dù Khách Hàng đó đã bị Khóa (Lock) bên ngoài danh sách Sale.
+      {/* TÍNH NĂNG 2 */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="2" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Hồ Sơ 360 Độ "Trọn Đời" (Lifetime Value)</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Bạn thử Click thẳng vào tên màu xanh (hoặc icon Xem) của 1 Khách hàng bất kỳ trên bảng. Giao diện sụp xuống một Bảng thông tin Hồ sơ Chi tiết vô cùng đồ sộ.
         </p>
+
+        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#475569', fontSize: '1.05rem' }}>
+          <li><strong>Ngăn Dữ Liệu Chuyên Môn:</strong> Lưu trữ vô tận những thông tin tế nhị của khách: Dị ứng đậu phộng, bị say xe, Hộ chiếu sắp hết hạn (Upload cả ảnh lên mây AWS), Yêu cầu ăn kiêng. Giám đốc cực kỳ đánh giá cao Sale ghi chi tiết mục này.</li>
+          <li><strong>Ngăn Bookings History (Xương sống):</strong> Nó sẽ liệt kê dọc TẤT CẢ các Tour mà Vị khách này đã từng đi cùng Công ty ta. Tổng giá trị họ đã đốt cho chúng ta là bao nhiêu. Bạn dựa vào ngăn này để xác định khách này VIP cỡ nào để mà dập đầu xin lỗi nếu có sai sót.</li>
+        </ul>
       </section>
 
     </div>
@@ -551,7 +630,8 @@ const ManualTab = () => {
       case 'leads':
       case 'leads-sop': return <ManualLeadsSOP />;
       case 'leads-guide': return <ManualLeadsGuide />;
-      case 'customers': return <ManualCustomers />;
+      case 'customers-sop': return <ManualCustomersSOP />;
+      case 'customers-guide': return <ManualCustomersGuide />;
       case 'bookings': return <ManualBookings />;
       case 'tours': return <ManualTours />;
       case 'overview':

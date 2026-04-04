@@ -1531,8 +1531,11 @@ function AppContent() {
           <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'leads-guide' ? 'active' : ''}`} onClick={() => navigate('/manual/leads-guide')} style={{ paddingLeft: '2.5rem' }}>
             <Target size={16} opacity={0.7} /> Lead - HD Sử Dụng
           </div>
-          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'customers' ? 'active' : ''}`} onClick={() => navigate('/manual/customers')} style={{ paddingLeft: '2.5rem' }}>
-            <Users size={16} opacity={0.7} /> Danh mục Khách hàng
+          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'customers-sop' ? 'active' : ''}`} onClick={() => navigate('/manual/customers-sop')} style={{ paddingLeft: '2.5rem' }}>
+            <Shield size={16} opacity={0.7} /> KH - Quy Định (SOP)
+          </div>
+          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'customers-guide' ? 'active' : ''}`} onClick={() => navigate('/manual/customers-guide')} style={{ paddingLeft: '2.5rem' }}>
+            <Users size={16} opacity={0.7} /> KH - HD Sử Dụng
           </div>
           <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'bookings' ? 'active' : ''}`} onClick={() => navigate('/manual/bookings')} style={{ paddingLeft: '2.5rem' }}>
             <ShoppingCart size={16} opacity={0.7} /> Đơn hàng & Dòng tiền
