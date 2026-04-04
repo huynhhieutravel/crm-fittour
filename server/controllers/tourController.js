@@ -6,7 +6,7 @@ exports.getAllTours = async (req, res) => {
             SELECT tt.*, 
                    (SELECT COUNT(*) FROM tour_departures td WHERE td.tour_template_id = tt.id) as departures_count
             FROM tour_templates tt 
-            ORDER BY tt.created_at DESC
+            ORDER BY COALESCE(tt.is_active, true) DESC, tt.created_at DESC
         `);
         res.json(result.rows);
     } catch (err) {
