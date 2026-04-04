@@ -4,7 +4,7 @@ const { logActivity } = require('../utils/logger');
 // === HOTELS ===
 exports.getHotels = async (req, res) => {
     try {
-        const { search, province, star_rate } = req.query;
+        const { search, province, star_rate, market } = req.query;
         let query = 'SELECT * FROM hotels WHERE 1=1';
         let params = [];
         let paramIndex = 1;
@@ -12,6 +12,11 @@ exports.getHotels = async (req, res) => {
         if (search) {
             query += ` AND (name ILIKE $${paramIndex} OR code ILIKE $${paramIndex})`;
             params.push(`%${search}%`);
+            paramIndex++;
+        }
+        if (market) {
+            query += ` AND market = $${paramIndex}`;
+            params.push(market);
             paramIndex++;
         }
         if (province) {
