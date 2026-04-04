@@ -60,21 +60,38 @@ export default function HotelsTab({ currentUser }) {
     return (
         <div style={{ padding: '0 2rem' }}>
             {/* Thanh công cụ */}
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: 'min-content' }}>
-                    <div className="search-bar" style={{ flex: 1, maxWidth: '350px' }}>
-                        <Search size={18} />
+            <div className="filter-bar" style={{ 
+                display: 'flex', 
+                flexDirection: 'row',
+                flexWrap: 'wrap', 
+                gap: '1rem', 
+                alignItems: 'center', 
+                backgroundColor: 'white',
+                padding: '1.25rem',
+                borderRadius: '1rem',
+                boxShadow: 'var(--shadow)',
+                marginBottom: '2rem'
+            }}>
+                <div className="filter-group" style={{ flex: '1 1 300px', margin: 0 }}>
+                    <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>TÌM KIẾM NHÀ CUNG CẤP</label>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
                         <input
+                            className="filter-input"
+                            style={{ width: '100%', paddingLeft: '40px', height: '44px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }}
                             type="text"
-                            placeholder="Tìm mã, tên khách sạn..."
+                            placeholder="Mã, Tên khách sạn..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
-                    
+                </div>
+
+                <div className="filter-group" style={{ flex: '0 0 200px', margin: 0 }}>
+                    <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>TỈNH THÀNH / KHU VỰC</label>
                     <select 
-                        className="form-select" 
-                        style={{ width: '180px' }}
+                        className="filter-input" 
+                        style={{ width: '100%', height: '44px', borderRadius: '8px', border: '1px solid #cbd5e1', padding: '0 12px', outline: 'none' }}
                         value={provinceFilter}
                         onChange={(e) => setProvinceFilter(e.target.value)}
                     >
@@ -89,12 +106,14 @@ export default function HotelsTab({ currentUser }) {
                         <option value="Tokyo">Tokyo (Nhật Bản)</option>
                         <option value="Đài Bắc">Đài Bắc (Đài Loan)</option>
                         <option value="Dubai">Dubai (UAE)</option>
-                        {/* More can be added */}
                     </select>
+                </div>
 
+                <div className="filter-group" style={{ flex: '0 0 160px', margin: 0 }}>
+                    <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>HẠNG DỊCH VỤ</label>
                     <select 
-                        className="form-select" 
-                        style={{ width: '150px' }}
+                        className="filter-input" 
+                        style={{ width: '100%', height: '44px', borderRadius: '8px', border: '1px solid #cbd5e1', padding: '0 12px', outline: 'none' }}
                         value={starFilter}
                         onChange={(e) => setStarFilter(e.target.value)}
                     >
@@ -107,48 +126,50 @@ export default function HotelsTab({ currentUser }) {
                     </select>
                 </div>
                 
-                {(currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'operations') && (
-                    <button className="btn btn-primary" onClick={handleAddHotel} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Plus size={18} /> Thêm Khách Sạn
-                    </button>
-                )}
+                <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-end', height: '100%', paddingTop: '1.4rem' }}>
+                    {(currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'operations') && (
+                        <button className="btn btn-primary" onClick={handleAddHotel} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '44px', padding: '0 1.5rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
+                            <Plus size={18} /> Thêm Mới
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Bảng Dữ Liệu */}
-            <div className="table-responsive">
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>MÃ NCC</th>
-                            <th>TÊN KHÁCH SẠN</th>
-                            <th>HẠNG SAO</th>
-                            <th>KHU VỰC</th>
-                            <th>PHONE / EMAIL</th>
-                            <th>THỊ TRƯỜNG</th>
+            <div className="table-responsive" style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+                <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                        <tr style={{ color: '#475569', fontSize: '0.8rem' }}>
+                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '120px' }}>MÃ NCC</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'left' }}>TÊN KHÁCH SẠN</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '140px' }}>HẠNG SAO</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '180px' }}>KHU VỰC</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '180px' }}>PHONE / EMAIL</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '150px' }}>THỊ TRƯỜNG</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>Đang tải dữ liệu...</td>
+                                <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td>
                             </tr>
                         ) : hotels.length === 0 ? (
                             <tr>
-                                <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+                                <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
                                     Không có khách sạn nào khớp với tìm kiếm.
                                 </td>
                             </tr>
                         ) : (
                             hotels.map(h => (
-                                <tr key={h.id} style={{ cursor: 'pointer' }} onClick={() => handleOpenHotel(h.id)}>
-                                    <td style={{ fontWeight: 600, color: '#3b82f6' }}>{h.code}</td>
-                                    <td style={{ fontWeight: 500 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <Building size={16} color="#64748b" />
+                                <tr key={h.id} className="table-row-hover" style={{ cursor: 'pointer', transition: 'background 0.2s' }} onClick={() => handleOpenHotel(h.id)} onMouseOver={e=>e.currentTarget.style.background='#f8fafc'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#3b82f6' }}>{h.code}</td>
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 500 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}>
+                                            <Building size={16} color="#475569" />
                                             {h.name}
                                         </div>
                                     </td>
-                                    <td>
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#f59e0b', fontSize: '0.85rem', fontWeight: 600 }}>
                                             <Star size={14} fill="#f59e0b" />
                                             {h.star_rate === '5_star' ? '5 Sao' : 
@@ -157,20 +178,20 @@ export default function HotelsTab({ currentUser }) {
                                              h.star_rate === 'resort' ? 'Resort' : 'Khác'}
                                         </div>
                                     </td>
-                                    <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
-                                            <MapPin size={14} color="#64748b" />
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#475569' }}>
+                                            <MapPin size={14} color="#94a3b8" />
                                             {h.province || '-'}
                                         </div>
                                     </td>
-                                    <td>
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
                                         <div style={{ fontSize: '0.85rem' }}>
-                                            <div>{h.phone || '-'}</div>
+                                            <div style={{ fontWeight: 500, color: '#1e293b' }}>{h.phone || '-'}</div>
                                             <div style={{ color: '#64748b' }}>{h.email || '-'}</div>
                                         </div>
                                     </td>
-                                    <td>
-                                        <span className="badge" style={{ background: '#f1f5f9', color: '#475569' }}>
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
+                                        <span className="badge" style={{ background: '#f1f5f9', color: '#475569', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
                                             {h.market || 'Chưa phân loại'}
                                         </span>
                                     </td>

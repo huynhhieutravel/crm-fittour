@@ -103,7 +103,8 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
     };
 
     const inputCell = { padding: '8px', borderBottom: '1px solid #e2e8f0', background: 'transparent' };
-    const inlineInput = { width: '100%', border: '1px solid #cbd5e1', borderRadius: '4px', padding: '6px 8px', fontSize: '13px', background: 'white' };
+    const inlineInput = { width: '100%', border: '1px solid #cbd5e1', borderRadius: '4px', padding: '6px 8px', fontSize: '13px', background: 'white', outline: 'none' };
+    const drawerInputStyle = { padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', width: '100%', outline: 'none', background: 'white', transition: 'border 0.2s' };
 
     return (
         <div className="drawer-overlay" style={{
@@ -152,24 +153,24 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                </h3>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1.25rem 2rem' }}>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500, marginBottom: '6px' }}>Mã Nhà Cung Cấp *</label>
-                                        <input type="text" className="form-control" style={{ background: '#f8fafc', borderColor: '#e2e8f0'}} value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} disabled={isViewOnly} placeholder="HOTEL-..." />
+                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Mã Nhà Cung Cấp *</label>
+                                        <input type="text" style={{ ...drawerInputStyle, background: '#f1f5f9', color: '#64748b', fontWeight: 600 }} value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} disabled={isViewOnly} placeholder="HOTEL-..." />
                                     </div>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500, marginBottom: '6px' }}>Tên Khách Sạn *</label>
-                                        <input type="text" className="form-control" style={{ fontWeight: 600, color: '#0f172a' }} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} disabled={isViewOnly} />
+                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Tên Khách Sạn *</label>
+                                        <input type="text" style={{ ...drawerInputStyle, fontWeight: 600, color: '#0f172a', borderColor: '#94a3b8' }} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} disabled={isViewOnly} placeholder="Nhập tên..." />
                                     </div>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500, marginBottom: '6px' }}>Số Điện Thoại</label>
-                                        <input type="text" className="form-control" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} disabled={isViewOnly} />
+                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Số Điện Thoại</label>
+                                        <input type="text" style={drawerInputStyle} value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} disabled={isViewOnly} placeholder="Phone" />
                                     </div>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500, marginBottom: '6px' }}>Email Hệ Thống</label>
-                                        <input type="email" className="form-control" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} disabled={isViewOnly} />
+                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Email Hệ Thống</label>
+                                        <input type="email" style={drawerInputStyle} value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} disabled={isViewOnly} placeholder="Email" />
                                     </div>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500, marginBottom: '6px' }}>Hạng sao / Class</label>
-                                        <select className="form-select" value={formData.star_rate} onChange={e => setFormData({...formData, star_rate: e.target.value})} disabled={isViewOnly}>
+                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Hạng sao / Class</label>
+                                        <select style={drawerInputStyle} value={formData.star_rate} onChange={e => setFormData({...formData, star_rate: e.target.value})} disabled={isViewOnly}>
                                             <option value="">Chọn hạng...</option>
                                             <option value="5_star">5 Sao</option>
                                             <option value="4_star">4 Sao</option>
@@ -179,8 +180,8 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                         </select>
                                     </div>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500, marginBottom: '6px' }}>Thị trường MICE/Inbound</label>
-                                        <select className="form-select" value={formData.market} onChange={e => setFormData({...formData, market: e.target.value})} disabled={isViewOnly}>
+                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Thị trường MICE/Inbound</label>
+                                        <select style={drawerInputStyle} value={formData.market} onChange={e => setFormData({...formData, market: e.target.value})} disabled={isViewOnly}>
                                             <option value="">-- Chọn Thị Trường --</option>
                                             <optgroup label="Việt Nam"><option value="Việt Nam (MICE)">Việt Nam (MICE)</option></optgroup>
                                             <optgroup label="Trung Quốc Đại Lục">
@@ -219,16 +220,16 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                         </select>
                                     </div>
                                     <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500, marginBottom: '6px' }}>Địa chỉ chi tiết</label>
+                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Địa chỉ chi tiết</label>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: '1rem' }}>
-                                            <input type="text" className="form-control" value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} disabled={isViewOnly} placeholder="Quốc gia" />
-                                            <input type="text" className="form-control" value={formData.province} onChange={e => setFormData({...formData, province: e.target.value})} disabled={isViewOnly} placeholder="Tỉnh / Ban" />
-                                            <input type="text" className="form-control" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} disabled={isViewOnly} placeholder="Số nhà, Đường..." />
+                                            <input type="text" style={drawerInputStyle} value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} disabled={isViewOnly} placeholder="Quốc gia" />
+                                            <input type="text" style={drawerInputStyle} value={formData.province} onChange={e => setFormData({...formData, province: e.target.value})} disabled={isViewOnly} placeholder="Tỉnh / Ban" />
+                                            <input type="text" style={drawerInputStyle} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} disabled={isViewOnly} placeholder="Số nhà, Đường..." />
                                         </div>
                                     </div>
                                     <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500, marginBottom: '6px' }}>Ghi chú đặc biệt</label>
-                                        <textarea className="form-control" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} disabled={isViewOnly} rows={2} style={{ resize: 'vertical' }} />
+                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Ghi chú đặc biệt</label>
+                                        <textarea style={{...drawerInputStyle, resize: 'vertical'}} value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} disabled={isViewOnly} rows={2} />
                                     </div>
                                 </div>
                             </div>
