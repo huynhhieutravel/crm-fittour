@@ -532,6 +532,40 @@ const ManualCustomersGuide = () => (
         </ul>
       </section>
 
+      {/* TÍNH NĂNG 3 */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="3" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Hệ Thống Phân Hạng VIP (VIP Segmentation)</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Hệ thống sẽ <strong>tự động đếm tổng số chuyến đi (Lịch sử Booking thành công + Số liệu nhập gốc)</strong> để thăng hạng cho Khách hàng. Sales tuyệt đối không tự sửa hạng VIP tay.
+        </p>
+
+        <ul style={{ paddingLeft: '0', display: 'flex', flexDirection: 'column', gap: '1rem', listStyle: 'none', margin: 0 }}>
+          <li style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.5rem' }}>⭐⭐⭐</span>
+            <div><strong style={{ color: '#dc2626', fontSize: '1.1rem' }}>VIP 1:</strong> <span style={{ color: '#475569' }}>Khách đã đi từ <strong>7 chuyến</strong> trở lên. Bậc siêu quyền lực.</span></div>
+          </li>
+          <li style={{ padding: '1rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.5rem' }}>⭐⭐</span>
+            <div><strong style={{ color: '#d97706', fontSize: '1.1rem' }}>VIP 2:</strong> <span style={{ color: '#475569' }}>Khách đã đi từ <strong>4 đến 6 chuyến</strong>. Tập khách trung thành trọn đời.</span></div>
+          </li>
+          <li style={{ padding: '1rem', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.5rem' }}>⭐</span>
+            <div><strong style={{ color: '#7c3aed', fontSize: '1.1rem' }}>VIP 3:</strong> <span style={{ color: '#475569' }}>Khách đã đi <strong>3 chuyến</strong>. Bắt đầu có dấu hiệu gắn bó với công ty.</span></div>
+          </li>
+          <li style={{ padding: '1rem', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.5rem' }}>🏅</span>
+            <div><strong style={{ color: '#2563eb', fontSize: '1.1rem' }}>Khách cũ (Repeat Customer):</strong> <span style={{ color: '#475569' }}>Khách đã đi <strong>2 chuyến</strong>. Điểm chạm tỷ lệ chốt cực cao.</span></div>
+          </li>
+          <li style={{ padding: '1rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.5rem' }}>🆕</span>
+            <div><strong style={{ color: '#64748b', fontSize: '1.1rem' }}>Khách mới (New Customer):</strong> <span style={{ color: '#475569' }}>Khách chưa đi hoặc mới đi <strong>1 chuyến</strong>.</span></div>
+          </li>
+        </ul>
+      </section>
+
     </div>
   </>
 );
