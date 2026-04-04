@@ -16,12 +16,15 @@ exports.checkPhoneExists = async (req, res) => {
         const phone = req.query.phone;
         if (!phone) return res.json({ exists: false });
         
+        const stripped = phone.replace(/[\s\-\.]/g, '');
         const result = await db.query(`
             SELECT id, name, customer_segment, past_trip_count,
             COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status = 'confirmed'), 0) as crm_trip_count
-            FROM customers WHERE phone = $1 OR phone LIKE '%' || $2
+            FROM customers 
+            WHERE REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', '') = $1
+               OR REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', '') = $2
             LIMIT 1
-        `, [phone, phone.replace(/^0/, '')]);
+        `, [stripped, stripped.replace(/^0/, '')]);
 
         if (result.rows.length > 0) {
             const cust = result.rows[0];
