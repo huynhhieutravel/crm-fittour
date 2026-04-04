@@ -1522,35 +1522,26 @@ function AppContent() {
           )}
 
           <div className="nav-section-title">Trợ giúp & Hướng dẫn</div>
-          <div className={`nav-item ${activeTab === 'manual' && (!pathParts[1] || pathParts[1] === 'overview') ? 'active' : ''}`} onClick={() => navigate('/manual/overview')}>
-            <BookOpen size={18} /> Phân quyền & Giới thiệu
-          </div>
-          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'leads-sop' ? 'active' : ''}`} onClick={() => navigate('/manual/leads-sop')} style={{ paddingLeft: '2.5rem' }}>
-            <Shield size={16} opacity={0.7} /> Lead - Quy Định (SOP)
-          </div>
-          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'leads-guide' ? 'active' : ''}`} onClick={() => navigate('/manual/leads-guide')} style={{ paddingLeft: '2.5rem' }}>
-            <Target size={16} opacity={0.7} /> Lead - HD Sử Dụng
-          </div>
-          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'customers-sop' ? 'active' : ''}`} onClick={() => navigate('/manual/customers-sop')} style={{ paddingLeft: '2.5rem' }}>
-            <Shield size={16} opacity={0.7} /> KH - Quy Định (SOP)
-          </div>
-          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'customers-guide' ? 'active' : ''}`} onClick={() => navigate('/manual/customers-guide')} style={{ paddingLeft: '2.5rem' }}>
-            <Users size={16} opacity={0.7} /> KH - HD Sử Dụng
-          </div>
-          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'bookings' ? 'active' : ''}`} onClick={() => navigate('/manual/bookings')} style={{ paddingLeft: '2.5rem' }}>
-            <ShoppingCart size={16} opacity={0.7} /> Đơn hàng & Dòng tiền
-          </div>
-          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'tours-sop' ? 'active' : ''}`} onClick={() => navigate('/manual/tours-sop')} style={{ paddingLeft: '2.5rem' }}>
-            <Shield size={16} opacity={0.7} /> Tour - Quy Định (SOP)
-          </div>
-          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'tours-guide' ? 'active' : ''}`} onClick={() => navigate('/manual/tours-guide')} style={{ paddingLeft: '2.5rem' }}>
-            <Map size={16} opacity={0.7} /> Tour - HD Sử Dụng
-          </div>
-          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'departures-sop' ? 'active' : ''}`} onClick={() => navigate('/manual/departures-sop')} style={{ paddingLeft: '2.5rem' }}>
-            <Shield size={16} opacity={0.7} /> Lịch Khởi Hành (SOP)
-          </div>
-          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'departures-guide' ? 'active' : ''}`} onClick={() => navigate('/manual/departures-guide')} style={{ paddingLeft: '2.5rem' }}>
-            <Calendar size={16} opacity={0.7} /> Lịch KH - HD Sử Dụng
+          <div 
+            className={`nav-item ${activeTab === 'manual' ? 'active-parent' : ''}`} 
+            onClick={() => navigate('/manual/overview')}
+            style={{ justifyContent: 'space-between' }}
+            onMouseEnter={(e) => {
+              if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+              const rect = e.currentTarget.getBoundingClientRect();
+              setHoveredRect(rect);
+              setHoveredMenu('manual');
+            }}
+            onMouseLeave={() => {
+              menuTimerRef.current = setTimeout(() => {
+                setHoveredMenu(null);
+              }, 150);
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <BookOpen size={18} /> Sổ tay Hướng dẫn
+            </div>
+            <ChevronRight size={14} opacity={0.5} />
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
@@ -1768,6 +1759,76 @@ function AppContent() {
             onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('calendar'); setHoveredMenu(null); }}
           >
             Lịch Chăm sóc
+          </div>
+        </div>
+      )}
+
+      {hoveredMenu === 'manual' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${Math.min(hoveredRect.top, window.innerHeight - 400)}px`, 
+            display: 'flex', 
+            opacity: 1, 
+             transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999,
+            maxHeight: '400px',
+            flexDirection: 'column',
+            overflowY: 'auto'
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('manual');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div className="submenu-item" style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: '#94a3b8', padding: '8px 16px', background: 'transparent' }}>
+            Giới thiệu & Cơ Bản
+          </div>
+          <div className={`submenu-item ${activeTab === 'manual' && (!pathParts[1] || pathParts[1] === 'overview') ? 'active' : ''}`} onClick={() => { navigate('/manual/overview'); setHoveredMenu(null); }}>
+            Phân quyền hệ thống
+          </div>
+          
+          <div className="submenu-item" style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: '#94a3b8', padding: '8px 16px', background: 'transparent', marginTop: '4px' }}>
+            Sales & Marketing
+          </div>
+          <div className={`submenu-item ${activeTab === 'manual' && pathParts[1] === 'leads-sop' ? 'active' : ''}`} onClick={() => { navigate('/manual/leads-sop'); setHoveredMenu(null); }}>
+            Lead - Quy Định (SOP)
+          </div>
+          <div className={`submenu-item ${activeTab === 'manual' && pathParts[1] === 'leads-guide' ? 'active' : ''}`} onClick={() => { navigate('/manual/leads-guide'); setHoveredMenu(null); }}>
+            Lead - HD Sử Dụng
+          </div>
+          <div className={`submenu-item ${activeTab === 'manual' && pathParts[1] === 'customers-sop' ? 'active' : ''}`} onClick={() => { navigate('/manual/customers-sop'); setHoveredMenu(null); }}>
+            Khách Hàng - Quy Định
+          </div>
+          <div className={`submenu-item ${activeTab === 'manual' && pathParts[1] === 'customers-guide' ? 'active' : ''}`} onClick={() => { navigate('/manual/customers-guide'); setHoveredMenu(null); }}>
+            Khách Hàng - HD Sử Dụng
+          </div>
+
+          <div className="submenu-item" style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: '#94a3b8', padding: '8px 16px', background: 'transparent', marginTop: '4px' }}>
+            Điều hành & Lõi
+          </div>
+          <div className={`submenu-item ${activeTab === 'manual' && pathParts[1] === 'bookings' ? 'active' : ''}`} onClick={() => { navigate('/manual/bookings'); setHoveredMenu(null); }}>
+            Đơn hàng & Dòng tiền
+          </div>
+          <div className={`submenu-item ${activeTab === 'manual' && pathParts[1] === 'tours-sop' ? 'active' : ''}`} onClick={() => { navigate('/manual/tours-sop'); setHoveredMenu(null); }}>
+            Tour - Quy Định (SOP)
+          </div>
+          <div className={`submenu-item ${activeTab === 'manual' && pathParts[1] === 'tours-guide' ? 'active' : ''}`} onClick={() => { navigate('/manual/tours-guide'); setHoveredMenu(null); }}>
+            Tour - HD Sử Dụng
+          </div>
+          <div className={`submenu-item ${activeTab === 'manual' && pathParts[1] === 'departures-sop' ? 'active' : ''}`} onClick={() => { navigate('/manual/departures-sop'); setHoveredMenu(null); }}>
+            Lịch KH - Quy Định
+          </div>
+          <div className={`submenu-item ${activeTab === 'manual' && pathParts[1] === 'departures-guide' ? 'active' : ''}`} onClick={() => { navigate('/manual/departures-guide'); setHoveredMenu(null); }}>
+            Lịch KH - HD Sử Dụng
           </div>
         </div>
       )}
