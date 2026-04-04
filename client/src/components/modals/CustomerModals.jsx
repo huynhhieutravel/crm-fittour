@@ -406,59 +406,7 @@ export const EditCustomerModal = ({
                 </div>
               </div>
 
-              {/* SỞ THÍCH ĐIỂM ĐẾN */}
-              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
-                <label>SỞ THÍCH & ĐIỂM ĐẾN (Có thể chọn nhiều)</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {DESTINATION_OPTIONS.map(opt => {
-                    const isSelected = getArrayValue('destinations').includes(opt);
-                    return (
-                      <button
-                        type="button"
-                        key={opt}
-                        onClick={() => toggleArrayItem('destinations', opt)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: '20px',
-                          border: isSelected ? '1px solid #3b82f6' : '1px solid #e2e8f0',
-                          background: isSelected ? '#eff6ff' : '#f8fafc',
-                          color: isSelected ? '#1d4ed8' : '#475569',
-                          fontSize: '0.8rem',
-                          fontWeight: isSelected ? 600 : 500,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        {opt}
-                      </button>
-                    );
-                  })}
-                  {getArrayValue('destinations').filter(d => !DESTINATION_OPTIONS.includes(d)).map(opt => (
-                     <button
-                        type="button"
-                        key={opt}
-                        onClick={() => toggleArrayItem('destinations', opt)}
-                        style={{ padding: '6px 14px', borderRadius: '20px', border: '1px solid #3b82f6', background: '#eff6ff', color: '#1d4ed8', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
-                     >
-                       {opt} ✕
-                     </button>
-                  ))}
-                  <input 
-                    type="text" 
-                    placeholder="+ Thêm mục khác..."
-                    style={{ padding: '6px 14px', borderRadius: '20px', border: '1px dashed #cbd5e1', fontSize: '0.8rem', background: 'transparent', outline: 'none', width: '150px' }}
-                    onKeyDown={e => {
-                      if(e.key === 'Enter' && e.target.value.trim()) {
-                        e.preventDefault();
-                        if (!getArrayValue('destinations').includes(e.target.value.trim())) {
-                          toggleArrayItem('destinations', e.target.value.trim());
-                        }
-                        e.target.value = '';
-                      }
-                    }}
-                  />
-                </div>
-              </div>
+
 
               {/* TRẢI NGHIỆM */}
               <div className="modal-form-group">
