@@ -766,7 +766,6 @@ const ManualDeparturesGuide = () => (
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
           Khi bấm vào 1 Lịch Khởi Hành, màn hình trượt ra cung cấp góc nhìn **Tất cả trong 1**. Phía trên hiện thanh Tiến độ (Status: Khởi Tạo ➡️ Đang Nhận Khách ➡️ Đã Chốt).
         </p>
-        <img src="/manual_images/departure_detail_view_1775197750860.png" style={{ width: '100%', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} alt="Chi tiết Tuyến Đi" />
       </section>
 
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
@@ -774,19 +773,12 @@ const ManualDeparturesGuide = () => (
            <DollarSign size={28} color="#059669" />
            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>C. Modun Dự Toán Chi Phí (Costings)</h2>
         </div>
-        <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '300px' }}>
-            <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1rem' }}>
-              Mỗi Lịch khởi hành đi kèm chức năng <strong>Lập Dự Toán Costing</strong> (Landtour, Nhà Hàng, Xe 45 chỗ...). 
-            </p>
-            <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
-              Bạn sẽ Thêm Hàng (Add Row), nhập Số Lượng và Đơn Giá. Hệ thống Tự Động Kẻ Form xuất ra con số Lãi/Lỗ Dự Kiến. Giao diện thiết kế gọn y như trang Excel truyền thống.
-            </p>
-          </div>
-          <div style={{ flex: 1, minWidth: '400px' }}>
-            <img src="/manual_images/costings_modal_content_check_1775184834222.png" style={{ width: '100%', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} alt="Bảng Costings" />
-          </div>
-        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1rem' }}>
+          Mỗi Lịch khởi hành đi kèm chức năng <strong>Lập Dự Toán Costing</strong> (Landtour, Nhà Hàng, Xe 45 chỗ...). 
+        </p>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
+          Bạn sẽ Thêm Hàng (Add Row), nhập Số Lượng và Đơn Giá. Hệ thống Tự Động Kẻ Form xuất ra con số Lãi/Lỗ Dự Kiến. Giao diện thiết kế gọn y như trang Excel truyền thống.
+        </p>
       </section>
     </div>
   </>
