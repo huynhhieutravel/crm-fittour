@@ -82,12 +82,22 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import DataDeletion from './pages/DataDeletion';
 
-const addToastGlobal = (message, setToasts) => {
+const addToastGlobal = (message, setToasts, type = 'success') => {
   const id = Date.now();
-  setToasts(prev => [...prev, { id, message }]);
-  setTimeout(() => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  }, 3000);
+  // Nếu có chữ "lỗi" hoặc "error" tự xem như type = 'error' để giữ lâu hơn
+  const isError = type === 'error' || message.toLowerCase().includes('lỗi');
+  setToasts(prev => [...prev, { id, message, type: isError ? 'error' : type }]);
+  
+  if (!isError) {
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 5000); // 5s cho thành công
+  } else {
+    // Thông báo lỗi cho hiển thị 15 giây hoặc đến khi user tự tắt (sẽ thêm nút X)
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 15000);
+  }
 };
 
 function AppContent() {
@@ -280,6 +290,7 @@ function AppContent() {
   const [tourToDelete, setTourToDelete] = useState(null);
   const [departureToDelete, setDepartureToDelete] = useState(null);
   const [bookingToDelete, setBookingToDelete] = useState(null);
+  const [hotelToDelete, setHotelToDelete] = useState(null);
   const [bookingToEdit, setBookingToEdit] = useState(null);
 
   const LEAD_SOURCES = ['Messenger', 'Zalo', 'Khách giới thiệu', 'Hotline', 'Khác'];
@@ -653,6 +664,40 @@ function AppContent() {
       } else {
         addToast('Lỗi khi xoá: ' + (err.response?.data?.message || err.message)); 
         setBookingToDelete(null);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmDeleteHotel = async () => {
+    if (!hotelToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/hotels/${hotelToDelete}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã xóa khách sạn thành công.');
+      setHotelToDelete(null);
+      // Buộc reload HotelsTab
+      window.dispatchEvent(new CustomEvent('reloadHotels'));
+    } catch (err) {
+      if (err.response && err.response.status === 409 && err.response.data.has_deps) {
+        if (window.confirm(`⚠️ ${err.response.data.message}\n\nBạn vẫn muốn xóa?`)) {
+          try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`/api/hotels/${hotelToDelete}?force=true`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            addToast('Đã xóa ép khách sạn.');
+            window.dispatchEvent(new CustomEvent('reloadHotels'));
+          } catch (err2) { addToast('Lỗi khi xoá ép: ' + (err2.response?.data?.message || err2.message), 'error'); }
+        }
+        setHotelToDelete(null);
+      } else {
+        addToast('Lỗi khi xóa khách sạn: ' + (err.response?.data?.message || err.message), 'error');
+        setHotelToDelete(null);
       }
     } finally {
       setLoading(false);
@@ -2113,7 +2158,7 @@ function AppContent() {
         )}
 
         {activeTab === 'hotels' && (
-          <HotelsTab currentUser={user} />
+          <HotelsTab currentUser={user} addToast={addToast} handleDeleteHotel={(id) => setHotelToDelete(id)} />
         )}
       </>
     )}
@@ -2304,7 +2349,14 @@ function AppContent() {
       />
 
       <div className="toast-container">
-        {toasts.map(t => <div key={t.id} className="toast">{t.message}</div>)}
+        {toasts.map(t => (
+          <div key={t.id} className="toast" style={t.type === 'error' ? { background: '#ef4444', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } : {}}>
+             <span style={{marginRight: '12px'}}>{t.message}</span>
+             {t.type === 'error' && (
+               <button onClick={() => setToasts(prev => prev.filter(x => x.id !== t.id))} style={{background:'transparent', border:'none', color:'white', cursor:'pointer', fontSize:'16px', fontWeight:'bold', padding:'0 4px', lineHeight: 1}}>×</button>
+             )}
+          </div>
+        ))}
       </div>
     </div>
     );
@@ -2440,13 +2492,14 @@ function AppContent() {
     )}
 
     {/* MODAL XÁC NHẬN XÓA (CUSTOM) */}
-    {(leadToDelete || customerToDelete || tourToDelete || departureToDelete || bookingToDelete) && (
+    {(leadToDelete || customerToDelete || tourToDelete || departureToDelete || bookingToDelete || hotelToDelete) && (
       <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={() => {
         setLeadToDelete(null);
         setCustomerToDelete(null);
         setTourToDelete(null);
         setDepartureToDelete(null);
         setBookingToDelete(null);
+        setHotelToDelete(null);
       }}>
         <div className="modal-content animate-slide-up" style={{ maxWidth: '400px', textAlign: 'center', padding: '2.5rem' }} onClick={e => e.stopPropagation()}>
           <div style={{ width: '60px', height: '60px', background: '#fee2e2', color: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
@@ -2467,6 +2520,7 @@ function AppContent() {
                 setTourToDelete(null);
                 setDepartureToDelete(null);
                 setBookingToDelete(null);
+                setHotelToDelete(null);
               }}
             >HỦY BỎ</button>
             <button 
@@ -2479,6 +2533,7 @@ function AppContent() {
                 if (tourToDelete) confirmDeleteTour();
                 if (departureToDelete) confirmDeleteDeparture();
                 if (bookingToDelete) confirmDeleteBooking();
+                if (hotelToDelete) confirmDeleteHotel();
               }}
             >{loading ? 'ĐANG XÓA...' : 'XÓA THỰC SỰ'}</button>
           </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Plus, MapPin, Star, Building, CheckCircle, XCircle, Eye, Edit2, Trash2 } from 'lucide-react';
+import { Search, Plus, MapPin, Star, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle } from 'lucide-react';
 import Select from 'react-select';
 import HotelDetailDrawer from '../components/modals/HotelDetailDrawer';
 
@@ -117,19 +117,36 @@ const reactSelectStyles = {
         })
     };
 
-export default function HotelsTab({ currentUser }) {
+export default function HotelsTab({ currentUser, addToast, handleDeleteHotel }) {
     const [hotels, setHotels] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [selectedHotel, setSelectedHotel] = useState(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
 
     // Filters
     const [marketFilter, setMarketFilter] = useState('');
     const [starFilter, setStarFilter] = useState('');
 
     useEffect(() => {
+        setCurrentPage(1); // Reset page on filter change
+    }, [search, marketFilter, starFilter]);
+
+    useEffect(() => {
         fetchHotels();
+    }, [currentPage, search, marketFilter, starFilter]);
+
+    // Lắng nghe sự kiện để reload list sau khi App.jsx xóa xong
+    useEffect(() => {
+        const handleReload = () => fetchHotels();
+        window.addEventListener('reloadHotels', handleReload);
+        return () => window.removeEventListener('reloadHotels', handleReload);
     }, [search, marketFilter, starFilter]);
 
     const fetchHotels = async () => {
@@ -141,10 +158,19 @@ export default function HotelsTab({ currentUser }) {
                 params: {
                     search,
                     market: marketFilter,
-                    star_rate: starFilter
+                    star_rate: starFilter,
+                    page: currentPage,
+                    limit: 30
                 }
             });
-            setHotels(res.data);
+            if (res.data && res.data.data !== undefined) {
+                setHotels(res.data.data);
+                setTotalPages(res.data.totalPages || 1);
+                setTotalItems(res.data.total || 0);
+            } else {
+                setHotels(res.data);
+                setTotalPages(1);
+            }
         } catch (err) {
             console.error('Error fetching hotels', err);
         } finally {
@@ -154,6 +180,7 @@ export default function HotelsTab({ currentUser }) {
 
     const handleOpenHotel = async (hotelId) => {
         try {
+            setActionLoading(true);
             const token = localStorage.getItem('token');
             const res = await axios.get(`/api/hotels/${hotelId}`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -162,7 +189,10 @@ export default function HotelsTab({ currentUser }) {
             setIsDrawerOpen(true);
         } catch (err) {
             console.error('Lỗi khi lấy chi tiết khách sạn', err);
-            alert('Lỗi thao tác');
+            if (addToast) addToast('Lỗi lấy thông tin khách sạn: ' + (err.response?.data?.message || err.message), 'error');
+            else alert('Lỗi thao tác');
+        } finally {
+            setActionLoading(false);
         }
     };
 
@@ -171,20 +201,6 @@ export default function HotelsTab({ currentUser }) {
         setIsDrawerOpen(true);
     };
 
-    const handleDeleteHotel = async (hotelId, name) => {
-        if (window.confirm(`Bạn có chắc chắn muốn xoá khách sạn ${name}?`)) {
-            try {
-                const token = localStorage.getItem('token');
-                await axios.delete(`/api/hotels/${hotelId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                fetchHotels();
-            } catch (err) {
-                console.error(err);
-                alert('Lỗi thao tác');
-            }
-        }
-    };
 
     return (
         <div style={{ padding: '0 2rem' }}>
@@ -315,7 +331,7 @@ export default function HotelsTab({ currentUser }) {
                                             <button className="btn-icon" title="Xem / Sửa" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6', padding: '4px' }} onClick={() => handleOpenHotel(h.id)}>
                                                 <Edit2 size={16} />
                                             </button>
-                                            <button className="btn-icon" title="Xoá" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }} onClick={() => handleDeleteHotel(h.id, h.name)}>
+                                            <button className="btn-icon" title="Xoá" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }} onClick={() => handleDeleteHotel(h.id)}>
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
@@ -326,6 +342,31 @@ export default function HotelsTab({ currentUser }) {
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', background: 'white', padding: '1rem', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                        Hiển thị trang <span style={{ fontWeight: 600, color: '#1e293b' }}>{currentPage}</span> trên <span style={{ fontWeight: 600, color: '#1e293b' }}>{totalPages}</span> (Tổng {totalItems} NCC)
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button 
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', background: currentPage === 1 ? '#f8fafc' : 'white', color: currentPage === 1 ? '#94a3b8' : '#334155', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+                        >
+                            Trang trước
+                        </button>
+                        <button 
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', background: currentPage === totalPages ? '#f8fafc' : 'white', color: currentPage === totalPages ? '#94a3b8' : '#334155', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
+                        >
+                            Trang sau
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Khung Drawer chi tiết Khách Sạn */}
             {isDrawerOpen && (
