@@ -40,7 +40,7 @@ const LeadsTab = ({
   handleConvertLead
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 30;
+  const [itemsPerPage, setItemsPerPage] = useState(30);
 
   const [selectedLeadIds, setSelectedLeadIds] = useState([]);
   const [bulkActionStatus, setBulkActionStatus] = useState('');
@@ -118,8 +118,9 @@ const LeadsTab = ({
     setCurrentPage(1);
   }, [leadFilters]);
 
-  const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
-  const currentLeads = filteredLeads.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const actualItemsPerPage = itemsPerPage === 'all' ? Math.max(1, filteredLeads.length) : itemsPerPage;
+  const totalPages = Math.ceil(filteredLeads.length / actualItemsPerPage) || 1;
+  const currentLeads = filteredLeads.slice((currentPage - 1) * actualItemsPerPage, currentPage * actualItemsPerPage);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -278,7 +279,24 @@ const LeadsTab = ({
                 <X size={12} strokeWidth={3} /> Xóa bộ lọc
               </button>
             )}
-            <div style={{ color: '#94a3b8', fontWeight: 600, background: '#f1f5f9', padding: '4px 12px', borderRadius: '6px' }}>
+            <select
+              className="filter-select"
+              style={{ padding: '4px 24px 4px 12px', height: '28px', fontSize: '0.8rem', borderRadius: '6px', fontWeight: 600, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#475569', minWidth: '70px' }}
+              value={itemsPerPage}
+              onChange={(e) => {
+                const val = e.target.value;
+                setItemsPerPage(val === 'all' ? 'all' : parseInt(val, 10));
+                setCurrentPage(1);
+              }}
+            >
+              <option value={30}>30 dòng</option>
+              <option value={50}>50 dòng</option>
+              <option value={100}>100 dòng</option>
+              <option value={300}>300 dòng</option>
+              <option value={1000}>1000 dòng</option>
+              <option value="all">Tất cả</option>
+            </select>
+            <div style={{ color: '#94a3b8', fontWeight: 600, background: '#f1f5f9', padding: '4px 12px', borderRadius: '6px', fontSize: '0.85rem' }}>
               {filteredLeads.length} Lead
             </div>
           </div>
