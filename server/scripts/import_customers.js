@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const XLSX = require('xlsx');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
