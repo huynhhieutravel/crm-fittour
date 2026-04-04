@@ -171,18 +171,18 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
           backgroundColor: bgColor,
           color: color,
           border: `1px solid ${borderColor}`,
-          padding: '4px 6px',
+          padding: '2px 4px',
           borderRadius: '4px',
-          fontSize: '0.75rem',
+          fontSize: '0.7rem',
           fontWeight: 600,
-          marginBottom: '4px',
+          marginBottom: '2px',
           cursor: 'pointer',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           display: 'flex',
           flexDirection: 'column',
-          gap: '2px'
+          gap: '1px'
         }}
         onClick={(e) => {
           e.stopPropagation();
@@ -191,14 +191,14 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
         title={`${ev.title}\n${ev.description || ''}`}
       >
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          {icon && <span style={{ marginRight: '4px' }}>{icon}</span>}
-          <span style={{overflow: 'hidden', textOverflow: 'ellipsis', flex: 1}}>{ev.title}</span>
+          {icon && <span style={{ marginRight: '2px' }}>{icon}</span>}
+          <span style={{overflow: 'hidden', textOverflow: 'ellipsis', flex: 1}}>{ev.title.replace(/Sinh nh[ậa]t/ig, 'SN')}</span>
           {vipBadge}
         </div>
         {cust && (
-          <div style={{ fontSize: '0.65rem', color, opacity: 0.9, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2px' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><Phone size={10} /> {cust.phone || 'N/A'}</span>
-            <span style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.5)', padding: '0 4px', borderRadius: '4px' }}>{cust.total_trip_count || 0} chuyến</span>
+          <div style={{ fontSize: '0.6rem', color, opacity: 0.9, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><Phone size={8} /> {cust.phone || 'N/A'}</span>
+            <span>{cust.total_trip_count || 0} chuyến</span>
           </div>
         )}
       </div>
