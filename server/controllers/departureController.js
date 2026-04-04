@@ -34,7 +34,7 @@ exports.getAllDepartures = async (req, res) => {
             FROM tour_departures td
             LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN guides g ON td.guide_id = g.id
-            ORDER BY td.start_date ASC
+            ORDER BY COALESCE(tt.is_active, true) DESC, td.start_date DESC
         `);
         res.json(result.rows);
     } catch (err) {
