@@ -98,7 +98,7 @@ function AppContent() {
     const path = window.location.pathname.substring(1);
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -338,7 +338,7 @@ function AppContent() {
   // Sync activeTab with URL
   useEffect(() => {
     const path = location.pathname.substring(1).split('/')[0];
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {

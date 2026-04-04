@@ -31,7 +31,9 @@ exports.getHotels = async (req, res) => {
         }
 
         query += ' ORDER BY id DESC';
+        console.log("Executing query:", query, "with params:", params);
         const result = await db.query(query, params);
+        console.log("Returned hotels count:", result.rows.length);
         res.json(result.rows);
     } catch (err) {
         console.error(err);
@@ -539,6 +541,35 @@ exports.deleteAllotment = async (req, res) => {
         await db.query('DELETE FROM hotel_allotments WHERE id = $1', [allotment_id]);
         res.json({ message: 'Deleted allotment' });
     } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// === NOTES ===
+exports.getHotelNotes = async (req, res) => {
+    try {
+        const result = await db.query(
+            'SELECT n.*, u.full_name as creator_name FROM hotel_notes n LEFT JOIN users u ON n.created_by = u.id WHERE n.hotel_id = $1 ORDER BY n.created_at DESC',
+            [req.params.hotel_id]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.addHotelNote = async (req, res) => {
+    const { hotel_id } = req.params;
+    const { content } = req.body;
+    const created_by = req.user.id;
+    try {
+        const result = await db.query(
+            'INSERT INTO hotel_notes (hotel_id, content, created_by) VALUES ($1, $2, $3) RETURNING *',
+            [hotel_id, content, created_by]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error('Add Hotel Note Error:', err);
         res.status(500).json({ message: err.message });
     }
 };

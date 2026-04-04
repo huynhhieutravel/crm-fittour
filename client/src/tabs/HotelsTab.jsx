@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Plus, MapPin, Star, Building, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Plus, MapPin, Star, Building, CheckCircle, XCircle, Eye, Edit2, Trash2 } from 'lucide-react';
 import Select from 'react-select';
 import HotelDetailDrawer from '../components/modals/HotelDetailDrawer';
 
@@ -171,6 +171,21 @@ export default function HotelsTab({ currentUser }) {
         setIsDrawerOpen(true);
     };
 
+    const handleDeleteHotel = async (hotelId, name) => {
+        if (window.confirm(`Bạn có chắc chắn muốn xoá khách sạn ${name}?`)) {
+            try {
+                const token = localStorage.getItem('token');
+                await axios.delete(`/api/hotels/${hotelId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                fetchHotels();
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi thao tác');
+            }
+        }
+    };
+
     return (
         <div style={{ padding: '0 2rem' }}>
             {/* Thanh công cụ */}
@@ -245,22 +260,23 @@ export default function HotelsTab({ currentUser }) {
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '180px' }}>KHU VỰC</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '180px' }}>PHONE / EMAIL</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '150px' }}>THỊ TRƯỜNG</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '140px' }}>THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td>
+                                <td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td>
                             </tr>
                         ) : hotels.length === 0 ? (
                             <tr>
-                                <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                                <td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
                                     Không có khách sạn nào khớp với tìm kiếm.
                                 </td>
                             </tr>
                         ) : (
                             hotels.map(h => (
-                                <tr key={h.id} className="table-row-hover" style={{ cursor: 'pointer', transition: 'background 0.2s' }} onClick={() => handleOpenHotel(h.id)} onMouseOver={e=>e.currentTarget.style.background='#f8fafc'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                                <tr key={h.id} className="table-row-hover" style={{ transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#f8fafc'} onMouseOut={e=>e.currentTarget.style.background='white'}>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#3b82f6' }}>{h.code}</td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 500 }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}>
@@ -293,6 +309,16 @@ export default function HotelsTab({ currentUser }) {
                                         <span className="badge" style={{ background: '#f1f5f9', color: '#475569', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
                                             {h.market || 'Chưa phân loại'}
                                         </span>
+                                    </td>
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
+                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                            <button className="btn-icon" title="Xem / Sửa" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6', padding: '4px' }} onClick={() => handleOpenHotel(h.id)}>
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button className="btn-icon" title="Xoá" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }} onClick={() => handleDeleteHotel(h.id, h.name)}>
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))

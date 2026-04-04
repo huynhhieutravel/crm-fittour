@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { X, Save, Plus, Trash2, Building, BedDouble, CalendarDays, Users } from 'lucide-react';
+import { X, Save, Plus, Trash2, Building, BedDouble, CalendarDays, Users, FileText, Send, Clock, PlusCircle } from 'lucide-react';
 import Select from 'react-select';
 
 const MARKET_OPTIONS = [
@@ -101,6 +101,33 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
 
     const [loading, setLoading] = useState(false);
 
+    const [hotelNotes, setHotelNotes] = useState([]);
+    const [newNote, setNewNote] = useState('');
+
+    const fetchHotelNotes = async () => {
+        if (!hotel?.id) return;
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`/api/hotels/${hotel.id}/notes`, { headers: { Authorization: `Bearer ${token}` } });
+            setHotelNotes(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleAddHotelNote = async () => {
+        if (!newNote.trim()) return;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post(`/api/hotels/${hotel.id}/notes`, { content: newNote }, { headers: { Authorization: `Bearer ${token}` } });
+            setNewNote('');
+            fetchHotelNotes();
+        } catch (err) {
+            console.error(err);
+            alert('Lỗi thêm ghi chú!');
+        }
+    };
+
     useEffect(() => {
         if (hotel) {
             setFormData({
@@ -133,10 +160,13 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
             } else {
                 setAllotments([]);
             }
+            
+            fetchHotelNotes();
         } else {
             setContacts([{ id: Date.now() + 1, name: '', position: '', dob: '', phone: '', email: '' }]);
             setServices([{ id: Date.now() + 2, sku: '', name: '', start_date: '', end_date: '', day_type: 'Ngày thường', contract_price: 0, net_price: 0, sell_price: 0 }]);
             setAllotments([{ id: Date.now() + 3, sku: '', name: '', start_date: '', end_date: '', day_type: 'Ngày thường', allotment_count: 0, cut_off_days: 0, net_price: 0, sell_price: 0 }]);
+            setHotelNotes([]);
         }
     }, [hotel]);
 
@@ -246,6 +276,11 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                     <div className={`tab-btn ${activeTab === 'allotment' ? 'active' : ''}`} onClick={() => setActiveTab('allotment')} style={tabStyle(activeTab === 'allotment')}>
                         <CalendarDays size={16} /> Quỹ Allotment
                     </div>
+                    {hotel && (
+                        <div className={`tab-btn ${activeTab === 'notes' ? 'active' : ''}`} onClick={() => setActiveTab('notes')} style={tabStyle(activeTab === 'notes')}>
+                            <FileText size={16} /> Lịch Sử Ghi Chú
+                        </div>
+                    )}
                 </div>
 
                 {/* BODY SET */}
@@ -476,6 +511,58 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                     </button>
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {activeTab === 'notes' && hotel && (
+                        <div style={{ flex: 1, padding: '2.5rem', overflowY: 'auto' }}>
+                            <div className="consultation-section animate-fade-in" style={{ gridColumn: 'span 3' }}>
+                                <h2 className="consultation-title">Lịch sử tư vấn & Chăm sóc</h2>
+                                <p className="consultation-subtitle">Theo dõi các lần trao đổi và ghi chú tiến trình với đối tác khách sạn.</p>
+                                
+                                {!isViewOnly && (
+                                    <div className="note-input-container">
+                                        <div className="note-input-label">
+                                            <PlusCircle size={18} /> THÊM GHI CHÚ MỚI
+                                        </div>
+                                        <textarea 
+                                            className="note-textarea" 
+                                            placeholder="Nhập nội dung tư vấn..." 
+                                            value={newNote} 
+                                            onChange={e => setNewNote(e.target.value)}
+                                        />
+                                        <button type="button" className="note-submit-btn" onClick={handleAddHotelNote}>
+                                            <Send size={16} /> Gửi
+                                        </button>
+                                    </div>
+                                )}
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                    {hotelNotes.map(note => (
+                                        <div key={note.id} style={{ padding: '1.5rem', background: 'white', borderRadius: '1rem', border: '1px solid #eaeff4', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                                            <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <div style={{ width: '24px', height: '24px', background: '#f1f5f9', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: '#6366f1' }}>
+                                                        {note.creator_name?.charAt(0) || 'U'}
+                                                    </div>
+                                                    <strong>{note.creator_name}</strong>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                    <Clock size={12} />
+                                                    <span>{new Date(note.created_at).toLocaleString('vi-VN')}</span>
+                                                </div>
+                                            </div>
+                                            <div style={{ fontSize: '0.95rem', color: '#1e293b', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{note.content}</div>
+                                        </div>
+                                    ))}
+                                    {hotelNotes.length === 0 && (
+                                        <div style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8', border: '2px dashed #f1f5f9', borderRadius: '1rem' }}>
+                                            <FileText size={40} style={{ marginBottom: '1rem', opacity: 0.2 }} />
+                                            <div>Chưa có lịch sử trạng thái hoặc ghi chú nào.</div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>

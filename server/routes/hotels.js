@@ -38,4 +38,8 @@ router.post('/:hotel_id/allotments', authenticateToken, roleCheck(ALLOWED_ROLES)
 router.put('/allotments/:allotment_id', authenticateToken, roleCheck(ALLOWED_ROLES), hotelController.updateAllotment);
 router.delete('/allotments/:allotment_id', authenticateToken, roleCheck(ALLOWED_ROLES), hotelController.deleteAllotment);
 
+// Notes
+router.get('/:hotel_id/notes', authenticateToken, roleCheck(ALLOWED_ROLES), hotelController.getHotelNotes);
+router.post('/:hotel_id/notes', authenticateToken, roleCheck(ALLOWED_ROLES), hotelController.addHotelNote);
+
 module.exports = router;
