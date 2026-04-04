@@ -1,5 +1,7 @@
-import { X, ChevronLeft, CheckCircle, PlusCircle, Send, Clock, FileText, LogOut, TrendingUp, UserPlus, Package } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, ChevronLeft, CheckCircle, PlusCircle, Send, Clock, FileText, LogOut, TrendingUp, UserPlus, Package, AlertTriangle, ExternalLink } from 'lucide-react';
 import SearchableSelect from '../common/SearchableSelect';
+import axios from 'axios';
 
 const EditLeadModal = ({ 
   editingLead, 
@@ -17,6 +19,28 @@ const EditLeadModal = ({
   handleAddNoteForLead,
   bus
 }) => {
+  const [existingCustomer, setExistingCustomer] = useState(null);
+
+  useEffect(() => {
+    if (!editingLead?.phone || editingLead.phone.trim().length < 8) {
+      setExistingCustomer(null);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await axios.get(`/api/customers/check-phone?phone=${editingLead.phone.trim()}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (res.data.exists && res.data.customer.id !== editingLead.customer_id) {
+          setExistingCustomer(res.data.customer);
+        } else {
+          setExistingCustomer(null);
+        }
+      } catch (err) {}
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [editingLead?.phone, editingLead?.customer_id]);
+
   if (!editingLead) return null;
   
   const formatDateTime = (dateStr) => {
@@ -47,8 +71,34 @@ const EditLeadModal = ({
       <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>Chỉnh sửa Hồ sơ Lead</h2>
       <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>Cập nhật tiến trình chăm sóc và thông tin tư vấn.</p>
       
+      {existingCustomer && (
+        <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+          <div style={{ padding: '8px', background: '#fef3c7', color: '#d97706', borderRadius: '8px' }}>
+            <AlertTriangle size={20} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <h4 style={{ color: '#b45309', fontWeight: 800, margin: '0 0 6px 0', fontSize: '1rem' }}>SĐT trùng với danh bạ Khách hàng cũ!</h4>
+            <p style={{ color: '#92400e', margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>
+              Bản ghi khách hàng đang chăm sóc trùng khớp với thông tin trong CSDL.
+              <br/>
+              Tên gốc: <strong>{existingCustomer.name}</strong> • Phân hạng: <strong>{existingCustomer.customer_segment}</strong> ({existingCustomer.total_trips || 0} chuyến)
+            </p>
+            <div style={{ marginTop: '8px' }}>
+              <a 
+                href={`/customers?view=${existingCustomer.id}`} 
+                target="_blank" 
+                rel="noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', fontWeight: 700, color: '#d97706', textDecoration: 'none', background: '#fef3c7', padding: '4px 10px', borderRadius: '4px' }}
+              >
+                <ExternalLink size={14} /> KIỂM TRA HỒ SƠ GỐC TẠI ĐÂY
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
-        <button className="btn-pro-cancel" style={{ width: 'auto', border: 'none', background: 'white', fontWeight: 800, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }} onClick={() => setEditingLead(null)}>
+        <button type="button" className="btn-pro-cancel" style={{ width: 'auto', border: 'none', background: 'white', fontWeight: 800, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }} onClick={() => setEditingLead(null)}>
           <ChevronLeft size={18} strokeWidth={3} /> QUAY LẠI
         </button>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>

@@ -11,6 +11,29 @@ function computeVipTier(totalTrips) {
     return 'New Customer';
 }
 
+exports.checkPhoneExists = async (req, res) => {
+    try {
+        const phone = req.query.phone;
+        if (!phone) return res.json({ exists: false });
+        
+        const result = await db.query(`
+            SELECT id, name, customer_segment, past_trip_count,
+            COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status = 'confirmed'), 0) as crm_trip_count
+            FROM customers WHERE phone = $1 OR phone LIKE '%' || $2
+            LIMIT 1
+        `, [phone, phone.replace(/^0/, '')]);
+
+        if (result.rows.length > 0) {
+            const cust = result.rows[0];
+            const total = parseInt(cust.past_trip_count || 0) + parseInt(cust.crm_trip_count || 0);
+            return res.json({ exists: true, customer: { ...cust, total_trips: total }});
+        }
+        res.json({ exists: false });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 exports.getAllCustomers = async (req, res) => {
     try {
         const result = await db.query(`

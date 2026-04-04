@@ -7,6 +7,7 @@ const roleCheck = require('../middleware/roleCheck');
 const ALLOWED_CUSTOMER_ROLES = ['admin', 'manager', 'sales', 'operations'];
 
 router.get('/birthdays/upcoming', authenticateToken, roleCheck(ALLOWED_CUSTOMER_ROLES), customerController.getUpcomingBirthdays);
+router.get('/check-phone', authenticateToken, roleCheck(ALLOWED_CUSTOMER_ROLES), customerController.checkPhoneExists);
 router.get('/', authenticateToken, roleCheck(ALLOWED_CUSTOMER_ROLES), customerController.getAllCustomers);
 router.post('/', authenticateToken, roleCheck(['admin', 'manager', 'sales']), customerController.createCustomer);
 const customerEventController = require('../controllers/customerEventController');

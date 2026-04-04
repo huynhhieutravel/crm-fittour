@@ -1,6 +1,7 @@
-import React from 'react';
-import { X, PlusCircle, LogOut } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, PlusCircle, LogOut, AlertTriangle, ExternalLink } from 'lucide-react';
 import SearchableSelect from '../common/SearchableSelect';
+import axios from 'axios';
 
 const AddLeadModal = ({ 
   showAddLeadModal, 
@@ -15,6 +16,28 @@ const AddLeadModal = ({
   users,
   bus
 }) => {
+  const [existingCustomer, setExistingCustomer] = useState(null);
+
+  useEffect(() => {
+    if (!newLead.phone || newLead.phone.trim().length < 8) {
+      setExistingCustomer(null);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await axios.get(`/api/customers/check-phone?phone=${newLead.phone.trim()}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (res.data.exists) {
+          setExistingCustomer(res.data.customer);
+        } else {
+          setExistingCustomer(null);
+        }
+      } catch (err) {}
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [newLead.phone]);
+
   if (!showAddLeadModal) return null;
 
   return (
@@ -26,14 +49,40 @@ const AddLeadModal = ({
         <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Hệ thống Quản lý Lead</div>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '1.5rem' }}>Thêm Lead Marketing Mới</h2>
         
+        {existingCustomer && (
+          <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+            <div style={{ padding: '8px', background: '#fef3c7', color: '#d97706', borderRadius: '8px' }}>
+              <AlertTriangle size={20} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h4 style={{ color: '#b45309', fontWeight: 800, margin: '0 0 6px 0', fontSize: '1rem' }}>Phát hiện Khách hàng cũ!</h4>
+              <p style={{ color: '#92400e', margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>
+                Số điện thoại này đã tồn tại trong Danh mục Khách Hàng Cơ Sở.
+                <br/>
+                Tên: <strong>{existingCustomer.name}</strong> • Phân hạng: <strong>{existingCustomer.customer_segment}</strong> ({existingCustomer.total_trips || 0} chuyến đi)
+              </p>
+              <div style={{ marginTop: '8px' }}>
+                <a 
+                  href={`/customers?view=${existingCustomer.id}`} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', fontWeight: 700, color: '#d97706', textDecoration: 'none', background: '#fef3c7', padding: '4px 10px', borderRadius: '4px' }}
+                >
+                  <ExternalLink size={14} /> KIỂM TRA HỒ SƠ GỐC TẠI ĐÂY
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleAddLead} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-          <div className="modal-form-group">
+          <div className="modal-form-group" style={existingCustomer ? { opacity: 0.5 } : {}}>
             <label>TÊN KHÁCH HÀNG *</label>
             <input className="modal-input" required value={newLead.name} onChange={e => setNewLead({...newLead, name: e.target.value})} placeholder="Nguyễn Văn A..." />
           </div>
           <div className="modal-form-group">
             <label>SỐ ĐIỆN THOẠI</label>
-            <input className="modal-input" value={newLead.phone} onChange={e => setNewLead({...newLead, phone: e.target.value})} placeholder="0901 234..." />
+            <input className="modal-input" value={newLead.phone} onChange={e => setNewLead({...newLead, phone: e.target.value})} placeholder="0901 234..." style={existingCustomer ? { borderColor: '#f59e0b', backgroundColor: '#fffbeb', color: '#92400e', fontWeight: 800 } : {}} />
           </div>
 
           <div className="modal-form-group">

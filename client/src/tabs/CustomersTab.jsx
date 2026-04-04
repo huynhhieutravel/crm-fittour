@@ -24,6 +24,17 @@ const CustomersTab = ({
 
   const [localFilters, setLocalFilters] = useState({ segment: '', minSpent: '', source: '', assignedTo: '' });
 
+  React.useEffect(() => {
+    const s = new URLSearchParams(window.location.search).get('search');
+    if (s && !customerFilters?.search) {
+      setCustomerFilters(prev => ({ ...prev, search: s }));
+    }
+    const viewId = new URLSearchParams(window.location.search).get('view');
+    if (viewId) {
+      handleViewProfile(viewId);
+    }
+  }, []);
+
   const handleViewProfile = async (id) => {
     try {
       const res = await axios.get(`/api/customers/${id}`, {
