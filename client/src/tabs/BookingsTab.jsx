@@ -12,7 +12,8 @@ const BookingsTab = ({
   bookingTotalPages,
   setShowAddBookingModal,
   handleDeleteBooking,
-  handleEditBooking
+  handleEditBooking,
+  currentUser
 }) => {
   const navigate = useNavigate();
   const [selectedBookingId, setSelectedBookingId] = useState(null);
@@ -199,9 +200,11 @@ const BookingsTab = ({
                       <button className="icon-btn edit" title="Sửa thông tin" onClick={() => handleEditBooking && handleEditBooking(booking)}>
                         <Edit2 size={18} />
                       </button>
-                      <button className="icon-btn delete" title="Xóa" onClick={() => handleDeleteBooking && handleDeleteBooking(booking.id)}>
-                        <Trash2 size={18} />
-                      </button>
+                      {['admin', 'manager'].includes(currentUser?.role) && (
+                        <button className="icon-btn delete" title="Xóa" onClick={() => handleDeleteBooking && handleDeleteBooking(booking.id)}>
+                          <Trash2 size={18} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

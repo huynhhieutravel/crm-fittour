@@ -9,7 +9,8 @@ const ToursTab = ({
   setEditingTemplate,
   handleDeleteTour,
   handleUpdateTemplate,
-  bus
+  bus,
+  currentUser
 }) => {
   const uniqueDestinations = [...new Set(tourTemplates.map(t => t.destination).filter(Boolean))].sort();
   const tourTypes = ['Group Tour', 'Private Tour', 'Luxury Tour', 'MICE Tour'];
@@ -179,13 +180,15 @@ const ToursTab = ({
                     >
                       <Edit3 size={14} />
                     </button>
-                    <button 
-                      className="icon-btn-square danger" 
-                      title="Xoá sản phẩm" 
-                      onClick={() => handleDeleteTour(template.id)}
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    {['admin', 'manager'].includes(currentUser?.role) && (
+                      <button 
+                        className="icon-btn-square danger" 
+                        title="Xoá sản phẩm" 
+                        onClick={() => handleDeleteTour(template.id)}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

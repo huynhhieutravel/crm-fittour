@@ -1940,6 +1940,7 @@ function AppContent() {
             handleDeleteTour={handleDeleteTour}
             handleUpdateTemplate={handleUpdateTemplate}
             bus={bus}
+            currentUser={user}
           />
         )}
 
@@ -1960,6 +1961,7 @@ function AppContent() {
             handleViewDeparture={handleViewDeparture}
             handleViewBookingsForDeparture={handleViewBookingsForDeparture}
             guides={guides}
+            currentUser={user}
           />
         )}
 

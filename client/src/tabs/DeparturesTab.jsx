@@ -23,7 +23,8 @@ const DeparturesTab = ({
   handleUpdateDeparture,
   handleViewDeparture,
   handleViewBookingsForDeparture,
-  guides
+  guides,
+  currentUser
 }) => {
   const [hoveredNotePath, setHoveredNotePath] = useState(null);
 
@@ -377,14 +378,16 @@ const DeparturesTab = ({
                       >
                         <Copy size={16} />
                       </button>
-                      <button 
-                        type="button"
-                        className="icon-btn delete" 
-                        onClick={(e) => { e.stopPropagation(); handleDeleteDeparture(dep.id); }} 
-                        title="Xoá Lịch khởi hành"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {['admin', 'manager'].includes(currentUser?.role) && (
+                        <button 
+                          type="button"
+                          className="icon-btn delete" 
+                          onClick={(e) => { e.stopPropagation(); handleDeleteDeparture(dep.id); }} 
+                          title="Xoá Lịch khởi hành"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
