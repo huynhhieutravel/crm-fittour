@@ -759,10 +759,6 @@ const ManualDeparturesGuide = () => (
           <br/>- <strong>List View</strong>: Cung cấp cột thông tin chi tiết về Slot (Chỗ) hiện tại, tình trạng ghép Booking nhanh chóng.
           <br/>- <strong>Calendar View</strong>: Xem khối lượng công việc tổng quan theo ngày, tối ưu khi xếp lịch cho Hướng dẫn viên.
         </p>
-        <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '10px' }}>
-             <img src="/manual_images/full_departures_list_1775200193242.png" style={{ flex: '1', minWidth: '400px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} alt="Giao diện List" />
-             <img src="/manual_images/departures_calendar_view_1775229184698.png" style={{ flex: '1', minWidth: '400px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} alt="Giao diện Calendar" />
-        </div>
       </section>
 
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
