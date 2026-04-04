@@ -35,11 +35,19 @@ const reactSelectStyles = {
         boxShadow: 'none',
         '&:hover': { borderColor: '#94a3b8' }
     }),
-    valueContainer: (base) => ({
-        ...base,
-        padding: '0 12px'
-    })
-};
+        valueContainer: (base) => ({
+            ...base,
+            padding: '0 12px',
+            height: '42px',
+            display: 'flex',
+            alignItems: 'center'
+        }),
+        input: (base) => ({
+            ...base,
+            margin: 0,
+            padding: 0
+        })
+    };
 
 export default function HotelsTab({ currentUser }) {
     const [hotels, setHotels] = useState([]);
@@ -151,7 +159,7 @@ export default function HotelsTab({ currentUser }) {
                 
                 <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-end', height: '100%', paddingTop: '1.4rem' }}>
                     {(currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'operations') && (
-                        <button className="btn btn-primary" onClick={handleAddHotel} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '44px', padding: '0 1.5rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
+                        <button className="btn btn-primary" onClick={handleAddHotel} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '44px', padding: '0 1.5rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, background: '#2563eb', color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)', cursor: 'pointer' }}>
                             <Plus size={18} /> Thêm Mới
                         </button>
                     )}

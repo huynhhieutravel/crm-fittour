@@ -191,6 +191,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
     const reactSelectStyles = {
         control: (base) => ({
             ...base,
+            height: '40px',
             minHeight: '40px',
             borderRadius: '8px',
             borderColor: '#cbd5e1',
@@ -199,7 +200,15 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
         }),
         valueContainer: (base) => ({
             ...base,
-            padding: '2px 8px'
+            padding: '0 12px',
+            height: '38px',
+            display: 'flex',
+            alignItems: 'center'
+        }),
+        input: (base) => ({
+            ...base,
+            margin: 0,
+            padding: 0
         })
     };
 
@@ -285,7 +294,8 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                             styles={reactSelectStyles}
                                             isClearable
                                             isDisabled={isViewOnly}
-                                            placeholder="Chọn thị trường..."
+                                            placeholder="🔍 Gõ để tìm hoặc chọn..."
+                                            noOptionsMessage={() => "Không tìm thấy thị trường"}
                                         />
                                     </div>
                                     <div className="form-group" style={{ gridColumn: 'span 2' }}>
