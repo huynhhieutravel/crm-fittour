@@ -570,47 +570,109 @@ const ManualBookings = () => (
   </>
 );
 
-const ManualTours = () => (
+const ManualToursSOP = () => (
   <>
-    <div style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.4)' }}>
-      <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.5px' }}>Điều hành: Sản phẩm Tour & Lịch trình</h1>
-      <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '600px', lineHeight: 1.6 }}>
-        Sử dụng hệ thống để thiết lập thư viện Sản phẩm Tour mẫu, quản lý danh sách Lịch trình bay chuyến và ghép Hướng Dẫn Viên.
+    <div style={{ background: 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(185, 28, 28, 0.4)' }}>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1rem' }}>
+        <Shield size={36} color="#fca5a5" />
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>Sản Phẩm Tour: Quy Định (SOP)</h1>
+      </div>
+      <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '650px', lineHeight: 1.6 }}>
+        Đây là bộ cốt lõi định hình mọi Sản Phẩm Tour Mẫu của FIT TOUR. Các quy trình này bắt buộc đối với phòng Product/Điều Hành để đảm bảo dữ liệu không bị gãy khi liên thông với Kế toán và Facebook Catalog.
       </p>
     </div>
 
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>A. Danh Mục Sản Phẩm Tour Mẫu</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="1" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Cú Pháp Đặt Mã SKU Bất Di Bất Dịch</h2>
+        </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Menu <strong>Sản phẩm Tour</strong> giống như quyển Catalogue (Thư mục) chứa các lộ trình du lịch mà FIT TOUR đang kinh doanh. Nó giữ quy tắc chung chẳng hạn như mã code <em>(VD: HAN-BKK-01)</em>, địa điểm và thời lượng tour chuẩn. Bảng này quản trị các "Form mẫu" trước khi mở ngày bay thực tế.
+          <strong>Mã Tour (SKU Code)</strong> không chỉ là mã bề nổi. Nó là móc nối linh hồn vào Meta Catalog API. Nhập sai mã là rơi thẳng tiền quảng cáo xuống biển!
+        </p>
+
+        <div style={{ padding: '1.5rem', background: '#fef2f2', borderLeft: '5px solid #ef4444', borderRadius: '4px', color: '#991b1b', marginBottom: '1.5rem' }}>
+          <h3 style={{ fontWeight: 800, margin: '0 0 10px 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertTriangle size={18} /> NGHIÊM CẤM TÊN CẢM TÍNH
+          </h3>
+          Cấm tuyệt đối đặt mã kiểu: <span style={{ textDecoration: 'line-through', opacity: 0.7 }}>Tour-Thái-Rẻ</span>, <span style={{ textDecoration: 'line-through', opacity: 0.7 }}>Thai2024</span>.<br/>
+          Bắt buộc sử dụng cú pháp chuẩn: <strong>[MÃ ĐIỂM ĐI]-[MÃ ĐIỂM ĐẾN]-[THỜI LƯỢNG]</strong><br/>
+          Ví dụ chuẩn: <strong style={{ color: '#dc2626' }}>HAN-BKK-05D4N</strong> (Từ Hà Nội - Đến Bangkok - 5 Ngày 4 Đêm).
+        </div>
+      </section>
+
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="2" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Trạng Thái Ẩn/Hiện Chứ Không Xóa</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Khi một sản phẩm Tour "hết thời" hoặc đóng tuyến, Điều hành viên thường có thói quen xóa cho sạch kho. CRM cấm điều này.
+        </p>
+        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#475569', fontSize: '1.05rem' }}>
+          <li>Hãy dùng chức năng <strong>Tắt trạng thái Active (Hiệu Lực)</strong>.</li>
+          <li>Lịch khởi hành cũ của tour đó ở năm ngoái vẫn sẽ được lưu trữ nguyên vẹn để đối chiếu sổ sách. Vị khách đi tour đó năm ngoái vẫn sẽ còn Lịch sử trong Hồ sơ của họ.</li>
+        </ul>
+      </section>
+
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="3" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Chặn Xóa Khi Đã Co Booking</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
+          Một khi Tour đã được bung ra thành "Lịch Khởi Hành" và Sales đã nhét khách thu tiền cọc vào chuyến đó: <strong>Lịch khởi hành đó bị khóa sống</strong>. Ngay lập tức, bạn không được phép thay đổi Lộ Trình Cốt Lõi (Số Ngày) của Tour mẫu nữa vì nó sẽ phá vỡ khế ước với những khách đã nạp tiền.
+        </p>
+      </section>
+    </div>
+  </>
+);
+
+const ManualToursGuide = () => (
+  <>
+    <div style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.4)' }}>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1rem' }}>
+        <Map size={36} color="#a7f3d0" />
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>Tour & Lịch Trình: Hướng Dẫn Sử Dụng</h1>
+      </div>
+      <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '600px', lineHeight: 1.6 }}>
+        Trạm không lưu của phòng Điều hành: Tổ chức thư viện Sản phẩm, rải Lịch bay chuyến trên Calendar và rải Hướng Dẫn Viên.
+      </p>
+    </div>
+
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>A. Danh Mục Sản Phẩm Tour Mẫu (Sản phẩm Form)</h2>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Menu <strong>Sản phẩm Tour</strong> giống như Khuôn đúc mẫu. Nó giữ quy tắc chung chẳng hạn như mã code <em>(VD: HAN-BKK-01)</em>, hình đại diện và thời lượng tour. Bạn chỉ cần tạo khuôn 1 lần là có thể rải hàng chục Lịch khởi hành cho tháng đó.
         </p>
         <img src="/manual_images/tours_list_main_1775229170603.png" style={{ width: '100%', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} alt="Danh sách Tour Mẫu" />
       </section>
 
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>B. Lịch Khởi Hành (Departures Timeline)</h2>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>B. Khai Phóng Lịch Khởi Hành (Departures Timeline)</h2>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Được thiết kế cho phòng <strong>Điều hành (Operations)</strong>. Bạn sẽ bóc các mẫu Tour ra và chỉ định ngày khởi hành thực tế (VD: Tour BKK khởi hành từ ngày 10 tới ngày 14). Màn hình chia thành hai chế độ là <strong>Lịch (Calendar)</strong> (trực quan các chuyến đi trải dài theo tuần/tháng) và <strong>Bảng (List)</strong>.
+          Bạn sẽ bóc các mẫu Tour ra và chỉ định ngày khởi hành thực tế (VD: Tour BKK khởi hành từ ngày 10 tới ngày 14). Có 2 chế độ hiển thị: <strong>Lịch (Calendar)</strong> (trực quan theo ô Ngày) và <strong>Bảng (List)</strong> (thuận tiện để lọc sửa nháp).
         </p>
         <img src="/manual_images/departures_calendar_view_1775229184698.png" style={{ width: '100%', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} alt="Lịch Khởi Hành" />
-        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginTop: '1.5rem' }}>
-          Cũng tại màn hình này, Điều hành viên có quyền Gán xe trung chuyển (Bus / Plane), gán Hướng dẫn Viên (Guides) dẫn đoàn chuyến đó. Lịch Departure sẽ cấm xóa/sửa đổi mạnh khi đoàn đã bắt đầu di chuyển để bảo vệ số đông hành khách.
-        </p>
+        <div style={{ padding: '1rem 1.5rem', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0', marginTop: '1.5rem' }}>
+          <strong>💡 Tips Gán Xe & HDV:</strong> Ngay tại màn hình này, nhấp vào một lịch ban hành, bạn có quyền ốp ngay Hướng Dẫn Viên (Guides) sẽ tiếp nhận đoàn. Giao dịch này kết nối trực tiếp đến Lịch công tác của HDV.
+        </div>
       </section>
 
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>C. Quản lý Hồ sơ Hướng Dẫn Viên (Guides)</h2>
-        <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
-          <div style={{ flex: 1 }}>
+        <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '300px' }}>
             <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1rem' }}>
-              Menu Danh sách HDV lưu trữ lý lịch hợp tác của những người dẫn Tour, bao gồm chứng chỉ ngoại ngữ, trạng thái làm việc (Sẵn sàng/Đang bận), và số lượng tour đã giao phó.
+              Menu Danh sách HDV lưu trữ lý lịch hợp tác: từ chứng chỉ ngoại ngữ, trạng thái làm việc (Rảnh/Bận), cho đến kinh nghiệm tác chiến tuyến đường đó.
             </p>
             <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
-              Bạn có thể dễ dàng khởi tạo Hồ sơ cho Tour Guide mới, ấn định Mức độ Ưu tiên để hệ thống dễ gợi ý trong Lịch khởi hành.
+              Bạn có quyền ấn định Mức độ Ưu tiên cho các Guide "Ruột" để vinh danh họ đẩy lên đầu danh sách chọn lựa khi có Lịch khởi hành mới.
             </p>
           </div>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: '350px' }}>
             <img src="/manual_images/guides_list_main_1775229241538.png" style={{ width: '100%', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', marginBottom: '10px' }} alt="Danh sách Guide" />
             <img src="/manual_images/add_guide_modal_1775229258128.png" style={{ width: '100%', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} alt="Tạo Guide" />
           </div>
@@ -633,7 +695,8 @@ const ManualTab = () => {
       case 'customers-sop': return <ManualCustomersSOP />;
       case 'customers-guide': return <ManualCustomersGuide />;
       case 'bookings': return <ManualBookings />;
-      case 'tours': return <ManualTours />;
+      case 'tours-sop': return <ManualToursSOP />;
+      case 'tours-guide': return <ManualToursGuide />;
       case 'overview':
       default: return <ManualOverview />;
     }

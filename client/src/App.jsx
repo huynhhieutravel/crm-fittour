@@ -1540,8 +1540,11 @@ function AppContent() {
           <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'bookings' ? 'active' : ''}`} onClick={() => navigate('/manual/bookings')} style={{ paddingLeft: '2.5rem' }}>
             <ShoppingCart size={16} opacity={0.7} /> Đơn hàng & Dòng tiền
           </div>
-          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'tours' ? 'active' : ''}`} onClick={() => navigate('/manual/tours')} style={{ paddingLeft: '2.5rem' }}>
-            <Map size={16} opacity={0.7} /> Điều hành & Tour
+          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'tours-sop' ? 'active' : ''}`} onClick={() => navigate('/manual/tours-sop')} style={{ paddingLeft: '2.5rem' }}>
+            <Shield size={16} opacity={0.7} /> Tour - Quy Định (SOP)
+          </div>
+          <div className={`nav-item ${activeTab === 'manual' && pathParts[1] === 'tours-guide' ? 'active' : ''}`} onClick={() => navigate('/manual/tours-guide')} style={{ paddingLeft: '2.5rem' }}>
+            <Map size={16} opacity={0.7} /> Tour - HD Sử Dụng
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
