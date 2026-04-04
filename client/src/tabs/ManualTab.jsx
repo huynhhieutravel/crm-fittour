@@ -204,8 +204,17 @@ const ManualLeadsSOP = () => (
             <ul style={{ paddingLeft: '1.2rem', color: '#b91c1c', display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: 0 }}>
               <li>Viết cẩu thả, vô hồn chỉ để lấy KPI.</li>
               <li><em>Ví dụ SAI: "Đã gọi", "Đang bận", "Có số điện thoại", "Zalo ko rep".</em> Mọi Note vô nghĩa sẽ bị hệ thống đánh dấu Zero Effort.</li>
+              <li><strong>TUYỆT ĐỐI KHÔNG ẨN DATA:</strong> Khách bom hàng hoặc chê đắt, bạn phải chuyển trạng thái 'Thất Bại' và Note rõ 'Khách chê đắt mua bên cty A'. Không được tự ý xóa dòng Lead để phi tang.</li>
             </ul>
           </div>
+        </div>
+
+        <div style={{ padding: '1rem 1.5rem', background: '#fffbeb', borderLeft: '4px solid #f59e0b', borderRadius: '4px', color: '#92400e', marginTop: '1.5rem' }}>
+          <strong>CASE DIỂN HÌNH (Sử Dụng Trạng Thái Kết Hợp Note):</strong>
+          <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem' }}>
+            <li><strong>Khách im lặng (Zalo ko rep / Xem ko trả lời):</strong> Sau 3 ngày, chuyển trạng thái về <em>Đang Follow</em> và Ghi chú: <em>"Đã báo giá nhưng KH xem ko trả lời. Sẽ follow lại tháng sau."</em></li>
+            <li><strong>Khách Gọi Hotline Đêm Khuya:</strong> Điền SDT vào sổ tay giấy, <strong>SÁNG HÔM SAU PHẢI LÊN CRM NHẬP BẰNG TAY NGAY LẬP TỨC.</strong> Mọi case chăm ngoài luồng không kê khai trên CRM sẽ bị tước doanh số.</li>
+          </ul>
         </div>
       </section>
 
@@ -286,6 +295,14 @@ const ManualLeadsGuide = () => (
           Tuyệt chiêu để lọc 1000 khách rác ra còn 10 khách ruột. Bấm vào nút <Filter size={18} style={{display: 'inline-block', verticalAlign: 'middle', margin: '0 4px'}} /> <strong>Bộ Lọc</strong> ở góc phải.
         </p>
 
+        {/* MCP WebP Demo Embed */}
+        <div style={{ borderRadius: '12px', border: '2px solid #3b82f6', overflow: 'hidden', marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(59, 130, 246, 0.2)' }}>
+          <div style={{ background: '#eff6ff', padding: '0.75rem 1rem', borderBottom: '1px solid #bfdbfe', color: '#1e3a8a', fontWeight: 600, fontSize: '0.9rem' }}>
+            🎥 Màn Hình Minh Họa: Mở dropdown Bộ lọc
+          </div>
+          <img src="/manual_images/leads_filter_demo.webp" style={{ width: '100%', display: 'block' }} alt="Cận cảnh mở menu Filter" />
+        </div>
+
         <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#475569', fontSize: '1.05rem', marginBottom: '1.5rem' }}>
           <li><strong>Lọc theo Thời Khoảng (Date range):</strong> Mặc định nó chỉ hiện tháng này. Bạn dùng chức năng "Tùy chọn" để chọn lịch từ năm trước đến năm sau nếu muốn xới củ lại khách cũ.</li>
           <li><strong>Lọc theo Trạng thái:</strong> Rất hiệu quả! Bạn check vào "Đang tư vấn" và "Sắp chốt" để nó in ra cục tệp nóng nhất cần xử lý ngay hôm nay. Bỏ tích "Thất bại" để đỡ chướng mắt.</li>
@@ -308,9 +325,10 @@ const ManualLeadsGuide = () => (
             <h3 style={{ color: '#1e3a8a', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', gap: '8px', alignItems: 'center' }}>
               <Edit3 size={18} color="#2563eb" /> Sửa Trực Tiếp (Inline Edit)
             </h3>
-            <p style={{ color: '#1e40af', margin: 0, fontSize: '0.95rem' }}>
+            <p style={{ color: '#1e40af', margin: 0, fontSize: '0.95rem', marginBottom: '1rem' }}>
               Bạn có thể nhấp đúp vào ô <strong>Số Điện Thoại</strong> hoặc dropdown <strong>Trạng thái</strong> ngay trên cái bảng (giống hệt xài Excel). Sửa xong nó hiện dấu tick xanh lưu luôn cái vèo!
             </p>
+            <img src="/manual_images/create_lead_modal.png" style={{ width: '100%', borderRadius: '8px', border: '1px solid #bfdbfe' }} alt="Sửa trực tiếp bằng Inline Edit" />
           </div>
           <div style={{ flex: 1, minWidth: '300px', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
             <h3 style={{ color: '#0f172a', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -341,6 +359,9 @@ const ManualLeadsGuide = () => (
           <div style={{ background: '#fdf4ff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #fbcfe8' }}>
             <strong>💬 (Nhật Ký - Notes)</strong><br/>
             Dùng để bật nhanh Modal chat để viết ghi chú tình hình con bệnh. Lịch sử ko bị xóa bao giờ.
+            <div style={{ marginTop: '1rem', borderRadius: '8px', overflow: 'hidden', border: '1px solid #f9a8d4' }}>
+               <img src="/manual_images/leads_form_and_notes.webp" style={{ width: '100%', display: 'block' }} alt="Mở Chat Notes" />
+            </div>
           </div>
           <div style={{ background: '#f0fdf4', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
             <strong>👤+ (Convert Chốt Đơn)</strong><br/>
@@ -414,14 +435,21 @@ const ManualCustomers = () => (
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
           <StepBadge num="3" />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Nguyên Tắc Dữ Liệu "Tiền Trảm Hậu Tấu"</h2>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Nguyên Tắc Nhóm (Group Buys) & Dữ Liệu</h2>
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Rất nhiều người thắc mắc: <em>Tại sao tôi không thấy nút <strong>Xóa hẳn</strong> Khách hàng?</em>
+          Tuyệt đối chú ý nguyên tắc dữ liệu đối với các trường hợp đặt Tour theo nhóm.
         </p>
+
+        <div style={{ padding: '1rem 1.5rem', background: '#f0fdf4', borderLeft: '4px solid #22c55e', borderRadius: '4px', color: '#166534', marginBottom: '1.5rem' }}>
+          <strong>CASE DIỂN HÌNH - KHÁCH ĐẶT CHUNG (5 bạn thân mua chung):</strong><br/>
+          Nếu 1 khách hàng đại diện thanh toán 50 triệu cho 5 người bạn. <strong>TUYỆT ĐỐI KHÔNG</strong> khai báo 1 khách rồi ghi "SL: 5" vào Note. Bạn <strong>BẮT BUỘC PHẢI KHAI BÁO CẢ 5 HỒ SƠ KHÁCH</strong>.
+          <br/><br/>
+          Lý do: Cả 5 người đó đều đi tour nhà bạn. Sau này họ sẽ là ngòi nổ Marketing cho năm sau. Mất 4 số data là bạn bay thẳng 4 khách nóng tiềm năng vô sọt rác!
+        </div>
+
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
-          Lý do là vì Khách hàng có liên kết rễ má với Đơn hàng và Lịch khởi hành. Nếu xóa mất, Kế toán sẽ không biết khoản tiền kia là của ai. <br/>
-          Thay vào đó, FIT TOUR áp dụng cơ chế <strong>Xóa Mềm (Soft-delete)</strong>. Bạn bấm vào nút [Khóa] màu xám, khách hàng đó sẽ tàng hình khỏi danh sách chọn khi Sales tạo Booking, nhưng lịch sử dòng tiền Kế toán xuất ra vẫn giữ nguyên vẹn.
+          Và với chức năng <strong>Xóa Mềm (Soft-delete)</strong> thay vì Xóa hẳn, Kế toán sẽ luôn truy vết được dòng tiền dù Khách Hàng đó đã bị Khóa (Lock) bên ngoài danh sách Sale.
         </p>
       </section>
 
