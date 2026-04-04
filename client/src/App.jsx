@@ -1349,10 +1349,7 @@ function AppContent() {
     <div className="app-container">
       <aside className="sidebar">
         <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-          <div style={{ padding: '8px', background: 'var(--secondary)', borderRadius: '10px', display: 'flex' }}>
-            <Map size={24} color="white" />
-          </div>
-          FIT TOUR
+          <img src="/logo.png" alt="FIT TOUR" style={{ height: '40px', objectFit: 'contain' }} />
         </div>
 
         <div className="sidebar-nav-scroll">
@@ -2264,11 +2261,8 @@ function AppContent() {
         element={isLoggedIn ? <Navigate to={`/${activeTab}`} replace /> : (
           <div className="login-page-wrapper">
             <div className="login-glass-card shadow-2xl">
-              <div className="login-brand">
-                <div className="login-logo-icon">
-                  <Map size={36} />
-                </div>
-                <h1>FIT TOUR</h1>
+              <div className="login-brand" style={{ display: 'flex', justifyContent: 'center' }}>
+                <img src="/logo.png" alt="FIT TOUR" style={{ height: '80px', marginBottom: '1rem', objectFit: 'contain' }} />
               </div>
 
               <h2>Đăng nhập hệ thống</h2>
