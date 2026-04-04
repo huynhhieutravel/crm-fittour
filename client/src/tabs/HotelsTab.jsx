@@ -1,7 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Plus, MapPin, Star, Building, CheckCircle, XCircle } from 'lucide-react';
+import Select from 'react-select';
 import HotelDetailDrawer from '../components/modals/HotelDetailDrawer';
+
+const PROVINCE_OPTIONS = [
+    { value: 'Hồ Chí Minh', label: 'Hồ Chí Minh' },
+    { value: 'Hà Nội', label: 'Hà Nội' },
+    { value: 'Đà Nẵng', label: 'Đà Nẵng' },
+    { value: 'Phuket', label: 'Phuket (Thái Lan)' },
+    { value: 'Bangkok', label: 'Bangkok (Thái Lan)' },
+    { value: 'Bali', label: 'Bali (Indonesia)' },
+    { value: 'Seoul', label: 'Seoul (Hàn Quốc)' },
+    { value: 'Tokyo', label: 'Tokyo (Nhật Bản)' },
+    { value: 'Đài Bắc', label: 'Đài Bắc (Đài Loan)' },
+    { value: 'Dubai', label: 'Dubai (UAE)' }
+];
+
+const STAR_OPTIONS = [
+    { value: '5_star', label: '5 Sao' },
+    { value: '4_star', label: '4 Sao' },
+    { value: '3_star', label: '3 Sao' },
+    { value: 'resort', label: 'Resort / Villa' },
+    { value: 'other', label: 'Khác' }
+];
+
+const reactSelectStyles = {
+    control: (base) => ({
+        ...base,
+        height: '44px',
+        minHeight: '44px',
+        borderRadius: '8px',
+        borderColor: '#cbd5e1',
+        boxShadow: 'none',
+        '&:hover': { borderColor: '#94a3b8' }
+    }),
+    valueContainer: (base) => ({
+        ...base,
+        padding: '0 12px'
+    })
+};
 
 export default function HotelsTab({ currentUser }) {
     const [hotels, setHotels] = useState([]);
@@ -89,41 +127,26 @@ export default function HotelsTab({ currentUser }) {
 
                 <div className="filter-group" style={{ flex: '0 0 200px', margin: 0 }}>
                     <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>TỈNH THÀNH / KHU VỰC</label>
-                    <select 
-                        className="filter-input" 
-                        style={{ width: '100%', height: '44px', borderRadius: '8px', border: '1px solid #cbd5e1', padding: '0 12px', outline: 'none' }}
-                        value={provinceFilter}
-                        onChange={(e) => setProvinceFilter(e.target.value)}
-                    >
-                        <option value="">Tất cả Tỉnh/Thành</option>
-                        <option value="Hồ Chí Minh">Hồ Chí Minh</option>
-                        <option value="Hà Nội">Hà Nội</option>
-                        <option value="Đà Nẵng">Đà Nẵng</option>
-                        <option value="Phuket">Phuket (Thái Lan)</option>
-                        <option value="Bangkok">Bangkok (Thái Lan)</option>
-                        <option value="Bali">Bali (Indonesia)</option>
-                        <option value="Seoul">Seoul (Hàn Quốc)</option>
-                        <option value="Tokyo">Tokyo (Nhật Bản)</option>
-                        <option value="Đài Bắc">Đài Bắc (Đài Loan)</option>
-                        <option value="Dubai">Dubai (UAE)</option>
-                    </select>
+                    <Select
+                        options={PROVINCE_OPTIONS}
+                        value={PROVINCE_OPTIONS.find(o => o.value === provinceFilter) || null}
+                        onChange={option => setProvinceFilter(option ? option.value : '')}
+                        styles={reactSelectStyles}
+                        isClearable
+                        placeholder="Tất cả Tỉnh/Thành"
+                    />
                 </div>
 
                 <div className="filter-group" style={{ flex: '0 0 160px', margin: 0 }}>
                     <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>HẠNG DỊCH VỤ</label>
-                    <select 
-                        className="filter-input" 
-                        style={{ width: '100%', height: '44px', borderRadius: '8px', border: '1px solid #cbd5e1', padding: '0 12px', outline: 'none' }}
-                        value={starFilter}
-                        onChange={(e) => setStarFilter(e.target.value)}
-                    >
-                        <option value="">Mọi hạng sao</option>
-                        <option value="5_star">5 Sao</option>
-                        <option value="4_star">4 Sao</option>
-                        <option value="3_star">3 Sao</option>
-                        <option value="resort">Resort / Villa</option>
-                        <option value="other">Khác</option>
-                    </select>
+                    <Select
+                        options={STAR_OPTIONS}
+                        value={STAR_OPTIONS.find(o => o.value === starFilter) || null}
+                        onChange={option => setStarFilter(option ? option.value : '')}
+                        styles={reactSelectStyles}
+                        isClearable
+                        placeholder="Mọi hạng sao"
+                    />
                 </div>
                 
                 <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-end', height: '100%', paddingTop: '1.4rem' }}>

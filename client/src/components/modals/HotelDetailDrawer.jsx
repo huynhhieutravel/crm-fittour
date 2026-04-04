@@ -1,6 +1,88 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Save, Plus, Trash2, Building, BedDouble, CalendarDays, Users } from 'lucide-react';
+import Select from 'react-select';
+
+const MARKET_OPTIONS = [
+    {
+        label: 'Việt Nam',
+        options: [{ value: 'Việt Nam (MICE)', label: 'Việt Nam (MICE)' }]
+    },
+    {
+        label: 'Trung Quốc Đại Lục',
+        options: [
+            { value: 'Trung Quốc', label: 'Trung Quốc (Chung)' },
+            { value: 'Bắc Kinh', label: 'Bắc Kinh' },
+            { value: 'Cáp Nhĩ Tân', label: 'Cáp Nhĩ Tân' },
+            { value: 'Cửu Trại Câu', label: 'Cửu Trại Câu' },
+            { value: 'Giang Nam', label: 'Giang Nam' },
+            { value: 'Giang Tây', label: 'Giang Tây' },
+            { value: 'Lệ Giang', label: 'Lệ Giang' },
+            { value: 'Tân Cương', label: 'Tân Cương' },
+            { value: 'Tây An', label: 'Tây An' },
+            { value: 'Tây Tạng', label: 'Tây Tạng' },
+            { value: 'Vân Nam', label: 'Vân Nam' },
+            { value: 'Á Đinh', label: 'Á Đinh' }
+        ]
+    },
+    {
+        label: 'Đông Bắc Á',
+        options: [
+            { value: 'Hàn Quốc', label: 'Hàn Quốc' },
+            { value: 'Nhật Bản', label: 'Nhật Bản' },
+            { value: 'Mông Cổ', label: 'Mông Cổ' },
+            { value: 'Đài Loan', label: 'Đài Loan' }
+        ]
+    },
+    {
+        label: 'Nam Á & Himalayas',
+        options: [
+            { value: 'Bhutan', label: 'Bhutan' },
+            { value: 'Himalayas', label: 'Himalayas' },
+            { value: 'Kailash', label: 'Kailash' },
+            { value: 'Kashmir', label: 'Kashmir' },
+            { value: 'Ladakh', label: 'Ladakh' },
+            { value: 'Nepal', label: 'Nepal' },
+            { value: 'Pakistan', label: 'Pakistan' }
+        ]
+    },
+    {
+        label: 'Trung Á & Lân Cận',
+        options: [
+            { value: 'Trung Á', label: 'Trung Á' },
+            { value: 'Caucasus', label: 'Caucasus' },
+            { value: 'Silk Road', label: 'Silk Road' }
+        ]
+    },
+    {
+        label: 'Đông Nam Á',
+        options: [
+            { value: 'Đông Nam Á', label: 'Đông Nam Á' },
+            { value: 'Bromo', label: 'Bromo' },
+            { value: 'Thái Lan', label: 'Thái Lan' },
+            { value: 'Singapore', label: 'Singapore' },
+            { value: 'Malaysia', label: 'Malaysia' }
+        ]
+    },
+    {
+        label: 'Châu Âu & Nga',
+        options: [
+            { value: 'Châu Âu', label: 'Châu Âu' },
+            { value: 'Nga - Murmansk', label: 'Nga - Murmansk' }
+        ]
+    },
+    {
+        label: 'Trung Đông & Châu Phi',
+        options: [
+            { value: 'Trung Đông', label: 'Trung Đông' },
+            { value: 'Thổ Nhĩ Kỳ', label: 'Thổ Nhĩ Kỳ' },
+            { value: 'Dubai', label: 'Dubai' },
+            { value: 'Ai Cập', label: 'Ai Cập' },
+            { value: 'Morocco', label: 'Morocco' },
+            { value: 'Châu Phi', label: 'Châu Phi' }
+        ]
+    }
+];
 
 export default function HotelDetailDrawer({ hotel, onClose, refreshList, currentUser }) {
     const [activeTab, setActiveTab] = useState('general');
@@ -105,6 +187,21 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
     const inputCell = { padding: '8px', borderBottom: '1px solid #e2e8f0', background: 'transparent' };
     const inlineInput = { width: '100%', border: '1px solid #cbd5e1', borderRadius: '4px', padding: '6px 8px', fontSize: '13px', background: 'white', outline: 'none' };
     const drawerInputStyle = { padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', width: '100%', outline: 'none', background: 'white', transition: 'border 0.2s' };
+    
+    const reactSelectStyles = {
+        control: (base) => ({
+            ...base,
+            minHeight: '40px',
+            borderRadius: '8px',
+            borderColor: '#cbd5e1',
+            boxShadow: 'none',
+            '&:hover': { borderColor: '#94a3b8' }
+        }),
+        valueContainer: (base) => ({
+            ...base,
+            padding: '2px 8px'
+        })
+    };
 
     return (
         <div className="drawer-overlay" style={{
@@ -181,43 +278,15 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                     </div>
                                     <div className="form-group">
                                         <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Thị trường MICE/Inbound</label>
-                                        <select style={drawerInputStyle} value={formData.market} onChange={e => setFormData({...formData, market: e.target.value})} disabled={isViewOnly}>
-                                            <option value="">-- Chọn Thị Trường --</option>
-                                            <optgroup label="Việt Nam"><option value="Việt Nam (MICE)">Việt Nam (MICE)</option></optgroup>
-                                            <optgroup label="Trung Quốc Đại Lục">
-                                                <option value="Trung Quốc">Trung Quốc (Chung)</option>
-                                                <option value="Bắc Kinh">Bắc Kinh</option>
-                                                <option value="Cáp Nhĩ Tân">Cáp Nhĩ Tân</option>
-                                                <option value="Cửu Trại Câu">Cửu Trại Câu</option>
-                                                <option value="Giang Nam">Giang Nam</option>
-                                                <option value="Giang Tây">Giang Tây</option>
-                                                <option value="Lệ Giang">Lệ Giang</option>
-                                                <option value="Tân Cương">Tân Cương</option>
-                                                <option value="Tây An">Tây An</option>
-                                                <option value="Tây Tạng">Tây Tạng</option>
-                                                <option value="Vân Nam">Vân Nam</option>
-                                                <option value="Á Đinh">Á Đinh</option>
-                                            </optgroup>
-                                            <optgroup label="Đông Bắc Á">
-                                                <option value="Hàn Quốc">Hàn Quốc</option>
-                                                <option value="Nhật Bản">Nhật Bản</option>
-                                                <option value="Mông Cổ">Mông Cổ</option>
-                                                <option value="Đài Loan">Đài Loan</option>
-                                            </optgroup>
-                                            <optgroup label="Nam Á & Himalayas">
-                                                <option value="Bhutan">Bhutan</option>
-                                                <option value="Himalayas">Himalayas</option>
-                                                <option value="Kailash">Kailash</option>
-                                                <option value="Kashmir">Kashmir</option>
-                                                <option value="Ladakh">Ladakh</option>
-                                                <option value="Nepal">Nepal</option>
-                                                <option value="Pakistan">Pakistan</option>
-                                            </optgroup>
-                                            <optgroup label="Trung Á & Lân Cận"><option value="Trung Á">Trung Á</option><option value="Caucasus">Caucasus</option><option value="Silk Road">Silk Road</option></optgroup>
-                                            <optgroup label="Đông Nam Á"><option value="Đông Nam Á">Đông Nam Á</option><option value="Bromo">Bromo</option><option value="Thái Lan">Thái Lan</option><option value="Singapore">Singapore</option><option value="Malaysia">Malaysia</option></optgroup>
-                                            <optgroup label="Châu Âu & Nga"><option value="Châu Âu">Châu Âu</option><option value="Nga - Murmansk">Nga - Murmansk</option></optgroup>
-                                            <optgroup label="Trung Đông & Châu Phi"><option value="Trung Đông">Trung Đông</option><option value="Thổ Nhĩ Kỳ">Thổ Nhĩ Kỳ</option><option value="Dubai">Dubai</option><option value="Ai Cập">Ai Cập</option><option value="Morocco">Morocco</option><option value="Châu Phi">Châu Phi</option></optgroup>
-                                        </select>
+                                        <Select 
+                                            options={MARKET_OPTIONS}
+                                            value={hotel?.market ? { label: hotel.market, value: hotel.market } : (formData.market ? { label: formData.market, value: formData.market } : null)}
+                                            onChange={option => setFormData({...formData, market: option ? option.value : ''})}
+                                            styles={reactSelectStyles}
+                                            isClearable
+                                            isDisabled={isViewOnly}
+                                            placeholder="Chọn thị trường..."
+                                        />
                                     </div>
                                     <div className="form-group" style={{ gridColumn: 'span 2' }}>
                                         <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Địa chỉ chi tiết</label>
