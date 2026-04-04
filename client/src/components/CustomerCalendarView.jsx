@@ -110,6 +110,7 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
   const renderEventChip = (ev, index) => {
     const isBirthday = ev.event_type === 'BIRTHDAY';
     const isPending = ev.status === 'pending';
+    const cust = customers.find(c => c.id === ev.customer_id);
     
     let bgColor = '#eff6ff';
     let color = '#3b82f6';
@@ -121,43 +122,33 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
       color = '#854d0e';
       borderColor = '#fde047';
       icon = '🎂';
+      
+      // Override colors based on VIP segment if it's a birthday
+      if (cust && cust.customer_segment) {
+        if (cust.customer_segment === 'VIP 1') {
+          bgColor = '#fee2e2'; color = '#991b1b'; borderColor = '#fca5a5';
+        } else if (cust.customer_segment === 'VIP 2') {
+          bgColor = '#ffedd5'; color = '#9a3412'; borderColor = '#fdba74';
+        } else if (cust.customer_segment === 'VIP 3') {
+          bgColor = '#f3e8ff'; color = '#6b21a8'; borderColor = '#d8b4fe';
+        } else if (cust.customer_segment === 'Repeat Customer') {
+          bgColor = '#e0f2fe'; color = '#075985'; borderColor = '#bae6fd';
+        }
+      }
     } else if (ev.status === 'completed') {
-      bgColor = '#dcfce7';
-      color = '#166534';
-      borderColor = '#bbf7d0';
+      bgColor = '#dcfce7'; color = '#166534'; borderColor = '#bbf7d0';
     } else if (ev.event_type === 'MEETING') {
-      bgColor = '#fce7f3';
-      color = '#be185d';
-      borderColor = '#fbcfe8';
-      icon = '🤝';
+      bgColor = '#fce7f3'; color = '#be185d'; borderColor = '#fbcfe8'; icon = '🤝';
     } else if (ev.event_type === 'CALL') {
-      bgColor = '#e0f2fe';
-      color = '#0369a1';
-      borderColor = '#bae6fd';
-      icon = '📞';
+      bgColor = '#e0f2fe'; color = '#0369a1'; borderColor = '#bae6fd'; icon = '📞';
     } else if (ev.event_type === 'PAYMENT') {
-      bgColor = '#fef2f2';
-      color = '#b91c1c';
-      borderColor = '#fecaca';
-      icon = '💰';
+      bgColor = '#fef2f2'; color = '#b91c1c'; borderColor = '#fecaca'; icon = '💰';
     } else if (ev.event_type === 'EMAIL') {
-      bgColor = '#dcfce7';
-      color = '#15803d';
-      borderColor = '#bbf7d0';
-      icon = '✉️';
-    } else if (ev.event_type === 'BIRTHDAY') {
-      bgColor = '#fef3c7';
-      color = '#d97706';
-      borderColor = '#fde68a';
-      icon = '🎂';
+      bgColor = '#dcfce7'; color = '#15803d'; borderColor = '#bbf7d0'; icon = '✉️';
     } else {
-      bgColor = '#f3f4f6';
-      color = '#4b5563';
-      borderColor = '#e5e7eb';
-      icon = '🤔';
+      bgColor = '#f3f4f6'; color = '#4b5563'; borderColor = '#e5e7eb'; icon = '🤔';
     }
 
-    const cust = customers.find(c => c.id === ev.customer_id);
     let vipBadge = null;
     if (cust && cust.customer_segment) {
       const seg = cust.customer_segment;
@@ -204,9 +195,10 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
           <span style={{overflow: 'hidden', textOverflow: 'ellipsis', flex: 1}}>{ev.title}</span>
           {vipBadge}
         </div>
-        {cust && cust.phone && (
-          <div style={{ fontSize: '0.65rem', color: isBirthday ? '#b45309' : '#64748b', opacity: 0.9, fontWeight: 500, display: 'flex', alignItems: 'center', gap: '2px' }}>
-            <Phone size={10} /> {cust.phone}
+        {cust && (
+          <div style={{ fontSize: '0.65rem', color, opacity: 0.9, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><Phone size={10} /> {cust.phone || 'N/A'}</span>
+            <span style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.5)', padding: '0 4px', borderRadius: '4px' }}>{cust.total_trip_count || 0} chuyến</span>
           </div>
         )}
       </div>
