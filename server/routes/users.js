@@ -4,7 +4,7 @@ const userController = require('../controllers/userController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 
-router.get('/', auth, admin, userController.getAllUsers);
+router.get('/', auth, userController.getAllUsers);
 router.get('/roles', auth, admin, userController.getRoles);
 router.post('/', auth, admin, userController.createUser);
 router.put('/:id', auth, admin, userController.updateUser);
