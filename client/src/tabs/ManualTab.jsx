@@ -298,9 +298,9 @@ const ManualLeadsGuide = () => (
         {/* MCP WebP Demo Embed */}
         <div style={{ borderRadius: '12px', border: '2px solid #3b82f6', overflow: 'hidden', marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(59, 130, 246, 0.2)' }}>
           <div style={{ background: '#eff6ff', padding: '0.75rem 1rem', borderBottom: '1px solid #bfdbfe', color: '#1e3a8a', fontWeight: 600, fontSize: '0.9rem' }}>
-            🎥 Màn Hình Minh Họa: Mở dropdown Bộ lọc
+            📷 Màn Hình Minh Họa: Mở dropdown Bộ lọc
           </div>
-          <img src="/manual_images/leads_filter_demo.webp" style={{ width: '100%', display: 'block' }} alt="Cận cảnh mở menu Filter" />
+          <img src="/manual_images/leads_filter_demo.png" style={{ width: '100%', display: 'block' }} alt="Cận cảnh mở menu Filter" />
         </div>
 
         <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#475569', fontSize: '1.05rem', marginBottom: '1.5rem' }}>
@@ -360,7 +360,7 @@ const ManualLeadsGuide = () => (
             <strong>💬 (Nhật Ký - Notes)</strong><br/>
             Dùng để bật nhanh Modal chat để viết ghi chú tình hình con bệnh. Lịch sử ko bị xóa bao giờ.
             <div style={{ marginTop: '1rem', borderRadius: '8px', overflow: 'hidden', border: '1px solid #f9a8d4' }}>
-               <img src="/manual_images/leads_form_and_notes.webp" style={{ width: '100%', display: 'block' }} alt="Mở Chat Notes" />
+               <img src="/manual_images/leads_form_and_notes.png" style={{ width: '100%', display: 'block' }} alt="Mở Chat Notes" />
             </div>
           </div>
           <div style={{ background: '#f0fdf4', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
