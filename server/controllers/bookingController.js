@@ -52,6 +52,8 @@ exports.getAllBookings = async (req, res) => {
                     b.*, 
                     c.name as customer_name,
                     c.phone as customer_phone,
+                    c.customer_segment,
+                    c.past_trip_count,
                     tt.name as tour_name,
                     tt.code as tour_code,
                     td.code as departure_code,
@@ -79,6 +81,8 @@ exports.getAllBookings = async (req, res) => {
                 b.*, 
                 c.name as customer_name, 
                 c.phone as customer_phone,
+                c.customer_segment,
+                c.past_trip_count,
                 tt.name as tour_name,
                 tt.code as tour_code,
                 td.code as departure_code,
@@ -172,7 +176,7 @@ exports.createBooking = async (req, res) => {
 exports.getBookingById = async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT b.*, c.name as customer_name, c.phone as customer_phone, c.email as customer_email, tt.name as tour_name
+            SELECT b.*, c.name as customer_name, c.phone as customer_phone, c.email as customer_email, c.customer_segment, c.past_trip_count, tt.name as tour_name
             FROM bookings b
             LEFT JOIN customers c ON b.customer_id = c.id
             LEFT JOIN tour_departures td ON b.tour_departure_id = td.id

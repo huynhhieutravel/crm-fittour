@@ -715,7 +715,18 @@ export const EditDepartureModal = ({
                       >
                         {bk.customer_name}
                       </div>
-                      <div style={{ color: '#64748b', fontSize: '0.8rem' }}>{bk.customer_phone}</div>
+                      <div style={{ color: '#64748b', fontSize: '0.8rem', marginBottom: '4px' }}>{bk.customer_phone}</div>
+                      {(bk.customer_segment || bk.past_trip_count > 0) && (
+                        <div style={{ 
+                          display: 'inline-flex', alignItems: 'center', gap: '4px',
+                          background: (bk.customer_segment || '').toLowerCase().includes('vip') ? '#fef08a' : '#f1f5f9', 
+                          color: (bk.customer_segment || '').toLowerCase().includes('vip') ? '#854d0e' : '#475569', 
+                          padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 
+                        }}>
+                          {bk.customer_segment && bk.customer_segment !== 'Tất cả' ? bk.customer_segment : 'Khách'}
+                          {bk.past_trip_count > 0 && <span style={{opacity: 0.8}}>• Đi {bk.past_trip_count} lần</span>}
+                        </div>
+                      )}
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center', fontWeight: 700, color: '#334155' }}>
                       <span style={{ background: '#e2e8f0', padding: '4px 10px', borderRadius: '16px' }}>{bk.pax_count}</span>

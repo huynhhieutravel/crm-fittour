@@ -147,6 +147,18 @@ const BookingsTab = ({
                     >
                       {booking.customer_name}
                     </button>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>{booking.customer_phone}</div>
+                    {(booking.customer_segment || booking.past_trip_count > 0) && (
+                      <div style={{ 
+                        display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '4px',
+                        background: (booking.customer_segment || '').toLowerCase().includes('vip') ? '#fef08a' : '#f1f5f9', 
+                        color: (booking.customer_segment || '').toLowerCase().includes('vip') ? '#854d0e' : '#475569', 
+                        padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 
+                      }}>
+                        {booking.customer_segment && booking.customer_segment !== 'Tất cả' ? booking.customer_segment : 'Khách'}
+                        {booking.past_trip_count > 0 && <span style={{opacity: 0.8}}>• Đi {booking.past_trip_count} lần</span>}
+                      </div>
+                    )}
                   </td>
                   <td style={{ fontSize: '0.85rem' }}>
                     <button 

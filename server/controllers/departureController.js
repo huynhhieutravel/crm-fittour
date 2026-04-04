@@ -105,7 +105,7 @@ exports.getDepartureById = async (req, res) => {
         if (departureResult.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy lịch khởi hành' });
 
         const bookingsResult = await db.query(`
-            SELECT b.*, c.name as customer_name, c.phone as customer_phone
+            SELECT b.*, c.name as customer_name, c.phone as customer_phone, c.customer_segment, c.past_trip_count
             FROM bookings b
             LEFT JOIN customers c ON b.customer_id = c.id
             WHERE b.tour_departure_id = $1
@@ -248,7 +248,7 @@ exports.deleteDeparture = async (req, res) => {
 exports.getDepartureBookings = async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT b.*, c.name as customer_name, c.phone as customer_phone
+            SELECT b.*, c.name as customer_name, c.phone as customer_phone, c.customer_segment, c.past_trip_count
             FROM bookings b
             JOIN customers c ON b.customer_id = c.id
             WHERE b.tour_departure_id = $1
