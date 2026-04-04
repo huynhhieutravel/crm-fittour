@@ -2221,7 +2221,7 @@ function AppContent() {
       />
 
       <ChangePasswordModal 
-        user={showChangeMyPassword ? currentUser : userToChangePassword}
+        user={showChangeMyPassword ? user : userToChangePassword}
         onClose={() => {
           setUserToChangePassword(null);
           setShowChangeMyPassword(false);
