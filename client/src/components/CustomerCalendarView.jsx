@@ -157,6 +157,21 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
       icon = '🤔';
     }
 
+    const cust = customers.find(c => c.id === ev.customer_id);
+    let vipBadge = null;
+    if (cust && cust.customer_segment) {
+      const seg = cust.customer_segment;
+      let sColor = '#64748b';
+      let sText = seg;
+      if (seg === 'VIP 1') { sColor = '#dc2626'; sText = '⭐⭐⭐'; }
+      else if (seg === 'VIP 2') { sColor = '#d97706'; sText = '⭐⭐'; }
+      else if (seg === 'VIP 3') { sColor = '#7c3aed'; sText = '⭐'; }
+      else if (seg === 'Repeat Customer') { sColor = '#2563eb'; sText = '🏅'; }
+      if (sText !== seg) {
+        vipBadge = <span style={{fontSize:'0.6rem', marginLeft:'4px', padding: '0px 4px', background: 'rgba(255,255,255,0.7)', borderRadius: '4px', border: `1px solid ${sColor}`, color: sColor}} title={seg}>{sText}</span>;
+      }
+    }
+
     return (
       <div 
         key={index}
@@ -175,20 +190,25 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
+          flexDirection: 'column',
+          gap: '2px'
         }}
         onClick={(e) => {
           e.stopPropagation();
-          // Directly open customer profile instead of ugly window.prompt
           onCustomerClick(ev.customer_id);
         }}
         title={`${ev.title}\n${ev.description || ''}`}
       >
-        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           {icon && <span style={{ marginRight: '4px' }}>{icon}</span>}
-          {ev.title}
+          <span style={{overflow: 'hidden', textOverflow: 'ellipsis', flex: 1}}>{ev.title}</span>
+          {vipBadge}
         </div>
+        {cust && cust.phone && (
+          <div style={{ fontSize: '0.65rem', color: isBirthday ? '#b45309' : '#64748b', opacity: 0.9, fontWeight: 500, display: 'flex', alignItems: 'center', gap: '2px' }}>
+            <Phone size={10} /> {cust.phone}
+          </div>
+        )}
       </div>
     );
   };
@@ -240,6 +260,7 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
             
             // Filter events for this day
             const dayEvents = events.filter(e => {
+              if (customers.findIndex(c => c.id === e.customer_id) === -1) return false;
               const eDate = new Date(e.event_date);
               return eDate.getDate() === day && eDate.getMonth() === currentDate.getMonth() && eDate.getFullYear() === currentDate.getFullYear();
             });

@@ -54,6 +54,15 @@ const CustomersTab = ({
     }
   };
 
+  const filteredCustomers = customers.filter(c => 
+    ((c.name || '').toLowerCase().includes((customerFilters?.search || '').toLowerCase()) ||
+     (c.phone || '').includes(customerFilters?.search || '')) &&
+    (localFilters.segment ? c.customer_segment === localFilters.segment : true) &&
+    (localFilters.minSpent ? (c.total_spent || 0) >= parseInt(localFilters.minSpent) : true) &&
+    (localFilters.source ? (c.lead_source || '').toLowerCase() === localFilters.source.toLowerCase() : true) &&
+    (localFilters.assignedTo ? (localFilters.assignedTo === 'NO_STAFF' ? !c.assigned_to : c.assigned_to === parseInt(localFilters.assignedTo)) : true)
+  );
+
   return (
     <>
       <div className="animate-fade-in">
@@ -171,7 +180,7 @@ const CustomersTab = ({
       </div>
 
       {customerActiveTab === 'calendar' ? (
-        <CustomerCalendarView users={users} customers={customers} onCustomerClick={handleViewProfile} />
+        <CustomerCalendarView users={users} customers={filteredCustomers} onCustomerClick={handleViewProfile} />
       ) : (
         <div className="data-table-container">
           <table className="data-table">
@@ -187,14 +196,7 @@ const CustomersTab = ({
             </tr>
           </thead>
           <tbody>
-            {customers.filter(c => 
-              ((c.name || '').toLowerCase().includes((customerFilters?.search || '').toLowerCase()) ||
-               (c.phone || '').includes(customerFilters?.search || '')) &&
-              (localFilters.segment ? c.customer_segment === localFilters.segment : true) &&
-              (localFilters.minSpent ? (c.total_spent || 0) >= parseInt(localFilters.minSpent) : true) &&
-              (localFilters.source ? (c.lead_source || '').toLowerCase() === localFilters.source.toLowerCase() : true) &&
-              (localFilters.assignedTo ? (localFilters.assignedTo === 'NO_STAFF' ? !c.assigned_to : c.assigned_to === parseInt(localFilters.assignedTo)) : true)
-            ).map(customer => (
+            {filteredCustomers.map(customer => (
               <tr key={customer.id}>
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
