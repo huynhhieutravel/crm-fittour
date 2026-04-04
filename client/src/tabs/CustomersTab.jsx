@@ -74,6 +74,23 @@ const CustomersTab = ({
     (localFilters.assignedTo ? (localFilters.assignedTo === 'NO_STAFF' ? !c.assigned_to : c.assigned_to === parseInt(localFilters.assignedTo)) : true)
   );
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(30);
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [customerFilters, localFilters]);
+
+  const actualItemsPerPage = itemsPerPage === 'all' ? Math.max(1, filteredCustomers.length) : itemsPerPage;
+  const totalPages = Math.ceil(filteredCustomers.length / actualItemsPerPage) || 1;
+  const currentCustomers = filteredCustomers.slice((currentPage - 1) * actualItemsPerPage, currentPage * actualItemsPerPage);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
   return (
     <>
       <div className="animate-fade-in">
@@ -207,7 +224,7 @@ const CustomersTab = ({
             </tr>
           </thead>
           <tbody>
-            {filteredCustomers.map(customer => (
+            {currentCustomers.map(customer => (
               <tr key={customer.id}>
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -316,6 +333,58 @@ const CustomersTab = ({
           </tbody>
         </table>
       </div>
+      )}
+
+      {customerActiveTab === 'list' && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', padding: '0 1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Hiển thị:</span>
+            <select
+              className="filter-select"
+              style={{ padding: '4px 24px 4px 12px', height: '32px', fontSize: '0.85rem', borderRadius: '6px', fontWeight: 600, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#475569', minWidth: '70px', margin: 0 }}
+              value={itemsPerPage}
+              onChange={(e) => {
+                const val = e.target.value;
+                setItemsPerPage(val === 'all' ? 'all' : parseInt(val, 10));
+                setCurrentPage(1);
+              }}
+            >
+              <option value={30}>30 dòng</option>
+              <option value={50}>50 dòng</option>
+              <option value={100}>100 dòng</option>
+              <option value={300}>300 dòng</option>
+              <option value={1000}>1000 dòng</option>
+              <option value="all">Tất cả</option>
+            </select>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#94a3b8' }}>
+              Hiển thị {currentCustomers.length} / {filteredCustomers.length} khách hàng
+            </span>
+          </div>
+
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <button 
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+                style={{ padding: '6px 12px', border: '1px solid #e2e8f0', background: currentPage === 1 ? '#f8fafc' : 'white', borderRadius: '6px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontWeight: 600, color: currentPage === 1 ? '#cbd5e1' : '#475569', fontSize: '0.85rem' }}
+              >
+                Trang trước
+              </button>
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b', margin: '0 8px' }}>
+                Trang {currentPage} / {totalPages}
+              </div>
+              <button 
+                type="button"
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+                style={{ padding: '6px 12px', border: '1px solid #e2e8f0', background: currentPage === totalPages ? '#f8fafc' : 'white', borderRadius: '6px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontWeight: 600, color: currentPage === totalPages ? '#cbd5e1' : '#475569', fontSize: '0.85rem' }}
+              >
+                Trang sau
+              </button>
+            </div>
+          )}
+        </div>
       )}
       </div>
 
