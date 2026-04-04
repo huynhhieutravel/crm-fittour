@@ -1547,7 +1547,7 @@ function AppContent() {
 
           <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <div className="nav-item" onClick={() => setShowChangeMyPassword(true)} style={{ color: '#0ea5e9', background: 'rgba(14, 165, 233, 0.05)', marginBottom: '5px' }}>
-              <Key size={18} /> <strong>ĐỔI MẬT KHẨU</strong>
+              <Lock size={18} /> <strong>ĐỔI MẬT KHẨU</strong>
             </div>
             <div className="nav-item" onClick={handleLogout} style={{ color: '#f87171', background: 'rgba(239, 68, 68, 0.05)' }}>
               <LogOut size={18} /> <strong>ĐĂNG XUẤT</strong>
