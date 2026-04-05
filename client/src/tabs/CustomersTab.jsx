@@ -200,7 +200,7 @@ const CustomersTab = ({
               <option value="">Tất cả nhân viên</option>
               <option value="NO_STAFF">⚠ Chưa giao ai</option>
               {users.map(u => (
-                <option key={u.id} value={u.id}>{u.full_name}</option>
+                <option key={u.id} value={u.id}>{u.username}</option>
               ))}
             </select>
           </div>
@@ -302,7 +302,7 @@ const CustomersTab = ({
                   {customer.created_at ? new Date(customer.created_at).toLocaleDateString('vi-VN') : 'N/A'}
                 </td>
                 <td style={{ fontSize: '0.85rem' }}>
-                  {users.find(u => u.id === customer.assigned_to)?.full_name || 'Chưa gán'}
+                  {users.find(u => u.id === customer.assigned_to)?.username || 'Chưa gán'}
                 </td>
                 <td style={{ fontWeight: 700, color: '#10b981' }}>
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(customer.total_spent || 0)}

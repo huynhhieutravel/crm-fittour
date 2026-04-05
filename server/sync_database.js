@@ -25,7 +25,8 @@ const MIGRATION_FILES = [
   'migrations/migration_departures_core.js',
   'migrate_code.js',
   'migrations/migration_dynamic_pricing.js',
-  'migrations/migration_phase15_costings.js'
+  'migrations/migration_phase15_costings.js',
+  'migrations/migration_restaurants.js'
 ];
 
 console.log('🌟 Bắt Đầu Tiến Trình Đồng Bộ Cơ Sở Dữ Liệu (Universal Sync) 🌟');

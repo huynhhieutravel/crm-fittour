@@ -1,0 +1,48 @@
+{
+  "module_name": "insurance",
+  "module_name_vi": "Bảo Hiểm",
+  "table_prefix": "insurances",
+  "icon": "Shield",
+
+  "entity_fields": [
+    { "name": "code", "type": "VARCHAR(50) UNIQUE", "label": "Mã NCC", "required": false },
+    { "name": "name", "type": "VARCHAR(255) NOT NULL", "label": "Tên Đối Tác", "required": true },
+    { "name": "tax_id", "type": "VARCHAR(50)", "label": "Mã số thuế", "required": false },
+    { "name": "insurance_class", "type": "VARCHAR(100)", "label": "Phân loại", "required": false },
+    { "name": "phone", "type": "VARCHAR(50)", "label": "Số điện thoại", "required": false },
+    { "name": "email", "type": "VARCHAR(100)", "label": "Email", "required": false },
+    { "name": "country", "type": "VARCHAR(100)", "label": "Quốc gia", "required": false },
+    { "name": "province", "type": "VARCHAR(100)", "label": "Tỉnh/Thành", "required": false },
+    { "name": "address", "type": "TEXT", "label": "Địa chỉ", "required": false },
+    { "name": "notes", "type": "TEXT", "label": "Ghi chú", "required": false },
+    { "name": "website", "type": "VARCHAR(255)", "label": "Website", "required": false },
+    { "name": "bank_account_name", "type": "VARCHAR(255)", "label": "Tên TK ngân hàng", "required": false },
+    { "name": "bank_account_number", "type": "VARCHAR(100)", "label": "Số TK", "required": false },
+    { "name": "bank_name", "type": "VARCHAR(255)", "label": "Ngân hàng", "required": false },
+    { "name": "market", "type": "VARCHAR(100)", "label": "Thị trường", "required": false }
+  ],
+
+  "contact_fields": [
+    { "name": "name", "type": "VARCHAR(255) NOT NULL", "label": "Tên" },
+    { "name": "position", "type": "VARCHAR(100)", "label": "Chức vụ" },
+    { "name": "phone", "type": "VARCHAR(50)", "label": "SĐT" },
+    { "name": "email", "type": "VARCHAR(100)", "label": "Email" }
+  ],
+
+  "service_fields": [
+    { "name": "sku", "type": "VARCHAR(50)", "label": "Mã Gói", "required": false },
+    { "name": "service_type", "type": "VARCHAR(100)", "label": "Phạm Vi", "required": false },
+    { "name": "name", "type": "VARCHAR(255) NOT NULL", "label": "Tên Gói Bảo Hiểm", "required": true },
+    { "name": "description", "type": "TEXT", "label": "Mô tả", "required": false },
+    { "name": "notes", "type": "TEXT", "label": "Ghi chú", "required": false },
+    { "name": "coverage_amount", "type": "VARCHAR(100)", "label": "Mức Bồi Thường", "required": false },
+    { "name": "duration_days", "type": "INTEGER", "label": "Số ngày bảo vệ", "required": false },
+    { "name": "cost_price", "type": "NUMERIC(15,2)", "label": "Giá KT", "required": false },
+    { "name": "net_price", "type": "NUMERIC(15,2)", "label": "Giá Net", "required": false },
+    { "name": "sale_price", "type": "NUMERIC(15,2)", "label": "Giá Bán", "required": false }
+  ],
+
+  "rate_fields": [
+    { "name": "dummy_rate", "type": "VARCHAR(1)" }
+  ]
+}

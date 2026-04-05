@@ -1,0 +1,53 @@
+{
+  "module_name": "ticket",
+  "module_name_vi": "Vé tham quan",
+  "table_prefix": "tickets",
+  "icon": "Ticket",
+
+  "entity_fields": [
+    { "name": "code", "type": "VARCHAR(50) UNIQUE", "label": "Mã NCC", "required": false },
+    { "name": "name", "type": "VARCHAR(255)", "label": "Tên Đại lý / Khu du lịch", "required": true },
+    { "name": "tax_id", "type": "VARCHAR(50)", "label": "Mã số thuế", "required": false },
+    { "name": "ticket_type", "type": "VARCHAR(100)", "label": "Loại vé", "required": false },
+    { "name": "phone", "type": "VARCHAR(50)", "label": "Số điện thoại", "required": false },
+    { "name": "email", "type": "VARCHAR(100)", "label": "Email", "required": false },
+    { "name": "country", "type": "VARCHAR(100)", "label": "Quốc gia", "required": false },
+    { "name": "province", "type": "VARCHAR(100)", "label": "Tỉnh/Thành", "required": false },
+    { "name": "address", "type": "TEXT", "label": "Địa chỉ", "required": false },
+    { "name": "notes", "type": "TEXT", "label": "Ghi chú", "required": false },
+    { "name": "ticket_class", "type": "VARCHAR(100)", "label": "Phân loại", "required": false },
+    { "name": "website", "type": "VARCHAR(255)", "label": "Website", "required": false },
+    { "name": "bank_account_name", "type": "VARCHAR(255)", "label": "Tên TK ngân hàng", "required": false },
+    { "name": "bank_account_number", "type": "VARCHAR(100)", "label": "Số TK", "required": false },
+    { "name": "bank_name", "type": "VARCHAR(255)", "label": "Ngân hàng", "required": false },
+    { "name": "market", "type": "VARCHAR(100)", "label": "Thị trường", "required": false }
+  ],
+
+  "contact_fields": [
+    { "name": "name", "type": "VARCHAR(255) NOT NULL", "label": "Tên" },
+    { "name": "position", "type": "VARCHAR(100)", "label": "Chức vụ" },
+    { "name": "phone", "type": "VARCHAR(50)", "label": "SĐT" },
+    { "name": "email", "type": "VARCHAR(100)", "label": "Email" }
+  ],
+
+  "service_fields": [
+    { "name": "name", "type": "VARCHAR(255)", "label": "Tên dịch vụ", "required": true },
+    { "name": "description", "type": "TEXT", "label": "Mô tả", "required": false },
+    { "name": "capacity", "type": "INTEGER", "label": "Số lượng vé", "required": false }
+  ],
+
+  "rate_fields": [
+    { "name": "fita_net", "type": "NUMERIC(15,2)" },
+    { "name": "fita_sale", "type": "NUMERIC(15,2)" },
+    { "name": "fita_commission", "type": "NUMERIC(15,2)" },
+    { "name": "fite_net", "type": "NUMERIC(15,2)" },
+    { "name": "fite_sale", "type": "NUMERIC(15,2)" },
+    { "name": "fite_commission", "type": "NUMERIC(15,2)" },
+    { "name": "series_net", "type": "NUMERIC(15,2)" },
+    { "name": "series_sale", "type": "NUMERIC(15,2)" },
+    { "name": "series_commission", "type": "NUMERIC(15,2)" },
+    { "name": "charter_net", "type": "NUMERIC(15,2)" },
+    { "name": "charter_sale", "type": "NUMERIC(15,2)" },
+    { "name": "charter_commission", "type": "NUMERIC(15,2)" }
+  ]
+}

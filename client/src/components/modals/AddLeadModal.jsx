@@ -130,7 +130,7 @@ const AddLeadModal = ({
             <label>TƯ VẤN VIÊN (CSKH)</label>
             <select className="modal-select" value={newLead.assigned_to || ''} onChange={e => setNewLead({...newLead, assigned_to: e.target.value})}>
               <option value="">-- Chọn nhân viên --</option>
-              {users.filter(u => u.is_active !== false).map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
+              {users.filter(u => u.is_active !== false).map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
             </select>
           </div>
           <div className="modal-form-group">

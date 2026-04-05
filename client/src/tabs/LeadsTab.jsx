@@ -215,7 +215,7 @@ const LeadsTab = ({
             <select className="filter-select" value={leadFilters.assigned_to} onChange={e => setLeadFilters({...leadFilters, assigned_to: e.target.value})}>
               <option value="">-- Tất cả --</option>
               <option value="NO_STAFF">⚠ Chưa giao ai</option>
-              {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
+              {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
             </select>
           </div>
           <button 
@@ -481,7 +481,7 @@ const LeadsTab = ({
                 </td>
                 <td>
                   <SearchableSelect 
-                    options={users.map(u => ({ id: u.id, name: u.full_name }))}
+                    options={users.map(u => ({ id: u.id, name: u.username }))}
                     value={lead.assigned_to}
                     onChange={(val) => handleQuickUpdate(lead.id, 'assigned_to', val)}
                     placeholder="Chưa giao"

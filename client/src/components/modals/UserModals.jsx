@@ -130,13 +130,20 @@ export const EditUserModal = ({
   });
 
   const MODULES_MAP = [
-    { key: 'leads', label: 'Lead Marketing' },
-    { key: 'tours', label: 'Sản phẩm Tour' },
-    { key: 'departures', label: 'Khởi hành' },
-    { key: 'guides', label: 'Hướng dẫn viên' },
-    { key: 'customers', label: 'Khách hàng' },
-    { key: 'bookings', label: 'Bán hàng/Booking' },
-    { key: 'users', label: 'Nhân sự' }
+    { key: 'leads', label: 'Lead Marketing', group: 'Tour Lẻ (FIT)' },
+    { key: 'tours', label: 'Sản phẩm Tour', group: 'Tour Lẻ (FIT)' },
+    { key: 'departures', label: 'Khởi hành', group: 'Tour Lẻ (FIT)' },
+    { key: 'guides', label: 'Hướng dẫn viên', group: 'Tour Lẻ (FIT)' },
+    { key: 'customers', label: 'Khách hàng', group: 'Tour Lẻ (FIT)' },
+    { key: 'bookings', label: 'Bán hàng/Booking', group: 'Tour Lẻ (FIT)' },
+    { key: 'users', label: 'Nhân sự', group: 'Tour Lẻ (FIT)' },
+    { key: 'group_hotels', label: 'NCC Khách sạn Đoàn', group: 'Tour Đoàn 🔒' },
+    { key: 'group_restaurants', label: 'NCC Nhà hàng Đoàn', group: 'Tour Đoàn 🔒' },
+    { key: 'group_transports', label: 'NCC Nhà xe Đoàn', group: 'Tour Đoàn 🔒' },
+    { key: 'group_tickets', label: 'NCC Vé TQ Đoàn', group: 'Tour Đoàn 🔒' },
+    { key: 'group_airlines', label: 'NCC Hãng bay Đoàn', group: 'Tour Đoàn 🔒' },
+    { key: 'group_landtours', label: 'NCC Land Tour Đoàn', group: 'Tour Đoàn 🔒' },
+    { key: 'group_insurances', label: 'NCC Bảo Hiểm Đoàn', group: 'Tour Đoàn 🔒' },
   ];
 
   useEffect(() => {
@@ -158,6 +165,13 @@ export const EditUserModal = ({
     e.preventDefault();
     onSave(user.id, formData);
   };
+
+  // Group modules by section
+  const grouped = MODULES_MAP.reduce((acc, mod) => {
+    if (!acc[mod.group]) acc[mod.group] = [];
+    acc[mod.group].push(mod);
+    return acc;
+  }, {});
 
   return (
     <div className="modal-overlay" onClick={onClose} style={{ zIndex: 9999 }}>
@@ -247,30 +261,47 @@ export const EditUserModal = ({
                 </tr>
               </thead>
               <tbody>
-                {MODULES_MAP.map(mod => {
-                  const p = formData.permissions[mod.key] || { can_view: false, can_create: false, can_edit: false, can_delete: false };
-                  const togglePerm = (action) => {
-                    setFormData(prev => ({
-                      ...prev,
-                      permissions: {
-                        ...prev.permissions,
-                        [mod.key]: {
-                          ...p,
-                          [action]: !p[action]
-                        }
-                      }
-                    }));
-                  };
-                  return (
-                    <tr key={mod.key}>
-                      <td style={{ fontWeight: 600 }}>{mod.label}</td>
-                      <td style={{ textAlign: 'center' }}><input type="checkbox" checked={p.can_view} onChange={() => togglePerm('can_view')} /></td>
-                      <td style={{ textAlign: 'center' }}><input type="checkbox" checked={p.can_create} onChange={() => togglePerm('can_create')} /></td>
-                      <td style={{ textAlign: 'center' }}><input type="checkbox" checked={p.can_edit} onChange={() => togglePerm('can_edit')} /></td>
-                      <td style={{ textAlign: 'center' }}><input type="checkbox" checked={p.can_delete} onChange={() => togglePerm('can_delete')} /></td>
+                {Object.entries(grouped).map(([groupName, mods]) => (
+                  <React.Fragment key={groupName}>
+                    <tr>
+                      <td colSpan="5" style={{ 
+                        background: groupName.includes('Đoàn') ? '#fef3c7' : '#e0f2fe', 
+                        fontWeight: 800, 
+                        fontSize: '0.8rem', 
+                        textTransform: 'uppercase',
+                        padding: '8px 12px',
+                        color: groupName.includes('Đoàn') ? '#92400e' : '#0369a1',
+                        letterSpacing: '0.5px'
+                      }}>
+                        {groupName}
+                      </td>
                     </tr>
-                  );
-                })}
+                    {mods.map(mod => {
+                      const p = formData.permissions[mod.key] || { can_view: false, can_create: false, can_edit: false, can_delete: false };
+                      const togglePerm = (action) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          permissions: {
+                            ...prev.permissions,
+                            [mod.key]: {
+                              ...p,
+                              [action]: !p[action]
+                            }
+                          }
+                        }));
+                      };
+                      return (
+                        <tr key={mod.key}>
+                          <td style={{ fontWeight: 600, paddingLeft: '20px' }}>{mod.label}</td>
+                          <td style={{ textAlign: 'center' }}><input type="checkbox" checked={p.can_view} onChange={() => togglePerm('can_view')} /></td>
+                          <td style={{ textAlign: 'center' }}><input type="checkbox" checked={p.can_create} onChange={() => togglePerm('can_create')} /></td>
+                          <td style={{ textAlign: 'center' }}><input type="checkbox" checked={p.can_edit} onChange={() => togglePerm('can_edit')} /></td>
+                          <td style={{ textAlign: 'center' }}><input type="checkbox" checked={p.can_delete} onChange={() => togglePerm('can_delete')} /></td>
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
               </tbody>
             </table>
           </div>

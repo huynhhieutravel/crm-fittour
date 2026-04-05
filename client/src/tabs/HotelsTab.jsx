@@ -3,87 +3,7 @@ import axios from 'axios';
 import { Search, Plus, MapPin, Star, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle } from 'lucide-react';
 import Select from 'react-select';
 import HotelDetailDrawer from '../components/modals/HotelDetailDrawer';
-
-const MARKET_OPTIONS = [
-    {
-        label: 'Việt Nam',
-        options: [{ value: 'Việt Nam (MICE)', label: 'Việt Nam (MICE)' }]
-    },
-    {
-        label: 'Trung Quốc Đại Lục',
-        options: [
-            { value: 'Trung Quốc', label: 'Trung Quốc (Chung)' },
-            { value: 'Bắc Kinh', label: 'Bắc Kinh' },
-            { value: 'Cáp Nhĩ Tân', label: 'Cáp Nhĩ Tân' },
-            { value: 'Cửu Trại Câu', label: 'Cửu Trại Câu' },
-            { value: 'Giang Nam', label: 'Giang Nam' },
-            { value: 'Giang Tây', label: 'Giang Tây' },
-            { value: 'Lệ Giang', label: 'Lệ Giang' },
-            { value: 'Tân Cương', label: 'Tân Cương' },
-            { value: 'Tây An', label: 'Tây An' },
-            { value: 'Tây Tạng', label: 'Tây Tạng' },
-            { value: 'Vân Nam', label: 'Vân Nam' },
-            { value: 'Á Đinh', label: 'Á Đinh' }
-        ]
-    },
-    {
-        label: 'Đông Bắc Á',
-        options: [
-            { value: 'Hàn Quốc', label: 'Hàn Quốc' },
-            { value: 'Nhật Bản', label: 'Nhật Bản' },
-            { value: 'Mông Cổ', label: 'Mông Cổ' },
-            { value: 'Đài Loan', label: 'Đài Loan' }
-        ]
-    },
-    {
-        label: 'Nam Á & Himalayas',
-        options: [
-            { value: 'Bhutan', label: 'Bhutan' },
-            { value: 'Himalayas', label: 'Himalayas' },
-            { value: 'Kailash', label: 'Kailash' },
-            { value: 'Kashmir', label: 'Kashmir' },
-            { value: 'Ladakh', label: 'Ladakh' },
-            { value: 'Nepal', label: 'Nepal' },
-            { value: 'Pakistan', label: 'Pakistan' }
-        ]
-    },
-    {
-        label: 'Trung Á & Lân Cận',
-        options: [
-            { value: 'Trung Á', label: 'Trung Á' },
-            { value: 'Caucasus', label: 'Caucasus' },
-            { value: 'Silk Road', label: 'Silk Road' }
-        ]
-    },
-    {
-        label: 'Đông Nam Á',
-        options: [
-            { value: 'Đông Nam Á', label: 'Đông Nam Á' },
-            { value: 'Bromo', label: 'Bromo' },
-            { value: 'Thái Lan', label: 'Thái Lan' },
-            { value: 'Singapore', label: 'Singapore' },
-            { value: 'Malaysia', label: 'Malaysia' }
-        ]
-    },
-    {
-        label: 'Châu Âu & Nga',
-        options: [
-            { value: 'Châu Âu', label: 'Châu Âu' },
-            { value: 'Nga - Murmansk', label: 'Nga - Murmansk' }
-        ]
-    },
-    {
-        label: 'Trung Đông & Châu Phi',
-        options: [
-            { value: 'Trung Đông', label: 'Trung Đông' },
-            { value: 'Thổ Nhĩ Kỳ', label: 'Thổ Nhĩ Kỳ' },
-            { value: 'Dubai', label: 'Dubai' },
-            { value: 'Ai Cập', label: 'Ai Cập' },
-            { value: 'Morocco', label: 'Morocco' },
-            { value: 'Châu Phi', label: 'Châu Phi' }
-        ]
-    }
-];
+import { MARKET_OPTIONS } from '../constants/markets';
 
 const STAR_OPTIONS = [
     { value: '5_star', label: '5 Sao' },
@@ -276,17 +196,18 @@ export default function HotelsTab({ currentUser, addToast, handleDeleteHotel }) 
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '180px' }}>KHU VỰC</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '180px' }}>PHONE / EMAIL</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '150px' }}>THỊ TRƯỜNG</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '120px' }}>ĐÁNH GIÁ</th>
                             <th style={{ padding: '16px 20px', textAlign: 'center', width: '140px' }}>THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td>
+                                <td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td>
                             </tr>
                         ) : hotels.length === 0 ? (
                             <tr>
-                                <td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                                <td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
                                     Không có khách sạn nào khớp với tìm kiếm.
                                 </td>
                             </tr>
@@ -325,6 +246,16 @@ export default function HotelsTab({ currentUser, addToast, handleDeleteHotel }) 
                                         <span className="badge" style={{ background: '#f1f5f9', color: '#475569', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
                                             {h.market || 'Chưa phân loại'}
                                         </span>
+                                    </td>
+                                    
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
+                                        {Number(h.rating) > 0 ? (
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', color: '#f59e0b', fontWeight: 600 }}>
+                                                {Number(h.rating).toFixed(1)} <Star size={16} fill="#f59e0b" />
+                                            </div>
+                                        ) : (
+                                            <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>-</span>
+                                        )}
                                     </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
                                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -375,6 +306,7 @@ export default function HotelsTab({ currentUser, addToast, handleDeleteHotel }) 
                     onClose={() => setIsDrawerOpen(false)} 
                     refreshList={fetchHotels}
                     currentUser={currentUser}
+                    addToast={addToast}
                 />
             )}
         </div>

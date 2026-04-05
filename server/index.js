@@ -43,6 +43,23 @@ const catalogRoutes = require('./routes/catalog');
 const costingRoutes = require('./routes/costings');
 const reminderRoutes = require('./routes/reminderRoutes');
 const hotelRoutes = require('./routes/hotels');
+const restaurantRoutes = require('./routes/restaurants');
+const transportRoutes = require('./routes/transports');
+const ticketRoutes = require('./routes/tickets');
+const airlineRoutes = require('./routes/airlines');
+const landtourRoutes = require('./routes/landtours');
+const insuranceRoutes = require('./routes/insurances');
+
+// ═══ Tour Đoàn (Group) NCC Routes ═══
+const groupHotelRoutes = require('./routes/groupHotels');
+const groupRestaurantRoutes = require('./routes/groupRestaurants');
+const groupTransportRoutes = require('./routes/groupTransports');
+const groupTicketRoutes = require('./routes/groupTickets');
+const groupAirlineRoutes = require('./routes/groupAirlines');
+const groupLandtourRoutes = require('./routes/groupLandtours');
+const groupInsuranceRoutes = require('./routes/groupInsurances');
+const groupLeadersRoutes = require('./routes/groupLeaders');
+const groupProjectsRoutes = require('./routes/groupProjects');
 
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/auth', authRoutes);
@@ -60,6 +77,24 @@ app.use('/api/activity', activityRoutes);
 app.use('/api/business-units', buRoutes);
 app.use('/api/meta/catalog', catalogRoutes);
 app.use('/api/hotels', hotelRoutes);
+app.use('/api/restaurants', restaurantRoutes);
+app.use('/api/transports', transportRoutes);
+app.use('/api/tickets', ticketRoutes);
+app.use('/api/airlines', airlineRoutes);
+app.use('/api/landtours', landtourRoutes);
+app.use('/api/insurances', insuranceRoutes);
+
+// ═══ Tour Đoàn (Group) NCC API ═══
+app.use('/api/group/hotels', groupHotelRoutes);
+app.use('/api/group/restaurants', groupRestaurantRoutes);
+app.use('/api/group/transports', groupTransportRoutes);
+app.use('/api/group/tickets', groupTicketRoutes);
+app.use('/api/group/airlines', groupAirlineRoutes);
+app.use('/api/group/landtours', groupLandtourRoutes);
+app.use('/api/group/insurances', groupInsuranceRoutes);
+
+app.use('/api/group-leaders', groupLeadersRoutes);
+app.use('/api/group-projects', groupProjectsRoutes);
 app.use('/api/costings', costingRoutes);
 app.use('/api/reminders', reminderRoutes);
 

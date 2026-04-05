@@ -1,90 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import StarRating from '../common/StarRating';
 import axios from 'axios';
 import { X, Save, Plus, Trash2, Building, BedDouble, CalendarDays, Users, FileText, Send, Clock, PlusCircle } from 'lucide-react';
 import Select from 'react-select';
+import { MARKET_OPTIONS } from '../../constants/markets';
 
-const MARKET_OPTIONS = [
-    {
-        label: 'Việt Nam',
-        options: [{ value: 'Việt Nam (MICE)', label: 'Việt Nam (MICE)' }]
-    },
-    {
-        label: 'Trung Quốc Đại Lục',
-        options: [
-            { value: 'Trung Quốc', label: 'Trung Quốc (Chung)' },
-            { value: 'Bắc Kinh', label: 'Bắc Kinh' },
-            { value: 'Cáp Nhĩ Tân', label: 'Cáp Nhĩ Tân' },
-            { value: 'Cửu Trại Câu', label: 'Cửu Trại Câu' },
-            { value: 'Giang Nam', label: 'Giang Nam' },
-            { value: 'Giang Tây', label: 'Giang Tây' },
-            { value: 'Lệ Giang', label: 'Lệ Giang' },
-            { value: 'Tân Cương', label: 'Tân Cương' },
-            { value: 'Tây An', label: 'Tây An' },
-            { value: 'Tây Tạng', label: 'Tây Tạng' },
-            { value: 'Vân Nam', label: 'Vân Nam' },
-            { value: 'Á Đinh', label: 'Á Đinh' }
-        ]
-    },
-    {
-        label: 'Đông Bắc Á',
-        options: [
-            { value: 'Hàn Quốc', label: 'Hàn Quốc' },
-            { value: 'Nhật Bản', label: 'Nhật Bản' },
-            { value: 'Mông Cổ', label: 'Mông Cổ' },
-            { value: 'Đài Loan', label: 'Đài Loan' }
-        ]
-    },
-    {
-        label: 'Nam Á & Himalayas',
-        options: [
-            { value: 'Bhutan', label: 'Bhutan' },
-            { value: 'Himalayas', label: 'Himalayas' },
-            { value: 'Kailash', label: 'Kailash' },
-            { value: 'Kashmir', label: 'Kashmir' },
-            { value: 'Ladakh', label: 'Ladakh' },
-            { value: 'Nepal', label: 'Nepal' },
-            { value: 'Pakistan', label: 'Pakistan' }
-        ]
-    },
-    {
-        label: 'Trung Á & Lân Cận',
-        options: [
-            { value: 'Trung Á', label: 'Trung Á' },
-            { value: 'Caucasus', label: 'Caucasus' },
-            { value: 'Silk Road', label: 'Silk Road' }
-        ]
-    },
-    {
-        label: 'Đông Nam Á',
-        options: [
-            { value: 'Đông Nam Á', label: 'Đông Nam Á' },
-            { value: 'Bromo', label: 'Bromo' },
-            { value: 'Thái Lan', label: 'Thái Lan' },
-            { value: 'Singapore', label: 'Singapore' },
-            { value: 'Malaysia', label: 'Malaysia' }
-        ]
-    },
-    {
-        label: 'Châu Âu & Nga',
-        options: [
-            { value: 'Châu Âu', label: 'Châu Âu' },
-            { value: 'Nga - Murmansk', label: 'Nga - Murmansk' }
-        ]
-    },
-    {
-        label: 'Trung Đông & Châu Phi',
-        options: [
-            { value: 'Trung Đông', label: 'Trung Đông' },
-            { value: 'Thổ Nhĩ Kỳ', label: 'Thổ Nhĩ Kỳ' },
-            { value: 'Dubai', label: 'Dubai' },
-            { value: 'Ai Cập', label: 'Ai Cập' },
-            { value: 'Morocco', label: 'Morocco' },
-            { value: 'Châu Phi', label: 'Châu Phi' }
-        ]
-    }
-];
-
-export default function HotelDetailDrawer({ hotel, onClose, refreshList, currentUser }) {
+export default function HotelDetailDrawer({ hotel, onClose, refreshList, currentUser, addToast }) {
     const [activeTab, setActiveTab] = useState('general');
     
     // States
@@ -92,12 +13,19 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
         code: '', name: '', tax_id: '', build_year: '', phone: '', email: '',
         country: '', province: '', address: '', notes: '', star_rate: '',
         website: '', hotel_class: '', project_name: '', market: '',
-        bank_account_name: '', bank_account_number: '', bank_name: ''
+        bank_account_name: '', bank_account_number: '', bank_name: '', rating: ''
     });
 
     const [contacts, setContacts] = useState([]);
     const [services, setServices] = useState([]);
     const [allotments, setAllotments] = useState([]);
+
+    const [deletedContactIds, setDeletedContactIds] = useState([]);
+    const [deletedServiceIds, setDeletedServiceIds] = useState([]);
+    const [deletedAllotmentIds, setDeletedAllotmentIds] = useState([]);
+
+    const [availableContracts, setAvailableContracts] = useState([]);
+    const [activeContractId, setActiveContractId] = useState(null);
 
     const [loading, setLoading] = useState(false);
 
@@ -124,7 +52,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
             fetchHotelNotes();
         } catch (err) {
             console.error(err);
-            alert('Lỗi thêm ghi chú!');
+            if (addToast) addToast('Lỗi thêm ghi chú!', 'error'); else alert('Lỗi thêm ghi chú!');
         }
     };
 
@@ -136,18 +64,25 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                 phone: hotel.phone || '', email: hotel.email || '',
                 country: hotel.country || '', province: hotel.province || '', address: hotel.address || '',
                 notes: hotel.notes || '', star_rate: hotel.star_rate || '', website: hotel.website || '',
-                market: hotel.market || ''
+                market: hotel.market || '', rating: hotel.rating || ''
             });
 
             setContacts(hotel.contacts || []);
             
-            if (hotel.contracts && hotel.contracts.length > 0 && hotel.contracts[0].rates) {
-                const mappedServices = hotel.contracts[0].rates.map(r => ({
-                    id: r.id, sku: r.sku, name: r.room_name, start_date: r.start_date?.split('T')[0] || '', end_date: r.end_date?.split('T')[0] || '',
-                    day_type: r.day_type, contract_price: r.contract_price, net_price: r.net_price, sell_price: r.sell_price, description: r.description, notes: r.notes
-                }));
-                setServices(mappedServices);
+            if (hotel.contracts && hotel.contracts.length > 0) {
+                setAvailableContracts(hotel.contracts);
+                setActiveContractId(hotel.contracts[0].id);
+                if (hotel.contracts[0].rates) {
+                    const mappedServices = hotel.contracts[0].rates.map(r => ({
+                        id: r.id, sku: r.sku, name: r.room_name, start_date: r.start_date?.split('T')[0] || '', end_date: r.end_date?.split('T')[0] || '',
+                        day_type: r.day_type, contract_price: r.contract_price, net_price: r.net_price, sell_price: r.sell_price, description: r.description, notes: r.notes
+                    }));
+                    setServices(mappedServices);
+                } else {
+                    setServices([]);
+                }
             } else {
+                setAvailableContracts([]);
                 setServices([]);
             }
 
@@ -172,23 +107,30 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
 
     const handleSaveGlobal = async () => {
         try {
-            if (!formData.name) return alert('Tên Khách sạn là bắt buộc!');
+            if (!formData.name) return addToast ? addToast('Tên Khách sạn là bắt buộc!', 'warning') : alert('Tên Khách sạn là bắt buộc!');
             setLoading(true);
             const token = localStorage.getItem('token');
-            const payload = { ...formData, contacts, services, allotments };
+            const payload = { 
+                ...formData, contacts, services, allotments,
+                deleted_contact_ids: deletedContactIds,
+                deleted_service_ids: deletedServiceIds,
+                deleted_allotment_ids: deletedAllotmentIds,
+                contract_id: activeContractId
+            };
             
             if (hotel?.id) {
                 await axios.put(`/api/hotels/${hotel.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
-                alert('Cập nhật thông tin thành công!');
+                if (addToast) addToast('Cập nhật thông tin thành công!', 'success'); else alert('Cập nhật thông tin thành công!');
             } else {
                 await axios.post('/api/hotels', payload, { headers: { Authorization: `Bearer ${token}` } });
-                alert('Tạo Khách sạn thành công!');
+                if (addToast) addToast('Tạo Khách sạn thành công!', 'success'); else alert('Tạo Khách sạn thành công!');
                 refreshList();
                 onClose();
             }
             refreshList();
         } catch (err) {
-            alert('Lỗi: ' + (err.response?.data?.message || err.message));
+            const msg = (err.response?.data?.message || err.message);
+            if (addToast) addToast('Lỗi: ' + msg, 'error'); else alert('Lỗi: ' + msg);
         } finally {
             setLoading(false);
         }
@@ -212,6 +154,37 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
         const newArr = [...allotments];
         newArr[index][field] = value;
         setAllotments(newArr);
+    };
+
+    const handleDeleteContact = (index, c) => {
+        if (c.id && c.id < 1e12) setDeletedContactIds(prev => [...prev, c.id]);
+        setContacts(contacts.filter((_, idx) => idx !== index));
+    };
+
+    const handleDeleteService = (index, s) => {
+        if (s.id && s.id < 1e12) setDeletedServiceIds(prev => [...prev, s.id]);
+        setServices(services.filter((_, idx) => idx !== index));
+    };
+
+    const handleDeleteAllotment = (index, a) => {
+        if (a.id && a.id < 1e12) setDeletedAllotmentIds(prev => [...prev, a.id]);
+        setAllotments(allotments.filter((_, idx) => idx !== index));
+    };
+
+    const handleContractChange = (contractId) => {
+        if (services.length > 0 && !window.confirm('Chuyển Hợp đồng sẽ xổ lại bảng giá, các thay đổi chưa được Lưu sẽ bị mất. Bạn có chắc chắn?')) return;
+        setActiveContractId(contractId);
+        const contract = availableContracts.find(c => c.id === parseInt(contractId));
+        if (contract && contract.rates) {
+            const mappedServices = contract.rates.map(r => ({
+                id: r.id, sku: r.sku, name: r.room_name, start_date: r.start_date?.split('T')[0] || '', end_date: r.end_date?.split('T')[0] || '',
+                day_type: r.day_type, contract_price: r.contract_price, net_price: r.net_price, sell_price: r.sell_price, description: r.description, notes: r.notes
+            }));
+            setServices(mappedServices);
+            setDeletedServiceIds([]); // reset delete tracker when switching contract
+        } else {
+            setServices([]);
+        }
     };
 
     const inputCell = { padding: '8px', borderBottom: '1px solid #e2e8f0', background: 'transparent' };
@@ -341,9 +314,17 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                             <input type="text" style={drawerInputStyle} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} disabled={isViewOnly} placeholder="Số nhà, Đường..." />
                                         </div>
                                     </div>
-                                    <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                    <div className="form-group" style={{ gridColumn: 'span 1' }}>
                                         <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Ghi chú đặc biệt</label>
                                         <textarea style={{...drawerInputStyle, resize: 'vertical'}} value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} disabled={isViewOnly} rows={2} />
+                                    </div>
+                                    <div className="form-group" style={{ gridColumn: 'span 1' }}>
+                                        <label style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Đánh giá chất lượng</label>
+                                        <StarRating 
+                                            rating={Number(formData.rating) || 0} 
+                                            onChange={(val) => setFormData({...formData, rating: val})} 
+                                            disabled={isViewOnly} 
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -353,8 +334,8 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                 <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
                                     <Users size={18} color="#cbd5e1" /> Liên Hệ Vận Hành
                                 </h3>
-                                <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                                <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto' }}>
+                                    <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                                         <thead style={{ background: '#f1f5f9' }}>
                                             <tr style={{ textAlign: 'left', color: '#475569', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
                                                 <th style={{ padding: '12px 16px', fontWeight: 600 }}>Họ và tên</th>
@@ -375,7 +356,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                                     <td style={inputCell}><input style={inlineInput} type="email" value={c.email} onChange={e => handleContactChange(i, 'email', e.target.value)} disabled={isViewOnly} placeholder="Email" /></td>
                                                     <td style={{ ...inputCell, textAlign: 'center' }}>
                                                         {!isViewOnly && (
-                                                            <button style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', padding: '4px', borderRadius: '4px', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#fef2f2'} onMouseOut={e=>e.currentTarget.style.background='transparent'} onClick={() => setContacts(contacts.filter((_, idx) => idx !== i))}><Trash2 size={16} /></button>
+                                                            <button style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', padding: '4px', borderRadius: '4px', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#fef2f2'} onMouseOut={e=>e.currentTarget.style.background='transparent'} onClick={() => handleDeleteContact(i, c)}><Trash2 size={16} /></button>
                                                         )}
                                                     </td>
                                                 </tr>
@@ -396,11 +377,27 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
 
                     {activeTab === 'rates' && (
                         <div className="card" style={{ background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', minHeight: '400px' }}>
-                            <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
-                                <BedDouble size={18} color="#cbd5e1" /> SẢN PHẨM / DỊCH VỤ PHÒNG
-                            </h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                                <h3 style={{ marginTop: 0, marginBottom: 0, fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
+                                    <BedDouble size={18} color="#cbd5e1" /> SẢN PHẨM / DỊCH VỤ PHÒNG
+                                </h3>
+                                {availableContracts.length > 0 && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Hợp đồng áp dụng:</label>
+                                        <select 
+                                            value={activeContractId || ''} 
+                                            onChange={e => handleContractChange(e.target.value)}
+                                            style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', background: '#f8fafc', outline: 'none' }}
+                                        >
+                                            {availableContracts.map(c => (
+                                                <option key={c.id} value={c.id}>{c.contract_name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
                             <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto' }}>
-                                <table style={{ width: '100%', minWidth: '950px', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                                <table style={{ width: '100%', minWidth: '1200px', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                                     <thead style={{ background: '#f1f5f9' }}>
                                         <tr style={{ textAlign: 'left', color: '#475569', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
                                             <th style={{ padding: '12px', width: '80px', fontWeight: 600 }}>SKU Code</th>
@@ -435,7 +432,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                                 <td style={inputCell}><input style={inlineInput} value={s.notes} onChange={e => handleServiceChange(i, 'notes', e.target.value)} disabled={isViewOnly} placeholder="Free Bfst" /></td>
                                                 <td style={{ ...inputCell, textAlign: 'center' }}>
                                                     {!isViewOnly && (
-                                                        <button style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', padding: '4px' }} onClick={() => setServices(services.filter((_, idx) => idx !== i))}><Trash2 size={16} /></button>
+                                                        <button style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', padding: '4px' }} onClick={() => handleDeleteService(i, s)}><Trash2 size={16} /></button>
                                                     )}
                                                 </td>
                                             </tr>
@@ -459,7 +456,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                 <CalendarDays size={18} color="#cbd5e1" /> THEO DÕI QUỸ PHÒNG (ALLOTMENT)
                             </h3>
                             <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto' }}>
-                                <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                                <table style={{ width: '100%', minWidth: '1300px', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                                     <thead style={{ background: '#f1f5f9' }}>
                                         <tr style={{ textAlign: 'left', color: '#475569', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
                                             <th style={{ padding: '12px', width: '80px', fontWeight: 600 }}>SKU Code</th>
@@ -496,7 +493,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                                 <td style={inputCell}><input style={inlineInput} value={a.notes} onChange={e => handleAllotmentChange(i, 'notes', e.target.value)} disabled={isViewOnly} /></td>
                                                 <td style={{ ...inputCell, textAlign: 'center' }}>
                                                     {!isViewOnly && (
-                                                        <button style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', padding: '4px' }} onClick={() => setAllotments(allotments.filter((_, idx) => idx !== i))}><Trash2 size={16} /></button>
+                                                        <button style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', padding: '4px' }} onClick={() => handleDeleteAllotment(i, a)}><Trash2 size={16} /></button>
                                                     )}
                                                 </td>
                                             </tr>

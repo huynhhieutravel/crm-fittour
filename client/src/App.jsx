@@ -92,7 +92,8 @@ import {
   DollarSign,
   BookOpen,
   Target,
-  Shield
+  Shield,
+  Briefcase
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -124,6 +125,7 @@ function AppContent() {
     const path = window.location.pathname.substring(1);
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
+    if (path.startsWith('group/')) return path.replace('/', '-');
     const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
@@ -378,7 +380,12 @@ function AppContent() {
 
   // Sync activeTab with URL
   useEffect(() => {
-    const path = location.pathname.substring(1).split('/')[0];
+    const fullPath = location.pathname.substring(1);
+    if (fullPath.startsWith('group/')) {
+      setActiveTab(fullPath.replace('/', '-'));
+      return;
+    }
+    const path = fullPath.split('/')[0];
     const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
@@ -1817,9 +1824,25 @@ function AppContent() {
           </div>
 
           {/* ═══ TOUR ĐOÀN SECTION ═══ */}
-          {(['group_hotels','group_restaurants','group_transports','group_tickets','group_airlines','group_landtours','group_insurances'].some(mod => checkView(mod))) && (
+          {(['group_hotels','group_restaurants','group_transports','group_tickets','group_airlines','group_landtours','group_insurances', 'group_projects', 'group_leaders'].some(mod => checkView(mod))) && (
             <>
               <div className="nav-section-title" style={{ color: '#d97706' }}>Tour Đoàn 🔒</div>
+              {checkView('group_leaders') && (
+                <div 
+                  className={`nav-item ${activeTab === 'group-leaders' ? 'active' : ''}`} 
+                  onClick={() => { navigate('/group/leaders'); setActiveTab('group-leaders'); }}
+                >
+                  <Users /> Khách B2B
+                </div>
+              )}
+              {checkView('group_projects') && (
+                <div 
+                  className={`nav-item ${activeTab === 'group-projects' ? 'active' : ''}`} 
+                  onClick={() => { navigate('/group/projects'); setActiveTab('group-projects'); }}
+                >
+                  <Briefcase /> Dự án Tour (MICE)
+                </div>
+              )}
               <div 
                 className={`nav-item ${['group-hotels','group-restaurants','group-transports','group-tickets','group-airlines','group-landtours','group-insurances'].includes(activeTab) ? 'active-parent' : ''}`} 
                 onClick={() => { navigate('/group/hotels'); setActiveTab('group-hotels'); }}
@@ -2544,10 +2567,10 @@ function AppContent() {
           <GroupInsurancesTab currentUser={user} addToast={addToast} handleDeleteGroupInsurance={(id) => setGroupInsuranceToDelete(id)} />
         )}
         {activeTab === 'group-projects' && (
-          <GroupProjectsTab currentUser={user} addToast={addToast} />
+          <GroupProjectsTab currentUser={user} addToast={addToast} users={users} />
         )}
         {activeTab === 'group-leaders' && (
-          <GroupLeadersTab currentUser={user} addToast={addToast} />
+          <GroupLeadersTab currentUser={user} addToast={addToast} users={users} />
         )}
       </>
     )}

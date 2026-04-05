@@ -1,0 +1,54 @@
+{
+  "module_name": "airline",
+  "module_name_vi": "Phòng vé/Hãng bay",
+  "table_prefix": "airlines",
+  "icon": "Plane",
+
+  "entity_fields": [
+    { "name": "code", "type": "VARCHAR(50) UNIQUE", "label": "Mã NCC", "required": false },
+    { "name": "name", "type": "VARCHAR(255)", "label": "Tên Phòng vé/Hãng bay", "required": true },
+    { "name": "tax_id", "type": "VARCHAR(50)", "label": "Mã số thuế", "required": false },
+    { "name": "airline_class", "type": "VARCHAR(100)", "label": "Phân loại", "required": false },
+    { "name": "phone", "type": "VARCHAR(50)", "label": "Số điện thoại", "required": false },
+    { "name": "email", "type": "VARCHAR(100)", "label": "Email", "required": false },
+    { "name": "country", "type": "VARCHAR(100)", "label": "Quốc gia", "required": false },
+    { "name": "province", "type": "VARCHAR(100)", "label": "Tỉnh/Thành", "required": false },
+    { "name": "address", "type": "TEXT", "label": "Địa chỉ", "required": false },
+    { "name": "notes", "type": "TEXT", "label": "Ghi chú", "required": false },
+    { "name": "website", "type": "VARCHAR(255)", "label": "Website", "required": false },
+    { "name": "bank_account_name", "type": "VARCHAR(255)", "label": "Tên TK ngân hàng", "required": false },
+    { "name": "bank_account_number", "type": "VARCHAR(100)", "label": "Số TK", "required": false },
+    { "name": "bank_name", "type": "VARCHAR(255)", "label": "Ngân hàng", "required": false },
+    { "name": "market", "type": "VARCHAR(100)", "label": "Thị trường", "required": false }
+  ],
+
+  "contact_fields": [
+    { "name": "name", "type": "VARCHAR(255) NOT NULL", "label": "Tên" },
+    { "name": "position", "type": "VARCHAR(100)", "label": "Chức vụ" },
+    { "name": "phone", "type": "VARCHAR(50)", "label": "SĐT" },
+    { "name": "email", "type": "VARCHAR(100)", "label": "Email" }
+  ],
+
+  "service_fields": [
+    { "name": "sku", "type": "VARCHAR(100)", "label": "SKU" },
+    { "name": "service_type", "type": "VARCHAR(100)", "label": "Loại hình dịch vụ" },
+    { "name": "name", "type": "VARCHAR(255)", "label": "Dịch vụ cung cấp", "required": true },
+    { "name": "routing", "type": "VARCHAR(255)", "label": "Hành trình vé" },
+    { "name": "flight_number_outbound", "type": "VARCHAR(100)", "label": "SHCB đi" },
+    { "name": "departure_date", "type": "DATE", "label": "Ngày đi" },
+    { "name": "departure_time", "type": "VARCHAR(50)", "label": "Giờ đi" },
+    { "name": "flight_number_inbound", "type": "VARCHAR(100)", "label": "SHCB về" },
+    { "name": "return_date", "type": "DATE", "label": "Ngày về" },
+    { "name": "return_time", "type": "VARCHAR(50)", "label": "Giờ về" },
+    { "name": "deposit_deadline", "type": "DATE", "label": "Hạn cắt cọc" },
+    { "name": "full_pay_deadline", "type": "DATE", "label": "Hạn FullPay" },
+    { "name": "naming_deadline", "type": "DATE", "label": "Hạn vào tên" },
+    { "name": "baggage", "type": "VARCHAR(100)", "label": "Hành lý" },
+    { "name": "payment_status", "type": "VARCHAR(255)", "label": "TT Thanh toán" },
+    { "name": "capacity", "type": "NUMERIC", "label": "Số lượng" },
+    { "name": "cost_price", "type": "NUMERIC(15,2)", "label": "Giá KT" },
+    { "name": "net_price", "type": "NUMERIC(15,2)", "label": "Giá gốc" },
+    { "name": "sale_price", "type": "NUMERIC(15,2)", "label": "Giá bán" },
+    { "name": "notes", "type": "TEXT", "label": "Ghi chú" }
+  ]
+}

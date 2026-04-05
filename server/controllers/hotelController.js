@@ -4,37 +4,60 @@ const { logActivity } = require('../utils/logger');
 // === HOTELS ===
 exports.getHotels = async (req, res) => {
     try {
-        const { search, province, star_rate, market } = req.query;
+        const { search, province, star_rate, market, page = 1, limit = 30 } = req.query;
+        const offset = (page - 1) * limit;
+
         let query = 'SELECT * FROM hotels WHERE 1=1';
+        let countQuery = 'SELECT COUNT(*) as total FROM hotels WHERE 1=1';
         let params = [];
         let paramIndex = 1;
 
         if (search) {
-            query += ` AND (name ILIKE $${paramIndex} OR code ILIKE $${paramIndex})`;
+            const searchClause = ` AND (name ILIKE $${paramIndex} OR code ILIKE $${paramIndex})`;
+            query += searchClause;
+            countQuery += searchClause;
             params.push(`%${search}%`);
             paramIndex++;
         }
         if (market) {
-            query += ` AND market = $${paramIndex}`;
+            const filterClause = ` AND market = $${paramIndex}`;
+            query += filterClause;
+            countQuery += filterClause;
             params.push(market);
             paramIndex++;
         }
         if (province) {
-            query += ` AND province = $${paramIndex}`;
+            const filterClause = ` AND province = $${paramIndex}`;
+            query += filterClause;
+            countQuery += filterClause;
             params.push(province);
             paramIndex++;
         }
         if (star_rate) {
-            query += ` AND star_rate = $${paramIndex}`;
+            const filterClause = ` AND star_rate = $${paramIndex}`;
+            query += filterClause;
+            countQuery += filterClause;
             params.push(star_rate);
             paramIndex++;
         }
 
-        query += ' ORDER BY id DESC';
-        console.log("Executing query:", query, "with params:", params);
-        const result = await db.query(query, params);
-        console.log("Returned hotels count:", result.rows.length);
-        res.json(result.rows);
+        query += ` ORDER BY id DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+        const queryParams = [...params, limit, offset];
+
+        const [dataResult, countResult] = await Promise.all([
+            db.query(query, queryParams),
+            db.query(countQuery, params)
+        ]);
+
+        const total = parseInt(countResult.rows[0].total, 10);
+
+        res.json({
+            data: dataResult.rows,
+            total,
+            page: parseInt(page, 10),
+            limit: parseInt(limit, 10),
+            totalPages: Math.ceil(total / limit)
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: err.message });
@@ -82,10 +105,11 @@ exports.getHotelDetails = async (req, res) => {
 exports.createHotel = async (req, res) => {
     const client = await db.pool.connect();
     try {
+        console.log('PAYLOAD RECEIVED:', req.body);
         const { 
             code, name, tax_id, build_year, phone, email, country, province, 
             address, notes, star_rate, website, hotel_class, project_name, 
-            bank_account_name, bank_account_number, bank_name, market,
+            bank_account_name, bank_account_number, bank_name, market, rating,
             contacts, services, allotments
         } = req.body;
 
@@ -95,19 +119,21 @@ exports.createHotel = async (req, res) => {
             `INSERT INTO hotels (
                 code, name, tax_id, build_year, phone, email, country, province, 
                 address, notes, star_rate, website, hotel_class, project_name, 
-                bank_account_name, bank_account_number, bank_name, market
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *`,
-            [code, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market]
+                bank_account_name, bank_account_number, bank_name, market, rating
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *`,
+            [code, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market, rating || 0]
         );
         const newHotelId = result.rows[0].id;
 
         // Xử lý Contacts
         if (contacts && Array.isArray(contacts)) {
             for (const c of contacts) {
-                await client.query(
-                    'INSERT INTO hotel_contacts (hotel_id, name, position, dob, phone, email) VALUES ($1, $2, $3, $4, $5, $6)',
-                    [newHotelId, c.name, c.position, c.dob || null, c.phone, c.email]
-                );
+                if (c.name && c.name.trim() !== '') {
+                    await client.query(
+                        'INSERT INTO hotel_contacts (hotel_id, name, position, dob, phone, email) VALUES ($1, $2, $3, $4, $5, $6)',
+                        [newHotelId, c.name, c.position, c.dob || null, c.phone, c.email]
+                    );
+                }
             }
         }
 
@@ -124,6 +150,7 @@ exports.createHotel = async (req, res) => {
         // Xử lý Services (Phòng + Giá)
         if (services && Array.isArray(services)) {
             for (const s of services) {
+                if (!s.name && !s.sku) continue; // Bỏ qua nếu dòng trống
                 // Upsert Room Type by SKU
                 let roomRes = await client.query('SELECT id FROM hotel_room_types WHERE hotel_id = $1 AND sku = $2', [newHotelId, s.sku || 'N/A']);
                 let roomId;
@@ -149,6 +176,7 @@ exports.createHotel = async (req, res) => {
         // Xử lý Allotments
         if (allotments && Array.isArray(allotments)) {
             for (const a of allotments) {
+                if (!a.name && !a.sku) continue; 
                 let roomRes = await client.query('SELECT id FROM hotel_room_types WHERE hotel_id = $1 AND sku = $2', [newHotelId, a.sku || 'N/A']);
                 let roomId;
                 if (roomRes.rows.length === 0) {
@@ -202,8 +230,10 @@ exports.updateHotel = async (req, res) => {
         const { 
             code, name, tax_id, build_year, phone, email, country, province, 
             address, notes, star_rate, website, hotel_class, project_name, 
-            bank_account_name, bank_account_number, bank_name, market,
-            contacts, services, allotments
+            bank_account_name, bank_account_number, bank_name, market, rating,
+            contacts, services, allotments,
+            deleted_contact_ids, deleted_service_ids, deleted_allotment_ids,
+            contract_id // Optional active contract ID to apply services to
         } = req.body;
 
         await client.query('BEGIN');
@@ -212,42 +242,62 @@ exports.updateHotel = async (req, res) => {
             `UPDATE hotels SET 
                 code=$1, name=$2, tax_id=$3, build_year=$4, phone=$5, email=$6, country=$7, province=$8, 
                 address=$9, notes=$10, star_rate=$11, website=$12, hotel_class=$13, project_name=$14, 
-                bank_account_name=$15, bank_account_number=$16, bank_name=$17, market=$18, updated_at=CURRENT_TIMESTAMP
-            WHERE id=$19 RETURNING *`,
-            [code, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market, id]
+                bank_account_name=$15, bank_account_number=$16, bank_name=$17, market=$18, rating=$19, updated_at=CURRENT_TIMESTAMP
+            WHERE id=$20 RETURNING *`,
+            [code, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market, rating || 0, id]
         );
 
-        // Update Contacts (Xóa cũ, Thêm mới)
+        // --- XÓA CÁC ĐỐI TƯỢNG BỊ LOẠI BỎ (DELETE) ---
+        if (deleted_contact_ids && deleted_contact_ids.length > 0) {
+            await client.query('DELETE FROM hotel_contacts WHERE id = ANY($1::int[])', [deleted_contact_ids]);
+        }
+        if (deleted_service_ids && deleted_service_ids.length > 0) {
+            await client.query('DELETE FROM hotel_contract_rates WHERE id = ANY($1::int[])', [deleted_service_ids]);
+        }
+        if (deleted_allotment_ids && deleted_allotment_ids.length > 0) {
+            await client.query('DELETE FROM hotel_allotments WHERE id = ANY($1::int[])', [deleted_allotment_ids]);
+        }
+
+        // --- CẬP NHẬT HOẶC TẠO MỚI (UPSERT) ---
+        // Contacts
         if (contacts !== undefined) {
-            await client.query('DELETE FROM hotel_contacts WHERE hotel_id = $1', [id]);
             for (const c of contacts) {
-                if (c.name && c.name.trim() !== '') {
+                if (!c.name || c.name.trim() === '') continue;
+                if (typeof c.id === 'string' || Number(c.id) > 1000000000000) {
+                    // ID kiểu timestamp do UI sinh -> INSERT
                     await client.query(
                         'INSERT INTO hotel_contacts (hotel_id, name, position, dob, phone, email) VALUES ($1, $2, $3, $4, $5, $6)',
                         [id, c.name, c.position, c.dob || null, c.phone, c.email]
+                    );
+                } else {
+                    // Cập nhật dòng có sẵn
+                    await client.query(
+                        'UPDATE hotel_contacts SET name=$1, position=$2, dob=$3, phone=$4, email=$5 WHERE id=$6',
+                        [c.name, c.position, c.dob || null, c.phone, c.email, c.id]
                     );
                 }
             }
         }
 
-        // Lấy hoặc tạo Default Contract
-        let contractRes = await client.query("SELECT id FROM hotel_contracts WHERE hotel_id = $1 AND contract_name = 'Hợp đồng Hệ thống mặc định'", [id]);
-        let defaultContractId;
-        if (contractRes.rows.length === 0) {
-            const insertCont = await client.query(
-                `INSERT INTO hotel_contracts (hotel_id, contract_name, status) VALUES ($1, $2, $3) RETURNING id`,
-                [id, 'Hợp đồng Hệ thống mặc định', 'active']
-            );
-            defaultContractId = insertCont.rows[0].id;
-        } else {
-            defaultContractId = contractRes.rows[0].id;
+        // Lấy hoặc tạo Hợp Đồng
+        let activeContractId = contract_id;
+        if (!activeContractId) {
+            let contractRes = await client.query("SELECT id FROM hotel_contracts WHERE hotel_id = $1 AND status = 'active' ORDER BY id DESC LIMIT 1", [id]);
+            if (contractRes.rows.length === 0) {
+                const insertCont = await client.query(
+                    `INSERT INTO hotel_contracts (hotel_id, contract_name, status) VALUES ($1, $2, $3) RETURNING id`,
+                    [id, 'Hợp đồng Hệ thống mặc định', 'active']
+                );
+                activeContractId = insertCont.rows[0].id;
+            } else {
+                activeContractId = contractRes.rows[0].id;
+            }
         }
 
-        // Update Services
+        // Update Services (Rates)
         if (services !== undefined) {
-            await client.query('DELETE FROM hotel_contract_rates WHERE contract_id = $1', [defaultContractId]);
             for (const s of services) {
-                if (!s.name && !s.sku) continue; // Skip empty rows
+                if (!s.name && !s.sku) continue; 
                 
                 let roomRes = await client.query('SELECT id FROM hotel_room_types WHERE hotel_id = $1 AND sku = $2', [id, s.sku || 'N/A']);
                 let roomId;
@@ -259,22 +309,29 @@ exports.updateHotel = async (req, res) => {
                     roomId = insertRoom.rows[0].id;
                 } else {
                     roomId = roomRes.rows[0].id;
-                    // Update name in case changed
                     await client.query('UPDATE hotel_room_types SET name = $1 WHERE id = $2', [s.name, roomId]);
                 }
 
-                await client.query(
-                    `INSERT INTO hotel_contract_rates 
-                    (contract_id, room_type_id, start_date, end_date, day_type, contract_price, net_price, sell_price, description, notes) 
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-                    [defaultContractId, roomId, s.start_date || new Date(), s.end_date || new Date(), s.day_type || 'Ngày thường', s.contract_price || 0, s.net_price || 0, s.sell_price || 0, s.description, s.notes]
-                );
+                if (typeof s.id === 'string' || Number(s.id) > 1000000000000) {
+                    await client.query(
+                        `INSERT INTO hotel_contract_rates 
+                        (contract_id, room_type_id, start_date, end_date, day_type, contract_price, net_price, sell_price, description, notes) 
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                        [activeContractId, roomId, s.start_date || new Date(), s.end_date || new Date(), s.day_type || 'Ngày thường', s.contract_price || 0, s.net_price || 0, s.sell_price || 0, s.description, s.notes]
+                    );
+                } else {
+                    await client.query(
+                        `UPDATE hotel_contract_rates SET
+                        room_type_id=$1, start_date=$2, end_date=$3, day_type=$4, contract_price=$5, net_price=$6, sell_price=$7, description=$8, notes=$9
+                        WHERE id=$10`,
+                        [roomId, s.start_date || new Date(), s.end_date || new Date(), s.day_type || 'Ngày thường', s.contract_price || 0, s.net_price || 0, s.sell_price || 0, s.description, s.notes, s.id]
+                    );
+                }
             }
         }
 
         // Update Allotments
         if (allotments !== undefined) {
-            await client.query('DELETE FROM hotel_allotments WHERE hotel_id = $1', [id]);
             for (const a of allotments) {
                 if (!a.name && !a.sku) continue; 
 
@@ -290,12 +347,21 @@ exports.updateHotel = async (req, res) => {
                     roomId = roomRes.rows[0].id;
                 }
 
-                await client.query(
-                    `INSERT INTO hotel_allotments 
-                    (hotel_id, room_type_id, start_date, end_date, day_type, allotment_count, cut_off_days, net_price, sell_price, description, notes) 
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-                    [id, roomId, a.start_date || new Date(), a.end_date || new Date(), a.day_type || 'Ngày thường', a.allotment_count || 0, a.cut_off_days || 0, a.net_price || 0, a.sell_price || 0, a.description, a.notes]
-                );
+                if (typeof a.id === 'string' || Number(a.id) > 1000000000000) {
+                    await client.query(
+                        `INSERT INTO hotel_allotments 
+                        (hotel_id, room_type_id, start_date, end_date, day_type, allotment_count, cut_off_days, net_price, sell_price, description, notes) 
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                        [id, roomId, a.start_date || new Date(), a.end_date || new Date(), a.day_type || 'Ngày thường', a.allotment_count || 0, a.cut_off_days || 0, a.net_price || 0, a.sell_price || 0, a.description, a.notes]
+                    );
+                } else {
+                    await client.query(
+                        `UPDATE hotel_allotments SET
+                        room_type_id=$1, start_date=$2, end_date=$3, day_type=$4, allotment_count=$5, cut_off_days=$6, net_price=$7, sell_price=$8, description=$9, notes=$10
+                        WHERE id=$11`,
+                        [roomId, a.start_date || new Date(), a.end_date || new Date(), a.day_type || 'Ngày thường', a.allotment_count || 0, a.cut_off_days || 0, a.net_price || 0, a.sell_price || 0, a.description, a.notes, a.id]
+                    );
+                }
             }
         }
 
@@ -324,6 +390,24 @@ exports.updateHotel = async (req, res) => {
 exports.deleteHotel = async (req, res) => {
     try {
         const { id } = req.params;
+
+        const checkDeps = await db.query(`
+            SELECT 
+                (SELECT COUNT(*) FROM hotel_contracts WHERE hotel_id = $1) as contract_count,
+                (SELECT COUNT(*) FROM hotel_room_types WHERE hotel_id = $1) as room_count
+        `, [id]);
+        
+        const deps = checkDeps.rows[0];
+        const totalDeps = parseInt(deps.contract_count) + parseInt(deps.room_count);
+
+        if (totalDeps > 0 && req.query.force !== 'true') {
+            return res.status(409).json({ 
+                message: `Khách sạn này đang có ${deps.contract_count} hợp đồng và ${deps.room_count} loại phòng. Xóa khách sạn sẽ xóa toàn bộ dữ liệu phụ lục bên trong.`,
+                has_deps: true,
+                dep_count: totalDeps
+            });
+        }
+
         await db.query('DELETE FROM hotels WHERE id = $1', [id]);
         if (req.user) {
             await logActivity({

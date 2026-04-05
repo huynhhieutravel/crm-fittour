@@ -20,7 +20,7 @@ exports.getAllUsers = async (req, res) => {
             const myDefaultRolePerms = rolePermsRes.rows.filter(p => p.role_id === user.role_id);
             
             // Generate matrix
-            const modules = ['leads', 'tours', 'departures', 'guides', 'customers', 'bookings', 'users', 'settings'];
+            const modules = ['leads', 'tours', 'departures', 'guides', 'customers', 'bookings', 'users', 'settings', 'group_hotels', 'group_restaurants', 'group_transports', 'group_tickets', 'group_airlines', 'group_landtours', 'group_insurances'];
             const mergedPermissions = {};
             
             modules.forEach(mod => {

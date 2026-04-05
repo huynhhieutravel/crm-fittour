@@ -1,0 +1,45 @@
+{
+  "module_name": "landtour",
+  "module_name_vi": "Land Tour",
+  "table_prefix": "landtours",
+  "icon": "Map",
+
+  "entity_fields": [
+    { "name": "code", "type": "VARCHAR(50) UNIQUE", "label": "Mã NCC", "required": false },
+    { "name": "name", "type": "VARCHAR(255)", "label": "Tên Land Tour", "required": true },
+    { "name": "tax_id", "type": "VARCHAR(50)", "label": "Mã số thuế", "required": false },
+    { "name": "landtour_class", "type": "VARCHAR(100)", "label": "Phân loại", "required": false },
+    { "name": "phone", "type": "VARCHAR(50)", "label": "Số điện thoại", "required": false },
+    { "name": "email", "type": "VARCHAR(100)", "label": "Email", "required": false },
+    { "name": "country", "type": "VARCHAR(100)", "label": "Quốc gia", "required": false },
+    { "name": "province", "type": "VARCHAR(100)", "label": "Tỉnh/Thành", "required": false },
+    { "name": "address", "type": "TEXT", "label": "Địa chỉ", "required": false },
+    { "name": "notes", "type": "TEXT", "label": "Ghi chú", "required": false },
+    { "name": "website", "type": "VARCHAR(255)", "label": "Website", "required": false },
+    { "name": "bank_account_name", "type": "VARCHAR(255)", "label": "Tên TK ngân hàng", "required": false },
+    { "name": "bank_account_number", "type": "VARCHAR(100)", "label": "Số TK", "required": false },
+    { "name": "bank_name", "type": "VARCHAR(255)", "label": "Ngân hàng", "required": false },
+    { "name": "market", "type": "VARCHAR(100)", "label": "Thị trường", "required": false }
+  ],
+
+  "contact_fields": [
+    { "name": "name", "type": "VARCHAR(255) NOT NULL", "label": "Tên" },
+    { "name": "position", "type": "VARCHAR(100)", "label": "Chức vụ" },
+    { "name": "phone", "type": "VARCHAR(50)", "label": "SĐT" },
+    { "name": "email", "type": "VARCHAR(100)", "label": "Email" }
+  ],
+
+  "service_fields": [
+    { "name": "sku", "type": "VARCHAR(50)", "label": "SKU", "required": false },
+    { "name": "service_type", "type": "VARCHAR(100)", "label": "Loại hình dịch vụ", "required": false },
+    { "name": "name", "type": "VARCHAR(255)", "label": "Dịch vụ cung cấp", "required": true },
+    { "name": "description", "type": "TEXT", "label": "Mô tả", "required": false },
+    { "name": "notes", "type": "TEXT", "label": "Ghi chú", "required": false },
+    { "name": "capacity", "type": "INTEGER", "label": "Số lượng", "required": false },
+    { "name": "cost_price", "type": "NUMERIC(15,2)", "label": "Giá KT", "required": false },
+    { "name": "net_price", "type": "NUMERIC(15,2)", "label": "Giá gốc", "required": false },
+    { "name": "sale_price", "type": "NUMERIC(15,2)", "label": "Giá bán", "required": false }
+  ],
+
+  "rate_fields": []
+}

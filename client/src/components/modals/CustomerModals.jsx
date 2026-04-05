@@ -134,7 +134,7 @@ export const AddCustomerModal = ({
             <select className="modal-select" value={newCustomer.assigned_to || ''} onChange={e => setNewCustomer({...newCustomer, assigned_to: e.target.value})}>
               <option value="">-- Chọn nhân viên --</option>
               {users.filter(u => u.is_active !== false).map(u => (
-                <option key={u.id} value={u.id}>{u.full_name} ({u.role_name})</option>
+                <option key={u.id} value={u.id}>{u.username} ({u.role_name})</option>
               ))}
             </select>
           </div>
@@ -389,7 +389,7 @@ export const EditCustomerModal = ({
                   <select className="modal-select" value={editingCustomer.assigned_to || ''} onChange={e => setEditingCustomer({...editingCustomer, assigned_to: e.target.value})}>
                     <option value="">-- Chọn nhân viên --</option>
                     {users.filter(u => u.is_active !== false).map(u => (
-                      <option key={u.id} value={u.id}>{u.full_name} ({u.role_name})</option>
+                      <option key={u.id} value={u.id}>{u.username} ({u.role_name})</option>
                     ))}
                   </select>
                 </div>

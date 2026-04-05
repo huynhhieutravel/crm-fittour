@@ -219,7 +219,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}>Nhân viên chăm sóc</div>
                     <div style={{ fontWeight: 600, color: '#3b82f6' }}>
                       {customer.assigned_to 
-                        ? (users.find(u => u.id === customer.assigned_to)?.full_name || 'Đã nghỉ việc / Ẩn (') + customer.assigned_to + ')'
+                        ? (users.find(u => u.id === customer.assigned_to)?.username || 'Đã nghỉ việc / Ẩn (') + customer.assigned_to + ')'
                         : '--- Chưa gán ---'}
                     </div>
                   </div>
