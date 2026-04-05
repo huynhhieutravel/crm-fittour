@@ -9,8 +9,33 @@ const STATUS_OPTIONS = [
     { value: 'Đang theo dõi', label: 'Đang theo dõi' },
     { value: 'Thành công', label: 'Thành công' },
     { value: 'Đã quyết toán', label: 'Đã quyết toán' },
-    { value: 'Chưa thành công', label: 'Chưa thành công' }
+    { value: 'Chưa thành công', label: 'Chưa thành công' },
+    { value: '__ALL__', label: '⚡ Tất cả (kể cả thất bại)' }
 ];
+
+// Build time filter options: months + quarters + years
+const buildTimeOptions = () => {
+    const opts = [];
+    const now = new Date();
+    const y = now.getFullYear();
+    // Current + next months (6 months forward, 3 back)
+    for (let i = -3; i <= 8; i++) {
+        const d = new Date(y, now.getMonth() + i, 1);
+        const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+        const yy = d.getFullYear();
+        opts.push({ value: `${yy}-${mm}`, label: `Tháng ${mm}/${yy}`, type: 'month' });
+    }
+    // Quarters for current year
+    for (let q = 1; q <= 4; q++) {
+        opts.push({ value: `Q${q}-${y}`, label: `Quý ${q}/${y}`, type: 'quarter' });
+    }
+    // Full years
+    opts.push({ value: `Y-${y-1}`, label: `Năm ${y-1}`, type: 'year' });
+    opts.push({ value: `Y-${y}`, label: `Năm ${y}`, type: 'year' });
+    opts.push({ value: `Y-${y+1}`, label: `Năm ${y+1}`, type: 'year' });
+    return opts;
+};
+const TIME_OPTIONS = buildTimeOptions();
 
 const reactSelectStyles = {
     control: (base) => ({
@@ -24,9 +49,9 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');  // empty = auto-exclude 'Chưa thành công'
     const [userFilter, setUserFilter] = useState('');
-    const [monthFilter, setMonthFilter] = useState('');
+    const [timeFilter, setTimeFilter] = useState('');
     
     // Modal state
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -94,27 +119,52 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
     const filtered = projects.filter(p => {
         const matchSearch = (p.name || '').toLowerCase().includes(search.toLowerCase()) || 
                              (p.leader_name || '').toLowerCase().includes(search.toLowerCase());
-        const matchStatus = statusFilter ? p.status === statusFilter : true;
+        // Status: empty = auto-exclude 'Chưa thành công', '__ALL__' = show everything
+        let matchStatus = true;
+        if (statusFilter === '__ALL__') {
+            matchStatus = true;
+        } else if (statusFilter) {
+            matchStatus = p.status === statusFilter;
+        } else {
+            matchStatus = p.status !== 'Chưa thành công';
+        }
         const matchUser = userFilter ? p.assigned_to === parseInt(userFilter) : true;
-        const matchMonth = monthFilter ? (p.departure_date && p.departure_date.startsWith(monthFilter)) : true;
-        return matchSearch && matchStatus && matchUser && matchMonth;
+        // Time filter: month (2026-01), quarter (Q1-2026), year (Y-2026)
+        let matchTime = true;
+        if (timeFilter) {
+            const depDate = p.departure_date ? p.departure_date.substring(0, 10) : null;
+            if (timeFilter.startsWith('Q')) {
+                // Quarter: Q1-2026
+                const [qPart, yPart] = timeFilter.split('-');
+                const quarter = parseInt(qPart.replace('Q', ''));
+                const qYear = parseInt(yPart);
+                if (depDate) {
+                    const dMonth = parseInt(depDate.substring(5, 7));
+                    const dYear = parseInt(depDate.substring(0, 4));
+                    const dQuarter = Math.ceil(dMonth / 3);
+                    matchTime = dYear === qYear && dQuarter === quarter;
+                } else { matchTime = false; }
+            } else if (timeFilter.startsWith('Y-')) {
+                // Year: Y-2026
+                const yr = timeFilter.replace('Y-', '');
+                matchTime = depDate ? depDate.startsWith(yr) : false;
+            } else {
+                // Month: 2026-01
+                matchTime = depDate ? depDate.startsWith(timeFilter) : false;
+            }
+        }
+        return matchSearch && matchStatus && matchUser && matchTime;
     }).sort((a, b) => {
-        const dateA = a.departure_date ? new Date(a.departure_date) : new Date('2099-12-31');
-        const dateB = b.departure_date ? new Date(b.departure_date) : new Date('2099-12-31');
-        return dateA - dateB;
+        // Null dates first, then newest (closest) date first = DESC
+        if (!a.departure_date && !b.departure_date) return 0;
+        if (!a.departure_date) return -1;
+        if (!b.departure_date) return 1;
+        return new Date(b.departure_date) - new Date(a.departure_date);
     });
 
     const userOptions = (users || []).filter(u => u.status === 'Active' || u.status === 'Hoạt động').map(u => ({
         value: u.id.toString(), label: u.full_name
     }));
-
-    const monthOptions = Array.from({ length: 12 }).map((_, i) => {
-        const d = new Date();
-        d.setMonth(d.getMonth() - 3 + i);
-        const m = (d.getMonth() + 1).toString().padStart(2, '0');
-        const y = d.getFullYear();
-        return { value: `${y}-${m}`, label: `Tháng ${m}/${y}` };
-    });
 
     const getStatusColor = (status) => {
         switch(status) {
@@ -150,15 +200,15 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                     </div>
                 </div>
 
-                <div className="filter-group" style={{ flex: '0 0 160px', margin: 0 }}>
+                <div className="filter-group" style={{ flex: '0 0 170px', margin: 0 }}>
                     <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>TÌNH TRẠNG</label>
                     <Select
                         options={STATUS_OPTIONS}
-                        value={STATUS_OPTIONS.find(o => o.value === statusFilter) || null}
+                        value={statusFilter === '' ? { value: '', label: '🚫 Trừ thất bại' } : STATUS_OPTIONS.find(o => o.value === statusFilter) || null}
                         onChange={option => setStatusFilter(option ? option.value : '')}
                         styles={reactSelectStyles}
                         isClearable
-                        placeholder="Tất cả"
+                        placeholder="Trừ thất bại"
                     />
                 </div>
 
@@ -174,15 +224,19 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                     />
                 </div>
 
-                <div className="filter-group" style={{ flex: '0 0 160px', margin: 0 }}>
-                    <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>TUYẾN ĐIỂM (NGÀY)</label>
+                <div className="filter-group" style={{ flex: '0 0 180px', margin: 0 }}>
+                    <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>THỜI GIAN</label>
                     <Select
-                        options={monthOptions}
-                        value={monthOptions.find(o => o.value === monthFilter) || null}
-                        onChange={option => setMonthFilter(option ? option.value : '')}
+                        options={[
+                            { label: '📅 Tháng', options: TIME_OPTIONS.filter(o => o.type === 'month') },
+                            { label: '📊 Quý', options: TIME_OPTIONS.filter(o => o.type === 'quarter') },
+                            { label: '📆 Năm', options: TIME_OPTIONS.filter(o => o.type === 'year') }
+                        ]}
+                        value={TIME_OPTIONS.find(o => o.value === timeFilter) || null}
+                        onChange={option => setTimeFilter(option ? option.value : '')}
                         styles={reactSelectStyles}
                         isClearable
-                        placeholder="Thời gian"
+                        placeholder="Tháng / Quý / Năm"
                     />
                 </div>
 
