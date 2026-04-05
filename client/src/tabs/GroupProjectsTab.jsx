@@ -76,6 +76,21 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
         setIsDrawerOpen(true);
     };
 
+    const handleInlineStatusChange = async (projectId, newStatus) => {
+        try {
+            const token = localStorage.getItem('token');
+            const proj = projects.find(p => p.id === projectId);
+            if (!proj) return;
+            await axios.put(`/api/group-projects/${projectId}`, {
+                ...proj, status: newStatus
+            }, { headers: { Authorization: `Bearer ${token}` } });
+            setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: newStatus } : p));
+        } catch (err) {
+            console.error(err);
+            if (addToast) addToast('Lỗi cập nhật trạng thái', 'error');
+        }
+    };
+
     const filtered = projects.filter(p => {
         const matchSearch = (p.name || '').toLowerCase().includes(search.toLowerCase()) || 
                              (p.leader_name || '').toLowerCase().includes(search.toLowerCase());
@@ -83,6 +98,10 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
         const matchUser = userFilter ? p.assigned_to === parseInt(userFilter) : true;
         const matchMonth = monthFilter ? (p.departure_date && p.departure_date.startsWith(monthFilter)) : true;
         return matchSearch && matchStatus && matchUser && matchMonth;
+    }).sort((a, b) => {
+        const dateA = a.departure_date ? new Date(a.departure_date) : new Date('2099-12-31');
+        const dateB = b.departure_date ? new Date(b.departure_date) : new Date('2099-12-31');
+        return dateA - dateB;
     });
 
     const userOptions = (users || []).filter(u => u.status === 'Active' || u.status === 'Hoạt động').map(u => ({
@@ -180,15 +199,15 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                 <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
                         <tr style={{ color: '#475569', fontSize: '0.8rem' }}>
-                            <th style={{ padding: '16px 20px', textAlign: 'left', width:'150px' }}>GIAI ĐOẠN</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'left' }}>TÊN ĐOÀN (DỰ ÁN)</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'center' }}>NGÀY ĐI - VỀ</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'left' }}>TUYẾN ĐIỂM</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'center' }}>QUY MÔ</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'right' }}>DỰ KIẾN THU</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'left' }}>B2B / ĐẠI DIỆN</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'left' }}>SALE PHỤ TRÁCH</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '100px' }}>THAO TÁC</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap' }}>NGÀY ĐI - VỀ</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'left' }}>TÊN ĐOÀN (DỰ ÁN)</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'center', width: '150px' }}>GIAI ĐOẠN</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'left' }}>TUYẾN ĐIỂM</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'center' }}>QUY MÔ</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'right' }}>DỰ KIẾN THU</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'left' }}>B2B / ĐẠI DIỆN</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'left' }}>SALE</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'center', width: '80px' }}></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -201,51 +220,64 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                                 const stColors = getStatusColor(p.status);
                                 return (
                                 <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                    <td style={{ padding: '16px 20px' }}>
-                                        <span style={{ background: stColors.bg, color: stColors.color, padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600 }}>
-                                            {p.status || 'Báo giá'}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '16px 20px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a', fontWeight: 600 }}>
-                                            <Briefcase size={16} color="#3b82f6" />
-                                            {p.name}
-                                        </div>
-                                    </td>
-                                    <td style={{ padding: '16px 20px', textAlign: 'center', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
-                                        <div style={{ color: '#1e293b', fontWeight: 500 }}>
+                                    <td style={{ padding: '10px 16px', textAlign: 'center', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                                        <div style={{ color: '#1e293b', fontWeight: 600 }}>
                                             {p.departure_date ? new Date(p.departure_date).toLocaleDateString('vi-VN') : '---'}
                                         </div>
-                                        {p.return_date && p.return_date !== p.departure_date && (
+                                        {p.return_date && String(p.return_date).split('T')[0] !== String(p.departure_date).split('T')[0] && (
                                             <div style={{ color: '#64748b', fontSize: '0.75rem' }}>
                                                 → {new Date(p.return_date).toLocaleDateString('vi-VN')}
                                             </div>
                                         )}
                                     </td>
-                                    <td style={{ padding: '16px 20px' }}>
+                                    <td style={{ padding: '10px 16px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a', fontWeight: 600 }}>
+                                            <Briefcase size={16} color="#3b82f6" />
+                                            {p.name}
+                                        </div>
+                                    </td>
+                                    <td style={{ padding: '6px 8px', textAlign: 'center' }}>
+                                        <select
+                                            value={p.status || 'Báo giá'}
+                                            onChange={(e) => handleInlineStatusChange(p.id, e.target.value)}
+                                            style={{
+                                                padding: '4px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700,
+                                                border: '1px solid transparent', cursor: 'pointer', width: '100%',
+                                                background: stColors.bg, color: stColors.color,
+                                                outline: 'none', appearance: 'auto'
+                                            }}
+                                        >
+                                            <option value="Báo giá">Báo giá</option>
+                                            <option value="Đang theo dõi">Đang theo dõi</option>
+                                            <option value="Thành công">Thành công</option>
+                                            <option value="Đã quyết toán">Đã quyết toán</option>
+                                            <option value="Chưa thành công">Chưa thành công</option>
+                                        </select>
+                                    </td>
+                                    <td style={{ padding: '10px 16px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#475569' }}>
                                             <MapPin size={14} color="#94a3b8" />
                                             {p.destination || 'Chưa xác định'}
                                         </div>
                                     </td>
-                                    <td style={{ padding: '16px 20px', textAlign: 'center', fontWeight: 'bold' }}>
+                                    <td style={{ padding: '10px 16px', textAlign: 'center', fontWeight: 'bold' }}>
                                         {p.expected_pax} Pax
                                     </td>
-                                    <td style={{ padding: '16px 20px', textAlign: 'right' }}>
+                                    <td style={{ padding: '10px 16px', textAlign: 'right' }}>
                                         <div style={{ fontWeight: 'bold', color: '#16a34a' }}>{formatMoney(p.total_revenue)}</div>
                                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{formatMoney(p.price_per_pax)} / Pax</div>
                                     </td>
-                                    <td style={{ padding: '16px 20px', fontSize: '0.85rem' }}>
+                                    <td style={{ padding: '10px 16px', fontSize: '0.85rem' }}>
                                         <div style={{ fontWeight: 600, color: '#0f172a' }}>{p.company_name || 'Khách Lẻ'}</div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748b', marginTop: '4px', fontSize: '0.75rem' }}>
                                             <Users size={12} /> {p.leader_name || '-'}
                                         </div>
                                     </td>
-                                    <td style={{ padding: '16px 20px' }}>
+                                    <td style={{ padding: '10px 16px' }}>
                                         <span style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500 }}>{p.assigned_name || '-'}</span>
                                     </td>
-                                    <td style={{ padding: '16px 20px', textAlign: 'center' }}>
-                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                    <td style={{ padding: '10px 16px', textAlign: 'center' }}>
+                                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
                                             <button className="btn-icon" onClick={() => handleOpenProject(p)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6' }}>
                                                 <Edit2 size={16} />
                                             </button>
