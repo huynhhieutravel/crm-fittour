@@ -182,6 +182,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                         <tr style={{ color: '#475569', fontSize: '0.8rem' }}>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width:'150px' }}>GIAI ĐOẠN</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left' }}>TÊN ĐOÀN (DỰ ÁN)</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'center' }}>NGÀY ĐI - VỀ</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left' }}>TUYẾN ĐIỂM</th>
                             <th style={{ padding: '16px 20px', textAlign: 'center' }}>QUY MÔ</th>
                             <th style={{ padding: '16px 20px', textAlign: 'right' }}>DỰ KIẾN THU</th>
@@ -192,9 +193,9 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td></tr>
+                            <tr><td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td></tr>
                         ) : filtered.length === 0 ? (
-                            <tr><td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Không có dự án MICE nào.</td></tr>
+                            <tr><td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Không có dự án MICE nào.</td></tr>
                         ) : (
                             filtered.map(p => {
                                 const stColors = getStatusColor(p.status);
@@ -210,6 +211,16 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                                             <Briefcase size={16} color="#3b82f6" />
                                             {p.name}
                                         </div>
+                                    </td>
+                                    <td style={{ padding: '16px 20px', textAlign: 'center', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                                        <div style={{ color: '#1e293b', fontWeight: 500 }}>
+                                            {p.departure_date ? new Date(p.departure_date).toLocaleDateString('vi-VN') : '---'}
+                                        </div>
+                                        {p.return_date && p.return_date !== p.departure_date && (
+                                            <div style={{ color: '#64748b', fontSize: '0.75rem' }}>
+                                                → {new Date(p.return_date).toLocaleDateString('vi-VN')}
+                                            </div>
+                                        )}
                                     </td>
                                     <td style={{ padding: '16px 20px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#475569' }}>
