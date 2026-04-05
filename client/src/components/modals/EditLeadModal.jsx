@@ -17,7 +17,8 @@ const EditLeadModal = ({
   newNote, 
   setNewNote, 
   handleAddNoteForLead,
-  bus
+  bus,
+  loading
 }) => {
   const [existingCustomer, setExistingCustomer] = useState(null);
 
@@ -28,7 +29,9 @@ const EditLeadModal = ({
     }
     const timer = setTimeout(async () => {
       try {
-        const res = await axios.get(`/api/customers/check-phone?phone=${editingLead.phone.trim()}`, {
+        const phoneTrimmed = editingLead.phone.toString().trim();
+        if (phoneTrimmed.length < 8) return;
+        const res = await axios.get(`/api/customers/check-phone?phone=${phoneTrimmed}`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         if (res.data.exists && res.data.customer.id !== editingLead.customer_id) {
@@ -219,7 +222,7 @@ const EditLeadModal = ({
           <label>TƯ VẤN VIÊN (CSKH)</label>
           <select className="modal-select" value={editingLead.assigned_to || ''} onChange={e => setEditingLead({...editingLead, assigned_to: e.target.value})}>
              <option value="">-- Chọn nhân viên --</option>
-             {users.filter(u => u.is_active !== false).map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
+             {users.filter(u => u.is_active !== false).map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
           </select>
         </div>
 
@@ -275,10 +278,10 @@ const EditLeadModal = ({
         </div>
 
         <div style={{ gridColumn: 'span 3', display: 'flex', gap: '1rem', marginTop: '1.5rem', paddingTop: '2rem', borderTop: '1px solid #f1f5f9' }}>
-          <button type="submit" className="btn-pro-save">
-            <CheckCircle size={18} strokeWidth={3} /> CẬP NHẬT HỒ SƠ
+          <button type="submit" className="btn-pro-save" disabled={loading} style={{ opacity: loading ? 0.7 : 1 }}>
+            <CheckCircle size={18} strokeWidth={3} /> {loading ? 'ĐANG LƯU...' : 'CẬP NHẬT HỒ SƠ'}
           </button>
-          <button type="button" className="btn-pro-cancel" onClick={() => setEditingLead(null)}>
+          <button type="button" className="btn-pro-cancel" onClick={() => setEditingLead(null)} disabled={loading}>
             <LogOut size={18} strokeWidth={2.5} style={{ transform: 'rotate(180deg)' }} /> HỦY BỎ
           </button>
         </div>

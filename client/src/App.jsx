@@ -18,6 +18,22 @@ import ToursTab from './tabs/ToursTab';
 import DeparturesTab from './tabs/DeparturesTab';
 import RemindersTab from './tabs/RemindersTab';
 import HotelsTab from './tabs/HotelsTab';
+import RestaurantsTab from './tabs/RestaurantsTab';
+import TransportsTab from './tabs/TransportsTab';
+import TicketsTab from './tabs/TicketsTab';
+import AirlinesTab from './tabs/AirlinesTab';
+import LandtoursTab from './tabs/LandtoursTab';
+import InsurancesTab from './tabs/InsurancesTab';
+// ═══ Tour Đoàn Tab Imports ═══
+import GroupHotelsTab from './tabs/GroupHotelsTab';
+import GroupRestaurantsTab from './tabs/GroupRestaurantsTab';
+import GroupTransportsTab from './tabs/GroupTransportsTab';
+import GroupTicketsTab from './tabs/GroupTicketsTab';
+import GroupAirlinesTab from './tabs/GroupAirlinesTab';
+import GroupLandtoursTab from './tabs/GroupLandtoursTab';
+import GroupInsurancesTab from './tabs/GroupInsurancesTab';
+import GroupProjectsTab from './tabs/GroupProjectsTab';
+import GroupLeadersTab from './tabs/GroupLeadersTab';
 import DashboardTab from './tabs/DashboardTab';
 import LeadsTab from './tabs/LeadsTab';
 import LeadsDashboardTab from './tabs/LeadsDashboardTab';
@@ -108,7 +124,7 @@ function AppContent() {
     const path = window.location.pathname.substring(1);
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -291,6 +307,20 @@ function AppContent() {
   const [departureToDelete, setDepartureToDelete] = useState(null);
   const [bookingToDelete, setBookingToDelete] = useState(null);
   const [hotelToDelete, setHotelToDelete] = useState(null);
+  const [restaurantToDelete, setRestaurantToDelete] = useState(null);
+  const [transportToDelete, setTransportToDelete] = useState(null);
+  const [ticketToDelete, setTicketToDelete] = useState(null);
+  const [airlineToDelete, setAirlineToDelete] = useState(null);
+  const [landtourToDelete, setLandtourToDelete] = useState(null);
+  const [insuranceToDelete, setInsuranceToDelete] = useState(null);
+  // ═══ Tour Đoàn Delete States ═══
+  const [groupHotelToDelete, setGroupHotelToDelete] = useState(null);
+  const [groupRestaurantToDelete, setGroupRestaurantToDelete] = useState(null);
+  const [groupTransportToDelete, setGroupTransportToDelete] = useState(null);
+  const [groupTicketToDelete, setGroupTicketToDelete] = useState(null);
+  const [groupAirlineToDelete, setGroupAirlineToDelete] = useState(null);
+  const [groupLandtourToDelete, setGroupLandtourToDelete] = useState(null);
+  const [groupInsuranceToDelete, setGroupInsuranceToDelete] = useState(null);
   const [bookingToEdit, setBookingToEdit] = useState(null);
 
   const LEAD_SOURCES = ['Messenger', 'Zalo', 'Khách giới thiệu', 'Hotline', 'Khác'];
@@ -349,7 +379,7 @@ function AppContent() {
   // Sync activeTab with URL
   useEffect(() => {
     const path = location.pathname.substring(1).split('/')[0];
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {
@@ -675,33 +705,242 @@ function AppContent() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`/api/hotels/${hotelToDelete}`, {
+      // Luôn gọi force=true vì user đã xác nhận ở modal "XÓA THỰC SỰ"
+      await axios.delete(`/api/hotels/${hotelToDelete}?force=true`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       addToast('Đã xóa khách sạn thành công.');
       setHotelToDelete(null);
-      // Buộc reload HotelsTab
       window.dispatchEvent(new CustomEvent('reloadHotels'));
     } catch (err) {
-      if (err.response && err.response.status === 409 && err.response.data.has_deps) {
-        if (window.confirm(`⚠️ ${err.response.data.message}\n\nBạn vẫn muốn xóa?`)) {
-          try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`/api/hotels/${hotelToDelete}?force=true`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            addToast('Đã xóa ép khách sạn.');
-            window.dispatchEvent(new CustomEvent('reloadHotels'));
-          } catch (err2) { addToast('Lỗi khi xoá ép: ' + (err2.response?.data?.message || err2.message), 'error'); }
-        }
-        setHotelToDelete(null);
-      } else {
-        addToast('Lỗi khi xóa khách sạn: ' + (err.response?.data?.message || err.message), 'error');
-        setHotelToDelete(null);
-      }
+      addToast('Lỗi khi xóa khách sạn: ' + (err.response?.data?.message || err.message), 'error');
+      setHotelToDelete(null);
     } finally {
       setLoading(false);
     }
+  };
+
+  const confirmDeleteRestaurant = async () => {
+    if (!restaurantToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      // Luôn gọi force=true vì user đã xác nhận ở modal "XÓA THỰC SỰ"
+      await axios.delete(`/api/restaurants/${restaurantToDelete}?force=true`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã xóa nhà hàng thành công.');
+      setRestaurantToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadRestaurants'));
+    } catch (err) {
+      addToast('Lỗi khi xóa nhà hàng: ' + (err.response?.data?.message || err.message), 'error');
+      setRestaurantToDelete(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmDeleteTransport = async () => {
+    if (!transportToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/transports/${transportToDelete}?force=true`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã xóa nhà xe thành công.');
+      setTransportToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadTransports'));
+    } catch (err) {
+      addToast('Lỗi khi xóa nhà xe: ' + (err.response?.data?.message || err.message), 'error');
+      setTransportToDelete(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmDeleteTicket = async () => {
+    if (!ticketToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/tickets/${ticketToDelete}?force=true`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã xóa vé tham quan thành công.');
+      setTicketToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadTickets'));
+    } catch (err) {
+      addToast('Lỗi khi xóa vé: ' + (err.response?.data?.message || err.message), 'error');
+      setTicketToDelete(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmDeleteAirline = async () => {
+    if (!airlineToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/airlines/${airlineToDelete}?force=true`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã xóa hãng hàng không thành công.');
+      setAirlineToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadAirlines'));
+    } catch (err) {
+      addToast('Lỗi khi xóa: ' + (err.response?.data?.message || err.message), 'error');
+      setAirlineToDelete(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmDeleteLandtour = async () => {
+    if (!landtourToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/landtours/${landtourToDelete}?force=true`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã xóa Land Tour thành công.');
+      setLandtourToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadLandtours'));
+    } catch (err) {
+      addToast('Lỗi khi xóa: ' + (err.response?.data?.message || err.message), 'error');
+      setLandtourToDelete(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmDeleteInsurance = async () => {
+    if (!insuranceToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/insurances/${insuranceToDelete}?force=true`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã xóa Bảo Hiểm thành công.');
+      setInsuranceToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadInsurances'));
+    } catch (err) {
+      addToast('Lỗi khi xóa: ' + (err.response?.data?.message || err.message), 'error');
+      setInsuranceToDelete(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+
+  // ═══ Tour Đoàn Delete Confirmation Functions ═══
+  const confirmDeleteGroupHotel = async () => {
+    if (!groupHotelToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/group/hotels/${groupHotelToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
+      addToast('Đã xóa KS Đoàn thành công.');
+      setGroupHotelToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadGroupHotels'));
+    } catch (err) {
+      addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
+      setGroupHotelToDelete(null);
+    } finally { setLoading(false); }
+  };
+
+  const confirmDeleteGroupRestaurant = async () => {
+    if (!groupRestaurantToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/group/restaurants/${groupRestaurantToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
+      addToast('Đã xóa Nhà hàng Đoàn thành công.');
+      setGroupRestaurantToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadGroupRestaurants'));
+    } catch (err) {
+      addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
+      setGroupRestaurantToDelete(null);
+    } finally { setLoading(false); }
+  };
+
+  const confirmDeleteGroupTransport = async () => {
+    if (!groupTransportToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/group/transports/${groupTransportToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
+      addToast('Đã xóa Nhà xe Đoàn thành công.');
+      setGroupTransportToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadGroupTransports'));
+    } catch (err) {
+      addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
+      setGroupTransportToDelete(null);
+    } finally { setLoading(false); }
+  };
+
+  const confirmDeleteGroupTicket = async () => {
+    if (!groupTicketToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/group/tickets/${groupTicketToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
+      addToast('Đã xóa Vé TQ Đoàn thành công.');
+      setGroupTicketToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadGroupTickets'));
+    } catch (err) {
+      addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
+      setGroupTicketToDelete(null);
+    } finally { setLoading(false); }
+  };
+
+  const confirmDeleteGroupAirline = async () => {
+    if (!groupAirlineToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/group/airlines/${groupAirlineToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
+      addToast('Đã xóa Hãng bay Đoàn thành công.');
+      setGroupAirlineToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadGroupAirlines'));
+    } catch (err) {
+      addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
+      setGroupAirlineToDelete(null);
+    } finally { setLoading(false); }
+  };
+
+  const confirmDeleteGroupLandtour = async () => {
+    if (!groupLandtourToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/group/landtours/${groupLandtourToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
+      addToast('Đã xóa Land Tour Đoàn thành công.');
+      setGroupLandtourToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadGroupLandtours'));
+    } catch (err) {
+      addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
+      setGroupLandtourToDelete(null);
+    } finally { setLoading(false); }
+  };
+
+  const confirmDeleteGroupInsurance = async () => {
+    if (!groupInsuranceToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/group/insurances/${groupInsuranceToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
+      addToast('Đã xóa Bảo hiểm Đoàn thành công.');
+      setGroupInsuranceToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadGroupInsurances'));
+    } catch (err) {
+      addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
+      setGroupInsuranceToDelete(null);
+    } finally { setLoading(false); }
   };
 
   const confirmDeleteDeparture = async () => {
@@ -866,6 +1105,7 @@ function AppContent() {
   };
 
   const fetchNotes = async (leadId) => {
+    if (!leadId) return;
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get(`/api/notes/${leadId}`, {
@@ -914,6 +1154,10 @@ function AppContent() {
 
   const handleUpdateLead = async (e) => {
     if (e) e.preventDefault();
+    if (!editingLead?.id) {
+       addToast('Lỗi: Lead không có ID hợp lệ.');
+       return;
+    }
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -1551,7 +1795,7 @@ function AppContent() {
 
           <div className="nav-section-title">Đối tác & Dịch vụ</div>
           <div 
-            className={`nav-item ${activeTab === 'hotels' ? 'active-parent' : ''}`} 
+            className={`nav-item ${['hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'landtours'].includes(activeTab) ? 'active-parent' : ''}`} 
             onClick={() => { navigate('/hotels'); setActiveTab('hotels'); }}
             style={{ justifyContent: 'space-between' }}
             onMouseEnter={(e) => {
@@ -1571,6 +1815,34 @@ function AppContent() {
             </div>
             <ChevronRight size={14} opacity={0.5} />
           </div>
+
+          {/* ═══ TOUR ĐOÀN SECTION ═══ */}
+          {(['group_hotels','group_restaurants','group_transports','group_tickets','group_airlines','group_landtours','group_insurances'].some(mod => checkView(mod))) && (
+            <>
+              <div className="nav-section-title" style={{ color: '#d97706' }}>Tour Đoàn 🔒</div>
+              <div 
+                className={`nav-item ${['group-hotels','group-restaurants','group-transports','group-tickets','group-airlines','group-landtours','group-insurances'].includes(activeTab) ? 'active-parent' : ''}`} 
+                onClick={() => { navigate('/group/hotels'); setActiveTab('group-hotels'); }}
+                style={{ justifyContent: 'space-between' }}
+                onMouseEnter={(e) => {
+                  if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setHoveredRect(rect);
+                  setHoveredMenu('group-suppliers');
+                }}
+                onMouseLeave={() => {
+                  menuTimerRef.current = setTimeout(() => {
+                    setHoveredMenu(null);
+                  }, 150);
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Package /> NCC Đoàn
+                </div>
+                <ChevronRight size={14} opacity={0.5} />
+              </div>
+            </>
+          )}
 
           {(checkView('users') || checkView('settings')) && (
             <>
@@ -1862,6 +2134,75 @@ function AppContent() {
           >
             Quản lý Khách sạn
           </div>
+          <div 
+            className={`submenu-item ${activeTab === 'restaurants' ? 'active' : ''}`} 
+            onClick={() => { navigate('/restaurants'); setActiveTab('restaurants'); setHoveredMenu(null); }}
+          >
+            Quản lý Nhà hàng
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'transports' ? 'active' : ''}`} 
+            onClick={() => { navigate('/transports'); setActiveTab('transports'); setHoveredMenu(null); }}
+          >
+            Quản lý Nhà xe
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'tickets' ? 'active' : ''}`} 
+            onClick={() => { navigate('/tickets'); setActiveTab('tickets'); setHoveredMenu(null); }}
+          >
+            Quản lý Vé Tham Quan
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'airlines' ? 'active' : ''}`} 
+            onClick={() => { navigate('/airlines'); setActiveTab('airlines'); setHoveredMenu(null); }}
+          >
+            Quản lý Vé máy bay
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'landtours' ? 'active' : ''}`} 
+            onClick={() => { navigate('/landtours'); setActiveTab('landtours'); setHoveredMenu(null); }}
+          >
+            Quản lý Land Tour
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'insurances' ? 'active' : ''}`} 
+            onClick={() => { navigate('/insurances'); setActiveTab('insurances'); setHoveredMenu(null); }}
+          >
+            Quản lý Bảo Hiểm
+          </div>
+        </div>
+      )}
+
+      {hoveredMenu === 'group-suppliers' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('group-suppliers');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          {checkView('group_hotels') && <div className={`submenu-item ${activeTab === 'group-hotels' ? 'active' : ''}`} onClick={() => { navigate('/group/hotels'); setActiveTab('group-hotels'); setHoveredMenu(null); }}>KS Đoàn</div>}
+          {checkView('group_restaurants') && <div className={`submenu-item ${activeTab === 'group-restaurants' ? 'active' : ''}`} onClick={() => { navigate('/group/restaurants'); setActiveTab('group-restaurants'); setHoveredMenu(null); }}>Nhà hàng Đoàn</div>}
+          {checkView('group_transports') && <div className={`submenu-item ${activeTab === 'group-transports' ? 'active' : ''}`} onClick={() => { navigate('/group/transports'); setActiveTab('group-transports'); setHoveredMenu(null); }}>Nhà xe Đoàn</div>}
+          {checkView('group_tickets') && <div className={`submenu-item ${activeTab === 'group-tickets' ? 'active' : ''}`} onClick={() => { navigate('/group/tickets'); setActiveTab('group-tickets'); setHoveredMenu(null); }}>Vé TQ Đoàn</div>}
+          {checkView('group_airlines') && <div className={`submenu-item ${activeTab === 'group-airlines' ? 'active' : ''}`} onClick={() => { navigate('/group/airlines'); setActiveTab('group-airlines'); setHoveredMenu(null); }}>Hãng bay Đoàn</div>}
+          {checkView('group_landtours') && <div className={`submenu-item ${activeTab === 'group-landtours' ? 'active' : ''}`} onClick={() => { navigate('/group/landtours'); setActiveTab('group-landtours'); setHoveredMenu(null); }}>Land Tour Đoàn</div>}
+          {checkView('group_insurances') && <div className={`submenu-item ${activeTab === 'group-insurances' ? 'active' : ''}`} onClick={() => { navigate('/group/insurances'); setActiveTab('group-insurances'); setHoveredMenu(null); }}>Bảo Hiểm Đoàn</div>}
         </div>
       )}
 
@@ -1953,7 +2294,7 @@ function AppContent() {
           }</h1>
           <div className="user-profile">
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{user?.full_name || 'Người dùng'}</div>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{user?.username || 'Người dùng'}</div>
               <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{user?.role?.toUpperCase() || 'NHÂN VIÊN'}</div>
             </div>
             <div className="user-avatar">{user?.username?.substring(0,1).toUpperCase() || 'U'}</div>
@@ -1976,6 +2317,7 @@ function AppContent() {
             setNewNote={setNewNote}
             handleAddNoteForLead={handleAddNoteForLead}
             bus={bus.filter(b => b.is_active !== false || b.id === editingLead.bu_group)}
+            loading={loading}
           />
         ) : (
           <>
@@ -2159,6 +2501,53 @@ function AppContent() {
 
         {activeTab === 'hotels' && (
           <HotelsTab currentUser={user} addToast={addToast} handleDeleteHotel={(id) => setHotelToDelete(id)} />
+        )}
+        {activeTab === 'restaurants' && (
+          <RestaurantsTab currentUser={user} addToast={addToast} handleDeleteRestaurant={(id) => setRestaurantToDelete(id)} />
+        )}
+        {activeTab === 'transports' && (
+          <TransportsTab currentUser={user} addToast={addToast} handleDeleteTransport={(id) => setTransportToDelete(id)} />
+        )}
+        {activeTab === 'tickets' && (
+          <TicketsTab currentUser={user} addToast={addToast} handleDeleteTicket={(id) => setTicketToDelete(id)} />
+        )}
+        {activeTab === 'airlines' && (
+          <AirlinesTab currentUser={user} addToast={addToast} handleDeleteAirline={(id) => setAirlineToDelete(id)} />
+        )}
+        {activeTab === 'landtours' && (
+          <LandtoursTab currentUser={user} addToast={addToast} handleDeleteLandtour={(id) => setLandtourToDelete(id)} />
+        )}
+        {activeTab === 'insurances' && (
+          <InsurancesTab currentUser={user} addToast={addToast} handleDeleteInsurance={(id) => setInsuranceToDelete(id)} />
+        )}
+
+        {/* ═══ Tour Đoàn Tab Rendering ═══ */}
+        {activeTab === 'group-hotels' && (
+          <GroupHotelsTab currentUser={user} addToast={addToast} handleDeleteGroupHotel={(id) => setGroupHotelToDelete(id)} />
+        )}
+        {activeTab === 'group-restaurants' && (
+          <GroupRestaurantsTab currentUser={user} addToast={addToast} handleDeleteGroupRestaurant={(id) => setGroupRestaurantToDelete(id)} />
+        )}
+        {activeTab === 'group-transports' && (
+          <GroupTransportsTab currentUser={user} addToast={addToast} handleDeleteGroupTransport={(id) => setGroupTransportToDelete(id)} />
+        )}
+        {activeTab === 'group-tickets' && (
+          <GroupTicketsTab currentUser={user} addToast={addToast} handleDeleteGroupTicket={(id) => setGroupTicketToDelete(id)} />
+        )}
+        {activeTab === 'group-airlines' && (
+          <GroupAirlinesTab currentUser={user} addToast={addToast} handleDeleteGroupAirline={(id) => setGroupAirlineToDelete(id)} />
+        )}
+        {activeTab === 'group-landtours' && (
+          <GroupLandtoursTab currentUser={user} addToast={addToast} handleDeleteGroupLandtour={(id) => setGroupLandtourToDelete(id)} />
+        )}
+        {activeTab === 'group-insurances' && (
+          <GroupInsurancesTab currentUser={user} addToast={addToast} handleDeleteGroupInsurance={(id) => setGroupInsuranceToDelete(id)} />
+        )}
+        {activeTab === 'group-projects' && (
+          <GroupProjectsTab currentUser={user} addToast={addToast} />
+        )}
+        {activeTab === 'group-leaders' && (
+          <GroupLeadersTab currentUser={user} addToast={addToast} />
         )}
       </>
     )}
@@ -2492,7 +2881,7 @@ function AppContent() {
     )}
 
     {/* MODAL XÁC NHẬN XÓA (CUSTOM) */}
-    {(leadToDelete || customerToDelete || tourToDelete || departureToDelete || bookingToDelete || hotelToDelete) && (
+    {(leadToDelete || customerToDelete || tourToDelete || departureToDelete || bookingToDelete || hotelToDelete || restaurantToDelete || transportToDelete || ticketToDelete || airlineToDelete || landtourToDelete || insuranceToDelete || groupHotelToDelete || groupRestaurantToDelete || groupTransportToDelete || groupTicketToDelete || groupAirlineToDelete || groupLandtourToDelete || groupInsuranceToDelete) && (
       <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={() => {
         setLeadToDelete(null);
         setCustomerToDelete(null);
@@ -2500,6 +2889,19 @@ function AppContent() {
         setDepartureToDelete(null);
         setBookingToDelete(null);
         setHotelToDelete(null);
+        setRestaurantToDelete(null);
+        setTransportToDelete(null);
+        setTicketToDelete(null);
+        setAirlineToDelete(null);
+        setLandtourToDelete(null);
+        setInsuranceToDelete(null);
+        setGroupHotelToDelete(null);
+        setGroupRestaurantToDelete(null);
+        setGroupTransportToDelete(null);
+        setGroupTicketToDelete(null);
+        setGroupAirlineToDelete(null);
+        setGroupLandtourToDelete(null);
+        setGroupInsuranceToDelete(null);
       }}>
         <div className="modal-content animate-slide-up" style={{ maxWidth: '400px', textAlign: 'center', padding: '2.5rem' }} onClick={e => e.stopPropagation()}>
           <div style={{ width: '60px', height: '60px', background: '#fee2e2', color: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
@@ -2521,6 +2923,19 @@ function AppContent() {
                 setDepartureToDelete(null);
                 setBookingToDelete(null);
                 setHotelToDelete(null);
+                setRestaurantToDelete(null);
+                setTransportToDelete(null);
+                setTicketToDelete(null);
+                setAirlineToDelete(null);
+                setLandtourToDelete(null);
+                setInsuranceToDelete(null);
+                setGroupHotelToDelete(null);
+                setGroupRestaurantToDelete(null);
+                setGroupTransportToDelete(null);
+                setGroupTicketToDelete(null);
+                setGroupAirlineToDelete(null);
+                setGroupLandtourToDelete(null);
+                setGroupInsuranceToDelete(null);
               }}
             >HỦY BỎ</button>
             <button 
@@ -2534,6 +2949,19 @@ function AppContent() {
                 if (departureToDelete) confirmDeleteDeparture();
                 if (bookingToDelete) confirmDeleteBooking();
                 if (hotelToDelete) confirmDeleteHotel();
+                if (restaurantToDelete) confirmDeleteRestaurant();
+                if (transportToDelete) confirmDeleteTransport();
+                if (ticketToDelete) confirmDeleteTicket();
+                if (airlineToDelete) confirmDeleteAirline();
+                if (landtourToDelete) confirmDeleteLandtour();
+                if (insuranceToDelete) confirmDeleteInsurance();
+                if (groupHotelToDelete) confirmDeleteGroupHotel();
+                if (groupRestaurantToDelete) confirmDeleteGroupRestaurant();
+                if (groupTransportToDelete) confirmDeleteGroupTransport();
+                if (groupTicketToDelete) confirmDeleteGroupTicket();
+                if (groupAirlineToDelete) confirmDeleteGroupAirline();
+                if (groupLandtourToDelete) confirmDeleteGroupLandtour();
+                if (groupInsuranceToDelete) confirmDeleteGroupInsurance();
               }}
             >{loading ? 'ĐANG XÓA...' : 'XÓA THỰC SỰ'}</button>
           </div>
