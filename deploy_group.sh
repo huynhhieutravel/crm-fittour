@@ -26,7 +26,7 @@ rsync -avz --delete \
 
 # 4. Run migrations on VPS
 echo "4/5 Running migrations..."
-ssh $VPS "cd $REMOTE/server && node migrations/migration_group_permissions.js && node migrations/fix_group_schemas_and_fks.js"
+ssh $VPS "cd $REMOTE/server && node migrations/migration_group_permissions.js && node migrations/fix_group_schemas_and_fks.js && node migrations/migration_permissions_update.js"
 
 # 5. Restart PM2
 echo "5/5 Restarting PM2..."

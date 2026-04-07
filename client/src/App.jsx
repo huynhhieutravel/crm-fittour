@@ -23,17 +23,13 @@ import TransportsTab from './tabs/TransportsTab';
 import TicketsTab from './tabs/TicketsTab';
 import AirlinesTab from './tabs/AirlinesTab';
 import LandtoursTab from './tabs/LandtoursTab';
+import InternalDocsTab from './tabs/InternalDocsTab';
 import InsurancesTab from './tabs/InsurancesTab';
+import OpToursTab from './tabs/OpToursTab';
 // ═══ Tour Đoàn Tab Imports ═══
-import GroupHotelsTab from './tabs/GroupHotelsTab';
-import GroupRestaurantsTab from './tabs/GroupRestaurantsTab';
-import GroupTransportsTab from './tabs/GroupTransportsTab';
-import GroupTicketsTab from './tabs/GroupTicketsTab';
-import GroupAirlinesTab from './tabs/GroupAirlinesTab';
-import GroupLandtoursTab from './tabs/GroupLandtoursTab';
-import GroupInsurancesTab from './tabs/GroupInsurancesTab';
 import GroupProjectsTab from './tabs/GroupProjectsTab';
 import GroupLeadersTab from './tabs/GroupLeadersTab';
+import B2BCompaniesTab from './tabs/B2BCompaniesTab';
 import DashboardTab from './tabs/DashboardTab';
 import LeadsTab from './tabs/LeadsTab';
 import LeadsDashboardTab from './tabs/LeadsDashboardTab';
@@ -93,7 +89,8 @@ import {
   BookOpen,
   Target,
   Shield,
-  Briefcase
+  Briefcase,
+  Building
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -126,7 +123,7 @@ function AppContent() {
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
     if (path.startsWith('group/')) return path.replace('/', '-');
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'op-tours'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -275,6 +272,8 @@ function AppContent() {
   });
   const [guideFilters, setGuideFilters] = useState({ search: '', status: '', language: '' });
   const [customerActiveTab, setCustomerActiveTab] = useState('list');
+  const [groupLeaderActiveTab, setGroupLeaderActiveTab] = useState('list');
+  const [b2bActiveTab, setB2bActiveTab] = useState('list');
   const [bus, setBus] = useState([]);
 
 
@@ -315,14 +314,9 @@ function AppContent() {
   const [airlineToDelete, setAirlineToDelete] = useState(null);
   const [landtourToDelete, setLandtourToDelete] = useState(null);
   const [insuranceToDelete, setInsuranceToDelete] = useState(null);
-  // ═══ Tour Đoàn Delete States ═══
-  const [groupHotelToDelete, setGroupHotelToDelete] = useState(null);
-  const [groupRestaurantToDelete, setGroupRestaurantToDelete] = useState(null);
-  const [groupTransportToDelete, setGroupTransportToDelete] = useState(null);
-  const [groupTicketToDelete, setGroupTicketToDelete] = useState(null);
-  const [groupAirlineToDelete, setGroupAirlineToDelete] = useState(null);
-  const [groupLandtourToDelete, setGroupLandtourToDelete] = useState(null);
-  const [groupInsuranceToDelete, setGroupInsuranceToDelete] = useState(null);
+  const [b2bCompanyToDelete, setB2bCompanyToDelete] = useState(null);
+  const [groupLeaderToDelete, setGroupLeaderToDelete] = useState(null);
+  const [groupProjectToDelete, setGroupProjectToDelete] = useState(null);
   const [bookingToEdit, setBookingToEdit] = useState(null);
 
   const LEAD_SOURCES = ['Messenger', 'Zalo', 'Khách giới thiệu', 'Hotline', 'Khác'];
@@ -378,15 +372,45 @@ function AppContent() {
     }
   }, [isLightMode]);
 
+  // Global listener for navigating to company detail from Calendar
+  useEffect(() => {
+    const handleSwitch = (e) => {
+      sessionStorage.setItem('pendingCompanyOpen', e.detail);
+      navigate('/group/companies');
+      setActiveTab('b2b-companies');
+      setB2bActiveTab('list');
+    };
+    const handleSwitchProject = (e) => {
+      sessionStorage.setItem('pendingProjectOpen', e.detail);
+      navigate('/group/projects');
+      setActiveTab('group-projects');
+    };
+    window.addEventListener('switchAndOpenCompany', handleSwitch);
+    window.addEventListener('switchAndOpenProject', handleSwitchProject);
+    return () => {
+      window.removeEventListener('switchAndOpenCompany', handleSwitch);
+      window.removeEventListener('switchAndOpenProject', handleSwitchProject);
+    };
+  }, [navigate]);
+
   // Sync activeTab with URL
   useEffect(() => {
     const fullPath = location.pathname.substring(1);
     if (fullPath.startsWith('group/')) {
-      setActiveTab(fullPath.replace('/', '-'));
+      if (fullPath === 'group/companies') {
+        setActiveTab('b2b-companies');
+        if (location.search.includes('tab=calendar')) {
+          setB2bActiveTab('calendar');
+        } else {
+          setB2bActiveTab('list');
+        }
+      } else {
+        setActiveTab(fullPath.replace('/', '-'));
+      }
       return;
     }
     const path = fullPath.split('/')[0];
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'op-tours'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {
@@ -842,111 +866,50 @@ function AppContent() {
     }
   };
 
-  
 
-  // ═══ Tour Đoàn Delete Confirmation Functions ═══
-  const confirmDeleteGroupHotel = async () => {
-    if (!groupHotelToDelete) return;
+
+  const confirmDeleteB2bCompany = async () => {
+    if (!b2bCompanyToDelete) return;
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`/api/group/hotels/${groupHotelToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
-      addToast('Đã xóa KS Đoàn thành công.');
-      setGroupHotelToDelete(null);
-      window.dispatchEvent(new CustomEvent('reloadGroupHotels'));
+      await axios.delete(`/api/b2b-companies/${b2bCompanyToDelete}`, { headers: { Authorization: `Bearer ${token}` } });
+      addToast('Đã xóa Doanh nghiệp thành công.');
+      setB2bCompanyToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadB2bCompanies'));
     } catch (err) {
       addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
-      setGroupHotelToDelete(null);
+      setB2bCompanyToDelete(null);
     } finally { setLoading(false); }
   };
 
-  const confirmDeleteGroupRestaurant = async () => {
-    if (!groupRestaurantToDelete) return;
+  const confirmDeleteGroupLeader = async () => {
+    if (!groupLeaderToDelete) return;
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`/api/group/restaurants/${groupRestaurantToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
-      addToast('Đã xóa Nhà hàng Đoàn thành công.');
-      setGroupRestaurantToDelete(null);
-      window.dispatchEvent(new CustomEvent('reloadGroupRestaurants'));
+      await axios.delete(`/api/group-leaders/${groupLeaderToDelete}`, { headers: { Authorization: `Bearer ${token}` } });
+      addToast('Đã xóa Trưởng đoàn thành công.');
+      setGroupLeaderToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadGroupLeaders'));
     } catch (err) {
       addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
-      setGroupRestaurantToDelete(null);
+      setGroupLeaderToDelete(null);
     } finally { setLoading(false); }
   };
 
-  const confirmDeleteGroupTransport = async () => {
-    if (!groupTransportToDelete) return;
+  const confirmDeleteGroupProject = async () => {
+    if (!groupProjectToDelete) return;
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`/api/group/transports/${groupTransportToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
-      addToast('Đã xóa Nhà xe Đoàn thành công.');
-      setGroupTransportToDelete(null);
-      window.dispatchEvent(new CustomEvent('reloadGroupTransports'));
+      await axios.delete(`/api/group-projects/${groupProjectToDelete}`, { headers: { Authorization: `Bearer ${token}` } });
+      addToast('Đã xóa Dự án Tour thành công.');
+      setGroupProjectToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadGroupProjects'));
     } catch (err) {
       addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
-      setGroupTransportToDelete(null);
-    } finally { setLoading(false); }
-  };
-
-  const confirmDeleteGroupTicket = async () => {
-    if (!groupTicketToDelete) return;
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`/api/group/tickets/${groupTicketToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
-      addToast('Đã xóa Vé TQ Đoàn thành công.');
-      setGroupTicketToDelete(null);
-      window.dispatchEvent(new CustomEvent('reloadGroupTickets'));
-    } catch (err) {
-      addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
-      setGroupTicketToDelete(null);
-    } finally { setLoading(false); }
-  };
-
-  const confirmDeleteGroupAirline = async () => {
-    if (!groupAirlineToDelete) return;
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`/api/group/airlines/${groupAirlineToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
-      addToast('Đã xóa Hãng bay Đoàn thành công.');
-      setGroupAirlineToDelete(null);
-      window.dispatchEvent(new CustomEvent('reloadGroupAirlines'));
-    } catch (err) {
-      addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
-      setGroupAirlineToDelete(null);
-    } finally { setLoading(false); }
-  };
-
-  const confirmDeleteGroupLandtour = async () => {
-    if (!groupLandtourToDelete) return;
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`/api/group/landtours/${groupLandtourToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
-      addToast('Đã xóa Land Tour Đoàn thành công.');
-      setGroupLandtourToDelete(null);
-      window.dispatchEvent(new CustomEvent('reloadGroupLandtours'));
-    } catch (err) {
-      addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
-      setGroupLandtourToDelete(null);
-    } finally { setLoading(false); }
-  };
-
-  const confirmDeleteGroupInsurance = async () => {
-    if (!groupInsuranceToDelete) return;
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`/api/group/insurances/${groupInsuranceToDelete}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
-      addToast('Đã xóa Bảo hiểm Đoàn thành công.');
-      setGroupInsuranceToDelete(null);
-      window.dispatchEvent(new CustomEvent('reloadGroupInsurances'));
-    } catch (err) {
-      addToast('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
-      setGroupInsuranceToDelete(null);
+      setGroupProjectToDelete(null);
     } finally { setLoading(false); }
   };
 
@@ -1642,7 +1605,9 @@ function AppContent() {
       return false;
     };
 
-    return (
+
+
+  return (
     <div className="app-container">
       <aside className="sidebar">
         <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
@@ -1714,6 +1679,15 @@ function AppContent() {
                     <Package /> Sản phẩm Tour
                   </div>
                   <ChevronRight size={14} opacity={0.5} />
+                </div>
+              )}
+
+              {checkView('op_tours') && (
+                <div 
+                  className={`nav-item ${activeTab === 'op-tours' ? 'active' : ''}`}
+                  onClick={() => navigate('/op-tours')}
+                >
+                  <Map /> Tour Nhanh (Test)
                 </div>
               )}
 
@@ -1824,16 +1798,38 @@ function AppContent() {
           </div>
 
           {/* ═══ TOUR ĐOÀN SECTION ═══ */}
-          {(['group_hotels','group_restaurants','group_transports','group_tickets','group_airlines','group_landtours','group_insurances', 'group_projects', 'group_leaders'].some(mod => checkView(mod))) && (
+          {(['group_projects', 'group_leaders'].some(mod => checkView(mod))) && (
             <>
               <div className="nav-section-title" style={{ color: '#d97706' }}>Tour Đoàn 🔒</div>
               {checkView('group_leaders') && (
-                <div 
-                  className={`nav-item ${activeTab === 'group-leaders' ? 'active' : ''}`} 
-                  onClick={() => { navigate('/group/leaders'); setActiveTab('group-leaders'); }}
-                >
-                  <Users /> Khách B2B
-                </div>
+                <>
+                  <div 
+                    className={`nav-item ${activeTab === 'b2b-companies' ? 'active' : ''}`} 
+                    onClick={() => { navigate('/group/companies'); setActiveTab('b2b-companies'); setB2bActiveTab('list'); }}
+                    style={{ justifyContent: 'space-between' }}
+                    onMouseEnter={(e) => {
+                      if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                      setHoveredMenu('b2b-companies');
+                      setHoveredRect(e.currentTarget.getBoundingClientRect());
+                    }}
+                    onMouseLeave={() => {
+                      menuTimerRef.current = setTimeout(() => {
+                        setHoveredMenu(null);
+                      }, 150);
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <Building /> Doanh nghiệp
+                    </div>
+                    <ChevronRight size={14} opacity={0.5} />
+                  </div>
+                  <div 
+                    className={`nav-item ${activeTab === 'group-leaders' ? 'active' : ''}`} 
+                    onClick={() => { navigate('/group/leaders'); setActiveTab('group-leaders'); }}
+                  >
+                    <Users /> Trưởng đoàn
+                  </div>
+                </>
               )}
               {checkView('group_projects') && (
                 <div 
@@ -1843,27 +1839,7 @@ function AppContent() {
                   <Briefcase /> Dự án Tour (MICE)
                 </div>
               )}
-              <div 
-                className={`nav-item ${['group-hotels','group-restaurants','group-transports','group-tickets','group-airlines','group-landtours','group-insurances'].includes(activeTab) ? 'active-parent' : ''}`} 
-                onClick={() => { navigate('/group/hotels'); setActiveTab('group-hotels'); }}
-                style={{ justifyContent: 'space-between' }}
-                onMouseEnter={(e) => {
-                  if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  setHoveredRect(rect);
-                  setHoveredMenu('group-suppliers');
-                }}
-                onMouseLeave={() => {
-                  menuTimerRef.current = setTimeout(() => {
-                    setHoveredMenu(null);
-                  }, 150);
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Package /> NCC Đoàn
-                </div>
-                <ChevronRight size={14} opacity={0.5} />
-              </div>
+
             </>
           )}
 
@@ -1882,6 +1858,11 @@ function AppContent() {
               )}
             </>
           )}
+
+          <div className="nav-section-title">Tài Liệu Nội Bộ</div>
+          <div className={`nav-item ${activeTab === 'internal-docs' ? 'active' : ''}`} onClick={() => navigate('/internal-docs')}>
+            <FileText /> Quy chế lương HDV
+          </div>
 
           <div className="nav-section-title">Trợ giúp & Hướng dẫn</div>
           <div 
@@ -2196,7 +2177,7 @@ function AppContent() {
         </div>
       )}
 
-      {hoveredMenu === 'group-suppliers' && hoveredRect && (
+      {hoveredMenu === 'b2b-companies' && hoveredRect && (
         <div 
           className="submenu-flyout"
           style={{ 
@@ -2211,7 +2192,7 @@ function AppContent() {
           }}
           onMouseEnter={() => {
             if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
-            setHoveredMenu('group-suppliers');
+            setHoveredMenu('b2b-companies');
           }}
           onMouseLeave={() => {
             menuTimerRef.current = setTimeout(() => {
@@ -2219,16 +2200,22 @@ function AppContent() {
             }, 150);
           }}
         >
-          {checkView('group_hotels') && <div className={`submenu-item ${activeTab === 'group-hotels' ? 'active' : ''}`} onClick={() => { navigate('/group/hotels'); setActiveTab('group-hotels'); setHoveredMenu(null); }}>KS Đoàn</div>}
-          {checkView('group_restaurants') && <div className={`submenu-item ${activeTab === 'group-restaurants' ? 'active' : ''}`} onClick={() => { navigate('/group/restaurants'); setActiveTab('group-restaurants'); setHoveredMenu(null); }}>Nhà hàng Đoàn</div>}
-          {checkView('group_transports') && <div className={`submenu-item ${activeTab === 'group-transports' ? 'active' : ''}`} onClick={() => { navigate('/group/transports'); setActiveTab('group-transports'); setHoveredMenu(null); }}>Nhà xe Đoàn</div>}
-          {checkView('group_tickets') && <div className={`submenu-item ${activeTab === 'group-tickets' ? 'active' : ''}`} onClick={() => { navigate('/group/tickets'); setActiveTab('group-tickets'); setHoveredMenu(null); }}>Vé TQ Đoàn</div>}
-          {checkView('group_airlines') && <div className={`submenu-item ${activeTab === 'group-airlines' ? 'active' : ''}`} onClick={() => { navigate('/group/airlines'); setActiveTab('group-airlines'); setHoveredMenu(null); }}>Hãng bay Đoàn</div>}
-          {checkView('group_landtours') && <div className={`submenu-item ${activeTab === 'group-landtours' ? 'active' : ''}`} onClick={() => { navigate('/group/landtours'); setActiveTab('group-landtours'); setHoveredMenu(null); }}>Land Tour Đoàn</div>}
-          {checkView('group_insurances') && <div className={`submenu-item ${activeTab === 'group-insurances' ? 'active' : ''}`} onClick={() => { navigate('/group/insurances'); setActiveTab('group-insurances'); setHoveredMenu(null); }}>Bảo Hiểm Đoàn</div>}
+          <div 
+            className={`submenu-item ${activeTab === 'b2b-companies' && b2bActiveTab === 'list' ? 'active' : ''}`} 
+            onClick={() => { navigate('/group/companies'); setActiveTab('b2b-companies'); setB2bActiveTab('list'); setHoveredMenu(null); }}
+          >
+            Danh sách Doanh nghiệp
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'b2b-companies' && b2bActiveTab === 'calendar' ? 'active' : ''}`} 
+            onClick={() => { navigate('/group/companies?tab=calendar'); setActiveTab('b2b-companies'); setB2bActiveTab('calendar'); setHoveredMenu(null); }}
+          >
+            Lịch Chăm Sóc B2B
+          </div>
         </div>
       )}
 
+      
       {hoveredMenu === 'manual' && hoveredRect && (
         <div 
           className="submenu-flyout"
@@ -2312,6 +2299,7 @@ function AppContent() {
             activeTab === 'leads' ? 'Quản lý Lead Marketing' : 
             activeTab === 'leads-dashboard' ? 'Dashboard Lead Marketing' :
             activeTab === 'bus' ? 'Quản lý Khối Kinh doanh (BU)' :
+            activeTab === 'internal-docs' ? 'Quy chế lương HDV' :
             activeTab === 'manual' ? 'Sổ tay HDSD CRM' :
             activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
           }</h1>
@@ -2352,6 +2340,7 @@ function AppContent() {
             )}
 
             {activeTab === 'manual' && <ManualTab />}
+            {activeTab === 'internal-docs' && <InternalDocsTab />}
 
             {activeTab === 'leads' && (
               <LeadsTab 
@@ -2405,6 +2394,10 @@ function AppContent() {
             bus={bus}
             currentUser={user}
           />
+        )}
+
+        {activeTab === 'op-tours' && (
+          <OpToursTab currentUser={user} />
         )}
 
         {activeTab === 'departures' && pathParts[1] === 'view' && pathParts[2] && (
@@ -2545,32 +2538,20 @@ function AppContent() {
         )}
 
         {/* ═══ Tour Đoàn Tab Rendering ═══ */}
-        {activeTab === 'group-hotels' && (
-          <GroupHotelsTab currentUser={user} addToast={addToast} handleDeleteGroupHotel={(id) => setGroupHotelToDelete(id)} />
-        )}
-        {activeTab === 'group-restaurants' && (
-          <GroupRestaurantsTab currentUser={user} addToast={addToast} handleDeleteGroupRestaurant={(id) => setGroupRestaurantToDelete(id)} />
-        )}
-        {activeTab === 'group-transports' && (
-          <GroupTransportsTab currentUser={user} addToast={addToast} handleDeleteGroupTransport={(id) => setGroupTransportToDelete(id)} />
-        )}
-        {activeTab === 'group-tickets' && (
-          <GroupTicketsTab currentUser={user} addToast={addToast} handleDeleteGroupTicket={(id) => setGroupTicketToDelete(id)} />
-        )}
-        {activeTab === 'group-airlines' && (
-          <GroupAirlinesTab currentUser={user} addToast={addToast} handleDeleteGroupAirline={(id) => setGroupAirlineToDelete(id)} />
-        )}
-        {activeTab === 'group-landtours' && (
-          <GroupLandtoursTab currentUser={user} addToast={addToast} handleDeleteGroupLandtour={(id) => setGroupLandtourToDelete(id)} />
-        )}
-        {activeTab === 'group-insurances' && (
-          <GroupInsurancesTab currentUser={user} addToast={addToast} handleDeleteGroupInsurance={(id) => setGroupInsuranceToDelete(id)} />
-        )}
-        {activeTab === 'group-projects' && (
-          <GroupProjectsTab currentUser={user} addToast={addToast} users={users} />
+                                                                {activeTab === 'companies' && (
+          <B2BCompaniesTab currentUser={user} addToast={addToast} handleDeleteCompany={(id) => setB2bCompanyToDelete(id)} />
         )}
         {activeTab === 'group-leaders' && (
-          <GroupLeadersTab currentUser={user} addToast={addToast} users={users} />
+          <GroupLeadersTab currentUser={user} addToast={addToast} users={users} handleDeleteLeader={(id) => setGroupLeaderToDelete(id)} />
+        )}
+        {activeTab === 'group-projects' && (
+          <GroupProjectsTab currentUser={user} addToast={addToast} users={users} handleDeleteProject={(id) => setGroupProjectToDelete(id)} />
+        )}
+
+        {activeTab === 'b2b-companies' && (
+          b2bActiveTab === 'calendar' ? 
+            <GroupLeadersTab currentUser={user} addToast={addToast} users={users} activeView="calendar" /> :
+            <B2BCompaniesTab currentUser={user} addToast={addToast} users={users} handleDeleteCompany={(id) => setB2bCompanyToDelete(id)} />
         )}
       </>
     )}
@@ -2904,7 +2885,7 @@ function AppContent() {
     )}
 
     {/* MODAL XÁC NHẬN XÓA (CUSTOM) */}
-    {(leadToDelete || customerToDelete || tourToDelete || departureToDelete || bookingToDelete || hotelToDelete || restaurantToDelete || transportToDelete || ticketToDelete || airlineToDelete || landtourToDelete || insuranceToDelete || groupHotelToDelete || groupRestaurantToDelete || groupTransportToDelete || groupTicketToDelete || groupAirlineToDelete || groupLandtourToDelete || groupInsuranceToDelete) && (
+    {(leadToDelete || customerToDelete || tourToDelete || departureToDelete || bookingToDelete || hotelToDelete || restaurantToDelete || transportToDelete || ticketToDelete || airlineToDelete || landtourToDelete || insuranceToDelete || b2bCompanyToDelete || groupLeaderToDelete || groupProjectToDelete) && (
       <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={() => {
         setLeadToDelete(null);
         setCustomerToDelete(null);
@@ -2918,13 +2899,9 @@ function AppContent() {
         setAirlineToDelete(null);
         setLandtourToDelete(null);
         setInsuranceToDelete(null);
-        setGroupHotelToDelete(null);
-        setGroupRestaurantToDelete(null);
-        setGroupTransportToDelete(null);
-        setGroupTicketToDelete(null);
-        setGroupAirlineToDelete(null);
-        setGroupLandtourToDelete(null);
-        setGroupInsuranceToDelete(null);
+        setB2bCompanyToDelete(null);
+        setGroupLeaderToDelete(null);
+        setGroupProjectToDelete(null);
       }}>
         <div className="modal-content animate-slide-up" style={{ maxWidth: '400px', textAlign: 'center', padding: '2.5rem' }} onClick={e => e.stopPropagation()}>
           <div style={{ width: '60px', height: '60px', background: '#fee2e2', color: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
@@ -2952,13 +2929,9 @@ function AppContent() {
                 setAirlineToDelete(null);
                 setLandtourToDelete(null);
                 setInsuranceToDelete(null);
-                setGroupHotelToDelete(null);
-                setGroupRestaurantToDelete(null);
-                setGroupTransportToDelete(null);
-                setGroupTicketToDelete(null);
-                setGroupAirlineToDelete(null);
-                setGroupLandtourToDelete(null);
-                setGroupInsuranceToDelete(null);
+                setB2bCompanyToDelete(null);
+                setGroupLeaderToDelete(null);
+                setGroupProjectToDelete(null);
               }}
             >HỦY BỎ</button>
             <button 
@@ -2978,14 +2951,8 @@ function AppContent() {
                 if (airlineToDelete) confirmDeleteAirline();
                 if (landtourToDelete) confirmDeleteLandtour();
                 if (insuranceToDelete) confirmDeleteInsurance();
-                if (groupHotelToDelete) confirmDeleteGroupHotel();
-                if (groupRestaurantToDelete) confirmDeleteGroupRestaurant();
-                if (groupTransportToDelete) confirmDeleteGroupTransport();
-                if (groupTicketToDelete) confirmDeleteGroupTicket();
-                if (groupAirlineToDelete) confirmDeleteGroupAirline();
-                if (groupLandtourToDelete) confirmDeleteGroupLandtour();
-                if (groupInsuranceToDelete) confirmDeleteGroupInsurance();
-              }}
+                if (b2bCompanyToDelete) confirmDeleteB2bCompany();
+                }}
             >{loading ? 'ĐANG XÓA...' : 'XÓA THỰC SỰ'}</button>
           </div>
         </div>

@@ -50,14 +50,8 @@ const airlineRoutes = require('./routes/airlines');
 const landtourRoutes = require('./routes/landtours');
 const insuranceRoutes = require('./routes/insurances');
 
-// ═══ Tour Đoàn (Group) NCC Routes ═══
-const groupHotelRoutes = require('./routes/groupHotels');
-const groupRestaurantRoutes = require('./routes/groupRestaurants');
-const groupTransportRoutes = require('./routes/groupTransports');
-const groupTicketRoutes = require('./routes/groupTickets');
-const groupAirlineRoutes = require('./routes/groupAirlines');
-const groupLandtourRoutes = require('./routes/groupLandtours');
-const groupInsuranceRoutes = require('./routes/groupInsurances');
+// ═══ Tour Đoàn (Group) Routes ═══
+const b2bCompaniesRoutes = require('./routes/b2bCompanies');
 const groupLeadersRoutes = require('./routes/groupLeaders');
 const groupProjectsRoutes = require('./routes/groupProjects');
 
@@ -85,18 +79,14 @@ app.use('/api/landtours', landtourRoutes);
 app.use('/api/insurances', insuranceRoutes);
 
 // ═══ Tour Đoàn (Group) NCC API ═══
-app.use('/api/group/hotels', groupHotelRoutes);
-app.use('/api/group/restaurants', groupRestaurantRoutes);
-app.use('/api/group/transports', groupTransportRoutes);
-app.use('/api/group/tickets', groupTicketRoutes);
-app.use('/api/group/airlines', groupAirlineRoutes);
-app.use('/api/group/landtours', groupLandtourRoutes);
-app.use('/api/group/insurances', groupInsuranceRoutes);
+const opToursRoutes = require('./routes/opTours');
 
 app.use('/api/group-leaders', groupLeadersRoutes);
 app.use('/api/group-projects', groupProjectsRoutes);
+app.use('/api/b2b-companies', b2bCompaniesRoutes);
 app.use('/api/costings', costingRoutes);
 app.use('/api/reminders', reminderRoutes);
+app.use('/api/op-tours', opToursRoutes);
 
 const dashboardRoutes = require('./routes/dashboard');
 

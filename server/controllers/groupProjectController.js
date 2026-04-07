@@ -3,19 +3,32 @@ const { logActivity } = require('../utils/logger');
 
 exports.getAllProjects = async (req, res) => {
     try {
+        const isPrivileged = ['admin', 'manager', 'group_manager'].includes(req.user.role);
+        const isGroupStaff = req.user.role === 'group_staff';
+
+        // Group Staff: only see projects linked to companies they are assigned to
+        const whereClause = (!isPrivileged && isGroupStaff) 
+            ? 'WHERE c.assigned_to = $1' 
+            : '';
+        const params = (!isPrivileged && isGroupStaff) 
+            ? [req.user.id] 
+            : [];
+
         const result = await db.query(`
-            SELECT gp.*, gl.name as leader_name, gl.company_name, 
+            SELECT gp.*, gl.name as leader_name, 
+                   COALESCE(c.name, gl.company_name) as company_name, 
                    gl.phone as leader_phone, gl.email as leader_email,
-                   u.full_name as assigned_name, u.username as assigned_username
+                   u.full_name as assigned_name, u.username as assigned_username,
+                   c.id as linked_company_id
             FROM group_projects gp
             LEFT JOIN group_leaders gl ON gp.group_leader_id = gl.id
+            LEFT JOIN b2b_companies c ON gp.company_id = c.id
             LEFT JOIN users u ON gp.assigned_to = u.id
+            ${whereClause}
             ORDER BY gp.created_at DESC
-        `);
+        `, params);
 
         // Masking logic based on ownership of the project
-        const isPrivileged = ['admin', 'manager', 'group_manager'].includes(req.user.role);
-        
         const projects = result.rows.map(p => {
             const isOwner = p.assigned_to === req.user.id;
             const canViewRaw = isPrivileged || isOwner;
@@ -46,7 +59,7 @@ exports.createProject = async (req, res) => {
             INSERT INTO group_projects 
             (name, group_leader_id, source, status, destination, expected_pax, price_per_pax, departure_date, return_date, expected_month, total_revenue, assigned_to)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *
-        `, [name, group_leader_id, source, status || 'Báo giá', destination, parseInt(expected_pax)||0, parseFloat(price_per_pax)||0, departure_date||null, return_date||null, expected_month, parseFloat(total_revenue)||0, assigned_to || req.user.id]);
+        `, [name, group_leader_id || null, source, status || 'Báo giá', destination, parseInt(expected_pax)||0, parseFloat(price_per_pax)||0, departure_date||null, return_date||null, expected_month||null, parseFloat(total_revenue)||0, assigned_to || null]);
 
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -63,7 +76,7 @@ exports.updateProject = async (req, res) => {
             UPDATE group_projects
             SET name=$1, group_leader_id=$2, source=$3, status=$4, destination=$5, expected_pax=$6, price_per_pax=$7, departure_date=$8, return_date=$9, expected_month=$10, total_revenue=$11, assigned_to=$12, updated_at=CURRENT_TIMESTAMP
             WHERE id=$13 RETURNING *
-        `, [name, group_leader_id, source, status, destination, parseInt(expected_pax)||0, parseFloat(price_per_pax)||0, departure_date||null, return_date||null, expected_month, parseFloat(total_revenue)||0, assigned_to, id]);
+        `, [name, group_leader_id || null, source, status, destination, parseInt(expected_pax)||0, parseFloat(price_per_pax)||0, departure_date||null, return_date||null, expected_month||null, parseFloat(total_revenue)||0, assigned_to || null, id]);
 
         res.json(result.rows[0]);
     } catch (err) {

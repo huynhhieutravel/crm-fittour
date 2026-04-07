@@ -7,9 +7,9 @@ const roleCheck = require('../middleware/roleCheck');
 const ALLOWED_ROLES = ['admin', 'manager', 'operations'];
 
 // Hotels
-router.get('/', authenticateToken, roleCheck(ALLOWED_ROLES), hotelController.getHotels);
+router.get('/', authenticateToken, roleCheck([...ALLOWED_ROLES, "group_manager"]), hotelController.getHotels);
 router.post('/', authenticateToken, roleCheck(ALLOWED_ROLES), hotelController.createHotel);
-router.get('/:id', authenticateToken, roleCheck(ALLOWED_ROLES), hotelController.getHotelDetails);
+router.get('/:id', authenticateToken, roleCheck([...ALLOWED_ROLES, "group_manager"]), hotelController.getHotelDetails);
 router.put('/:id', authenticateToken, roleCheck(ALLOWED_ROLES), hotelController.updateHotel);
 router.delete('/:id', authenticateToken, roleCheck(ALLOWED_ROLES), hotelController.deleteHotel);
 
@@ -39,7 +39,7 @@ router.put('/allotments/:allotment_id', authenticateToken, roleCheck(ALLOWED_ROL
 router.delete('/allotments/:allotment_id', authenticateToken, roleCheck(ALLOWED_ROLES), hotelController.deleteAllotment);
 
 // Notes
-router.get('/:hotel_id/notes', authenticateToken, roleCheck(ALLOWED_ROLES), hotelController.getHotelNotes);
+router.get('/:hotel_id/notes', authenticateToken, roleCheck([...ALLOWED_ROLES, "group_manager"]), hotelController.getHotelNotes);
 router.post('/:hotel_id/notes', authenticateToken, roleCheck(ALLOWED_ROLES), hotelController.addHotelNote);
 
 module.exports = router;

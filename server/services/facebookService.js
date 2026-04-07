@@ -9,6 +9,18 @@ const getSetting = async (key) => {
     return res.rows.length > 0 ? res.rows[0].value : null;
 };
 
+const extractVietnamPhone = (text) => {
+    if (!text) return null;
+    const phoneRegex = /(?:\+84|0)(?:[\s\.\-]*[3|5|7|8|9])(?:[\s\.\-]*[0-9]){8}\b/g;
+    const matches = text.match(phoneRegex);
+    if (matches && matches.length > 0) {
+        let phone = matches[0].replace(/[\s\.\-\+]/g, '');
+        if (phone.startsWith('84')) phone = '0' + phone.substring(2);
+        return phone;
+    }
+    return null;
+};
+
 exports.handleMessage = async (sender_psid, received_message, isStandby = false) => {
     let response;
 
@@ -92,6 +104,20 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
             'INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)',
             [conversationId, 'customer', received_message.text]
         );
+
+        // 5. Cập nhật Số điện thoại (Tự động trích xuất)
+        const extractedPhone = extractVietnamPhone(received_message.text);
+        if (extractedPhone && leadId) {
+            const checkPhone = await db.query('SELECT phone FROM leads WHERE id = $1', [leadId]);
+            if (checkPhone.rows.length > 0 && !checkPhone.rows[0].phone) {
+                console.log(`[FB WEBHOOK] Phát hiện SĐT ${extractedPhone} cho Lead ID ${leadId}. Đang cập nhật...`);
+                // Cập nhật SĐT và cố gắng định danh KH cũ
+                await db.query(
+                    'UPDATE leads SET phone = $1, customer_id = COALESCE(customer_id, (SELECT id FROM customers WHERE phone = $1 LIMIT 1)) WHERE id = $2',
+                    [extractedPhone, leadId]
+                );
+            }
+        }
 
         response = {
             "text": `Chào bạn! Cảm ơn bạn đã nhắn tin cho FIT Tour. Chúng tôi đã nhận được tin nhắn và tư vấn viên sẽ liên hệ với bạn ngay!`
@@ -332,14 +358,15 @@ exports.syncRecentConversations = async () => {
         const { token, pageId } = await getPageToken();
         if (!token || !pageId) return;
 
-        // Kéo 5 cuộc trò chuyện gần nhất để tìm khách hàng mới kèm 5 tin nhắn cực gần đễ trích xuất ghi chú
-        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=participants{id,name},messages.limit(5){message,from}&limit=5&access_token=${token}`;
+        // Kéo 5 cuộc trò chuyện gần nhất để tìm khách hàng mới kèm 5 tin nhắn cực gần đễ trích xuất ghi chú, SĐT và Link
+        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=link,participants{id,name},messages.limit(5){message,from}&limit=5&access_token=${token}`;
         const res = await axios.get(endpoint);
         
         if (!res.data || !res.data.data) return;
 
         for (const conv of res.data.data) {
             try {
+                const fbLink = conv.link ? `https://facebook.com${conv.link}` : null;
                 const participants = conv.participants?.data || [];
                 // Tìm user (loại trừ Page hiện tại)
                 const user = participants.find(p => p.id !== pageId);
@@ -358,19 +385,24 @@ exports.syncRecentConversations = async () => {
                 // Kéo hội thoại từ DB xem đã có chưa
                 const convRes = await db.query('SELECT * FROM conversations WHERE external_id = $1', [psid]);
                 
+                // Trích xuất tự động SĐT từ tin nhắn nếu có
+                const extractedPhone = extractVietnamPhone(actualMessageText);
+                let currentLeadId;
+
                 if (convRes.rows.length === 0) {
                     console.log(`[FB POLLER] Phát hiện khách mới chat với Fanpage: ${userName}. Đang tạo Lead...`);
                     // Tạo Lead mới tinh (Kèm kiểm tra PSID dò Khách Quen)
                     const leadResult = await db.query(
-                        'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id) VALUES ($1, $2, $3, $4, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $6 LIMIT 1)) RETURNING *',
-                        [userName, 'Messenger', 'Mới', psid, firstMessageNote, psid]
+                        'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id, phone, fb_conversation_link) VALUES ($1, $2, $3, $4, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $6 OR phone = $7 LIMIT 1), $7, $8) RETURNING *',
+                        [userName, 'Messenger', 'Mới', psid, firstMessageNote, psid, extractedPhone, fbLink]
                     );
 
+                    currentLeadId = leadResult.rows[0].id;
                     // --- LUÔN tạo Conversation để tránh tạo Lead trùng lặp mỗi lần poll ---
                     const messageForConv = actualMessageText || '(Khách mới nhắn tin)';
                     const newConv = await db.query(
                         'INSERT INTO conversations (source, external_id, lead_id, last_message) VALUES ($1, $2, $3, $4) RETURNING id',
-                        ['messenger', psid, leadResult.rows[0].id, messageForConv]
+                        ['messenger', psid, currentLeadId, messageForConv]
                     );
                     const conversationId = newConv.rows[0].id;
                     if (userMsgObj) {
@@ -387,11 +419,26 @@ exports.syncRecentConversations = async () => {
                 } else {
                     // ĐÃ CÓ CONVERSATION
                     const oldConv = convRes.rows[0];
+                    currentLeadId = oldConv.lead_id;
+
+                    // Nếu có SĐT mới, cập nhật vào Lead nếu đang trống
+                    if (extractedPhone) {
+                        const checkPhone = await db.query('SELECT phone FROM leads WHERE id = $1', [currentLeadId]);
+                        if (checkPhone.rows.length > 0 && !checkPhone.rows[0].phone) {
+                            console.log(`[FB POLLER] Trích xuất SĐT ${extractedPhone} cho Lead ID ${currentLeadId}`);
+                            await db.query('UPDATE leads SET phone = $1, customer_id = COALESCE(customer_id, (SELECT id FROM customers WHERE phone = $1 LIMIT 1)) WHERE id = $2', [extractedPhone, currentLeadId]);
+                        }
+                    }
+
+                    // Lưu/Cập nhật fb_conversation_link liên tục để sửa lỗi cũ
+                    if (fbLink) {
+                        await db.query('UPDATE leads SET fb_conversation_link = $1 WHERE id = $2 AND (fb_conversation_link IS NULL OR fb_conversation_link != $1)', [fbLink, currentLeadId]);
+                    }
                     
                     // Cờ kiểm tra: Nếu user Msg cuối cùng không khớp Last message (tức là webhook bị nghẽn chưa catch)
                     if (userMsgObj && actualMessageText !== oldConv.last_message) {
                         
-                        const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [oldConv.lead_id]);
+                        const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [currentLeadId]);
                         if (leadRes.rows.length > 0) {
                             const oldLead = leadRes.rows[0];
 
@@ -399,8 +446,8 @@ exports.syncRecentConversations = async () => {
                             if (['Chốt đơn', 'Thất bại'].includes(oldLead.status)) {
                                 console.log(`[FB POLLER] Phát hiện KHÁCH QUEN CŨ (Lead đã đóng) nhắn Fanpage: ${userName}. Tạo Lead mới...`);
                                 const newLeadResult = await db.query(
-                                    'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4 LIMIT 1), $5, $6) RETURNING *',
-                                    [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email]
+                                    'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email, fb_conversation_link) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4 LIMIT 1), $5, $6, $7) RETURNING *',
+                                    [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email, fbLink]
                                 );
                                 
                                 const safeMsg1 = actualMessageText || '(Hình ảnh/Đính kèm)';

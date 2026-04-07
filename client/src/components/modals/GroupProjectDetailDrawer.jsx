@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { X, Save, Building, Users, Briefcase, MapPin, Calendar, DollarSign, Activity, Plus } from 'lucide-react';
+import { X, Save, Building, Users, Briefcase, MapPin, Calendar, DollarSign, Activity, Plus, ExternalLink } from 'lucide-react';
 import Select from 'react-select';
 import { MARKET_OPTIONS } from '../../constants/markets';
+import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
 export default function GroupProjectDetailDrawer({ project, onClose, refreshList, currentUser, addToast, users }) {
     const [formData, setFormData] = useState({
@@ -95,7 +96,7 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
         }
     };
 
-    const isViewOnly = currentUser?.role !== 'admin' && currentUser?.role !== 'manager' && currentUser?.role !== 'operations';
+    const isViewOnly = checkViewOnly(currentUser?.role, 'group');
 
     const drawerInputStyle = { 
         padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', 
@@ -160,7 +161,24 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
 
                             <div className="form-group" style={{ gridColumn: 'span 2' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                    <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, display: 'block' }}>ĐẠI DIỆN ĐOÀN (B2B)</label>
+                                    <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        ĐẠI DIỆN ĐOÀN (B2B)
+                                        {formData.group_leader_id && (
+                                            <button 
+                                                title="Mở hồ sơ Trưởng đoàn"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    sessionStorage.setItem('pendingLeaderOpen', formData.group_leader_id);
+                                                    window.history.pushState({}, '', '/group/leaders');
+                                                    window.dispatchEvent(new PopStateEvent('popstate'));
+                                                    onClose();
+                                                }}
+                                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#3b82f6', display: 'flex', alignItems: 'center' }}
+                                            >
+                                                <ExternalLink size={14} />
+                                            </button>
+                                        )}
+                                    </label>
                                     <button 
                                         onClick={() => setIsAddingLeader(!isAddingLeader)} 
                                         style={{ background: 'transparent', border: 'none', color: '#3b82f6', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}

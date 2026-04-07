@@ -2,16 +2,22 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, UserPlus, Edit3, Trash2, Eye, Filter, MessageSquareText, Building, Phone, Mail } from 'lucide-react';
 import GroupLeaderProfileSlider from '../components/GroupLeaderProfileSlider';
+import GroupLeaderCalendarView from '../components/GroupLeaderCalendarView';
+import GroupLeaderAddModal from '../components/GroupLeaderAddModal';
+import { Users, Plus } from 'lucide-react';
 
-export default function GroupLeadersTab({ currentUser, addToast, users = [] }) {
+export default function GroupLeadersTab({ currentUser, addToast, users = [], activeView = 'list', handleDeleteLeader }) {
     const [leaders, setLeaders] = useState([]);
+    const [companies, setCompanies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [assignedFilter, setAssignedFilter] = useState('');
     const [hoveredNoteId, setHoveredNoteId] = useState(null);
+    const [showCreateModal, setShowCreateModal] = useState(false);
 
     // Profile slider
     const [selectedLeaderFull, setSelectedLeaderFull] = useState(null);
+    const [autoEditOnOpen, setAutoEditOnOpen] = useState(false);
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -19,11 +25,36 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [] }) {
 
     useEffect(() => {
         fetchLeaders();
+        fetchCompanies();
+
+        const handleReload = () => fetchLeaders();
+        window.addEventListener('reloadGroupLeaders', handleReload);
+        return () => window.removeEventListener('reloadGroupLeaders', handleReload);
     }, []);
 
     useEffect(() => {
         setCurrentPage(1);
     }, [search, assignedFilter]);
+
+    useEffect(() => {
+        const pending = sessionStorage.getItem('pendingLeaderOpen');
+        if (pending && leaders.length > 0) {
+            handleViewProfile(pending);
+            sessionStorage.removeItem('pendingLeaderOpen');
+        }
+    }, [leaders]);
+
+    const fetchCompanies = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get('/api/b2b-companies', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setCompanies(res.data);
+        } catch (err) {
+            console.error('Error fetching companies:', err);
+        }
+    };
 
     const fetchLeaders = async () => {
         try {
@@ -41,27 +72,18 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [] }) {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("CẢNH BÁO: Bạn có muốn xóa hồ sơ Đại Diện B2B này không? Hành động này không thể hoàn tác!")) return;
-        try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`/api/group-leaders/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (addToast) addToast("Xóa Thành Công", "success");
-            fetchLeaders();
-        } catch (err) {
-            if (addToast) addToast("Lỗi khi xóa", "error");
-        }
+    const handleDelete = (id) => {
+        if (handleDeleteLeader) handleDeleteLeader(id);
     };
 
-    const handleViewProfile = async (id) => {
+    const handleViewProfile = async (id, autoEdit = false) => {
         try {
             const token = localStorage.getItem('token');
             const res = await axios.get(`/api/group-leaders/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSelectedLeaderFull(res.data);
+            if (autoEdit) setAutoEditOnOpen(true);
         } catch (err) {
             console.error(err);
             if (addToast) addToast('Lỗi tải hồ sơ B2B', 'error');
@@ -109,11 +131,23 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [] }) {
     return (
         <>
             <div className="animate-fade-in">
+                {/* Header section with Add Button - HIDE IN CALENDAR VIEW */}
+                {activeView !== 'calendar' && (
+                    <div className="section-header" style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                            <Users size={22} color="#6366f1" /> DANH SÁCH TRƯỞNG ĐOÀN
+                        </h2>
+                        <button className="btn-pro-save" style={{ background: '#6366f1', padding: '8px 16px', borderRadius: '8px', color: 'white', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }} onClick={() => setShowCreateModal(true)}>
+                            <Plus size={16} /> THÊM TRƯỞNG ĐOÀN
+                        </button>
+                    </div>
+                )}
+
                 {/* Filter Bar */}
                 <div className="filter-bar" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Filter size={18} className="text-secondary" /> BỘ LỌC ĐẠI DIỆN B2B
+                            <Filter size={18} className="text-secondary" /> {activeView === 'calendar' ? 'BỘ LỌC LỊCH HẸN' : 'BỘ LỌC TRƯỞNG ĐOÀN'}
                         </h3>
                         <div style={{ display: 'flex', gap: '12px' }}>
                             {(search || assignedFilter) && (
@@ -161,6 +195,10 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [] }) {
                     </div>
                 </div>
 
+                {activeView === 'calendar' ? (
+                    <GroupLeaderCalendarView users={users} leaders={filtered} companies={companies} onLeaderClick={handleViewProfile} />
+                ) : (
+                <>
                 {/* Data Table */}
                 <div className="data-table-container">
                     <table className="data-table">
@@ -178,7 +216,7 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [] }) {
                             {loading ? (
                                 <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Đang tải dữ liệu...</td></tr>
                             ) : currentLeaders.length === 0 ? (
-                                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Không tìm thấy Khách B2B nào.</td></tr>
+                                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Không tìm thấy Trưởng đoàn nào.</td></tr>
                             ) : (
                                 currentLeaders.map(leader => (
                                     <tr key={leader.id}>
@@ -209,7 +247,7 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [] }) {
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                     <span style={{ padding: '2px 8px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 700, background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe' }}>
-                                                        🏢 {leader.company_name || 'Khách Lẻ'}
+                                                        🏢 {leader.company_display_name || leader.company_name || 'Chưa gắn DN'}
                                                     </span>
                                                 </div>
                                             </div>
@@ -233,6 +271,9 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [] }) {
                                             <div style={{ display: 'flex', gap: '4px' }}>
                                                 <button className="icon-btn" title="Xem hồ sơ" onClick={() => handleViewProfile(leader.id)}>
                                                     <Eye size={16} className="text-blue-500" />
+                                                </button>
+                                                <button className="icon-btn" title="Sửa" onClick={() => handleViewProfile(leader.id, true)}>
+                                                    <Edit3 size={16} color="#3b82f6" />
                                                 </button>
                                                 <button className="icon-btn danger" style={{ color: '#ef4444' }} title="Xóa" onClick={() => handleDelete(leader.id)}>
                                                     <Trash2 size={16} />
@@ -294,13 +335,29 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [] }) {
                         </div>
                     )}
                 </div>
+                </>
+                )}
             </div>
 
             <GroupLeaderProfileSlider
                 leader={selectedLeaderFull}
                 users={users}
-                onClose={() => setSelectedLeaderFull(null)}
+                companies={companies}
+                onClose={() => { setSelectedLeaderFull(null); setAutoEditOnOpen(false); }}
                 onAddNote={handleAddNote}
+                onLeaderUpdated={() => { fetchLeaders(); handleViewProfile(selectedLeaderFull.id); }}
+                autoEdit={autoEditOnOpen}
+                onAutoEditConsumed={() => setAutoEditOnOpen(false)}
+            />
+
+            <GroupLeaderAddModal
+                open={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                onSuccess={() => { setShowCreateModal(false); fetchLeaders(); }}
+                companies={companies}
+                users={users}
+                currentUser={currentUser}
+                addToast={addToast}
             />
         </>
     );

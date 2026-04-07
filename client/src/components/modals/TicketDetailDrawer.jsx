@@ -4,6 +4,7 @@ import axios from 'axios';
 import { X, Save, Plus, Trash2, Ticket, ShoppingBag, Users, FileText, Send, Clock, PlusCircle } from 'lucide-react';
 import Select from 'react-select';
 import { MARKET_OPTIONS } from '../../constants/markets';
+import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
 export default function TicketDetailDrawer({ ticket, onClose, refreshList, currentUser, addToast }) {
     const [activeTab, setActiveTab] = useState('general');
@@ -110,7 +111,7 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
         }
     };
 
-    const isViewOnly = currentUser?.role !== 'admin' && currentUser?.role !== 'manager' && currentUser?.role !== 'operations';
+    const isViewOnly = checkViewOnly(currentUser?.role, 'suppliers');
 
     const handleContactChange = (index, field, value) => {
         const newContacts = [...contacts];

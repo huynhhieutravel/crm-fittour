@@ -20,16 +20,30 @@ const maskContact = (str, type) => {
 
 exports.getAllGroupLeaders = async (req, res) => {
     try {
+        const isPrivileged = ['admin', 'manager', 'group_manager'].includes(req.user.role);
+        const isGroupStaff = req.user.role === 'group_staff';
+
+        // Group Staff: only see leaders linked to companies they are assigned to
+        const whereClause = (!isPrivileged && isGroupStaff) 
+            ? 'WHERE c.assigned_to = $1' 
+            : '';
+        const params = (!isPrivileged && isGroupStaff) 
+            ? [req.user.id] 
+            : [];
+
         const result = await db.query(`
             SELECT gl.*, 
                    u.full_name as assigned_name,
                    u.username as assigned_username,
+                   c.name as company_display_name,
+                   c.id as linked_company_id,
                    COALESCE(stats.total_projects, 0) as total_projects,
                    COALESCE(stats.total_revenue, 0) as total_revenue,
                    latest_note.content as latest_note,
                    latest_note.created_at as latest_note_at
             FROM group_leaders gl
             LEFT JOIN users u ON gl.assigned_to = u.id
+            LEFT JOIN b2b_companies c ON gl.company_id = c.id
             LEFT JOIN LATERAL (
                 SELECT COUNT(*)::int as total_projects, 
                        COALESCE(SUM(total_revenue), 0) as total_revenue
@@ -43,11 +57,10 @@ exports.getAllGroupLeaders = async (req, res) => {
                 ORDER BY gln.created_at DESC
                 LIMIT 1
             ) latest_note ON true
+            ${whereClause}
             ORDER BY gl.created_at DESC
-        `);
+        `, params);
 
-        const isPrivileged = ['admin', 'manager', 'group_manager'].includes(req.user.role);
-        
         const leaders = result.rows.map(leader => {
             const isOwner = leader.assigned_to === req.user.id;
             const canViewRaw = isPrivileged || isOwner;
@@ -78,10 +91,13 @@ exports.getGroupLeaderById = async (req, res) => {
             SELECT gl.*, 
                    u.full_name as assigned_name,
                    u.username as assigned_username,
+                   c.name as company_display_name,
+                   c.founded_date as company_founded_date,
                    COALESCE(stats.total_projects, 0) as total_projects,
                    COALESCE(stats.total_revenue, 0) as total_revenue
             FROM group_leaders gl
             LEFT JOIN users u ON gl.assigned_to = u.id
+            LEFT JOIN b2b_companies c ON gl.company_id = c.id
             LEFT JOIN LATERAL (
                 SELECT COUNT(*)::int as total_projects, 
                        COALESCE(SUM(total_revenue), 0) as total_revenue
@@ -169,7 +185,7 @@ exports.createLeaderNote = async (req, res) => {
 exports.createGroupLeader = async (req, res) => {
     const client = await db.pool.connect();
     try {
-        const { name, company_name, phone, email, preferences, dob, assigned_to } = req.body;
+        const { name, company_name, phone, email, preferences, dob, assigned_to, company_founded_date, company_id, position, contact_status } = req.body;
         
         // Prevent duplicate phone across all leaders
         if (phone) {
@@ -185,9 +201,9 @@ exports.createGroupLeader = async (req, res) => {
         const assignId = assigned_to || req.user.id; // Default ownership to creator
 
         const result = await client.query(`
-            INSERT INTO group_leaders (name, company_name, phone, email, preferences, dob, assigned_to)
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
-        `, [name, company_name, phone, email, preferences, dob, assignId]);
+            INSERT INTO group_leaders (name, company_name, phone, email, preferences, dob, assigned_to, company_founded_date, company_id, position, contact_status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *
+        `, [name, company_name, phone, email, preferences, dob || null, assignId, company_founded_date || null, company_id || null, position || 'Trưởng đoàn', contact_status || 'active']);
 
         await logActivity({
             user_id: req.user.id,
@@ -208,7 +224,7 @@ exports.createGroupLeader = async (req, res) => {
 exports.updateGroupLeader = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, company_name, phone, email, preferences, dob, assigned_to } = req.body;
+        const { name, company_name, phone, email, preferences, dob, assigned_to, company_founded_date, company_id, position, contact_status } = req.body;
         
         // Ensure ownership
         const current = await db.query('SELECT assigned_to FROM group_leaders WHERE id=$1', [id]);
@@ -221,9 +237,11 @@ exports.updateGroupLeader = async (req, res) => {
 
         const result = await db.query(`
             UPDATE group_leaders 
-            SET name=$1, company_name=$2, phone=$3, email=$4, preferences=$5, dob=$6, assigned_to=$7, updated_at=CURRENT_TIMESTAMP
-            WHERE id=$8 RETURNING *
-        `, [name, company_name, phone, email, preferences, dob, assigned_to, id]);
+            SET name=$1, company_name=$2, phone=$3, email=$4, preferences=$5, dob=$6, 
+                assigned_to=$7, company_founded_date=$8, company_id=$9, position=$10, 
+                contact_status=$11, updated_at=CURRENT_TIMESTAMP
+            WHERE id=$12 RETURNING *
+        `, [name, company_name, phone, email, preferences, dob || null, assigned_to || null, company_founded_date || null, company_id || null, position || 'Trưởng đoàn', contact_status || 'active', id]);
 
         res.json(result.rows[0]);
     } catch (err) {

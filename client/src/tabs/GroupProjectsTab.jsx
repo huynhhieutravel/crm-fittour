@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Plus, MapPin, Edit2, Trash2, Calendar, Users, Briefcase } from 'lucide-react';
+import { Search, Plus, MapPin, Edit2, Trash2, Calendar, Users, Briefcase, Eye } from 'lucide-react';
 import Select from 'react-select';
 import GroupProjectDetailDrawer from '../components/modals/GroupProjectDetailDrawer';
 
@@ -13,29 +13,6 @@ const STATUS_OPTIONS = [
     { value: '__ALL__', label: '⚡ Tất cả (kể cả thất bại)' }
 ];
 
-// Build time filter options: months + quarters + years
-const buildTimeOptions = () => {
-    const opts = [];
-    const now = new Date();
-    const y = now.getFullYear();
-    // Current + next months (6 months forward, 3 back)
-    for (let i = -3; i <= 8; i++) {
-        const d = new Date(y, now.getMonth() + i, 1);
-        const mm = (d.getMonth() + 1).toString().padStart(2, '0');
-        const yy = d.getFullYear();
-        opts.push({ value: `${yy}-${mm}`, label: `Tháng ${mm}/${yy}`, type: 'month' });
-    }
-    // Quarters for current year
-    for (let q = 1; q <= 4; q++) {
-        opts.push({ value: `Q${q}-${y}`, label: `Quý ${q}/${y}`, type: 'quarter' });
-    }
-    // Full years
-    opts.push({ value: `Y-${y-1}`, label: `Năm ${y-1}`, type: 'year' });
-    opts.push({ value: `Y-${y}`, label: `Năm ${y}`, type: 'year' });
-    opts.push({ value: `Y-${y+1}`, label: `Năm ${y+1}`, type: 'year' });
-    return opts;
-};
-const TIME_OPTIONS = buildTimeOptions();
 
 const reactSelectStyles = {
     control: (base) => ({
@@ -45,13 +22,20 @@ const reactSelectStyles = {
     valueContainer: (base) => ({ ...base, padding: '0 12px', height: '42px', display: 'flex', alignItems: 'center' })
 };
 
-export default function GroupProjectsTab({ currentUser, addToast, users }) {
+export default function GroupProjectsTab({ currentUser, addToast, users, handleDeleteProject }) {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');  // empty = auto-exclude 'Chưa thành công'
     const [userFilter, setUserFilter] = useState('');
-    const [timeFilter, setTimeFilter] = useState('');
+    
+    // New time filter state
+    const [timeFilterMode, setTimeFilterMode] = useState('all'); // 'all', 'month', 'quarter', 'year', 'custom'
+    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+    const [selectedQuarter, setSelectedQuarter] = useState(Math.ceil((new Date().getMonth() + 1) / 3));
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [customStartDate, setCustomStartDate] = useState('');
+    const [customEndDate, setCustomEndDate] = useState('');
     
     // Modal state
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -59,7 +43,24 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
 
     useEffect(() => {
         fetchProjects();
+
+        const handleReload = () => fetchProjects();
+        window.addEventListener('reloadGroupProjects', handleReload);
+        return () => window.removeEventListener('reloadGroupProjects', handleReload);
     }, []);
+
+    // Try to open a project from sessionStorage link
+    useEffect(() => {
+        const pending = sessionStorage.getItem('pendingProjectOpen');
+        if (pending && projects.length > 0) {
+            const p = projects.find(proj => String(proj.id) === String(pending));
+            if (p) {
+                setSelectedProject(p);
+                setIsDrawerOpen(true);
+            }
+            sessionStorage.removeItem('pendingProjectOpen');
+        }
+    }, [projects]);
 
     const fetchProjects = async () => {
         try {
@@ -77,18 +78,8 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Bạn có chắc chắn muốn xóa đoàn này không?")) return;
-        try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`/api/group-projects/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if(addToast) addToast("Xóa Thành Công", "success");
-            fetchProjects();
-        } catch(err) {
-            if(addToast) addToast("Lỗi khi xóa", "error");
-        }
+    const handleDelete = (id) => {
+        if (handleDeleteProject) handleDeleteProject(id);
     };
 
     const handleOpenProject = (project) => {
@@ -129,28 +120,27 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
             matchStatus = p.status !== 'Chưa thành công';
         }
         const matchUser = userFilter ? p.assigned_to === parseInt(userFilter) : true;
-        // Time filter: month (2026-01), quarter (Q1-2026), year (Y-2026)
         let matchTime = true;
-        if (timeFilter) {
+        if (timeFilterMode !== 'all') {
             const depDate = p.departure_date ? p.departure_date.substring(0, 10) : null;
-            if (timeFilter.startsWith('Q')) {
-                // Quarter: Q1-2026
-                const [qPart, yPart] = timeFilter.split('-');
-                const quarter = parseInt(qPart.replace('Q', ''));
-                const qYear = parseInt(yPart);
-                if (depDate) {
-                    const dMonth = parseInt(depDate.substring(5, 7));
-                    const dYear = parseInt(depDate.substring(0, 4));
-                    const dQuarter = Math.ceil(dMonth / 3);
-                    matchTime = dYear === qYear && dQuarter === quarter;
-                } else { matchTime = false; }
-            } else if (timeFilter.startsWith('Y-')) {
-                // Year: Y-2026
-                const yr = timeFilter.replace('Y-', '');
-                matchTime = depDate ? depDate.startsWith(yr) : false;
+            if (!depDate) {
+                matchTime = false;
             } else {
-                // Month: 2026-01
-                matchTime = depDate ? depDate.startsWith(timeFilter) : false;
+                const dYear = parseInt(depDate.substring(0, 4));
+                const dMonth = parseInt(depDate.substring(5, 7));
+                if (timeFilterMode === 'month') {
+                    matchTime = dYear === selectedYear && dMonth === selectedMonth;
+                } else if (timeFilterMode === 'quarter') {
+                    const dQuarter = Math.ceil(dMonth / 3);
+                    matchTime = dYear === selectedYear && dQuarter === selectedQuarter;
+                } else if (timeFilterMode === 'year') {
+                    matchTime = dYear === selectedYear;
+                } else if (timeFilterMode === 'custom') {
+                    const dNum = new Date(depDate).getTime();
+                    const sNum = customStartDate ? new Date(customStartDate).getTime() : -Infinity;
+                    const eNum = customEndDate ? new Date(customEndDate).getTime() : Infinity;
+                    matchTime = dNum >= sNum && dNum <= eNum;
+                }
             }
         }
         return matchSearch && matchStatus && matchUser && matchTime;
@@ -186,7 +176,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                 backgroundColor: 'white', padding: '1.25rem', borderRadius: '1rem', 
                 boxShadow: 'var(--shadow)', marginBottom: '2rem'
             }}>
-                <div className="filter-group" style={{ flex: '1 1 250px', margin: 0 }}>
+                <div className="filter-group" style={{ flex: '2 1 300px', margin: 0 }}>
                     <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>TÌM KIẾM ĐOÀN / ĐẠI DIỆN</label>
                     <div style={{ position: 'relative' }}>
                         <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
@@ -195,12 +185,12 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                             placeholder="Nhập tên đoàn..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            style={{ width: '100%', paddingLeft: '40px', height: '44px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }}
+                            style={{ width: '100%', paddingLeft: '40px', height: '44px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', fontSize: '0.85rem' }}
                         />
                     </div>
                 </div>
 
-                <div className="filter-group" style={{ flex: '0 0 170px', margin: 0 }}>
+                <div className="filter-group" style={{ flex: '1 1 200px', margin: 0 }}>
                     <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>TÌNH TRẠNG</label>
                     <Select
                         options={STATUS_OPTIONS}
@@ -212,7 +202,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                     />
                 </div>
 
-                <div className="filter-group" style={{ flex: '0 0 180px', margin: 0 }}>
+                <div className="filter-group" style={{ flex: '1 1 200px', margin: 0 }}>
                     <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>NHÂN VIÊN</label>
                     <Select
                         options={userOptions}
@@ -224,28 +214,70 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                     />
                 </div>
 
-                <div className="filter-group" style={{ flex: '0 0 180px', margin: 0 }}>
-                    <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>THỜI GIAN</label>
-                    <Select
-                        options={[
-                            { label: '📅 Tháng', options: TIME_OPTIONS.filter(o => o.type === 'month') },
-                            { label: '📊 Quý', options: TIME_OPTIONS.filter(o => o.type === 'quarter') },
-                            { label: '📆 Năm', options: TIME_OPTIONS.filter(o => o.type === 'year') }
-                        ]}
-                        value={TIME_OPTIONS.find(o => o.value === timeFilter) || null}
-                        onChange={option => setTimeFilter(option ? option.value : '')}
-                        styles={reactSelectStyles}
-                        isClearable
-                        placeholder="Tháng / Quý / Năm"
-                    />
-                </div>
+                <div style={{ flexBasis: '100%', height: 0 }}></div>
+                
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.85rem', flexWrap: 'wrap', width: '100%' }}>
+                  <span style={{ fontWeight: 600, color: '#64748b', marginRight: '0.5rem' }}>THỜI GIAN:</span>
+                  {[
+                    { id: 'all', label: 'Tất cả' },
+                    { id: 'month', label: 'Tháng' },
+                    { id: 'quarter', label: 'Quý' },
+                    { id: 'year', label: 'Năm' },
+                    { id: 'custom', label: 'Tùy chọn' }
+                  ].map(p => (
+                    <button key={p.id} className={`preset-btn ${timeFilterMode === p.id ? 'active' : ''}`} onClick={() => setTimeFilterMode(p.id)}>
+                      {p.label}
+                    </button>
+                  ))}
 
-                <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-end', height: '100%', paddingTop: '1.4rem' }}>
-                    {(currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'operations') && (
-                        <button className="btn btn-primary" onClick={handleAddProject} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '44px', padding: '0 1.5rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, background: '#2563eb', color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)', cursor: 'pointer' }}>
-                            <Plus size={18} /> Thêm Dự Án
+                  {timeFilterMode === 'month' && (
+                      <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem', alignItems: 'center', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
+                          <select className="filter-select" style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }} value={selectedMonth} onChange={e => setSelectedMonth(parseInt(e.target.value))}>
+                              {Array.from({ length: 12 }, (_, i) => <option key={i+1} value={i+1}>Tháng {i+1}</option>)}
+                          </select>
+                          <select className="filter-select" style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }} value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
+                              {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>Năm {y}</option>)}
+                          </select>
+                      </div>
+                  )}
+
+                  {timeFilterMode === 'quarter' && (
+                      <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem', alignItems: 'center', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
+                          <select className="filter-select" style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }} value={selectedQuarter} onChange={e => setSelectedQuarter(parseInt(e.target.value))}>
+                              {[1, 2, 3, 4].map(q => <option key={q} value={q}>Quý {q}</option>)}
+                          </select>
+                          <select className="filter-select" style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }} value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
+                              {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>Năm {y}</option>)}
+                          </select>
+                      </div>
+                  )}
+
+                  {timeFilterMode === 'year' && (
+                      <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem', alignItems: 'center', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
+                          <select className="filter-select" style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }} value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
+                              {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>Năm {y}</option>)}
+                          </select>
+                      </div>
+                  )}
+
+                  {timeFilterMode === 'custom' && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
+                        <input type="date" className="filter-input" style={{ padding: '4px 8px', height: '32px', border: '1px solid #cbd5e1', borderRadius: '6px', outline: 'none' }} value={customStartDate} onChange={e => setCustomStartDate(e.target.value)} />
+                        <span style={{ color: '#94a3b8' }}>-</span>
+                        <input type="date" className="filter-input" style={{ padding: '4px 8px', height: '32px', border: '1px solid #cbd5e1', borderRadius: '6px', outline: 'none' }} value={customEndDate} onChange={e => setCustomEndDate(e.target.value)} />
+                      </div>
+                  )}
+                  
+                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ color: '#94a3b8', fontWeight: 600, background: '#f1f5f9', padding: '6px 12px', borderRadius: '6px' }}>
+                      {filtered.length} Dự án
+                    </div>
+                    {(currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'operations' || currentUser?.role === 'group_manager' || currentUser?.role === 'group_staff') && (
+                        <button className="btn btn-primary" onClick={handleAddProject} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '36px', padding: '0 1rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, background: '#2563eb', color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)', cursor: 'pointer' }}>
+                            <Plus size={16} /> Thêm Dự Án
                         </button>
                     )}
+                  </div>
                 </div>
             </div>
 
@@ -255,7 +287,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                         <tr style={{ color: '#475569', fontSize: '0.8rem' }}>
                             <th style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap' }}>NGÀY ĐI - VỀ</th>
                             <th style={{ padding: '12px 16px', textAlign: 'left' }}>TÊN ĐOÀN (DỰ ÁN)</th>
-                            <th style={{ padding: '12px 16px', textAlign: 'center', width: '150px' }}>GIAI ĐOẠN</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'center', width: '180px' }}>GIAI ĐOẠN</th>
                             <th style={{ padding: '12px 16px', textAlign: 'left' }}>TUYẾN ĐIỂM</th>
                             <th style={{ padding: '12px 16px', textAlign: 'center' }}>QUY MÔ</th>
                             <th style={{ padding: '12px 16px', textAlign: 'right' }}>DỰ KIẾN THU</th>
@@ -295,10 +327,10 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                                             value={p.status || 'Báo giá'}
                                             onChange={(e) => handleInlineStatusChange(p.id, e.target.value)}
                                             style={{
-                                                padding: '4px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700,
-                                                border: '1px solid transparent', cursor: 'pointer', width: '100%',
-                                                background: stColors.bg, color: stColors.color,
-                                                outline: 'none', appearance: 'auto'
+                                                padding: '6px 10px', fontSize: '0.8rem', fontWeight: 700,
+                                                cursor: 'pointer', borderColor: 'transparent', minWidth: '140px',
+                                                appearance: 'none', background: stColors.bg, color: stColors.color,
+                                                borderRadius: '6px', outline: 'none', textAlign: 'center'
                                             }}
                                         >
                                             <option value="Báo giá">Báo giá</option>
@@ -331,11 +363,14 @@ export default function GroupProjectsTab({ currentUser, addToast, users }) {
                                         <span style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500 }}>{p.assigned_name || '-'}</span>
                                     </td>
                                     <td style={{ padding: '10px 16px', textAlign: 'center' }}>
-                                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                                            <button className="btn-icon" onClick={() => handleOpenProject(p)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6' }}>
+                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                            <button className="icon-btn" title="Xem" onClick={() => handleOpenProject(p)} style={{ color: '#0284c7', background: '#e0f2fe' }}>
+                                                <Eye size={16} />
+                                            </button>
+                                            <button className="icon-btn edit" title="Sửa" onClick={() => handleOpenProject(p)}>
                                                 <Edit2 size={16} />
                                             </button>
-                                            <button className="btn-icon" onClick={() => handleDelete(p.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                                            <button className="icon-btn delete" onClick={() => handleDelete(p.id)} title="Xóa">
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>

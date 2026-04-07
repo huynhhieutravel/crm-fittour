@@ -3,6 +3,13 @@ import axios from 'axios';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Phone, MapPin, Search, X } from 'lucide-react';
 import SearchableSelect from './common/SearchableSelect';
 
+const formatDateLocal = (dateInput) => {
+    if (!dateInput) return '';
+    const d = new Date(dateInput);
+    if (isNaN(d)) return '';
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([]);
@@ -24,8 +31,8 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
       
       const res = await axios.get('/api/customers/events/all', {
         params: {
-          start_date: start.toISOString().split('T')[0],
-          end_date: end.toISOString().split('T')[0]
+          start_date: formatDateLocal(start),
+          end_date: formatDateLocal(end)
         },
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });

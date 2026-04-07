@@ -7,9 +7,9 @@ const roleCheck = require('../middleware/roleCheck');
 const ALLOWED_ROLES = ['admin', 'manager', 'operations'];
 
 // Restaurants
-router.get('/', authenticateToken, roleCheck(ALLOWED_ROLES), restaurantController.getRestaurants);
+router.get('/', authenticateToken, roleCheck([...ALLOWED_ROLES, "group_manager"]), restaurantController.getRestaurants);
 router.post('/', authenticateToken, roleCheck(ALLOWED_ROLES), restaurantController.createRestaurant);
-router.get('/:id', authenticateToken, roleCheck(ALLOWED_ROLES), restaurantController.getRestaurantDetails);
+router.get('/:id', authenticateToken, roleCheck([...ALLOWED_ROLES, "group_manager"]), restaurantController.getRestaurantDetails);
 router.put('/:id', authenticateToken, roleCheck(ALLOWED_ROLES), restaurantController.updateRestaurant);
 router.delete('/:id', authenticateToken, roleCheck(ALLOWED_ROLES), restaurantController.deleteRestaurant);
 
@@ -34,7 +34,7 @@ router.put('/rates/:rate_id', authenticateToken, roleCheck(ALLOWED_ROLES), resta
 router.delete('/rates/:rate_id', authenticateToken, roleCheck(ALLOWED_ROLES), restaurantController.deleteContractRate);
 
 // Notes
-router.get('/:restaurant_id/notes', authenticateToken, roleCheck(ALLOWED_ROLES), restaurantController.getRestaurantNotes);
+router.get('/:restaurant_id/notes', authenticateToken, roleCheck([...ALLOWED_ROLES, "group_manager"]), restaurantController.getRestaurantNotes);
 router.post('/:restaurant_id/notes', authenticateToken, roleCheck(ALLOWED_ROLES), restaurantController.addRestaurantNote);
 
 module.exports = router;
