@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const db = require('../db');
 
 // Ensure upload directory exists
 const uploadDir = path.join(__dirname, '../public/uploads/receipts');
@@ -48,6 +49,35 @@ router.post('/upload', upload.single('file'), (req, res) => {
     }
 });
 
+// Route: Bulk delete files
+router.post('/bulk-delete', (req, res) => {
+    console.log('[MEDIA] Called bulk-delete:', req.body);
+    try {
+        const filenames = req.body.filenames;
+        if (!Array.isArray(filenames) || filenames.length === 0) {
+            return res.status(400).json({ error: 'Danh sách file không hợp lệ.' });
+        }
+        
+        let deletedCount = 0;
+        let notFoundCount = 0;
+        
+        for (const filename of filenames) {
+            const filePath = path.join(uploadDir, filename);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+                deletedCount++;
+            } else {
+                notFoundCount++;
+            }
+        }
+        
+        res.status(200).json({ message: `Đã xóa thành công ${deletedCount} file (Không tìm thấy: ${notFoundCount}).`, deletedCount });
+    } catch (err) {
+        console.error('Bulk delete error:', err);
+        res.status(500).json({ error: 'Lỗi xóa hàng loạt trên máy chủ.' });
+    }
+});
+
 // Route: Delete a file
 router.delete('/:filename', (req, res) => {
     try {
@@ -66,20 +96,35 @@ router.delete('/:filename', (req, res) => {
 });
 
 // Route: Get all media for Admin config
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     try {
         if (!fs.existsSync(uploadDir)) {
             return res.json([]);
         }
         
-        const files = fs.readdirSync(uploadDir);
+        // Setup mapping for Voucher code attached
+        let vouchersData = [];
+        try {
+            const result = await db.query('SELECT voucher_code, attachment_url FROM payment_vouchers WHERE attachment_url IS NOT NULL');
+            vouchersData = result.rows;
+        } catch(dbErr) {
+            console.error('Error fetching vouchers mapping for media:', dbErr);
+        }
+
+        const files = fs.readdirSync(uploadDir).filter(f => !f.startsWith('._') && !f.startsWith('.DS_Store'));
         const mediaList = files.map(file => {
             const stats = fs.statSync(path.join(uploadDir, file));
+            const publicUrl = `/uploads/receipts/${file}`;
+            
+            // Check if attached to any voucher
+            const linkedVoucher = vouchersData.find(v => v.attachment_url === publicUrl);
+
             return {
                 filename: file,
-                url: `/uploads/receipts/${file}`,
+                url: publicUrl,
                 size: stats.size,
-                createdAt: stats.birthtime
+                createdAt: stats.birthtime,
+                voucherCode: linkedVoucher ? linkedVoucher.voucher_code : null
             };
         });
 
@@ -87,6 +132,7 @@ router.get('/', (req, res) => {
         mediaList.sort((a, b) => b.createdAt - a.createdAt);
         res.json(mediaList);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Lỗi lấy danh sách file.' });
     }
 });
