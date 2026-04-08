@@ -12,14 +12,25 @@ router.get('/:tourId/:bookingId', async (req, res) => {
         const { tourId, bookingId } = req.params;
 
         // Fetch Tour Info
-        const tourRes = await db.query('SELECT * FROM op_tours WHERE id = $1', [tourId]);
+        const tourRes = await db.query(`
+            SELECT td.*, tt.name as tour_name, tt.code as template_code
+            FROM tour_departures td
+            LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+            WHERE td.id = $1
+        `, [tourId]);
         if (tourRes.rows.length === 0) return res.status(404).json({ error: 'Tour not found' });
         const tour = tourRes.rows[0];
+        tour.tour_code = tour.code;
 
         // Fetch Booking Info
-        const bookingRes = await db.query('SELECT * FROM op_tour_bookings WHERE id = $1 AND tour_id = $2', [bookingId, tourId]);
+        const bookingRes = await db.query('SELECT * FROM bookings WHERE id = $1 AND tour_departure_id = $2', [bookingId, tourId]);
         if (bookingRes.rows.length === 0) return res.status(404).json({ error: 'Booking not found' });
         const booking = bookingRes.rows[0];
+        // Map field names for compatibility
+        booking.name = booking.customer_name || '';
+        booking.phone = booking.customer_phone || '';
+        booking.total = booking.total_price;
+        booking.status = booking.booking_status;
 
         // Parse JSON
         booking.raw_details = typeof booking.raw_details === 'string' ? JSON.parse(booking.raw_details) : (booking.raw_details || {});
@@ -42,13 +53,22 @@ router.get('/:tourId/:bookingId/export-docx', async (req, res) => {
         const { tourId, bookingId } = req.params;
 
         // Lấy lại data (để security, không trust data gửi từ body vì GET / URL public)
-        const tourRes = await db.query('SELECT * FROM op_tours WHERE id = $1', [tourId]);
+        const tourRes = await db.query(`
+            SELECT td.*, tt.name as tour_name, tt.code as template_code
+            FROM tour_departures td
+            LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+            WHERE td.id = $1
+        `, [tourId]);
         if (tourRes.rows.length === 0) return res.status(404).send('Tour not found');
         const tour = tourRes.rows[0];
+        tour.tour_code = tour.code;
 
-        const bookingRes = await db.query('SELECT * FROM op_tour_bookings WHERE id = $1 AND tour_id = $2', [bookingId, tourId]);
+        const bookingRes = await db.query('SELECT b.*, c.name as customer_name, c.phone as customer_phone FROM bookings b LEFT JOIN customers c ON b.customer_id = c.id WHERE b.id = $1 AND b.tour_departure_id = $2', [bookingId, tourId]);
         if (bookingRes.rows.length === 0) return res.status(404).send('Booking not found');
         const booking = bookingRes.rows[0];
+        booking.name = booking.customer_name || '';
+        booking.phone = booking.customer_phone || '';
+        booking.total = booking.total_price;
 
         booking.raw_details = typeof booking.raw_details === 'string' ? JSON.parse(booking.raw_details) : (booking.raw_details || {});
         tour.tour_info = typeof tour.tour_info === 'string' ? JSON.parse(tour.tour_info) : (tour.tour_info || {});

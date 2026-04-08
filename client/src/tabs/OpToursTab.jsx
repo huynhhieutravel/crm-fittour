@@ -307,14 +307,14 @@ export default function OpToursTab({ currentUser }) {
 
   useEffect(() => {
     fetchTours();
-    axios.get('http://localhost:5001/api/airlines?limit=1000')
+    axios.get('/api/airlines?limit=1000')
       .then(res => setAirlinesList(res.data.data || []))
       .catch(console.error);
   }, []);
 
   const fetchTours = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/op-tours', {
+      const response = await axios.get('/api/op-tours', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setTours(response.data);
@@ -360,7 +360,7 @@ export default function OpToursTab({ currentUser }) {
   const handleDeleteTour = async (id) => {
     if (window.confirm('Bạn có chắc muốn xóa tour này?')) {
       try {
-        await axios.delete(`http://localhost:5001/api/op-tours/${id}`, {
+        await axios.delete(`/api/op-tours/${id}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         fetchTours();
@@ -839,7 +839,7 @@ export default function OpToursTab({ currentUser }) {
             setIsCustomerModalOpen(false);
             
             // Fetch single tour and update modal instantly
-            const tourRes = await axios.get(`http://localhost:5001/api/op-tours/${selectedBookingTour.id}`, {
+            const tourRes = await axios.get(`/api/op-tours/${selectedBookingTour.id}`, {
                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             setSelectedBookingTour(tourRes.data);

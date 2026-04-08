@@ -20,10 +20,10 @@ exports.createVoucher = async (req, res) => {
 
         // VALIDATION: Prevent Overcharging
         if (booking_id) {
-            const bookingCheck = await db.query('SELECT total, paid FROM op_tour_bookings WHERE id = $1', [booking_id]);
+            const bookingCheck = await db.query('SELECT total_price, paid FROM bookings WHERE id = $1', [booking_id]);
             if (bookingCheck.rows.length > 0) {
                 const b = bookingCheck.rows[0];
-                const remaining = Number(b.total) - Number(b.paid);
+                const remaining = Number(b.total_price) - Number(b.paid);
                 if (Number(amount) > remaining) {
                     return res.status(400).json({ message: `Số tiền thu (${Number(amount).toLocaleString('vi-VN')}đ) vượt quá số tiền còn nợ (${remaining.toLocaleString('vi-VN')}đ)!` });
                 }
@@ -63,26 +63,26 @@ exports.createVoucher = async (req, res) => {
         // Auto Update Booking mapping amount
         if (booking_id && amount > 0) {
             const upRes = await db.query(`
-                UPDATE op_tour_bookings 
+                UPDATE bookings 
                 SET paid = paid + $1 
                 WHERE id = $2
-                RETURNING total, paid, status
+                RETURNING total_price, paid, booking_status
             `, [amount, booking_id]);
 
             if (upRes.rows.length > 0) {
                 const bCheck = upRes.rows[0];
                 const newPaid = Number(bCheck.paid || 0);
-                const total = Number(bCheck.total || 0);
+                const total = Number(bCheck.total_price || 0);
                 
-                let autoStatus = bCheck.status;
+                let autoStatus = bCheck.booking_status;
                 if (newPaid >= total && total > 0) {
                     autoStatus = 'Đã thanh toán';
                 } else if (newPaid > 0 && newPaid < total) {
                     autoStatus = 'Đã đặt cọc';
                 }
 
-                if (autoStatus !== bCheck.status) {
-                    await db.query(`UPDATE op_tour_bookings SET status = $1 WHERE id = $2`, [autoStatus, booking_id]);
+                if (autoStatus !== bCheck.booking_status) {
+                    await db.query(`UPDATE bookings SET booking_status = $1 WHERE id = $2`, [autoStatus, booking_id]);
                 }
             }
         }
@@ -109,12 +109,13 @@ exports.getAllVouchers = async (req, res) => {
     try {
         const result = await db.query(`
             SELECT v.*, 
-                   t.tour_name, 
-                   t.tour_code,
-                   b.status as booking_status
+                   td.code as tour_code,
+                   tt.name as tour_name,
+                   b.booking_status
             FROM payment_vouchers v
-            LEFT JOIN op_tours t ON v.tour_id = t.id
-            LEFT JOIN op_tour_bookings b ON v.booking_id = b.id
+            LEFT JOIN tour_departures td ON v.tour_id = td.id
+            LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+            LEFT JOIN bookings b ON v.booking_id = b.id
             ORDER BY v.created_at DESC
             LIMIT 2000
         `);
@@ -142,29 +143,29 @@ exports.cancelVoucher = async (req, res) => {
             return res.status(400).json({ message: 'Phiếu thu này đã được hủy trước đó!' });
         }
 
-        // Proceed to rollback specific paid amount to op_tour_bookings
+        // Proceed to rollback specific paid amount to bookings
         if (voucher.booking_id && voucher.amount > 0) {
             const downRes = await db.query(`
-                UPDATE op_tour_bookings 
+                UPDATE bookings 
                 SET paid = GREATEST(0, paid - $1)
                 WHERE id = $2
-                RETURNING total, paid, status
+                RETURNING total_price, paid, booking_status
             `, [voucher.amount, voucher.booking_id]);
 
             if (downRes.rows.length > 0) {
                 const bCheck = downRes.rows[0];
                 const newPaid = Number(bCheck.paid || 0);
-                const total = Number(bCheck.total || 0);
+                const total = Number(bCheck.total_price || 0);
                 
-                let autoStatus = bCheck.status;
-                if (newPaid === 0 && (bCheck.status === 'Đã đặt cọc' || bCheck.status === 'Đã thanh toán')) {
+                let autoStatus = bCheck.booking_status;
+                if (newPaid === 0 && (bCheck.booking_status === 'Đã đặt cọc' || bCheck.booking_status === 'Đã thanh toán')) {
                     autoStatus = 'Giữ chỗ';
                 } else if (newPaid > 0 && newPaid < total) {
                     autoStatus = 'Đã đặt cọc';
                 }
 
-                if (autoStatus !== bCheck.status) {
-                    await db.query(`UPDATE op_tour_bookings SET status = $1 WHERE id = $2`, [autoStatus, voucher.booking_id]);
+                if (autoStatus !== bCheck.booking_status) {
+                    await db.query(`UPDATE bookings SET booking_status = $1 WHERE id = $2`, [autoStatus, voucher.booking_id]);
                 }
             }
         }
@@ -189,7 +190,7 @@ exports.deleteVoucher = async (req, res) => {
         // If not cancelled yet, we must rollback the paid amount before deleting
         if (voucher.status !== 'Đã hủy' && voucher.booking_id && voucher.amount > 0) {
             await db.query(`
-                UPDATE op_tour_bookings 
+                UPDATE bookings 
                 SET paid = paid - $1 
                 WHERE id = $2
             `, [voucher.amount, voucher.booking_id]);

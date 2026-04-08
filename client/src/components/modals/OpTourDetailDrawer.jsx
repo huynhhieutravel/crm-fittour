@@ -31,9 +31,9 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
     const fetchData = async () => {
         try {
             const [guidesRes, airlinesRes, templatesRes] = await Promise.all([
-                axios.get('http://localhost:5001/api/guides'),
-                axios.get('http://localhost:5001/api/airlines?limit=1000'),
-                axios.get('http://localhost:5001/api/tours', {
+                axios.get('/api/guides'),
+                axios.get('/api/airlines?limit=1000'),
+                axios.get('/api/tours', {
                   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 }).catch(() => ({ data: [] }))
             ]);
@@ -140,11 +140,11 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
       };
 
       if (tour?.id) {
-        await axios.put(`http://localhost:5001/api/op-tours/${tour.id}`, payload, {
+        await axios.put(`/api/op-tours/${tour.id}`, payload, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
       } else {
-        await axios.post('http://localhost:5001/api/op-tours', payload, {
+        await axios.post('/api/op-tours', payload, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
       }
