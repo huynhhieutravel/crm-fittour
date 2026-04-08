@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Plus, Trash2, Edit3 } from 'lucide-react';
+import { Search, Plus, Trash2, Edit3, Eye } from 'lucide-react';
 
 const ToursTab = ({ 
   tourTemplates, 
@@ -173,6 +173,13 @@ const ToursTab = ({
                 </td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', paddingRight: '1rem' }}>
+                    <button 
+                      className="icon-btn-square primary" 
+                      title="Xem biểu đồ và Lịch khởi hành" 
+                      onClick={() => setEditingTemplate({...template, _openTab: 'departures'})}
+                    >
+                      <Eye size={14} />
+                    </button>
                     <button 
                       className="icon-btn-square" 
                       title="Sửa sản phẩm" 

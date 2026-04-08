@@ -43,7 +43,7 @@ exports.getAllReminders = async (req, res) => {
                    tt.name as tour_name,
                    td.start_date as tour_start_date,
                    td.code as tour_code,
-                   (SELECT COUNT(*) FROM bookings WHERE tour_departure_id = td.id AND booking_status IN ('confirmed', 'Thành công')) as total_pax
+                   (SELECT COUNT(*) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ')) as total_pax
             FROM departure_reminders br
             JOIN tour_departures td ON br.tour_departure_id = td.id
             JOIN tour_templates tt ON td.tour_template_id = tt.id

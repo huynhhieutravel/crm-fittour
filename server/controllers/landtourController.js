@@ -94,13 +94,13 @@ exports.getDetails = async (req, res) => {
 exports.create = async (req, res) => {
     const client = await db.pool.connect();
     try {
-        const { code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating, contacts, services } = req.body;
+        const { code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link, contacts, services } = req.body;
 
         await client.query('BEGIN');
 
         const result = await client.query(
-            `INSERT INTO landtours (code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`,
-            [code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating || 0]
+            `INSERT INTO landtours (code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
+            [code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
         );
         const newId = result.rows[0].id;
 
@@ -155,7 +155,7 @@ exports.update = async (req, res) => {
     try {
         const { id } = req.params;
         const { 
-            code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating,
+            code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link,
             contacts, services,
             deleted_contact_ids, deleted_service_ids
         } = req.body;
@@ -163,8 +163,8 @@ exports.update = async (req, res) => {
         await client.query('BEGIN');
 
         const result = await client.query(
-            `UPDATE landtours SET code=$1, name=$2, tax_id=$3, landtour_class=$4, phone=$5, email=$6, country=$7, province=$8, address=$9, notes=$10, website=$11, bank_account_name=$12, bank_account_number=$13, bank_name=$14, market=$15, rating=$16, updated_at=CURRENT_TIMESTAMP WHERE id=$17 RETURNING *`,
-            [code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, id]
+            `UPDATE landtours SET code=$1, name=$2, tax_id=$3, landtour_class=$4, phone=$5, email=$6, country=$7, province=$8, address=$9, notes=$10, website=$11, bank_account_name=$12, bank_account_number=$13, bank_name=$14, market=$15, rating=$16, drive_link=$17, updated_at=CURRENT_TIMESTAMP WHERE id=$18 RETURNING *`,
+            [code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null, id]
         );
 
         if (deleted_contact_ids && deleted_contact_ids.length > 0) {
@@ -274,7 +274,7 @@ exports.createContact = async (req, res) => {
         const { landtour_id } = req.params;
         const { name, position, phone, email } = req.body;
         const result = await db.query(
-            'INSERT INTO landtour_contacts (landtour_id, name, position, phone, email) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            'INSERT INTO landtour_contacts (landtour_id, name, position, phone, email) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
             [landtour_id, name, position, phone, email]
         );
         res.status(201).json(result.rows[0]);
@@ -288,7 +288,7 @@ exports.updateContact = async (req, res) => {
         const { contact_id } = req.params;
         const { name, position, phone, email } = req.body;
         const result = await db.query(
-            'UPDATE landtour_contacts SET name=$1, position=$2, phone=$3, email=$4 WHERE id=$5 RETURNING *',
+            'UPDATE landtour_contacts SET name=$1, position=$2, phone=$3, email=$4 WHERE id=$6 RETURNING *',
             [name, position, phone, email, contact_id]
         );
         res.json(result.rows[0]);
@@ -313,7 +313,7 @@ exports.createService = async (req, res) => {
         const { landtour_id } = req.params;
         const { sku, service_type, name, description, notes, capacity, cost_price, net_price, sale_price } = req.body;
         const result = await db.query(
-            'INSERT INTO landtour_services (landtour_id, sku, service_type, name, description, notes, capacity, cost_price, net_price, sale_price) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+            'INSERT INTO landtour_services (landtour_id, sku, service_type, name, description, notes, capacity, cost_price, net_price, sale_price) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
             [landtour_id, sku || null, service_type || null, name || null, description || null, notes || null, capacity || null, cost_price || null, net_price || null, sale_price || null]
         );
         res.status(201).json(result.rows[0]);
@@ -327,7 +327,7 @@ exports.updateService = async (req, res) => {
         const { service_id } = req.params;
         const { sku, service_type, name, description, notes, capacity, cost_price, net_price, sale_price } = req.body;
         const result = await db.query(
-            'UPDATE landtour_services SET sku=$1, service_type=$2, name=$3, description=$4, notes=$5, capacity=$6, cost_price=$7, net_price=$8, sale_price=$9 WHERE id=$10 RETURNING *',
+            'UPDATE landtour_services SET sku=$1, service_type=$2, name=$3, description=$4, notes=$5, capacity=$6, cost_price=$7, net_price=$8, sale_price=$9 WHERE id=$11 RETURNING *',
             [sku || null, service_type || null, name || null, description || null, notes || null, capacity || null, cost_price || null, net_price || null, sale_price || null, service_id]
         );
         res.json(result.rows[0]);
@@ -352,7 +352,7 @@ exports.createContract = async (req, res) => {
         const { landtour_id } = req.params;
         const { name, valid_from, valid_to, notes } = req.body;
         const result = await db.query(
-            'INSERT INTO landtour_contracts (landtour_id, name, valid_from, valid_to, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            'INSERT INTO landtour_contracts (landtour_id, name, valid_from, valid_to, notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
             [landtour_id, name, valid_from || null, valid_to || null, notes]
         );
         res.status(201).json(result.rows[0]);
@@ -366,7 +366,7 @@ exports.updateContract = async (req, res) => {
         const { contract_id } = req.params;
         const { name, valid_from, valid_to, notes } = req.body;
         const result = await db.query(
-            'UPDATE landtour_contracts SET name=$1, valid_from=$2, valid_to=$3, notes=$4 WHERE id=$5 RETURNING *',
+            'UPDATE landtour_contracts SET name=$1, valid_from=$2, valid_to=$3, notes=$4 WHERE id=$6 RETURNING *',
             [name, valid_from || null, valid_to || null, notes, contract_id]
         );
         res.json(result.rows[0]);
@@ -391,7 +391,7 @@ exports.createContractRate = async (req, res) => {
         const { contract_id } = req.params;
         const { service_id } = req.body;
         const result = await db.query(
-            `INSERT INTO landtour_contract_rates (contract_id, service_id) VALUES ($1, $2) RETURNING *`,
+            `INSERT INTO landtour_contract_rates (contract_id, service_id) VALUES ($1, $2, $3) RETURNING *`,
             [contract_id, service_id]
         );
         res.status(201).json(result.rows[0]);
@@ -405,7 +405,7 @@ exports.updateContractRate = async (req, res) => {
         const { rate_id } = req.params;
         const { service_id } = req.body;
         const result = await db.query(
-            `UPDATE landtour_contract_rates SET service_id=$1 WHERE id=$2 RETURNING *`,
+            `UPDATE landtour_contract_rates SET service_id=$1 WHERE id=$3 RETURNING *`,
             [service_id, rate_id]
         );
         res.json(result.rows[0]);
@@ -443,7 +443,7 @@ exports.addNote = async (req, res) => {
     const user_id = req.user.id;
     try {
         const result = await db.query(
-            'INSERT INTO landtour_notes (landtour_id, content, user_id) VALUES ($1, $2, $3) RETURNING *',
+            'INSERT INTO landtour_notes (landtour_id, content, user_id) VALUES ($1, $2, $3, $4) RETURNING *',
             [landtour_id, content, user_id]
         );
         res.status(201).json(result.rows[0]);

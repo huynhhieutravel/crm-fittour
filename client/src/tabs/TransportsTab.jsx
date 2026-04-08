@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Plus, MapPin, Truck, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle , Star} from 'lucide-react';
+import { Search, Plus, MapPin, Truck, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle , Star, ExternalLink } from 'lucide-react';
 import Select from 'react-select';
 import TransportDetailDrawer from '../components/modals/TransportDetailDrawer';
 import { MARKET_OPTIONS } from '../constants/markets';
@@ -195,7 +195,7 @@ export default function TransportsTab({ currentUser, addToast, handleDeleteTrans
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '120px' }}>MÃ NCC</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left' }}>TÊN NHÀ XE</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '160px' }}>LOẠI HÌNH</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '180px' }}>KHU VỰC</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '100px' }}>DRIVE</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '180px' }}>PHONE / EMAIL</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '150px' }}>THỊ TRƯỜNG</th>
                             <th style={{ padding: '16px 20px', textAlign: 'center', width: '120px' }}>ĐÁNH GIÁ</th>
@@ -233,11 +233,14 @@ export default function TransportsTab({ currentUser, addToast, handleDeleteTrans
                                              h.transport_class === 'limousine' ? 'Limousine' :  'Khác'}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#475569' }}>
-                                            <MapPin size={14} color="#94a3b8" />
-                                            {h.province || '-'}
-                                        </div>
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
+                                        {h.drive_link ? (
+                                            <a href={h.drive_link} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', background: '#2563eb', color: 'white', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, textDecoration: 'none', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#1d4ed8'} onMouseOut={e=>e.currentTarget.style.background='#2563eb'}>
+                                                <ExternalLink size={13} /> Mở
+                                            </a>
+                                        ) : (
+                                            <span style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>—</span>
+                                        )}
                                     </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
                                         <div style={{ fontSize: '0.85rem' }}>

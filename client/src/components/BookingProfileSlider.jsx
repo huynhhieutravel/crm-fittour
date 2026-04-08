@@ -144,12 +144,10 @@ const BookingProfileSlider = ({ bookingId, onClose }) => {
                     borderRadius: '999px', 
                     fontSize: '0.75rem', 
                     fontWeight: 800, 
-                    backgroundColor: booking.booking_status === 'confirmed' ? '#e0f2fe' : booking.booking_status === 'completed' ? '#dcfce7' : booking.booking_status === 'cancelled' ? '#fee2e2' : '#fef3c7',
-                    color: booking.booking_status === 'confirmed' ? '#0369a1' : booking.booking_status === 'completed' ? '#15803d' : booking.booking_status === 'cancelled' ? '#b91c1c' : '#b45309',
+                    backgroundColor: booking.booking_status === 'Giữ chỗ' ? '#e0f2fe' : booking.booking_status === 'Hoàn thành' ? '#dcfce7' : booking.booking_status === 'Huỷ' ? '#fee2e2' : booking.booking_status === 'Đã thanh toán' ? '#d1fae5' : booking.booking_status === 'Đã đặt cọc' ? '#fef3c7' : '#f1f5f9',
+                    color: booking.booking_status === 'Giữ chỗ' ? '#0369a1' : booking.booking_status === 'Hoàn thành' ? '#15803d' : booking.booking_status === 'Huỷ' ? '#b91c1c' : booking.booking_status === 'Đã thanh toán' ? '#065f46' : booking.booking_status === 'Đã đặt cọc' ? '#b45309' : '#475569',
                   }}>
-                    {booking.booking_status === 'pending' ? 'Chờ xác nhận' : 
-                     booking.booking_status === 'confirmed' ? 'Đã xác nhận' :
-                     booking.booking_status === 'completed' ? 'Hoàn thành' : 'Đã huỷ'}
+                    {booking.booking_status}
                   </span>
                   {booking.payment_status === 'paid' && (
                     <span style={{ padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 800, backgroundColor: '#dcfce7', color: '#166534', display: 'flex', alignItems: 'center', gap: '4px' }}>

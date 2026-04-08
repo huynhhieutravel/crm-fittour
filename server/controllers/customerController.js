@@ -19,7 +19,7 @@ exports.checkPhoneExists = async (req, res) => {
         const stripped = phone.replace(/[\s\-\.]/g, '');
         const result = await db.query(`
             SELECT id, name, customer_segment, past_trip_count,
-            COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status = 'confirmed'), 0) as crm_trip_count
+            COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as crm_trip_count
             FROM customers 
             WHERE REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', '') = $1
                OR REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', '') = $2
@@ -39,16 +39,30 @@ exports.checkPhoneExists = async (req, res) => {
 
 exports.getAllCustomers = async (req, res) => {
     try {
-        const result = await db.query(`
+        const { search } = req.query;
+        let queryStr = `
             SELECT c.*, 
-                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0) as total_spent,
-                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0) as crm_trip_count,
+                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as total_spent,
+                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as crm_trip_count,
                    (SELECT content FROM lead_notes WHERE customer_id = c.id ORDER BY created_at DESC LIMIT 1) as latest_note,
                    l.source as lead_source
             FROM customers c
             LEFT JOIN leads l ON c.lead_id = l.id
-            ORDER BY c.created_at DESC, c.id DESC
-        `);
+        `;
+        let queryParams = [];
+
+        if (search) {
+            queryStr += ` WHERE c.name ILIKE $1 OR c.phone ILIKE $1 `;
+            queryParams.push(`%${search}%`);
+        }
+
+        queryStr += ` ORDER BY c.created_at DESC, c.id DESC `;
+        
+        if (search) {
+            queryStr += ` LIMIT 30`;
+        }
+
+        const result = await db.query(queryStr, queryParams);
         
         const currentYear = new Date().getFullYear();
         const now = new Date();
@@ -169,8 +183,8 @@ exports.getCustomerById = async (req, res) => {
     try {
         const result = await db.query(`
             SELECT c.*, 
-                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0)::numeric as total_spent,
-                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed'), 0) as crm_trip_count
+                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0)::numeric as total_spent,
+                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as crm_trip_count
             FROM customers c WHERE c.id = $1
         `, [req.params.id]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy khách hàng' });

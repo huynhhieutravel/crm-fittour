@@ -109,7 +109,7 @@ exports.createHotel = async (req, res) => {
         const { 
             code, name, tax_id, build_year, phone, email, country, province, 
             address, notes, star_rate, website, hotel_class, project_name, 
-            bank_account_name, bank_account_number, bank_name, market, rating,
+            bank_account_name, bank_account_number, bank_name, market, rating, drive_link,
             contacts, services, allotments
         } = req.body;
 
@@ -119,9 +119,9 @@ exports.createHotel = async (req, res) => {
             `INSERT INTO hotels (
                 code, name, tax_id, build_year, phone, email, country, province, 
                 address, notes, star_rate, website, hotel_class, project_name, 
-                bank_account_name, bank_account_number, bank_name, market, rating
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *`,
-            [code, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market, rating || 0]
+                bank_account_name, bank_account_number, bank_name, market, rating, drive_link
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING *`,
+            [code, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
         );
         const newHotelId = result.rows[0].id;
 
@@ -242,9 +242,9 @@ exports.updateHotel = async (req, res) => {
             `UPDATE hotels SET 
                 code=$1, name=$2, tax_id=$3, build_year=$4, phone=$5, email=$6, country=$7, province=$8, 
                 address=$9, notes=$10, star_rate=$11, website=$12, hotel_class=$13, project_name=$14, 
-                bank_account_name=$15, bank_account_number=$16, bank_name=$17, market=$18, rating=$19, updated_at=CURRENT_TIMESTAMP
-            WHERE id=$20 RETURNING *`,
-            [code, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market, rating || 0, id]
+                bank_account_name=$15, bank_account_number=$16, bank_name=$17, market=$18, rating=$19, drive_link=$20, updated_at=CURRENT_TIMESTAMP
+            WHERE id=$21 RETURNING *`,
+            [code, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null, id]
         );
 
         // --- XÓA CÁC ĐỐI TƯỢNG BỊ LOẠI BỎ (DELETE) ---
@@ -550,7 +550,7 @@ exports.createContractRate = async (req, res) => {
         const result = await db.query(
             `INSERT INTO hotel_contract_rates 
              (contract_id, room_type_id, start_date, end_date, day_type, currency, contract_price, net_price, sell_price, description, notes) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
             [contract_id, room_type_id, start_date, end_date, day_type || 'All', currency || 'VND', contract_price, net_price, sell_price, description, notes]
         );
         res.status(201).json(result.rows[0]);
@@ -594,7 +594,7 @@ exports.createAllotment = async (req, res) => {
         const result = await db.query(
             `INSERT INTO hotel_allotments 
              (hotel_id, room_type_id, start_date, end_date, day_type, allotment_count, cut_off_days, currency, net_price, sell_price, description, notes) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
             [hotel_id, room_type_id, start_date, end_date, day_type || 'All', allotment_count || 0, cut_off_days || 0, currency || 'VND', net_price, sell_price, description, notes]
         );
         res.status(201).json(result.rows[0]);

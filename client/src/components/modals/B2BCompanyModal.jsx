@@ -266,21 +266,22 @@ const B2BCompanyModal = ({ company, onClose, onUpdateSuccess, users = [] }) => {
                 <label>NGÀY THÀNH LẬP</label>
                 <input className="modal-input" type="date" value={formData.founded_date} onChange={e => setFormData({...formData, founded_date: e.target.value})} />
               </div>
+
+              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
+                <label>NHÂN VIÊN CHĂM SÓC</label>
+                <select className="modal-select" value={formData.assigned_to || ''} onChange={e => setFormData({...formData, assigned_to: e.target.value})}>
+                  <option value="">-- Chọn nhân viên --</option>
+                  {users.filter(u => u.is_active !== false && ['group_manager', 'group_staff'].includes(u.role_name)).map(u => (
+                    <option key={u.id} value={u.id}>{u.full_name || u.username} ({u.role_name})</option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 
           {activeTab === 'insight' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="modal-form-group">
-                  <label>NHÂN VIÊN CHĂM SÓC</label>
-                  <select className="modal-select" value={formData.assigned_to || ''} onChange={e => setFormData({...formData, assigned_to: e.target.value})}>
-                    <option value="">-- Chọn nhân viên --</option>
-                    {users.filter(u => u.is_active !== false).map(u => (
-                      <option key={u.id} value={u.id}>{u.username} ({u.role_name})</option>
-                    ))}
-                  </select>
-                </div>
                 <div className="modal-form-group">
                   <label>NGÀY CHỐT ĐƠN ĐẦU / KHỞI HÀNH LẦN ĐẦU</label>
                   <input className="modal-input" type="date" value={formData.first_deal_date} onChange={e => setFormData({...formData, first_deal_date: e.target.value})} />

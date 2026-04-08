@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import StarRating from '../common/StarRating';
 import axios from 'axios';
-import { X, Save, Plus, Trash2, Plane, ShoppingBag, Users, FileText, Send, Clock, PlusCircle } from 'lucide-react';
+import { X, Save, Plus, Trash2, Plane, ShoppingBag, Users, FileText, Send, Clock, PlusCircle , ExternalLink, Link2 } from 'lucide-react';
 import Select from 'react-select';
 import { MARKET_OPTIONS } from '../../constants/markets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
@@ -13,7 +13,7 @@ export default function AirlineDetailDrawer({ airline, onClose, refreshList, cur
     const [formData, setFormData] = useState({
         code: '', name: '', tax_id: '', phone: '', email: '',
         country: '', province: '', address: '', notes: '', airline_class: '',
-        website: '', market: '',
+        website: '', market: '', drive_link: '', logo_url: '',
         bank_account_name: '', bank_account_number: '', bank_name: '', rating: ''
     });
 
@@ -60,7 +60,7 @@ export default function AirlineDetailDrawer({ airline, onClose, refreshList, cur
                 country: airline.country || '', province: airline.province || '', address: airline.address || '',
                 notes: airline.notes || '', airline_class: airline.airline_class || '', 
                 website: airline.website || '',
-                market: airline.market || '',
+                market: airline.market || '', drive_link: airline.drive_link || '', logo_url: airline.logo_url || '',
                 bank_account_name: airline.bank_account_name || '', 
                 bank_account_number: airline.bank_account_number || '', 
                 bank_name: airline.bank_name || ''
@@ -226,14 +226,20 @@ export default function AirlineDetailDrawer({ airline, onClose, refreshList, cur
                                         <label style={labelStyle}>Thị trường MICE/Inbound</label>
                                         <Select 
                                             options={MARKET_OPTIONS}
-                                            value={formData.market ? { label: formData.market, value: formData.market } : null}
-                                            onChange={option => setFormData({...formData, market: option ? option.value : ''})}
+                                            value={formData.market ? formData.market.split(', ').map(m => ({ label: m, value: m })) : []}
+                                            onChange={options => setFormData({...formData, market: options ? options.map(o => o.value).join(', ') : ''})}
                                             styles={reactSelectStyles}
                                             isClearable
+                                            isMulti
                                             isDisabled={isViewOnly}
-                                            placeholder="🔍 Gõ để tìm hoặc chọn..."
+                                            placeholder="🔍 Gõ để tìm hoặc chọn nhiều..."
                                             noOptionsMessage={() => "Không tìm thấy thị trường"}
                                         />
+                                    </div>
+                                    <div>
+                                        <label style={labelStyle}>Tên File HOẶC Link Logo Hãng</label>
+                                        <input type="text" style={drawerInputStyle} value={formData.logo_url || ''} onChange={e => setFormData({...formData, logo_url: e.target.value})} disabled={isViewOnly} placeholder="VD: vn-air.jpg HOẶC https://..." />
+                                        <small style={{ display: 'block', marginTop: '4px', color: '#94a3b8', fontSize: '0.75rem' }}>* Mẹo: Có thể copy "địa chỉ hình ảnh" từ Google dán trực tiếp vào đây.</small>
                                     </div>
                                     <div>
                                         <label style={labelStyle}>MẠNG ĐƯỜNG BAY</label>
@@ -249,6 +255,20 @@ export default function AirlineDetailDrawer({ airline, onClose, refreshList, cur
                                             <input type="text" style={drawerInputStyle} value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} disabled={isViewOnly} placeholder="Quốc gia" />
                                             <input type="text" style={drawerInputStyle} value={formData.province} onChange={e => setFormData({...formData, province: e.target.value})} disabled={isViewOnly} placeholder="Tỉnh / Thành phố" />
                                             <input type="text" style={drawerInputStyle} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} disabled={isViewOnly} placeholder="Số nhà, Đường..." />
+                                        </div>
+                                    </div>
+                                    
+                                    <div style={{ gridColumn: 'span 2', background: '#eff6ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+                                        <label style={{ ...labelStyle, color: '#2563eb', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Link2 size={16} /> Link Drive Dữ Liệu NCC
+                                        </label>
+                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                            <input type="url" style={{ ...drawerInputStyle, flex: 1, borderColor: '#93c5fd', background: 'white' }} value={formData.drive_link} onChange={e => setFormData({...formData, drive_link: e.target.value})} disabled={isViewOnly} placeholder="https://drive.google.com/..." />
+                                            {formData.drive_link && (
+                                                <a href={formData.drive_link} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '8px 12px', background: '#2563eb', color: 'white', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                                                    <ExternalLink size={14} /> Mở Drive
+                                                </a>
+                                            )}
                                         </div>
                                     </div>
                                     <div style={{ gridColumn: 'span 1' }}>

@@ -26,7 +26,7 @@ const generateReminders = async () => {
             UPDATE departure_reminders 
             SET status = 'CANCELLED' 
             WHERE status = 'PENDING' 
-              AND tour_departure_id IN (SELECT id FROM tour_departures WHERE status = 'Cancelled');
+              AND tour_departure_id IN (SELECT id FROM tour_departures WHERE status = 'Huỷ');
         `);
 
         // 2. Chạy quét sinh nhắc nhở
@@ -41,7 +41,7 @@ const generateReminders = async () => {
                 FROM tour_departures td
                 WHERE td.start_date IS NOT NULL
                   AND td.end_date IS NOT NULL
-                  AND td.status != 'Cancelled'
+                  AND td.status != 'Huỷ'
                   AND ${q.condition} <= CURRENT_DATE
                 ON CONFLICT (tour_departure_id, type) 
                 DO UPDATE SET 

@@ -12,15 +12,15 @@ exports.getAllBUs = async (req, res) => {
 
 exports.updateBU = async (req, res) => {
     const { id } = req.params;
-    const { label, countries, description, is_active, sort_order } = req.body;
+    const { label, countries, description, is_active, sort_order, keywords } = req.body;
     
     console.log(`[BU_DEBUG] UPDATE REQUEST - ID: ${id}`);
     console.log(`[BU_DEBUG] Payload:`, { label, countries, description, is_active, sort_order });
     
     try {
         const result = await db.query(
-            'UPDATE business_units SET label = $1, countries = $2, description = $3, is_active = $4, sort_order = $5, updated_at = NOW() WHERE id = $6 RETURNING *',
-            [label, countries, description, is_active, sort_order, id]
+            'UPDATE business_units SET label = $1, countries = $2, description = $3, is_active = $4, sort_order = $5, keywords = $6, updated_at = NOW() WHERE id = $7 RETURNING *',
+            [label, countries, description, is_active, sort_order, keywords || [], id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Không tìm thấy BU' });
@@ -60,14 +60,14 @@ exports.reorderBUs = async (req, res) => {
 };
 
 exports.createBU = async (req, res) => {
-    const { id, label, countries, description } = req.body;
+    const { id, label, countries, description, keywords } = req.body;
     try {
         const maxOrderResult = await db.query('SELECT MAX(sort_order) as max_order FROM business_units');
         const nextOrder = (maxOrderResult.rows[0].max_order || 0) + 1;
 
         const result = await db.query(
-            'INSERT INTO business_units (id, label, countries, description, is_active, sort_order, created_at, updated_at) VALUES ($1, $2, $3, $4, TRUE, $5, NOW(), NOW()) RETURNING *',
-            [id, label, countries, description, nextOrder]
+            'INSERT INTO business_units (id, label, countries, description, keywords, is_active, sort_order, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, TRUE, $6, NOW(), NOW()) RETURNING *',
+            [id, label, countries, description, keywords || [], nextOrder]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {

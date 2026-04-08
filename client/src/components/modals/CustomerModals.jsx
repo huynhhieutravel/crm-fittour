@@ -542,9 +542,7 @@ export const EditCustomerModal = ({
                               fontWeight: 800,
                               textTransform: 'uppercase'
                             }}>
-                              {booking.booking_status === 'confirmed' ? 'Đã xác nhận' : 
-                               booking.booking_status === 'pending' ? 'Chờ thanh toán' : 
-                               booking.booking_status === 'cancelled' ? 'Đã hủy' : booking.booking_status}
+                              {booking.booking_status}
                             </span>
                           </div>
                         </div>

@@ -18,6 +18,10 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
+// Serve static files for media uploads
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
 // Request Logging Middleware
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
@@ -41,6 +45,7 @@ const activityRoutes = require('./routes/activity');
 const buRoutes = require('./routes/buRoutes');
 const catalogRoutes = require('./routes/catalog');
 const costingRoutes = require('./routes/costings');
+const publicContractsRoutes = require('./routes/publicContracts');
 const reminderRoutes = require('./routes/reminderRoutes');
 const hotelRoutes = require('./routes/hotels');
 const restaurantRoutes = require('./routes/restaurants');
@@ -49,6 +54,7 @@ const ticketRoutes = require('./routes/tickets');
 const airlineRoutes = require('./routes/airlines');
 const landtourRoutes = require('./routes/landtours');
 const insuranceRoutes = require('./routes/insurances');
+const mediaRoutes = require('./routes/media');
 
 // ═══ Tour Đoàn (Group) Routes ═══
 const b2bCompaniesRoutes = require('./routes/b2bCompanies');
@@ -58,6 +64,8 @@ const groupProjectsRoutes = require('./routes/groupProjects');
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/tours', tourRoutes);
+app.use('/api/public/contracts', publicContractsRoutes);
+app.use('/api/vouchers', require('./routes/vouchers'));
 app.use('/api/departures', departureRoutes);
 app.use('/api/guides', guideRoutes);
 app.use('/api/leads', leadRoutes);
@@ -77,6 +85,7 @@ app.use('/api/tickets', ticketRoutes);
 app.use('/api/airlines', airlineRoutes);
 app.use('/api/landtours', landtourRoutes);
 app.use('/api/insurances', insuranceRoutes);
+app.use('/api/media', mediaRoutes);
 
 // ═══ Tour Đoàn (Group) NCC API ═══
 const opToursRoutes = require('./routes/opTours');
@@ -91,6 +100,9 @@ app.use('/api/op-tours', opToursRoutes);
 const dashboardRoutes = require('./routes/dashboard');
 
 app.use('/api/dashboard', dashboardRoutes);
+
+const licenseRoutes = require('./routes/licenses');
+app.use('/api/licenses', licenseRoutes);
 
 app.get('/', (req, res) => {
     res.send('FIT Tour CRM API is running...');
@@ -128,4 +140,8 @@ server.listen(PORT, () => {
     // Start Tour Care Reminder Cron Engine
     const { startCronJobs } = require('./cron/reminderEngine');
     startCronJobs();
+
+    // Start Auto-delete Media Cron Engine (60 days)
+    const { startMediaCleanupCron } = require('./cron/mediaCleanup');
+    startMediaCleanupCron();
 });

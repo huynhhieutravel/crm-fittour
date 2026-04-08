@@ -161,11 +161,12 @@ const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEdit
 
   const formatStatus = (st) => {
     switch(st) {
-       case 'Open': return { label: '🟢 Mở bán', color: '#16a34a' };
-       case 'Guaranteed': return { label: '🔵 Chắc chắn đi', color: '#2563eb' };
-       case 'Full': return { label: '🟠 Đã đầy', color: '#ea580c' };
-       case 'Cancelled': return { label: '🔴 Hủy tour', color: '#dc2626' };
-       default: return { label: '🟢 Mở bán', color: '#16a34a' };
+       case 'Mở bán': return { label: '🟢 Mở bán', color: '#16a34a' };
+       case 'Chắc chắn đi': return { label: '🔵 Chắc chắn đi', color: '#2563eb' };
+       case 'Đã đầy': return { label: '🟠 Đã đầy', color: '#ea580c' };
+       case 'Hoàn thành': return { label: '✅ Hoàn thành', color: '#475569' };
+       case 'Huỷ': return { label: '🔴 Huỷ', color: '#dc2626' };
+       default: return { label: st || '🟢 Mở bán', color: '#16a34a' };
     }
   };
 

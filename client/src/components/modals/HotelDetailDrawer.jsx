@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import StarRating from '../common/StarRating';
 import axios from 'axios';
-import { X, Save, Plus, Trash2, Building, BedDouble, CalendarDays, Users, FileText, Send, Clock, PlusCircle } from 'lucide-react';
+import { X, Save, Plus, Trash2, Building, BedDouble, CalendarDays, Users, FileText, Send, Clock, PlusCircle, ExternalLink, Link2 } from 'lucide-react';
 import Select from 'react-select';
 import { MARKET_OPTIONS } from '../../constants/markets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
@@ -13,7 +13,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
     const [formData, setFormData] = useState({
         code: '', name: '', tax_id: '', build_year: '', phone: '', email: '',
         country: '', province: '', address: '', notes: '', star_rate: '',
-        website: '', hotel_class: '', project_name: '', market: '',
+        website: '', hotel_class: '', project_name: '', market: '', drive_link: '',
         bank_account_name: '', bank_account_number: '', bank_name: '', rating: ''
     });
 
@@ -65,7 +65,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                 phone: hotel.phone || '', email: hotel.email || '',
                 country: hotel.country || '', province: hotel.province || '', address: hotel.address || '',
                 notes: hotel.notes || '', star_rate: hotel.star_rate || '', website: hotel.website || '',
-                market: hotel.market || '', rating: hotel.rating || ''
+                market: hotel.market || '', drive_link: hotel.drive_link || '', rating: hotel.rating || ''
             });
 
             setContacts(hotel.contacts || []);
@@ -313,6 +313,19 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                             <input type="text" style={drawerInputStyle} value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} disabled={isViewOnly} placeholder="Quốc gia" />
                                             <input type="text" style={drawerInputStyle} value={formData.province} onChange={e => setFormData({...formData, province: e.target.value})} disabled={isViewOnly} placeholder="Tỉnh / Ban" />
                                             <input type="text" style={drawerInputStyle} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} disabled={isViewOnly} placeholder="Số nhà, Đường..." />
+                                        </div>
+                                    </div>
+                                    <div style={{ gridColumn: 'span 2', background: '#eff6ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+                                        <label style={{ fontSize: '0.85rem', color: '#2563eb', fontWeight: 600, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px', textTransform: 'uppercase' }}>
+                                            <Link2 size={16} /> Link Drive Dữ Liệu NCC
+                                        </label>
+                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                            <input type="url" style={{ ...drawerInputStyle, flex: 1, borderColor: '#93c5fd', background: 'white' }} value={formData.drive_link} onChange={e => setFormData({...formData, drive_link: e.target.value})} disabled={isViewOnly} placeholder="https://drive.google.com/..." />
+                                            {formData.drive_link && (
+                                                <a href={formData.drive_link} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '8px 12px', background: '#2563eb', color: 'white', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                                                    <ExternalLink size={14} /> Mở Drive
+                                                </a>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="form-group" style={{ gridColumn: 'span 1' }}>

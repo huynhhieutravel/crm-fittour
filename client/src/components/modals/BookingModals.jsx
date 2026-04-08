@@ -15,7 +15,7 @@ export const AddBookingModal = ({
     tour_departure_id: '',
     notes: '',
     payment_status: 'unpaid',
-    booking_status: 'pending',
+    booking_status: 'Mới',
     discount: 0,
     initial_deposit_amount: '',
     initial_deposit_method: 'CASH',
@@ -48,7 +48,7 @@ export const AddBookingModal = ({
           tour_departure_id: bookingToEdit.tour_departure_id || '',
           notes: bookingToEdit.notes || '',
           payment_status: bookingToEdit.payment_status || 'unpaid',
-          booking_status: bookingToEdit.booking_status || 'pending',
+          booking_status: bookingToEdit.booking_status || 'Mới',
           discount: Number(bookingToEdit.discount) || 0,
           initial_deposit_amount: '',
           initial_deposit_method: 'CASH',
@@ -62,7 +62,7 @@ export const AddBookingModal = ({
         setNewCustomerInfo({ name: '', phone: '' });
       } else {
         setFormData({
-          customer_id: '', tour_departure_id: '', notes: '', payment_status: 'unpaid', booking_status: 'pending',
+          customer_id: '', tour_departure_id: '', notes: '', payment_status: 'unpaid', booking_status: 'Mới',
           discount: 0, initial_deposit_amount: '', initial_deposit_method: 'CASH', initial_deposit_date: new Date().toISOString().slice(0, 10)
         });
         setPaxDetails([]);
@@ -437,10 +437,12 @@ export const AddBookingModal = ({
             <div className="modal-form-group">
               <label>TRẠNG THÁI ĐƠN</label>
               <select className="modal-select" value={formData.booking_status} onChange={e => setFormData({...formData, booking_status: e.target.value})}>
-                <option value="pending">Chờ xác nhận (Pending)</option>
-                <option value="processing">Đang xử lý (Processing)</option>
-                <option value="confirmed">Thành công (Confirmed)</option>
-                <option value="cancelled">Đã Hủy (Cancelled)</option>
+                <option value="Mới">Mới</option>
+                <option value="Giữ chỗ">Giữ chỗ</option>
+                <option value="Đã đặt cọc">Đã đặt cọc</option>
+                <option value="Đã thanh toán">Đã thanh toán</option>
+                <option value="Hoàn thành">Hoàn thành</option>
+                <option value="Huỷ">Huỷ</option>
               </select>
             </div>
           </div>

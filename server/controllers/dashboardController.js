@@ -46,7 +46,7 @@ exports.getOverviewStats = async (req, res) => {
             SELECT COUNT(*) as active_departures
             FROM tour_departures
             WHERE start_date >= CURRENT_DATE 
-            AND status != 'Cancelled'
+            AND status != 'Huỷ'
         `;
         const depsRes = await pool.query(depsQuery);
         const depsData = depsRes.rows[0];

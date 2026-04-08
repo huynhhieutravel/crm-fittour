@@ -18,7 +18,7 @@ router.get('/conversations', auth, async (req, res) => {
 
         if (search) {
             queryArgs.push(`%${search}%`);
-            whereClause = `WHERE l.name ILIKE $1 OR c.last_message ILIKE $1`;
+            whereClause = `WHERE l.name ILIKE $1 OR c.last_message ILIKE $1 OR c.external_id ILIKE $1`;
         }
 
         // Đếm tổng số lượng

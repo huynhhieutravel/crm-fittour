@@ -121,7 +121,7 @@ exports.createBooking = async (req, res) => {
             [
               finalCode, customer_id, tour_id || null, tour_departure_id || null, 
               start_date || null, pax_count || 0, total_price || 0, payment_status || 'unpaid', 
-              booking_status || 'pending', notes || null, 
+              booking_status || 'Mới', notes || null, 
               typeof pax_details === 'object' ? JSON.stringify(pax_details) : (pax_details || '[]'), 
               typeof service_details === 'object' ? JSON.stringify(service_details) : (service_details || '[]'),
               discount || 0
@@ -355,7 +355,7 @@ exports.createGroupBooking = async (req, res) => {
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
             [
                 bookingCode, customerId, departure_id, 
-                passengers.length, total_price, 'confirmed', 
+                passengers.length, total_price, 'Giữ chỗ', 
                 true, group_name, 'unpaid'
             ]
         );

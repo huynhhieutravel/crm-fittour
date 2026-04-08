@@ -94,13 +94,13 @@ exports.getDetails = async (req, res) => {
 exports.create = async (req, res) => {
     const client = await db.pool.connect();
     try {
-        const { code, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating, contacts, services } = req.body;
+        const { code, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link, contacts, services } = req.body;
 
         await client.query('BEGIN');
 
         const result = await client.query(
-            `INSERT INTO transports (code, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
-            [code, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating || 0]
+            `INSERT INTO transports (code, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *`,
+            [code, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
         );
         const newId = result.rows[0].id;
 
@@ -155,7 +155,7 @@ exports.update = async (req, res) => {
     try {
         const { id } = req.params;
         const { 
-            code, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating,
+            code, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link,
             contacts, services,
             deleted_contact_ids, deleted_service_ids
         } = req.body;
@@ -163,8 +163,8 @@ exports.update = async (req, res) => {
         await client.query('BEGIN');
 
         const result = await client.query(
-            `UPDATE transports SET code=$1, name=$2, tax_id=$3, vehicle_type=$4, phone=$5, email=$6, country=$7, province=$8, address=$9, notes=$10, transport_class=$11, website=$12, bank_account_name=$13, bank_account_number=$14, bank_name=$15, market=$16, rating=$17, updated_at=CURRENT_TIMESTAMP WHERE id=$18 RETURNING *`,
-            [code, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, id]
+            `UPDATE transports SET code=$1, name=$2, tax_id=$3, vehicle_type=$4, phone=$5, email=$6, country=$7, province=$8, address=$9, notes=$10, transport_class=$11, website=$12, bank_account_name=$13, bank_account_number=$14, bank_name=$15, market=$16, rating=$17, drive_link=$18, updated_at=CURRENT_TIMESTAMP WHERE id=$19 RETURNING *`,
+            [code, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null, id]
         );
 
         if (deleted_contact_ids && deleted_contact_ids.length > 0) {
@@ -274,7 +274,7 @@ exports.createContact = async (req, res) => {
         const { transport_id } = req.params;
         const { name, position, phone, email } = req.body;
         const result = await db.query(
-            'INSERT INTO transport_contacts (transport_id, name, position, phone, email) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            'INSERT INTO transport_contacts (transport_id, name, position, phone, email) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
             [transport_id, name, position, phone, email]
         );
         res.status(201).json(result.rows[0]);
@@ -288,7 +288,7 @@ exports.updateContact = async (req, res) => {
         const { contact_id } = req.params;
         const { name, position, phone, email } = req.body;
         const result = await db.query(
-            'UPDATE transport_contacts SET name=$1, position=$2, phone=$3, email=$4 WHERE id=$5 RETURNING *',
+            'UPDATE transport_contacts SET name=$1, position=$2, phone=$3, email=$4 WHERE id=$6 RETURNING *',
             [name, position, phone, email, contact_id]
         );
         res.json(result.rows[0]);
@@ -313,7 +313,7 @@ exports.createService = async (req, res) => {
         const { transport_id } = req.params;
         const { name, description, capacity, cost_price, net_price, sale_price, notes } = req.body;
         const result = await db.query(
-            'INSERT INTO transport_services (transport_id, name, description, capacity, cost_price, net_price, sale_price, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+            'INSERT INTO transport_services (transport_id, name, description, capacity, cost_price, net_price, sale_price, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
             [transport_id, name || null, description || null, capacity || null, cost_price || null, net_price || null, sale_price || null, notes || null]
         );
         res.status(201).json(result.rows[0]);
@@ -327,7 +327,7 @@ exports.updateService = async (req, res) => {
         const { service_id } = req.params;
         const { name, description, capacity, cost_price, net_price, sale_price, notes } = req.body;
         const result = await db.query(
-            'UPDATE transport_services SET name=$1, description=$2, capacity=$3, cost_price=$4, net_price=$5, sale_price=$6, notes=$7 WHERE id=$8 RETURNING *',
+            'UPDATE transport_services SET name=$1, description=$2, capacity=$3, cost_price=$4, net_price=$5, sale_price=$6, notes=$7 WHERE id=$9 RETURNING *',
             [name || null, description || null, capacity || null, cost_price || null, net_price || null, sale_price || null, notes || null, service_id]
         );
         res.json(result.rows[0]);
@@ -352,7 +352,7 @@ exports.createContract = async (req, res) => {
         const { transport_id } = req.params;
         const { name, valid_from, valid_to, notes } = req.body;
         const result = await db.query(
-            'INSERT INTO transport_contracts (transport_id, name, valid_from, valid_to, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            'INSERT INTO transport_contracts (transport_id, name, valid_from, valid_to, notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
             [transport_id, name, valid_from || null, valid_to || null, notes]
         );
         res.status(201).json(result.rows[0]);
@@ -366,7 +366,7 @@ exports.updateContract = async (req, res) => {
         const { contract_id } = req.params;
         const { name, valid_from, valid_to, notes } = req.body;
         const result = await db.query(
-            'UPDATE transport_contracts SET name=$1, valid_from=$2, valid_to=$3, notes=$4 WHERE id=$5 RETURNING *',
+            'UPDATE transport_contracts SET name=$1, valid_from=$2, valid_to=$3, notes=$4 WHERE id=$6 RETURNING *',
             [name, valid_from || null, valid_to || null, notes, contract_id]
         );
         res.json(result.rows[0]);
@@ -391,7 +391,7 @@ exports.createContractRate = async (req, res) => {
         const { contract_id } = req.params;
         const { service_id, fita_net, fita_sale, fita_commission, fite_net, fite_sale, fite_commission, series_net, series_sale, series_commission, charter_net, charter_sale, charter_commission } = req.body;
         const result = await db.query(
-            `INSERT INTO transport_contract_rates (contract_id, service_id, fita_net, fita_sale, fita_commission, fite_net, fite_sale, fite_commission, series_net, series_sale, series_commission, charter_net, charter_sale, charter_commission) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
+            `INSERT INTO transport_contract_rates (contract_id, service_id, fita_net, fita_sale, fita_commission, fite_net, fite_sale, fite_commission, series_net, series_sale, series_commission, charter_net, charter_sale, charter_commission) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`,
             [contract_id, service_id, fita_net, fita_sale, fita_commission, fite_net, fite_sale, fite_commission, series_net, series_sale, series_commission, charter_net, charter_sale, charter_commission]
         );
         res.status(201).json(result.rows[0]);
@@ -405,7 +405,7 @@ exports.updateContractRate = async (req, res) => {
         const { rate_id } = req.params;
         const { service_id, fita_net, fita_sale, fita_commission, fite_net, fite_sale, fite_commission, series_net, series_sale, series_commission, charter_net, charter_sale, charter_commission } = req.body;
         const result = await db.query(
-            `UPDATE transport_contract_rates SET service_id=$1, fita_net=$2, fita_sale=$3, fita_commission=$4, fite_net=$5, fite_sale=$6, fite_commission=$7, series_net=$8, series_sale=$9, series_commission=$10, charter_net=$11, charter_sale=$12, charter_commission=$13 WHERE id=$14 RETURNING *`,
+            `UPDATE transport_contract_rates SET service_id=$1, fita_net=$2, fita_sale=$3, fita_commission=$4, fite_net=$5, fite_sale=$6, fite_commission=$7, series_net=$8, series_sale=$9, series_commission=$10, charter_net=$11, charter_sale=$12, charter_commission=$13 WHERE id=$15 RETURNING *`,
             [service_id, fita_net, fita_sale, fita_commission, fite_net, fite_sale, fite_commission, series_net, series_sale, series_commission, charter_net, charter_sale, charter_commission, rate_id]
         );
         res.json(result.rows[0]);
@@ -443,7 +443,7 @@ exports.addNote = async (req, res) => {
     const user_id = req.user.id;
     try {
         const result = await db.query(
-            'INSERT INTO transport_notes (transport_id, content, user_id) VALUES ($1, $2, $3) RETURNING *',
+            'INSERT INTO transport_notes (transport_id, content, user_id) VALUES ($1, $2, $3, $4) RETURNING *',
             [transport_id, content, user_id]
         );
         res.status(201).json(result.rows[0]);

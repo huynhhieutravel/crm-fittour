@@ -11,7 +11,7 @@ exports.getAllLeads = async (req, res) => {
                    (SELECT content FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note,
                    (SELECT created_at FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note_at,
                    c.id as returning_customer_id,
-                   (SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status = 'confirmed')::numeric as total_spent,
+                   (SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới'))::numeric as total_spent,
                    CASE WHEN c.id IS NOT NULL THEN true ELSE false END as is_returning_customer
             FROM leads l 
             LEFT JOIN tour_templates tt ON l.tour_id = tt.id 

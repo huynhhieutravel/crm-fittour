@@ -12,7 +12,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 
-const InboxTab = ({ leads, setEditingLead }) => {
+const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid }) => {
   // API Data States
   const [conversations, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
@@ -43,6 +43,7 @@ const InboxTab = ({ leads, setEditingLead }) => {
       setConversations(res.data.data);
       setTotalPages(res.data.pagination.totalPages);
       setTotalRows(res.data.pagination.total);
+      return res.data.data;
     } catch (err) {
       console.error("Fetch Conversations Error:", err);
     } finally {
@@ -53,6 +54,37 @@ const InboxTab = ({ leads, setEditingLead }) => {
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
+
+  // Auto-select conversation khi nhận initialPsid từ Lead Chat button
+  const psidHandledRef = useRef(false);
+  useEffect(() => {
+    if (!initialPsid || psidHandledRef.current) return;
+    
+    if (conversations.length > 0) {
+      const matchConv = conversations.find(c => c.external_id === initialPsid);
+      if (matchConv) {
+        psidHandledRef.current = true;
+        handleSelectConv(matchConv);
+        if (clearInitialPsid) clearInitialPsid();
+      } else if (!searchKey) {
+        // Conversation không nằm trong trang hiện tại, search bằng PSID
+        setSearchInput(initialPsid);
+        setSearchKey(initialPsid);
+      } else if (searchKey === initialPsid && conversations.length > 0) {
+        // Đã search xong, auto chọn kết quả đầu tiên
+        psidHandledRef.current = true;
+        handleSelectConv(conversations[0]);
+        if (clearInitialPsid) clearInitialPsid();
+      }
+    }
+  }, [conversations, searchKey, initialPsid]);
+
+  // Reset ref khi initialPsid thay đổi (mới click Chat)
+  useEffect(() => {
+    if (initialPsid) {
+      psidHandledRef.current = false;
+    }
+  }, [initialPsid]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -780,6 +812,9 @@ const InboxTab = ({ leads, setEditingLead }) => {
           font-size: 0.875rem;
           line-height: 1.5;
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+          overflow-wrap: break-word;
+          word-break: break-word;
+          white-space: pre-wrap;
         }
 
         .msg-wrapper.staff .msg-bubble {

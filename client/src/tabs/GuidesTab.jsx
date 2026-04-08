@@ -626,17 +626,20 @@ const GuidesTab = ({
                           
                           const gridStart = startIndex === -1 ? 1 : startIndex + 1;
                           const gridEnd = endIndex === -1 ? days.length + 1 : endIndex + 2;
+                          const isMice = asg.source === 'mice';
                           
                           return (
                             <div 
                               key={idx}
-                              className={`gantt-bar gantt-bar-${(asg.status || 'draft').toLowerCase()}`}
+                              className={`gantt-bar ${isMice ? 'gantt-bar-mice' : `gantt-bar-${(asg.status || 'draft').toLowerCase()}`}`}
                               style={{ 
                                 gridColumn: `${gridStart} / ${gridEnd}`,
                                 zIndex: 10,
-                                cursor: 'pointer'
+                                cursor: isMice ? 'default' : 'pointer',
+                                ...(isMice ? { background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', borderColor: '#b45309' } : {})
                               }}
                               onClick={() => {
+                                if (isMice) return;
                                 const dep = tourDepartures.find(d => d.id === asg.id);
                                 if (dep && handleEditDeparture) handleEditDeparture(dep);
                               }}
@@ -645,7 +648,9 @@ const GuidesTab = ({
                                 <span className="gantt-bar-label">{asg.tourName}</span>
                               </div>
                               <div className="gantt-tooltip">
-                                <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '0.8rem', color: '#60a5fa' }}>{(asg.status || 'N/A').toUpperCase()}</div>
+                                <div style={{ fontWeight: 800, marginBottom: '6px', fontSize: '0.8rem', color: isMice ? '#f59e0b' : '#60a5fa' }}>
+                                  {isMice ? '🏢 TOUR ĐOÀN (MICE)' : (asg.status || 'N/A').toUpperCase()}
+                                </div>
                                 <div style={{ fontWeight: 600, marginBottom: '6px' }}>{asg.tourName}</div>
                                 <div style={{ color: '#94a3b8', fontSize: '0.7rem' }}>
                                   <span style={{ color: '#cbd5e1' }}>Khởi hành: </span> 

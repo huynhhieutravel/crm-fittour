@@ -104,7 +104,7 @@ const DeparturesTab = ({
           <div className="stat-content">
             <span className="stat-label">TOUR ĐÃ CHỐT (GUARANTEED)</span>
             <div className="stat-value">
-              {tourDepartures.filter(d => d.status === 'Guaranteed').length}
+              {tourDepartures.filter(d => d.status === 'Chắc chắn đi').length}
             </div>
           </div>
         </div>
@@ -129,11 +129,11 @@ const DeparturesTab = ({
             <label>TRẠNG THÁI</label>
             <select className="filter-select" value={tourFilters.status || ''} onChange={e => setTourFilters({...tourFilters, status: e.target.value})}>
               <option value="">-- Tất cả trạng thái --</option>
-              <option value="Open">Mở bán (Open)</option>
-              <option value="Guaranteed">Chắc chắn đi (Guaranteed)</option>
-              <option value="Full">Đã đầy (Full)</option>
-              <option value="Cancelled">Hủy tour (Cancelled)</option>
-              <option value="Finished">Đã hoàn thành</option>
+              <option value="Mở bán">Mở bán</option>
+              <option value="Chắc chắn đi">Chắc chắn đi</option>
+              <option value="Đã đầy">Đã đầy</option>
+              <option value="Hoàn thành">Hoàn thành</option>
+              <option value="Huỷ">Huỷ</option>
             </select>
           </div>
           <div className="filter-group">
@@ -331,23 +331,26 @@ const DeparturesTab = ({
                         borderColor: 'transparent',
                         minWidth: '120px',
                         appearance: 'none',
-                        background: dep.status === 'Open' ? '#dcfce7' : 
-                                    dep.status === 'Guaranteed' ? '#dbeafe' : 
-                                    dep.status === 'Full' ? '#fef3c7' : '#fee2e2',
-                        color: dep.status === 'Open' ? '#166534' : 
-                               dep.status === 'Guaranteed' ? '#1e40af' : 
-                               dep.status === 'Full' ? '#b45309' : '#b91c1c',
+                        background: dep.status === 'Mở bán' ? '#dcfce7' : 
+                                    dep.status === 'Chắc chắn đi' ? '#dbeafe' : 
+                                    dep.status === 'Đã đầy' ? '#fef3c7' : 
+                                    dep.status === 'Hoàn thành' ? '#f1f5f9' : '#fee2e2',
+                        color: dep.status === 'Mở bán' ? '#166534' : 
+                               dep.status === 'Chắc chắn đi' ? '#1e40af' : 
+                               dep.status === 'Đã đầy' ? '#b45309' : 
+                               dep.status === 'Hoàn thành' ? '#475569' : '#b91c1c',
                         borderRadius: '6px',
                         outline: 'none',
                         textAlign: 'center'
                       }}
-                      value={dep.status || 'Open'}
+                      value={dep.status || 'Mở bán'}
                       onChange={(e) => handleUpdateDeparture({ ...dep, status: e.target.value })}
                     >
-                      <option value="Open">Mở bán</option>
-                      <option value="Guaranteed">Chắc chắn đi</option>
-                      <option value="Full">Đã đầy</option>
-                      <option value="Cancelled">Hủy chuyến</option>
+                      <option value="Mở bán">Mở bán</option>
+                      <option value="Chắc chắn đi">Chắc chắn đi</option>
+                      <option value="Đã đầy">Đã đầy</option>
+                      <option value="Hoàn thành">Hoàn thành</option>
+                      <option value="Huỷ">Huỷ</option>
                     </select>
                   </td>
                   <td style={{ textAlign: 'right' }}>

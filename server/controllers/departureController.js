@@ -1,13 +1,14 @@
 const db = require('../db');
 
-// Helper to check for guide schedule overlaps
+// Helper to check for guide schedule overlaps (checks BOTH tour_departures AND group_projects)
 const checkGuideOverlap = async (guide_id, start_date, end_date, exclude_id = null) => {
     if (!guide_id || !start_date || !end_date) return false;
     
+    // Check tour_departures
     let query = `
         SELECT id FROM tour_departures 
         WHERE guide_id = $1 
-        AND status != 'Cancelled'
+        AND status != 'Huỷ'
         AND (
             (start_date <= $3 AND end_date >= $2)
         )
@@ -20,7 +21,17 @@ const checkGuideOverlap = async (guide_id, start_date, end_date, exclude_id = nu
     }
     
     const result = await db.query(query, params);
-    return result.rows.length > 0;
+    if (result.rows.length > 0) return true;
+
+    // Also check group_projects (BU3 MICE tours)
+    const gpResult = await db.query(`
+        SELECT id FROM group_projects
+        WHERE guide_id = $1 AND status NOT IN ('Chưa thành công')
+        AND departure_date IS NOT NULL AND return_date IS NOT NULL
+        AND (departure_date <= $3 AND return_date >= $2)
+    `, [guide_id, start_date, end_date]);
+    
+    return gpResult.rows.length > 0;
 };
 
 exports.getAllDepartures = async (req, res) => {
@@ -30,7 +41,7 @@ exports.getAllDepartures = async (req, res) => {
                 td.*, 
                 tt.name as template_name, tt.duration as template_duration,
                 g.name as guide_name,
-                (SELECT COALESCE(SUM(pax_count), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status != 'cancelled') as sold_pax
+                (SELECT COALESCE(SUM(pax_count), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ')) as sold_pax
             FROM tour_departures td
             LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN guides g ON td.guide_id = g.id
@@ -75,7 +86,7 @@ exports.createDeparture = async (req, res) => {
                 price_rules, additional_services, notes
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *`,
             [
-                generatedCode, tour_template_id, start_date, end_date, max_participants, status || 'Open',
+                generatedCode, tour_template_id, start_date, end_date, max_participants, status || 'Mở bán',
                 actual_price, discount_price,
                 final_guide, final_operator, 
                 typeof supplier_info === 'object' ? JSON.stringify(supplier_info) : (supplier_info || '{}'), 
@@ -125,7 +136,7 @@ exports.getDepartureById = async (req, res) => {
 
         const departure = departureResult.rows[0];
         departure.bookings = bookings;
-        departure.sold_pax = bookings.reduce((sum, b) => b.booking_status !== 'cancelled' ? sum + Number(b.pax_count) : sum, 0);
+        departure.sold_pax = bookings.reduce((sum, b) => b.booking_status !== 'Huỷ' ? sum + Number(b.pax_count) : sum, 0);
 
         res.json(departure);
     } catch (err) {
@@ -277,7 +288,7 @@ exports.duplicateDeparture = async (req, res) => {
                 price_rules, additional_services, notes
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *`,
             [
-                generatedCode, dep.tour_template_id, dep.start_date, dep.end_date, dep.max_participants, 'Open',
+                generatedCode, dep.tour_template_id, dep.start_date, dep.end_date, dep.max_participants, 'Mở bán',
                 dep.actual_price, dep.discount_price,
                 dep.guide_id, dep.operator_id, dep.supplier_info, dep.min_participants, dep.break_even_pax,
                 dep.deadline_booking, dep.deadline_visa, dep.deadline_payment,

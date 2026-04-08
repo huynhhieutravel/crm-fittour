@@ -20,11 +20,13 @@ const BookingsTab = ({
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'pending': return { bg: '#fef3c7', color: '#b45309', label: 'Chờ xác nhận' };
-      case 'confirmed': return { bg: '#e0f2fe', color: '#0369a1', label: 'Đã xác nhận' };
-      case 'completed': return { bg: '#dcfce7', color: '#15803d', label: 'Hoàn thành' };
-      case 'cancelled': return { bg: '#fee2e2', color: '#b91c1c', label: 'Đã huỷ' };
-      default: return { bg: '#fef3c7', color: '#b45309', label: status };
+      case 'Mới': return { bg: '#f1f5f9', color: '#475569', label: 'Mới' };
+      case 'Giữ chỗ': return { bg: '#e0f2fe', color: '#0369a1', label: 'Giữ chỗ' };
+      case 'Đã đặt cọc': return { bg: '#fef3c7', color: '#b45309', label: 'Đã đặt cọc' };
+      case 'Đã thanh toán': return { bg: '#d1fae5', color: '#065f46', label: 'Đã thanh toán' };
+      case 'Hoàn thành': return { bg: '#dcfce7', color: '#15803d', label: 'Hoàn thành' };
+      case 'Huỷ': return { bg: '#fee2e2', color: '#b91c1c', label: 'Huỷ' };
+      default: return { bg: '#f1f5f9', color: '#475569', label: status };
     }
   };
 
@@ -63,10 +65,12 @@ const BookingsTab = ({
               onChange={e => setBookingFilters({...bookingFilters, bookingStatus: e.target.value})}
             >
               <option value="">Tất cả</option>
-              <option value="pending">Chờ xác nhận</option>
-              <option value="confirmed">Đã xác nhận</option>
-              <option value="completed">Hoàn thành</option>
-              <option value="cancelled">Đã huỷ</option>
+              <option value="Mới">Mới</option>
+              <option value="Giữ chỗ">Giữ chỗ</option>
+              <option value="Đã đặt cọc">Đã đặt cọc</option>
+              <option value="Đã thanh toán">Đã thanh toán</option>
+              <option value="Hoàn thành">Hoàn thành</option>
+              <option value="Huỷ">Huỷ</option>
             </select>
           </div>
 

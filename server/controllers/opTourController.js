@@ -1,8 +1,44 @@
 const db = require('../db');
 
+// ===================================================
+// OpTours REFACTORED — reads from tour_departures + bookings
+// (legacy op_tours and op_tour_bookings are deprecated)
+// ===================================================
+
 exports.getAllOpTours = async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM op_tours ORDER BY start_date DESC');
+    const result = await db.query(`
+      SELECT 
+        td.id, td.tour_template_id, td.code as tour_code, tt.name as tour_name, 
+        td.start_date, td.end_date, td.market, td.status,
+        td.total_revenue, td.actual_revenue, td.total_expense, td.profit,
+        td.tour_info, td.expenses, td.guides_json as guides, td.itinerary, 
+        td.created_at, td.updated_at,
+        td.max_participants,
+        td.actual_price, td.discount_price,
+        td.guide_id, td.operator_id,
+        tt.code as template_code, tt.duration as template_duration,
+        g.name as guide_name,
+        (
+          SELECT COALESCE(SUM(b.pax_count), 0)
+          FROM bookings b
+          WHERE b.tour_departure_id = td.id AND b.booking_status NOT IN ('Huỷ')
+        ) AS total_sold,
+        (
+          SELECT COALESCE(SUM(b.pax_count), 0)
+          FROM bookings b
+          WHERE b.tour_departure_id = td.id AND b.booking_status IN ('Giữ chỗ', 'Mới')
+        ) AS total_reserved,
+        (
+          SELECT COALESCE(SUM(COALESCE(b.paid, 0)), 0)
+          FROM bookings b
+          WHERE b.tour_departure_id = td.id AND b.booking_status NOT IN ('Huỷ')
+        ) AS total_paid
+      FROM tour_departures td
+      LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+      LEFT JOIN guides g ON td.guide_id = g.id
+      ORDER BY td.start_date DESC
+    `);
     res.json(result.rows);
   } catch (error) {
     console.error('Error in getAllOpTours:', error);
@@ -10,14 +46,74 @@ exports.getAllOpTours = async (req, res) => {
   }
 };
 
+exports.getPublicOpTours = async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT 
+        td.id, td.code as tour_code, tt.name as tour_name, 
+        td.start_date, td.end_date, td.market, td.status,
+        td.tour_info, td.max_participants,
+        (
+          SELECT COALESCE(SUM(b.pax_count), 0)
+          FROM bookings b
+          WHERE b.tour_departure_id = td.id AND b.booking_status NOT IN ('Huỷ', 'Mới', 'Giữ chỗ')
+        ) AS total_sold,
+        (
+          SELECT COALESCE(SUM(b.pax_count), 0)
+          FROM bookings b
+          WHERE b.tour_departure_id = td.id AND b.booking_status IN ('Giữ chỗ', 'Mới')
+        ) AS total_reserved
+      FROM tour_departures td
+      LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+      ORDER BY td.start_date DESC
+    `);
+    
+    const publicTours = result.rows.map(row => {
+        return {
+            id: row.id,
+            tour_code: row.tour_code,
+            tour_name: row.tour_name,
+            start_date: row.start_date,
+            end_date: row.end_date,
+            market: row.market,
+            status: row.status,
+            tour_info: row.tour_info,
+            max_participants: row.max_participants,
+            public_stats: {
+                heldCount: Number(row.total_reserved),
+                soldCount: Number(row.total_sold)
+            }
+        };
+    });
+    
+    res.json(publicTours);
+  } catch (error) {
+    console.error('Error in getPublicOpTours:', error);
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+};
+
 exports.getOpTourById = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await db.query('SELECT * FROM op_tours WHERE id = $1', [id]);
+    const result = await db.query(`
+      SELECT td.*, tt.name as tour_name, tt.code as template_code, tt.duration as template_duration,
+             g.name as guide_name
+      FROM tour_departures td
+      LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+      LEFT JOIN guides g ON td.guide_id = g.id
+      WHERE td.id = $1
+    `, [id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Không tìm thấy tour' });
     }
-    res.json(result.rows[0]);
+    // Map field names so frontend doesn't break
+    const row = result.rows[0];
+    res.json({
+      ...row,
+      tour_code: row.code,
+      guides: row.guides_json
+    });
   } catch (error) {
     console.error('Error in getOpTourById:', error);
     res.status(500).json({ error: 'Lỗi server' });
@@ -25,16 +121,43 @@ exports.getOpTourById = async (req, res) => {
 };
 
 exports.createOpTour = async (req, res) => {
-  const { tour_code, tour_name, start_date, end_date, market, status, tour_info, revenues, expenses, guides, itinerary } = req.body;
+  const { tour_code, tour_name, start_date, end_date, market, status, tour_info, revenues, expenses, guides, itinerary, tour_template_id } = req.body;
   try {
+    const sDate = start_date || null;
+    const eDate = end_date || null;
+
+    // tour_template_id is required for the new schema
+    if (!tour_template_id) {
+      return res.status(400).json({ error: 'Vui lòng chọn Sản phẩm Tour (tour_template_id)' });
+    }
+
+    // Generate code from tour_code or auto
+    const code = tour_code || `OP-${Date.now()}`;
+
     const result = await db.query(
-      `INSERT INTO op_tours 
-       (tour_code, tour_name, start_date, end_date, market, status, tour_info, revenues, expenses, guides, itinerary) 
+      `INSERT INTO tour_departures 
+       (code, tour_template_id, start_date, end_date, market, status, 
+        tour_info, expenses, guides_json, itinerary, max_participants) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
        RETURNING *`,
-      [tour_code, tour_name, start_date, end_date, market, status, tour_info || '{}', revenues || '[]', expenses || '[]', guides || '[]', itinerary]
+      [
+        code, tour_template_id, sDate, eDate, market || null, status || 'Mở bán', 
+        JSON.stringify(tour_info || {}), 
+        JSON.stringify(expenses || []), 
+        JSON.stringify(guides || []), 
+        itinerary || null,
+        tour_info?.total_seats || 20
+      ]
     );
-    res.status(201).json(result.rows[0]);
+    
+    // Return with mapped fields
+    const row = result.rows[0];
+    res.status(201).json({
+      ...row,
+      tour_code: row.code,
+      tour_name: tour_name, // from request body
+      guides: row.guides_json
+    });
   } catch (error) {
     console.error('Error in createOpTour:', error);
     res.status(500).json({ error: 'Lỗi khi tạo tour mới' });
@@ -43,21 +166,47 @@ exports.createOpTour = async (req, res) => {
 
 exports.updateOpTour = async (req, res) => {
   const { id } = req.params;
-  const { tour_code, tour_name, start_date, end_date, market, status, total_revenue, actual_revenue, total_expense, profit, tour_info, revenues, expenses, guides, itinerary } = req.body;
+  const { tour_code, tour_name, tour_template_id, start_date, end_date, market, status, total_revenue, actual_revenue, total_expense, profit, tour_info, revenues, expenses, guides, itinerary } = req.body;
   
   try {
+    const sDate = start_date || null;
+    const eDate = end_date || null;
+    const tRev = total_revenue !== '' && total_revenue !== undefined ? total_revenue : 0;
+    const aRev = actual_revenue !== '' && actual_revenue !== undefined ? actual_revenue : 0;
+    const tExp = total_expense !== '' && total_expense !== undefined ? total_expense : 0;
+    const pfit = profit !== '' && profit !== undefined ? profit : 0;
+
     const result = await db.query(
-      `UPDATE op_tours 
-       SET tour_code = $1, tour_name = $2, start_date = $3, end_date = $4, market = $5, status = $6, 
-           total_revenue = $7, actual_revenue = $8, total_expense = $9, profit = $10,
-           tour_info = $11, revenues = $12, expenses = $13, guides = $14, itinerary = $15, 
+      `UPDATE tour_departures 
+       SET code = $1, start_date = $2, end_date = $3, market = $4, status = $5, 
+           total_revenue = $6, actual_revenue = $7, total_expense = $8, profit = $9,
+           tour_info = $10, expenses = $11, guides_json = $12, itinerary = $13, 
+           max_participants = COALESCE($14, max_participants),
+           tour_template_id = COALESCE($16, tour_template_id),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $16 RETURNING *`,
-       [tour_code, tour_name, start_date, end_date, market, status, total_revenue, actual_revenue, total_expense, profit, tour_info, revenues, expenses, guides, itinerary, id]
+       WHERE id = $15 RETURNING *`,
+       [
+         tour_code, sDate, eDate, market, status, 
+         tRev, aRev, tExp, pfit, 
+         JSON.stringify(tour_info || {}), 
+         JSON.stringify(expenses || []), 
+         JSON.stringify(guides || []), 
+         itinerary, 
+         tour_info?.total_seats || null,
+         id,
+         tour_template_id || null
+       ]
     );
 
     if (result.rowCount === 0) return res.status(404).json({ error: 'Không tìm thấy tour' });
-    res.json(result.rows[0]);
+    
+    const row = result.rows[0];
+    res.json({
+      ...row,
+      tour_code: row.code,
+      tour_name: tour_name,
+      guides: row.guides_json
+    });
   } catch (error) {
     console.error('Error in updateOpTour:', error);
     res.status(500).json({ error: 'Lỗi khi cập nhật tour' });
@@ -67,7 +216,13 @@ exports.updateOpTour = async (req, res) => {
 exports.deleteOpTour = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await db.query('DELETE FROM op_tours WHERE id = $1 RETURNING id', [id]);
+    // Check if there are bookings tied to this departure
+    const bookingCheck = await db.query('SELECT COUNT(*) as cnt FROM bookings WHERE tour_departure_id = $1', [id]);
+    if (Number(bookingCheck.rows[0].cnt) > 0) {
+      return res.status(400).json({ error: `Không thể xóa: Tour này đang có ${bookingCheck.rows[0].cnt} booking. Hãy huỷ hoặc chuyển booking trước.` });
+    }
+    
+    const result = await db.query('DELETE FROM tour_departures WHERE id = $1 RETURNING id', [id]);
     if (result.rowCount === 0) return res.status(404).json({ error: 'Không tìm thấy tour' });
     res.json({ message: 'Xóa tour thành công' });
   } catch (error) {
@@ -77,94 +232,179 @@ exports.deleteOpTour = async (req, res) => {
 };
 
 exports.addOpTourBooking = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params;  // tour_departure_id
   const bookingData = req.body;
   
   try {
-    // 1. Lấy dữ liệu tour hiện tại
-    const tourRes = await db.query('SELECT revenues FROM op_tours WHERE id = $1', [id]);
+    // 1. Lấy thông tin tour departure
+    const tourRes = await db.query('SELECT tour_info, max_participants FROM tour_departures WHERE id = $1', [id]);
     if (tourRes.rows.length === 0) {
       return res.status(404).json({ error: 'Không tìm thấy tour' });
     }
-    
-    let revenues = tourRes.rows[0].revenues || [];
-    if (typeof revenues === 'string') {
-      try { revenues = JSON.parse(revenues); } catch(e) { revenues = []; }
-    }
-    
-    // Xử lý Edit hoặc Create
-    let newBooking;
-    if (bookingData.id) {
-       // Thao tác Cập nhật
-       const existingIndex = revenues.findIndex(b => b.id === bookingData.id);
-       if (existingIndex > -1) {
-          const oldBooking = revenues[existingIndex];
-          newBooking = {
-             ...oldBooking,
-             ...bookingData,
-             updated_at: new Date().toISOString()
-          };
-          revenues[existingIndex] = newBooking;
-       } else {
-          // Fallback nếu không khớp id
-          newBooking = {
-            ...bookingData,
-            created_at: new Date().toISOString()
-          };
-          revenues.push(newBooking);
-       }
-    } else {
-       // Thao tác Tạo mới
-       newBooking = {
-         ...bookingData,
-         id: `BK_${Date.now()}_${Math.floor(Math.random()*1000)}`,
-         created_at: new Date().toISOString()
-       };
-       revenues.push(newBooking);
-    }
-    
-    // 2. Cập nhật lại mảng revenues vào op_tours
-    await db.query(
-      'UPDATE op_tours SET revenues = $1 WHERE id = $2',
-      [JSON.stringify(revenues), id]
-    );
 
-    // 3. Tự động xử lý danh sách khách hàng đi kèm (Upsert vào bảng customers)
+    const rawTourInfo = tourRes.rows[0].tour_info || {};
+    let tourInfo = typeof rawTourInfo === 'string' ? JSON.parse(rawTourInfo) : rawTourInfo;
+    const totalSeats = Number(tourInfo.total_seats || tourRes.rows[0].max_participants || 0);
+    const allowOverbooking = tourInfo.allow_overbooking === true;
+
+    // Check capacity
+    const currentBookingStatus = bookingData.status || 'Giữ chỗ';
+    if (!['Hủy', 'Huỷ'].includes(currentBookingStatus)) {
+        const soldRes = await db.query(`
+           SELECT COALESCE(SUM(pax_count), 0) as sold
+           FROM bookings
+           WHERE tour_departure_id = $1 AND id != $2 AND booking_status NOT IN ('Huỷ')
+        `, [id, bookingData.id || -1]);
+        
+        const soldSoFar = Number(soldRes.rows[0].sold || 0);
+        const newQty = Number(bookingData.qty || bookingData.pax_count || 0);
+        if (!allowOverbooking && totalSeats > 0 && (soldSoFar + newQty > totalSeats)) {
+            return res.status(400).json({ 
+                error: `QUÁ SỐ CHỖ: Tour chỉ còn ${totalSeats - soldSoFar} chỗ (Tổng: ${totalSeats}). Bạn đang giữ/bán ${newQty} chỗ. Vui lòng bật "Cho bán quá chỗ" trong cài đặt Tour nếu muốn tiếp tục.`
+            });
+        }
+    }
+    
+    // Edit or Create
+    let newBooking;
+    let isNewBooking = !bookingData.id;
+    
+    const rawDetails = bookingData.raw_details || {};
+    const paxCount = Number(bookingData.qty || bookingData.pax_count || 0);
+    const totalPrice = Number(bookingData.total || bookingData.total_price || 0);
+    const paidAmount = Number(bookingData.paid || 0);
+    const bookingStatus = bookingData.status || 'Giữ chỗ';
+
+    if (!isNewBooking) {
+        // Permission check
+        const bCheck = await db.query('SELECT created_by FROM bookings WHERE id = $1', [bookingData.id]);
+        if (bCheck.rows.length > 0) {
+             const existingBooking = bCheck.rows[0];
+             if (req.user.role !== 'admin' && req.user.role !== 'manager' && req.user.role !== 'operator' && existingBooking.created_by != req.user.id) {
+                  return res.status(403).json({ error: 'Lỗi phân quyền! Bạn không có quyền chỉnh sửa Booking của người khác.' });
+             }
+        }
+
+        // Update existing booking
+        await db.query(`
+            UPDATE bookings
+            SET customer_id = $1, pax_count = $2,
+                base_price = $3, surcharge = $4, discount = $5, total_price = $6, paid = $7,
+                booking_status = $8, raw_details = $9, notes = $10, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $11 AND tour_departure_id = $12
+        `, [
+            bookingData.customer_id || null, paxCount,
+            Number(bookingData.base_price) || 0, Number(bookingData.surcharge) || 0, Number(bookingData.discount) || 0, totalPrice, paidAmount,
+            bookingStatus, JSON.stringify(rawDetails), bookingData.notes || null, bookingData.id, id
+        ]);
+        newBooking = bookingData;
+    } else {
+        // Generate booking code
+        const bookingCode = `BK-${Date.now().toString(36).toUpperCase()}`;
+        
+        // Create new booking
+        const insertRes = await db.query(`
+            INSERT INTO bookings (
+                booking_code, tour_departure_id, customer_id, pax_count,
+                base_price, surcharge, discount, total_price, paid, 
+                booking_status, payment_status, raw_details, notes,
+                created_by, created_by_name
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            RETURNING *
+        `, [
+            bookingCode, id, bookingData.customer_id || null, paxCount,
+            Number(bookingData.base_price) || 0, Number(bookingData.surcharge) || 0, Number(bookingData.discount) || 0, totalPrice, paidAmount,
+            bookingStatus, paidAmount >= totalPrice && totalPrice > 0 ? 'paid' : (paidAmount > 0 ? 'partial' : 'unpaid'),
+            JSON.stringify(rawDetails), bookingData.notes || null,
+            req.user ? req.user.id : null, req.user ? req.user.full_name : 'Sales'
+        ]);
+        newBooking = { ...bookingData, id: insertRes.rows[0].id, booking_code: bookingCode };
+    }
+
+    // === AUTO-CONVERT ENGINE & VIP ENGINE ===
+    function getVipLevel(totalTrips) {
+        if (totalTrips >= 7) return 'VIP 1';
+        if (totalTrips >= 4) return 'VIP 2';
+        if (totalTrips >= 3) return 'VIP 3';
+        if (totalTrips >= 2) return 'Repeat Customer';
+        return 'New Customer';
+    }
+
+    // 1. Process Booker VIP (if this is a brand new booking)
+    if (isNewBooking && bookingData.customer_id) {
+       try {
+           const updateRes = await db.query(`
+               UPDATE customers 
+               SET past_trip_count = COALESCE(past_trip_count, 0) + 1 
+               WHERE id = $1 
+               RETURNING past_trip_count, COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as crm_trip_count
+           `, [bookingData.customer_id]);
+           
+           if (updateRes.rows.length > 0) {
+               const r = updateRes.rows[0];
+               const totalTrips = parseInt(r.past_trip_count) + parseInt(r.crm_trip_count);
+               const newVip = getVipLevel(totalTrips);
+               await db.query('UPDATE customers SET customer_segment = $1 WHERE id = $2', [newVip, bookingData.customer_id]);
+           }
+       } catch (err) {
+           console.error('Booker VIP update error:', err.message);
+       }
+    }
+
+    // 2. Process Members (Passengers)
     const members = bookingData.raw_details?.members || [];
+    const bookerPhone = bookingData.phone ? bookingData.phone.replace(/[\s\-\.]/g, '') : '';
+
     for (const m of members) {
       if (m.phone && m.phone.trim() !== '') {
-        const phone = m.phone.replace(/[\\s\\-\\.]/g, '');
-        const name = m.name ? m.name.toUpperCase().trim() : 'KHÁCH ĐI KÈM';
+        const memberPhone = m.phone.replace(/[\s\-\.]/g, '');
+        
+        if (memberPhone === bookerPhone) continue;
+        
+        const memberName = m.name ? m.name.trim() : '';
+        if (!memberName || memberName.startsWith('Khách ')) continue;
+
+        const name = memberName.toUpperCase();
         const cmnd = m.docId || '';
         const dob = m.dob || null;
         
-        // Kiểm tra xem khách hàng đã tồn tại chưa
-        const custCheck = await db.query(
-          `SELECT id, past_trip_count FROM customers 
-           WHERE REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', '') = $1 
-              OR REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', '') = $2`,
-          [phone, phone.replace(/^0/, '')]
-        );
+        try {
+          const custCheck = await db.query(
+             `SELECT id FROM customers 
+              WHERE REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', '') = $1 
+                 OR REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', '') = $2 LIMIT 1`,
+             [memberPhone, memberPhone.replace(/^0/, '')]
+          );
 
-        if (custCheck.rows.length > 0) {
-           // Đã tồn tại -> Chỉ tăng past_trip_count nếu cần + Cập nhật CMND nếu trống
-           const custFound = custCheck.rows[0];
-           await db.query(
-             `UPDATE customers 
-              SET past_trip_count = COALESCE(past_trip_count, 0) + 1,
-                  id_card = COALESCE(id_card, NULLIF($1, '')),
-                  birth_date = COALESCE(birth_date, NULLIF($2, '')::date)
-              WHERE id = $3`,
-             [cmnd, dob, custFound.id]
-           );
-        } else {
-           // Chưa tồn tại -> Tạo mới Customer
-           await db.query(
-             `INSERT INTO customers 
-              (name, phone, id_card, birth_date, customer_segment, past_trip_count)
-              VALUES ($1, $2, $3, NULLIF($4, '')::date, $5, 1)`,
-             [name, m.phone.trim(), cmnd, dob, 'New Customer']
-           );
+          if (custCheck.rows.length > 0) {
+             const custFound = custCheck.rows[0];
+             const updateRes = await db.query(`
+                UPDATE customers 
+                SET id_card = COALESCE(id_card, NULLIF($1, '')),
+                    birth_date = COALESCE(birth_date, NULLIF($2, '')::date),
+                    past_trip_count = COALESCE(past_trip_count, 0) + 1
+                WHERE id = $3
+                RETURNING past_trip_count, COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as crm_trip_count
+             `, [cmnd, dob, custFound.id]);
+             
+             if (updateRes.rows.length > 0) {
+                 const r = updateRes.rows[0];
+                 const totalTrips = parseInt(r.past_trip_count) + parseInt(r.crm_trip_count);
+                 const newVip = getVipLevel(totalTrips);
+                 await db.query('UPDATE customers SET customer_segment = $1 WHERE id = $2', [newVip, custFound.id]);
+             }
+          } else {
+             const startTrips = 1;
+             const startVip = getVipLevel(startTrips);
+             await db.query(
+               `INSERT INTO customers 
+                (name, phone, id_card, birth_date, customer_segment, past_trip_count, role)
+                VALUES ($1, $2, $3, NULLIF($4, '')::date, $5, $6, $7)`,
+               [name, m.phone.trim(), cmnd, dob, startVip, startTrips, 'passenger']
+             );
+          }
+        } catch (autoErr) {
+          console.warn('Auto-convert member warning:', autoErr.message);
         }
       }
     }
@@ -176,3 +416,72 @@ exports.addOpTourBooking = async (req, res) => {
   }
 };
 
+exports.getOpTourBookings = async (req, res) => {
+  const { id } = req.params;  // tour_departure_id
+  try {
+    const result = await db.query(`
+      SELECT b.*, c.name as customer_name, c.phone as customer_phone
+      FROM bookings b
+      LEFT JOIN customers c ON b.customer_id = c.id
+      WHERE b.tour_departure_id = $1 
+      ORDER BY b.created_at DESC
+    `, [id]);
+    
+    const bookings = result.rows.map(row => ({
+        ...row,
+        // Map fields for OpTours frontend compatibility
+        tour_id: row.tour_departure_id,
+        name: row.customer_name || '',
+        phone: row.customer_phone || '',
+        qty: row.pax_count,
+        total: row.total_price,
+        status: row.booking_status,
+        raw_details: typeof row.raw_details === 'string' ? JSON.parse(row.raw_details) : (row.raw_details || {})
+    }));
+    res.json(bookings);
+  } catch (error) {
+    console.error('Error fetching bookings:', error);
+    res.status(500).json({ error: 'Lỗi khi lấy danh sách Bookings' });
+  }
+};
+
+exports.updateOpTourBooking = async (req, res) => {
+  const { id, bookingId } = req.params;
+  const { status, note } = req.body;
+  try {
+    const bCheck = await db.query('SELECT total_price, paid, booking_status, created_by FROM bookings WHERE id = $1 AND tour_departure_id = $2', [bookingId, id]);
+    if (bCheck.rows.length === 0) return res.status(404).json({ error: 'Không tìm thấy Booking' });
+    const booking = bCheck.rows[0];
+
+    // Permission check
+    if (req.user.role !== 'admin' && req.user.role !== 'manager' && req.user.role !== 'operator' && booking.created_by != req.user.id) {
+        return res.status(403).json({ error: 'Lỗi phân quyền! Bạn không có quyền thao tác trên Booking của người khác.' });
+    }
+
+    if (status) {
+        const paid = Number(booking.paid || 0);
+        const total = Number(booking.total_price || 0);
+        
+        if (status === 'Đã thanh toán' && (paid < total || total === 0)) {
+             return res.status(400).json({ error: 'Không thể chuyển trạng thái sang Đã thanh toán do chưa đủ dư nợ!' });
+        }
+        if (status === 'Đã đặt cọc' && (paid === 0 || paid >= total)) {
+             return res.status(400).json({ error: 'Không thể chuyển trạng thái sang Đã đặt cọc (Số dư không hợp lệ)!' });
+        }
+        if ((status === 'Mới' || status === 'Giữ chỗ') && paid > 0) {
+             return res.status(400).json({ error: 'Không thể hạ trạng thái xuống khi Booking này đang giữ tiền cọc!' });
+        }
+
+        await db.query('UPDATE bookings SET booking_status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND tour_departure_id = $3', [status, bookingId, id]);
+    }
+    
+    if (note !== undefined) {
+        await db.query('UPDATE bookings SET notes = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND tour_departure_id = $3', [note, bookingId, id]);
+    }
+    
+    res.json({ message: 'Cập nhật thành công' });
+  } catch (error) {
+    console.error('Error updating booking:', error);
+    res.status(500).json({ error: 'Lỗi khi cập nhật Booking' });
+  }
+};

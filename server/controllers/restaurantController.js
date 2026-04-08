@@ -106,7 +106,7 @@ exports.createRestaurant = async (req, res) => {
         const { 
             code, name, tax_id, phone, email, country, province, 
             address, notes, restaurant_class, website, cuisine_type, 
-            bank_account_name, bank_account_number, bank_name, market, rating,
+            bank_account_name, bank_account_number, bank_name, market, rating, drive_link,
             contacts, services
         } = req.body;
 
@@ -116,9 +116,9 @@ exports.createRestaurant = async (req, res) => {
             `INSERT INTO restaurants (
                 code, name, tax_id, phone, email, country, province, 
                 address, notes, restaurant_class, website, cuisine_type, 
-                bank_account_name, bank_account_number, bank_name, market, rating
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
-            [code, name, tax_id, phone, email, country, province, address, notes, restaurant_class, website, cuisine_type, bank_account_name, bank_account_number, bank_name, market, rating || 0]
+                bank_account_name, bank_account_number, bank_name, market, rating, drive_link
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *`,
+            [code, name, tax_id, phone, email, country, province, address, notes, restaurant_class, website, cuisine_type, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
         );
         const newRestaurantId = result.rows[0].id;
 
@@ -177,7 +177,7 @@ exports.updateRestaurant = async (req, res) => {
         const { 
             code, name, tax_id, phone, email, country, province, 
             address, notes, restaurant_class, website, cuisine_type, 
-            bank_account_name, bank_account_number, bank_name, market, rating,
+            bank_account_name, bank_account_number, bank_name, market, rating, drive_link,
             contacts, services,
             deleted_contact_ids, deleted_service_ids
         } = req.body;
@@ -188,9 +188,9 @@ exports.updateRestaurant = async (req, res) => {
             `UPDATE restaurants SET 
                 code=$1, name=$2, tax_id=$3, phone=$4, email=$5, country=$6, province=$7, 
                 address=$8, notes=$9, restaurant_class=$10, website=$11, cuisine_type=$12, 
-                bank_account_name=$13, bank_account_number=$14, bank_name=$15, market=$16, rating=$17, updated_at=CURRENT_TIMESTAMP
-            WHERE id=$18 RETURNING *`,
-            [code, name, tax_id, phone, email, country, province, address, notes, restaurant_class, website, cuisine_type, bank_account_name, bank_account_number, bank_name, market, rating || 0, id]
+                bank_account_name=$13, bank_account_number=$14, bank_name=$15, market=$16, rating=$17, drive_link=$18, updated_at=CURRENT_TIMESTAMP
+            WHERE id=$19 RETURNING *`,
+            [code, name, tax_id, phone, email, country, province, address, notes, restaurant_class, website, cuisine_type, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null, id]
         );
 
         // --- XÓA CÁC ĐỐI TƯỢNG BỊ LOẠI BỎ (DELETE) ---

@@ -140,12 +140,18 @@ export const EditTemplateModal = ({
   template,
   onClose,
   onUpdate,
-  bus
+  bus,
+  tourDepartures = []
 }) => {
-  const [formData, setFormData] = React.useState(template || {});
+  const [formData, setFormData] = React.useState({});
+  const [activeTab, setActiveTab] = React.useState('info');
 
   React.useEffect(() => {
-    if (template) setFormData(template);
+    if (template) {
+       const { _openTab, ...rest } = template;
+       setFormData(rest);
+       setActiveTab(_openTab || 'info');
+    }
   }, [template]);
 
   if (!template) return null;
@@ -162,6 +168,12 @@ export const EditTemplateModal = ({
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>⚙️ CHỈNH SỬA SẢN PHẨM TOUR</h2>
           <button className="icon-btn" onClick={onClose}><X size={24} /></button>
         </div>
+        <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', marginBottom: '1.5rem', gap: '2rem' }}>
+          <button type="button" onClick={() => setActiveTab('info')} style={{ padding: '10px 0', background: 'none', border: 'none', borderBottom: activeTab === 'info' ? '2px solid #3b82f6' : '2px solid transparent', color: activeTab === 'info' ? '#3b82f6' : '#64748b', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', outline: 'none' }}>THÔNG TIN SẢN PHẨM</button>
+          <button type="button" onClick={() => setActiveTab('departures')} style={{ padding: '10px 0', background: 'none', border: 'none', borderBottom: activeTab === 'departures' ? '2px solid #3b82f6' : '2px solid transparent', color: activeTab === 'departures' ? '#3b82f6' : '#64748b', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', outline: 'none' }}>LỊCH SỬ KHỞI HÀNH</button>
+        </div>
+
+        {activeTab === 'info' && (
         <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
           <div className="modal-form-group">
             <label>MÃ TOUR *</label>
@@ -260,6 +272,62 @@ export const EditTemplateModal = ({
             <button type="button" className="btn-pro-cancel" style={{ width: 'auto' }} onClick={onClose}>HỦY</button>
           </div>
         </form>
+        )}
+
+        {activeTab === 'departures' && (
+          <div style={{ background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+            {tourDepartures.filter(d => d.tour_template_id === template.id).length === 0 ? (
+               <div style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>Sản phẩm này chưa có lịch khởi hành nào.</div>
+            ) : (
+               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                 <thead style={{ background: '#f1f5f9' }}>
+                   <tr>
+                     <th style={{ padding: '12px', fontWeight: 'bold' }}>MÃ KHỞI HÀNH</th>
+                     <th style={{ padding: '12px', fontWeight: 'bold' }}>NGÀY KH</th>
+                     <th style={{ padding: '12px', fontWeight: 'bold' }}>NGÀY VỀ</th>
+                     <th style={{ padding: '12px', fontWeight: 'bold' }}>SỐ CHỖ</th>
+                     <th style={{ padding: '12px', fontWeight: 'bold' }}>GIÁ NIÊM YẾT</th>
+                     <th style={{ padding: '12px', fontWeight: 'bold' }}>TRẠNG THÁI</th>
+                     <th style={{ padding: '12px', fontWeight: 'bold', width: '50px' }}></th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {tourDepartures.filter(d => d.tour_template_id === template.id).map(dep => (
+                     <tr key={dep.id} style={{ borderBottom: '1px solid #e2e8f0', transition: 'background 0.2s' }}>
+                       <td style={{ padding: '12px', fontWeight: 'bold', color: '#3b82f6' }}>{dep.code || dep.tour_code || '-'}</td>
+                       <td style={{ padding: '12px', fontWeight: 600 }}>{dep.start_date ? new Date(dep.start_date).toLocaleDateString('vi-VN') : '-'}</td>
+                       <td style={{ padding: '12px' }}>{dep.end_date ? new Date(dep.end_date).toLocaleDateString('vi-VN') : '-'}</td>
+                       <td style={{ padding: '12px', textAlign: 'center' }}><span style={{background: '#e2e8f0', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold'}}>{dep.max_participants || 0}</span></td>
+                       <td style={{ padding: '12px', color: '#f59e0b', fontWeight: 'bold' }}>{new Intl.NumberFormat('vi-VN').format(dep.price || dep.actual_price || 0)}đ</td>
+                       <td style={{ padding: '12px' }}>
+                          <span style={{ 
+                            background: dep.status === 'Hoàn thành' ? '#dcfce7' : dep.status === 'Huỷ' ? '#fef2f2' : '#e0f2fe',
+                            color: dep.status === 'Hoàn thành' ? '#166534' : dep.status === 'Huỷ' ? '#991b1b' : '#0369a1',
+                            padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600
+                          }}>
+                            {dep.status || 'Mở bán'}
+                          </span>
+                       </td>
+                       <td style={{ padding: '12px', textAlign: 'center' }}>
+                         <button 
+                           type="button"
+                           onClick={() => {
+                              window.dispatchEvent(new CustomEvent('jumpToDeparture', { detail: dep.id }));
+                              onClose();
+                           }}
+                           style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', outline: 'none' }}
+                           title="Đi tới Cửa sổ Lịch Khởi Hành này"
+                         >
+                           👁️
+                         </button>
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -419,10 +487,11 @@ export const AddDepartureModal = ({
           <div className="modal-form-group">
             <label>TRẠNG THÁI VẬN HÀNH</label>
             <select className="modal-select" value={newDeparture.status} onChange={e => setNewDeparture({...newDeparture, status: e.target.value})}>
-              <option value="Open">Mở bán (Open)</option>
-              <option value="Guaranteed">Chắc chắn đi (Guaranteed)</option>
-              <option value="Full">Đã đầy (Full)</option>
-              <option value="Cancelled">Hủy tour (Cancelled)</option>
+              <option value="Mở bán">Mở bán</option>
+              <option value="Chắc chắn đi">Chắc chắn đi</option>
+              <option value="Đã đầy">Đã đầy</option>
+              <option value="Hoàn thành">Hoàn thành</option>
+              <option value="Huỷ">Huỷ</option>
             </select>
           </div>
           <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
@@ -664,11 +733,12 @@ export const EditDepartureModal = ({
           </div>
           <div className="modal-form-group">
             <label>TRẠNG THÁI VẬN HÀNH</label>
-            <select className="modal-select" value={editingDeparture.status || 'Open'} onChange={e => setEditingDeparture({...editingDeparture, status: e.target.value})}>
-              <option value="Open">Mở bán (Open)</option>
-              <option value="Guaranteed">Chắc chắn đi (Guaranteed)</option>
-              <option value="Full">Đã đầy (Full)</option>
-              <option value="Cancelled">Hủy tour (Cancelled)</option>
+            <select className="modal-select" value={editingDeparture.status || 'Mở bán'} onChange={e => setEditingDeparture({...editingDeparture, status: e.target.value})}>
+              <option value="Mở bán">Mở bán</option>
+              <option value="Chắc chắn đi">Chắc chắn đi</option>
+              <option value="Đã đầy">Đã đầy</option>
+              <option value="Hoàn thành">Hoàn thành</option>
+              <option value="Huỷ">Huỷ</option>
             </select>
           </div>
           <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>

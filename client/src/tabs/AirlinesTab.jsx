@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Plus, MapPin, Plane, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle , Star} from 'lucide-react';
+import { Search, Plus, MapPin, Plane, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle , Star, ExternalLink } from 'lucide-react';
 import Select from 'react-select';
 import AirlineDetailDrawer from '../components/modals/AirlineDetailDrawer';
 import { MARKET_OPTIONS } from '../constants/markets';
@@ -189,13 +189,11 @@ export default function AirlinesTab({ currentUser, addToast, handleDeleteAirline
                 <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
                         <tr style={{ color: '#475569', fontSize: '0.8rem' }}>
-                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '120px' }}>MÃ NCC</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '80px' }}>MÃ NCC</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left' }}>TÊN HÃNG BAY</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '160px' }}>LOẠI HÌNH</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '180px' }}>KHU VỰC</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '180px' }}>PHONE / EMAIL</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '100px' }}>DRIVE</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '150px' }}>THỊ TRƯỜNG</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '120px' }}>ĐÁNH GIÁ</th>
                             <th style={{ padding: '16px 20px', textAlign: 'center', width: '140px' }}>THAO TÁC</th>
                         </tr>
                     </thead>
@@ -216,44 +214,32 @@ export default function AirlinesTab({ currentUser, addToast, handleDeleteAirline
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#3b82f6' }}>{h.code}</td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}>
-                                            <Plane size={16} color="#ea580c" />
+                                            {h.logo_url ? <img src={h.logo_url.startsWith('http') ? h.logo_url : `/airlines/${h.logo_url}`} alt={h.name} style={{ width: '28px', height: '28px', objectFit: 'contain', borderRadius: '4px' }} /> : <Plane size={16} color="#ea580c" />}
                                             {h.name}
                                         </div>
                                     </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <span style={{ background: '#fff7ed', color: '#c2410c', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600 }}>
+                                        <span style={{ background: '#fff7ed', color: '#c2410c', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
                                             {h.airline_class === 'domestic' ? 'Hãng bay Nội Địa' : 
                                              h.airline_class === 'international' ? 'Hãng bay Nước Ngoài' : 
                                              h.airline_class === 'charter' ? 'Charter / Chuyên Cơ' : 'Khác'}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#475569' }}>
-                                            <MapPin size={14} color="#94a3b8" />
-                                            {h.province || '-'}
-                                        </div>
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
+                                        {h.drive_link ? (
+                                            <a href={h.drive_link} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', background: '#2563eb', color: 'white', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, textDecoration: 'none', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#1d4ed8'} onMouseOut={e=>e.currentTarget.style.background='#2563eb'}>
+                                                <ExternalLink size={13} /> Mở
+                                            </a>
+                                        ) : (
+                                            <span style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>—</span>
+                                        )}
                                     </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <div style={{ fontSize: '0.85rem' }}>
-                                            <div style={{ fontWeight: 500, color: '#1e293b' }}>{h.phone || '-'}</div>
-                                            <div style={{ color: '#64748b' }}>{h.email || '-'}</div>
-                                        </div>
-                                    </td>
-                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <span className="badge" style={{ background: '#f1f5f9', color: '#475569', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+                                        <span className="badge" style={{ background: '#f1f5f9', color: '#475569', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
                                             {h.market || 'Chưa phân loại'}
                                         </span>
                                     </td>
                                     
-                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
-                                        {Number(h.rating) > 0 ? (
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', color: '#f59e0b', fontWeight: 600 }}>
-                                                {Number(h.rating).toFixed(1)} <Star size={16} fill="#f59e0b" />
-                                            </div>
-                                        ) : (
-                                            <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>-</span>
-                                        )}
-                                    </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
                                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                                             <button className="btn-icon" title="Xem / Sửa" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6', padding: '4px' }} onClick={() => handleOpenAirline(h.id)}>

@@ -53,11 +53,11 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
   };
 
   const prevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
 
   const nextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
 
   const daysInMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
@@ -218,7 +218,7 @@ const CustomerCalendarView = ({ users = [], customers = [], onCustomerClick }) =
       <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
           <CalendarIcon size={20} className="text-secondary" />
-          {monthNames[currentDate.getMonth()]} năm {currentDate.getFullYear()}
+          <span className="notranslate" translate="no">{`${monthNames[currentDate.getMonth()]} năm ${currentDate.getFullYear()}`}</span>
         </h3>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button className="btn btn-outline" onClick={prevMonth} style={{ padding: '6px 10px' }}>

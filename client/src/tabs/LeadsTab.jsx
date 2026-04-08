@@ -37,7 +37,8 @@ const LeadsTab = ({
   tours,
   bus,
   fetchLeads,
-  handleConvertLead
+  handleConvertLead,
+  navigateToInbox
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(30);
@@ -257,6 +258,19 @@ const LeadsTab = ({
           ))}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
+            <span style={{ color: '#64748b', fontWeight: 600 }}>SĐT:</span>
+            {[
+              { id: '', label: 'Tất cả' },
+              { id: 'yes', label: '✅ Có SĐT' },
+              { id: 'no', label: '❌ Chưa có' }
+            ].map(p => (
+              <button key={p.id} className={`preset-btn ${leadFilters.hasPhone === p.id ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, hasPhone: p.id})}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
             <span style={{ color: '#64748b', fontWeight: 600 }}>Tùy chọn:</span>
             <input type="date" className="filter-input" style={{ padding: '4px 8px', height: '32px' }} value={leadFilters.startDate || ''} onChange={e => setLeadFilters({...leadFilters, timeRange: 'custom', startDate: e.target.value})} />
             <span style={{ color: '#94a3b8' }}>-</span>
@@ -264,10 +278,10 @@ const LeadsTab = ({
           </div>
 
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {(leadFilters.status || leadFilters.bu_group || leadFilters.assigned_to || leadFilters.search || (leadFilters.tours && leadFilters.tours.length > 0) || leadFilters.startDate || leadFilters.endDate) && (
+            {(leadFilters.status || leadFilters.bu_group || leadFilters.assigned_to || leadFilters.search || leadFilters.hasPhone || (leadFilters.tours && leadFilters.tours.length > 0) || leadFilters.startDate || leadFilters.endDate) && (
               <button 
                 type="button"
-                onClick={() => setLeadFilters({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'all', startDate: '', endDate: '', tours: [] })}
+                onClick={() => setLeadFilters({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'all', startDate: '', endDate: '', tours: [], hasPhone: '' })}
                 style={{ 
                   display: 'flex', alignItems: 'center', gap: '4px',
                   background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca', 
@@ -346,6 +360,23 @@ const LeadsTab = ({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <span style={{ fontWeight: 600, color: '#334155' }}>{new Date(lead.created_at).toLocaleDateString('vi-VN')}</span>
                     <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(lead.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                    {lead.facebook_psid && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); navigateToInbox(lead.facebook_psid); }}
+                        title="Xem hội thoại Messenger"
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '3px',
+                          background: '#eff6ff', color: '#3b82f6', border: '1px solid #bfdbfe',
+                          borderRadius: '4px', padding: '2px 6px', fontSize: '0.65rem',
+                          fontWeight: 700, cursor: 'pointer', marginTop: '2px',
+                          transition: 'all 0.15s'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = '#3b82f6'; e.currentTarget.style.color = '#fff'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = '#3b82f6'; }}
+                      >
+                        <MessageSquare size={10} /> Chat
+                      </button>
+                    )}
                   </div>
                 </td>
                 <td>

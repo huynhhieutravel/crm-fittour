@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { Search, Building, Plus, Eye, Trash2, Phone, Mail, Calendar, MapPin, Globe, ChevronDown, ChevronUp, Users, FolderOpen, X, Edit3 } from 'lucide-react';
+import { Search, Building, Plus, Eye, Trash2, Phone, Mail, Calendar, MapPin, Globe, ChevronDown, ChevronUp, Users, FolderOpen, X, Edit3, UserCheck } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
 import B2BCompanyModal, { INDUSTRY_OPTIONS } from '../components/modals/B2BCompanyModal';
 
@@ -106,7 +106,21 @@ const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list
       return sortDir === 'asc' ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
     });
     return list;
-  }, [companies, searchTerm, sortField, sortDir]);
+  }, [companies, searchTerm, sortField, sortDir, industryFilter, assignedFilter]);
+
+  const handleInlineAssign = async (companyId, newAssignedTo, e) => {
+    e.stopPropagation();
+    try {
+      await axios.put(`/api/b2b-companies/${companyId}`, 
+        { ...companies.find(c => c.id === companyId), assigned_to: newAssignedTo || null },
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+      );
+      fetchCompanies();
+      addToast?.('Cập nhật Sale thành công!', 'success');
+    } catch (err) {
+      addToast?.('Lỗi cập nhật Sale', 'error');
+    }
+  };
 
   const toggleSort = (field) => {
     if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -152,7 +166,7 @@ const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list
         <div style={{ minWidth: '200px' }}>
           <select className="filter-select" style={{ width: '100%' }} value={assignedFilter} onChange={e => setAssignedFilter(e.target.value)}>
             <option value="">Tất cả Sale phụ trách</option>
-            {users.map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
+            {users.filter(u => ['group_manager', 'group_staff'].includes(u.role_name)).map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
           </select>
         </div>
       </div>
@@ -175,14 +189,17 @@ const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list
               <th style={{ cursor: 'pointer', padding: '12px 16px', textAlign: 'right', fontWeight: 700, fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase' }} onClick={() => toggleSort('total_revenue')}>
                 Tổng DT <SortIcon field="total_revenue" />
               </th>
+              <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 700, fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', minWidth: '160px' }}>
+                <UserCheck size={13} style={{ marginRight: '4px', verticalAlign: 'middle' }} />Sale chăm sóc
+              </th>
               <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 700, fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase' }}>Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>Đang tải...</td></tr>
+              <tr><td colSpan="8" style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>Đang tải...</td></tr>
             ) : filteredCompanies.length === 0 ? (
-              <tr><td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>Không có doanh nghiệp nào</td></tr>
+              <tr><td colSpan="8" style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>Không có doanh nghiệp nào</td></tr>
             ) : filteredCompanies.map(c => (
               <tr key={c.id} style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }} onClick={() => openDetail(c)}>
                 <td style={{ padding: '14px 16px' }}>
@@ -204,6 +221,22 @@ const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list
                 <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 600 }}>{c.total_projects}</td>
                 <td style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: Number(c.total_revenue) > 0 ? '#16a34a' : '#94a3b8' }}>
                   {formatVND(c.total_revenue)}
+                </td>
+                <td style={{ padding: '14px 8px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                  <select 
+                    value={c.assigned_to || ''} 
+                    onChange={e => handleInlineAssign(c.id, e.target.value, e)}
+                    style={{ 
+                      padding: '6px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', 
+                      fontSize: '0.8rem', background: c.assigned_to ? '#f0fdf4' : '#fef2f2', 
+                      color: c.assigned_to ? '#15803d' : '#dc2626', fontWeight: 600, 
+                      cursor: 'pointer', minWidth: '130px',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="">-- Chưa gán --</option>
+                    {users.filter(u => ['group_manager', 'group_staff'].includes(u.role_name)).map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
+                  </select>
                 </td>
                 <td style={{ padding: '14px 16px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
                   <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>

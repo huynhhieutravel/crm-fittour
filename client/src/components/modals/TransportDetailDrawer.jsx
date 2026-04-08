@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import StarRating from '../common/StarRating';
 import axios from 'axios';
-import { X, Save, Plus, Trash2, Truck, ShoppingBag, Users, FileText, Send, Clock, PlusCircle } from 'lucide-react';
+import { X, Save, Plus, Trash2, Truck, ShoppingBag, Users, FileText, Send, Clock, PlusCircle , ExternalLink, Link2 } from 'lucide-react';
 import Select from 'react-select';
 import { MARKET_OPTIONS } from '../../constants/markets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
@@ -13,7 +13,7 @@ export default function TransportDetailDrawer({ transport, onClose, refreshList,
     const [formData, setFormData] = useState({
         code: '', name: '', tax_id: '', phone: '', email: '',
         country: '', province: '', address: '', notes: '', transport_class: '',
-        website: '', vehicle_type: '', market: '',
+        website: '', vehicle_type: '', market: '', drive_link: '',
         bank_account_name: '', bank_account_number: '', bank_name: '', rating: ''
     });
 
@@ -60,7 +60,7 @@ export default function TransportDetailDrawer({ transport, onClose, refreshList,
                 country: transport.country || '', province: transport.province || '', address: transport.address || '',
                 notes: transport.notes || '', transport_class: transport.transport_class || '', 
                 website: transport.website || '', vehicle_type: transport.vehicle_type || '',
-                market: transport.market || '',
+                market: transport.market || '', drive_link: transport.drive_link || '',
                 bank_account_name: transport.bank_account_name || '', 
                 bank_account_number: transport.bank_account_number || '', 
                 bank_name: transport.bank_name || ''
@@ -252,6 +252,20 @@ export default function TransportDetailDrawer({ transport, onClose, refreshList,
                                             <input type="text" style={drawerInputStyle} value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} disabled={isViewOnly} placeholder="Quốc gia" />
                                             <input type="text" style={drawerInputStyle} value={formData.province} onChange={e => setFormData({...formData, province: e.target.value})} disabled={isViewOnly} placeholder="Tỉnh / Thành phố" />
                                             <input type="text" style={drawerInputStyle} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} disabled={isViewOnly} placeholder="Số nhà, Đường..." />
+                                        </div>
+                                    </div>
+                                    
+                                    <div style={{ gridColumn: 'span 2', background: '#eff6ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+                                        <label style={{ ...labelStyle, color: '#2563eb', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Link2 size={16} /> Link Drive Dữ Liệu NCC
+                                        </label>
+                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                            <input type="url" style={{ ...drawerInputStyle, flex: 1, borderColor: '#93c5fd', background: 'white' }} value={formData.drive_link} onChange={e => setFormData({...formData, drive_link: e.target.value})} disabled={isViewOnly} placeholder="https://drive.google.com/..." />
+                                            {formData.drive_link && (
+                                                <a href={formData.drive_link} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '8px 12px', background: '#2563eb', color: 'white', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                                                    <ExternalLink size={14} /> Mở Drive
+                                                </a>
+                                            )}
                                         </div>
                                     </div>
                                     <div style={{ gridColumn: 'span 1' }}>

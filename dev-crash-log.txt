@@ -1,0 +1,20 @@
+
+> client@0.0.0 dev
+> vite
+
+
+  VITE v6.4.1  ready in 505 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+1:49:36 PM [vite] (client) warning: Duplicate key "color" in object literal
+386|                  </div>
+387|                  <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
+388|                     <label style={{ fontSize: '12px', color: '#64748b', width: '130px', fontWeight: 'bold', color: '#1e293b' }}>Hạn xin Visa</label>
+   |                                                                                                             ^
+389|                     <input type="date" style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', boxSizing: 'border-box' }} value={formData.tour_info.visa_deadline || ''} onChange={(e) => handleChange('visa_deadline', e.target.value, true)} />
+390|                  </div>
+
+  Plugin: vite:esbuild
+  File: /Volumes/T7 Loki SS/WORK Hiếu/crm-fittour/client/src/components/modals/OpTourDetailDrawer.jsx

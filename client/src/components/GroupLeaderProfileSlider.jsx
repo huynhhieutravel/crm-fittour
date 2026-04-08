@@ -125,11 +125,30 @@ const GroupLeaderProfileSlider = ({ leader, onClose, onAddNote, users = [], comp
             </select>
           </div>
           <div className="modal-form-group">
-            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '6px', display: 'block' }}>SALE PHỤ TRÁCH</label>
-            <select className="modal-select" value={editForm.assigned_to} onChange={e => setEditForm({...editForm, assigned_to: e.target.value ? parseInt(e.target.value) : ''})}>
-              <option value="">-- Chọn Sale --</option>
-              {users.map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
-            </select>
+            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              SALE PHỤ TRÁCH
+              {editForm.company_id && (
+                <span style={{ fontSize: '0.6rem', background: '#dbeafe', color: '#2563eb', padding: '2px 6px', borderRadius: '8px' }}>Từ Doanh Nghiệp</span>
+              )}
+            </label>
+            {editForm.company_id ? (
+              <div className="modal-input" style={{ background: '#f8fafc', color: '#334155', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'default' }}>
+                <span>{leader.assigned_name || '— Chưa gán —'}</span>
+                <button 
+                  type="button"
+                  title="Sửa Sale tại Doanh nghiệp"
+                  onClick={() => navigateToCompany(editForm.company_id)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', fontWeight: 600 }}
+                >
+                  <ExternalLink size={12} /> Sửa tại DN
+                </button>
+              </div>
+            ) : (
+              <select className="modal-select" value={editForm.assigned_to} onChange={e => setEditForm({...editForm, assigned_to: e.target.value ? parseInt(e.target.value) : ''})}>
+                <option value="">-- Chọn Sale --</option>
+                {users.filter(u => ['group_manager', 'group_staff'].includes(u.role_name)).map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
+              </select>
+            )}
           </div>
         </div>
         <div className="modal-form-group" style={{ marginTop: '1rem' }}>

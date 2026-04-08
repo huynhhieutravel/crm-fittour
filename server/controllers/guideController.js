@@ -4,18 +4,24 @@ exports.getAllGuides = async (req, res) => {
     try {
         const result = await db.query(`
             SELECT g.*, 
-                   COUNT(td.id)::int as total_tours,
+                   (SELECT COUNT(*)::int FROM tour_departures WHERE guide_id = g.id) +
+                   (SELECT COUNT(*)::int FROM group_projects WHERE guide_id = g.id AND status NOT IN ('Chưa thành công')) as total_tours,
                    (
-                       SELECT json_build_object('name', tt.name, 'start_date', td2.start_date, 'end_date', td2.end_date, 'status', td2.status)
-                       FROM tour_departures td2
-                       JOIN tour_templates tt ON td2.tour_template_id = tt.id
-                       WHERE td2.guide_id = g.id AND td2.end_date >= CURRENT_DATE
-                       ORDER BY td2.start_date ASC
+                       SELECT json_build_object('name', sub.name, 'start_date', sub.start_date, 'end_date', sub.end_date, 'status', sub.status)
+                       FROM (
+                           SELECT tt.name, td2.start_date, td2.end_date, td2.status
+                           FROM tour_departures td2
+                           JOIN tour_templates tt ON td2.tour_template_id = tt.id
+                           WHERE td2.guide_id = g.id AND td2.end_date >= CURRENT_DATE
+                           UNION ALL
+                           SELECT gp.name, gp.departure_date as start_date, gp.return_date as end_date, gp.status
+                           FROM group_projects gp
+                           WHERE gp.guide_id = g.id AND gp.return_date >= CURRENT_DATE AND gp.status NOT IN ('Chưa thành công')
+                       ) sub
+                       ORDER BY sub.start_date ASC
                        LIMIT 1
                    ) as next_tour
             FROM guides g
-            LEFT JOIN tour_departures td ON g.id = td.guide_id
-            GROUP BY g.id
             ORDER BY g.name ASC;
         `);
         res.json(result.rows);
@@ -87,22 +93,37 @@ exports.updateGuide = async (req, res) => {
 
 exports.getGuideTimeline = async (req, res) => {
     try {
-        const result = await db.query(`
+        // Get assignments from tour_departures
+        const depResult = await db.query(`
             SELECT 
                 g.id as guide_id, g.name as guide_name, g.status as guide_status,
                 td.id as departure_id, td.start_date, td.end_date, td.status as departure_status,
-                tt.name as tour_name
+                tt.name as tour_name,
+                'departure' as source
             FROM guides g
             LEFT JOIN tour_departures td ON g.id = td.guide_id
             LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
             ORDER BY g.name ASC, td.start_date ASC
         `);
 
+        // Get assignments from group_projects (BU3 MICE)
+        const gpResult = await db.query(`
+            SELECT 
+                gp.guide_id,
+                gp.id as departure_id, gp.departure_date as start_date, gp.return_date as end_date, 
+                gp.status as departure_status,
+                gp.name as tour_name,
+                'mice' as source
+            FROM group_projects gp
+            WHERE gp.guide_id IS NOT NULL AND gp.status NOT IN ('Chưa thành công')
+            ORDER BY gp.departure_date ASC
+        `);
+
         // Format data: group by guide
         const timeline = [];
         const guidesMap = {};
 
-        result.rows.forEach(row => {
+        depResult.rows.forEach(row => {
             if (!guidesMap[row.guide_id]) {
                 guidesMap[row.guide_id] = {
                     id: row.guide_id,
@@ -118,7 +139,22 @@ exports.getGuideTimeline = async (req, res) => {
                     start: row.start_date,
                     end: row.end_date,
                     tourName: row.tour_name,
-                    status: row.departure_status
+                    status: row.departure_status,
+                    source: 'departure'
+                });
+            }
+        });
+
+        // Add MICE assignments
+        gpResult.rows.forEach(row => {
+            if (guidesMap[row.guide_id]) {
+                guidesMap[row.guide_id].assignments.push({
+                    id: `mice-${row.departure_id}`,
+                    start: row.start_date,
+                    end: row.end_date,
+                    tourName: `🏢 ${row.tour_name}`,
+                    status: row.departure_status,
+                    source: 'mice'
                 });
             }
         });

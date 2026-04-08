@@ -34,7 +34,7 @@ exports.verifyWebhook = async (req, res) => {
     }
 };
 
-exports.handleWebhookEvent = (req, res) => {
+exports.handleWebhookEvent = async (req, res) => {
     const body = req.body;
     
     console.log('[WEBHOOK] ===== INCOMING WEBHOOK EVENT =====');
@@ -42,7 +42,7 @@ exports.handleWebhookEvent = (req, res) => {
     console.log('[WEBHOOK] Full body:', JSON.stringify(body, null, 2));
 
     if (body.object === 'page') {
-        body.entry.forEach(function(entry) {
+        for (const entry of body.entry) {
             console.log(`[WEBHOOK] Processing entry ID: ${entry.id}`);
             
             // Handle Messenger Conversations (Primary or Standby)
@@ -58,10 +58,37 @@ exports.handleWebhookEvent = (req, res) => {
                         console.log(`[WEBHOOK] Sender PSID: ${sender_psid}`);
                         
                         if (webhook_event.message) {
-                            console.log(`[WEBHOOK] Message text: "${webhook_event.message.text || '(attachment/other)'}"`);
-                            facebookService.handleMessage(sender_psid, webhook_event.message, isStandby)
-                                .then(() => console.log('[WEBHOOK] ✅ handleMessage completed'))
-                                .catch(err => console.error('[WEBHOOK] ❌ handleMessage error:', err.message, err.stack));
+                            // Kiểm tra nếu đây là echo (tin nhắn page gửi khách) → lưu vào messages
+                            if (webhook_event.message.is_echo) {
+                                const recipientPsid = webhook_event.recipient?.id || sender_psid;
+                                const echoText = webhook_event.message.text || '(Hình ảnh/Đính kèm)';
+                                // Tìm conversation bằng PSID người nhận (khách)
+                                const echoConvRes = await db.query('SELECT id, lead_id FROM conversations WHERE external_id = $1', [recipientPsid]);
+                                if (echoConvRes.rows.length > 0) {
+                                    const echoConvId = echoConvRes.rows[0].id;
+                                    await db.query(
+                                        'INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)',
+                                        [echoConvId, 'page', echoText]
+                                    );
+                                    // Nếu lead chưa có BU → check lại sau mỗi page reply
+                                    const leadId = echoConvRes.rows[0].lead_id;
+                                    if (leadId) {
+                                        const leadCheck = await db.query('SELECT bu_group FROM leads WHERE id = $1', [leadId]);
+                                        if (leadCheck.rows.length > 0 && !leadCheck.rows[0].bu_group) {
+                                            const allMsgs = await db.query('SELECT content FROM messages WHERE conversation_id = $1', [echoConvId]);
+                                            const allText = allMsgs.rows.map(m => m.content || '').join(' ');
+                                            const autoBU = await facebookService.classifyBUFromMessage_exported ? null : null;
+                                            // BU check sẽ được thực hiện bởi tin nhắn customer tiếp theo
+                                        }
+                                    }
+                                }
+                                console.log(`[WEBHOOK] 📤 Echo (page reply) saved for PSID: ${recipientPsid}`);
+                            } else {
+                                console.log(`[WEBHOOK] Message text: "${webhook_event.message.text || '(attachment/other)'}"`);
+                                facebookService.handleMessage(sender_psid, webhook_event.message, isStandby)
+                                    .then(() => console.log('[WEBHOOK] ✅ handleMessage completed'))
+                                    .catch(err => console.error('[WEBHOOK] ❌ handleMessage error:', err.message, err.stack));
+                            }
                         } else if (webhook_event.postback) {
                             console.log(`[WEBHOOK] Postback payload: ${webhook_event.postback.payload}`);
                             facebookService.handlePostback(sender_psid, webhook_event.postback)
@@ -97,7 +124,7 @@ exports.handleWebhookEvent = (req, res) => {
                     }
                 });
             }
-        });
+        }
 
         res.status(200).send('EVENT_RECEIVED');
     } else {

@@ -10,6 +10,7 @@ import {
 } from 'react-router-dom';
 
 import SettingsTab from './tabs/SettingsTab';
+import MediaSettingsTab from './tabs/MediaSettingsTab';
 import BookingsTab from './tabs/BookingsTab';
 import CostingsTab from './tabs/CostingsTab';
 import CustomersTab from './tabs/CustomersTab';
@@ -24,8 +25,11 @@ import TicketsTab from './tabs/TicketsTab';
 import AirlinesTab from './tabs/AirlinesTab';
 import LandtoursTab from './tabs/LandtoursTab';
 import InternalDocsTab from './tabs/InternalDocsTab';
+import LicensesTab from './tabs/LicensesTab';
+import BURulesTab from './tabs/BURulesTab';
 import InsurancesTab from './tabs/InsurancesTab';
 import OpToursTab from './tabs/OpToursTab';
+import PaymentVouchersTab from './tabs/PaymentVouchersTab';
 // ═══ Tour Đoàn Tab Imports ═══
 import GroupProjectsTab from './tabs/GroupProjectsTab';
 import GroupLeadersTab from './tabs/GroupLeadersTab';
@@ -46,6 +50,8 @@ import LeadNotesModal from './components/modals/LeadNotesModal';
 import { AddTemplateModal, AddDepartureModal, EditTemplateModal, EditDepartureModal } from './components/modals/TourModals';
 import GuideModal from './components/modals/GuideModal';
 import ViewDeparturePage from './pages/ViewDeparturePage';
+import AgencySharePage from './pages/AgencySharePage';
+import ServiceContractViewer from './pages/ServiceContractViewer';
 
 import { 
   Users, 
@@ -75,6 +81,7 @@ import {
   ShoppingCart,
   UserCheck,
   Settings,
+  Image as ImageIcon,
   AlertTriangle,
   ChevronDown,
   ChevronRight,
@@ -123,10 +130,11 @@ function AppContent() {
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
     if (path.startsWith('group/')) return path.replace('/', '-');
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'op-tours'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [inboxPsid, setInboxPsid] = useState(null);
   const [user, setUser] = useState(null);
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
@@ -154,7 +162,7 @@ function AppContent() {
     meta_page_access_token: '',
     meta_page_id: ''
   });
-  const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'today', startDate: '', endDate: '', tours: [] });
+  const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'today', startDate: '', endDate: '', tours: [], hasPhone: '' });
   const [tourFilters, setTourFilters] = useState({ search: '', tour_type: '', destination: '', status: '', guide_id: '', timeRange: 'all', startDate: '', endDate: '' });
   const [bookingFilters, setBookingFilters] = useState({ search: '', status: '', bookingStatus: '', paymentStatus: '' });
   const [bookingCurrentPage, setBookingCurrentPage] = useState(1);
@@ -186,9 +194,16 @@ function AppContent() {
 
   // Sidebar Submenu State
   const [isToursMenuOpen, setIsToursMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('sidebar_collapsed') === 'true';
+  });
   const [hoveredMenu, setHoveredMenu] = useState(null);
   const [hoveredRect, setHoveredRect] = useState(null);
   const menuTimerRef = useRef(null);
+
+  useEffect(() => {
+    localStorage.setItem('sidebar_collapsed', isSidebarCollapsed);
+  }, [isSidebarCollapsed]);
 
   const sidebarRef = useRef(null);
 
@@ -238,7 +253,7 @@ function AppContent() {
   });
 
   const [newDeparture, setNewDeparture] = useState({
-    tour_template_id: '', start_date: '', end_date: '', max_participants: 20, status: 'Open',
+    tour_template_id: '', start_date: '', end_date: '', max_participants: 20, status: 'Mở bán',
     actual_price: 0, discount_price: 0,
     guide_id: '', operator_id: '', min_participants: 10, break_even_pax: 12,
     price_rules: [
@@ -385,11 +400,18 @@ function AppContent() {
       navigate('/group/projects');
       setActiveTab('group-projects');
     };
+    const handleJumpToDeparture = (e) => {
+      sessionStorage.setItem('pendingOpenDepartureId', e.detail);
+      navigate('/op-tours');
+      setActiveTab('op-tours');
+    };
     window.addEventListener('switchAndOpenCompany', handleSwitch);
     window.addEventListener('switchAndOpenProject', handleSwitchProject);
+    window.addEventListener('jumpToDeparture', handleJumpToDeparture);
     return () => {
       window.removeEventListener('switchAndOpenCompany', handleSwitch);
       window.removeEventListener('switchAndOpenProject', handleSwitchProject);
+      window.removeEventListener('jumpToDeparture', handleJumpToDeparture);
     };
   }, [navigate]);
 
@@ -410,7 +432,7 @@ function AppContent() {
       return;
     }
     const path = fullPath.split('/')[0];
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'op-tours'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {
@@ -647,7 +669,7 @@ function AppContent() {
       fetchTourDepartures();
       setShowAddDepartureModal(false);
       setNewDeparture({
-        tour_template_id: '', start_date: '', end_date: '', max_participants: 20, status: 'Open',
+        tour_template_id: '', start_date: '', end_date: '', max_participants: 20, status: 'Mở bán',
         actual_price: 0, discount_price: 0,
         guide_id: '', operator_id: '', min_participants: 10, break_even_pax: 12,
         price_rules: [
@@ -1331,7 +1353,10 @@ function AppContent() {
       }
     }
 
-    return matchesStatus && matchesSource && matchesSearch && matchesBU && matchesStaff && matchesTime && matchesTours;
+    const matchesPhone = !leadFilters.hasPhone || 
+      (leadFilters.hasPhone === 'yes' ? (lead.phone && lead.phone.trim() !== '') : (!lead.phone || lead.phone.trim() === ''));
+
+    return matchesStatus && matchesSource && matchesSearch && matchesBU && matchesStaff && matchesTime && matchesTours && matchesPhone;
   });
 
   const fetchConversations = async () => {
@@ -1609,9 +1634,12 @@ function AppContent() {
 
   return (
     <div className="app-container">
-      <aside className="sidebar">
-        <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-          <img src="/logo.png" alt="FIT TOUR" style={{ height: '40px', objectFit: 'contain' }} />
+      <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`} ref={sidebarRef}>
+        <button className="sidebar-toggle-btn" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} title="Thu/Phóng Menu">
+          {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
+        <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer', overflow: 'hidden' }}>
+          <img src="/logo.png" alt="FIT TOUR" style={{ height: '40px', width: isSidebarCollapsed ? '32px' : 'auto', objectFit: isSidebarCollapsed ? 'cover' : 'contain', objectPosition: 'left' }} />
         </div>
 
         <div className="sidebar-nav-scroll">
@@ -1684,23 +1712,14 @@ function AppContent() {
 
               {checkView('op_tours') && (
                 <div 
-                  className={`nav-item ${activeTab === 'op-tours' ? 'active' : ''}`}
+                  className={`nav-item ${activeTab === 'op-tours' || activeTab === 'costings' || activeTab === 'reminders' ? 'active-parent' : ''}`}
                   onClick={() => navigate('/op-tours')}
-                >
-                  <Map /> Tour Nhanh (Test)
-                </div>
-              )}
-
-              {checkView('departures') && (
-                <div 
-                  className={`nav-item ${activeTab === 'departures' || activeTab === 'costings' ? 'active-parent' : ''}`}
-                  onClick={() => navigate('/departures')}
                   style={{ justifyContent: 'space-between' }}
                   onMouseEnter={(e) => {
                     if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
                     const rect = e.currentTarget.getBoundingClientRect();
                     setHoveredRect(rect);
-                    setHoveredMenu('departures');
+                    setHoveredMenu('op-tours');
                   }}
                   onMouseLeave={() => {
                     menuTimerRef.current = setTimeout(() => {
@@ -1714,6 +1733,17 @@ function AppContent() {
                   <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
+
+              {checkView('op_tours') && (
+                <div 
+                  className={`nav-item ${activeTab === 'vouchers' ? 'active' : ''}`}
+                  onClick={() => navigate('/vouchers')}
+                >
+                  <DollarSign /> Phiếu Thu / Chi
+                </div>
+              )}
+
+              {/* Old Lịch khởi hành tab removed — merged into OpTours above */}
               
               {checkView('guides') && (
                 <div 
@@ -1743,7 +1773,8 @@ function AppContent() {
 
           {(checkView('bookings') || checkView('customers')) && (
             <>
-              {checkView('bookings') && (
+              {/* Old Đơn hàng/Booking tab removed — merged into OpTours */}
+              {false && checkView('bookings') && (
                 <div className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`} onClick={() => navigate('/bookings')}>
                   <ShoppingCart /> Đơn hàng/Booking
                 </div>
@@ -1852,9 +1883,14 @@ function AppContent() {
                 </div>
               )}
               {checkView('settings') && (
-                <div className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => navigate('/settings')}>
-                  <Settings /> Cấu hình Meta
-                </div>
+                <>
+                  <div className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => navigate('/settings')}>
+                    <Settings /> Cấu hình Meta
+                  </div>
+                  <div className={`nav-item ${activeTab === 'media-settings' ? 'active' : ''}`} onClick={() => navigate('/media-settings')}>
+                    <ImageIcon /> Quản lý Media (Rác)
+                  </div>
+                </>
               )}
             </>
           )}
@@ -1862,6 +1898,12 @@ function AppContent() {
           <div className="nav-section-title">Tài Liệu Nội Bộ</div>
           <div className={`nav-item ${activeTab === 'internal-docs' ? 'active' : ''}`} onClick={() => navigate('/internal-docs')}>
             <FileText /> Quy chế lương HDV
+          </div>
+          <div className={`nav-item ${activeTab === 'licenses' ? 'active' : ''}`} onClick={() => navigate('/licenses')}>
+            <FileText /> Giấy phép
+          </div>
+          <div className={`nav-item ${activeTab === 'bu-rules' ? 'active' : ''}`} onClick={() => navigate('/bu-rules')}>
+            <FileText /> Quy tắc chọn BU
           </div>
 
           <div className="nav-section-title">Trợ giúp & Hướng dẫn</div>
@@ -1981,7 +2023,9 @@ function AppContent() {
         </div>
       )}
 
-      {hoveredMenu === 'departures' && hoveredRect && (
+      {/* Old departures flyout removed — replaced by op-tours flyout */}
+
+      {hoveredMenu === 'op-tours' && hoveredRect && (
         <div 
           className="submenu-flyout"
           style={{ 
@@ -1996,7 +2040,7 @@ function AppContent() {
           }}
           onMouseEnter={() => {
             if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
-            setHoveredMenu('departures');
+            setHoveredMenu('op-tours');
           }}
           onMouseLeave={() => {
             menuTimerRef.current = setTimeout(() => {
@@ -2005,10 +2049,10 @@ function AppContent() {
           }}
         >
           <div 
-            className={`submenu-item ${activeTab === 'departures' ? 'active' : ''}`} 
-            onClick={() => { navigate('/departures'); setHoveredMenu(null); }}
+            className={`submenu-item ${activeTab === 'op-tours' ? 'active' : ''}`} 
+            onClick={() => { navigate('/op-tours'); setHoveredMenu(null); }}
           >
-            Lịch khởi hành
+            Danh sách Lịch khởi hành
           </div>
           {(user?.role === 'admin' || user?.role === 'operations' || user?.role === 'manager') && (
             <div 
@@ -2288,7 +2332,7 @@ function AppContent() {
 
       <main className="main-content">
         <div className="breadcrumb-container">
-          <div className="breadcrumb">CRM / {activeTab.toUpperCase()}</div>
+          <div className="breadcrumb">CRM / {activeTab === 'op-tours' ? 'LỊCH KHỞI HÀNH' : activeTab.toUpperCase()}</div>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           </div>
         </div>
@@ -2300,7 +2344,10 @@ function AppContent() {
             activeTab === 'leads-dashboard' ? 'Dashboard Lead Marketing' :
             activeTab === 'bus' ? 'Quản lý Khối Kinh doanh (BU)' :
             activeTab === 'internal-docs' ? 'Quy chế lương HDV' :
+            activeTab === 'licenses' ? 'Giấy phép' :
+            activeTab === 'bu-rules' ? 'Quy tắc chọn BU cho Lead' :
             activeTab === 'manual' ? 'Sổ tay HDSD CRM' :
+            activeTab === 'op-tours' ? 'Lịch khởi hành' :
             activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
           }</h1>
           <div className="user-profile">
@@ -2341,6 +2388,8 @@ function AppContent() {
 
             {activeTab === 'manual' && <ManualTab />}
             {activeTab === 'internal-docs' && <InternalDocsTab />}
+            {activeTab === 'licenses' && <LicensesTab currentUser={user} addToast={addToast} />}
+            {activeTab === 'bu-rules' && <BURulesTab currentUser={user} />}
 
             {activeTab === 'leads' && (
               <LeadsTab 
@@ -2363,6 +2412,7 @@ function AppContent() {
                 bus={bus}
                 fetchLeads={fetchLeads}
                 handleConvertLead={(leadId) => setLeadToConvert(leads.find(l => l.id === leadId))}
+                navigateToInbox={(psid) => { setInboxPsid(psid); navigate('/inbox'); setActiveTab('inbox'); }}
               />
             )}
             {activeTab === 'leads-dashboard' && (
@@ -2378,6 +2428,8 @@ function AppContent() {
           <InboxTab 
             setEditingLead={setEditingLead}
             leads={leads}
+            initialPsid={inboxPsid}
+            clearInitialPsid={() => setInboxPsid(null)}
           />
         )}
 
@@ -2398,6 +2450,10 @@ function AppContent() {
 
         {activeTab === 'op-tours' && (
           <OpToursTab currentUser={user} />
+        )}
+
+        {activeTab === 'vouchers' && (
+          <PaymentVouchersTab currentUser={user} />
         )}
 
         {activeTab === 'departures' && pathParts[1] === 'view' && pathParts[2] && (
@@ -2502,6 +2558,10 @@ function AppContent() {
             onReorderBUs={handleReorderBUs}
             onCreateBU={handleCreateBU}
           />
+        )}
+        
+        {activeTab === 'media-settings' && (
+          <MediaSettingsTab addToast={addToast} />
         )}
 
         {activeTab === 'bus' && (
@@ -2667,6 +2727,7 @@ function AppContent() {
         onClose={() => setEditingTemplate(null)}
         onUpdate={handleUpdateTemplate}
         bus={bus.filter(b => b.is_active !== false || b.id === editingTemplate?.bu_group)}
+        tourDepartures={tourDepartures}
       />
 
       <AddDepartureModal 
@@ -2758,6 +2819,8 @@ function AppContent() {
   return (
     <>
       <Routes>
+      <Route path="/simple-list-share/lich_dai_ly" element={<AgencySharePage />} />
+      <Route path="/service-confirm/:tourId/:bookingId" element={<ServiceContractViewer />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/deletion" element={<DataDeletion />} />

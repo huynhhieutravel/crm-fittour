@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Plus, MapPin, Edit2, Trash2, Calendar, Users, Briefcase, Eye } from 'lucide-react';
+import { Search, Plus, MapPin, Edit2, Trash2, Calendar, Users, Briefcase, Eye, UserCheck } from 'lucide-react';
 import Select from 'react-select';
 import GroupProjectDetailDrawer from '../components/modals/GroupProjectDetailDrawer';
 
@@ -293,14 +293,15 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                             <th style={{ padding: '12px 16px', textAlign: 'right' }}>DỰ KIẾN THU</th>
                             <th style={{ padding: '12px 16px', textAlign: 'left' }}>B2B / ĐẠI DIỆN</th>
                             <th style={{ padding: '12px 16px', textAlign: 'left' }}>SALE</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'left' }}>HDV</th>
                             <th style={{ padding: '12px 16px', textAlign: 'center', width: '80px' }}></th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td></tr>
+                            <tr><td colSpan="10" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td></tr>
                         ) : filtered.length === 0 ? (
-                            <tr><td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Không có dự án MICE nào.</td></tr>
+                            <tr><td colSpan="10" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Không có dự án MICE nào.</td></tr>
                         ) : (
                             filtered.map(p => {
                                 const stColors = getStatusColor(p.status);
@@ -361,6 +362,19 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                     </td>
                                     <td style={{ padding: '10px 16px' }}>
                                         <span style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500 }}>{p.assigned_name || '-'}</span>
+                                    </td>
+                                    <td style={{ padding: '10px 16px' }}>
+                                        {p.guide_names && p.guide_names.length > 0 ? (
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                                {p.guide_names.map((name, i) => (
+                                                    <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '0.8rem', fontWeight: 600, color: '#92400e', background: '#fef3c7', padding: '3px 8px', borderRadius: '6px', border: '1px solid #fde68a' }}>
+                                                        <UserCheck size={11} /> {name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>—</span>
+                                        )}
                                     </td>
                                     <td style={{ padding: '10px 16px', textAlign: 'center' }}>
                                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
