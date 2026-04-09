@@ -2,19 +2,17 @@ const express = require('express');
 const router = express.Router();
 const bookingController = require('../controllers/bookingController');
 const authenticateToken = require('../middleware/auth');
-const roleCheck = require('../middleware/roleCheck');
+const { permCheck, permCheckAny } = require('../middleware/permCheck');
 
-const ALLOWED_BOOKING_ROLES = ['admin', 'manager', 'sales', 'operations'];
-
-router.get('/', authenticateToken, roleCheck([...ALLOWED_BOOKING_ROLES, "group_manager"]), bookingController.getAllBookings);
-router.post('/', authenticateToken, roleCheck(['admin', 'manager', 'sales', "group_manager"]), bookingController.createBooking);
-router.post('/group', authenticateToken, roleCheck(['admin', 'manager', 'sales', "group_manager"]), bookingController.createGroupBooking);
-router.get('/:id', authenticateToken, roleCheck([...ALLOWED_BOOKING_ROLES, "group_manager"]), bookingController.getBookingById);
-router.put('/:id', authenticateToken, roleCheck(['admin', 'manager', 'sales', "group_manager"]), bookingController.updateBooking);
-router.delete('/:id', authenticateToken, roleCheck(['admin', 'manager', "group_manager"]), bookingController.deleteBooking);
+router.get('/', authenticateToken, permCheckAny([['bookings','view_all'], ['bookings','view_own']]), bookingController.getAllBookings);
+router.post('/', authenticateToken, permCheck('bookings', 'create'), bookingController.createBooking);
+router.post('/group', authenticateToken, permCheck('bookings', 'create'), bookingController.createGroupBooking);
+router.get('/:id', authenticateToken, permCheckAny([['bookings','view_all'], ['bookings','view_own']]), bookingController.getBookingById);
+router.put('/:id', authenticateToken, permCheckAny([['bookings','edit_all'], ['bookings','edit_own']]), bookingController.updateBooking);
+router.delete('/:id', authenticateToken, permCheck('bookings', 'delete'), bookingController.deleteBooking);
 
 // Sub-resources
-router.post('/:id/transactions', authenticateToken, roleCheck(['admin', 'manager', 'sales', 'accountant', "group_manager"]), bookingController.addTransaction);
-router.put('/passengers/:paxId', authenticateToken, roleCheck(ALLOWED_BOOKING_ROLES), bookingController.updatePassenger);
+router.post('/:id/transactions', authenticateToken, permCheck('vouchers', 'create'), bookingController.addTransaction);
+router.put('/passengers/:paxId', authenticateToken, permCheckAny([['bookings','edit_all'], ['bookings','edit_own']]), bookingController.updatePassenger);
 
 module.exports = router;

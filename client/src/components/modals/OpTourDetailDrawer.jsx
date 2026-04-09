@@ -189,7 +189,31 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
         {/* Body scroll */}
         <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
           
-          {/* Card 1: Thông tin Tour */}
+          {/* Copy Tour Banner */}
+          {tour?._isCopy && (
+            <div style={{ 
+              background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', 
+              border: '2px solid #f59e0b', 
+              borderRadius: '8px', 
+              padding: '14px 20px', 
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <span style={{ fontSize: '24px' }}>📋</span>
+              <div>
+                <div style={{ fontWeight: 800, color: '#92400e', fontSize: '14px', marginBottom: '2px' }}>
+                  📋 BẢN SAO TOUR — Mã tour tự động kèm số thứ tự (DEP-01, 02...)
+                </div>
+                <div style={{ color: '#a16207', fontSize: '12px' }}>
+                  ⚠️ Hãy sửa <strong>Ngày khởi hành</strong>, <strong>Ngày về</strong> cho đúng lịch mới. Booking &amp; Phiếu thu cũ KHÔNG copy theo.
+                </div>
+              </div>
+            </div>
+          )}
+
+
           <div style={{ background: 'white', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
              <h4 style={{ color: '#f59e0b', margin: '0 0 15px 0', fontSize: '15px' }}>Thông tin Tour</h4>
              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '15px' }}>
@@ -429,10 +453,14 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
              <h4 style={{ margin: '0 0 15px 0', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '5px' }}>
                 Lịch trình Tours <span style={{ fontSize: '12px' }}>▼</span>
              </h4>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <label style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>Link lịch trình (File PDF)</label>
-                <input type="text" placeholder="Nhập link file PDF lịch trình" style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formData.tour_info.tour_itinerary_link || ''} onChange={e => handleChange('tour_itinerary_link', e.target.value, true)} />
-             </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                 <label style={{ fontSize: '13px', color: '#64748b', fontWeight: '500', minWidth: '180px' }}>📄 Link lịch trình (File PDF)</label>
+                 <input type="text" placeholder="Nhập link file PDF lịch trình" style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formData.tour_info.tour_itinerary_link || ''} onChange={e => handleChange('tour_itinerary_link', e.target.value, true)} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                 <label style={{ fontSize: '13px', color: '#64748b', fontWeight: '500', minWidth: '180px' }}>🌐 Link lịch trình (Trang Web)</label>
+                 <input type="text" placeholder="Nhập link trang web lịch trình" style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formData.tour_info.tour_itinerary_web_link || ''} onChange={e => handleChange('tour_itinerary_web_link', e.target.value, true)} />
+              </div>
           </div>
 
           {/* Card: Điều khoản & Lưu ý */}

@@ -2,16 +2,14 @@ const express = require('express');
 const router = express.Router();
 const leadController = require('../controllers/leadController');
 const authenticateToken = require('../middleware/auth');
-const roleCheck = require('../middleware/roleCheck');
+const { permCheck, permCheckAny } = require('../middleware/permCheck');
 
-const ALLOWED_LEAD_ROLES = ['admin', 'manager', 'sales', 'marketing'];
-
-router.get('/stats', authenticateToken, roleCheck(ALLOWED_LEAD_ROLES), leadController.getLeadStats);
-router.get('/', authenticateToken, roleCheck(ALLOWED_LEAD_ROLES), leadController.getAllLeads);
-router.post('/bulk-update', authenticateToken, roleCheck(ALLOWED_LEAD_ROLES), leadController.bulkUpdateLeads);
-router.post('/', authenticateToken, roleCheck(ALLOWED_LEAD_ROLES), leadController.createLead);
-router.get('/:id', authenticateToken, roleCheck(ALLOWED_LEAD_ROLES), leadController.getLeadById);
-router.put('/:id', authenticateToken, roleCheck(ALLOWED_LEAD_ROLES), leadController.updateLead);
-router.delete('/:id', authenticateToken, roleCheck(['admin', 'manager']), leadController.deleteLead);
+router.get('/stats', authenticateToken, permCheckAny([['leads','view_all'], ['leads','view_own']]), leadController.getLeadStats);
+router.get('/', authenticateToken, permCheckAny([['leads','view_all'], ['leads','view_own']]), leadController.getAllLeads);
+router.post('/bulk-update', authenticateToken, permCheck('leads', 'edit'), leadController.bulkUpdateLeads);
+router.post('/', authenticateToken, permCheck('leads', 'create'), leadController.createLead);
+router.get('/:id', authenticateToken, permCheckAny([['leads','view_all'], ['leads','view_own']]), leadController.getLeadById);
+router.put('/:id', authenticateToken, permCheck('leads', 'edit'), leadController.updateLead);
+router.delete('/:id', authenticateToken, permCheck('leads', 'delete'), leadController.deleteLead);
 
 module.exports = router;

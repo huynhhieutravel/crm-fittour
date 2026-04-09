@@ -2,9 +2,28 @@ const db = require('../db');
 const { logActivity } = require('../utils/logger');
 const { convertLeadToCustomer } = require('../services/conversionService');
 const metaCapi = require('../services/metaCapiService');
+const { getDataScope } = require('../middleware/teamScope');
+const { getUserMergedPerms } = require('../middleware/permCheck');
 
 exports.getAllLeads = async (req, res) => {
     try {
+        // Data Scoping: xác định phạm vi dữ liệu dựa trên quyền user
+        let scopeClause = '';
+        let scopeParams = [];
+        
+        if (req.user && req.user.role !== 'admin') {
+            const perms = await getUserMergedPerms(req.user.id, req.user.role);
+            const scope = await getDataScope(req.user.id, 'leads', perms);
+            
+            if (scope.scope === 'team' || scope.scope === 'own') {
+                scopeClause = `WHERE l.assigned_to = ANY($1)`;
+                scopeParams = [scope.userIds];
+            } else if (scope.scope === 'none') {
+                return res.json([]); // Không có quyền xem
+            }
+            // scope === 'all' → không thêm WHERE
+        }
+
         const result = await db.query(`
             SELECT l.*, tt.name as tour_name, u.full_name as assigned_to_name,
                    (SELECT COUNT(*)::int FROM lead_notes WHERE lead_id = l.id) as notes_count,
@@ -17,8 +36,9 @@ exports.getAllLeads = async (req, res) => {
             LEFT JOIN tour_templates tt ON l.tour_id = tt.id 
             LEFT JOIN users u ON l.assigned_to = u.id 
             LEFT JOIN customers c ON l.customer_id = c.id
+            ${scopeClause}
             ORDER BY l.created_at DESC
-        `);
+        `, scopeParams);
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ message: err.message });

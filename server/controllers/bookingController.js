@@ -1,5 +1,7 @@
 const db = require('../db');
 const { logActivity } = require('../utils/logger');
+const { getDataScope } = require('../middleware/teamScope');
+const { getUserMergedPerms } = require('../middleware/permCheck');
 
 exports.getAllBookings = async (req, res) => {
     try {
@@ -8,6 +10,20 @@ exports.getAllBookings = async (req, res) => {
         let whereClauses = [];
         let params = [];
         let paramCount = 1;
+
+        // Data Scoping: giới hạn theo team
+        if (req.user && req.user.role !== 'admin') {
+            const perms = await getUserMergedPerms(req.user.id, req.user.role);
+            const scope = await getDataScope(req.user.id, 'bookings', perms);
+            
+            if (scope.scope === 'team' || scope.scope === 'own') {
+                whereClauses.push(`b.created_by = ANY($${paramCount})`);
+                params.push(scope.userIds);
+                paramCount++;
+            } else if (scope.scope === 'none') {
+                return res.json({ data: [], total: 0, page: 1, totalPages: 0 });
+            }
+        }
 
         if (search) {
             whereClauses.push(`(b.booking_code ILIKE $${paramCount} OR c.name ILIKE $${paramCount} OR c.phone ILIKE $${paramCount} OR tt.code ILIKE $${paramCount} OR td.code ILIKE $${paramCount})`);

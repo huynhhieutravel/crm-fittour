@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Search, CalendarDays, Users, Download, X, Plane } from 'lucide-react';
+import { Plus, Search, CalendarDays, Users, Download, X, Plane, Copy } from 'lucide-react';
 import * as XLSX from 'xlsx-js-style';
 import OpTourDetailDrawer from '../components/modals/OpTourDetailDrawer';
 import OpTourAddCustomerModal from '../components/modals/OpTourAddCustomerModal';
@@ -371,6 +371,42 @@ export default function OpToursTab({ currentUser }) {
     }
   }
 
+  const handleCopyTour = (tour) => {
+    // Auto-generate tour code: {TEMPLATE_CODE}-DEP-{SEQ}
+    // Đếm số lần departure đã tồn tại để tạo số thứ tự tiếp theo
+    const baseCode = tour.template_code || tour.tour_code?.split('-DEP-')[0] || 'TOUR';
+    
+    // Tìm số thứ tự lớn nhất hiện có cho cùng sản phẩm tour
+    let maxSeq = 0;
+    tours.forEach(t => {
+      const code = t.tour_code || '';
+      if (code.startsWith(baseCode + '-DEP-')) {
+        const seqPart = code.replace(baseCode + '-DEP-', '');
+        const num = parseInt(seqPart, 10);
+        if (!isNaN(num) && num > maxSeq) maxSeq = num;
+      }
+    });
+    const nextSeq = String(maxSeq + 1).padStart(2, '0');
+    const newCode = `${baseCode}-DEP-${nextSeq}`;
+
+    const cloned = {
+      tour_code: newCode,
+      tour_name: tour.tour_name || '',
+      tour_template_id: tour.tour_template_id || '',
+      start_date: tour.start_date ? tour.start_date.split('T')[0] : '',
+      end_date: tour.end_date ? tour.end_date.split('T')[0] : '',
+      market: tour.market || '',
+      status: 'Mở bán',
+      tour_info: { ...(tour.tour_info || {}) },
+      expenses: tour.expenses ? JSON.parse(JSON.stringify(tour.expenses)) : [],
+      guides: tour.guides ? JSON.parse(JSON.stringify(tour.guides)) : [],
+      itinerary: tour.itinerary || '',
+      _isCopy: true,
+    };
+    setSelectedTour(cloned);
+    setIsDrawerOpen(true);
+  };
+
   // Derive unique markets from data dynamically
   const uniqueMarkets = ['Tất cả', ...new Set(tours.map(t => t.market).filter(Boolean))];
   const uniqueStatuses = ['Tất cả', ...new Set(tours.map(t => t.status).filter(Boolean))];
@@ -734,6 +770,12 @@ export default function OpToursTab({ currentUser }) {
                       style={{ width: '85px', background: '#22c55e', color: 'white', border: 'none', padding: '5px 0', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '4px' }}
                     >
                       + Giữ chỗ
+                    </button>
+                    <button 
+                      onClick={() => handleCopyTour(tour)}
+                      style={{ width: '85px', background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', padding: '4px 0', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '4px' }}
+                    >
+                      <Copy size={12} /> Copy
                     </button>
                     <button 
                       onClick={() => openAllMembersList(tour)}

@@ -299,12 +299,31 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                     const filledMembers = members.filter(m => m.name && m.name.trim() !== '' && !m.name.startsWith('Khách ')).length;
                     const missingCount = totalSlots > 0 ? Math.max(0, totalSlots - filledMembers) : 0;
                     
+                    const hasAccess = isOwnerOrAdmin(b);
+                    const renderMasked = (val, type) => {
+                        if (!val || val === '---') return '---';
+                        if (hasAccess) return val;
+                        const str = String(val).trim();
+                        if (type === 'name') {
+                            const words = str.split(' ');
+                            if (words.length <= 1) return str.substring(0,1) + '***';
+                            return words[0] + ' ***';
+                        }
+                        if (type === 'phone') {
+                            return str.length > 5 ? str.substring(0, 3) + '****' + str.substring(str.length - 3) : '***';
+                        }
+                        if (type === 'id') {
+                            return str.length > 4 ? str.substring(0, 2) + '****' + str.substring(str.length - 2) : '***';
+                        }
+                        return '***';
+                    };
+                    
                     return (
                       <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0', background: 'white' }}>
                         <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'top' }}>{idx + 1}</td>
                         <td style={{ padding: '15px', verticalAlign: 'top', lineHeight: '1.6' }}>
                            <div style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '5px' }}>
-                              <b>Tên:</b> {b.name} 
+                              <b>Tên:</b> {renderMasked(b.name, 'name')} 
                               <span style={{ border: '1px solid #f59e0b', color: '#f59e0b', borderRadius: '12px', padding: '2px 6px', fontSize: '10px' }}>Cá nhân</span>
                               {missingCount > 0 ? (
                                 <span style={{ background: '#fef3c7', color: '#92400e', borderRadius: '12px', padding: '2px 8px', fontSize: '10px', fontWeight: 'bold', border: '1px solid #f59e0b' }} title="Còn thành viên chưa có đầy đủ Họ tên / SĐT">⚠️ Thiếu TT: {missingCount} khách</span>
@@ -312,10 +331,10 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                                 <span style={{ background: '#dcfce7', color: '#166534', borderRadius: '12px', padding: '2px 8px', fontSize: '10px', fontWeight: 'bold', border: '1px solid #86efac' }}>✅ Đủ thông tin {totalSlots} khách</span>
                               ) : null}
                            </div>
-                           <div style={{ marginBottom: '4px' }}><b>Điện thoại:</b> {b.phone || firstMember.phone || '---'}</div>
-                           <div style={{ marginBottom: '4px' }}><b>CMTND:</b> {b.cmnd || firstMember.docId || '---'}</div>
-                           <div style={{ marginBottom: '4px' }}><b>Giới tính:</b> {bInfo.gender || firstMember.gender || '---'}</div>
-                           <div style={{ marginBottom: '4px' }}><b>Ngày sinh:</b> {formatDate(firstMember.dob)}</div>
+                           <div style={{ marginBottom: '4px' }}><b>Điện thoại:</b> {renderMasked(b.phone || firstMember.phone, 'phone')}</div>
+                           <div style={{ marginBottom: '4px' }}><b>CMTND:</b> {renderMasked(b.cmnd || firstMember.docId, 'id')}</div>
+                           <div style={{ marginBottom: '4px' }}><b>Giới tính:</b> {hasAccess ? (bInfo.gender || firstMember.gender || '---') : '***'}</div>
+                           <div style={{ marginBottom: '4px' }}><b>Ngày sinh:</b> {hasAccess ? formatDate(firstMember.dob) : '***'}</div>
                            <div style={{ marginBottom: '4px', position: 'relative', display: 'inline-block' }}>
                               <b>Số lượng:</b>{' '}
                               <span 

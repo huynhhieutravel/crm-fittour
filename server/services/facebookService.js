@@ -21,13 +21,34 @@ const extractVietnamPhone = (text) => {
     return null;
 };
 
+// Lọc tin chào mừng tự động khi khách comment bài viết (chỉ bỏ template greeting)
+// Pattern: "FIT xin chào chị [TÊN] ạ, team FIT sẽ gửi..." + "để lại SDT"
+const isAutoGreeting = (text) => {
+    if (!text) return false;
+    const lower = text.toLowerCase();
+    return lower.includes('fit xin chào') && lower.includes('team fit') && lower.includes('lịch trình');
+};
+
 // Auto-classify BU from message keywords (ưu tiên sort_order: BU1 trước)
+// FIX v2: Word boundary + stopwords + lọc greeting template
 const classifyBUFromMessage = async (messageText) => {
     if (!messageText || messageText.trim().length < 2) return null;
     
     // Normalize: lowercase + remove diacritics
-    const normalize = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+    const normalize = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0111/g, 'd').replace(/\u0110/g, 'D');
     const normalizedMsg = normalize(messageText);
+    
+    // Stopwords: tu tieng Viet pho bien bi trung keyword sau khi bo dau
+    const STOPWORDS = new Set([
+        'nhat',   // nhat, nhat (trung Nhat Ban)
+        'nhan',   // nhan, nhan
+        'lai',    // lai, lai
+        'chi',    // chi, chi
+        'gia',    // gia, gia
+        'ay',     // ay
+        'an',     // an, an
+        'cho',    // cho
+    ]);
     
     try {
         const busResult = await db.query(
@@ -45,29 +66,30 @@ const classifyBUFromMessage = async (messageText) => {
                 const normalizedKw = normalize(keyword);
                 if (normalizedKw.length < 1) continue;
                 
-                let matched = false;
-                if (normalizedKw.length <= 3) {
-                    // Keyword ngắn (ý, mỹ, úc, tq...) → dùng word boundary để tránh false positive
-                    const regex = new RegExp(`(?:^|[\\s,;.!?()\\[\\]"'])${normalizedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:$|[\\s,;.!?()\\[\\]"'])`, 'i');
-                    matched = regex.test(normalizedMsg);
-                } else {
-                    matched = normalizedMsg.includes(normalizedKw);
-                }
+                // Skip stopwords - tu qua pho bien gay false positive
+                if (normalizedKw.length <= 4 && STOPWORDS.has(normalizedKw)) continue;
+                
+                // LUON dung word boundary cho moi keyword
+                const escaped = normalizedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const boundary = '[\\s,;.!?()\\[\\]"\\-]';
+                const regex = new RegExp('(?:^|' + boundary + ')' + escaped + '(?:$|' + boundary + ')', 'i');
+                const matched = regex.test(normalizedMsg);
                 
                 if (matched) {
-                    console.log(`[BU-AUTO] Matched keyword "${keyword}" → ${bu.id} (${bu.label}) cho tin nhắn: "${messageText.substring(0, 60)}..."`);
+                    console.log('[BU-AUTO] Matched keyword "' + keyword + '" -> ' + bu.id + ' (' + bu.label + ') cho tin nhan: "' + messageText.substring(0, 60) + '..."');
                     return bu.id;
                 }
             }
         }
         
-        console.log(`[BU-AUTO] Không match BU cho tin nhắn: "${messageText.substring(0, 80)}"`);
+        console.log('[BU-AUTO] Khong match BU cho tin nhan: "' + messageText.substring(0, 80) + '"');
         return null;
     } catch (err) {
-        console.error('[BU-AUTO] Lỗi classifyBU:', err.message);
+        console.error('[BU-AUTO] Loi classifyBU:', err.message);
         return null;
     }
 };
+
 
 exports.handleMessage = async (sender_psid, received_message, isStandby = false) => {
     let response;
@@ -155,14 +177,13 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
                     await db.query('UPDATE leads SET created_at = NOW(), last_contacted_at = NOW() WHERE id = $1', [leadId]);
                     await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [received_message.text, conversationId]);
 
-                    // [BU-AUTO] Nếu lead chưa có BU → tiếp tục classify từ TẤT CẢ tin nhắn (customer + page)
+                    // [BU-AUTO] Nếu lead chưa có BU → classify từ TẤT CẢ tin nhắn (lọc greeting template)
                     if (!oldLead.bu_group) {
-                        // Gộp tất cả messages của conversation này
                         const allMsgsResult = await db.query(
                             'SELECT content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
                             [conversationId]
                         );
-                        const allText = allMsgsResult.rows.map(m => m.content || '').join(' ') + ' ' + (received_message.text || '');
+                        const allText = allMsgsResult.rows.filter(m => !isAutoGreeting(m.content)).map(m => m.content || '').join(' ') + ' ' + (received_message.text || '');
                         const autoBU3 = await classifyBUFromMessage(allText);
                         if (autoBU3) {
                             await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU3, leadId]);
@@ -475,8 +496,8 @@ exports.syncRecentConversations = async () => {
 
                     currentLeadId = leadResult.rows[0].id;
 
-                    // Auto-classify BU from ALL messages in conversation (customer + page)
-                    const allConvMsgs = messagesList.map(m => (m.message || '')).join(' ');
+                    // Auto-classify BU from ALL messages (lọc bỏ tin chào mừng tự động)
+                    const allConvMsgs = messagesList.filter(m => !isAutoGreeting(m.message)).map(m => (m.message || '')).join(' ');
                     const autoBUPoller = await classifyBUFromMessage(allConvMsgs || actualMessageText);
                     if (autoBUPoller) {
                         await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller, currentLeadId]);
@@ -549,13 +570,13 @@ exports.syncRecentConversations = async () => {
                                 await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [safeMsg2, oldConv.id]);
                                 await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', safeMsg2]);
 
-                                // [BU-AUTO] Poller: Nếu lead chưa có BU → classify từ TẤT CẢ messages (customer + page)
+                                // [BU-AUTO] Poller: Nếu lead chưa có BU → classify TẤT CẢ (lọc greeting)
                                 if (!oldLead.bu_group) {
                                     const allPollerMsgs = await db.query(
                                         'SELECT content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
                                         [oldConv.id]
                                     );
-                                    const allPollerText = allPollerMsgs.rows.map(m => m.content || '').join(' ');
+                                    const allPollerText = allPollerMsgs.rows.filter(m => !isAutoGreeting(m.content)).map(m => m.content || '').join(' ');
                                     const autoBUPoller2 = await classifyBUFromMessage(allPollerText);
                                     if (autoBUPoller2) {
                                         await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller2, oldLead.id]);

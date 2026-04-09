@@ -2,39 +2,38 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/ticketController');
 const authenticateToken = require('../middleware/auth');
-const roleCheck = require('../middleware/roleCheck');
+const { permCheck } = require('../middleware/permCheck');
 
-const ALLOWED_ROLES = ['admin', 'manager', 'operations'];
 
 // Tickets
-router.get('/', authenticateToken, roleCheck([...ALLOWED_ROLES, "group_manager"]), controller.getAll);
-router.post('/', authenticateToken, roleCheck(ALLOWED_ROLES), controller.create);
-router.get('/:id', authenticateToken, roleCheck([...ALLOWED_ROLES, "group_manager"]), controller.getDetails);
-router.put('/:id', authenticateToken, roleCheck(ALLOWED_ROLES), controller.update);
-router.delete('/:id', authenticateToken, roleCheck(ALLOWED_ROLES), controller.delete);
+router.get('/', authenticateToken, permCheck('tickets', 'view'), controller.getAll);
+router.post('/', authenticateToken, permCheck('tickets', 'create'), controller.create);
+router.get('/:id', authenticateToken, permCheck('tickets', 'view'), controller.getDetails);
+router.put('/:id', authenticateToken, permCheck('tickets', 'edit'), controller.update);
+router.delete('/:id', authenticateToken, permCheck('tickets', 'delete'), controller.delete);
 
 // Contacts
-router.post('/:ticket_id/contacts', authenticateToken, roleCheck(ALLOWED_ROLES), controller.createContact);
-router.put('/contacts/:contact_id', authenticateToken, roleCheck(ALLOWED_ROLES), controller.updateContact);
-router.delete('/contacts/:contact_id', authenticateToken, roleCheck(ALLOWED_ROLES), controller.deleteContact);
+router.post('/:ticket_id/contacts', authenticateToken, permCheck('tickets', 'edit'), controller.createContact);
+router.put('/contacts/:contact_id', authenticateToken, permCheck('tickets', 'edit'), controller.updateContact);
+router.delete('/contacts/:contact_id', authenticateToken, permCheck('tickets', 'edit'), controller.deleteContact);
 
 // Services
-router.post('/:ticket_id/services', authenticateToken, roleCheck(ALLOWED_ROLES), controller.createService);
-router.put('/services/:service_id', authenticateToken, roleCheck(ALLOWED_ROLES), controller.updateService);
-router.delete('/services/:service_id', authenticateToken, roleCheck(ALLOWED_ROLES), controller.deleteService);
+router.post('/:ticket_id/services', authenticateToken, permCheck('tickets', 'edit'), controller.createService);
+router.put('/services/:service_id', authenticateToken, permCheck('tickets', 'edit'), controller.updateService);
+router.delete('/services/:service_id', authenticateToken, permCheck('tickets', 'edit'), controller.deleteService);
 
 // Contracts
-router.post('/:ticket_id/contracts', authenticateToken, roleCheck(ALLOWED_ROLES), controller.createContract);
-router.put('/contracts/:contract_id', authenticateToken, roleCheck(ALLOWED_ROLES), controller.updateContract);
-router.delete('/contracts/:contract_id', authenticateToken, roleCheck(ALLOWED_ROLES), controller.deleteContract);
+router.post('/:ticket_id/contracts', authenticateToken, permCheck('tickets', 'edit'), controller.createContract);
+router.put('/contracts/:contract_id', authenticateToken, permCheck('tickets', 'edit'), controller.updateContract);
+router.delete('/contracts/:contract_id', authenticateToken, permCheck('tickets', 'edit'), controller.deleteContract);
 
 // Contract Rates
-router.post('/contracts/:contract_id/rates', authenticateToken, roleCheck(ALLOWED_ROLES), controller.createContractRate);
-router.put('/rates/:rate_id', authenticateToken, roleCheck(ALLOWED_ROLES), controller.updateContractRate);
-router.delete('/rates/:rate_id', authenticateToken, roleCheck(ALLOWED_ROLES), controller.deleteContractRate);
+router.post('/contracts/:contract_id/rates', authenticateToken, permCheck('tickets', 'edit'), controller.createContractRate);
+router.put('/rates/:rate_id', authenticateToken, permCheck('tickets', 'edit'), controller.updateContractRate);
+router.delete('/rates/:rate_id', authenticateToken, permCheck('tickets', 'edit'), controller.deleteContractRate);
 
 // Notes
-router.get('/:ticket_id/notes', authenticateToken, roleCheck([...ALLOWED_ROLES, "group_manager"]), controller.getNotes);
-router.post('/:ticket_id/notes', authenticateToken, roleCheck(ALLOWED_ROLES), controller.addNote);
+router.get('/:ticket_id/notes', authenticateToken, permCheck('tickets', 'view'), controller.getNotes);
+router.post('/:ticket_id/notes', authenticateToken, permCheck('tickets', 'edit'), controller.addNote);
 
 module.exports = router;

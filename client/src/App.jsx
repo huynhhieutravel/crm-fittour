@@ -40,12 +40,14 @@ import LeadsDashboardTab from './tabs/LeadsDashboardTab';
 import StaffPerformanceTab from './tabs/StaffPerformanceTab';
 import GuidesTab from './tabs/GuidesTab';
 import UsersTab from './tabs/UsersTab';
+import TeamsTab from './tabs/TeamsTab';
 import ManualTab from './tabs/ManualTab';
 import AddLeadModal from './components/modals/AddLeadModal';
 import EditLeadModal from './components/modals/EditLeadModal';
 import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
 import { AddBookingModal } from './components/modals/BookingModals';
 import { AddUserModal, EditUserModal, ChangePasswordModal } from './components/modals/UserModals';
+import { RolePermissionModal, UserPermissionOverrideModal } from './components/modals/PermissionModals';
 import LeadNotesModal from './components/modals/LeadNotesModal';
 import { AddTemplateModal, AddDepartureModal, EditTemplateModal, EditDepartureModal } from './components/modals/TourModals';
 import GuideModal from './components/modals/GuideModal';
@@ -130,7 +132,7 @@ function AppContent() {
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
     if (path.startsWith('group/')) return path.replace('/', '-');
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -148,10 +150,13 @@ function AppContent() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const [myPermissions, setMyPermissions] = useState(null);
   const [testLoading, setTestLoading] = useState(false);
   const [metaToken, setMetaToken] = useState('');
   const [roles, setRoles] = useState([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showRolePermModal, setShowRolePermModal] = useState(false);
+  const [userToEditPerms, setUserToEditPerms] = useState(null);
   const [editingUserAccount, setEditingUserAccount] = useState(null);
   const [userToChangePassword, setUserToChangePassword] = useState(null);
   const [showChangeMyPassword, setShowChangeMyPassword] = useState(false);
@@ -432,7 +437,7 @@ function AppContent() {
       return;
     }
     const path = fullPath.split('/')[0];
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'media-settings', 'users', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'media-settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {
@@ -478,8 +483,19 @@ function AppContent() {
       fetchUsers();
       fetchSettings();
       fetchBUs();
+      fetchMyPermissions();
     }
   }, [isLoggedIn]);
+
+  const fetchMyPermissions = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('/api/permissions/my', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMyPermissions(res.data.permissions);
+    } catch (err) { console.error('Fetch permissions failed', err); }
+  };
 
   const fetchBUs = async () => {
     try {
@@ -1624,8 +1640,25 @@ function AppContent() {
     const currentUserFull = users.find(u => u.id === user?.id) || {};
     const hasPerms = currentUserFull.permissions || {};
     
+    // Hàm check quyền V2
+    const checkPerm = (mod, action = 'view') => {
+      if (user?.role === 'admin') return true;
+      if (!myPermissions || !myPermissions[mod]) return false;
+      return myPermissions[mod][action] === true;
+    };
+
+    const checkPermAny = (mod, actions = []) => {
+      if (user?.role === 'admin') return true;
+      if (!myPermissions || !myPermissions[mod]) return false;
+      return actions.some(act => myPermissions[mod][act] === true);
+    };
+
     const checkView = (mod) => {
       if (user?.role === 'admin') return true;
+      // Trải nghiệm V2 mượt mà hơn cho Sidebar
+      if (myPermissions) {
+        return checkPermAny(mod, ['view', 'view_own', 'view_all']);
+      }
       if (hasPerms[mod]) return hasPerms[mod].can_view === true;
       return false;
     };
@@ -1880,6 +1913,11 @@ function AppContent() {
               {checkView('users') && (
                 <div className={`nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => navigate('/users')}>
                   <UserCheck /> Quản lý Nhân sự
+                </div>
+              )}
+              {(user?.role === 'admin') && (
+                <div className={`nav-item ${activeTab === 'teams' ? 'active' : ''}`} onClick={() => navigate('/teams')}>
+                  <Users /> Quản lý Team
                 </div>
               )}
               {checkView('settings') && (
@@ -2535,16 +2573,23 @@ function AppContent() {
           />
         )}
 
-        {activeTab === 'users' && (user?.role === 'admin' || user?.role === 'manager') && (
+        {activeTab === 'users' && (checkPerm('users', 'view') || user?.role === 'admin' || user?.role === 'manager') && (
           <UsersTab 
             users={users}
             roles={roles}
             currentUser={user}
+            checkPerm={checkPerm}
             onAddUser={() => setShowAddUserModal(true)}
             onEditUser={(u) => setEditingUserAccount(u)}
             onChangePassword={(u) => setUserToChangePassword(u)}
             onDeleteUser={handleDeleteUser}
+            onEditRolePerms={() => setShowRolePermModal(true)}
+            onEditUserPerms={(u) => setUserToEditPerms(u)}
           />
+        )}
+
+        {activeTab === 'teams' && user?.role === 'admin' && (
+          <TeamsTab addToast={addToast} users={users} />
         )}
 
         {activeTab === 'settings' && (
@@ -2776,6 +2821,19 @@ function AppContent() {
         onClose={() => setEditingUserAccount(null)}
         onSave={handleUpdateUser}
         roles={roles}
+      />
+
+      <RolePermissionModal 
+        open={showRolePermModal} 
+        onClose={() => setShowRolePermModal(false)}
+        addToast={addToast}
+      />
+      
+      <UserPermissionOverrideModal 
+        open={!!userToEditPerms} 
+        user={userToEditPerms}
+        onClose={() => setUserToEditPerms(null)}
+        addToast={addToast}
       />
 
       <ChangePasswordModal 

@@ -1,31 +1,106 @@
 const db = require('../db');
 const bcrypt = require('bcryptjs');
 const { logActivity } = require('../utils/logger');
+const { isInManagedTeam, getAllowedRolesForManager } = require('../middleware/teamScope');
 
 exports.getAllUsers = async (req, res) => {
     try {
         const usersRes = await db.query(`
-            SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active, u.created_at, r.name as role_name, r.id as role_id 
+            SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active, u.created_at, 
+                   r.name as role_name, r.id as role_id,
+                   COALESCE(
+                       (SELECT json_agg(json_build_object('id', t.id, 'name', t.name, 'code', t.code) ORDER BY t.name)
+                        FROM team_members tmb JOIN teams t ON tmb.team_id = t.id
+                        WHERE tmb.user_id = u.id), '[]'::json
+                   ) as teams
             FROM users u 
             JOIN roles r ON u.role_id = r.id 
             ORDER BY u.full_name ASC
         `);
+
+        // ---- V2: Đọc từ bảng mới (ưu tiên) ----
+        let useV2 = false;
+        let permMaster = [];
+        let rolePermsV2 = [];
+        let userPermsV2 = [];
         
+        try {
+            const masterRes = await db.query('SELECT id, module, action FROM permissions_master');
+            permMaster = masterRes.rows;
+            if (permMaster.length > 0) {
+                useV2 = true;
+                const rpRes = await db.query('SELECT * FROM role_permissions_v2');
+                rolePermsV2 = rpRes.rows;
+                const upRes = await db.query('SELECT * FROM user_permissions_v2');
+                userPermsV2 = upRes.rows;
+            }
+        } catch (e) {
+            // V2 tables chưa tồn tại → fallback v1
+            useV2 = false;
+        }
+
+        if (useV2) {
+            // ---- V2 Path ----
+            const usersWithPerms = usersRes.rows.map(user => {
+                const permissions = {};
+                
+                permMaster.forEach(pm => {
+                    if (!permissions[pm.module]) permissions[pm.module] = {};
+                    
+                    // Check user override first
+                    const userOverride = userPermsV2.find(
+                        up => up.user_id === user.id && up.permission_id === pm.id
+                    );
+                    
+                    if (userOverride) {
+                        permissions[pm.module][pm.action] = userOverride.granted;
+                    } else {
+                        // Fall back to role default
+                        const roleDefault = rolePermsV2.find(
+                            rp => rp.role_id === user.role_id && rp.permission_id === pm.id
+                        );
+                        permissions[pm.module][pm.action] = roleDefault ? roleDefault.granted : false;
+                    }
+                });
+                
+                // Backward compatibility: Generate can_view/can_create/can_edit/can_delete 
+                // so frontend sidebar checkView() still works during migration
+                const legacyPerms = {};
+                Object.entries(permissions).forEach(([mod, actions]) => {
+                    legacyPerms[mod] = {
+                        can_view: actions.view_all || actions.view_own || actions.view || false,
+                        can_create: actions.create || false,
+                        can_edit: actions.edit || actions.edit_own || actions.edit_all || false,
+                        can_delete: actions.delete || false,
+                        // V2 detailed permissions
+                        ...actions
+                    };
+                });
+                
+                return {
+                    ...user,
+                    permissions: legacyPerms,
+                    permissions_v2: permissions
+                };
+            });
+            
+            return res.json(usersWithPerms);
+        }
+
+        // ---- V1 Fallback (bảng cũ) ----
         const rolePermsRes = await db.query('SELECT * FROM role_permissions');
         const userPermsRes = await db.query('SELECT * FROM user_permissions');
 
-        // Map users and attach merged permissions
+        const modules = [
+            'leads', 'tours', 'departures', 'guides', 'customers', 'bookings', 'users', 'settings', 
+            'b2b_companies', 'group_leaders', 'group_projects', 'op_tours'
+        ];
+        
         const usersWithPerms = usersRes.rows.map(user => {
             const myOverrides = userPermsRes.rows.filter(p => p.user_id === user.id);
             const myDefaultRolePerms = rolePermsRes.rows.filter(p => p.role_id === user.role_id);
             
-            // Generate matrix
-            const modules = [
-                'leads', 'tours', 'departures', 'guides', 'customers', 'bookings', 'users', 'settings', 
-                'b2b_companies', 'group_leaders', 'group_projects', 'op_tours'
-            ];
             const mergedPermissions = {};
-            
             modules.forEach(mod => {
                 const defaultP = myDefaultRolePerms.find(p => p.module_name === mod) || { can_view: false, can_create: false, can_edit: false, can_delete: false };
                 const overrideP = myOverrides.find(p => p.module_name === mod);
@@ -38,10 +113,7 @@ exports.getAllUsers = async (req, res) => {
                 };
             });
             
-            return {
-                ...user,
-                permissions: mergedPermissions
-            };
+            return { ...user, permissions: mergedPermissions };
         });
 
         res.json(usersWithPerms);
@@ -60,7 +132,7 @@ exports.getRoles = async (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
-    const { username, password, full_name, email, role_id, phone, is_active } = req.body;
+    const { username, password, full_name, email, role_id, phone, is_active, team_id } = req.body;
     try {
         // Password policy: tối thiểu 6 ký tự
         if (!password || password.length < 6) {
@@ -73,10 +145,19 @@ exports.createUser = async (req, res) => {
             return res.status(400).json({ message: 'Tên đăng nhập đã tồn tại.' });
         }
 
+        // Determine team_id: if team manager creates user, auto-assign to their team
+        let finalTeamId = team_id || null;
+        if (!finalTeamId && req.user) {
+            const creatorRes = await db.query('SELECT team_id FROM users WHERE id = $1', [req.user.id]);
+            if (creatorRes.rows.length > 0 && creatorRes.rows[0].team_id) {
+                finalTeamId = creatorRes.rows[0].team_id;
+            }
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await db.query(
-            'INSERT INTO users (username, password, full_name, email, role_id, phone, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
-            [username, hashedPassword, full_name, email, role_id, phone || null, is_active !== false]
+            'INSERT INTO users (username, password, full_name, email, role_id, phone, is_active, team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
+            [username, hashedPassword, full_name, email, role_id, phone || null, is_active !== false, finalTeamId]
         );
         res.status(201).json({ id: result.rows[0].id, message: 'Thêm nhân viên thành công.' });
     } catch (err) {
@@ -154,16 +235,25 @@ exports.changePassword = async (req, res) => {
             return res.status(400).json({ message: 'Mật khẩu mới phải có ít nhất 6 ký tự.' });
         }
 
-        // Kiểm tra quyền (phải là Admin/Manager hoặc chính chủ)
-        if (req.user.role !== 'admin' && req.user.role !== 'manager' && req.user.id !== parseInt(id)) {
+        const isAdmin = req.user.role === 'admin';
+        const isManager = req.user.role === 'manager';
+        const isSelf = req.user.id === parseInt(id);
+
+        // Check team manager permission
+        let isTeamMgr = false;
+        if (!isAdmin && !isManager && !isSelf) {
+            isTeamMgr = await isInManagedTeam(req.user.id, parseInt(id));
+        }
+
+        if (!isAdmin && !isManager && !isSelf && !isTeamMgr) {
             return res.status(403).json({ message: 'Bạn không có quyền thực hiện thao tác này.' });
         }
 
-        // Safeguard: Managers cannot change Admin password
-        if (req.user.role === 'manager') {
+        // Safeguard: Managers/Team leads cannot change Admin password
+        if (!isAdmin) {
             const targetUser = await db.query('SELECT r.name as role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = $1', [id]);
             if (targetUser.rows.length > 0 && targetUser.rows[0].role_name === 'admin') {
-                return res.status(403).json({ message: 'Quản lý không có quyền đổi mật khẩu của Quản trị viên.' });
+                return res.status(403).json({ message: 'Không có quyền đổi mật khẩu của Quản trị viên.' });
             }
         }
 
@@ -207,3 +297,155 @@ exports.deleteUser = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+// === TEAM MANAGEMENT ENDPOINTS ===
+
+exports.getTeams = async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT t.*, 
+                   (SELECT COUNT(*)::int FROM team_members tmb WHERE tmb.team_id = t.id) as member_count,
+                   COALESCE(
+                       (SELECT json_agg(json_build_object('id', mgr.id, 'full_name', mgr.full_name))
+                        FROM team_managers tm JOIN users mgr ON tm.user_id = mgr.id
+                        WHERE tm.team_id = t.id), '[]'::json
+                   ) as managers
+            FROM teams t
+            ORDER BY t.name
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getTeamMembers = async (req, res) => {
+    try {
+        const { teamId } = req.params;
+        const result = await db.query(`
+            SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active,
+                   r.name as role_name,
+                   EXISTS(SELECT 1 FROM team_managers tm WHERE tm.user_id = u.id AND tm.team_id = $1) as is_manager
+            FROM team_members tmb
+            JOIN users u ON tmb.user_id = u.id
+            JOIN roles r ON u.role_id = r.id
+            WHERE tmb.team_id = $1
+            ORDER BY is_manager DESC, u.full_name ASC
+        `, [teamId]);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.createTeam = async (req, res) => {
+    try {
+        const { name, code, description } = req.body;
+        if (!name || !code) return res.status(400).json({ message: 'Tên và mã team là bắt buộc.' });
+        
+        const exists = await db.query('SELECT id FROM teams WHERE code = $1', [code.toUpperCase()]);
+        if (exists.rows.length > 0) return res.status(409).json({ message: 'Mã team đã tồn tại.' });
+        
+        const result = await db.query(
+            'INSERT INTO teams (name, code, description) VALUES ($1, $2, $3) RETURNING *',
+            [name, code.toUpperCase(), description || null]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.updateTeam = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description } = req.body;
+        const result = await db.query(
+            'UPDATE teams SET name = COALESCE($1, name), description = $2 WHERE id = $3 RETURNING *',
+            [name, description || null, id]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ message: 'Team không tồn tại.' });
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.deleteTeam = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const memberCount = await db.query('SELECT COUNT(*)::int as c FROM team_members WHERE team_id = $1', [id]);
+        if (memberCount.rows[0].c > 0) {
+            return res.status(409).json({ message: `Team có ${memberCount.rows[0].c} thành viên. Vui lòng chuyển hết thành viên trước khi xóa.` });
+        }
+        await db.query('DELETE FROM teams WHERE id = $1', [id]);
+        res.json({ message: 'Đã xóa team.' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.addTeamMember = async (req, res) => {
+    try {
+        const { teamId } = req.params;
+        const { userId } = req.body;
+        await db.query(
+            'INSERT INTO team_members (team_id, user_id) VALUES ($1, $2) ON CONFLICT (team_id, user_id) DO NOTHING',
+            [teamId, userId]
+        );
+        res.json({ message: 'Đã thêm thành viên vào team.' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.removeTeamMember = async (req, res) => {
+    try {
+        const { teamId, userId } = req.params;
+        // Also remove from managers if exists
+        await db.query('DELETE FROM team_managers WHERE team_id = $1 AND user_id = $2', [teamId, userId]);
+        await db.query('DELETE FROM team_members WHERE team_id = $1 AND user_id = $2', [teamId, userId]);
+        res.json({ message: 'Đã xóa thành viên khỏi team.' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.setTeamManager = async (req, res) => {
+    try {
+        const { teamId } = req.params;
+        const { userId } = req.body;
+        // Ensure user is a member first
+        await db.query(
+            'INSERT INTO team_members (team_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [teamId, userId]
+        );
+        await db.query(
+            'INSERT INTO team_managers (team_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [teamId, userId]
+        );
+        res.json({ message: 'Đã gán trưởng nhóm.' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.removeTeamManager = async (req, res) => {
+    try {
+        const { teamId, userId } = req.params;
+        await db.query('DELETE FROM team_managers WHERE team_id = $1 AND user_id = $2', [teamId, userId]);
+        res.json({ message: 'Đã gỡ quyền trưởng nhóm.' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getAllowedRoles = async (req, res) => {
+    try {
+        const roles = await getAllowedRolesForManager(req.user.id);
+        res.json(roles);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+

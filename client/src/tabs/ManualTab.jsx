@@ -721,7 +721,7 @@ const ManualDeparturesSOP = () => (
     <div style={{ background: 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(185, 28, 28, 0.4)' }}>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1rem' }}>
         <Shield size={36} color="#fca5a5" />
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>Lịch Khởi Hành (Departures): Quy Định Khắc Khe</h1>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>Lịch Khởi Hành: Quy Định (SOP)</h1>
       </div>
       <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '650px', lineHeight: 1.6 }}>
         Đây là xương sống của lợi nhuận. Mọi tác vụ ở Lịch Khởi Hành ảnh hưởng trực tiếp đến BCTC (Báo Cáo Tài Chính) và Doanh thu thực nhận. Đề nghị tuân thủ quy tắc 100%.
@@ -729,24 +729,122 @@ const ManualDeparturesSOP = () => (
     </div>
 
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+
+      {/* CẤU TRÚC DỮ LIỆU */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
           <StepBadge num="1" />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Nguyên Tắc Bất Di Bất Dịch Về Quỹ Chỗ (Slots)</h2>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Cấu Trúc Dữ Liệu Master-Detail</h2>
         </div>
-        <div style={{ padding: '1.5rem', background: '#fef2f2', borderLeft: '5px solid #ef4444', borderRadius: '4px', color: '#991b1b', marginBottom: '1.5rem' }}>
-          <h3 style={{ fontWeight: 800, margin: '0 0 10px 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <AlertTriangle size={18} /> QUY TẮC "DƯƠNG VÔ HẠN, ÂM THÌ CẤM"
-          </h3>
-          Khi set up số chỗ trống (Total Slots), bạn có quyền bán Over-book nếu có thương lượng với hãng xe. Nhưng bạn <strong>không bao giờ được phép Bóp số lượng Slots Nhỏ hơn Số Khách (Bookings) hiện tại</strong>.<br/>
-          Hệ thống sẽ nảy lỗi nếu bạn báo đoàn có 20 ghế nhưng đã có 21 khách vào cọc.
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Hệ thống hoạt động theo mô hình <strong>2 cấp (Master → Detail)</strong>. Hiểu đúng cấu trúc này là nền tảng sống còn:
+        </p>
+        <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700 }}>Cấp</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700 }}>Chức năng</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700 }}>Ví dụ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px' }}><span style={{ padding: '4px 8px', borderRadius: '4px', background: '#dbeafe', color: '#1e40af', fontSize: '0.85rem', fontWeight: 600 }}>Sản phẩm Tour</span></td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Chứa thông tin cố định: Mã tour, Tên, BU, Thời lượng, Giá niêm yết. <strong>Không chứa ngày tháng.</strong></td>
+                <td style={{ padding: '12px 16px', color: '#475569', fontStyle: 'italic' }}>SGN-BKK-05D4N (Tour Bangkok 5N4Đ)</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px' }}><span style={{ padding: '4px 8px', borderRadius: '4px', background: '#dcfce7', color: '#166534', fontSize: '0.85rem', fontWeight: 600 }}>Lịch Khởi Hành</span></td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Một chuyến đi cụ thể: Ngày đi/về, Market, Số chỗ, HDV, Hành trình bay... Luôn gắn với 1 Sản phẩm Tour.</td>
+                <td style={{ padding: '12px 16px', color: '#475569', fontStyle: 'italic' }}>Khởi hành 15/06, Về 19/06, 30 chỗ</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px' }}><span style={{ padding: '4px 8px', borderRadius: '4px', background: '#fef08a', color: '#854d0e', fontSize: '0.85rem', fontWeight: 600 }}>Booking</span></td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Đơn đặt chỗ: Số lượng pax, Giá, Đã cọc, Trạng thái, Danh sách thành viên đi kèm.</td>
+                <td style={{ padding: '12px 16px', color: '#475569', fontStyle: 'italic' }}>BK-M8FG2: Chú Hoàng, 3 khách, 45tr</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '12px 16px' }}><span style={{ padding: '4px 8px', borderRadius: '4px', background: '#fecaca', color: '#991b1b', fontSize: '0.85rem', fontWeight: 600 }}>Phiếu Thu</span></td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Chứng từ thanh toán gắn với Booking. Tự động cộng/trừ tiền khi tạo/huỷ phiếu.</td>
+                <td style={{ padding: '12px 16px', color: '#475569', fontStyle: 'italic' }}>PT-M8FG2-080426-A3: Thu 15tr cọc</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style={{ padding: '1rem 1.5rem', background: '#fffbeb', borderLeft: '4px solid #f59e0b', borderRadius: '4px', color: '#92400e', marginTop: '1.5rem' }}>
+          <strong>QUY TẮC LIÊN KẾT:</strong> 1 Sản phẩm → Nhiều Lịch KH → Nhiều Booking → Nhiều Phiếu Thu. <strong>Xoá ngược lại cấm tuyệt đối</strong> khi đã có dữ liệu con.
         </div>
       </section>
 
+      {/* VÒNG ĐỜI TRẠNG THÁI */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
           <StepBadge num="2" />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Bảng Dự Toán (Costing) Lập Trước, Bán Sau</h2>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Vòng Đời Trạng Thái Tour (THỦ CÔNG)</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Mỗi Lịch khởi hành có <strong>1 trong 5 trạng thái</strong>. Nhân viên vận hành (Operator) phải <strong>tự tay chuyển</strong> — hệ thống KHÔNG tự động:
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ padding: '1rem', background: '#e0f2fe', borderRadius: '8px', flex: '1 1 180px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>🔵</div>
+            <strong style={{ color: '#0369a1' }}>Mở bán</strong>
+            <p style={{ color: '#475569', fontSize: '0.85rem', margin: '0.5rem 0 0 0' }}>Đang nhận đăng ký</p>
+          </div>
+          <div style={{ padding: '1rem', background: '#fce7f3', borderRadius: '8px', flex: '1 1 180px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>🩷</div>
+            <strong style={{ color: '#be185d' }}>Chắc chắn đi</strong>
+            <p style={{ color: '#475569', fontSize: '0.85rem', margin: '0.5rem 0 0 0' }}>Đủ khách, chốt bay/KS</p>
+          </div>
+          <div style={{ padding: '1rem', background: '#f3e8ff', borderRadius: '8px', flex: '1 1 180px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>🟣</div>
+            <strong style={{ color: '#7c3aed' }}>Đã đầy</strong>
+            <p style={{ color: '#475569', fontSize: '0.85rem', margin: '0.5rem 0 0 0' }}>Hết chỗ hoàn toàn</p>
+          </div>
+          <div style={{ padding: '1rem', background: '#dcfce7', borderRadius: '8px', flex: '1 1 180px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>🟢</div>
+            <strong style={{ color: '#166534' }}>Hoàn thành</strong>
+            <p style={{ color: '#475569', fontSize: '0.85rem', margin: '0.5rem 0 0 0' }}>Tour kết thúc, chốt sổ</p>
+          </div>
+          <div style={{ padding: '1rem', background: '#fef2f2', borderRadius: '8px', flex: '1 1 180px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>🔴</div>
+            <strong style={{ color: '#991b1b' }}>Huỷ</strong>
+            <p style={{ color: '#475569', fontSize: '0.85rem', margin: '0.5rem 0 0 0' }}>Thiếu khách / Sự cố</p>
+          </div>
+        </div>
+        <div style={{ padding: '1rem 1.5rem', background: '#fef2f2', borderLeft: '4px solid #ef4444', borderRadius: '4px', color: '#991b1b' }}>
+          <strong>⚠️ NGHIÊM CẤM:</strong> Không được chuyển Tour về "Mở bán" hoặc "Giữ chỗ" nếu đã có khách cọc tiền. Kế toán sẽ không khớp được sổ.
+        </div>
+      </section>
+
+      {/* OVERBOOKING */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="3" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Nguyên Tắc "Quỹ Chỗ" & Chống Bán Vượt (Overbooking Guard)</h2>
+        </div>
+        <div style={{ padding: '1.5rem', background: '#fef2f2', borderLeft: '5px solid #ef4444', borderRadius: '4px', color: '#991b1b', marginBottom: '1.5rem' }}>
+          <h3 style={{ fontWeight: 800, margin: '0 0 10px 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertTriangle size={18} /> HỆ THỐNG TỰ ĐỘNG CHẶN
+          </h3>
+          Mỗi khi Sale tạo hoặc sửa Booking, hệ thống sẽ:<br/>
+          1. Cộng tổng pax_count của mọi booking hiện có (trừ booking Huỷ và booking đang sửa)<br/>
+          2. Nếu <strong>(đã bán + mới) {'>'} Tổng chỗ</strong> → <strong>TỪ CHỐI</strong> kèm thông báo:<br/>
+          <div style={{ background: 'white', padding: '0.75rem 1rem', borderRadius: '4px', marginTop: '0.75rem', fontFamily: 'monospace', fontSize: '0.9rem' }}>
+            "QUÁ SỐ CHỖ: Tour chỉ còn X chỗ. Vui lòng bật 'Cho bán quá chỗ' trong cài đặt Tour."
+          </div>
+        </div>
+        <div style={{ padding: '1rem 1.5rem', background: '#f0fdf4', borderLeft: '4px solid #22c55e', borderRadius: '4px', color: '#166534' }}>
+          <strong>💡 NGOẠI LỆ:</strong> Nếu Điều hành viên BẬT tùy chọn <strong>"Cho bán quá chỗ" (allow_overbooking)</strong> trong cài đặt Tour → hệ thống sẽ bỏ qua kiểm tra, cho booking vượt. Chỉ dùng khi đã thương lượng thêm xe/ghế.
+        </div>
+      </section>
+
+      {/* COSTING */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="4" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Bảng Dự Toán (Costing): Lập Trước, Bán Sau</h2>
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
           Việc ban hành Lịch khởi hành mà không có Bảng Dự Toán (Land Tour, Khách Sạn, Xe, Máy bay) là <strong>tối kỵ</strong>. Bộ phận Sales cần nhìn vào Bảng Costing để biết giá Sàn được phép bán bao nhiêu để không âm vốn.
@@ -757,18 +855,21 @@ const ManualDeparturesSOP = () => (
         </ul>
       </section>
 
+      {/* LƯU Ý VẬN HÀNH */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
-          <StepBadge num="3" />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Quy Trình Chốt (Locking) Chuyến Đi</h2>
+          <StepBadge num="5" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Lưu Ý Vận Hành Quan Trọng</h2>
         </div>
-        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
-          Quá trình "Chốt đoàn" (Status: In Progress ➡️ Completed) yêu cầu:
-          <br/>1. Đã ghép Hướng Dẫn Viên.
-          <br/>2. Số lượng Khách hàng thực tế khớp với Danh sách Thu chi.
-          <br/>Một khi đã chuyển Completed, Lịch Khởi Hành sẽ thuộc quyền kiểm soát của Kế toán để quyết toán, Điều hành sẽ bị khóa nút sửa xóa.
-        </p>
+        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#475569', fontSize: '1.05rem' }}>
+          <li><strong>Không bao giờ xoá Sản phẩm Tour</strong> nếu đang có Lịch khởi hành gắn liền — sẽ mất toàn bộ liên kết lịch sử.</li>
+          <li><strong>Luôn kiểm tra "Cho bán quá chỗ"</strong> trước khi mở bán tour cận ngày — tránh bị hệ thống chặn booking.</li>
+          <li><strong>Huỷ Phiếu Thu</strong> sẽ tự động trừ tiền — không cần chỉnh tay số tiền "Đã cọc" của Booking.</li>
+          <li><strong>Export Excel</strong> chỉ xuất thành viên của Booking chưa huỷ (tự động bỏ qua booking "Huỷ/Hủy").</li>
+          <li><strong>Xoá Tour</strong> chỉ được phép khi Tour đó chưa có booking nào. Hệ thống sẽ từ chối kèm thông báo số lượng booking hiện có.</li>
+        </ul>
       </section>
+
     </div>
   </>
 );
@@ -778,45 +879,209 @@ const ManualDeparturesGuide = () => (
     <div style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', padding: '3rem 2rem', borderRadius: '16px', color: 'white', marginBottom: '2rem', boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.4)' }}>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1rem' }}>
         <Calendar size={36} color="#bfdbfe" />
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>Lịch Khởi Hành: Bảng Điều Khiển Tổng Cục</h1>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>Lịch Khởi Hành: HDSD & Hệ Thống Tự Động</h1>
       </div>
       <p style={{ fontSize: '1.1rem', opacity: 0.9, maxWidth: '600px', lineHeight: 1.6 }}>
-        Nơi biến các Khung Tour thành Hiện Thực. Mỗi Lịch là một Chuyến Bay/Chuyến Xe có số ghế, thu chi, và khách hàng thật sự tham gia.
+        Khám phá 5 động cơ bán tự động (Auto-Engine) vận hành ngầm giúp hệ thống thông minh hóa toàn bộ quy trình từ đặt chỗ đến thanh toán.
       </p>
     </div>
 
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+
+      {/* BỘ LỌC */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>A. Giao Diện Calendar & List View</h2>
-        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Bạn có thể thay đổi cách nhìn Lịch trình giữa 2 chế độ:
-          <br/>- <strong>List View</strong>: Cung cấp cột thông tin chi tiết về Slot (Chỗ) hiện tại, tình trạng ghép Booking nhanh chóng.
-          <br/>- <strong>Calendar View</strong>: Xem khối lượng công việc tổng quan theo ngày, tối ưu khi xếp lịch cho Hướng dẫn viên.
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="1" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Bộ Lọc Đa Chiều (9 Bộ Lọc)</h2>
+        </div>
+        <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700 }}>Bộ lọc</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700 }}>Cách hoạt động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', fontWeight: 600 }}>🔍 Tìm kiếm</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Lọc theo Mã tour hoặc Tên tour (không phân biệt hoa thường)</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', fontWeight: 600 }}>📦 Sản phẩm Tour</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Dropdown chọn Template gốc — chỉ hiển thị Departure thuộc template đó</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', fontWeight: 600 }}>📅 Ngày Khởi hành</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Chỉ hiển thị tour có start_date ≥ ngày chọn</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', fontWeight: 600 }}>📅 Ngày Kết thúc</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Chỉ hiển thị tour có end_date ≤ ngày chọn</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', fontWeight: 600 }}>🕐 Ngày tạo</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Lọc tour tạo từ ngày chọn trở đi</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', fontWeight: 600 }}>🏷️ Tình trạng</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Mở bán / Chắc chắn đi / Đã đầy / Hoàn thành / Huỷ</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', fontWeight: 600 }}>💰 TT Thanh toán</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Chưa thanh toán / Đã cọc</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', fontWeight: 600 }}>🌏 Market (Pills)</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Nút bo tròn lọc nhanh theo khu vực: Đông Á, ASEAN, Trung Á...</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '12px 16px', fontWeight: 600 }}>👤 NVĐH / Duyệt</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Lọc theo tên nhân viên điều hành ghi trong tour_info</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
+      {/* AUTO-CONVERT */}
       <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '1rem' }}>B. Khung Quản Trị Chi Tiết Bắt Buộc (Detail View)</h2>
-        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Khi bấm vào 1 Lịch Khởi Hành, màn hình trượt ra cung cấp góc nhìn **Tất cả trong 1**. Phía trên hiện thanh Tiến độ (Status: Khởi Tạo ➡️ Đang Nhận Khách ➡️ Đã Chốt).
-        </p>
-      </section>
-
-      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-           <DollarSign size={28} color="#059669" />
-           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>C. Modun Dự Toán Chi Phí (Costings)</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="2" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>🤖 Auto-Convert: Hành Khách → Khách Hàng</h2>
+        </div>
+        <div style={{ padding: '1rem 1.5rem', background: '#eff6ff', borderLeft: '4px solid #3b82f6', borderRadius: '4px', color: '#1e3a8a', marginBottom: '1.5rem' }}>
+          <strong>KHI NÀO CHẠY:</strong> Tự động mỗi khi tạo Booking MỚI (không chạy khi sửa).
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1rem' }}>
-          Mỗi Lịch khởi hành đi kèm chức năng <strong>Lập Dự Toán Costing</strong> (Landtour, Nhà Hàng, Xe 45 chỗ...). 
+          Hệ thống quét danh sách thành viên (members) trong Booking và xử lý từng người:
         </p>
-        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7 }}>
-          Bạn sẽ Thêm Hàng (Add Row), nhập Số Lượng và Đơn Giá. Hệ thống Tự Động Kẻ Form xuất ra con số Lãi/Lỗ Dự Kiến. Giao diện thiết kế gọn y như trang Excel truyền thống.
-        </p>
+        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '250px', background: '#f0fdf4', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+            <h3 style={{ color: '#166534', fontWeight: 700, marginBottom: '0.5rem' }}>✅ SĐT đã tồn tại</h3>
+            <p style={{ color: '#15803d', margin: 0, fontSize: '0.95rem' }}>Cập nhật bổ sung CMND, DOB. Tăng past_trip_count +1. Tái tính hạng VIP.</p>
+          </div>
+          <div style={{ flex: 1, minWidth: '250px', background: '#eff6ff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bfdbfe' }}>
+            <h3 style={{ color: '#1e3a8a', fontWeight: 700, marginBottom: '0.5rem' }}>🆕 SĐT chưa có</h3>
+            <p style={{ color: '#1e40af', margin: 0, fontSize: '0.95rem' }}>Tạo Customer mới với role = 'passenger'. Gán hạng VIP theo số chuyến.</p>
+          </div>
+          <div style={{ flex: 1, minWidth: '250px', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ color: '#64748b', fontWeight: 700, marginBottom: '0.5rem' }}>🚫 Bỏ qua khi</h3>
+            <p style={{ color: '#475569', margin: 0, fontSize: '0.95rem' }}>SĐT trùng với Booker, Tên mặc định "Khách ...", hoặc không có SĐT.</p>
+          </div>
+        </div>
       </section>
+
+      {/* VIP ENGINE */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="3" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>🤖 VIP Engine: Phân Hạng Tự Động</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Chạy song song với Auto-Convert. <strong>Tổng số chuyến = past_trip_count (nhập gốc) + crm_trip_count (bookings thực tế)</strong>.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ padding: '0.75rem 1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.3rem' }}>⭐⭐⭐</span>
+            <div><strong style={{ color: '#dc2626' }}>VIP 1:</strong> <span style={{ color: '#475569' }}>≥ 7 chuyến</span></div>
+          </div>
+          <div style={{ padding: '0.75rem 1rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.3rem' }}>⭐⭐</span>
+            <div><strong style={{ color: '#d97706' }}>VIP 2:</strong> <span style={{ color: '#475569' }}>≥ 4 chuyến</span></div>
+          </div>
+          <div style={{ padding: '0.75rem 1rem', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.3rem' }}>⭐</span>
+            <div><strong style={{ color: '#7c3aed' }}>VIP 3:</strong> <span style={{ color: '#475569' }}>≥ 3 chuyến</span></div>
+          </div>
+          <div style={{ padding: '0.75rem 1rem', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.3rem' }}>🏅</span>
+            <div><strong style={{ color: '#2563eb' }}>Repeat Customer:</strong> <span style={{ color: '#475569' }}>≥ 2 chuyến</span></div>
+          </div>
+          <div style={{ padding: '0.75rem 1rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.3rem' }}>🆕</span>
+            <div><strong style={{ color: '#64748b' }}>New Customer:</strong> <span style={{ color: '#475569' }}>1 chuyến</span></div>
+          </div>
+        </div>
+      </section>
+
+      {/* AUTO PAYMENT STATUS */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="4" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>🤖 Auto Payment Status: Trạng Thái Booking Theo Tiền</h2>
+        </div>
+        <div style={{ padding: '1rem 1.5rem', background: '#eff6ff', borderLeft: '4px solid #3b82f6', borderRadius: '4px', color: '#1e3a8a', marginBottom: '1.5rem' }}>
+          <strong>KHI NÀO CHẠY:</strong> Mỗi khi tạo hoặc huỷ <strong>Phiếu Thu</strong> (Payment Voucher). Không cần Sale chỉnh tay.
+        </div>
+        <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700 }}>Điều kiện</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700 }}>Trạng thái Booking tự chuyển thành</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>paid ≥ total_price (và total_price {'>'} 0)</td>
+                <td style={{ padding: '12px 16px' }}><span style={{ padding: '4px 8px', borderRadius: '4px', background: '#dcfce7', color: '#166534', fontWeight: 600 }}>Đã thanh toán</span></td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>0 {'<'} paid {'<'} total_price</td>
+                <td style={{ padding: '12px 16px' }}><span style={{ padding: '4px 8px', borderRadius: '4px', background: '#fef08a', color: '#854d0e', fontWeight: 600 }}>Đã đặt cọc</span></td>
+              </tr>
+              <tr>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>paid = 0 (sau khi huỷ phiếu)</td>
+                <td style={{ padding: '12px 16px' }}><span style={{ padding: '4px 8px', borderRadius: '4px', background: '#e0e7ff', color: '#4338ca', fontWeight: 600 }}>Giữ chỗ</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style={{ padding: '1rem 1.5rem', background: '#fffbeb', borderLeft: '4px solid #f59e0b', borderRadius: '4px', color: '#92400e', marginTop: '1.5rem' }}>
+          <strong>KHI HUỶ PHIẾU THU:</strong> Hệ thống tự động trừ ngược số tiền trong phiếu ra khỏi booking.paid, sau đó tái tính trạng thái booking theo bảng trên. Kế toán không cần chỉnh tay.
+        </div>
+      </section>
+
+      {/* PERMISSION GUARD */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="5" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>🤖 Permission Guard: Phân Quyền Chỉnh Sửa Booking</h2>
+        </div>
+        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '250px', background: '#f0fdf4', padding: '1.5rem', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+            <h3 style={{ color: '#166534', fontWeight: 700, marginBottom: '0.5rem' }}>✅ Admin / Manager / Operator</h3>
+            <p style={{ color: '#15803d', margin: 0, fontSize: '0.95rem' }}>Có quyền sửa/huỷ MỌI Booking trong hệ thống, bất kể ai tạo.</p>
+          </div>
+          <div style={{ flex: 1, minWidth: '250px', background: '#fef2f2', padding: '1.5rem', borderRadius: '12px', border: '1px solid #fecaca' }}>
+            <h3 style={{ color: '#991b1b', fontWeight: 700, marginBottom: '0.5rem' }}>🔒 Sales / Staff</h3>
+            <p style={{ color: '#b91c1c', margin: 0, fontSize: '0.95rem' }}>Chỉ được sửa Booking do chính mình tạo (created_by). Vi phạm → <strong>HTTP 403 Lỗi Phân Quyền.</strong></p>
+          </div>
+        </div>
+      </section>
+
+      {/* LIÊN KẾT SẢN PHẨM */}
+      <section style={{ background: '#fff', padding: '2rem', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+          <StepBadge num="6" />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Liên kết Sản phẩm Tour ↔ Lịch Khởi Hành</h2>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+          Hai tab <strong>Sản phẩm Tour</strong> và <strong>Lịch Khởi Hành</strong> liên thông 2 chiều:
+        </p>
+        <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#475569', fontSize: '1.05rem' }}>
+          <li><strong>Từ Sản phẩm → Lịch sử:</strong> Click icon 👁️ trên hàng Sản phẩm Tour → Modal hiện tab "LỊCH SỬ KHỞI HÀNH" liệt kê mọi chuyến đi của template đó.</li>
+          <li><strong>Nhảy nhanh sang chi tiết:</strong> Trong tab Lịch sử, click 👁️ trên bất kỳ chuyến nào → Hệ thống tự động navigate sang tab Lịch Khởi Hành và mở Drawer chi tiết chuyến đó ngay lập tức.</li>
+          <li><strong>Export toàn bộ khách:</strong> Nút Export trên thanh công cụ xuất file .xlsx chuẩn FIT Tour bao gồm toàn bộ thành viên, Hộ chiếu, Giá, Cọc, Trạng thái thanh toán.</li>
+        </ul>
+      </section>
+
     </div>
   </>
 );
+
+
 
 const ManualTab = () => {
   const location = useLocation();

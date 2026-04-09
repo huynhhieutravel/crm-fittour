@@ -2,21 +2,23 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/opTourController');
 const authenticateToken = require('../middleware/auth');
-const roleCheck = require('../middleware/roleCheck');
+const { permCheck, permCheckAny } = require('../middleware/permCheck');
 
-const ALLOWED_ROLES = ['admin', 'manager', 'group_manager']; 
-
+// Public
 router.get('/public', controller.getPublicOpTours);
-router.get('/', authenticateToken, roleCheck(ALLOWED_ROLES.concat(['group_staff', 'sales', 'marketing'])), controller.getAllOpTours);
-router.post('/', authenticateToken, roleCheck(ALLOWED_ROLES), controller.createOpTour);
-router.get('/:id', authenticateToken, roleCheck(ALLOWED_ROLES.concat(['group_staff', 'sales', 'marketing'])), controller.getOpTourById);
-router.put('/:id', authenticateToken, roleCheck(ALLOWED_ROLES), controller.updateOpTour);
-router.delete('/:id', authenticateToken, roleCheck(ALLOWED_ROLES), controller.deleteOpTour);
+
+// List & View: cần view_all hoặc view_own
+router.get('/', authenticateToken, permCheckAny([['op_tours','view_all'], ['op_tours','view_own']]), controller.getAllOpTours);
+router.get('/:id', authenticateToken, permCheckAny([['op_tours','view_all'], ['op_tours','view_own']]), controller.getOpTourById);
+
+// Create / Edit / Delete
+router.post('/', authenticateToken, permCheck('op_tours', 'create'), controller.createOpTour);
+router.put('/:id', authenticateToken, permCheck('op_tours', 'edit'), controller.updateOpTour);
+router.delete('/:id', authenticateToken, permCheck('op_tours', 'delete'), controller.deleteOpTour);
 
 // Bookings / Revenues
-// Bookings / Revenues
-router.get('/:id/bookings', authenticateToken, controller.getOpTourBookings);
-router.post('/:id/bookings', authenticateToken, roleCheck(['admin', 'manager', 'group_manager', 'sales', 'group_staff']), controller.addOpTourBooking);
-router.put('/:id/bookings/:bookingId', authenticateToken, roleCheck(['admin', 'manager', 'group_manager', 'sales', 'group_staff']), controller.updateOpTourBooking);
+router.get('/:id/bookings', authenticateToken, permCheckAny([['bookings','view_all'], ['bookings','view_own']]), controller.getOpTourBookings);
+router.post('/:id/bookings', authenticateToken, permCheck('bookings', 'create'), controller.addOpTourBooking);
+router.put('/:id/bookings/:bookingId', authenticateToken, permCheckAny([['bookings','edit_all'], ['bookings','edit_own']]), controller.updateOpTourBooking);
 
 module.exports = router;

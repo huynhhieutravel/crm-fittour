@@ -2,16 +2,14 @@ const express = require('express');
 const router = express.Router();
 const tourController = require('../controllers/tourController');
 const authenticateToken = require('../middleware/auth');
-const roleCheck = require('../middleware/roleCheck');
+const { permCheck } = require('../middleware/permCheck');
 
-const ALLOWED_TOUR_ROLES = ['admin', 'manager', 'operations'];
-
-router.get('/', authenticateToken, roleCheck(['admin', 'manager', 'operations', 'sales', "group_manager"]), tourController.getAllTours);
-router.post('/', authenticateToken, roleCheck(ALLOWED_TOUR_ROLES), tourController.createTour);
-router.get('/:id', authenticateToken, roleCheck(['admin', 'manager', 'operations', 'sales', "group_manager"]), tourController.getTourById);
-router.put('/:id', authenticateToken, roleCheck(ALLOWED_TOUR_ROLES), tourController.updateTour);
-router.delete('/:id', authenticateToken, roleCheck(['admin', 'manager', "group_manager"]), tourController.deleteTour);
-router.get('/:id/notes', authenticateToken, roleCheck(['admin', 'manager', 'operations', 'sales', "group_manager"]), tourController.getTourNotes);
-router.post('/notes', authenticateToken, roleCheck(ALLOWED_TOUR_ROLES), tourController.addTourNote);
+router.get('/', authenticateToken, permCheck('tours', 'view'), tourController.getAllTours);
+router.post('/', authenticateToken, permCheck('tours', 'create'), tourController.createTour);
+router.get('/:id', authenticateToken, permCheck('tours', 'view'), tourController.getTourById);
+router.put('/:id', authenticateToken, permCheck('tours', 'edit'), tourController.updateTour);
+router.delete('/:id', authenticateToken, permCheck('tours', 'delete'), tourController.deleteTour);
+router.get('/:id/notes', authenticateToken, permCheck('tours', 'view'), tourController.getTourNotes);
+router.post('/notes', authenticateToken, permCheck('tours', 'edit'), tourController.addTourNote);
 
 module.exports = router;

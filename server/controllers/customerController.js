@@ -1,6 +1,8 @@
 const db = require('../db');
 const { logActivity } = require('../utils/logger');
 const { convertLeadToCustomer } = require('../services/conversionService');
+const { getDataScope } = require('../middleware/teamScope');
+const { getUserMergedPerms } = require('../middleware/permCheck');
 
 // Helper: Tính phân khúc VIP tự động dựa trên tổng số chuyến đi
 function computeVipTier(totalTrips) {
@@ -40,6 +42,25 @@ exports.checkPhoneExists = async (req, res) => {
 exports.getAllCustomers = async (req, res) => {
     try {
         const { search } = req.query;
+        
+        // Data Scoping
+        let scopeClause = '';
+        let scopeParams = [];
+        let paramOffset = 0;
+        
+        if (req.user && req.user.role !== 'admin') {
+            const perms = await getUserMergedPerms(req.user.id, req.user.role);
+            const scope = await getDataScope(req.user.id, 'customers', perms);
+            
+            if (scope.scope === 'team' || scope.scope === 'own') {
+                scopeClause = `WHERE c.assigned_to = ANY($1)`;
+                scopeParams = [scope.userIds];
+                paramOffset = 1;
+            } else if (scope.scope === 'none') {
+                return res.json([]);
+            }
+        }
+
         let queryStr = `
             SELECT c.*, 
                    COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as total_spent,
@@ -48,12 +69,13 @@ exports.getAllCustomers = async (req, res) => {
                    l.source as lead_source
             FROM customers c
             LEFT JOIN leads l ON c.lead_id = l.id
+            ${scopeClause}
         `;
-        let queryParams = [];
 
         if (search) {
-            queryStr += ` WHERE c.name ILIKE $1 OR c.phone ILIKE $1 `;
-            queryParams.push(`%${search}%`);
+            const searchParam = `$${paramOffset + 1}`;
+            queryStr += ` ${scopeClause ? 'AND' : 'WHERE'} (c.name ILIKE ${searchParam} OR c.phone ILIKE ${searchParam}) `;
+            scopeParams.push(`%${search}%`);
         }
 
         queryStr += ` ORDER BY c.created_at DESC, c.id DESC `;
@@ -62,7 +84,7 @@ exports.getAllCustomers = async (req, res) => {
             queryStr += ` LIMIT 30`;
         }
 
-        const result = await db.query(queryStr, queryParams);
+        const result = await db.query(queryStr, scopeParams);
         
         const currentYear = new Date().getFullYear();
         const now = new Date();

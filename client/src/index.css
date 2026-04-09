@@ -856,6 +856,15 @@ body {
   width: 90% !important;
 }
 
+.modal-content.special-fullscreen {
+  max-width: 1600px !important;
+  width: 98vw !important;
+  height: 96vh !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
 .modal-content h3 { color: #1e293b !important; font-weight: 800 !important; }
 
 .modal-form-group label {

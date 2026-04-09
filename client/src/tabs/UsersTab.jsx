@@ -1,18 +1,25 @@
 import React, { useState } from 'react';
-import { Search, UserPlus, Shield, Edit3, Key, Trash2, Mail, Clock } from 'lucide-react';
+import { Search, UserPlus, Shield, Edit3, Key, Trash2, Mail, Clock, UserCog, Users } from 'lucide-react';
 
 const UsersTab = ({ 
   users, 
   roles, 
   currentUser,
+  checkPerm,
   onAddUser, 
   onEditUser, 
   onChangePassword, 
-  onDeleteUser 
+  onDeleteUser,
+  onEditRolePerms,
+  onEditUserPerms
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
+  const [selectedTeam, setSelectedTeam] = useState('ALL');
+
+  // Extract unique teams from users (now users have `teams` array)
+  const allTeamNames = [...new Set(users.flatMap(u => (u.teams || []).map(t => t.name)).filter(Boolean))];
 
   const filteredUsers = users.filter(u => {
     const matchSearch = u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -20,12 +27,13 @@ const UsersTab = ({
                         u.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchRole = selectedRole === 'ALL' ? true : u.role_name === selectedRole;
+    const matchTeam = selectedTeam === 'ALL' ? true : (u.teams || []).some(t => t.name === selectedTeam);
     
     let matchStatus = true;
     if (selectedStatus === 'ACTIVE') matchStatus = u.is_active !== false;
     if (selectedStatus === 'INACTIVE') matchStatus = u.is_active === false;
 
-    return matchSearch && matchRole && matchStatus;
+    return matchSearch && matchRole && matchTeam && matchStatus;
   });
 
   const getRoleColor = (roleName) => {
@@ -56,7 +64,21 @@ const UsersTab = ({
               />
             </div>
           </div>
-          <div className="filter-group" style={{ flex: 1, minWidth: '150px' }}>
+          <div className="filter-group" style={{ flex: 1, minWidth: '130px' }}>
+            <label>TEAM</label>
+            <select 
+              className="filter-input"
+              value={selectedTeam}
+              onChange={e => setSelectedTeam(e.target.value)}
+              style={{ width: '100%' }}
+            >
+              <option value="ALL">-- Tất cả --</option>
+              {allTeamNames.map(tn => (
+                <option key={tn} value={tn}>{tn}</option>
+              ))}
+            </select>
+          </div>
+          <div className="filter-group" style={{ flex: 1, minWidth: '130px' }}>
             <label>PHÂN QUYỀN</label>
             <select 
               className="filter-input"
@@ -70,7 +92,7 @@ const UsersTab = ({
               ))}
             </select>
           </div>
-          <div className="filter-group" style={{ flex: 1, minWidth: '150px' }}>
+          <div className="filter-group" style={{ flex: 1, minWidth: '130px' }}>
             <label>TRẠNG THÁI</label>
             <select 
               className="filter-input"
@@ -84,13 +106,26 @@ const UsersTab = ({
             </select>
           </div>
         </div>
-        <button 
-          className="btn-pro-save" 
-          onClick={onAddUser}
-          style={{ width: 'auto', padding: '0.75rem 1.5rem', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)' }}
-        >
-          <UserPlus size={18} strokeWidth={3} /> THÊM THÀNH VIÊN MỚI
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {checkPerm && checkPerm('users', 'change_permissions') && (
+            <button 
+              className="btn-pro-save" 
+              onClick={onEditRolePerms}
+              style={{ width: 'auto', padding: '0.75rem 1.5rem', background: '#059669', boxShadow: '0 4px 12px rgba(5, 150, 105, 0.2)' }}
+            >
+              <Shield size={18} strokeWidth={3} /> PHÂN QUYỀN CHỨC VỤ
+            </button>
+          )}
+          {checkPerm && checkPerm('users', 'create') && (
+            <button 
+              className="btn-pro-save" 
+              onClick={onAddUser}
+              style={{ width: 'auto', padding: '0.75rem 1.5rem', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)' }}
+            >
+              <UserPlus size={18} strokeWidth={3} /> TẠO TÀI KHOẢN
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="data-table-container shadow-sm" style={{ border: '1px solid #f1f5f9', borderRadius: '12px', overflow: 'hidden' }}>
@@ -98,6 +133,7 @@ const UsersTab = ({
           <thead style={{ background: '#f8fafc' }}>
             <tr>
               <th style={{ padding: '1rem 1.5rem' }}>THÔNG TIN THÀNH VIÊN</th>
+              <th>TEAM</th>
               <th>PHÂN QUYỀN</th>
               <th>NGÀY GIA NHẬP</th>
               <th style={{ textAlign: 'right', paddingRight: '2.5rem' }}>THAO TÁC</th>
@@ -151,6 +187,25 @@ const UsersTab = ({
                     </div>
                   </td>
                   <td>
+                    {(u.teams || []).length > 0 ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {(u.teams || []).map(t => (
+                          <div key={t.id} style={{ 
+                            display: 'inline-flex', alignItems: 'center', gap: '4px',
+                            padding: '3px 8px', borderRadius: '6px',
+                            background: '#f0fdf4', color: '#15803d',
+                            fontSize: '0.7rem', fontWeight: 600
+                          }}>
+                            <Users size={10} />
+                            {t.name}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>—</span>
+                    )}
+                  </td>
+                  <td>
                     <div style={{ 
                       display: 'inline-flex', 
                       alignItems: 'center', 
@@ -176,22 +231,36 @@ const UsersTab = ({
                   <td>
                     {!isCurrentUserReadOnly ? (
                       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', paddingRight: '1rem' }}>
-                        <button 
-                          className="icon-btn-square" 
-                          title="Sửa thông tin" 
-                          onClick={() => onEditUser(u)}
-                        ><Edit3 size={14} /></button>
-                        <button 
-                          className="icon-btn-square" 
-                          title="Đổi mật khẩu" 
-                          style={{ color: '#d97706' }}
-                          onClick={() => onChangePassword(u)}
-                        ><Key size={14} /></button>
-                        <button 
-                          className="icon-btn-square danger" 
-                          title="Xóa thành viên" 
-                          onClick={() => onDeleteUser(u.id)}
-                        ><Trash2 size={14} /></button>
+                        {checkPerm && checkPerm('users', 'change_permissions') && (
+                          <button 
+                            className="icon-btn-square" 
+                            title="Phân quyền cá nhân" 
+                            style={{ color: '#2563eb' }}
+                            onClick={() => onEditUserPerms(u)}
+                          ><UserCog size={14} /></button>
+                        )}
+                        {checkPerm && checkPerm('users', 'edit') && (
+                          <button 
+                            className="icon-btn-square" 
+                            title="Sửa thông tin" 
+                            onClick={() => onEditUser(u)}
+                          ><Edit3 size={14} /></button>
+                        )}
+                        {(checkPerm && (checkPerm('users', 'edit') || checkPerm('users', 'reset_password_team') || checkPerm('users', 'manage_team'))) && (
+                          <button 
+                            className="icon-btn-square" 
+                            title="Đổi mật khẩu" 
+                            style={{ color: '#d97706' }}
+                            onClick={() => onChangePassword(u)}
+                          ><Key size={14} /></button>
+                        )}
+                        {checkPerm && checkPerm('users', 'delete') && (
+                          <button 
+                            className="icon-btn-square danger" 
+                            title="Xóa thành viên" 
+                            onClick={() => onDeleteUser(u.id)}
+                          ><Trash2 size={14} /></button>
+                        )}
                       </div>
                     ) : (
                       <div style={{ textAlign: 'right', paddingRight: '2rem', fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>
@@ -204,7 +273,7 @@ const UsersTab = ({
             })}
             {filteredUsers.length === 0 && (
               <tr>
-                <td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
                   Không tìm thấy thành viên phù hợp.
                 </td>
               </tr>

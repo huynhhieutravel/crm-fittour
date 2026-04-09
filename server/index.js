@@ -104,6 +104,9 @@ app.use('/api/dashboard', dashboardRoutes);
 const licenseRoutes = require('./routes/licenses');
 app.use('/api/licenses', licenseRoutes);
 
+const permissionRoutes = require('./routes/permissions');
+app.use('/api/permissions', permissionRoutes);
+
 app.get('/', (req, res) => {
     res.send('FIT Tour CRM API is running...');
 });

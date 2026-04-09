@@ -2,16 +2,14 @@ const express = require('express');
 const router = express.Router();
 const departureController = require('../controllers/departureController');
 const authenticateToken = require('../middleware/auth');
-const roleCheck = require('../middleware/roleCheck');
+const { permCheck, permCheckAny } = require('../middleware/permCheck');
 
-const ALLOWED_DEPARTURE_ROLES = ['admin', 'manager', 'operations'];
-
-router.get('/', authenticateToken, roleCheck(['admin', 'manager', 'operations', 'sales', "group_manager"]), departureController.getAllDepartures);
-router.post('/', authenticateToken, roleCheck(ALLOWED_DEPARTURE_ROLES), departureController.createDeparture);
-router.get('/:id', authenticateToken, roleCheck(['admin', 'manager', 'operations', 'sales', "group_manager"]), departureController.getDepartureById);
-router.get('/:id/bookings', authenticateToken, roleCheck(['admin', 'manager', 'operations', 'sales', "group_manager"]), departureController.getDepartureBookings);
-router.put('/:id', authenticateToken, roleCheck(ALLOWED_DEPARTURE_ROLES), departureController.updateDeparture);
-router.post('/:id/duplicate', authenticateToken, roleCheck(ALLOWED_DEPARTURE_ROLES), departureController.duplicateDeparture);
-router.delete('/:id', authenticateToken, roleCheck(['admin', 'manager', "group_manager"]), departureController.deleteDeparture);
+router.get('/', authenticateToken, permCheckAny([['op_tours','view_all'], ['op_tours','view_own']]), departureController.getAllDepartures);
+router.post('/', authenticateToken, permCheck('op_tours', 'create'), departureController.createDeparture);
+router.get('/:id', authenticateToken, permCheckAny([['op_tours','view_all'], ['op_tours','view_own']]), departureController.getDepartureById);
+router.get('/:id/bookings', authenticateToken, permCheckAny([['bookings','view_all'], ['bookings','view_own']]), departureController.getDepartureBookings);
+router.put('/:id', authenticateToken, permCheck('op_tours', 'edit'), departureController.updateDeparture);
+router.post('/:id/duplicate', authenticateToken, permCheck('op_tours', 'clone'), departureController.duplicateDeparture);
+router.delete('/:id', authenticateToken, permCheck('op_tours', 'delete'), departureController.deleteDeparture);
 
 module.exports = router;
