@@ -298,9 +298,18 @@ const OrgChartTab = ({ currentUser, addToast }) => {
             if (!u.is_active) return;
             
             let targetTeamId = null;
+            let targetBuId = null;
             let isManager = false;
             
-            if (u.teams && u.teams.length > 0) {
+            if (u.username) {
+                const un = u.username.toLowerCase();
+                if (un.startsWith('hi')) targetBuId = buNodeIds[3]; // BU4
+                else if (un.startsWith('sv')) targetBuId = buNodeIds[2]; // BU3
+                else if (un.startsWith('tq')) targetBuId = buNodeIds[0]; // BU1
+                else if (un.startsWith('gu')) targetBuId = buNodeIds[1]; // BU2
+            }
+
+            if (!targetBuId && u.teams && u.teams.length > 0) {
                 targetTeamId = u.teams[0].id;
             }
             if (u.role_name === 'manager' || u.position?.toLowerCase().includes('trưởng')) {
@@ -312,7 +321,26 @@ const OrgChartTab = ({ currentUser, addToast }) => {
             let x = 0;
             let y = 0;
 
-            if (targetTeamId && teamNodeIds[targetTeamId]) {
+            if (targetBuId) {
+                const buNodeIdx = newNodes.findIndex(n => n.id === targetBuId);
+                const buX = buNodeIdx >= 0 ? newNodes[buNodeIdx].position.x : 0;
+                const buY = buNodeIdx >= 0 ? newNodes[buNodeIdx].position.y : 0;
+
+                const count = teamMemberCount[targetBuId] || 0;
+                
+                // Stagger columns slightly for a neat layout inside the BU block
+                x = buX + ((count % 2 === 0) ? -80 : 80);
+                y = buY + 160 + (Math.floor(count / 2) * 110);
+                teamMemberCount[targetBuId] = count + 1;
+
+                newEdges.push({
+                    id: `edge_${targetBuId}_${uId}`,
+                    source: targetBuId,
+                    target: uId,
+                    animated: true,
+                    style: { stroke: '#22c55e', strokeWidth: 2 } // Green line for members
+                });
+            } else if (targetTeamId && teamNodeIds[targetTeamId]) {
                 const teamNodeIdx = newNodes.findIndex(n => n.id === teamNodeIds[targetTeamId]);
                 const teamX = teamNodeIdx >= 0 ? newNodes[teamNodeIdx].position.x : 0;
                 const teamY = teamNodeIdx >= 0 ? newNodes[teamNodeIdx].position.y : 0;
