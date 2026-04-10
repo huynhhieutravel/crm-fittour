@@ -440,7 +440,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 {/* Row 2 */}
                 <div style={{ gridColumn: 'span 6' }}></div>
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px', fontWeight: 'bold', color: '#1e293b' }}>Hạn xin Visa</label>
+                   <label style={{ fontSize: '12px', color: '#1e293b', width: '130px', fontWeight: 'bold' }}>Hạn xin Visa</label>
                    <input type="date" style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', boxSizing: 'border-box' }} value={formData.tour_info.visa_deadline || ''} onChange={e => handleChange('visa_deadline', e.target.value, true)} />
                 </div>
 
