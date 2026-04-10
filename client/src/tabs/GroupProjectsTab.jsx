@@ -291,6 +291,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                             <th style={{ padding: '12px 16px', textAlign: 'left' }}>TUYẾN ĐIỂM</th>
                             <th style={{ padding: '12px 16px', textAlign: 'center' }}>QUY MÔ</th>
                             <th style={{ padding: '12px 16px', textAlign: 'right' }}>DỰ KIẾN THU</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'right' }}>LỢI NHUẬN</th>
                             <th style={{ padding: '12px 16px', textAlign: 'left' }}>B2B / ĐẠI DIỆN</th>
                             <th style={{ padding: '12px 16px', textAlign: 'left' }}>SALE</th>
                             <th style={{ padding: '12px 16px', textAlign: 'left' }}>HDV</th>
@@ -299,9 +300,9 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="10" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td></tr>
+                            <tr><td colSpan="11" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td></tr>
                         ) : filtered.length === 0 ? (
-                            <tr><td colSpan="10" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Không có dự án MICE nào.</td></tr>
+                            <tr><td colSpan="11" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Không có dự án MICE nào.</td></tr>
                         ) : (
                             filtered.map(p => {
                                 const stColors = getStatusColor(p.status);
@@ -353,6 +354,9 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                     <td style={{ padding: '10px 16px', textAlign: 'right' }}>
                                         <div style={{ fontWeight: 'bold', color: '#16a34a' }}>{formatMoney(p.total_revenue)}</div>
                                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{formatMoney(p.price_per_pax)} / Pax</div>
+                                    </td>
+                                    <td style={{ padding: '10px 16px', textAlign: 'right' }}>
+                                        <div style={{ fontWeight: 'bold', color: p.profit > 0 ? '#ea580c' : '#94a3b8' }}>{formatMoney(p.profit)}</div>
                                     </td>
                                     <td style={{ padding: '10px 16px', fontSize: '0.85rem' }}>
                                         <div style={{ fontWeight: 600, color: '#0f172a' }}>{p.company_name || 'Khách Lẻ'}</div>

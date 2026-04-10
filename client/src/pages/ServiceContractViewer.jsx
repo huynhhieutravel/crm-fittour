@@ -143,14 +143,58 @@ export default function ServiceContractViewer() {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td style={{ padding: '10px', border: '1px solid #e2e8f0' }}>1</td>
-                                <td style={{ padding: '10px', border: '1px solid #e2e8f0', textAlign: 'left', fontWeight: 'bold' }}>Tour trọn gói</td>
-                                <td style={{ padding: '10px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{booking.qty || 1}</td>
-                                <td style={{ padding: '10px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{totalAmount.toLocaleString('vi-VN')}</td>
-                                <td style={{ padding: '10px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>0</td>
-                                <td style={{ padding: '10px', border: '1px solid #e2e8f0', fontWeight: 'bold' }} contentEditable suppressContentEditableWarning>{totalAmount.toLocaleString('vi-VN')}</td>
-                            </tr>
+                            {booking.raw_details?.pricingRows?.filter(r => Number(r.qty) > 0).map((row, idx) => (
+                                <React.Fragment key={idx}>
+                                    <tr>
+                                        <td style={{ padding: '10px', border: '1px solid #e2e8f0' }}>{idx + 1}</td>
+                                        <td style={{ padding: '10px', border: '1px solid #e2e8f0', textAlign: 'left', fontWeight: 'bold' }}>Tour trọn gói ({row.ageType})</td>
+                                        <td style={{ padding: '10px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{row.qty}</td>
+                                        <td style={{ padding: '10px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{Number(row.price).toLocaleString('vi-VN')}</td>
+                                        <td style={{ padding: '10px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{Number(row.discount).toLocaleString('vi-VN')}</td>
+                                        <td style={{ padding: '10px', border: '1px solid #e2e8f0', fontWeight: 'bold' }} contentEditable suppressContentEditableWarning>{Number(row.total || 0).toLocaleString('vi-VN')}</td>
+                                    </tr>
+                                    {row.extraServices && row.extraServices.length > 0 && row.extraServices.map((svc, sIdx) => (
+                                        <tr key={`svc-${idx}-${sIdx}`} style={{ fontStyle: 'italic', color: '#475569' }}>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0', borderTop: 'none' }}></td>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0', textAlign: 'left', fontSize: '13px' }}>↳ Phụ thu dịch vụ: {svc.name}</td>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0', fontSize: '13px' }} contentEditable suppressContentEditableWarning>{svc.qty}</td>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0', fontSize: '13px' }} contentEditable suppressContentEditableWarning>{Number(svc.price).toLocaleString('vi-VN')}</td>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0', fontSize: '13px' }} contentEditable suppressContentEditableWarning>0</td>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0', fontWeight: 'bold', fontSize: '13px' }} contentEditable suppressContentEditableWarning>{Number(svc.total).toLocaleString('vi-VN')}</td>
+                                        </tr>
+                                    ))}
+                                    {row.surcharge > 0 && (
+                                        <tr style={{ fontStyle: 'italic', color: '#475569' }}>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0', borderTop: 'none' }}></td>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0', textAlign: 'left', fontSize: '13px' }}>↳ Tiền phụ thu (Surcharge)</td>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0', fontSize: '13px' }} contentEditable suppressContentEditableWarning>1</td>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0', fontSize: '13px' }} contentEditable suppressContentEditableWarning>{Number(row.surcharge).toLocaleString('vi-VN')}</td>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0', fontSize: '13px' }} contentEditable suppressContentEditableWarning>0</td>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0', fontWeight: 'bold', fontSize: '13px' }} contentEditable suppressContentEditableWarning>{Number(row.surcharge).toLocaleString('vi-VN')}</td>
+                                        </tr>
+                                    )}
+                                    {row.customerNote && row.customerNote.trim() !== '' && (
+                                        <tr style={{ background: '#f8fafc' }}>
+                                            <td style={{ padding: '6px 10px', border: '1px solid #e2e8f0' }}></td>
+                                            <td colSpan="5" style={{ padding: '6px 10px', border: '1px solid #e2e8f0', textAlign: 'left', fontSize: '12px', color: '#334155' }}>
+                                                <strong>Ghi chú:</strong> {row.customerNote}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
+                            ))}
+                            
+                            {/* Fallback in case there is no pricingRows */}
+                            {(!booking.raw_details?.pricingRows || booking.raw_details.pricingRows.filter(r => Number(r.qty) > 0).length === 0) && (
+                                <tr>
+                                    <td style={{ padding: '10px', border: '1px solid #e2e8f0' }}>1</td>
+                                    <td style={{ padding: '10px', border: '1px solid #e2e8f0', textAlign: 'left', fontWeight: 'bold' }}>Tour trọn gói</td>
+                                    <td style={{ padding: '10px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{booking.qty || 1}</td>
+                                    <td style={{ padding: '10px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{totalAmount.toLocaleString('vi-VN')}</td>
+                                    <td style={{ padding: '10px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>0</td>
+                                    <td style={{ padding: '10px', border: '1px solid #e2e8f0', fontWeight: 'bold' }} contentEditable suppressContentEditableWarning>{totalAmount.toLocaleString('vi-VN')}</td>
+                                </tr>
+                            )}
                         </tbody>
                         <tfoot>
                             <tr style={{ background: '#f8fafc', fontWeight: 'bold' }}>
@@ -201,6 +245,7 @@ export default function ServiceContractViewer() {
                             <tr>
                                 <th style={{ padding: '8px', border: '1px solid #e2e8f0' }}>STT</th>
                                 <th style={{ padding: '8px', border: '1px solid #e2e8f0' }}>Họ tên</th>
+                                <th style={{ padding: '8px', border: '1px solid #e2e8f0' }}>Email</th>
                                 <th style={{ padding: '8px', border: '1px solid #e2e8f0' }}>Ngày sinh</th>
                                 <th style={{ padding: '8px', border: '1px solid #e2e8f0' }}>Giới tính</th>
                                 <th style={{ padding: '8px', border: '1px solid #e2e8f0' }}>Số điện thoại</th>
@@ -212,14 +257,15 @@ export default function ServiceContractViewer() {
                                 <tr key={idx}>
                                     <td style={{ padding: '8px', border: '1px solid #e2e8f0' }}>{idx + 1}</td>
                                     <td style={{ padding: '8px', border: '1px solid #e2e8f0', textTransform: 'uppercase', textAlign: 'left' }} contentEditable suppressContentEditableWarning>{m.name}</td>
+                                    <td style={{ padding: '8px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{m.email || ''}</td>
                                     <td style={{ padding: '8px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{m.dob}</td>
                                     <td style={{ padding: '8px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{m.gender}</td>
                                     <td style={{ padding: '8px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{m.phone}</td>
-                                    <td style={{ padding: '8px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{m.identity}</td>
+                                    <td style={{ padding: '8px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{m.docId || m.identity}</td>
                                 </tr>
                             ))}
                             {members.length === 0 && (
-                                <tr><td colSpan="6" style={{ padding: '15px' }}>Chưa có danh sách</td></tr>
+                                <tr><td colSpan="7" style={{ padding: '15px' }}>Chưa có danh sách</td></tr>
                             )}
                         </tbody>
                     </table>

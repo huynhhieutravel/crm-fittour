@@ -40,6 +40,30 @@ export const AddCustomerModal = ({
   CUSTOMER_SEGMENTS,
   users = []
 }) => {
+  const [uploadingPassport, setUploadingPassport] = useState(false);
+
+  const handleUploadPassport = async (file) => {
+    if (!file) return;
+    setUploadingPassport(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axios.post('/api/media/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (res.data && res.data.url) {
+         setNewCustomer({ ...newCustomer, passport_url: res.data.url });
+      }
+    } catch (err) {
+      alert("Lỗi tải lên ảnh Hộ chiếu! " + (err.response?.data?.message || err.message));
+    } finally {
+      setUploadingPassport(false);
+    }
+  };
+
   if (!showAddCustomerModal) return null;
 
   return (
@@ -91,6 +115,19 @@ export const AddCustomerModal = ({
           <div className="modal-form-group">
             <label>CCCD / PASSPORT</label>
             <input className="modal-input" value={newCustomer.id_card} onChange={e => setNewCustomer({...newCustomer, id_card: e.target.value})} />
+          </div>
+          <div className="modal-form-group">
+             <label style={{ display: 'flex', alignItems: 'center' }}>
+                ẢNH HỘ CHIẾU / CCCD 
+                {newCustomer.passport_url && <a href={newCustomer.passport_url} target="_blank" rel="noreferrer" style={{ color: '#3b82f6', marginLeft: '8px', fontSize: '0.85rem' }}>👁️ Xem ảnh</a>}
+             </label>
+             <div style={{ display: 'flex', gap: '8px' }}>
+                <input className="modal-input" placeholder="Url ảnh..." value={newCustomer.passport_url || ''} onChange={e => setNewCustomer({...newCustomer, passport_url: e.target.value})} style={{ flex: 1 }} />
+                <label className="btn-outline" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '0 12px', borderRadius: '4px', border: '1px solid #cbd5e1', whiteSpace: 'nowrap' }}>
+                    {uploadingPassport ? 'Đang up...' : '📷 Tải lên'}
+                    <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={e => handleUploadPassport(e.target.files[0])} />
+                </label>
+             </div>
           </div>
           <div className="modal-form-group">
             <label>NGÀY HẾT HẠN PASSPORT</label>
@@ -180,11 +217,35 @@ export const EditCustomerModal = ({
   newCustomerNote,
   setNewCustomerNote,
   handleAddCustomerNote,
-  users = []
+  users = [],
+  currentUser = null
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showMiniEventForm, setShowMiniEventForm] = useState(false);
   const [miniEvent, setMiniEvent] = useState({ title: '', event_type: 'CALL', event_date: '', description: '' });
+  const [uploadingPassport, setUploadingPassport] = useState(false);
+
+  const handleUploadPassport = async (file) => {
+    if (!file) return;
+    setUploadingPassport(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axios.post('/api/media/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (res.data && res.data.url) {
+         setEditingCustomer({ ...editingCustomer, passport_url: res.data.url });
+      }
+    } catch (err) {
+      alert("Lỗi tải lên ảnh Hộ chiếu! " + (err.response?.data?.message || err.message));
+    } finally {
+      setUploadingPassport(false);
+    }
+  };
 
   const handleCreateMiniEvent = async () => {
     if (!miniEvent.title || !miniEvent.event_date) return alert('Vui lòng nhập tên và ngày hẹn báo trước!');
@@ -316,6 +377,19 @@ export const EditCustomerModal = ({
             <input className="modal-input" value={editingCustomer.id_card || ''} onChange={e => setEditingCustomer({...editingCustomer, id_card: e.target.value})} />
           </div>
           <div className="modal-form-group">
+             <label style={{ display: 'flex', alignItems: 'center' }}>
+                ẢNH HỘ CHIẾU / CCCD 
+                {editingCustomer.passport_url && <a href={editingCustomer.passport_url} target="_blank" rel="noreferrer" style={{ color: '#3b82f6', marginLeft: '8px', fontSize: '0.85rem' }}>👁️ Xem ảnh</a>}
+             </label>
+             <div style={{ display: 'flex', gap: '8px' }}>
+                <input className="modal-input" placeholder="Url ảnh..." value={editingCustomer.passport_url || ''} onChange={e => setEditingCustomer({...editingCustomer, passport_url: e.target.value})} style={{ flex: 1 }} />
+                <label className="btn-outline" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '0 12px', borderRadius: '4px', border: '1px solid #cbd5e1', whiteSpace: 'nowrap' }}>
+                    {uploadingPassport ? 'Đang up...' : '📷 Tải lên'}
+                    <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={e => handleUploadPassport(e.target.files[0])} />
+                </label>
+             </div>
+          </div>
+          <div className="modal-form-group">
             <label>NGÀY HẾT HẠN PASSPORT</label>
             <input className="modal-input" type="date" value={editingCustomer.id_expiry ? editingCustomer.id_expiry.split('T')[0] : ''} onChange={e => setEditingCustomer({...editingCustomer, id_expiry: e.target.value})} />
           </div>
@@ -365,7 +439,11 @@ export const EditCustomerModal = ({
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', fontSize: '0.8rem' }}>
                           <div style={{ background: 'white', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
                             <div style={{ color: '#94a3b8', fontWeight: 600, marginBottom: '2px' }}>Trước CRM</div>
-                            <input type="number" min="0" value={pastTrips} onChange={e => setEditingCustomer({...editingCustomer, past_trip_count: parseInt(e.target.value) || 0})} style={{ width: '100%', textAlign: 'center', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '4px', fontWeight: 800, fontSize: '1.1rem', color: '#1e293b', outline: 'none' }} />
+                            {currentUser && ['admin', 'manager'].includes(currentUser.role) ? (
+                              <input type="number" min="0" value={pastTrips} onChange={e => setEditingCustomer({...editingCustomer, past_trip_count: parseInt(e.target.value) || 0})} style={{ width: '100%', textAlign: 'center', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '4px', fontWeight: 800, fontSize: '1.1rem', color: '#1e293b', outline: 'none' }} />
+                            ) : (
+                              <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b', padding: '4px' }}>{pastTrips}</div>
+                            )}
                           </div>
                           <div style={{ background: 'white', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
                             <div style={{ color: '#94a3b8', fontWeight: 600, marginBottom: '2px' }}>Trong CRM</div>

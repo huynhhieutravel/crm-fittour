@@ -31,9 +31,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  LabelList,
-  AreaChart,
-  Area
+  LabelList
 } from "recharts";
 
 const LeadsDashboardTab = ({ setEditingLead }) => {

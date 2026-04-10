@@ -81,7 +81,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
   };
 
   const modalContent = (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 10002 }}>
       <div 
         className="modal-content animate-slide-up" 
         onClick={e => e.stopPropagation()}
@@ -198,6 +198,19 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                   <div>
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}>Quốc tịch</div>
                     <div style={{ fontWeight: 500 }}>{customer.nationality || 'Việt Nam'}</div>
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}>Ảnh Giấy Tờ</div>
+                    <div style={{ fontWeight: 500 }}>
+                       {customer.passport_url ? (
+                           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                             <a href={customer.passport_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#e0f2fe', color: '#0369a1', borderRadius: '4px', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, border: '1px solid #bae6fd' }}>
+                                <FileText size={14} /> Đi tới trang Ảnh/File
+                             </a>
+                             <img src={customer.passport_url} alt="Hộ chiếu / CCCD" style={{ height: '40px', width: 'auto', borderRadius: '4px', border: '1px solid #e2e8f0', objectFit: 'contain' }} onError={(e) => e.target.style.display='none'} />
+                           </div>
+                       ) : 'Chưa có ảnh'}
+                    </div>
                   </div>
                 </div>
               </div>

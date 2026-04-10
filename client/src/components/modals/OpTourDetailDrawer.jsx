@@ -26,14 +26,18 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
   const [guides, setGuides] = useState([]);
   const [airlinesList, setAirlinesList] = useState([]);
   const [tourTemplates, setTourTemplates] = useState([]);
+  const [operatorsList, setOperatorsList] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
         try {
-            const [guidesRes, airlinesRes, templatesRes] = await Promise.all([
+            const [guidesRes, airlinesRes, templatesRes, usersRes] = await Promise.all([
                 axios.get('/api/guides'),
                 axios.get('/api/airlines?limit=1000'),
                 axios.get('/api/tours', {
+                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                }).catch(() => ({ data: [] })),
+                axios.get('/api/users', {
                   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 }).catch(() => ({ data: [] }))
             ]);
@@ -43,6 +47,20 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
             }
             if (Array.isArray(templatesRes.data)) {
                 setTourTemplates(templatesRes.data);
+            }
+            if (Array.isArray(usersRes.data)) {
+                setOperatorsList(usersRes.data
+                  .filter(u => {
+                      if (u.is_active === false || u.role_name === 'admin') return false;
+                      const hasOpRole = ['operations', 'manager'].includes(u.role_name);
+                      const inOpTeam = u.teams && u.teams.some(t => 
+                          (t.name && t.name.toLowerCase().includes('điều hành')) || 
+                          (t.code && t.code.toLowerCase() === 'operations')
+                      );
+                      return hasOpRole || inOpTeam;
+                  })
+                  .map(u => ({ label: u.full_name, value: u.full_name }))
+                );
             }
         } catch (e) {
             console.error('Lỗi tải Data (Guides/Airlines/Templates):', e);
@@ -161,7 +179,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
   return (
     <div className="drawer-overlay" style={{
       position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-      background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', justifyContent: 'flex-end'
+      background: 'rgba(0,0,0,0.5)', zIndex: 1500, display: 'flex', justifyContent: 'flex-end'
     }}>
       <div className="drawer-content" style={{
         width: '90%', height: '100%', background: '#f8fafc', display: 'flex', flexDirection: 'column',
@@ -265,9 +283,30 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                     <input type="date" style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', boxSizing: 'border-box' }} value={formData.end_date} onChange={e => handleChange('end_date', e.target.value)} />
                 </div>
 
-                <div style={{ gridColumn: 'span 12' }}>
+                <div style={{ gridColumn: 'span 6' }}>
                     <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Nhân viên điều hành:</label>
-                    <input type="text" placeholder="Nhập tên nhân viên (cách nhau bằng dấu phẩy)..." style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formData.tour_info.operators || ''} onChange={e => handleChange('operators', e.target.value, true)} />
+                    <Select
+                        isMulti
+                        options={operatorsList}
+                        value={operatorsList.filter(o => (formData.tour_info.operators || '').split(', ').includes(o.value))}
+                        onChange={opts => handleChange('operators', opts ? opts.map(o => o.value).join(', ') : '', true)}
+                        placeholder="Chọn nhân viên điều hành..."
+                        styles={{ control: (base) => ({ ...base, minHeight: '36px', borderColor: '#cbd5e1' }) }}
+                    />
+                </div>
+                <div style={{ gridColumn: 'span 6' }}>
+                    <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Tour Guide:</label>
+                    <Select 
+                        options={guides}
+                        value={guides.find(g => g.value === formData.tour_info.tour_guide_id) || null}
+                        onChange={opt => {
+                            handleChange('tour_guide_id', opt ? opt.value : '', true);
+                            handleChange('tour_guide_name', opt ? opt.label : '', true);
+                        }}
+                        isClearable
+                        placeholder="Nhập tên, SĐT HDV..."
+                        styles={{ control: (base) => ({ ...base, minHeight: '36px', borderColor: '#cbd5e1' }) }}
+                    />
                 </div>
              </div>
           </div>
@@ -389,27 +428,9 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                      <input type="text" style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formatCurrency(formData.tour_info.price_infant)} onChange={e => { handleChange('price_infant_percent', '', true); handleChange('price_infant', parseCurrency(e.target.value), true); }} />
                    </div>
                 </div>
-                <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px' }}>Tour Guide</label>
-                   <div style={{ flex: 1 }}>
-                       <Select 
-                           options={guides}
-                           value={guides.find(g => g.value === formData.tour_info.tour_guide_id) || null}
-                           onChange={opt => {
-                               handleChange('tour_guide_id', opt ? opt.value : '', true);
-                               handleChange('tour_guide_name', opt ? opt.label : '', true);
-                           }}
-                           isClearable
-                           placeholder="Nhập tên, SĐT HDV..."
-                           styles={{ control: (base) => ({ ...base, minHeight: '36px', borderColor: '#cbd5e1' }) }}
-                       />
-                   </div>
-                </div>
-
-                {/* Row 1 */}
-                <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px' }}>Ghi chú</label>
-                   <textarea rows={1} style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formData.tour_info.internal_notes || ''} onChange={e => handleChange('internal_notes', e.target.value, true)} />
+                <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px', paddingTop: '8px' }}>Ghi chú nội bộ</label>
+                   <textarea rows={3} style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', minHeight: '60px', resize: 'vertical' }} value={formData.tour_info.internal_notes || ''} onChange={e => handleChange('internal_notes', e.target.value, true)} />
                 </div>
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
                    <label style={{ fontSize: '12px', color: '#1e293b', fontWeight: 'bold', width: '130px' }}>Thời gian nhận chỗ <span style={{color:'red'}}>(*)</span></label>
@@ -417,10 +438,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 </div>
 
                 {/* Row 2 */}
-                <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px' }}>Lịch trình Tour</label>
-                   <input type="text" placeholder="Ghi link drive..." style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formData.tour_info.file_link || ''} onChange={e => handleChange('file_link', e.target.value, true)} />
-                </div>
+                <div style={{ gridColumn: 'span 6' }}></div>
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
                    <label style={{ fontSize: '12px', color: '#64748b', width: '130px', fontWeight: 'bold', color: '#1e293b' }}>Hạn xin Visa</label>
                    <input type="date" style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', boxSizing: 'border-box' }} value={formData.tour_info.visa_deadline || ''} onChange={e => handleChange('visa_deadline', e.target.value, true)} />

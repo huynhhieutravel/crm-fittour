@@ -8,7 +8,7 @@ import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 export default function GroupProjectDetailDrawer({ project, onClose, refreshList, currentUser, addToast, users }) {
     const [formData, setFormData] = useState({
         name: '', group_leader_id: '', source: '', status: 'Báo giá', destination: '',
-        expected_pax: 0, price_per_pax: 0, departure_date: '', return_date: '', expected_month: '', total_revenue: 0, assigned_to: '', guide_ids: []
+        expected_pax: 0, price_per_pax: 0, departure_date: '', return_date: '', expected_month: '', total_revenue: 0, profit: 0, assigned_to: '', guide_ids: []
     });
     
     const [leaders, setLeaders] = useState([]);
@@ -27,6 +27,7 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                 return_date: project.return_date ? String(project.return_date).split('T')[0] : '',
                 price_per_pax: project.price_per_pax ? Number(project.price_per_pax) : 0,
                 total_revenue: project.total_revenue ? Number(project.total_revenue) : 0,
+                profit: project.profit ? Number(project.profit) : 0,
                 guide_ids: project.guide_ids || []
             });
         }
@@ -151,6 +152,15 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
         
     const formattedPrice = formData.price_per_pax && !isNaN(Number(formData.price_per_pax)) 
         ? new Intl.NumberFormat('vi-VN').format(Number(formData.price_per_pax)) 
+        : '';
+
+    const handleProfitChange = (e) => {
+        const rawValue = e.target.value.replace(/[^0-9-]/g, '');
+        setFormData({ ...formData, profit: rawValue ? parseInt(rawValue, 10) : 0 });
+    };
+
+    const formattedProfit = formData.profit && !isNaN(Number(formData.profit)) 
+        ? new Intl.NumberFormat('vi-VN').format(Number(formData.profit)) 
         : '';
 
     return (
@@ -303,9 +313,13 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                                 <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block' }}>NGÀY VỀ (DỰ KIẾN)</label>
                                 <input type="date" style={drawerInputStyle} value={formData.return_date} onChange={e => setFormData({...formData, return_date: e.target.value})} disabled={isViewOnly} />
                             </div>
-                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                            <div className="form-group">
                                 <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block' }}>DOANH THU ĐỀ XUẤT (VNĐ)</label>
                                 <input type="text" style={{ ...drawerInputStyle, color: '#16a34a', fontWeight: 'bold' }} value={formattedRevenue} onChange={handleRevenueChange} disabled={isViewOnly} placeholder="0" />
+                            </div>
+                            <div className="form-group">
+                                <label style={{ fontSize: '0.85rem', color: '#ea580c', fontWeight: 600, marginBottom: '8px', display: 'block' }}>LỢI NHUẬN (VNĐ)</label>
+                                <input type="text" style={{ ...drawerInputStyle, color: '#ea580c', fontWeight: 'bold' }} value={formattedProfit} onChange={handleProfitChange} disabled={isViewOnly} placeholder="0" />
                             </div>
                         </div>
                     </div>

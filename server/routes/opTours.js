@@ -20,5 +20,6 @@ router.delete('/:id', authenticateToken, permCheck('op_tours', 'delete'), contro
 router.get('/:id/bookings', authenticateToken, permCheckAny([['bookings','view_all'], ['bookings','view_own']]), controller.getOpTourBookings);
 router.post('/:id/bookings', authenticateToken, permCheck('bookings', 'create'), controller.addOpTourBooking);
 router.put('/:id/bookings/:bookingId', authenticateToken, permCheckAny([['bookings','edit_all'], ['bookings','edit_own']]), controller.updateOpTourBooking);
+router.delete('/:id/bookings/:bookingId', authenticateToken, permCheck('bookings', 'delete'), controller.deleteOpTourBooking);
 
 module.exports = router;

@@ -299,6 +299,62 @@ const BookingProfileSlider = ({ bookingId, onClose }) => {
                         </div>
                      </div>
                   </div>
+
+                  {/* CHITIET BAOGIA (PRICING BREAKDOWN) FOR PDF */}
+                  {booking.raw_details && booking.raw_details.pricingRows && booking.raw_details.pricingRows.some(r => Number(r.qty) > 0) && (
+                    <div style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '1rem' }}>
+                       <h3 style={{ fontSize: '1.1rem', color: '#1e293b', margin: '0 0 1rem 0', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Tag size={18} color="#3b82f6" /> Chi tiết Báo Giá
+                       </h3>
+                       <div style={{ overflowX: 'auto' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                             <thead>
+                                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                                   <th style={{ padding: '10px', textAlign: 'left', color: '#475569', fontWeight: 700 }}>Loại khách</th>
+                                   <th style={{ padding: '10px', textAlign: 'center', color: '#475569', fontWeight: 700 }}>SL</th>
+                                   <th style={{ padding: '10px', textAlign: 'right', color: '#475569', fontWeight: 700 }}>Đơn giá</th>
+                                   <th style={{ padding: '10px', textAlign: 'right', color: '#475569', fontWeight: 700 }}>Phụ thu</th>
+                                   <th style={{ padding: '10px', textAlign: 'right', color: '#475569', fontWeight: 700 }}>Giảm giá</th>
+                                   <th style={{ padding: '10px', textAlign: 'right', color: '#475569', fontWeight: 700 }}>Tổng con</th>
+                                </tr>
+                             </thead>
+                             <tbody>
+                                {booking.raw_details.pricingRows.filter(r => Number(r.qty) > 0).map((row, idx) => (
+                                   <React.Fragment key={idx}>
+                                      <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                         <td style={{ padding: '10px', fontWeight: 600, color: '#1e293b' }}>{row.ageType}</td>
+                                         <td style={{ padding: '10px', textAlign: 'center' }}>{row.qty}</td>
+                                         <td style={{ padding: '10px', textAlign: 'right' }}>{Number(row.price).toLocaleString('vi-VN')}₫</td>
+                                         <td style={{ padding: '10px', textAlign: 'right', color: row.surcharge > 0 ? '#ea580c' : 'inherit' }}>{row.surcharge > 0 ? `+${Number(row.surcharge).toLocaleString('vi-VN')}₫` : '-'}</td>
+                                         <td style={{ padding: '10px', textAlign: 'right', color: row.discount > 0 ? '#16a34a' : 'inherit' }}>{row.discount > 0 ? `-${Number(row.discount).toLocaleString('vi-VN')}₫` : '-'}</td>
+                                         <td style={{ padding: '10px', textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>{Number(row.total || 0).toLocaleString('vi-VN')}₫</td>
+                                      </tr>
+                                      {/* Extra Services for this row */}
+                                      {row.extraServices && row.extraServices.length > 0 && row.extraServices.map((svc, sIdx) => (
+                                         <tr key={`svc-${idx}-${sIdx}`} style={{ borderBottom: '1px dashed #e2e8f0', backgroundColor: '#fcfcfc' }}>
+                                            <td colSpan="2" style={{ padding: '6px 10px 6px 30px', color: '#64748b', fontSize: '0.85rem' }}>
+                                               ↳ <span style={{ fontWeight: 600 }}>Dịch vụ kèm theo:</span> {svc.name}
+                                            </td>
+                                            <td style={{ padding: '6px 10px', textAlign: 'right', color: '#64748b', fontSize: '0.85rem' }}>{Number(svc.price).toLocaleString('vi-VN')}₫</td>
+                                            <td colSpan="2" style={{ padding: '6px 10px', textAlign: 'center', color: '#64748b', fontSize: '0.85rem' }}>SL: {svc.qty}</td>
+                                            <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 600, color: '#475569', fontSize: '0.85rem' }}>+{Number(svc.total).toLocaleString('vi-VN')}₫</td>
+                                         </tr>
+                                      ))}
+                                      {/* Customer Notes for this row */}
+                                      {row.customerNote && row.customerNote.trim() !== '' && (
+                                         <tr style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: '#fcfcfc' }}>
+                                            <td colSpan="6" style={{ padding: '8px 10px', color: '#334155', fontSize: '0.85rem', fontStyle: 'italic' }}>
+                                               <span style={{ fontWeight: 600, color: '#0f172a' }}>Ghi chú:</span> {row.customerNote}
+                                            </td>
+                                         </tr>
+                                      )}
+                                   </React.Fragment>
+                                ))}
+                             </tbody>
+                          </table>
+                       </div>
+                    </div>
+                  )}
                 </div>
               )}
 

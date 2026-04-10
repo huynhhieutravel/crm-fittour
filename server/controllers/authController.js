@@ -7,7 +7,7 @@ exports.login = async (req, res) => {
 
     try {
         const result = await db.query(
-            'SELECT u.*, r.name as role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.username = $1',
+            'SELECT u.*, COALESCE(r.name, u.role) as role_name FROM users u LEFT JOIN roles r ON u.role_id = r.id WHERE u.username = $1',
             [username]
         );
 

@@ -134,8 +134,10 @@ exports.cancelVoucher = async (req, res) => {
         
         const voucher = vCheck.rows[0];
         
-        // Kế toán / Quản lý / Admin hoặc chính người tạo mới được hủy
-        if (req.user.role !== 'admin' && req.user.role !== 'manager' && req.user.role !== 'operator' && voucher.created_by != req.user.id) {
+        // BUG-02 FIX: Use role from JWT (which is already role_name via authController)
+        const userRole = req.user.role || '';
+        const isPrivileged = ['admin', 'manager', 'operator'].includes(userRole);
+        if (!isPrivileged && voucher.created_by != req.user.id) {
             return res.status(403).json({ message: 'Lỗi Phân Quyền! Bạn không có quyền hủy Phiếu Thu này.' });
         }
 
@@ -189,11 +191,30 @@ exports.deleteVoucher = async (req, res) => {
         const voucher = vCheck.rows[0];
         // If not cancelled yet, we must rollback the paid amount before deleting
         if (voucher.status !== 'Đã hủy' && voucher.booking_id && voucher.amount > 0) {
-            await db.query(`
+            const downRes = await db.query(`
                 UPDATE bookings 
-                SET paid = paid - $1 
+                SET paid = GREATEST(0, paid - $1)
                 WHERE id = $2
+                RETURNING total_price, paid, booking_status
             `, [voucher.amount, voucher.booking_id]);
+
+            // Recalc auto-status sau khi trừ tiền (giống cancelVoucher)
+            if (downRes.rows.length > 0) {
+                const bCheck = downRes.rows[0];
+                const newPaid = Number(bCheck.paid || 0);
+                const total = Number(bCheck.total_price || 0);
+                
+                let autoStatus = bCheck.booking_status;
+                if (newPaid === 0 && (bCheck.booking_status === 'Đã đặt cọc' || bCheck.booking_status === 'Đã thanh toán')) {
+                    autoStatus = 'Giữ chỗ';
+                } else if (newPaid > 0 && newPaid < total) {
+                    autoStatus = 'Đã đặt cọc';
+                }
+
+                if (autoStatus !== bCheck.booking_status) {
+                    await db.query(`UPDATE bookings SET booking_status = $1 WHERE id = $2`, [autoStatus, voucher.booking_id]);
+                }
+            }
         }
 
         await db.query('DELETE FROM payment_vouchers WHERE id = $1', [id]);

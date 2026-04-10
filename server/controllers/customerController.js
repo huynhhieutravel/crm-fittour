@@ -52,12 +52,17 @@ exports.getAllCustomers = async (req, res) => {
             const perms = await getUserMergedPerms(req.user.id, req.user.role);
             const scope = await getDataScope(req.user.id, 'customers', perms);
             
-            if (scope.scope === 'team' || scope.scope === 'own') {
-                scopeClause = `WHERE c.assigned_to = ANY($1)`;
-                scopeParams = [scope.userIds];
-                paramOffset = 1;
-            } else if (scope.scope === 'none') {
-                return res.json([]);
+            // Bypass data isolation if explicitly searching (to prevent duplicates)
+            const isSearching = search && search.trim().length > 0;
+            
+            if (!isSearching) {
+                if (scope.scope === 'team' || scope.scope === 'own') {
+                    scopeClause = `WHERE c.assigned_to = ANY($1)`;
+                    scopeParams = [scope.userIds];
+                    paramOffset = 1;
+                } else if (scope.scope === 'none') {
+                    return res.json([]);
+                }
             }
         }
 
@@ -151,8 +156,8 @@ exports.createCustomer = async (req, res) => {
                 id_card, id_expiry, address, preferred_contact, role,
                 customer_segment, tour_interests, special_requests, internal_notes, 
                 lead_id, location_city, travel_season, first_deal_date, assigned_to,
-                destinations, experiences, travel_styles, created_at, past_trip_count
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25) RETURNING *`,
+                destinations, experiences, travel_styles, created_at, past_trip_count, passport_url
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26) RETURNING *`,
             [
                 normalizedName, body.phone || null, body.email || null, body.gender || null, 
                 body.birth_date || null, body.nationality || 'Việt Nam', 
@@ -167,7 +172,8 @@ exports.createCustomer = async (req, res) => {
                 body.experiences ? JSON.stringify(body.experiences) : '[]',
                 body.travel_styles ? JSON.stringify(body.travel_styles) : '[]',
                 body.created_at || new Date(),
-                parseInt(body.past_trip_count) || 0
+                parseInt(body.past_trip_count) || 0,
+                body.passport_url || null
             ]
         );
 
@@ -291,7 +297,7 @@ exports.updateCustomer = async (req, res) => {
             'customer_segment', 'tour_interests', 'special_requests', 
             'internal_notes', 'location_city', 'travel_season', 
             'first_deal_date', 'assigned_to', 'destinations', 'experiences', 'travel_styles', 'created_at',
-            'past_trip_count'
+            'past_trip_count', 'passport_url'
         ];
 
         Object.keys(updates).forEach(key => {
@@ -357,21 +363,33 @@ exports.updateCustomer = async (req, res) => {
 };
 
 exports.deleteCustomer = async (req, res) => {
+    const client = await db.pool.connect();
     try {
+        await client.query('BEGIN');
         const custId = req.params.id;
-        const resCust = await db.query('SELECT name FROM customers WHERE id = $1', [custId]);
-        if (resCust.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
+        const resCust = await client.query('SELECT name FROM customers WHERE id = $1', [custId]);
+        if (resCust.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
+        }
 
         // Kiểm tra booking liên kết
-        const bCount = await db.query('SELECT COUNT(*)::int as c FROM bookings WHERE customer_id = $1', [custId]);
+        const bCount = await client.query('SELECT COUNT(*)::int as c FROM bookings WHERE customer_id = $1', [custId]);
         if (bCount.rows[0].c > 0) {
+            await client.query('ROLLBACK');
             return res.status(409).json({
                 message: `Khách hàng "${resCust.rows[0].name}" có ${bCount.rows[0].c} đơn hàng liên kết. Không thể xóa trực tiếp.`,
                 has_bookings: true
             });
         }
 
-        await db.query('DELETE FROM customers WHERE id = $1', [custId]);
+        // MED-08 FIX: Xóa các bản ghi con trước để tránh FK violation
+        await client.query('DELETE FROM lead_notes WHERE customer_id = $1', [custId]);
+        await client.query('DELETE FROM customer_events WHERE customer_id = $1', [custId]);
+        await client.query('UPDATE leads SET customer_id = NULL WHERE customer_id = $1', [custId]);
+        await client.query('DELETE FROM booking_passengers WHERE customer_id = $1', [custId]);
+        
+        await client.query('DELETE FROM customers WHERE id = $1', [custId]);
 
         // LOG ACTIVITY
         await logActivity({
@@ -382,9 +400,13 @@ exports.deleteCustomer = async (req, res) => {
             details: `Đã xóa Khách hàng: ${resCust.rows[0].name}`
         });
 
+        await client.query('COMMIT');
         res.json({ message: 'Đã xoá khách hàng thành công' });
     } catch (err) {
+        await client.query('ROLLBACK');
         res.status(500).json({ message: err.message });
+    } finally {
+        client.release();
     }
 };
 

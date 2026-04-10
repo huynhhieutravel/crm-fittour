@@ -225,7 +225,31 @@ exports.deleteDeparture = async (req, res) => {
 
         const depId = req.params.id;
 
-        // 1. Xóa booking_passengers & booking_transactions (con của bookings)
+        // === BUG-06 FIX: Chặn xóa nếu có booking đã thu tiền ===
+        const paidCheck = await client.query(
+            'SELECT COUNT(*)::int as cnt FROM bookings WHERE tour_departure_id = $1 AND paid > 0',
+            [depId]
+        );
+        if (paidCheck.rows[0].cnt > 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ 
+                message: `Không thể xóa: Lịch khởi hành này có ${paidCheck.rows[0].cnt} booking đã thu tiền. Hãy hoàn tiền hoặc huỷ các phiếu thu trước khi xóa.` 
+            });
+        }
+
+        // Chặn xóa nếu có booking active (chưa Huỷ)
+        const activeCheck = await client.query(
+            "SELECT COUNT(*)::int as cnt FROM bookings WHERE tour_departure_id = $1 AND booking_status NOT IN ('Huỷ', 'Hủy')",
+            [depId]
+        );
+        if (activeCheck.rows[0].cnt > 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ 
+                message: `Không thể xóa: Lịch khởi hành này còn ${activeCheck.rows[0].cnt} booking đang hoạt động. Hãy huỷ tất cả booking trước khi xóa.` 
+            });
+        }
+
+        // 1. Xóa booking_passengers & booking_transactions (con của bookings đã Huỷ)
         await client.query(`
             DELETE FROM booking_passengers WHERE booking_id IN (SELECT id FROM bookings WHERE tour_departure_id = $1)
         `, [depId]);
@@ -233,13 +257,18 @@ exports.deleteDeparture = async (req, res) => {
             DELETE FROM booking_transactions WHERE booking_id IN (SELECT id FROM bookings WHERE tour_departure_id = $1)
         `, [depId]);
 
-        // 2. Xóa bookings
+        // 2. Xóa bookings (chỉ các booking đã Huỷ còn sót lại)
         await client.query('DELETE FROM bookings WHERE tour_departure_id = $1', [depId]);
 
-        // 3. Xóa departure_reminders
+        // 3. Xóa payment_vouchers liên quan
+        await client.query(`
+            DELETE FROM payment_vouchers WHERE tour_id = $1
+        `, [depId]);
+
+        // 4. Xóa departure_reminders
         await client.query('DELETE FROM departure_reminders WHERE tour_departure_id = $1', [depId]);
 
-        // 4. Xóa departure (tour_costings sẽ tự cascade nhờ ON DELETE CASCADE)
+        // 5. Xóa departure (tour_costings sẽ tự cascade nhờ ON DELETE CASCADE)
         const result = await client.query('DELETE FROM tour_departures WHERE id = $1 RETURNING *', [depId]);
         if (result.rows.length === 0) {
             await client.query('ROLLBACK');

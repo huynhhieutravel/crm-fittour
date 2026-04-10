@@ -6,7 +6,8 @@ const { isInManagedTeam, getAllowedRolesForManager } = require('../middleware/te
 exports.getAllUsers = async (req, res) => {
     try {
         const usersRes = await db.query(`
-            SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active, u.created_at, 
+            SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active, u.created_at,
+                   u.birth_date, u.gender, u.id_card, u.passport_url, u.id_expiry, u.address, u.facebook_url,
                    r.name as role_name, r.id as role_id,
                    COALESCE(
                        (SELECT json_agg(json_build_object('id', t.id, 'name', t.name, 'code', t.code) ORDER BY t.name)
@@ -145,6 +146,15 @@ exports.createUser = async (req, res) => {
             return res.status(400).json({ message: 'Tên đăng nhập đã tồn tại.' });
         }
 
+        // Security check: restrict what roles the creator can assign
+        if (req.user && req.user.role !== 'admin') {
+            const allowedRoles = await getAllowedRolesForManager(req.user.id);
+            const isAllowedRole = allowedRoles.some(r => r.id === parseInt(role_id));
+            if (!isAllowedRole) {
+                return res.status(403).json({ message: 'Bạn không có quyền tạo tài khoản với Phân quyền này.' });
+            }
+        }
+
         // Determine team_id: if team manager creates user, auto-assign to their team
         let finalTeamId = team_id || null;
         if (!finalTeamId && req.user) {
@@ -167,7 +177,8 @@ exports.createUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     const { id } = req.params;
-    const { full_name, email, role_id, phone, is_active, permissions } = req.body;
+    const { full_name, email, role_id, phone, is_active, permissions,
+            birth_date, gender, id_card, passport_url, id_expiry, address, facebook_url, created_at, position, avatar_url } = req.body;
     console.log(`[UPDATE USER ${id}] Payload:`, JSON.stringify(req.body));
     
     const client = await db.pool.connect();
@@ -183,9 +194,29 @@ exports.updateUser = async (req, res) => {
             }
         }
 
+        // Logic delete old avatar if changed
+        if (avatar_url) {
+            const oldUserRes = await client.query('SELECT avatar_url FROM users WHERE id = $1', [id]);
+            const oldAvatar = oldUserRes.rows[0]?.avatar_url;
+            if (oldAvatar && oldAvatar !== avatar_url && oldAvatar.startsWith('/uploads/')) {
+                const fs = require('fs');
+                const path = require('path');
+                const oldPath = path.join(__dirname, '../public', oldAvatar);
+                if (fs.existsSync(oldPath)) {
+                    fs.unlinkSync(oldPath);
+                    console.log(`[USER] Deleted old avatar: ${oldPath}`);
+                }
+            }
+        }
+
         await client.query(
-            'UPDATE users SET full_name = $1, email = $2, role_id = $3, phone = $4, is_active = $5 WHERE id = $6',
-            [full_name, email, role_id, phone || null, is_active !== false, id]
+            `UPDATE users SET full_name = $1, email = $2, role_id = $3, phone = $4, is_active = $5,
+             birth_date = $7, gender = $8, id_card = $9, passport_url = $10, id_expiry = $11, address = $12, facebook_url = $13,
+             created_at = COALESCE($14, created_at), position = $15, avatar_url = COALESCE($16, avatar_url)
+             WHERE id = $6`,
+            [full_name, email, role_id, phone || null, is_active !== false, id,
+             birth_date || null, gender || null, id_card || null, passport_url || null, id_expiry || null, address || null, facebook_url || null,
+             created_at || null, position || null, avatar_url || null]
         );
         
         // Sync custom permissions if provided
@@ -449,3 +480,74 @@ exports.getAllowedRoles = async (req, res) => {
     }
 };
 
+// === SELF PROFILE ENDPOINTS ===
+
+exports.getMyProfile = async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active, u.created_at,
+                   u.birth_date, u.gender, u.id_card, u.passport_url, u.id_expiry, u.address, u.facebook_url,
+                   r.name as role_name, r.id as role_id,
+                   COALESCE(
+                       (SELECT json_agg(json_build_object('id', t.id, 'name', t.name, 'code', t.code) ORDER BY t.name)
+                        FROM team_members tmb JOIN teams t ON tmb.team_id = t.id
+                        WHERE tmb.user_id = u.id), '[]'::json
+                   ) as teams
+            FROM users u 
+            LEFT JOIN roles r ON u.role_id = r.id 
+            WHERE u.id = $1
+        `, [req.user.id]);
+        
+        if (result.rows.length === 0) return res.status(404).json({ message: 'User not found' });
+        
+        // Don't expose password
+        const user = result.rows[0];
+        delete user.password;
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.updateMyProfile = async (req, res) => {
+    try {
+        const { full_name, email, phone, birth_date, gender, id_card, passport_url, id_expiry, address, facebook_url, created_at, position, avatar_url } = req.body;
+        
+        // Handle old avatar deletion
+        if (avatar_url) {
+            const oldUserRes = await db.query('SELECT avatar_url FROM users WHERE id = $1', [req.user.id]);
+            const oldAvatar = oldUserRes.rows[0]?.avatar_url;
+            if (oldAvatar && oldAvatar !== avatar_url && oldAvatar.startsWith('/uploads/')) {
+                const fs = require('fs');
+                const path = require('path');
+                const oldPath = path.join(__dirname, '../public', oldAvatar);
+                if (fs.existsSync(oldPath)) {
+                    fs.unlinkSync(oldPath);
+                    console.log(`[USER] Deleted old avatar: ${oldPath}`);
+                }
+            }
+        }
+
+        await db.query(`
+            UPDATE users SET 
+                full_name = COALESCE($1, full_name), 
+                email = $2, phone = $3,
+                birth_date = $4, gender = $5, id_card = $6, 
+                passport_url = $7, id_expiry = $8, address = $9, facebook_url = $10,
+                created_at = COALESCE($12, created_at),
+                position = $13,
+                avatar_url = COALESCE($14, avatar_url),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $11
+        `, [
+            full_name, email || null, phone || null,
+            birth_date || null, gender || null, id_card || null,
+            passport_url || null, id_expiry || null, address || null, facebook_url || null,
+            req.user.id, created_at || null, position || null, avatar_url || null
+        ]);
+        
+        res.json({ message: 'Cập nhật hồ sơ cá nhân thành công.' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

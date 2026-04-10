@@ -37,46 +37,168 @@ const ManualOverview = () => (
           <div style={{ padding: '10px', background: '#fef2f2', color: '#dc2626', borderRadius: '12px' }}>
             <Shield size={24} />
           </div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>2. Phân quyền hệ thống & Giải thích vai trò</h2>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>2. Ma Trận Phân Quyền Đầy Đủ Hiện Tại (V2)</h2>
         </div>
-        <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-          
-          <div style={{ padding: '1.5rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#b91c1c', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              👑 Admin (Quản trị viên)
-            </h3>
-            <p style={{ color: '#475569', fontSize: '0.95rem', lineHeight: 1.6 }}>
-              Người nắm toàn quyền hệ thống. Được xoá dữ liệu vĩnh viễn, truy cập Cài đặt hệ thống (Settings), quản lý tài khoản nhân sự và cấu hình API Meta.
-            </p>
-          </div>
+        <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '2rem' }}>
+          Bảng phân quyền thực tế mới nhất cho thiết kế Đa Đội Nhóm (Multi-Team). Dấu <strong style={{ color: '#166534' }}>[✓]</strong> là được cấp quyền. Dấu <strong style={{ color: '#94a3b8' }}>[-]</strong> là không có quyền.
+        </p>
 
-          <div style={{ padding: '1.5rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#c2410c', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              👨‍💼 Manager (Quản lý)
-            </h3>
-            <p style={{ color: '#475569', fontSize: '0.95rem', lineHeight: 1.6 }}>
-              Dành cho Trưởng phòng/Đội trưởng. Xem data Khách hàng của nhóm, đánh giá doanh số nhân viên. Có quyền tạo/sửa Tour, Lịch khởi hành và HDV.
-            </p>
-          </div>
+        {/* BẢNG 1: SALE & MKT */}
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1e3a8a', marginBottom: '1rem', borderBottom: '2px solid #bfdbfe', paddingBottom: '0.5rem' }}>1. Khối Marketing & Sales</h3>
+        <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '2.5rem' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px', fontSize: '0.95rem' }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, width: '22%' }}>Module</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, width: '38%' }}>Hành động (Action)</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, textAlign: 'center' }}>MKT Lead</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, textAlign: 'center' }}>MKT (NV)</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, textAlign: 'center' }}>Sale Lead</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, textAlign: 'center' }}>Sale (NV)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td rowSpan={4} style={{ padding: '12px 16px', fontWeight: 600, borderRight: '1px solid #e2e8f0' }}>Leads & Messenger</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Xem Lead Cá nhân / Của Team</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Team)</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Own)</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Tạo Lead, Sửa Lead, Chat Messenger</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Phân Lead cho NV khác, Xuất File</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+              </tr>
+              <tr style={{ borderBottom: '2px solid #cbd5e1' }}>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Xóa Lead vĩnh viễn</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+              </tr>
+              
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td rowSpan={2} style={{ padding: '12px 16px', fontWeight: 600, borderRight: '1px solid #e2e8f0' }}>Booking & Khách HCM</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Xem Team/Cá nhân, Tạo, Sửa của mình</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Team)</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Own)</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Team)</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Own)</td>
+              </tr>
+              <tr style={{ borderBottom: '2px solid #cbd5e1' }}>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Sửa của lính, Nhận / Chuyển khoản, Xuất file</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-          <div style={{ padding: '1.5rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0369a1', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              💰 Sales (Kinh doanh)
-            </h3>
-            <p style={{ color: '#475569', fontSize: '0.95rem', lineHeight: 1.6 }}>
-              Tương tác trực tiếp tạo đơn hàng. Chỉ xem Tệp khách hàng được giao cho bản thân. Không xem được "Costing" hoặc cấu trúc báo giá mảng Điều hành.
-            </p>
-          </div>
+        {/* BẢNG 2: OPERATIONS & MICE */}
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1e3a8a', marginBottom: '1rem', borderBottom: '2px solid #bfdbfe', paddingBottom: '0.5rem' }}>2. Khối Điều Hành, NCC & Tour Đoàn</h3>
+        <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '2.5rem' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px', fontSize: '0.95rem' }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, width: '22%' }}>Module</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, width: '45%' }}>Hành động (Action)</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, textAlign: 'center' }}>Ops Lead</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, textAlign: 'center' }}>Ops (NV)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', fontWeight: 600, borderRight: '1px solid #e2e8f0' }}>Sản phẩm Tour & Lịch KH</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Xem Toàn bộ / Cá nhân, Tạo, Sửa, Xuất File, Nhân bản</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Full)</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+              </tr>
+              <tr style={{ borderBottom: '2px solid #cbd5e1' }}>
+                <td style={{ padding: '12px 16px', fontWeight: 600, borderRight: '1px solid #e2e8f0' }}>HDV & Tất cả NCC</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Xem, Thêm Mới, Cập nhật thông tin (Khách sạn, Xe, Vé...)</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Có Xóa)</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Hông Xóa)</td>
+              </tr>
+            </tbody>
+            <thead>
+              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', borderTop: '2px solid #e2e8f0' }}>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700 }}>Module MICE</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700 }}>Hành động (Action)</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, textAlign: 'center' }}>Group Manager</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, textAlign: 'center' }}>Group Staff</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td rowSpan={2} style={{ padding: '12px 16px', fontWeight: 600, borderRight: '1px solid #e2e8f0' }}>Khách B2B & Dự Án</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Xem, Quản lý toàn bộ Doanh Nghiệp, Lịch KH, Bookings Group</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (All & Full)</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Chỉ xem Khách của mình (Own), Cập nhật Dự án phụ trách</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Own)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-          <div style={{ padding: '1.5rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#15803d', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              ⚙️ Operations (Điều hành)
-            </h3>
-            <p style={{ color: '#475569', fontSize: '0.95rem', lineHeight: 1.6 }}>
-              Chuyên viên back-office. Ưu tiên tab Lịch khởi hành, quản lý Visa, điều phối Hướng dẫn viên, và nhập xuất các khoản chi phí Tour (Costing).
-            </p>
-          </div>
-
+        {/* BẢNG 3: TÀI CHÍNH KẾ TOÁN & SYSTEM */}
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1e3a8a', marginBottom: '1rem', borderBottom: '2px solid #bfdbfe', paddingBottom: '0.5rem' }}>3. Tài Chính (Vouchers) & Đặc Quyền Manager</h3>
+        <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px', fontSize: '0.95rem' }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, width: '22%' }}>Nhóm Quyền</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, width: '38%' }}>Hành động (Action)</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, textAlign: 'center' }}>Accountant</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, textAlign: 'center' }}>Các Leader</th>
+                <th style={{ padding: '12px 16px', color: '#334155', fontWeight: 700, textAlign: 'center' }}>Các Staff</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td rowSpan={2} style={{ padding: '12px 16px', fontWeight: 600, borderRight: '1px solid #e2e8f0' }}>Tài chính (Voucher)</td>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Xem Tất Cả Các Thu Chi, Duyệt, Hủy, Kiểm Ngân Costings</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Full)</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Tùy role)</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+              </tr>
+              <tr style={{ borderBottom: '2px solid #cbd5e1' }}>
+                <td style={{ padding: '12px 16px', color: '#475569' }}>Xem Của Mình, Tạo Phiếu Mới</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓ (Own)</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td rowSpan={2} style={{ padding: '12px 16px', fontWeight: 600, borderRight: '1px solid #e2e8f0' }}>Đặc Quyền Manager & Admin</td>
+                <td style={{ padding: '12px 16px', color: '#991b1b', fontWeight: 'bold' }}>Quản lý Nhân sự Trong Team & Reset Pass lính mới</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#166534', fontWeight: 'bold' }}>✓</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '12px 16px', color: '#991b1b', fontWeight: 'bold' }}>Cấu hình Role, Cài Đặt Hệ Thống, Quản lý Toàn Công Ty</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>-</td>
+                <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8' }}>- (Chỉ Admin)</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </div>

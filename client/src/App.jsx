@@ -35,6 +35,7 @@ import GroupProjectsTab from './tabs/GroupProjectsTab';
 import GroupLeadersTab from './tabs/GroupLeadersTab';
 import B2BCompaniesTab from './tabs/B2BCompaniesTab';
 import DashboardTab from './tabs/DashboardTab';
+import GroupDashboardTab from './tabs/GroupDashboardTab';
 import LeadsTab from './tabs/LeadsTab';
 import LeadsDashboardTab from './tabs/LeadsDashboardTab';
 import StaffPerformanceTab from './tabs/StaffPerformanceTab';
@@ -42,6 +43,8 @@ import GuidesTab from './tabs/GuidesTab';
 import UsersTab from './tabs/UsersTab';
 import TeamsTab from './tabs/TeamsTab';
 import ManualTab from './tabs/ManualTab';
+import MyProfileTab from './tabs/MyProfileTab';
+import TeamDirectoryTab from './tabs/TeamDirectoryTab';
 import AddLeadModal from './components/modals/AddLeadModal';
 import EditLeadModal from './components/modals/EditLeadModal';
 import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
@@ -99,11 +102,13 @@ import {
   Target,
   Shield,
   Briefcase,
-  Building
+  Building,
+  Activity
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import DataDeletion from './pages/DataDeletion';
+import OrgChartTab from './tabs/OrgChartTab';
 
 const addToastGlobal = (message, setToasts, type = 'success') => {
   const id = Date.now();
@@ -132,7 +137,7 @@ function AppContent() {
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
     if (path.startsWith('group/')) return path.replace('/', '-');
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'my-profile'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -347,7 +352,7 @@ function AppContent() {
   const CONTACT_METHODS = ['Zalo', 'Call', 'Email'];
   const CITY_OPTIONS = ['TP. Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng', 'Khác'];
 
-  const addToast = (msg) => addToastGlobal(msg, setToasts);
+  const addToast = (msg, type) => addToastGlobal(msg, setToasts, type);
 
   useEffect(() => {
     const reqInterceptor = axios.interceptors.request.use(
@@ -437,7 +442,7 @@ function AppContent() {
       return;
     }
     const path = fullPath.split('/')[0];
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'media-settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers'];
+    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'media-settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'group-dashboard'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {
@@ -1865,6 +1870,14 @@ function AppContent() {
           {(['group_projects', 'group_leaders'].some(mod => checkView(mod))) && (
             <>
               <div className="nav-section-title" style={{ color: '#d97706' }}>Tour Đoàn 🔒</div>
+              {checkView('group_projects') && (
+                <div 
+                  className={`nav-item ${activeTab === 'group-dashboard' ? 'active' : ''}`} 
+                  onClick={() => { navigate('/group/dashboard'); setActiveTab('group-dashboard'); }}
+                >
+                  <Activity /> Dashboard MICE
+                </div>
+              )}
               {checkView('group_leaders') && (
                 <>
                   <div 
@@ -1968,6 +1981,15 @@ function AppContent() {
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <div className={`nav-item ${activeTab === 'team-directory' ? 'active' : ''}`} onClick={() => { navigate('/team-directory'); setActiveTab('team-directory'); }} style={{ color: '#f59e0b', background: activeTab === 'team-directory' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(245, 158, 11, 0.03)', marginBottom: '5px' }}>
+              <Users size={18} /> <strong>NHÂN SỰ FIT TOUR</strong>
+            </div>
+            <div className={`nav-item ${activeTab === 'org-chart' ? 'active' : ''}`} onClick={() => { navigate('/org-chart'); setActiveTab('org-chart'); }} style={{ color: '#10b981', background: activeTab === 'org-chart' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.03)', marginBottom: '5px' }}>
+              <Target size={18} /> <strong>SƠ ĐỒ TỔ CHỨC</strong>
+            </div>
+            <div className={`nav-item ${activeTab === 'my-profile' ? 'active' : ''}`} onClick={() => { navigate('/my-profile'); setActiveTab('my-profile'); }} style={{ color: '#a78bfa', background: activeTab === 'my-profile' ? 'rgba(167, 139, 250, 0.1)' : 'rgba(167, 139, 250, 0.03)', marginBottom: '5px' }}>
+              <User size={18} /> <strong>TRANG CÁ NHÂN</strong>
+            </div>
             <div className="nav-item" onClick={() => setShowChangeMyPassword(true)} style={{ color: '#0ea5e9', background: 'rgba(14, 165, 233, 0.05)', marginBottom: '5px' }}>
               <Lock size={18} /> <strong>ĐỔI MẬT KHẨU</strong>
             </div>
@@ -2386,6 +2408,8 @@ function AppContent() {
             activeTab === 'bu-rules' ? 'Quy tắc chọn BU cho Lead' :
             activeTab === 'manual' ? 'Sổ tay HDSD CRM' :
             activeTab === 'op-tours' ? 'Lịch khởi hành' :
+            activeTab === 'team-directory' ? 'Nhân Sự FIT Tour' :
+            activeTab === 'my-profile' ? 'Trang cá nhân' :
             activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
           }</h1>
           <div className="user-profile">
@@ -2592,6 +2616,18 @@ function AppContent() {
           <TeamsTab addToast={addToast} users={users} />
         )}
 
+        {activeTab === 'my-profile' && (
+          <MyProfileTab currentUser={user} addToast={addToast} />
+        )}
+
+        {activeTab === 'team-directory' && (
+          <TeamDirectoryTab users={users} />
+        )}
+
+        {activeTab === 'org-chart' && (
+          <OrgChartTab currentUser={user} addToast={addToast} />
+        )}
+
         {activeTab === 'settings' && (
           <SettingsTab 
             metaSettings={metaSettings}
@@ -2648,6 +2684,9 @@ function AppContent() {
         )}
         {activeTab === 'group-leaders' && (
           <GroupLeadersTab currentUser={user} addToast={addToast} users={users} handleDeleteLeader={(id) => setGroupLeaderToDelete(id)} />
+        )}
+        {activeTab === 'group-dashboard' && (
+          <GroupDashboardTab />
         )}
         {activeTab === 'group-projects' && (
           <GroupProjectsTab currentUser={user} addToast={addToast} users={users} handleDeleteProject={(id) => setGroupProjectToDelete(id)} />
@@ -2747,6 +2786,7 @@ function AppContent() {
         setNewCustomerNote={setNewCustomerNote}
         handleAddCustomerNote={handleAddCustomerNote}
         users={users}
+        currentUser={user}
       />
 
       <LeadNotesModal 

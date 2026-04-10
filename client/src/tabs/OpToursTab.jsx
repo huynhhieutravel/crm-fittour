@@ -55,6 +55,7 @@ export default function OpToursTab({ currentUser }) {
   const [selectedCustomerTour, setSelectedCustomerTour] = useState(null);
   const [isBookingListOpen, setIsBookingListOpen] = useState(false);
   const [selectedBookingTour, setSelectedBookingTour] = useState(null);
+  const [refreshBookingsTrigger, setRefreshBookingsTrigger] = useState(0);
   const [viewingAllMembers, setViewingAllMembers] = useState(null); // { tour, allMembers }
 
   const fmtMoney = (v) => Number(v || 0).toLocaleString('vi-VN');
@@ -74,6 +75,10 @@ export default function OpToursTab({ currentUser }) {
         const totalQty = b.qty || pricingRows.reduce((s, r) => s + Number(r.qty || 0), 0) || members.length;
         const salesName = b.created_by_name || 'Sales';
         const tourPrice = (pricingRows && pricingRows.length > 0) ? pricingRows[0].price : (b.raw_details?.price_adult || 0);
+        const internalNote = pricingRows[0]?.internalNote || '';
+        const custNote = pricingRows[0]?.note || '';
+        const bNoteCombined = [internalNote, custNote].filter(Boolean).join(' | ');
+
         members.forEach((m, mIdx) => {
           allMembers.push({ 
             ...m, 
@@ -87,7 +92,9 @@ export default function OpToursTab({ currentUser }) {
             bPaid: mIdx === 0 ? (b.paid || 0) : '',
             bRemaining: mIdx === 0 ? ((Number(b.total) || 0) - (Number(b.paid) || 0)) : '',
             bStatus: b.status || 'Giữ chỗ',
-            bNote: m.note || '',
+            bNote: (mIdx === 0 && bNoteCombined) 
+                    ? (bNoteCombined + (m.note ? ` - ${m.note}` : ''))
+                    : (m.note || ''),
           });
         });
       });
@@ -307,7 +314,9 @@ export default function OpToursTab({ currentUser }) {
 
   useEffect(() => {
     fetchTours();
-    axios.get('/api/airlines?limit=1000')
+    axios.get('/api/airlines?limit=1000', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    })
       .then(res => setAirlinesList(res.data.data || []))
       .catch(console.error);
   }, []);
@@ -672,12 +681,35 @@ export default function OpToursTab({ currentUser }) {
                 <td style={{ padding: '12px 8px', borderLeft: '5px solid #fbbf24' }}><input type="checkbox" /></td>
                 <td style={{ padding: '12px 8px', color: '#64748b' }}>{index + 1}</td>
                 <td style={{ padding: '12px 8px' }}>
+                   {tour.tour_info?.internal_notes && (
+                      <div className="note-tooltip-container" style={{ display: 'inline-flex', position: 'relative', alignItems: 'center', marginBottom: '4px' }}>
+                         <span title="Có ghi chú nội bộ" style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fcd34d', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', cursor: 'help', fontWeight: 'bold' }}>
+                            📌 GHI CHÚ LƯU Ý
+                         </span>
+                         <div className="note-tooltip" style={{
+                            position: 'absolute', bottom: '100%', left: '0', marginBottom: '8px',
+                            background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e',
+                            padding: '10px 12px', borderRadius: '6px', fontSize: '12px',
+                            width: 'max-content', maxWidth: '300px', zIndex: 50,
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                            display: 'none', whiteSpace: 'pre-wrap', fontWeight: 'normal'
+                         }}>
+                            <div style={{ fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #fcd34d', paddingBottom: '4px' }}>📌 Ghi chú nội bộ:</div>
+                            {tour.tour_info.internal_notes}
+                         </div>
+                      </div>
+                   )}
+                   <style>{`
+                      .note-tooltip-container:hover .note-tooltip { display: block !important; }
+                   `}</style>
                    <div style={{ color: '#2563eb', fontWeight: '500', cursor: 'pointer' }} onClick={() => handleOpenDrawer(tour)}>
                       {tour.tour_code}
                    </div>
                 </td>
                 <td style={{ padding: '12px 8px' }}>
-                   <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '13px', color: '#1e293b' }}>{tour.tour_name}</div>
+                   <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '13px', color: '#1e293b' }}>
+                      {tour.tour_name}
+                   </div>
                    <div style={{ color: '#64748b', fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
                      {(() => {
                         const info = tour.tour_info || {};
@@ -866,6 +898,7 @@ export default function OpToursTab({ currentUser }) {
         onUpdateTour={setSelectedBookingTour}
         onRefreshList={fetchTours}
         currentUser={currentUser}
+        refreshTrigger={refreshBookingsTrigger}
       />
 
       <OpTourAddCustomerModal 
@@ -888,6 +921,7 @@ export default function OpToursTab({ currentUser }) {
             
             // Update outer list in background
             fetchTours();
+            setRefreshBookingsTrigger(prev => prev + 1);
           } catch (err) {
             console.error('Lỗi khi lưu Booking:', err);
             const msg = err.response?.data?.error || 'Lỗi khi lưu Booking. Vui lòng thử lại!';
@@ -924,14 +958,14 @@ export default function OpToursTab({ currentUser }) {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 1 }}>
-                    {['STT', 'Tên', 'Giới tính', 'Ngày sinh', 'Số hộ chiếu/CMT', 'Ngày hết hạn', 'Quốc tịch', 'Số điện thoại', 'Mã phòng', 'Độ tuổi', 'Ngày cấp', 'Loại phòng', 'Sale phụ trách', 'Tổng', 'Giá Tour', 'Đã cọc', 'Còn lại', 'Trạng thái thanh toán', 'Ghi chú'].map((h, hi) => (
+                    {['STT', 'Tên', 'Phân loại', 'Giới tính', 'Ngày sinh', 'Số hộ chiếu/CMT', 'Ngày hết hạn', 'Quốc tịch', 'Số điện thoại', 'Mã phòng', 'Độ tuổi', 'Ngày cấp', 'Loại phòng', 'Sale phụ trách', 'Tổng', 'Giá Tour', 'Đã cọc', 'Còn lại', 'Trạng thái thanh toán', 'Ghi chú'].map((h, hi) => (
                       <th key={hi} style={{ padding: '8px 6px', borderRight: '1px solid #e2e8f0', textAlign: 'center', whiteSpace: 'nowrap', fontSize: '11px', fontWeight: 700, color: '#334155' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {viewingAllMembers.allMembers.length === 0 ? (
-                    <tr><td colSpan="18" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Chưa có thành viên nào.</td></tr>
+                    <tr><td colSpan="20" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Chưa có thành viên nào.</td></tr>
                   ) : viewingAllMembers.allMembers.map((m, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid #f1f5f9', background: i % 2 === 0 ? 'white' : '#fafbfc' }}>
                       <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 'bold', color: '#64748b', borderRight: '1px solid #f1f5f9' }}>{i + 1}</td>
@@ -939,6 +973,28 @@ export default function OpToursTab({ currentUser }) {
                         {m.name || '---'}
                         {m.isBooker && <span style={{ color: '#ea580c' }}>*</span>}
                         {m.isBooker && <div style={{ fontSize: '10px', color: '#3b82f6', fontWeight: 700 }}>Số chỗ: {m.numSlots}</div>}
+                      </td>
+                      <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9', minWidth: '100px' }}>
+                         {(m.customerSegment || (m.tripCount > 0)) ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                               <span style={{
+                                  padding: '2px 6px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap',
+                                  ...(m.customerSegment === 'VIP 1' ? { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' } : 
+                                      m.customerSegment === 'VIP 2' ? { background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' } : 
+                                      m.customerSegment === 'VIP 3' ? { background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' } : 
+                                      m.customerSegment === 'Repeat Customer' ? { background: '#dbeafe', color: '#2563eb', border: '1px solid #bfdbfe' } : 
+                                      { background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0' })
+                               }}>
+                                  {m.customerSegment === 'VIP 1' ? '⭐⭐⭐ VIP 1' :
+                                   m.customerSegment === 'VIP 2' ? '⭐⭐ VIP 2' :
+                                   m.customerSegment === 'VIP 3' ? '⭐ VIP 3' :
+                                   m.customerSegment || 'Khách Cũ'}
+                               </span>
+                               {m.tripCount > 0 && <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>{m.tripCount} chuyến</span>}
+                            </div>
+                         ) : m.phone ? (
+                            <span style={{ padding: '2px 6px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>Khách mới</span>
+                         ) : null}
                       </td>
                       <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{m.gender || ''}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{m.dob || ''}</td>

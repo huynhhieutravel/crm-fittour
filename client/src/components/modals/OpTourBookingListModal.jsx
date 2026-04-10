@@ -5,7 +5,7 @@ import axios from 'axios';
 import * as XLSX from 'xlsx-js-style';
 import BookingVouchersModal from './BookingVouchersModal';
 
-export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAddCustomer, onEditBooking, onUpdateTour, onRefreshList, currentUser }) {
+export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAddCustomer, onEditBooking, onUpdateTour, onRefreshList, currentUser, refreshTrigger }) {
   const [hoveredQty, setHoveredQty] = useState({ id: null, rows: [], x: 0, y: 0 });
   const [viewingMembers, setViewingMembers] = useState(null); // { booking, members }
   const [bookings, setBookings] = useState([]);
@@ -38,7 +38,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
            setLoadingBookings(false);
         });
      }
-  }, [isOpen, tour?.id]);
+  }, [isOpen, tour?.id, refreshTrigger]);
 
   if (!isOpen) return null;
 
@@ -50,7 +50,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
       return false;
   };
 
-  const exportMembersXlsx = (members, bookingName) => {
+  const exportMembersXlsx = (members, bookingName, bookingNote = '') => {
     let countNL = 0, countTE = 0, countTN = 0;
     members.forEach(m => {
       if (m.ageType?.includes('Người lớn')) countNL++;
@@ -101,7 +101,8 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
       wsData.push([
         i + 1, m.name || '', m.dob || '', m.gender || '', m.ageType || '',
         m.docId || '', m.issueDate || '', m.expiryDate || '',
-        m.phone || '', m.roomType || '', m.roomCode || '', m.note || ''
+        m.phone || '', m.roomType || '', m.roomCode || '', 
+        (i === 0 && bookingNote) ? (bookingNote + (m.note ? ` - ${m.note}` : '')) : (m.note || '')
       ]);
     });
 
@@ -205,7 +206,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
   });
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000, padding: '20px' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1600, padding: '20px' }}>
       <div style={{ background: '#f8fafc', borderRadius: '8px', width: '100%', maxWidth: '1400px', height: '95vh', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
         
         {/* HEADER */}
@@ -235,7 +236,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
              </div>
              <div style={{ background: 'linear-gradient(135deg, #a3e635, #84cc16)', boxShadow: '0 4px 10px rgba(132,204,22,0.3)', color: 'white', padding: '15px', borderRadius: '8px', position: 'relative', minHeight: '85px', overflow: 'hidden' }}>
                 <div style={{ fontSize: '28px', fontWeight: 'bold', position: 'absolute', top: '8px', right: '15px' }}>{countThanhToan}</div>
-                <div style={{ position: 'absolute', bottom: '12px', left: '15px', fontSize: '14px', fontWeight: '500' }}>Đã thanh toán</div>
+                <div style={{ position: 'absolute', bottom: '12px', left: '15px', fontSize: '14px', fontWeight: '500' }}>Đã Tất Toán</div>
              </div>
              <div style={{ background: 'linear-gradient(135deg, #4ade80, #22c55e)', boxShadow: '0 4px 10px rgba(34,197,94,0.3)', color: 'white', padding: '15px', borderRadius: '8px', position: 'relative', minHeight: '85px', overflow: 'hidden' }}>
                 <div style={{ fontSize: '20px', fontWeight: 'bold', position: 'absolute', top: '14px', right: '15px' }}>{formatMoney(sumDaThu)}</div>
@@ -425,7 +426,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                              <option value="Mới" disabled={b.status !== 'Mới' && !!(b.paid > 0)}>⚪️ Mới (Chưa giữ chỗ)</option>
                              <option value="Giữ chỗ" disabled={!!(b.paid > 0)}>🟠 Giữ chỗ</option>
                              <option value="Đã đặt cọc" disabled={!(b.paid > 0 && b.paid < b.total)} title={!(b.paid > 0 && b.paid < b.total) ? 'Chỉ hệ thống Kế toán tự chọn lựa chọn này khi Số dư > 0' : 'Sẵn sàng phục hồi'}>🟡 Đã đặt cọc {!(b.paid > 0 && b.paid < b.total) ? '(Auto)' : ''}</option>
-                             <option value="Đã thanh toán" disabled={!(b.paid > 0 && b.paid >= b.total)} title={!(b.paid > 0 && b.paid >= b.total) ? 'Hệ thống tự động cập nhật khi Kế toán báo Đã Thanh Toán 100%' : 'Sẵn sàng phục hồi'}>🟢 Đã thanh toán {!(b.paid > 0 && b.paid >= b.total) ? '(Auto)' : ''}</option>
+                             <option value="Đã thanh toán" disabled={!(b.paid > 0 && b.paid >= b.total)} title={!(b.paid > 0 && b.paid >= b.total) ? 'Hệ thống tự động cập nhật khi Kế toán báo Đã Tất Toán 100%' : 'Sẵn sàng phục hồi'}>🟢 Đã Tất Toán {!(b.paid > 0 && b.paid >= b.total) ? '(Auto)' : ''}</option>
                              <option value="Hoàn thành" disabled={currentUser?.role !== 'admin' && currentUser?.role !== 'manager' && currentUser?.role !== 'operator'}>✅ Hoàn thành</option>
                              <option value="Huỷ">🔴 Huỷ</option>
                            </select>
@@ -444,9 +445,31 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                                         <div style={{ background: '#f59e0b', padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', display: 'flex' }} onClick={() => setShowTransferModal(b)} title="Chuyển tour">
                                            <ArrowRight size={16} color="white" />
                                         </div>
-                                        {/* Gộp thao tác Xóa (Xóa mất khỏi Database) chỉ dành cho Admin */}
-                                        {currentUser?.role === 'admin' && (
-                                            <Trash2 size={18} color="#ef4444" cursor="pointer" title="Xóa Vĩnh Viễn Booking (Admin)"/>
+                                        {/* Xóa = Chuyển trạng thái sang Hủy (Dành cho người tạo nhánh báo cáo phễu Kế toán an toàn) */}
+                                        {isOwnerOrAdmin(b) && (
+                                            <Trash2 size={18} color="#ef4444" cursor="pointer" title="Hủy Booking này"
+                                                onClick={async () => {
+                                                  if (b.status === 'Huỷ' || b.status === 'Hủy') {
+                                                      alert('Booking này đã ở trạng thái Hủy rồi!');
+                                                      return;
+                                                  }
+                                                  if (!window.confirm(`⚠️ BẠN CÓ CHẮC CHẮN MUỐN HỦY BOOKING NÀY?\n\n- Booking sẽ KHÔNG bị xóa khỏi hệ thống Kế toán để đối chiếu sau này.\n- Trạng thái sẽ chuyển thành NGUY HIỂM (HỦY).\n- Số ghế của Booking sẽ được trả lại cho Kho chỗ.`)) return;
+                                                  try {
+                                                    await axios.put(`/api/op-tours/${tour.id}/bookings/${b.id}`, { status: 'Huỷ' }, {
+                                                      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                                    });
+                                                    setBookings(prev => prev.map(bk => bk.id === b.id ? { ...bk, status: 'Huỷ' } : bk));
+                                                    if (onUpdateTour) {
+                                                      const newTourRes = await axios.get(`/api/op-tours/${tour.id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }});
+                                                      onUpdateTour(newTourRes.data);
+                                                      if (onRefreshList) onRefreshList();
+                                                    }
+                                                    alert('Hủy booking thành công!');
+                                                  } catch (err) {
+                                                    alert(err.response?.data?.error || 'Lỗi khi hủy Booking');
+                                                  }
+                                                }}
+                                            />
                                         )}
                                      </div>
                                   </div>
@@ -473,7 +496,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
             left: hoveredQty.x + 40,
             transform: 'translateY(-100%)',
             pointerEvents: 'none',
-            zIndex: 99999,
+            zIndex: 9999,
             background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
             padding: '16px 20px',
             borderRadius: '12px',
@@ -502,7 +525,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
 
         {/* MEMBER LIST SUB-MODAL */}
         {viewingMembers && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100001, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1810, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
             <div style={{ background: 'white', borderRadius: '12px', width: '95%', maxWidth: '1300px', maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px rgba(0,0,0,0.25)' }}>
               {/* Header */}
               <div style={{ padding: '20px 25px', borderBottom: '2px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -512,7 +535,13 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                 </div>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <button 
-                    onClick={() => exportMembersXlsx(viewingMembers.members, viewingMembers.booking?.name)}
+                    onClick={() => {
+                      const raw = viewingMembers.booking?.raw_details || {};
+                      const inNote = raw.pricingRows?.[0]?.internalNote || '';
+                      const cuNote = raw.pricingRows?.[0]?.note || '';
+                      const combined = [inNote, cuNote].filter(Boolean).join(' | ');
+                      exportMembersXlsx(viewingMembers.members, viewingMembers.booking?.name, combined);
+                    }}
                     style={{ background: '#ef4444', color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
                   >
                     <Download size={16} /> Tải xuống danh sách
@@ -557,8 +586,21 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                         <td style={{ padding: '10px 8px', textAlign: 'center' }}>{m.expiryDate || '---'}</td>
                         <td style={{ padding: '10px 8px', textAlign: 'center' }}>{m.roomType || '---'}</td>
                         <td style={{ padding: '10px 8px', textAlign: 'center' }}>{m.roomCode || '---'}</td>
-                        <td style={{ padding: '10px 8px', textAlign: 'center', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={m.note}>{m.note || '---'}</td>
-                      </tr>
+                      <td style={{ padding: '10px 8px', textAlign: 'center', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={m.note}>
+                          {(i === 0 && (() => {
+                              const raw = viewingMembers.booking?.raw_details || {};
+                              const inNote = raw.pricingRows?.[0]?.internalNote || '';
+                              const cuNote = raw.pricingRows?.[0]?.note || '';
+                              return [inNote, cuNote].filter(Boolean).join(' | ');
+                          })()) ? (() => {
+                              const raw = viewingMembers.booking?.raw_details || {};
+                              const inNote = raw.pricingRows?.[0]?.internalNote || '';
+                              const cuNote = raw.pricingRows?.[0]?.note || '';
+                              const combined = [inNote, cuNote].filter(Boolean).join(' | ');
+                              return combined + (m.note ? ` - ${m.note}` : '');
+                          })() : (m.note || '---')}
+                      </td>
+                    </tr>
                     ))}
                   </tbody>
                 </table>
@@ -569,7 +611,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
 
         {/* TRANSFER MODAL */}
         {showTransferModal && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000000, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1800, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <div style={{ background: 'white', borderRadius: '8px', padding: '20px', width: '600px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid transparent' }}>
                  <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: 'bold', width: '100%', textAlign: 'center' }}>CHUYỂN TOUR</h3>

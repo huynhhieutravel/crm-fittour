@@ -1,0 +1,255 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { User, Mail, Phone, Calendar, MapPin, Shield, Save, ExternalLink, Camera, Clock } from 'lucide-react';
+
+const MyProfileTab = ({ currentUser, addToast }) => {
+  const [profile, setProfile] = useState(null);
+  const [formData, setFormData] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploadingPassport, setUploadingPassport] = useState(false);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await axios.get('/api/users/me', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setProfile(res.data);
+      setFormData({
+        full_name: res.data.full_name || '',
+        email: res.data.email || '',
+        phone: res.data.phone || '',
+        birth_date: res.data.birth_date ? res.data.birth_date.split('T')[0] : '',
+        gender: res.data.gender || '',
+        id_card: res.data.id_card || '',
+        passport_url: res.data.passport_url || '',
+        id_expiry: res.data.id_expiry ? res.data.id_expiry.split('T')[0] : '',
+        address: res.data.address || '',
+        facebook_url: res.data.facebook_url || '',
+        created_at: res.data.created_at ? res.data.created_at.split('T')[0] : '',
+        position: res.data.position || '',
+        avatar_url: res.data.avatar_url || ''
+      });
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchProfile(); }, []);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await axios.put('/api/users/me', formData, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      addToast?.('Đã cập nhật hồ sơ cá nhân thành công!');
+      fetchProfile();
+    } catch (err) {
+      alert('Lỗi: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUploadAvatar = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await axios.post('/api/media/upload', fd, {
+        headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.data?.url) {
+        setFormData(p => ({ ...p, avatar_url: res.data.url }));
+        setProfile(p => ({ ...p, avatar_url: res.data.url }));
+      }
+    } catch (err) {
+      alert('Lỗi tải ảnh: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleUploadPassport = async (file) => {
+    if (!file) return;
+    setUploadingPassport(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await axios.post('/api/media/upload', fd, {
+        headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.data?.url) setFormData(p => ({ ...p, passport_url: res.data.url }));
+    } catch (err) {
+      alert('Lỗi tải lên: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setUploadingPassport(false);
+    }
+  };
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>Đang tải...</div>;
+  if (!profile) return <div style={{ textAlign: 'center', padding: '3rem', color: '#ef4444' }}>Không tải được hồ sơ</div>;
+
+  return (
+    <div className="animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto' }}>
+      {/* Profile Header Card */}
+      <div style={{
+        background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #7c3aed 100%)',
+        borderRadius: '16px', padding: '2rem', color: '#fff', marginBottom: '1.5rem',
+        display: 'flex', alignItems: 'center', gap: '1.5rem', boxShadow: '0 8px 32px rgba(37, 99, 235, 0.3)'
+      }}>
+        <div style={{
+          width: '80px', height: '80px', borderRadius: '20px',
+          background: profile.avatar_url ? `url(${profile.avatar_url}) center/cover no-repeat` : 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '2rem', fontWeight: 800, border: '2px solid rgba(255,255,255,0.3)',
+          overflow: 'hidden'
+        }}>
+          {!profile.avatar_url && profile.full_name?.charAt(0).toUpperCase()}
+        </div>
+        <div style={{ flex: 1 }}>
+          <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>{profile.full_name}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px', opacity: 0.9 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
+              <User size={14} /> @{profile.username}
+            </span>
+            <span style={{ padding: '2px 10px', borderRadius: '12px', background: 'rgba(255,255,255,0.2)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>
+              {profile.position || profile.role_name}
+            </span>
+          </div>
+          {(profile.teams || []).length > 0 && (
+            <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
+              {profile.teams.map(t => (
+                <span key={t.id} style={{ padding: '3px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.15)', fontSize: '0.7rem', fontWeight: 600 }}>
+                  {t.name}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{ textAlign: 'right', fontSize: '0.75rem', opacity: 0.7 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
+            <Clock size={12} /> Gia nhập: {new Date(profile.created_at).toLocaleDateString('vi-VN')}
+          </div>
+        </div>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleSave}>
+        <div style={{
+          background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0',
+          padding: '1.5rem', boxShadow: '0 2px 12px rgba(0,0,0,0.04)'
+        }}>
+          <h3 style={{ margin: '0 0 1.25rem', fontSize: '1rem', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <User size={18} color="#3b82f6" /> Thông tin cá nhân
+          </h3>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+            <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
+              <label>HỌ VÀ TÊN</label>
+              <input className="modal-input" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} style={{ fontWeight: 700 }} />
+            </div>
+            
+            <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
+              <label>ẢNH ĐẠI DIỆN (AVATAR) - Tỷ lệ vuông 1:1</label>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input className="modal-input" disabled value={formData.avatar_url || ''} placeholder="Đường dẫn ảnh..." style={{ flex: 1 }} />
+                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '0.6rem 1rem', background: '#e0e7ff', color: '#4338ca', fontWeight: 600, borderRadius: '8px', whiteSpace: 'nowrap', fontSize: '0.85rem' }}>
+                  📸 Tải ảnh lên
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUploadAvatar} />
+                </label>
+              </div>
+            </div>
+
+            <div className="modal-form-group">
+              <label><Phone size={13} style={{ marginRight: '4px' }} /> SỐ ĐIỆN THOẠI</label>
+              <input className="modal-input" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="090..." />
+            </div>
+            <div className="modal-form-group">
+              <label><Mail size={13} style={{ marginRight: '4px' }} /> EMAIL</label>
+              <input className="modal-input" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+            </div>
+
+            <div className="modal-form-group">
+              <label><Calendar size={13} style={{ marginRight: '4px' }} /> NGÀY SINH</label>
+              <input className="modal-input" type="date" value={formData.birth_date} onChange={e => setFormData({...formData, birth_date: e.target.value})} />
+            </div>
+            <div className="modal-form-group">
+              <label>GIỚI TÍNH</label>
+              <select className="modal-select" value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})}>
+                <option value="">-- Giới tính --</option>
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+
+            <div className="modal-form-group">
+              <label>💼 CHỨC VỤ (EXTERNAL)</label>
+              <select className="modal-select" value={formData.position} onChange={e => setFormData({...formData, position: e.target.value})}>
+                <option value="">-- Chọn chức vụ --</option>
+                <option value="Giám Đốc">Giám Đốc</option>
+                <option value="Phó Giám Đốc">Phó Giám Đốc</option>
+                <option value="Trưởng Phòng">Trưởng Phòng</option>
+                <option value="Nhân Viên">Nhân Viên</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Khác">Khác</option>
+              </select>
+            </div>
+            <div className="modal-form-group">
+              <label><Clock size={13} style={{ marginRight: '4px' }} /> NGÀY GIA NHẬP CÔNG TY</label>
+              <input className="modal-input" type="date" value={formData.created_at} onChange={e => setFormData({...formData, created_at: e.target.value})} />
+            </div>
+
+            <div className="modal-form-group">
+              <label><Shield size={13} style={{ marginRight: '4px' }} /> CCCD / PASSPORT</label>
+              <input className="modal-input" value={formData.id_card} onChange={e => setFormData({...formData, id_card: e.target.value})} />
+            </div>
+            <div className="modal-form-group">
+              <label>NGÀY HẾT HẠN PASSPORT</label>
+              <input className="modal-input" type="date" value={formData.id_expiry} onChange={e => setFormData({...formData, id_expiry: e.target.value})} />
+            </div>
+
+            <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
+              <label style={{ display: 'flex', alignItems: 'center' }}>
+                <Camera size={13} style={{ marginRight: '4px' }} /> ẢNH HỘ CHIẾU / CCCD
+                {formData.passport_url && <a href={formData.passport_url} target="_blank" rel="noreferrer" style={{ color: '#3b82f6', marginLeft: '8px', fontSize: '0.85rem' }}>👁️ Xem ảnh</a>}
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input className="modal-input" placeholder="URL ảnh..." value={formData.passport_url} onChange={e => setFormData({...formData, passport_url: e.target.value})} style={{ flex: 1 }} />
+                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '0 12px', borderRadius: '6px', border: '1px solid #cbd5e1', whiteSpace: 'nowrap', fontSize: '0.85rem', background: '#f8fafc' }}>
+                  {uploadingPassport ? 'Đang up...' : '📷 Tải lên'}
+                  <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={e => handleUploadPassport(e.target.files[0])} />
+                </label>
+              </div>
+            </div>
+
+            <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
+              <label><MapPin size={13} style={{ marginRight: '4px' }} /> ĐỊA CHỈ</label>
+              <input className="modal-input" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Địa chỉ chi tiết..." />
+            </div>
+
+            <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
+              <label style={{ display: 'flex', alignItems: 'center' }}>
+                <ExternalLink size={13} style={{ marginRight: '4px' }} /> LINK FACEBOOK
+                {formData.facebook_url && <a href={formData.facebook_url} target="_blank" rel="noreferrer" style={{ color: '#3b82f6', marginLeft: '8px', fontSize: '0.85rem' }}>↗ Mở trang</a>}
+              </label>
+              <input className="modal-input" value={formData.facebook_url} onChange={e => setFormData({...formData, facebook_url: e.target.value})} placeholder="https://facebook.com/..." />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
+            <button type="submit" className="btn-pro-save" disabled={saving} style={{ width: 'auto', padding: '0.75rem 2rem', opacity: saving ? 0.7 : 1 }}>
+              <Save size={16} /> {saving ? 'Đang lưu...' : 'LƯU THAY ĐỔI'}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default MyProfileTab;

@@ -118,13 +118,14 @@ router.get('/:tourId/:bookingId/export-docx', async (req, res) => {
 
         const buf = doc.getZip().generate({ type: 'nodebuffer' });
         
-        res.setHeader('Content-Disposition', `attachment; filename=HopDongDichVu_${booking.name || 'FIT'}.docx`);
+        const safeName = (booking.name || 'FIT').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").replace(/\s+/g, '_');
+        res.setHeader('Content-Disposition', `attachment; filename="HopDongDichVu_${safeName}.docx"`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
         res.send(buf);
 
     } catch (err) {
         console.error(err);
-        res.status(500).send('Error generating document');
+        res.status(500).send('Error generating document: ' + err.message);
     }
 });
 

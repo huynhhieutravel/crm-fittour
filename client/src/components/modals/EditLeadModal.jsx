@@ -71,8 +71,25 @@ const EditLeadModal = ({
   return (
     <div className="animate-fade-in" style={{ padding: '2rem', background: 'white', borderRadius: '1.5rem', border: '1px solid #e2e8f0', maxWidth: '1000px', margin: '0 auto' }}>
       <div style={{ color: '#64748b', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.5rem' }}>FIT Tour CRM / Leads</div>
-      <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>Chỉnh sửa Hồ sơ Lead</h2>
+      <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        Chỉnh sửa Hồ sơ Lead
+        {editingLead.is_locked && <span style={{ fontSize: '1rem', background: '#f87171', color: 'white', padding: '4px 10px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><AlertTriangle size={16} /> DATA BỊ KHÓA</span>}
+      </h2>
       <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>Cập nhật tiến trình chăm sóc và thông tin tư vấn.</p>
+      
+      {editingLead.is_locked && (
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+          <div style={{ padding: '8px', background: '#fee2e2', color: '#ef4444', borderRadius: '8px' }}>
+            <AlertTriangle size={20} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <h4 style={{ color: '#991b1b', fontWeight: 800, margin: '0 0 6px 0', fontSize: '1rem' }}>Hồ sơ thuộc về tư vấn viên khác</h4>
+            <p style={{ color: '#7f1d1d', margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>
+              Bạn không có quyền thay đổi thông tin hay gán lại Người phụ trách cho Lead này. Số điện thoại đã được ẩn bảo mật. Bạn chỉ có thể theo dõi tiến độ tư vấn.
+            </p>
+          </div>
+        </div>
+      )}
       
       {existingCustomer && (
         <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
@@ -105,12 +122,14 @@ const EditLeadModal = ({
           <ChevronLeft size={18} strokeWidth={3} /> QUAY LẠI
         </button>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <button type="button" className="btn-pro-save" style={{ width: 'auto', background: '#10b981' }} onClick={() => {
-            setEditingLead({...editingLead, status: 'Chốt đơn'});
-            handleConvertLead(editingLead.id);
-          }}>
-             <CheckCircle size={18} strokeWidth={3} /> CHỐT ĐƠN & CHUYỂN KHÁCH
-          </button>
+          {!editingLead.is_locked && (
+             <button type="button" className="btn-pro-save" style={{ width: 'auto', background: '#10b981' }} onClick={() => {
+               setEditingLead({...editingLead, status: 'Chốt đơn'});
+               handleConvertLead(editingLead.id);
+             }}>
+                <CheckCircle size={18} strokeWidth={3} /> CHỐT ĐƠN & CHUYỂN KHÁCH
+             </button>
+          )}
           <button type="button" onClick={() => setEditingLead(null)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <X size={24} strokeWidth={3} />
           </button>
@@ -127,6 +146,7 @@ const EditLeadModal = ({
         <div className="modal-form-group">
           <label style={{ color: '#6366f1', fontWeight: 800 }}>TRẠNG THÁI HIỆN TẠI</label>
           <select 
+            disabled={editingLead.is_locked}
             className="modal-select" 
             style={{ border: '2px solid #e0e7ff', background: '#f5f7ff', fontWeight: 700 }}
             value={editingLead.status || ''} 
@@ -137,11 +157,11 @@ const EditLeadModal = ({
         </div>
         <div className="modal-form-group">
           <label>THỜI GIAN LIÊN HỆ</label>
-          <input className="modal-input" type="datetime-local" value={formatDateTime(editingLead.last_contacted_at)} onChange={e => setEditingLead({...editingLead, last_contacted_at: e.target.value})} />
+          <input disabled={editingLead.is_locked} className="modal-input" type="datetime-local" value={formatDateTime(editingLead.last_contacted_at)} onChange={e => setEditingLead({...editingLead, last_contacted_at: e.target.value})} />
         </div>
         <div className="modal-form-group">
           <label>THỜI GIAN CHỐT ĐƠN (BOOK)</label>
-          <input className="modal-input" type="datetime-local" value={formatDateTime(editingLead.won_at)} onChange={e => setEditingLead({...editingLead, won_at: e.target.value})} />
+          <input disabled={editingLead.is_locked} className="modal-input" type="datetime-local" value={formatDateTime(editingLead.won_at)} onChange={e => setEditingLead({...editingLead, won_at: e.target.value})} />
         </div>
 
         {/* SECTION 2: THÔNG TIN KHÁCH HÀNG */}
@@ -152,15 +172,15 @@ const EditLeadModal = ({
 
         <div className="modal-form-group">
           <label>HỌ VÀ TÊN *</label>
-          <input className="modal-input" required value={editingLead.name} onChange={e => setEditingLead({...editingLead, name: e.target.value})} />
+          <input disabled={editingLead.is_locked} className="modal-input" required value={editingLead.name} onChange={e => setEditingLead({...editingLead, name: e.target.value})} />
         </div>
         <div className="modal-form-group">
           <label>SỐ ĐIỆN THOẠI *</label>
-          <input className="modal-input" value={editingLead.phone} onChange={e => setEditingLead({...editingLead, phone: e.target.value})} />
+          <input disabled={editingLead.is_locked} className="modal-input" value={editingLead.phone} onChange={e => setEditingLead({...editingLead, phone: e.target.value})} />
         </div>
         <div className="modal-form-group">
           <label>EMAIL</label>
-          <input className="modal-input" type="email" value={editingLead.email || ''} onChange={e => setEditingLead({...editingLead, email: e.target.value})} />
+          <input disabled={editingLead.is_locked} className="modal-input" type="email" value={editingLead.email || ''} onChange={e => setEditingLead({...editingLead, email: e.target.value})} />
         </div>
         <div className="modal-form-group">
           <label>FACEBOOK ID (PSID)</label>
@@ -168,7 +188,7 @@ const EditLeadModal = ({
         </div>
         <div className="modal-form-group">
           <label>GIỚI TÍNH</label>
-          <select className="modal-select" value={editingLead.gender || ''} onChange={e => setEditingLead({...editingLead, gender: e.target.value})}>
+          <select disabled={editingLead.is_locked} className="modal-select" value={editingLead.gender || ''} onChange={e => setEditingLead({...editingLead, gender: e.target.value})}>
             <option value="">-- Giới tính --</option>
             <option value="male">Nam</option>
             <option value="female">Nữ</option>
@@ -177,11 +197,12 @@ const EditLeadModal = ({
         </div>
         <div className="modal-form-group">
           <label>NGÀY SINH</label>
-          <input className="modal-input" type="date" value={formatDate(editingLead.birth_date)} onChange={e => setEditingLead({...editingLead, birth_date: e.target.value})} />
+          <input disabled={editingLead.is_locked} className="modal-input" type="date" value={formatDate(editingLead.birth_date)} onChange={e => setEditingLead({...editingLead, birth_date: e.target.value})} />
         </div>
         <div className="modal-form-group">
           <label>NHÓM BU (TƯ VẤN)</label>
           <select 
+            disabled={editingLead.is_locked}
             className="modal-select" 
             value={editingLead.bu_group || ''} 
             onChange={e => setEditingLead({...editingLead, bu_group: e.target.value})}
@@ -202,25 +223,26 @@ const EditLeadModal = ({
           <SearchableSelect 
             options={tours}
             value={editingLead.tour_id}
-            onChange={(val) => setEditingLead({...editingLead, tour_id: val})}
+            onChange={(val) => !editingLead.is_locked && setEditingLead({...editingLead, tour_id: val})}
             placeholder="Chọn tour quan tâm..."
+            style={{ opacity: editingLead.is_locked ? 0.7 : 1, pointerEvents: editingLead.is_locked ? 'none' : 'auto' }}
           />
         </div>
         <div className="modal-form-group">
           <label>NGUỒN KHÁCH HÀNG</label>
-          <select className="modal-select" value={editingLead.source || ''} onChange={e => setEditingLead({...editingLead, source: e.target.value})}>
+          <select disabled={editingLead.is_locked} className="modal-select" value={editingLead.source || ''} onChange={e => setEditingLead({...editingLead, source: e.target.value})}>
             {LEAD_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         <div className="modal-form-group">
           <label>PHÂN LOẠI KHÁCH HÀNG</label>
-          <select className="modal-select" value={editingLead.classification || ''} onChange={e => setEditingLead({...editingLead, classification: e.target.value})}>
+          <select disabled={editingLead.is_locked} className="modal-select" value={editingLead.classification || ''} onChange={e => setEditingLead({...editingLead, classification: e.target.value})}>
             {LEAD_CLASSIFICATIONS.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div className="modal-form-group">
           <label>TƯ VẤN VIÊN (CSKH)</label>
-          <select className="modal-select" value={editingLead.assigned_to || ''} onChange={e => setEditingLead({...editingLead, assigned_to: e.target.value})}>
+          <select disabled={editingLead.is_locked} className="modal-select" value={editingLead.assigned_to || ''} onChange={e => setEditingLead({...editingLead, assigned_to: e.target.value})}>
              <option value="">-- Chọn nhân viên --</option>
              {users.filter(u => u.is_active !== false).map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
           </select>
@@ -228,7 +250,7 @@ const EditLeadModal = ({
 
         <div className="modal-form-group" style={{ gridColumn: 'span 3' }}>
           <label>GHI CHÚ CHI TIẾT</label>
-          <textarea className="modal-textarea" style={{ height: '80px' }} value={editingLead.consultation_note || ''} onChange={e => setEditingLead({...editingLead, consultation_note: e.target.value})} />
+          <textarea disabled={editingLead.is_locked} className="modal-textarea" style={{ height: '80px' }} value={editingLead.consultation_note || ''} onChange={e => setEditingLead({...editingLead, consultation_note: e.target.value})} />
         </div>
 
         <div className="consultation-section animate-fade-in" style={{ gridColumn: 'span 3' }}>
@@ -240,12 +262,13 @@ const EditLeadModal = ({
               <PlusCircle size={18} /> THÊM GHI CHÚ MỚI
             </div>
             <textarea 
+              disabled={editingLead.is_locked}
               className="note-textarea" 
-              placeholder="Nhập nội dung tư vấn..." 
+              placeholder={editingLead.is_locked ? "Data bị khóa, không thể thêm ghi chú" : "Nhập nội dung tư vấn..."} 
               value={newNote} 
               onChange={e => setNewNote(e.target.value)}
             />
-            <button type="button" className="note-submit-btn" onClick={() => handleAddNoteForLead(editingLead.id)}>
+            <button disabled={editingLead.is_locked} type="button" className="note-submit-btn" style={{ opacity: editingLead.is_locked ? 0.5 : 1 }} onClick={() => handleAddNoteForLead(editingLead.id)}>
               <Send size={16} /> Gửi
             </button>
           </div>
@@ -278,9 +301,11 @@ const EditLeadModal = ({
         </div>
 
         <div style={{ gridColumn: 'span 3', display: 'flex', gap: '1rem', marginTop: '1.5rem', paddingTop: '2rem', borderTop: '1px solid #f1f5f9' }}>
-          <button type="submit" className="btn-pro-save" disabled={loading} style={{ opacity: loading ? 0.7 : 1 }}>
-            <CheckCircle size={18} strokeWidth={3} /> {loading ? 'ĐANG LƯU...' : 'CẬP NHẬT HỒ SƠ'}
-          </button>
+          {!editingLead.is_locked && (
+            <button type="submit" className="btn-pro-save" disabled={loading} style={{ opacity: loading ? 0.7 : 1 }}>
+              <CheckCircle size={18} strokeWidth={3} /> {loading ? 'ĐANG LƯU...' : 'CẬP NHẬT HỒ SƠ'}
+            </button>
+          )}
           <button type="button" className="btn-pro-cancel" onClick={() => setEditingLead(null)} disabled={loading}>
             <LogOut size={18} strokeWidth={2.5} style={{ transform: 'rotate(180deg)' }} /> HỦY BỎ
           </button>

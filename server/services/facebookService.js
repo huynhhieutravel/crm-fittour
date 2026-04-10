@@ -48,6 +48,7 @@ const classifyBUFromMessage = async (messageText) => {
         'ay',     // ay
         'an',     // an, an
         'cho',    // cho
+        'doan',   // doan = đoàn (group) vs đoạn (giai đoạn) → false positive
     ]);
     
     try {

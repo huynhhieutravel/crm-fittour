@@ -133,6 +133,7 @@ const UsersTab = ({
           <thead style={{ background: '#f8fafc' }}>
             <tr>
               <th style={{ padding: '1rem 1.5rem' }}>THÔNG TIN THÀNH VIÊN</th>
+              <th>SỐ ĐIỆN THOẠI</th>
               <th>TEAM</th>
               <th>PHÂN QUYỀN</th>
               <th>NGÀY GIA NHẬP</th>
@@ -149,19 +150,15 @@ const UsersTab = ({
                 <tr key={u.id} style={{ opacity: u.is_active === false ? 0.6 : 1, filter: u.is_active === false ? 'grayscale(100%)' : 'none' }}>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ 
-                        width: '40px', 
-                        height: '40px', 
-                        borderRadius: '10px', 
-                        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 800,
-                        color: '#64748b',
-                        border: '1px solid #e2e8f0'
+                      <div style={{
+                        width: '36px', height: '36px', borderRadius: '10px',
+                        background: u.avatar_url ? `url(${u.avatar_url}) center/cover no-repeat` : `linear-gradient(135deg, ${roleStyle.color}20, ${roleStyle.color}40)`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: roleStyle.color, fontWeight: 800, fontSize: '0.9rem',
+                        border: `1px solid ${roleStyle.color}40`, flexShrink: 0,
+                        overflow: 'hidden'
                       }}>
-                        {u.full_name?.charAt(0).toUpperCase()}
+                        {!u.avatar_url && u.full_name?.charAt(0).toUpperCase()}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -170,12 +167,6 @@ const UsersTab = ({
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: '#64748b' }}>
                           <span style={{ fontWeight: 600, color: u.is_active === false ? '#64748b' : '#2563eb' }}>@{u.username}</span>
-                          {u.phone && (
-                            <>
-                              <span style={{ color: '#cbd5e1' }}>|</span>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>{u.phone}</span>
-                            </>
-                          )}
                           {u.email && (
                             <>
                               <span style={{ color: '#cbd5e1' }}>|</span>
@@ -185,6 +176,13 @@ const UsersTab = ({
                         </div>
                       </div>
                     </div>
+                  </td>
+                  <td style={{ fontWeight: 600, color: '#475569', fontSize: '0.85rem' }}>
+                    {u.phone ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Phone size={13} color="#0ea5e9" /> {u.phone}
+                      </div>
+                    ) : '-'}
                   </td>
                   <td>
                     {(u.teams || []).length > 0 ? (

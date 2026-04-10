@@ -11,7 +11,9 @@ import {
   Trash2, 
   FileText, 
   Package,
-  X 
+  X,
+  Eye,
+  Lock
 } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
 import axios from 'axios';
@@ -348,12 +350,13 @@ const LeadsTab = ({
                 <td style={{ textAlign: 'center' }}>
                   <input 
                     type="checkbox" 
+                    disabled={lead.is_locked}
                     checked={selectedLeadIds.includes(lead.id)}
                     onChange={(e) => {
                       if (e.target.checked) setSelectedLeadIds([...selectedLeadIds, lead.id]);
                       else setSelectedLeadIds(selectedLeadIds.filter(id => id !== lead.id));
                     }}
-                    style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                    style={{ cursor: lead.is_locked ? 'not-allowed' : 'pointer', width: '16px', height: '16px', opacity: lead.is_locked ? 0.4 : 1 }}
                   />
                 </td>
                 <td style={{ color: '#64748b', fontSize: '0.85rem' }}>
@@ -426,11 +429,20 @@ const LeadsTab = ({
                       ) : (
                         <span 
                           className="lead-phone" 
-                          style={{ color: '#6366f1', fontSize: '0.85rem', cursor: 'text', borderBottom: '1px dashed #cbd5e1' }}
-                          title="Nhấn để sửa số điện thoại"
-                          onClick={(e) => { e.stopPropagation(); handlePhoneEdit(lead); }}
+                          style={{ 
+                            color: lead.is_locked ? '#94a3b8' : '#6366f1', 
+                            fontSize: '0.85rem', 
+                            cursor: lead.is_locked ? 'not-allowed' : 'text', 
+                            borderBottom: lead.is_locked ? 'none' : '1px dashed #cbd5e1',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                          title={lead.is_locked ? "Data bị khóa" : "Nhấn để sửa số điện thoại"}
+                          onClick={(e) => { e.stopPropagation(); if (!lead.is_locked) handlePhoneEdit(lead); }}
                         >
-                          {lead.phone || 'Chưa định danh SĐT...'}
+                          {lead.is_locked && <Lock size={12} color="#94a3b8" />}
+                          {(lead.is_locked && lead.masked_phone) ? lead.masked_phone : (lead.phone || 'Chưa định danh SĐT...')}
                         </span>
                       )}
                       {(lead.facebook_psid || lead.meta_lead_id) && (
@@ -479,7 +491,7 @@ const LeadsTab = ({
                     <SearchableSelect 
                       options={tours}
                       value={lead.tour_id}
-                      onChange={(val) => handleQuickUpdate(lead.id, 'tour_id', val)}
+                      onChange={(val) => !lead.is_locked && handleQuickUpdate(lead.id, 'tour_id', val)}
                       placeholder="Chọn tour..."
                       style={{ 
                         border: 'none', 
@@ -487,7 +499,9 @@ const LeadsTab = ({
                         padding: '0',
                         minHeight: 'auto',
                         minWidth: '220px',
-                        fontSize: '0.85rem'
+                        fontSize: '0.85rem',
+                        opacity: lead.is_locked ? 0.7 : 1,
+                        pointerEvents: lead.is_locked ? 'none' : 'auto'
                       }}
                       className="table-searchable-select"
                     />
@@ -497,13 +511,13 @@ const LeadsTab = ({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       {getSourceIcon(lead.source)}
-                      <select className="table-select-ghost" value={lead.source} onChange={e => handleQuickUpdate(lead.id, 'source', e.target.value)}>
+                      <select disabled={lead.is_locked} className="table-select-ghost" value={lead.source} onChange={e => handleQuickUpdate(lead.id, 'source', e.target.value)}>
                         {LEAD_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Package size={12} color="#6366f1" />
-                      <select className="table-select-ghost" style={{ color: '#6366f1', fontWeight: 600 }} value={lead.bu_group || ''} onChange={e => handleQuickUpdate(lead.id, 'bu_group', e.target.value)}>
+                      <select disabled={lead.is_locked} className="table-select-ghost" style={{ color: lead.is_locked ? '#94a3b8' : '#6366f1', fontWeight: 600 }} value={lead.bu_group || ''} onChange={e => handleQuickUpdate(lead.id, 'bu_group', e.target.value)}>
                         <option value="">-- Nhóm --</option>
                         {bus.filter(bu => bu.is_active !== false || bu.id === lead.bu_group).map(bu => <option key={bu.id} value={bu.id}>{bu.label}</option>)}
                       </select>
@@ -514,7 +528,7 @@ const LeadsTab = ({
                   <SearchableSelect 
                     options={users.map(u => ({ id: u.id, name: u.username }))}
                     value={lead.assigned_to}
-                    onChange={(val) => handleQuickUpdate(lead.id, 'assigned_to', val)}
+                    onChange={(val) => !lead.is_locked && handleQuickUpdate(lead.id, 'assigned_to', val)}
                     placeholder="Chưa giao"
                     style={{ 
                       border: 'none', 
@@ -523,17 +537,19 @@ const LeadsTab = ({
                       minHeight: 'auto',
                       minWidth: '150px',
                       fontSize: '0.85rem',
-                      fontWeight: 600
+                      fontWeight: 600,
+                      opacity: lead.is_locked ? 0.7 : 1,
+                      pointerEvents: lead.is_locked ? 'none' : 'auto'
                     }}
                     className="table-searchable-select"
                   />
                 </td>
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <select className={`status-select badge-${lead.status}`} value={lead.status} onChange={e => handleQuickUpdate(lead.id, 'status', e.target.value)}>
+                    <select disabled={lead.is_locked} className={`status-select badge-${lead.status} ${lead.is_locked ? 'opacity-70' : ''}`} value={lead.status} onChange={e => handleQuickUpdate(lead.id, 'status', e.target.value)}>
                       {LEAD_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
-                    <select className={`table-select-ghost classification-${lead.classification}`} style={{ fontSize: '0.65rem', padding: '2px 6px', fontWeight: 700 }} value={lead.classification || 'Mới'} onChange={e => handleQuickUpdate(lead.id, 'classification', e.target.value)}>
+                    <select disabled={lead.is_locked} className={`table-select-ghost classification-${lead.classification}`} style={{ fontSize: '0.65rem', padding: '2px 6px', fontWeight: 700 }} value={lead.classification || 'Mới'} onChange={e => handleQuickUpdate(lead.id, 'classification', e.target.value)}>
                       {LEAD_CLASSIFICATIONS.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
@@ -553,18 +569,36 @@ const LeadsTab = ({
                     <button 
                       type="button" 
                       className="icon-btn-square" 
-                      style={{ color: '#10b981', background: '#d1fae5', border: 'none' }} 
+                      style={{ color: '#10b981', background: '#d1fae5', border: 'none', opacity: lead.is_locked ? 0.3 : 1, cursor: lead.is_locked ? 'not-allowed' : 'pointer' }} 
                       title="Chuyển thành Khách Hàng (Chốt đơn)" 
+                      disabled={lead.is_locked}
                       onClick={(e) => { 
                         e.preventDefault(); 
                         e.stopPropagation(); 
-                        handleConvertLead(lead.id);
+                        if(!lead.is_locked) handleConvertLead(lead.id);
                       }}
                     >
                       <UserPlus size={14} />
                     </button>
-                    <button type="button" className="icon-btn-square" title="Chỉnh sửa" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingLead(lead); }}><Edit3 size={14} /></button>
-                    <button type="button" className="icon-btn-square danger" title="Xóa" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteLead(lead.id); }}><Trash2 size={14} /></button>
+                    <button 
+                      type="button" 
+                      className="icon-btn-square" 
+                      title={lead.is_locked ? "Xem (Đã bị khóa)" : "Chỉnh sửa"} 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingLead(lead); }}
+                      style={{ background: lead.is_locked ? '#f8fafc' : undefined, color: lead.is_locked ? '#64748b' : undefined }}
+                    >
+                      {lead.is_locked ? <Eye size={14} /> : <Edit3 size={14} />}
+                    </button>
+                    <button 
+                      type="button" 
+                      className="icon-btn-square danger" 
+                      title="Xóa" 
+                      disabled={lead.is_locked}
+                      style={{ opacity: lead.is_locked ? 0.3 : 1, cursor: lead.is_locked ? 'not-allowed' : 'pointer' }}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); if(!lead.is_locked) handleDeleteLead(lead.id); }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 </td>
               </tr>

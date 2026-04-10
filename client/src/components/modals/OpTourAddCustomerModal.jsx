@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Search, Plus } from 'lucide-react';
 import AsyncSelect from 'react-select/async';
+import CustomerProfileSlider from '../CustomerProfileSlider';
 
 export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initialData }) {
   // Auto-generate B-XXXX (4-5 digits) for a new booking code
@@ -24,6 +25,47 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   const [isQuickAdd, setIsQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState('');
   const [quickAddPhone, setQuickAddPhone] = useState('');
+
+  const [showProfileSlider, setShowProfileSlider] = useState(false);
+  const [fullProfileData, setFullProfileData] = useState(null);
+  const [uploadingPassportId, setUploadingPassportId] = useState(null);
+
+  const handleUploadPassport = async (memberId, file) => {
+    if (!file) return;
+    setUploadingPassportId(memberId);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axios.post('/api/media/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (res.data && res.data.url) {
+         setMembers(prev => prev.map(m => m.id === memberId ? { ...m, passportUrl: res.data.url } : m));
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert("Lỗi tải lên ảnh Hộ chiếu! " + (err.response?.data?.message || err.message));
+    } finally {
+      setUploadingPassportId(null);
+    }
+  };
+
+  const handleViewProfile = async () => {
+    if (!bookingInfo.customerId) return;
+    try {
+      const res = await axios.get(`/api/customers/${bookingInfo.customerId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setFullProfileData(res.data);
+      setShowProfileSlider(true);
+    } catch (err) {
+      console.error('Error fetching customer profile:', err);
+      alert('Không thể tải thông tin hồ sơ hoặc khách hàng không tồn tại.');
+    }
+  };
 
   const handleCreateQuickCustomer = async () => {
     if (!quickAddName.trim() || !quickAddPhone.trim()) {
@@ -70,13 +112,27 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
 
 
   const selectCustomer = (cust) => {
+    const parseJSON = (str) => {
+      try { return typeof str === 'string' ? JSON.parse(str || '[]') : (str || []); } catch(e) { return []; }
+    };
+
     setBookingInfo({
       ...bookingInfo,
       customerId: cust.id,
       search: cust.phone || cust.name || '',
       name: cust.name || '',
       phone: cust.phone || '',
-      gender: cust.gender || 'Nữ'
+      gender: cust.gender || 'Nữ',
+      crmNote: cust.ghi_chu || '',
+      customerSegment: cust.customer_segment || '',
+      tripCount: cust.total_trip_count || 0,
+      insights: {
+        destinations: parseJSON(cust.destinations),
+        experiences: parseJSON(cust.experiences),
+        travelStyles: parseJSON(cust.travel_styles),
+        internalNotes: cust.internal_notes || '',
+        specialRequests: cust.special_requests || ''
+      }
     });
     
     // Auto fill first member without destroying other slots
@@ -85,7 +141,8 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       const memberData = {
         phone: cust.phone || '', name: cust.name || '', gender: cust.gender || 'Chọn',
         dob: cust.birth_date ? cust.birth_date.split('T')[0] : '', docId: cust.id_card || '', 
-        expiryDate: cust.id_expiry ? cust.id_expiry.split('T')[0] : ''
+        expiryDate: cust.id_expiry ? cust.id_expiry.split('T')[0] : '',
+        passportUrl: cust.passport_url || ''
       };
       
       if (newMembers.length > 0) {
@@ -101,8 +158,6 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       }
       return newMembers;
     });
-
-    setShowSearchDropdown(false);
   };
 
   const defaultPricingRows = [
@@ -178,7 +233,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
         for (let i = newMembers.length; i < totalQty; i++) {
           newMembers.push({
             id: Date.now() + i,
-            phone: '', name: '', ageType: 'Chưa rõ', gender: 'Chọn',
+            phone: '', name: '', email: '', ageType: 'Chưa rõ', gender: 'Chọn',
             dob: '', docType: 'CMTND', docId: '', issueDate: '', expiryDate: '',
             flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
             note: '', roomType: '-Chọn-', hotel: '', roomCode: ''
@@ -317,7 +372,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
         } else {
           newMembers.push({
             id: Date.now() + i,
-            phone: '', name: '', ageType: requiredAgeTypes[i], gender: 'Chọn',
+            phone: '', name: '', email: '', ageType: requiredAgeTypes[i], gender: 'Chọn',
             dob: '', docType: 'CMTND', docId: '', issueDate: '', expiryDate: '',
             flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
             note: '', roomType: '-Chọn-', hotel: '', roomCode: ''
@@ -335,7 +390,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   const addMember = () => {
     setMembers(prev => [...prev, {
       id: Date.now(),
-      phone: '', name: '', ageType: 'Người lớn', gender: 'Chọn',
+      phone: '', name: '', email: '', ageType: 'Người lớn', gender: 'Chọn',
       dob: '', docType: 'CMTND', docId: '', issueDate: '', expiryDate: '',
       flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
       note: '', roomType: '-Chọn-', hotel: '', roomCode: ''
@@ -344,6 +399,42 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
 
   const handleMemberChange = (id, field, value) => {
     setMembers(prev => prev.map(m => m.id === id ? { ...m, [field]: value } : m));
+  };
+
+  const handleMemberPhoneBlur = async (id, phone) => {
+    if (!phone || phone.trim().length < 8) return;
+    try {
+      const res = await axios.get('/api/customers?search=' + encodeURIComponent(phone.trim()), {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = res.data?.data || res.data;
+      if (data && data.length > 0) {
+        // Auto match the first customer exactly by phone
+        const cust = data.find(c => c.phone && c.phone.includes(phone.trim())) || data[0];
+        setMembers(prev => prev.map(m => {
+          if (m.id === id && cust) {
+             return {
+                ...m,
+                name: cust.name || m.name,
+                email: cust.email || m.email,
+                gender: cust.gender || m.gender,
+                dob: cust.birth_date ? cust.birth_date.split('T')[0] : m.dob,
+                docType: cust.id_card ? 'CMTND' : m.docType,
+                docId: cust.id_card || m.docId,
+                expiryDate: cust.id_expiry ? cust.id_expiry.split('T')[0] : m.expiryDate,
+                crmNote: cust.ghi_chu || '',
+                customerId: cust.id || null,
+                tripCount: parseInt(cust.total_trips || cust.crm_trip_count || 0),
+                customerSegment: cust.customer_segment || '',
+                passportUrl: cust.passport_url || ''
+             };
+          }
+          return m;
+        }));
+      }
+    } catch (err) {
+      console.error("Lỗi fetch thông tin thành viên (Phone):", err);
+    }
   };
 
   const handleSubmit = () => {
@@ -398,7 +489,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   const totalPrice = pricingRows.reduce((sum, r) => sum + Number(r.total || 0), 0);
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', zIndex: 10000, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', zIndex: 1700, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div style={{ width: '95%', maxWidth: '1400px', height: '90%', background: '#fff', borderRadius: '8px', display: 'flex', flexDirection: 'column', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
         
         {/* Modal Header */}
@@ -422,6 +513,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                    loadOptions={loadCustomerOptions}
                    defaultOptions={false}
                    placeholder="Tìm khách hàng (Tên hoặc SĐT)..."
+                   value={bookingInfo.customerId ? { value: bookingInfo.customerId, label: bookingInfo.name + (bookingInfo.phone ? ` - ${bookingInfo.phone}` : '') } : null}
                    onChange={(selectedOption) => {
                       if (selectedOption) selectCustomer(selectedOption.customer);
                    }}
@@ -452,6 +544,104 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                 <input type="text" value={bookingInfo.reservationCode} onChange={e => setBookingInfo({...bookingInfo, reservationCode: e.target.value})} style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', background: '#f8fafc' }} />
              </div>
           </div>
+
+          {bookingInfo.customerId && (
+             <div style={{ background: bookingInfo.crmNote ? '#fffbeb' : '#f8fafc', padding: '12px 16px', borderLeft: `4px solid ${bookingInfo.crmNote ? '#f59e0b' : '#cbd5e1'}`, fontSize: '13px', marginBottom: '30px', borderRadius: '0 8px 8px 0', display: 'flex', gap: '15px' }}>
+                <div style={{ fontSize: '24px' }}>{bookingInfo.crmNote ? '📝' : 'ℹ️'}</div>
+                <div style={{ flex: 1 }}>
+                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '10px' }}>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                           <strong style={{ color: bookingInfo.crmNote ? '#b45309' : '#64748b' }}>Hồ sơ Ghi chú cũ của Khách ({bookingInfo.name}):</strong>
+                           {bookingInfo.insights && (bookingInfo.insights.destinations?.length > 0 || bookingInfo.insights.experiences?.length > 0 || bookingInfo.insights.travelStyles?.length > 0 || bookingInfo.insights.specialRequests || bookingInfo.insights.internalNotes) && (
+                              <div style={{ position: 'relative' }} className="booker-insight-tooltip-parent">
+                                 <span style={{ padding: '3px 8px', borderRadius: '6px', background: '#e0e7ff', color: '#4338ca', fontSize: '11px', cursor: 'help', fontWeight: 'bold', border: '1px solid #c7d2fe', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                                     🏷️ Xem Sở Thích & Insight
+                                 </span>
+                                 <div className="booker-insight-tooltip-child" style={{
+                                     position: 'absolute', top: '100%', left: 0, marginTop: '8px', width: '380px',
+                                     background: '#fff', border: '1px solid #e2e8f0', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                                     borderRadius: '8px', padding: '16px', zIndex: 100, display: 'none', cursor: 'auto',
+                                     color: '#1e293b'
+                                 }}>
+                                    <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#0f172a', borderBottom: '2px solid #f1f5f9', paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      🏷️ Insight & Sở thích nâng cao
+                                    </h4>
+                                    
+                                    {bookingInfo.insights.destinations?.length > 0 && (
+                                        <div style={{ marginBottom: '10px' }}>
+                                            <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 'bold', marginBottom: '4px' }}>ĐIỂM ĐẾN YÊU THÍCH</div>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                                {bookingInfo.insights.destinations.map((d, i) => <span key={i} style={{ padding: '2px 10px', borderRadius: '16px', fontSize: '11px', background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', fontWeight: 600 }}>{d}</span>)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {bookingInfo.insights.experiences?.length > 0 && (
+                                        <div style={{ marginBottom: '10px' }}>
+                                            <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 'bold', marginBottom: '4px' }}>TRẢI NGHIỆM ĐỀ CAO</div>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                                {bookingInfo.insights.experiences.map((e, i) => <span key={i} style={{ padding: '2px 10px', borderRadius: '16px', fontSize: '11px', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', fontWeight: 600 }}>{e}</span>)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {bookingInfo.insights.travelStyles?.length > 0 && (
+                                        <div style={{ marginBottom: '10px' }}>
+                                            <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 'bold', marginBottom: '4px' }}>KIỂU ĐI / NHÓM KHÁCH</div>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                                {bookingInfo.insights.travelStyles.map((s, i) => <span key={i} style={{ padding: '2px 10px', borderRadius: '16px', fontSize: '11px', background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a', fontWeight: 600 }}>{s}</span>)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {bookingInfo.insights.internalNotes && (
+                                        <div style={{ marginBottom: '10px', background: '#fef2f2', padding: '10px', borderRadius: '6px', borderLeft: '4px solid #ef4444' }}>
+                                            <div style={{ fontSize: '10px', color: '#b91c1c', fontWeight: 'bold', marginBottom: '4px' }}>GHI CHÚ SALE (MẬT)</div>
+                                            <div style={{ fontSize: '12px', color: '#7f1d1d', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>{bookingInfo.insights.internalNotes}</div>
+                                        </div>
+                                    )}
+                                    {bookingInfo.insights.specialRequests && (
+                                        <div style={{ marginBottom: '4px', background: '#f8fafc', padding: '10px', borderRadius: '6px', borderLeft: '4px solid #94a3b8' }}>
+                                            <div style={{ fontSize: '10px', color: '#475569', fontWeight: 'bold', marginBottom: '4px' }}>YÊU CẦU ĐẶC BIỆT</div>
+                                            <div style={{ fontSize: '12px', color: '#334155', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>{bookingInfo.insights.specialRequests}</div>
+                                        </div>
+                                    )}
+                                 </div>
+                                 <style>{`
+                                     .booker-insight-tooltip-parent:hover .booker-insight-tooltip-child { display: block !important; }
+                                 `}</style>
+                              </div>
+                           )}
+                       </div>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                           {bookingInfo.customerSegment && (
+                               <span style={{
+                                  padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 700,
+                                  ...(bookingInfo.customerSegment === 'VIP 1' ? { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' } : 
+                                      bookingInfo.customerSegment === 'VIP 2' ? { background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' } : 
+                                      bookingInfo.customerSegment === 'VIP 3' ? { background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' } : 
+                                      bookingInfo.customerSegment === 'Repeat Customer' ? { background: '#dbeafe', color: '#2563eb', border: '1px solid #bfdbfe' } : 
+                                      { background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0' })
+                               }}>
+                                  {bookingInfo.customerSegment === 'VIP 1' ? '⭐⭐⭐ VIP 1' :
+                                   bookingInfo.customerSegment === 'VIP 2' ? '⭐⭐ VIP 2' :
+                                   bookingInfo.customerSegment === 'VIP 3' ? '⭐ VIP 3' :
+                                   bookingInfo.customerSegment || 'New Customer'}
+                               </span>
+                           )}
+                           {typeof bookingInfo.tripCount !== 'undefined' && (
+                               <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
+                                 {bookingInfo.tripCount} chuyến
+                               </span>
+                           )}
+                           <button type="button" onClick={handleViewProfile} style={{ fontSize: '11px', color: '#2563eb', border: 'none', background: '#dbeafe', padding: '4px 10px', borderRadius: '6px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: '10px', cursor: 'pointer', outline: 'none' }}>
+                               👁️ Trích xuất Hồ sơ Khách hàng
+                           </button>
+                       </div>
+                   </div>
+                   <div style={{ color: bookingInfo.crmNote ? '#92400e' : '#94a3b8', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
+                      {bookingInfo.crmNote || <em>(Chưa có dữ liệu ghi chú lịch sử nào được lưu cho khách hàng này trên hệ thống)</em>}
+                   </div>
+                </div>
+             </div>
+          )}
 
           {/* PRICING ROWS */}
           <h4 style={{ margin: '30px 0 15px 0', fontSize: '16px', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px' }}>#2 Thông tin giá & Báo giá</h4>
@@ -498,11 +688,11 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                <div style={{ display: 'flex', gap: '20px', paddingLeft: '45px', marginTop: '10px' }}>
                   <div style={{ flex: 1 }}>
                      <label style={{ fontSize: '11px', display: 'block', marginBottom: '2px', fontWeight: 'bold' }}>Ghi chú nội bộ:</label>
-                     <textarea style={{ width: '100%', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', height: '40px' }}></textarea>
+                     <textarea value={row.internalNote || ''} onChange={e => handlePricingChange(row.id, 'internalNote', e.target.value)} style={{ width: '100%', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', height: '40px' }}></textarea>
                   </div>
                   <div style={{ flex: 1 }}>
                      <label style={{ fontSize: '11px', display: 'block', marginBottom: '2px', fontWeight: 'bold' }}>Ghi chú khách hàng:</label>
-                     <textarea style={{ width: '100%', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', height: '40px' }}></textarea>
+                     <textarea value={row.customerNote || ''} onChange={e => handlePricingChange(row.id, 'customerNote', e.target.value)} style={{ width: '100%', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', height: '40px' }}></textarea>
                   </div>
                </div>
                <div style={{ paddingLeft: '45px', marginTop: '15px' }}>
@@ -555,15 +745,65 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                <div key={m.id} style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginBottom: '15px', overflowX: 'auto', paddingBottom: '5px' }}>
                   <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#ef4444', paddingBottom: '8px', paddingRight: '5px' }}>#{idx + 1}</div>
                   <button style={{ background: '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', width: '30px', height: '30px', cursor: 'pointer', flexShrink: 0 }}>+</button>
-                  <button style={{ background: 'none', border: '1px solid #cbd5e1', borderRadius: '4px', width: '30px', height: '30px', flexShrink: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>📷</button>
+
                   
                   <div style={{ width: '110px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Điện thoại:</label>
-                     <input type="text" value={m.phone} onChange={e => handleMemberChange(m.id, 'phone', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                     <input type="text" value={m.phone} onChange={e => handleMemberChange(m.id, 'phone', e.target.value)} onBlur={e => handleMemberPhoneBlur(m.id, e.target.value)} placeholder="Nhập để tra cứu..." style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: idx === 0 ? '#f1f5f9' : 'white', cursor: idx === 0 ? 'not-allowed' : 'text', color: idx === 0 ? '#64748b' : 'inherit' }} disabled={idx === 0} title={idx === 0 ? "Số điện thoại người đặt (Booker) bị khóa mặc định" : ""} />
                   </div>
                   <div style={{ width: '130px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Tên:</label>
                      <input type="text" value={m.name} onChange={e => handleMemberChange(m.id, 'name', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                  </div>
+
+                  {/* NEW COLUMN: PHÂN LOẠI & GHI CHÚ */}
+                  <div style={{ width: '180px', flexShrink: 0, paddingBottom: '2px' }}>
+                     <label style={{ fontSize: '10px', color: '#64748b', display: 'block', marginBottom: '4px' }}>Hồ sơ & Ghi chú:</label>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        {(m.customerSegment || (m.tripCount > 0)) ? (
+                           <>
+                              <span style={{
+                                 padding: '2px 6px', borderRadius: '10px', fontSize: '10px', fontWeight: 700,
+                                 ...(m.customerSegment === 'VIP 1' ? { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' } : 
+                                     m.customerSegment === 'VIP 2' ? { background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' } : 
+                                     m.customerSegment === 'VIP 3' ? { background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' } : 
+                                     m.customerSegment === 'Repeat Customer' ? { background: '#dbeafe', color: '#2563eb', border: '1px solid #bfdbfe' } : 
+                                     { background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0' })
+                              }}>
+                                 {m.customerSegment === 'VIP 1' ? '⭐⭐⭐ VIP 1' :
+                                  m.customerSegment === 'VIP 2' ? '⭐⭐ VIP 2' :
+                                  m.customerSegment === 'VIP 3' ? '⭐ VIP 3' :
+                                  m.customerSegment || 'Khách Cũ'}
+                              </span>
+                              {m.tripCount > 0 && <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>{m.tripCount} chuyến</span>}
+                           </>
+                        ) : (
+                           <span style={{ padding: '2px 6px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0' }}>Khách mới</span>
+                        )}
+
+                        {m.crmNote && (
+                           <div style={{ position: 'relative' }}>
+                              <div className={`tooltip-parent-${m.id}`} style={{ background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: '4px', cursor: 'help', display: 'inline-flex', padding: '2px 4px' }}>
+                                 <span title="Có ghi chú hệ thống" style={{ fontSize: '10px' }}>📝 Ghi chú</span>
+                                 <div className={`tooltip-child-${m.id}`} style={{
+                                    position: 'absolute', bottom: '100%', left: 0, marginBottom: '6px',
+                                    background: '#fffbeb', border: '1px solid #f59e0b', color: '#92400e',
+                                    padding: '10px', borderRadius: '6px', fontSize: '12px',
+                                    width: '250px', zIndex: 100, display: 'none', whiteSpace: 'pre-wrap', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                                 }}>
+                                    <strong>📝 Ghi chú ăn chay / đặc biệt:</strong><br/>{m.crmNote}
+                                 </div>
+                              </div>
+                              <style>{`
+                                 .tooltip-parent-${m.id}:hover .tooltip-child-${m.id} { display: block !important; }
+                              `}</style>
+                           </div>
+                        )}
+                     </div>
+                  </div>
+                  <div style={{ width: '150px', flexShrink: 0 }}>
+                     <label style={{ fontSize: '10px' }}>Email:</label>
+                     <input type="email" value={m.email || ''} onChange={e => handleMemberChange(m.id, 'email', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
                   </div>
                   <div style={{ width: '110px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Độ tuổi:</label>
@@ -584,6 +824,24 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                   <div style={{ width: '120px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Ngày sinh:</label>
                      <input type="date" value={m.dob} onChange={e => handleMemberChange(m.id, 'dob', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                  </div>
+                  <div style={{ flexShrink: 0, position: 'relative' }}>
+                     <label style={{ fontSize: '10px', display: 'block', marginBottom: '2px' }}>Hộ chiếu/CCCD</label>
+                     <label style={{ 
+                        background: m.passportUrl ? '#dcfce7' : '#f8fafc', 
+                        border: m.passportUrl ? '1px solid #22c55e' : '1px solid #cbd5e1', 
+                        borderRadius: '4px', width: '85px', height: '30px', 
+                        display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer',
+                        fontSize: '11px', fontWeight: 'bold', color: m.passportUrl ? '#15803d' : '#475569'
+                     }} title={m.passportUrl ? "Đã có Hộ chiếu (Nhấn để thay đổi)" : "Tải lên Hộ chiếu"}>
+                        {uploadingPassportId === m.id ? (
+                           <div style={{ width: '12px', height: '12px', border: '2px solid #cbd5e1', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                        ) : m.passportUrl ? '✅ Đã tải' : '📷 Tải lên'}
+                        <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={(e) => handleUploadPassport(m.id, e.target.files[0])} />
+                     </label>
+                     {m.passportUrl && (
+                        <a href={m.passportUrl} target="_blank" rel="noreferrer" style={{ position: 'absolute', bottom: '-4px', right: '-8px', background: '#3b82f6', color: 'white', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '10px', textDecoration: 'none' }} title="Xem Hộ chiếu">👁️</a>
+                     )}
                   </div>
                   <div style={{ width: '100px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>CMT/Hộ chiếu:</label>
@@ -610,27 +868,33 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                   {/* Additional fields hidden in the horizontal scroll... */}
                   <div style={{ width: '60px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Vé đi:</label>
-                     <input type="text" style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                     <input type="text" value={m.flightOut || ''} onChange={e => handleMemberChange(m.id, 'flightOut', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
                   </div>
                   <div style={{ width: '60px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Vé về:</label>
-                     <input type="text" style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                     <input type="text" value={m.flightIn || ''} onChange={e => handleMemberChange(m.id, 'flightIn', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
                   </div>
                   <div style={{ width: '100px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Tình trạng Visa:</label>
-                     <select style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }}><option>-Chọn-</option></select>
+                     <select value={m.visaStatus || '-Chọn-'} onChange={e => handleMemberChange(m.id, 'visaStatus', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }}>
+                        <option>-Chọn-</option>
+                        <option>Đã có</option>
+                        <option>Chưa có</option>
+                        <option>Đang nộp</option>
+                        <option>Rớt</option>
+                     </select>
                   </div>
                   <div style={{ width: '60px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Nộp Visa:</label>
-                     <input type="text" style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                     <input type="text" value={m.visaSubmit || ''} onChange={e => handleMemberChange(m.id, 'visaSubmit', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
                   </div>
                   <div style={{ width: '60px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>KQ Visa:</label>
-                     <input type="text" style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                     <input type="text" value={m.visaResult || ''} onChange={e => handleMemberChange(m.id, 'visaResult', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
                   </div>
                   <div style={{ width: '80px', flexShrink: 0 }}>
-                     <label style={{ fontSize: '10px' }}>Ghi chú:</label>
-                     <input type="text" style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                     <label style={{ fontSize: '10px' }}>Ghi chú hiện tại:</label>
+                     <input type="text" value={m.note || ''} onChange={e => handleMemberChange(m.id, 'note', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
                   </div>
                </div>
              ))}
@@ -660,7 +924,14 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                 </button>
              </div>
           </div>
-
+          {showProfileSlider && fullProfileData && (
+            <CustomerProfileSlider 
+               customer={fullProfileData} 
+               onClose={() => setShowProfileSlider(false)} 
+               onAddNote={() => {}} 
+               users={[]}
+            />
+         )}
         </div>
       </div>
     </div>

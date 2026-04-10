@@ -10,6 +10,10 @@ router.get('/roles', auth, permCheck('users', 'view'), userController.getRoles);
 router.get('/teams', auth, userController.getTeams);
 router.get('/allowed-roles', auth, userController.getAllowedRoles);
 
+// Self profile (must be before /:id to avoid conflict)
+router.get('/me', auth, userController.getMyProfile);
+router.put('/me', auth, userController.updateMyProfile);
+
 // Team CRUD (Admin only)
 router.post('/teams', auth, permCheck('users', 'manage_team'), userController.createTeam);
 router.put('/teams/:id', auth, permCheck('users', 'manage_team'), userController.updateTeam);

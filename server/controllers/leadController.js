@@ -2,26 +2,21 @@ const db = require('../db');
 const { logActivity } = require('../utils/logger');
 const { convertLeadToCustomer } = require('../services/conversionService');
 const metaCapi = require('../services/metaCapiService');
-const { getDataScope } = require('../middleware/teamScope');
-const { getUserMergedPerms } = require('../middleware/permCheck');
+const { getDataScope } = require("../middleware/teamScope");
+const { getUserMergedPerms } = require("../middleware/permCheck");
+
 
 exports.getAllLeads = async (req, res) => {
     try {
-        // Data Scoping: xác định phạm vi dữ liệu dựa trên quyền user
-        let scopeClause = '';
-        let scopeParams = [];
-        
+        // Data Scoping (V2) - Masking thay vì Ẩn Dòng
+        let myScope = null;
         if (req.user && req.user.role !== 'admin') {
             const perms = await getUserMergedPerms(req.user.id, req.user.role);
-            const scope = await getDataScope(req.user.id, 'leads', perms);
+            myScope = await getDataScope(req.user.id, 'leads', perms);
             
-            if (scope.scope === 'team' || scope.scope === 'own') {
-                scopeClause = `WHERE l.assigned_to = ANY($1)`;
-                scopeParams = [scope.userIds];
-            } else if (scope.scope === 'none') {
-                return res.json([]); // Không có quyền xem
+            if (myScope.scope === 'none') {
+                return res.json([]); // Không có quyền xem module
             }
-            // scope === 'all' → không thêm WHERE
         }
 
         const result = await db.query(`
@@ -36,10 +31,32 @@ exports.getAllLeads = async (req, res) => {
             LEFT JOIN tour_templates tt ON l.tour_id = tt.id 
             LEFT JOIN users u ON l.assigned_to = u.id 
             LEFT JOIN customers c ON l.customer_id = c.id
-            ${scopeClause}
             ORDER BY l.created_at DESC
-        `, scopeParams);
-        res.json(result.rows);
+        `);
+
+        const leads = result.rows.map(lead => {
+            let isLocked = false;
+            if (req.user && req.user.role !== 'admin' && myScope && myScope.scope !== 'all') {
+                if (lead.assigned_to !== null && !myScope.userIds.includes(lead.assigned_to)) {
+                    isLocked = true; // Lead thuộc về người khác
+                }
+            }
+
+            if (isLocked) {
+                lead.is_locked = true;
+                if (lead.phone && lead.phone.length >= 7) {
+                    lead.masked_phone = lead.phone.substring(0, 3) + '****' + lead.phone.substring(lead.phone.length - 3);
+                } else if (lead.phone) {
+                    lead.masked_phone = '***';
+                }
+            } else {
+                lead.is_locked = false;
+            }
+            return lead;
+        });
+
+        res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+        res.json(leads);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

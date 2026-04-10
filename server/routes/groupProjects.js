@@ -9,6 +9,7 @@ const VIEW_ROLES = ['admin', 'manager', 'group_manager', 'group_staff', 'operati
 const EDIT_ROLES = ['admin', 'manager', 'group_manager', 'group_staff'];
 const DELETE_ROLES = ['admin', 'manager', 'group_manager'];
 
+router.get('/stats', authenticateToken, roleCheck(VIEW_ROLES), controller.getProjectStats);
 router.get('/', authenticateToken, roleCheck(VIEW_ROLES), controller.getAllProjects);
 router.post('/', authenticateToken, roleCheck(EDIT_ROLES), controller.createProject);
 router.put('/:id', authenticateToken, roleCheck(EDIT_ROLES), controller.updateProject);
