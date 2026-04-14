@@ -935,3 +935,63 @@ Dạ hiện tại bên em có nhiều"
 [BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
 [BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
 [BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[CSKH-Engine 2026-04-14T14:45:00.040Z] === START ===
+[CSKH-Engine 2026-04-14T14:45:00.203Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T14:45:00.215Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:45:00.216Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:45:00.217Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:45:00.218Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:45:00.240Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:45:00.241Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:45:00.242Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T14:45:00.242Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Nguyen Thuy Linh. Đang tạo Lead...
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "Bromo" -> BU4 | msg: "Dạ FIT Tour xin chào anh/chị ạ.
+
+Dạ em gửi anh/chị thông tin"
+[BU-AUTO] Poller Lead #4398 (Nguyen Thuy Linh) → Auto BU: BU4
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "c17a6f71b29c47499497a57e39a373bc7d61315b78ca10cfc172e2df71e77b9a"
+    ],
+    "fb_login_id": "26843735551983447"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4398,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'A2V-YPprMTsy8lyjVtw0V6n' }
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
