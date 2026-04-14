@@ -1991,33 +1991,30 @@ function AppContent() {
             </>
           )}
 
-          {(checkView('users') || checkView('settings')) && (
-            <>
-              <div className="nav-section-title">Hệ thống & Nhân sự</div>
-              {checkView('users') && (
-                <div 
-                  className={`nav-item ${['users','staff-calendar','teams','team-directory','org-chart'].includes(activeTab) ? 'active' : ''}`} 
-                  onClick={() => { navigate('/users'); setActiveTab('users'); }}
-                  style={{ justifyContent: 'space-between' }}
-                  onMouseEnter={(e) => {
-                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    setHoveredRect(rect);
-                    setHoveredMenu('hr-menu');
-                  }}
-                  onMouseLeave={() => {
-                    menuTimerRef.current = setTimeout(() => {
-                      setHoveredMenu(null);
-                    }, 150);
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <UserCheck /> Quản lý Nhân sự
-                  </div>
-                  <ChevronRight size={14} opacity={0.5} />
-                </div>
-              )}
-              {checkView('settings') && (
+          <div className="nav-section-title">Hệ thống & Nhân sự</div>
+          <div 
+            className={`nav-item ${['users','staff-calendar','teams','team-directory','org-chart'].includes(activeTab) ? 'active' : ''}`} 
+            onClick={() => { navigate('/team-directory'); setActiveTab('team-directory'); }}
+            style={{ justifyContent: 'space-between' }}
+            onMouseEnter={(e) => {
+              if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+              const rect = e.currentTarget.getBoundingClientRect();
+              setHoveredRect(rect);
+              setHoveredMenu('hr-menu');
+            }}
+            onMouseLeave={() => {
+              menuTimerRef.current = setTimeout(() => {
+                setHoveredMenu(null);
+              }, 150);
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <UserCheck /> Quản lý Nhân sự
+            </div>
+            <ChevronRight size={14} opacity={0.5} />
+          </div>
+
+          {checkView('settings') && (
                 <div className={`nav-item ${activeTab === 'market-settings' ? 'active' : ''}`} onClick={() => navigate('/market-settings')}>
                   <MapPin /> Quản lý Thị trường
                 </div>
@@ -2035,8 +2032,6 @@ function AppContent() {
                   </div>
                 </>
               )}
-            </>
-          )}
 
           <div className="nav-section-title">Tài Liệu Nội Bộ</div>
           <div className={`nav-item ${activeTab === 'internal-docs' ? 'active' : ''}`} onClick={() => navigate('/internal-docs')}>
@@ -2455,26 +2450,6 @@ function AppContent() {
           }}
         >
           <div 
-            className={`submenu-item ${activeTab === 'users' ? 'active' : ''}`} 
-            onClick={() => { navigate('/users'); setActiveTab('users'); setHoveredMenu(null); }}
-          >
-            👥 Danh sách Nhân sự
-          </div>
-          <div 
-            className={`submenu-item ${activeTab === 'staff-calendar' ? 'active' : ''}`} 
-            onClick={() => { navigate('/staff-calendar'); setActiveTab('staff-calendar'); setHoveredMenu(null); }}
-          >
-            🎂 Lịch Nhân sự
-          </div>
-          {(user?.role === 'admin') && (
-            <div 
-              className={`submenu-item ${activeTab === 'teams' ? 'active' : ''}`} 
-              onClick={() => { navigate('/teams'); setActiveTab('teams'); setHoveredMenu(null); }}
-            >
-              🏢 Quản lý Team
-            </div>
-          )}
-          <div 
             className={`submenu-item ${activeTab === 'team-directory' ? 'active' : ''}`} 
             onClick={() => { navigate('/team-directory'); setActiveTab('team-directory'); setHoveredMenu(null); }}
           >
@@ -2486,6 +2461,30 @@ function AppContent() {
           >
             📊 Sơ đồ Tổ chức
           </div>
+          <div 
+            className={`submenu-item ${activeTab === 'staff-calendar' ? 'active' : ''}`} 
+            onClick={() => { navigate('/staff-calendar'); setActiveTab('staff-calendar'); setHoveredMenu(null); }}
+          >
+            🎂 Lịch Nhân sự
+          </div>
+          {checkView('users') && (
+            <>
+              {(user?.role === 'admin') && (
+                <div 
+                  className={`submenu-item ${activeTab === 'teams' ? 'active' : ''}`} 
+                  onClick={() => { navigate('/teams'); setActiveTab('teams'); setHoveredMenu(null); }}
+                >
+                  🏢 Quản lý Team
+                </div>
+              )}
+              <div 
+                className={`submenu-item ${activeTab === 'users' ? 'active' : ''}`} 
+                onClick={() => { navigate('/users'); setActiveTab('users'); setHoveredMenu(null); }}
+              >
+                👥 Danh sách Nhân sự
+              </div>
+            </>
+          )}
         </div>
       )}
 
