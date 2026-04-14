@@ -42,3 +42,4 @@
 10:04:34 PM [vite] (client) hmr update /src/tabs/GroupProjectsTab.jsx
 10:04:53 PM [vite] (client) hmr update /src/tabs/GroupLeadersTab.jsx
 10:11:15 PM [vite] (client) hmr update /src/tabs/GroupProjectsTab.jsx
+10:14:30 PM [vite] (client) hmr update /src/components/modals/GroupProjectDetailDrawer.jsx

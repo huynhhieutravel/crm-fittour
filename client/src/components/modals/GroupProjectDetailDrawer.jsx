@@ -362,6 +362,8 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                                         <Select
                                             options={guideOptions.filter(o => !formData.guide_ids.includes(o.value) || o.value === gid)}
                                             value={guide || null}
+                                            menuPlacement="bottom"
+                                            menuPosition="fixed"
                                             onChange={o => {
                                                 const newIds = [...formData.guide_ids];
                                                 newIds[idx] = o ? o.value : null;
