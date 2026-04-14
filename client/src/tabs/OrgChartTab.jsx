@@ -23,6 +23,10 @@ const CustomNode = ({ data, selected }) => {
         bgColor = '#111827';
         borderColor = '#3b82f6';
         labelColor = '#ffffff';
+    } else if (data.roleType === 'VICE_DIRECTOR') {
+        bgColor = '#b48e4b';
+        borderColor = '#92400e';
+        labelColor = '#ffffff';
     } else if (data.roleType === 'MANAGER') {
         bgColor = '#fef3c7';
         borderColor = '#f59e0b';
@@ -35,6 +39,10 @@ const CustomNode = ({ data, selected }) => {
         bgColor = '#f0fdf4';
         borderColor = '#22c55e';
         labelColor = '#166534';
+    } else if (data.roleType === 'OPERATIONS') {
+        bgColor = '#ccfbf1';
+        borderColor = '#14b8a6';
+        labelColor = '#0f766e';
     }
 
     return (
@@ -235,6 +243,8 @@ const OrgChartTab = ({ currentUser, addToast }) => {
             }
         };
 
+        const getStaffRole = (pos) => pos?.toLowerCase().includes('điều hành') ? 'OPERATIONS' : 'STAFF';
+
         // ═══════════════════════════════════════════
         //  1. CEO - Max Vũ
         // ═══════════════════════════════════════════
@@ -246,7 +256,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
         //  2. Phó Giám đốc - Vy Phan
         // ═══════════════════════════════════════════
         const viceId = mkId();
-        addNode(viceId, 630, 140, 'Vy Phan', 'Phó Giám đốc', 'CEO');
+        addNode(viceId, 630, 140, 'Vy Phan', 'Phó Giám đốc', 'VICE_DIRECTOR');
         linkUser(viceId, 'sv1.sale');
         addEdge(ceoId, viceId);
 
@@ -272,7 +282,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
         ];
         bu1Staff.forEach((s, i) => {
             const sId = mkId();
-            addNode(sId, -60, 510 + i * 100, s.name, s.pos, 'STAFF');
+            addNode(sId, -60, 510 + i * 100, s.name, s.pos, getStaffRole(s.pos));
             linkUser(sId, s.user);
             addEdge(bu1Head, sId, greenEdge);
         });
@@ -298,7 +308,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
         ];
         bu2Staff.forEach((s, i) => {
             const sId = mkId();
-            addNode(sId, 220, 510 + i * 100, s.name, s.pos, 'STAFF');
+            addNode(sId, 220, 510 + i * 100, s.name, s.pos, getStaffRole(s.pos));
             linkUser(sId, s.user);
             addEdge(bu2Head, sId, greenEdge);
         });
@@ -325,7 +335,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
         ];
         bu3Staff.forEach((s, i) => {
             const sId = mkId();
-            addNode(sId, 500, 510 + i * 100, s.name, s.pos, 'STAFF');
+            addNode(sId, 500, 510 + i * 100, s.name, s.pos, getStaffRole(s.pos));
             linkUser(sId, s.user);
             addEdge(bu3Head, sId, greenEdge);
         });
@@ -348,7 +358,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
         ];
         bu4Staff.forEach((s, i) => {
             const sId = mkId();
-            addNode(sId, 780, 510 + i * 100, s.name, s.pos, 'STAFF');
+            addNode(sId, 780, 510 + i * 100, s.name, s.pos, getStaffRole(s.pos));
             linkUser(sId, s.user);
             addEdge(bu4Head, sId, greenEdge);
         });
@@ -371,7 +381,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
         ];
         ktStaff.forEach((s, i) => {
             const sId = mkId();
-            addNode(sId, 1040, 510 + i * 100, s.name, s.pos, 'STAFF');
+            addNode(sId, 1040, 510 + i * 100, s.name, s.pos, getStaffRole(s.pos));
             linkUser(sId, s.user);
             addEdge(ktHead, sId, greenEdge);
         });
@@ -394,7 +404,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
         ];
         mktStaff.forEach((s, i) => {
             const sId = mkId();
-            addNode(sId, 1300, 510 + i * 100, s.name, s.pos, 'STAFF');
+            addNode(sId, 1300, 510 + i * 100, s.name, s.pos, getStaffRole(s.pos));
             linkUser(sId, s.user);
             addEdge(mktHead, sId, greenEdge);
         });
@@ -486,8 +496,10 @@ const OrgChartTab = ({ currentUser, addToast }) => {
                             <MiniMap zoomable pannable nodeColor={(node) => {
                                 switch (node.data?.roleType) {
                                     case 'CEO': return '#111827';
+                                    case 'VICE_DIRECTOR': return '#b48e4b';
                                     case 'MANAGER': return '#f59e0b';
                                     case 'BU': return '#3b82f6';
+                                    case 'OPERATIONS': return '#14b8a6';
                                     default: return '#22c55e';
                                 }
                             }} />
@@ -543,8 +555,10 @@ const OrgChartTab = ({ currentUser, addToast }) => {
                                     onChange={e => updateSelectedNodeData('roleType', e.target.value)}
                                 >
                                     <option value="CEO">Giám Đốc (Đen/Xanh)</option>
+                                    <option value="VICE_DIRECTOR">Phó Giám Đốc (Vàng đồng)</option>
                                     <option value="MANAGER">Trưởng Phòng (Vàng rực)</option>
                                     <option value="BU">Khối BU (Xanh dương)</option>
+                                    <option value="OPERATIONS">Điều hành (Xanh ngọc)</option>
                                     <option value="STAFF">Nhân viên (Xanh lá)</option>
                                 </select>
                             </div>
