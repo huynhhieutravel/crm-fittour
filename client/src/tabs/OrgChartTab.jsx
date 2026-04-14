@@ -31,6 +31,10 @@ const CustomNode = ({ data, selected }) => {
         bgColor = '#fef3c7';
         borderColor = '#f59e0b';
         labelColor = '#92400e';
+    } else if (data.roleType === 'VICE_MANAGER') {
+        bgColor = '#fffbeb';
+        borderColor = '#fcd34d';
+        labelColor = '#a16207';
     } else if (data.roleType === 'BU') {
         bgColor = '#eff6ff';
         borderColor = '#3b82f6';
@@ -243,7 +247,12 @@ const OrgChartTab = ({ currentUser, addToast }) => {
             }
         };
 
-        const getStaffRole = (pos) => pos?.toLowerCase().includes('điều hành') ? 'OPERATIONS' : 'STAFF';
+        const getStaffRole = (pos) => {
+            const p = pos?.toLowerCase() || '';
+            if (p.includes('điều hành')) return 'OPERATIONS';
+            if (p.includes('phó phòng')) return 'VICE_MANAGER';
+            return 'STAFF';
+        };
 
         // ═══════════════════════════════════════════
         //  1. CEO - Max Vũ
@@ -498,6 +507,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
                                     case 'CEO': return '#111827';
                                     case 'VICE_DIRECTOR': return '#b48e4b';
                                     case 'MANAGER': return '#f59e0b';
+                                    case 'VICE_MANAGER': return '#fcd34d';
                                     case 'BU': return '#3b82f6';
                                     case 'OPERATIONS': return '#14b8a6';
                                     default: return '#22c55e';
@@ -557,6 +567,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
                                     <option value="CEO">Giám Đốc (Đen/Xanh)</option>
                                     <option value="VICE_DIRECTOR">Phó Giám Đốc (Vàng đồng)</option>
                                     <option value="MANAGER">Trưởng Phòng (Vàng rực)</option>
+                                    <option value="VICE_MANAGER">Phó Phòng (Vàng nhạt)</option>
                                     <option value="BU">Khối BU (Xanh dương)</option>
                                     <option value="OPERATIONS">Điều hành (Xanh ngọc)</option>
                                     <option value="STAFF">Nhân viên (Xanh lá)</option>
