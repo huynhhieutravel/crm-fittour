@@ -152,7 +152,11 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
         return new Date(b.departure_date) - new Date(a.departure_date);
     });
 
-    const userOptions = (users || []).filter(u => u.is_active !== false).map(u => ({
+    const userOptions = (users || []).filter(u => u.is_active !== false && (
+        (u.teams || []).some(t => String(t.name || '').toLowerCase().includes('đoàn') || String(t.name || '').toLowerCase().includes('mice')) ||
+        ['admin', 'manager', 'group_manager', 'group_staff'].includes(u.role_name) ||
+        u.role === 'admin' || u.role === 'manager'
+    )).map(u => ({
         value: u.id.toString(), label: u.full_name || u.username
     }));
 

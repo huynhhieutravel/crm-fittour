@@ -187,7 +187,11 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [], act
                             >
                                 <option value="">Tất cả nhân viên</option>
                                 <option value="NO_STAFF">⚠ Chưa giao ai</option>
-                                {users.map(u => (
+                                {users.filter(u => u.is_active !== false && (
+                                    (u.teams || []).some(t => String(t.name || '').toLowerCase().includes('đoàn') || String(t.name || '').toLowerCase().includes('mice')) ||
+                                    ['admin', 'manager', 'group_manager', 'group_staff'].includes(u.role_name) ||
+                                    u.role === 'admin' || u.role === 'manager'
+                                )).map(u => (
                                     <option key={u.id} value={u.id}>{u.username || u.full_name}</option>
                                 ))}
                             </select>
