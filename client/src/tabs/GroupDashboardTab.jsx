@@ -524,13 +524,24 @@ const GroupDashboardTab = () => {
           </div>
           <div style={{ height: "350px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: 20, right: 80, bottom: 20, left: 80 }}>
+              <PieChart margin={{ top: 20, right: 50, bottom: 20, left: 50 }} style={{ overflow: 'visible' }}>
                 <Pie
                   data={chartStatusStats}
                   cx="50%" cy="50%"
                   innerRadius={70} outerRadius={95} paddingAngle={4}
                   dataKey="count" nameKey="status" isAnimationActive={false}
-                  label={({ status, percent }) => percent > 0.05 ? `${status} (${(percent * 100).toFixed(0)}%)` : ''}
+                  label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
+                    const RADIAN = Math.PI / 180;
+                    const radius = outerRadius * 1.2;
+                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                    if (percent < 0.05) return null;
+                    return (
+                      <text x={x} y={y} fill="#475569" fontSize="12" fontWeight="600" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+                        {`${name} (${(percent * 100).toFixed(0)}%)`}
+                      </text>
+                    );
+                  }}
                 >
                   {chartStatusStats.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.status] || COLORS[index % COLORS.length]} />
