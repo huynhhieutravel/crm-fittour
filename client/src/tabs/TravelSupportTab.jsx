@@ -396,25 +396,25 @@ const TravelSupportTab = ({ users = [], currentUser, checkPerm }) => {
                     </select>
                  </td>
                  <td style={{ padding: '8px 8px' }}>
-                   <input type="text" className="modal-input" style={{ fontSize: '0.96rem', height: '40px', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0 12px' }} placeholder="Nhập tên..." value={fastAdd.service_name} onChange={e => updateFastAdd('service_name', e.target.value)} />
+                   <input type="text" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0 12px' }} placeholder="Nhập tên..." value={fastAdd.service_name} onChange={e => updateFastAdd('service_name', e.target.value)} />
                  </td>
                  <td style={{ textAlign: 'center', padding: '8px 4px' }}>
-                    <input type="date" className="modal-input" style={{ fontSize: '0.9rem', height: '40px', width: '100%', borderRadius: '10px' }} value={fastAdd.usage_date} onChange={e => updateFastAdd('usage_date', e.target.value)} />
+                    <input type="date" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', width: '100%', borderRadius: '10px' }} value={fastAdd.usage_date} onChange={e => updateFastAdd('usage_date', e.target.value)} />
                  </td>
                  <td style={{ textAlign: 'right', padding: '8px 4px' }}>
-                    <input type="text" className="modal-input" style={{ fontSize: '0.96rem', height: '40px', textAlign: 'right', borderRadius: '10px' }} placeholder="Vốn" value={formatMoney(fastAdd.unit_cost)} onChange={e => updateFastAdd('unit_cost', parseMoney(e.target.value))} />
+                    <input type="text" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', textAlign: 'right', borderRadius: '10px' }} placeholder="Vốn" value={formatMoney(fastAdd.unit_cost)} onChange={e => updateFastAdd('unit_cost', parseMoney(e.target.value))} />
                  </td>
                  <td style={{ textAlign: 'center', padding: '8px 4px' }}>
-                    <input type="number" className="modal-input" style={{ fontSize: '0.96rem', height: '40px', textAlign: 'center', width: '100%', borderRadius: '10px' }} value={fastAdd.quantity} onChange={e => updateFastAdd('quantity', parseFloat(e.target.value) || 1)} />
+                    <input type="number" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', textAlign: 'center', width: '100%', borderRadius: '10px' }} value={fastAdd.quantity} onChange={e => updateFastAdd('quantity', parseFloat(e.target.value) || 1)} />
                  </td>
                  <td style={{ textAlign: 'right', padding: '8px 4px' }}>
-                    <input type="text" className="modal-input" style={{ fontSize: '0.96rem', height: '40px', textAlign: 'right', color: '#991b1b', borderRadius: '10px', background: '#fff5f5' }} value={formatMoney(fastAdd.total_cost)} onChange={e => updateFastAdd('total_cost', parseMoney(e.target.value))} />
+                    <input type="text" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', textAlign: 'right', color: '#991b1b', borderRadius: '10px', background: '#fff5f5' }} value={formatMoney(fastAdd.total_cost)} onChange={e => updateFastAdd('total_cost', parseMoney(e.target.value))} />
                  </td>
                  <td style={{ textAlign: 'right', padding: '8px 4px' }}>
-                    <input type="text" className="modal-input" style={{ fontSize: '0.96rem', height: '40px', textAlign: 'right', color: '#1e40af', borderRadius: '10px', background: '#f0f7ff' }} value={formatMoney(fastAdd.total_income)} onChange={e => updateFastAdd('total_income', parseMoney(e.target.value))} />
+                    <input type="text" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', textAlign: 'right', color: '#1e40af', borderRadius: '10px', background: '#f0f7ff' }} value={formatMoney(fastAdd.total_income)} onChange={e => updateFastAdd('total_income', parseMoney(e.target.value))} />
                  </td>
                  <td style={{ textAlign: 'right', padding: '8px 4px' }}>
-                    <input type="text" className="modal-input" style={{ fontSize: '0.96rem', height: '40px', textAlign: 'right', color: '#6366f1', borderRadius: '10px' }} placeholder="Đã thu" value={formatMoney(fastAdd.collected_amount)} onChange={e => updateFastAdd('collected_amount', parseMoney(e.target.value))} />
+                    <input type="text" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', textAlign: 'right', color: '#6366f1', borderRadius: '10px' }} placeholder="Đã thu" value={formatMoney(fastAdd.collected_amount)} onChange={e => updateFastAdd('collected_amount', parseMoney(e.target.value))} />
                  </td>
                  <td style={{ textAlign: 'right', color: '#f59e0b', fontSize: '1rem', paddingRight: '12px', fontWeight: 600 }}>
                     {formatMoney(parseMoney(fastAdd.total_income) - parseMoney(fastAdd.collected_amount))}

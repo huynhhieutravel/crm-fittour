@@ -1752,6 +1752,13 @@ function AppContent() {
                   <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
+
+              <div 
+                className={`nav-item ${activeTab === 'travel-support' ? 'active' : ''}`}
+                onClick={() => navigate('/travel-support')}
+              >
+                <Briefcase /> Dịch vụ Hỗ trợ
+              </div>
               {checkView('leads') && (
                 <div 
                   className={`nav-item ${(activeTab === 'marketing-ads' || activeTab === 'management-dashboard') ? 'active' : ''}`} 
@@ -1843,13 +1850,6 @@ function AppContent() {
                   <DollarSign /> Phiếu Thu / Chi
                 </div>
               )}
-
-              <div 
-                className={`nav-item ${activeTab === 'travel-support' ? 'active' : ''}`}
-                onClick={() => navigate('/travel-support')}
-              >
-                <Briefcase /> Dịch vụ Hỗ trợ
-              </div>
 
               {/* Old Lịch khởi hành tab removed — merged into OpTours above */}
               
