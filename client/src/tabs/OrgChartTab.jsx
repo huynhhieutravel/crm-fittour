@@ -228,7 +228,29 @@ const OrgChartTab = ({ currentUser, addToast }) => {
         const mkId = () => `node_auto_${++nodeCounter}`;
 
         const addNode = (id, x, y, label, position, roleType) => {
-            newNodes.push({ id, type: 'custom', position: { x, y }, data: { label, position, roleType, avatarUrl: '' } });
+            const node = { id, type: 'custom', position: { x, y }, data: { label, position, roleType, avatarUrl: '' } };
+            
+            // Auto-link by exact or fuzzy full name match
+            if (label) {
+                const searchLabel = label.toLowerCase().trim();
+                const u = usersList.find(usr => {
+                    const fn = usr.full_name?.toLowerCase().trim() || '';
+                    // Prevent generic matches like "Kế Toán" from matching a person. Add min length check.
+                    if (searchLabel.length < 4) return false;
+                    // Check against names like "Trần Quốc Thịnh", avoid matching "Khối Sale BU1"
+                    if (searchLabel.includes('khối ') || searchLabel.includes('kế toán') || searchLabel.includes('marketing')) return false;
+                    
+                    return fn === searchLabel || (fn && (fn.includes(searchLabel) || searchLabel.includes(fn)));
+                });
+                
+                if (u) {
+                    node.data.label = u.full_name || node.data.label;
+                    node.data.avatarUrl = u.avatar_url || '';
+                    node.data.userId = u.id;
+                }
+            }
+            
+            newNodes.push(node);
         };
         const addEdge = (src, tgt, style = edgeStyle) => {
             newEdges.push({ id: `edge_${src}_${tgt}`, source: src, target: tgt, animated: true, style });
