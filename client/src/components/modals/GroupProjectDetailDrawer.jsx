@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Save, Building, Users, Briefcase, MapPin, Calendar, DollarSign, Activity, Plus, ExternalLink, UserCheck } from 'lucide-react';
 import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
@@ -72,6 +73,33 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
             setAllGuides(res.data);
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const handleCreateGuide = async (inputValue, index) => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem('token');
+            const res = await axios.post('/api/guides', 
+                { name: inputValue, status: 'Active' },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            const newGuideId = res.data.id;
+            
+            // Re-fetch all guides to update the main list
+            await fetchGuides();
+            
+            // Auto-select the newly created guide
+            const newIds = [...formData.guide_ids];
+            newIds[index] = newGuideId;
+            setFormData(prev => ({ ...prev, guide_ids: newIds.filter(Boolean) }));
+            
+            if (addToast) addToast(`Đã tạo phân công cho "${inputValue}"`, 'success');
+        } catch (err) {
+            console.error('Error creating guide:', err);
+            if (addToast) addToast('Lỗi khi tạo HDV mới!', 'error');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -361,7 +389,7 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                                     }}>
                                         <span style={{ color: '#d97706', fontWeight: 700, fontSize: '0.85rem', minWidth: '28px' }}>#{idx + 1}</span>
                                         <div style={{ flex: 1 }}>
-                                        <Select
+                                        <CreatableSelect
                                             options={guideOptions.filter(o => !formData.guide_ids.includes(o.value) || o.value === gid)}
                                             value={guide || null}
                                             menuPlacement="bottom"
@@ -372,6 +400,8 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                                                 newIds[idx] = o ? o.value : null;
                                                 setFormData({...formData, guide_ids: newIds.filter(Boolean)});
                                             }}
+                                            onCreateOption={(inputValue) => handleCreateGuide(inputValue, idx)}
+                                            formatCreateLabel={(inputValue) => `Tạo mới "${inputValue}"`}
                                             styles={{
                                                 ...reactSelectStyles,
                                                 control: (base) => ({
@@ -383,8 +413,8 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                                                 valueContainer: (base) => ({ ...base, padding: '0 12px' }),
                                                 singleValue: (base) => ({ ...base, fontWeight: 600, color: '#92400e' })
                                             }}
-                                            isDisabled={isViewOnly}
-                                            placeholder="Chọn HDV..."
+                                            isDisabled={isViewOnly || loading}
+                                            placeholder="Chọn hoặc gõ tên HDV/NV..."
                                             noOptionsMessage={() => 'Đã chọn hết HDV'}
                                         />
                                         </div>
