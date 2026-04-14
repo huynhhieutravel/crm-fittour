@@ -152,9 +152,9 @@ const GroupDashboardTab = () => {
          chartEndDate = `${selectedYear}-12-31`;
          chartGroupBy = "quarter";
       } else if (dateFilter === "year") {
-         chartStartDate = `${selectedYear - 4}-01-01`;
+         chartStartDate = `${selectedYear}-01-01`;
          chartEndDate = `${selectedYear}-12-31`;
-         chartGroupBy = "year";
+         chartGroupBy = "month";
       } else {
          chartStartDate = startDate;
          chartEndDate = endDate;
@@ -260,10 +260,10 @@ const GroupDashboardTab = () => {
           finalTimeSeries.push(found ? { ...found, period: `Quý ${i}` } : { period: `Quý ${i}`, count: 0, revenue: 0, profit: 0 });
        }
     } else if (dateFilter === "year") {
-       for (let i = selectedYear - 4; i <= selectedYear; i++) {
-          const period = `${i}`;
+       for (let i=1; i<=12; i++) {
+          const period = `${selectedYear}-${String(i).padStart(2,'0')}`;
           const found = stats.timeSeries.find(t => t.period === period);
-          finalTimeSeries.push(found ? { ...found, period: `Năm ${i}` } : { period: `Năm ${i}`, count: 0, revenue: 0, profit: 0 });
+          finalTimeSeries.push(found ? { ...found, period: `Tháng ${i}` } : { period: `Tháng ${i}`, count: 0, revenue: 0, profit: 0 });
        }
     } else {
        finalTimeSeries = stats.timeSeries;
