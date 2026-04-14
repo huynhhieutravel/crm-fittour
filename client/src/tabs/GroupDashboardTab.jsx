@@ -528,17 +528,18 @@ const GroupDashboardTab = () => {
                 <Pie
                   data={chartStatusStats}
                   cx="50%" cy="50%"
-                  innerRadius={70} outerRadius={95} paddingAngle={4}
+                  innerRadius={60} outerRadius={80} paddingAngle={4}
                   dataKey="count" nameKey="status" isAnimationActive={false}
                   label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
                     const RADIAN = Math.PI / 180;
-                    const radius = outerRadius * 1.2;
+                    const radius = outerRadius * 1.35;
                     const x = cx + radius * Math.cos(-midAngle * RADIAN);
                     const y = cy + radius * Math.sin(-midAngle * RADIAN);
                     if (percent < 0.05) return null;
                     return (
-                      <text x={x} y={y} fill="#475569" fontSize="12" fontWeight="600" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-                        {`${name} (${(percent * 100).toFixed(0)}%)`}
+                      <text x={x} y={y} fill="#475569" fontSize="11" fontWeight="700" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+                        <tspan x={x} dy="-0.6em">{name}</tspan>
+                        <tspan x={x} dy="1.2em">({(percent * 100).toFixed(0)}%)</tspan>
                       </text>
                     );
                   }}
