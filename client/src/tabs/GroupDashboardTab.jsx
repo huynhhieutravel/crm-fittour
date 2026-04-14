@@ -211,7 +211,8 @@ const GroupDashboardTab = () => {
   // Derived KPIs
   const winRate = totalProjects > 0 ? ((wonProjects / totalProjects) * 100).toFixed(1) : '0.0';
   const avgDealSize = wonProjects > 0 ? totalRevenue / wonProjects : 0;
-  const revenuePerPax = totalPax > 0 ? totalRevenue / totalPax : 0;
+  const pipelineRevenue = stats.kpi.pipeline_revenue ? Number(stats.kpi.pipeline_revenue) : 0;
+  const pipelineProjects = stats.kpi.pipeline_projects ? Number(stats.kpi.pipeline_projects) : 0;
   const avgProfitMargin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : '0.0';
 
   const STATUS_COLORS = {
@@ -470,12 +471,12 @@ const GroupDashboardTab = () => {
         </div>
         <div style={{ background: 'white', borderRadius: '14px', padding: '1.25rem 1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #fef3c7, #fde68a)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Users size={20} color="#d97706" />
+            <Clock size={20} color="#d97706" />
           </div>
           <div>
-            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>DT / Khách (PAX)</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#d97706', letterSpacing: '-0.5px' }}>{formatMoneyLarge(revenuePerPax)}</div>
-            <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>Đo chất lượng đoàn</div>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>DT Pipeline (Chờ chốt)</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#d97706', letterSpacing: '-0.5px' }}>{formatMoneyLarge(pipelineRevenue)}</div>
+            <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>{pipelineProjects} dự án đang trong ống</div>
           </div>
         </div>
         <div style={{ background: 'white', borderRadius: '14px', padding: '1.25rem 1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '14px' }}>
