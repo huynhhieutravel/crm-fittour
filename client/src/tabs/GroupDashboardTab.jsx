@@ -439,7 +439,7 @@ const GroupDashboardTab = () => {
       </div>
 
       {/* Analytics Grid - Row 1: Time Series Chart */}
-      <div className="mb-10 w-full">
+      <div className="w-full" style={{ marginBottom: '1.5rem' }}>
         <div style={{ background: 'white', borderRadius: '16px', padding: '2rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
             <div>
@@ -523,11 +523,11 @@ const GroupDashboardTab = () => {
           </div>
           <div style={{ height: "350px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
+              <PieChart margin={{ top: 20, right: 40, bottom: 20, left: 40 }}>
                 <Pie
                   data={chartStatusStats}
                   cx="50%" cy="50%"
-                  innerRadius={90} outerRadius={120} paddingAngle={4}
+                  innerRadius={80} outerRadius={105} paddingAngle={4}
                   dataKey="count" nameKey="status" isAnimationActive={false}
                   label={({ status, percent }) => percent > 0.05 ? `${status} (${(percent * 100).toFixed(0)}%)` : ''}
                 >
