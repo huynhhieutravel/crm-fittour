@@ -136,12 +136,12 @@ const DashboardTab = ({
       </div>
 
       <div className="stats-grid">
-        <div className="stat-card purple" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
-          <div className="stat-icon-bg"><DollarSign size={24} /></div>
+        <div className="stat-card" style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' }}>
+          <div className="stat-icon-bg"><User size={24} /></div>
           <div className="stat-content">
-            <span className="stat-label">TỔNG DOANH THU</span>
+            <span className="stat-label">TỔNG HỒ SƠ NHẬN</span>
             <div className="stat-value">
-              {(overview?.stats?.total_revenue || 0).toLocaleString('vi-VN')}đ
+              {overview?.stats?.total_leads || 0}
             </div>
           </div>
         </div>
