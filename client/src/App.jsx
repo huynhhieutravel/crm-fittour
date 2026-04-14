@@ -1999,6 +1999,11 @@ function AppContent() {
                   <UserCheck /> Quản lý Nhân sự
                 </div>
               )}
+              {checkView('users') && (
+                <div className={`nav-item ${activeTab === 'staff-calendar' ? 'active' : ''}`} onClick={() => navigate('/staff-calendar')} style={{ paddingLeft: '2.8rem', fontSize: '0.85rem' }}>
+                  <Calendar /> Lịch Nhân sự
+                </div>
+              )}
               {(user?.role === 'admin') && (
                 <div className={`nav-item ${activeTab === 'teams' ? 'active' : ''}`} onClick={() => navigate('/teams')}>
                   <Users /> Quản lý Team
@@ -2800,6 +2805,14 @@ function AppContent() {
           />
         )}
 
+        {activeTab === 'staff-calendar' && (checkPerm('users', 'view') || user?.role === 'admin' || user?.role === 'manager') && (
+          <div className="content-area">
+            <div className="content-header">
+              <h1>Lịch Sinh nhật & Kỷ niệm Nhân sự</h1>
+            </div>
+            <StaffCalendarView users={users} />
+          </div>
+        )}
 
         {activeTab === 'teams' && user?.role === 'admin' && (
           <TeamsTab addToast={addToast} users={users} />

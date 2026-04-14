@@ -1388,3 +1388,538 @@ Dạ em gửi anh/chị thông tin"
 [BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
 [BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
 [BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T16:09:30.778Z] GET /api/leads
+[2026-04-14T16:09:30.783Z] GET /api/tours
+[2026-04-14T16:09:30.783Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T16:09:30.784Z] GET /api/guides
+[2026-04-14T16:09:30.784Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:09:30.784Z] GET /api/customers
+[2026-04-14T16:09:30.801Z] GET /api/users
+[2026-04-14T16:09:30.807Z] GET /api/departures
+[2026-04-14T16:09:30.812Z] GET /api/settings
+[2026-04-14T16:09:30.974Z] GET /api/business-units
+[2026-04-14T16:09:30.975Z] GET /api/permissions/my
+[2026-04-14T16:09:30.996Z] GET /api/users/roles
+[2026-04-14T16:09:30.998Z] GET /api/leads
+[2026-04-14T16:09:30.999Z] GET /api/tours
+[2026-04-14T16:09:31.000Z] GET /api/departures
+[2026-04-14T16:09:31.000Z] GET /api/guides
+[2026-04-14T16:09:31.001Z] GET /api/settings
+[2026-04-14T16:09:31.001Z] GET /api/customers
+[2026-04-14T16:09:31.002Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T16:09:31.005Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:09:31.014Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T16:09:31.015Z] GET /api/users
+[2026-04-14T16:09:31.019Z] GET /api/business-units
+[2026-04-14T16:09:31.025Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T16:09:31.097Z] GET /api/permissions/my
+[2026-04-14T16:09:31.634Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:09:31.635Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T16:11:39.278Z] GET /api/leads
+[2026-04-14T16:11:39.283Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T16:11:39.284Z] GET /api/departures
+[2026-04-14T16:11:39.285Z] GET /api/guides
+[2026-04-14T16:11:39.285Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:11:39.286Z] GET /api/tours
+[2026-04-14T16:11:39.314Z] GET /api/customers
+[2026-04-14T16:11:39.320Z] GET /api/users
+[2026-04-14T16:11:39.330Z] GET /api/settings
+[2026-04-14T16:11:39.348Z] GET /api/business-units
+[2026-04-14T16:11:39.397Z] GET /api/permissions/my
+[2026-04-14T16:11:39.432Z] GET /api/users/roles
+[2026-04-14T16:11:39.434Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T16:11:39.438Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T16:11:39.441Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T16:11:39.753Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:11:42.420Z] GET /api/guides/timeline/data
+[2026-04-14T16:11:42.427Z] GET /api/guides/timeline/data
+[2026-04-14T16:11:49.865Z] GET /api/group-projects
+[2026-04-14T16:11:49.884Z] GET /api/group-projects
+[2026-04-14T16:11:52.973Z] GET /api/group-leaders
+[2026-04-14T16:11:52.976Z] GET /api/markets
+[2026-04-14T16:11:52.978Z] GET /api/guides
+[2026-04-14T16:11:52.990Z] GET /api/group-leaders
+[2026-04-14T16:11:53.010Z] GET /api/guides
+[2026-04-14T16:12:01.127Z] POST /api/guides
+[2026-04-14T16:12:01.147Z] GET /api/guides
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T16:12:45.651Z] GET /api/leads
+[2026-04-14T16:12:45.667Z] GET /api/group-projects
+[2026-04-14T16:12:45.668Z] GET /api/guides
+[2026-04-14T16:12:45.668Z] GET /api/departures
+[2026-04-14T16:12:45.669Z] GET /api/users
+[2026-04-14T16:12:45.681Z] GET /api/tours
+[2026-04-14T16:12:45.773Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:12:45.792Z] GET /api/customers
+[2026-04-14T16:12:45.793Z] GET /api/business-units
+[2026-04-14T16:12:45.793Z] GET /api/users/roles
+[2026-04-14T16:12:45.806Z] GET /api/settings
+[2026-04-14T16:12:45.812Z] GET /api/permissions/my
+[2026-04-14T16:12:45.814Z] GET /api/group-projects
+[2026-04-14T16:12:45.834Z] GET /api/group-projects
+[2026-04-14T16:12:45.837Z] GET /api/group-projects
+[2026-04-14T16:12:46.132Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:12:49.028Z] GET /api/guides
+[2026-04-14T16:12:49.029Z] GET /api/group-leaders
+[2026-04-14T16:12:49.030Z] GET /api/markets
+[2026-04-14T16:12:49.037Z] GET /api/group-leaders
+[2026-04-14T16:12:49.059Z] GET /api/guides
+[2026-04-14T16:12:56.004Z] POST /api/guides
+[2026-04-14T16:12:56.043Z] GET /api/guides
+[2026-04-14T16:12:57.087Z] PUT /api/group-projects/181
+[2026-04-14T16:12:57.212Z] GET /api/group-projects
+[2026-04-14T16:13:00.660Z] GET /api/guides
+[2026-04-14T16:13:00.661Z] GET /api/group-leaders
+[2026-04-14T16:13:00.674Z] GET /api/guides
+[2026-04-14T16:13:00.685Z] GET /api/group-leaders
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[CSKH-Engine 2026-04-14T16:15:00.023Z] === START ===
+[CSKH-Engine 2026-04-14T16:15:00.177Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T16:15:00.185Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:15:00.186Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:15:00.187Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:15:00.189Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:15:00.212Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:15:00.213Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:15:00.213Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T16:15:00.213Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[CSKH-Engine 2026-04-14T16:30:00.011Z] === START ===
+[CSKH-Engine 2026-04-14T16:30:00.020Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T16:30:00.033Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:30:00.034Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:30:00.035Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:30:00.037Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:30:00.058Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:30:00.059Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:30:00.059Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T16:30:00.059Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T16:33:44.292Z] GET /api/marketing-ads?bu_name=All&year=2026&month=4&week_number=
+[2026-04-14T16:33:44.296Z] GET /api/marketing-ads/kpis?year=2026
+[2026-04-14T16:33:44.297Z] GET /api/leads
+[2026-04-14T16:33:44.300Z] GET /api/departures
+[2026-04-14T16:33:44.304Z] GET /api/tours
+[2026-04-14T16:33:44.305Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:33:44.406Z] GET /api/users
+[2026-04-14T16:33:44.409Z] GET /api/settings
+[2026-04-14T16:33:44.410Z] GET /api/guides
+[2026-04-14T16:33:44.411Z] GET /api/business-units
+[2026-04-14T16:33:44.414Z] GET /api/permissions/my
+[2026-04-14T16:33:44.422Z] GET /api/users/roles
+[2026-04-14T16:33:44.422Z] GET /api/customers
+[2026-04-14T16:33:44.424Z] GET /api/marketing-ads?bu_name=All&year=2026&month=4&week_number=
+[2026-04-14T16:33:44.428Z] GET /api/marketing-ads/kpis?year=2026
+[2026-04-14T16:33:44.461Z] GET /api/marketing-ads?bu_name=All&year=2026&month=4&week_number=
+[2026-04-14T16:33:44.463Z] GET /api/marketing-ads/kpis?year=2026
+[2026-04-14T16:33:44.465Z] GET /api/marketing-ads?bu_name=All&year=2026&month=4&week_number=
+[2026-04-14T16:33:44.469Z] GET /api/marketing-ads/kpis?year=2026
+[2026-04-14T16:33:44.778Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:33:49.025Z] GET /api/customers/events/all?start_date=2026-04-01&end_date=2026-04-30
+[CUSTOMER EVENTS] Fetching events from 2026-04-01 to 2026-04-30
+[2026-04-14T16:33:49.055Z] GET /api/customers/events/all?start_date=2026-04-01&end_date=2026-04-30
+[CUSTOMER EVENTS] Fetching events from 2026-04-01 to 2026-04-30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T16:34:36.017Z] GET /api/users/teams
+[2026-04-14T16:34:36.033Z] GET /api/users/teams
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T16:40:10.683Z] GET /api/leads
+[2026-04-14T16:40:10.690Z] GET /api/tours
+[2026-04-14T16:40:10.698Z] GET /api/departures
+[2026-04-14T16:40:10.703Z] GET /api/settings
+[2026-04-14T16:40:10.707Z] GET /api/guides
+[2026-04-14T16:40:10.709Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:40:10.713Z] GET /api/customers
+[2026-04-14T16:40:10.803Z] GET /api/users
+[2026-04-14T16:40:10.805Z] GET /api/business-units
+[2026-04-14T16:40:10.812Z] GET /api/permissions/my
+[2026-04-14T16:40:11.592Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:40:35.356Z] GET /api/leads
+[2026-04-14T16:40:35.363Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:40:35.364Z] GET /api/customers
+[2026-04-14T16:40:35.366Z] GET /api/tours
+[2026-04-14T16:40:35.368Z] GET /api/departures
+[2026-04-14T16:40:35.368Z] GET /api/users
+[2026-04-14T16:40:35.391Z] GET /api/settings
+[2026-04-14T16:40:35.398Z] GET /api/guides
+[2026-04-14T16:40:35.400Z] GET /api/business-units
+[2026-04-14T16:40:35.502Z] GET /api/reminders/today
+[2026-04-14T16:40:35.506Z] GET /api/permissions/my
+[2026-04-14T16:40:35.507Z] GET /api/users/roles
+[2026-04-14T16:40:35.517Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-14T16:40:35.519Z] GET /api/reminders/today
+[2026-04-14T16:40:35.537Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-14T16:40:35.617Z] GET /api/leads
+[2026-04-14T16:40:35.617Z] GET /api/tours
+[2026-04-14T16:40:35.618Z] GET /api/departures
+[2026-04-14T16:40:35.618Z] GET /api/settings
+[2026-04-14T16:40:35.618Z] GET /api/guides
+[2026-04-14T16:40:35.619Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:40:35.620Z] GET /api/customers
+[2026-04-14T16:40:35.626Z] GET /api/users
+[2026-04-14T16:40:35.708Z] GET /api/business-units
+[2026-04-14T16:40:35.708Z] GET /api/permissions/my
+[2026-04-14T16:40:35.795Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:40:36.583Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:40:52.788Z] GET /api/leads
+[2026-04-14T16:40:52.789Z] GET /api/tours
+[2026-04-14T16:40:52.790Z] GET /api/departures
+[2026-04-14T16:40:52.790Z] GET /api/guides
+[2026-04-14T16:40:52.790Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:40:52.790Z] GET /api/customers
+[2026-04-14T16:40:52.805Z] GET /api/users
+[2026-04-14T16:40:52.813Z] GET /api/settings
+[2026-04-14T16:40:52.819Z] GET /api/users/roles
+[2026-04-14T16:40:52.824Z] GET /api/business-units
+[2026-04-14T16:40:52.928Z] GET /api/permissions/my
+[2026-04-14T16:40:52.930Z] GET /api/users/roles
+[2026-04-14T16:40:53.279Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:40:53.602Z] GET /api/leads
+[2026-04-14T16:40:53.603Z] GET /api/settings
+[2026-04-14T16:40:53.605Z] GET /api/tours
+[2026-04-14T16:40:53.605Z] GET /api/customers
+[2026-04-14T16:40:53.605Z] GET /api/users
+[2026-04-14T16:40:53.606Z] GET /api/departures
+[2026-04-14T16:40:53.606Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:40:53.612Z] GET /api/business-units
+[2026-04-14T16:40:53.690Z] GET /api/permissions/my
+[2026-04-14T16:40:53.691Z] GET /api/guides
+[2026-04-14T16:40:54.590Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T16:42:58.506Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-14T16:42:58.510Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-14T16:42:58.512Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:42:58.514Z] GET /api/reminders/today
+[2026-04-14T16:42:58.515Z] GET /api/reminders/today
+[2026-04-14T16:42:58.517Z] GET /api/leads
+[2026-04-14T16:42:58.605Z] GET /api/tours
+[2026-04-14T16:42:58.608Z] GET /api/departures
+[2026-04-14T16:42:58.609Z] GET /api/guides
+[2026-04-14T16:42:58.610Z] GET /api/customers
+[2026-04-14T16:42:58.610Z] GET /api/users
+[2026-04-14T16:42:58.616Z] GET /api/settings
+[2026-04-14T16:42:58.639Z] GET /api/business-units
+[2026-04-14T16:42:58.640Z] GET /api/permissions/my
+[2026-04-14T16:42:58.662Z] GET /api/users/roles
+[2026-04-14T16:42:58.665Z] GET /api/reminders/today
+[2026-04-14T16:42:58.666Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-14T16:42:58.667Z] GET /api/reminders/today
+[2026-04-14T16:42:58.667Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-14T16:42:58.957Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T16:44:38.686Z] GET /api/leads
+[2026-04-14T16:44:38.688Z] GET /api/guides
+[2026-04-14T16:44:38.690Z] GET /api/tours
+[2026-04-14T16:44:38.691Z] GET /api/customers
+[2026-04-14T16:44:38.692Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:44:38.692Z] GET /api/users
+[2026-04-14T16:44:38.734Z] GET /api/departures
+[2026-04-14T16:44:38.837Z] GET /api/settings
+[2026-04-14T16:44:38.838Z] GET /api/business-units
+[2026-04-14T16:44:38.839Z] GET /api/users/roles
+[2026-04-14T16:44:38.840Z] GET /api/permissions/my
+[2026-04-14T16:44:38.854Z] GET /api/users/roles
+[2026-04-14T16:44:39.178Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:44:39.623Z] GET /api/leads
+[2026-04-14T16:44:39.624Z] GET /api/settings
+[2026-04-14T16:44:39.626Z] GET /api/departures
+[2026-04-14T16:44:39.626Z] GET /api/tours
+[2026-04-14T16:44:39.626Z] GET /api/customers
+[2026-04-14T16:44:39.626Z] GET /api/guides
+[2026-04-14T16:44:39.627Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:44:39.633Z] GET /api/users
+[2026-04-14T16:44:39.644Z] GET /api/business-units
+[2026-04-14T16:44:39.646Z] GET /api/permissions/my
+[2026-04-14T16:44:40.588Z] GET /api/bookings?page=1&limit=30
+[CSKH-Engine 2026-04-14T16:45:00.038Z] === START ===
+[CSKH-Engine 2026-04-14T16:45:00.052Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T16:45:00.062Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:45:00.064Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:45:00.065Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:45:00.066Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:45:00.087Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:45:00.088Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T16:45:00.089Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T16:45:00.089Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T16:46:31.527Z] GET /api/leads
+[2026-04-14T16:46:31.531Z] GET /api/guides
+[2026-04-14T16:46:31.532Z] GET /api/departures
+[2026-04-14T16:46:31.533Z] GET /api/customers
+[2026-04-14T16:46:31.533Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:46:31.534Z] GET /api/users
+[2026-04-14T16:46:31.683Z] GET /api/business-units
+[2026-04-14T16:46:31.685Z] GET /api/permissions/my
+[2026-04-14T16:46:31.686Z] GET /api/users/roles
+[2026-04-14T16:46:31.692Z] GET /api/tours
+[2026-04-14T16:46:31.692Z] GET /api/settings
+[2026-04-14T16:46:31.966Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T16:47:08.925Z] GET /api/leads
+[2026-04-14T16:47:08.926Z] GET /api/tours
+[2026-04-14T16:47:08.926Z] GET /api/departures
+[2026-04-14T16:47:08.927Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:47:08.927Z] GET /api/guides
+[2026-04-14T16:47:08.927Z] GET /api/customers
+[2026-04-14T16:47:08.954Z] GET /api/users
+[2026-04-14T16:47:09.058Z] GET /api/settings
+[2026-04-14T16:47:09.091Z] GET /api/business-units
+[2026-04-14T16:47:09.093Z] GET /api/permissions/my
+[2026-04-14T16:47:09.094Z] GET /api/users/roles
+[2026-04-14T16:47:09.123Z] GET /api/users/roles
+[2026-04-14T16:47:09.423Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:47:09.616Z] GET /api/leads
+[2026-04-14T16:47:09.617Z] GET /api/settings
+[2026-04-14T16:47:09.618Z] GET /api/guides
+[2026-04-14T16:47:09.619Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:47:09.619Z] GET /api/customers
+[2026-04-14T16:47:09.620Z] GET /api/users
+[2026-04-14T16:47:09.620Z] GET /api/tours
+[2026-04-14T16:47:09.714Z] GET /api/departures
+[2026-04-14T16:47:09.715Z] GET /api/business-units
+[2026-04-14T16:47:09.716Z] GET /api/permissions/my
+[2026-04-14T16:47:10.584Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:47:25.510Z] GET /api/leads
+[2026-04-14T16:47:25.511Z] GET /api/departures
+[2026-04-14T16:47:25.512Z] GET /api/guides
+[2026-04-14T16:47:25.512Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:47:25.513Z] GET /api/customers
+[2026-04-14T16:47:25.513Z] GET /api/tours
+[2026-04-14T16:47:25.531Z] GET /api/users
+[2026-04-14T16:47:25.539Z] GET /api/settings
+[2026-04-14T16:47:25.634Z] GET /api/business-units
+[2026-04-14T16:47:25.635Z] GET /api/permissions/my
+[2026-04-14T16:47:25.636Z] GET /api/users/roles
+[2026-04-14T16:47:25.668Z] GET /api/leads
+[2026-04-14T16:47:25.670Z] GET /api/settings
+[2026-04-14T16:47:25.671Z] GET /api/tours
+[2026-04-14T16:47:25.673Z] GET /api/departures
+[2026-04-14T16:47:25.673Z] GET /api/guides
+[2026-04-14T16:47:25.674Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:47:25.674Z] GET /api/users/roles
+[2026-04-14T16:47:25.674Z] GET /api/customers
+[2026-04-14T16:47:25.682Z] GET /api/users
+[2026-04-14T16:47:25.701Z] GET /api/business-units
+[2026-04-14T16:47:25.711Z] GET /api/permissions/my
+[2026-04-14T16:47:26.008Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:47:26.587Z] GET /api/bookings?page=1&limit=30

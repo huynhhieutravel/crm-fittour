@@ -195,3 +195,14 @@
 10:55:13 PM [vite] (client) hmr update /src/tabs/GroupDashboardTab.jsx
 11:00:51 PM [vite] (client) hmr update /src/tabs/GroupDashboardTab.jsx
 11:01:08 PM [vite] (client) hmr update /src/tabs/GroupDashboardTab.jsx
+11:09:23 PM [vite] (client) hmr update /src/components/modals/GroupProjectDetailDrawer.jsx
+11:09:27 PM [vite] (client) ✨ new dependencies optimized: react-select/creatable
+11:09:27 PM [vite] (client) ✨ optimized dependencies changed. reloading
+11:40:09 PM [vite] (client) hmr update /src/App.jsx
+11:40:35 PM [vite] (client) hmr update /src/App.jsx
+11:40:52 PM [vite] (client) hmr update /src/App.jsx
+11:44:21 PM [vite] (client) hmr update /src/tabs/UsersTab.jsx
+11:44:38 PM [vite] (client) hmr update /src/App.jsx
+11:47:08 PM [vite] (client) hmr update /src/App.jsx
+11:47:25 PM [vite] (client) hmr update /src/App.jsx
+11:47:47 PM [vite] (client) hmr update /src/tabs/UsersTab.jsx

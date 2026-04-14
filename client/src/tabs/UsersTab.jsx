@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Search, UserPlus, Shield, Edit3, Key, Trash2, Mail, Clock, UserCog, Users, Phone, Calendar, Cake } from 'lucide-react';
-import StaffCalendarView from '../components/StaffCalendarView';
+import { Search, UserPlus, Shield, Edit3, Key, Trash2, Mail, Clock, UserCog, Users, Phone } from 'lucide-react';
 
 const UsersTab = ({ 
   users, 
@@ -18,7 +17,6 @@ const UsersTab = ({
   const [selectedRole, setSelectedRole] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   const [selectedTeam, setSelectedTeam] = useState('ALL');
-  const [subView, setSubView] = useState('list'); // 'list' | 'calendar'
 
   // Extract unique teams from users (now users have `teams` array)
   const allTeamNames = [...new Set(users.flatMap(u => (u.teams || []).map(t => t.name)).filter(Boolean))];
@@ -51,42 +49,6 @@ const UsersTab = ({
 
   return (
     <div className="animate-fade-in">
-      {/* Sub-tab Navigation */}
-      <div style={{ display: 'flex', gap: '4px', background: '#f1f5f9', borderRadius: '10px', padding: '4px', marginBottom: '1.25rem', width: 'fit-content' }}>
-        <button
-          onClick={() => setSubView('list')}
-          style={{
-            padding: '8px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-            fontSize: '0.85rem', fontWeight: 700,
-            background: subView === 'list' ? '#3b82f6' : 'transparent',
-            color: subView === 'list' ? '#fff' : '#64748b',
-            display: 'flex', alignItems: 'center', gap: '6px',
-            transition: 'all 0.2s'
-          }}
-        >
-          <Users size={15} /> Danh sách
-        </button>
-        <button
-          onClick={() => setSubView('calendar')}
-          style={{
-            padding: '8px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-            fontSize: '0.85rem', fontWeight: 700,
-            background: subView === 'calendar' ? '#3b82f6' : 'transparent',
-            color: subView === 'calendar' ? '#fff' : '#64748b',
-            display: 'flex', alignItems: 'center', gap: '6px',
-            transition: 'all 0.2s'
-          }}
-        >
-          <Cake size={15} /> Lịch Nhân sự
-        </button>
-      </div>
-
-      {subView === 'calendar' && (
-        <StaffCalendarView users={users} />
-      )}
-
-      {subView === 'list' && (
-      <>
       <div className="filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: '300px', flexWrap: 'wrap' }}>
           <div className="filter-group" style={{ flex: 2, minWidth: '200px' }}>
@@ -317,8 +279,6 @@ const UsersTab = ({
           </tbody>
         </table>
       </div>
-      </>
-      )}
     </div>
   );
 };
