@@ -206,6 +206,13 @@ const GroupDashboardTab = () => {
   const totalPax = stats.kpi.total_pax || 0;
   const totalRevenue = stats.kpi.total_revenue ? Number(stats.kpi.total_revenue) : 0;
   const totalProfit = stats.kpi.total_profit ? Number(stats.kpi.total_profit) : 0;
+  const wonProjects = stats.kpi.won_projects ? Number(stats.kpi.won_projects) : 0;
+
+  // Derived KPIs
+  const winRate = totalProjects > 0 ? ((wonProjects / totalProjects) * 100).toFixed(1) : '0.0';
+  const avgDealSize = wonProjects > 0 ? totalRevenue / wonProjects : 0;
+  const revenuePerPax = totalPax > 0 ? totalRevenue / totalPax : 0;
+  const avgProfitMargin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : '0.0';
 
   const STATUS_COLORS = {
     "Mới": "#3b82f6",
@@ -435,6 +442,50 @@ const GroupDashboardTab = () => {
               <Users size={14} />
               <span>Thị phần khách số lượng lớn</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Secondary KPI Insights Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ background: 'white', borderRadius: '14px', padding: '1.25rem 1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Target size={20} color="#2563eb" />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tỷ lệ chốt (Win Rate)</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#2563eb', letterSpacing: '-0.5px' }}>{winRate}%</div>
+            <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>{wonProjects}/{totalProjects} dự án</div>
+          </div>
+        </div>
+        <div style={{ background: 'white', borderRadius: '14px', padding: '1.25rem 1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #d1fae5, #a7f3d0)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <DollarSign size={20} color="#059669" />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>DT Trung bình / Deal</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#059669', letterSpacing: '-0.5px' }}>{formatMoneyLarge(avgDealSize)}</div>
+            <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>Trên {wonProjects} deal thành công</div>
+          </div>
+        </div>
+        <div style={{ background: 'white', borderRadius: '14px', padding: '1.25rem 1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #fef3c7, #fde68a)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Users size={20} color="#d97706" />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>DT / Khách (PAX)</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#d97706', letterSpacing: '-0.5px' }}>{formatMoneyLarge(revenuePerPax)}</div>
+            <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>Đo chất lượng đoàn</div>
+          </div>
+        </div>
+        <div style={{ background: 'white', borderRadius: '14px', padding: '1.25rem 1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #fce7f3, #fbcfe8)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <TrendingUp size={20} color="#db2777" />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Biên LN Trung bình</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#db2777', letterSpacing: '-0.5px' }}>{avgProfitMargin}%</div>
+            <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>Hiệu suất sinh lời</div>
           </div>
         </div>
       </div>

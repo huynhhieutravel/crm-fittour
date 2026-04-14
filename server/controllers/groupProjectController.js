@@ -172,7 +172,8 @@ exports.getProjectStats = async (req, res) => {
                 COUNT(*) as total_projects,
                 SUM(gp.expected_pax) as total_pax,
                 SUM(CASE WHEN gp.status IN ('Thành công', 'Đã quyết toán') THEN gp.total_revenue ELSE 0 END) as total_revenue,
-                SUM(CASE WHEN gp.status IN ('Thành công', 'Đã quyết toán') THEN gp.profit ELSE 0 END) as total_profit
+                SUM(CASE WHEN gp.status IN ('Thành công', 'Đã quyết toán') THEN gp.profit ELSE 0 END) as total_profit,
+                SUM(CASE WHEN gp.status IN ('Thành công', 'Đã quyết toán') THEN 1 ELSE 0 END) as won_projects
             FROM group_projects gp
             WHERE ${timeCondition}
         `;
