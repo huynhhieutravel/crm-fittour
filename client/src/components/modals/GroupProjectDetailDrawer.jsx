@@ -132,7 +132,8 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
             ...base, height: '40px', minHeight: '40px', borderRadius: '8px', 
             borderColor: '#cbd5e1', boxShadow: 'none', '&:hover': { borderColor: '#94a3b8' }
         }),
-        valueContainer: (base) => ({ ...base, padding: '0 12px', height: '38px', display: 'flex', alignItems: 'center' })
+        valueContainer: (base) => ({ ...base, padding: '0 12px', height: '38px', display: 'flex', alignItems: 'center' }),
+        menuPortal: (base) => ({ ...base, zIndex: 100000 })
     };
 
     const leaderOptions = leaders.map(l => ({ value: l.id, label: `${l.name} - ${l.company_name || 'Khách Lẻ'}` }));
@@ -184,8 +185,9 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                 </div>
 
                 {/* BODY */}
-                <div className="mobile-stack-grid mobile-stack-grid" style={{ flex: 1, overflowY: 'auto', padding: '2.5rem', display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: '2rem', alignContent: 'start' }}>
-                    <div className="card" style={{ background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                    <div className="mobile-stack-grid mobile-stack-grid" style={{ padding: '2.5rem', paddingBottom: '1.5rem', display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: '2rem', alignContent: 'start' }}>
+                        <div className="card" style={{ background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                         <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1rem', fontWeight: 700, color: '#475569', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Activity size={18} color="#94a3b8" /> THÔNG TIN CƠ BẢN
                         </h3>
@@ -364,6 +366,7 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                                             value={guide || null}
                                             menuPlacement="bottom"
                                             menuPosition="fixed"
+                                            menuPortalTarget={document.body}
                                             onChange={o => {
                                                 const newIds = [...formData.guide_ids];
                                                 newIds[idx] = o ? o.value : null;
@@ -433,6 +436,7 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                             Chưa có hướng dẫn viên nào được chỉ định
                         </div>
                     )}
+                </div>
                 </div>
 
                 {/* FOOTER */}
