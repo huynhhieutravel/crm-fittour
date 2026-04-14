@@ -210,181 +210,199 @@ const OrgChartTab = ({ currentUser, addToast }) => {
     const handleAutoGenerate = () => {
         const newNodes = [];
         const newEdges = [];
-        
-        // CEO
-        const ceoId = 'node_ceo_1';
-        newNodes.push({
-            id: ceoId,
-            type: 'custom',
-            position: { x: 400, y: 50 },
-            data: { label: 'BAN ĐIỀU HÀNH', position: 'Ban Giám Đốc', roleType: 'CEO', avatarUrl: '' }
-        });
+        const edgeStyle = { stroke: '#94a3b8', strokeWidth: 2 };
+        const greenEdge = { stroke: '#22c55e', strokeWidth: 2 };
+        let nodeCounter = 0;
+        const mkId = () => `node_auto_${++nodeCounter}`;
 
-        const teamNodeIds = {}; // team_id -> node_id
+        const addNode = (id, x, y, label, position, roleType) => {
+            newNodes.push({ id, type: 'custom', position: { x, y }, data: { label, position, roleType, avatarUrl: '' } });
+        };
+        const addEdge = (src, tgt, style = edgeStyle) => {
+            newEdges.push({ id: `edge_${src}_${tgt}`, source: src, target: tgt, animated: true, style });
+        };
 
-        // Create Master Phòng Sale
-        const saleMasterId = 'node_master_sale';
-        newNodes.push({
-            id: saleMasterId,
-            type: 'custom',
-            position: { x: 300, y: 180 },
-            data: { label: 'Khối Kinh Doanh (Sale)', position: 'Quản Trị Tích Hợp', roleType: 'BU', avatarUrl: '' }
-        });
-        newEdges.push({
-            id: `edge_${ceoId}_${saleMasterId}`,
-            source: ceoId,
-            target: saleMasterId,
-            animated: true,
-            style: { stroke: '#94a3b8', strokeWidth: 2 }
-        });
-
-        // Create 4 BU Nodes under Master Sale
-        const buNodes = ['BU1', 'BU2', 'BU3', 'BU4'];
-        const buNodeIds = [];
-        buNodes.forEach((bu, i) => {
-            const buId = `node_bu_${i+1}`;
-            buNodeIds.push(buId);
-            newNodes.push({
-                id: buId,
-                type: 'custom',
-                position: { x: (i * 260) - 100, y: 320 },
-                data: { label: `Khối Sale ${bu}`, position: 'Kinh Doanh', roleType: 'MANAGER', avatarUrl: '' }
-            });
-            newEdges.push({
-                id: `edge_${saleMasterId}_${buId}`,
-                source: saleMasterId,
-                target: buId,
-                animated: true,
-                style: { stroke: '#94a3b8', strokeWidth: 2 }
-            });
-        });
-
-        // Team Nodes (Khối BU / Phòng)
-        teamsList.forEach((t, i) => {
-            const tId = `node_team_${t.id}`;
-            teamNodeIds[t.id] = tId;
-            const isSale = t.name.toLowerCase().includes('sale');
-            
-            // Assign randomly or sequentially to a BU if it's a sale team
-            let parentId = ceoId;
-            let targetY = 180;
-            let targetX = (i * 280) + 700; // Push non-sale to the right
-
-            if (isSale) {
-                const buIndex = i % 4; // Assign evenly to BU1-BU4
-                parentId = buNodeIds[buIndex];
-                targetY = 460;
-                targetX = (buIndex * 260) - 100 + ((i % 2) * 120 - 60); // slight stagger
-            }
-
-            newNodes.push({
-                id: tId,
-                type: 'custom',
-                position: { x: targetX, y: targetY },
-                data: { label: t.name, position: 'Cấp Phòng Ban', roleType: 'BU', avatarUrl: '' }
-            });
-            newEdges.push({
-                id: `edge_${parentId}_${tId}`,
-                source: parentId,
-                target: tId,
-                animated: true,
-                style: { stroke: '#94a3b8', strokeWidth: 2 }
-            });
-        });
-
-        const teamMemberCount = {};
-
-        usersList.forEach(u => {
-            if (!u.is_active) return;
-            
-            let targetTeamId = null;
-            let targetBuId = null;
-            let isManager = false;
-            
-            if (u.username) {
-                const un = u.username.toLowerCase();
-                if (un.startsWith('hi')) targetBuId = buNodeIds[3]; // BU4
-                else if (un.startsWith('sv')) targetBuId = buNodeIds[2]; // BU3
-                else if (un.startsWith('tq')) targetBuId = buNodeIds[0]; // BU1
-                else if (un.startsWith('gu')) targetBuId = buNodeIds[1]; // BU2
-            }
-
-            if (!targetBuId && u.teams && u.teams.length > 0) {
-                targetTeamId = u.teams[0].id;
-            }
-            if (u.role_name === 'manager' || u.position?.toLowerCase().includes('trưởng')) {
-                isManager = true;
-            }
-
-            const roleType = isManager ? 'MANAGER' : 'STAFF';
-            const uId = `node_user_${u.id}`;
-            let x = 0;
-            let y = 0;
-
-            if (targetBuId) {
-                const buNodeIdx = newNodes.findIndex(n => n.id === targetBuId);
-                const buX = buNodeIdx >= 0 ? newNodes[buNodeIdx].position.x : 0;
-                const buY = buNodeIdx >= 0 ? newNodes[buNodeIdx].position.y : 0;
-
-                const count = teamMemberCount[targetBuId] || 0;
-                
-                // Stagger columns slightly for a neat layout inside the BU block
-                x = buX + ((count % 2 === 0) ? -80 : 80);
-                y = buY + 160 + (Math.floor(count / 2) * 110);
-                teamMemberCount[targetBuId] = count + 1;
-
-                newEdges.push({
-                    id: `edge_${targetBuId}_${uId}`,
-                    source: targetBuId,
-                    target: uId,
-                    animated: true,
-                    style: { stroke: '#22c55e', strokeWidth: 2 } // Green line for members
-                });
-            } else if (targetTeamId && teamNodeIds[targetTeamId]) {
-                const teamNodeIdx = newNodes.findIndex(n => n.id === teamNodeIds[targetTeamId]);
-                const teamX = teamNodeIdx >= 0 ? newNodes[teamNodeIdx].position.x : 0;
-                const teamY = teamNodeIdx >= 0 ? newNodes[teamNodeIdx].position.y : 0;
-
-                const count = teamMemberCount[targetTeamId] || 0;
-                
-                x = teamX;
-                y = teamY + 140 + (count * 100);
-                teamMemberCount[targetTeamId] = count + 1;
-
-                newEdges.push({
-                    id: `edge_${teamNodeIds[targetTeamId]}_${uId}`,
-                    source: teamNodeIds[targetTeamId],
-                    target: uId,
-                    animated: true,
-                    style: { stroke: '#94a3b8', strokeWidth: 2 }
-                });
-            } else {
-                // Unassigned
-                if (u.role_name === 'admin') return; 
-                const count = teamMemberCount['unassigned'] || 0;
-                x = -280;
-                y = 220 + (count * 120);
-                teamMemberCount['unassigned'] = count + 1;
-            }
-
-            newNodes.push({
-                id: uId,
-                type: 'custom',
-                position: { x, y },
-                data: { 
-                    label: u.full_name, 
-                    position: u.position || u.role_name, 
-                    roleType: roleType, 
-                    avatarUrl: u.avatar_url || '',
-                    userId: u.id
+        // Try to link user by username
+        const linkUser = (nodeId, username) => {
+            const u = usersList.find(usr => usr.username?.toLowerCase() === username.toLowerCase());
+            if (u) {
+                const node = newNodes.find(n => n.id === nodeId);
+                if (node) {
+                    node.data.label = u.full_name || node.data.label;
+                    node.data.avatarUrl = u.avatar_url || '';
+                    node.data.userId = u.id;
                 }
-            });
+            }
+        };
+
+        // ═══════════════════════════════════════════
+        //  1. CEO - Max Vũ
+        // ═══════════════════════════════════════════
+        const ceoId = mkId();
+        addNode(ceoId, 650, 30, 'Max Vũ', 'CEO', 'CEO');
+        linkUser(ceoId, 'admin');
+
+        // ═══════════════════════════════════════════
+        //  2. Phó Giám đốc - Vy Phan
+        // ═══════════════════════════════════════════
+        const viceId = mkId();
+        addNode(viceId, 630, 140, 'Vy Phan', 'Phó Giám đốc', 'CEO');
+        linkUser(viceId, 'sv1.sale');
+        addEdge(ceoId, viceId);
+
+        // ═══════════════════════════════════════════
+        //  3. KHỐI SALE BU1
+        // ═══════════════════════════════════════════
+        const bu1Id = mkId();
+        addNode(bu1Id, -50, 280, 'Khối Sale BU1', '', 'BU');
+        addEdge(viceId, bu1Id);
+
+        const bu1Head = mkId();
+        addNode(bu1Head, -60, 390, 'Trần Quốc Thịnh', 'Trưởng phòng BU1', 'MANAGER');
+        linkUser(bu1Head, 'tq1.sale');
+        addEdge(bu1Id, bu1Head, greenEdge);
+
+        const bu1Staff = [
+            { name: 'Nguyễn Hồ Đông Hải', pos: 'Lead Điều hành', user: 'tq2.sale' },
+            { name: 'Đoàn Thủy An', pos: 'sales', user: 'tq3.sale' },
+            { name: 'Nguyễn Quỳnh Phương', pos: 'sales', user: 'tq5.sale' },
+            { name: 'Trần Minh Dũng', pos: 'Điều hành', user: 'dung.dh' },
+            { name: 'Nguyễn Hùng Thịnh', pos: 'sales', user: 'tq4.sale' },
+            { name: 'Lâm Mỹ Duyên', pos: 'sales', user: 'tq6.sale' },
+        ];
+        bu1Staff.forEach((s, i) => {
+            const sId = mkId();
+            addNode(sId, -60, 510 + i * 100, s.name, s.pos, 'STAFF');
+            linkUser(sId, s.user);
+            addEdge(bu1Head, sId, greenEdge);
+        });
+
+        // ═══════════════════════════════════════════
+        //  4. KHỐI SALE BU2
+        // ═══════════════════════════════════════════
+        const bu2Id = mkId();
+        addNode(bu2Id, 230, 280, 'Khối Sale BU2', '', 'BU');
+        addEdge(viceId, bu2Id);
+
+        const bu2Head = mkId();
+        addNode(bu2Head, 220, 390, 'Lê Minh Tuấn', 'Trưởng phòng BU2', 'MANAGER');
+        linkUser(bu2Head, 'gu1.sale');
+        addEdge(bu2Id, bu2Head, greenEdge);
+
+        const bu2Staff = [
+            { name: 'Bùi Ngọc Hiếu', pos: 'Phó phòng sales', user: 'gu2.sale' },
+            { name: 'Văn Tâm', pos: 'Visa', user: 'gu3.sale' },
+            { name: 'Dương Quỳnh Như', pos: 'sales', user: 'gu4.sale' },
+            { name: 'Nguyễn Thị Hằng', pos: 'Điều hành', user: 'hang.dh' },
+            { name: 'Lê Thanh Hà', pos: 'Điều hành', user: 'ha.dh' },
+        ];
+        bu2Staff.forEach((s, i) => {
+            const sId = mkId();
+            addNode(sId, 220, 510 + i * 100, s.name, s.pos, 'STAFF');
+            linkUser(sId, s.user);
+            addEdge(bu2Head, sId, greenEdge);
+        });
+
+        // ═══════════════════════════════════════════
+        //  5. KHỐI SALE BU3
+        // ═══════════════════════════════════════════
+        const bu3Id = mkId();
+        addNode(bu3Id, 510, 280, 'Khối Sale BU3', '', 'BU');
+        addEdge(viceId, bu3Id);
+
+        const bu3Head = mkId();
+        addNode(bu3Head, 500, 390, 'Vy Phan', 'Trưởng phòng BU3', 'MANAGER');
+        linkUser(bu3Head, 'sv1.sale');
+        addEdge(bu3Id, bu3Head, greenEdge);
+
+        const bu3Staff = [
+            { name: 'Hoàng Thị Hoa', pos: 'Lead team sale', user: 'sv4.sale' },
+            { name: 'Trần Đức Mẫn', pos: 'Lead Điều hành', user: 'sv2.sale' },
+            { name: 'Hậu Quang Hưng', pos: 'sales', user: 'sv3.sale' },
+            { name: 'Nguyễn Huỳnh Hồng Trang', pos: 'sales', user: 'sv5.sale' },
+            { name: 'Lê Thị Trang', pos: 'sales', user: 'sv6.sale' },
+            { name: 'Phạm Thụy', pos: 'Điều hành', user: 'sv7.sale' },
+        ];
+        bu3Staff.forEach((s, i) => {
+            const sId = mkId();
+            addNode(sId, 500, 510 + i * 100, s.name, s.pos, 'STAFF');
+            linkUser(sId, s.user);
+            addEdge(bu3Head, sId, greenEdge);
+        });
+
+        // ═══════════════════════════════════════════
+        //  6. KHỐI SALE BU4
+        // ═══════════════════════════════════════════
+        const bu4Id = mkId();
+        addNode(bu4Id, 790, 280, 'Khối Sale BU4', '', 'BU');
+        addEdge(viceId, bu4Id);
+
+        const bu4Head = mkId();
+        addNode(bu4Head, 780, 390, 'Hồng Trang', 'Trưởng phòng BU4', 'MANAGER');
+        linkUser(bu4Head, 'hi1.sale');
+        addEdge(bu4Id, bu4Head, greenEdge);
+
+        const bu4Staff = [
+            { name: 'Max Vũ', pos: 'sales', user: 'hi2.sale' },
+            { name: 'Huy Ngô', pos: 'sales', user: 'hi3.sale' },
+        ];
+        bu4Staff.forEach((s, i) => {
+            const sId = mkId();
+            addNode(sId, 780, 510 + i * 100, s.name, s.pos, 'STAFF');
+            linkUser(sId, s.user);
+            addEdge(bu4Head, sId, greenEdge);
+        });
+
+        // ═══════════════════════════════════════════
+        //  7. KẾ TOÁN
+        // ═══════════════════════════════════════════
+        const ktId = mkId();
+        addNode(ktId, 1050, 280, 'Kế Toán', '', 'BU');
+        addEdge(viceId, ktId);
+
+        const ktHead = mkId();
+        addNode(ktHead, 1040, 390, 'Nguyễn Xuân', 'Trưởng phòng', 'MANAGER');
+        linkUser(ktHead, 'xuan.kt');
+        addEdge(ktId, ktHead, greenEdge);
+
+        const ktStaff = [
+            { name: 'Bảo Ngọc', pos: 'kế toán', user: 'bngoc.kt' },
+            { name: 'Hiếu Thảo', pos: 'kế toán', user: 'hthao.kt' },
+        ];
+        ktStaff.forEach((s, i) => {
+            const sId = mkId();
+            addNode(sId, 1040, 510 + i * 100, s.name, s.pos, 'STAFF');
+            linkUser(sId, s.user);
+            addEdge(ktHead, sId, greenEdge);
+        });
+
+        // ═══════════════════════════════════════════
+        //  8. MARKETING
+        // ═══════════════════════════════════════════
+        const mktId = mkId();
+        addNode(mktId, 1310, 280, 'Marketing', '', 'BU');
+        addEdge(viceId, mktId);
+
+        const mktHead = mkId();
+        addNode(mktHead, 1300, 390, 'Trọng Hiếu', 'Trưởng phòng', 'MANAGER');
+        linkUser(mktHead, 'hi.mkt');
+        addEdge(mktId, mktHead, greenEdge);
+
+        const mktStaff = [
+            { name: 'Hải Long', pos: 'Fanpage', user: 'long.mkt' },
+            { name: 'Nhân sự', pos: 'marketing', user: 'ns.mkt' },
+        ];
+        mktStaff.forEach((s, i) => {
+            const sId = mkId();
+            addNode(sId, 1300, 510 + i * 100, s.name, s.pos, 'STAFF');
+            linkUser(sId, s.user);
+            addEdge(mktHead, sId, greenEdge);
         });
 
         setNodes(newNodes);
         setEdges(newEdges);
         setIsEditing(true);
-        if(addToast) addToast('Đã tự động khởi tạo dữ liệu! Bạn có thể kéo thả chỉnh sửa.', 'success');
+        if(addToast) addToast('Đã tự động khởi tạo sơ đồ tổ chức 04/2026! Bạn có thể kéo thả chỉnh sửa rồi Lưu.', 'success');
     };
 
     if (loading) return <div style={{ padding: '2rem' }}>Đang tải Sơ đồ tổ chức...</div>;
