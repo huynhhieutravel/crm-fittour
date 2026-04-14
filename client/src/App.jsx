@@ -2570,7 +2570,7 @@ function AppContent() {
             activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
           }</h1>
           </div>
-          <div className="user-profile">
+          <div className="user-profile" onClick={() => navigate('/my-profile')} style={{ cursor: 'pointer' }} title="Trang cá nhân">
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{user?.username || 'Người dùng'}</div>
               <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{user?.role?.toUpperCase() || 'NHÂN VIÊN'}</div>
