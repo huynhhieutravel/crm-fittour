@@ -1996,7 +1996,7 @@ function AppContent() {
               <div className="nav-section-title">Hệ thống & Nhân sự</div>
               {checkView('users') && (
                 <div 
-                  className={`nav-item ${['users','staff-calendar','teams'].includes(activeTab) ? 'active' : ''}`} 
+                  className={`nav-item ${['users','staff-calendar','teams','team-directory','org-chart'].includes(activeTab) ? 'active' : ''}`} 
                   onClick={() => { navigate('/users'); setActiveTab('users'); }}
                   style={{ justifyContent: 'space-between' }}
                   onMouseEnter={(e) => {
@@ -2073,12 +2073,6 @@ function AppContent() {
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <div className={`nav-item ${activeTab === 'team-directory' ? 'active' : ''}`} onClick={() => { navigate('/team-directory'); setActiveTab('team-directory'); }} style={{ color: '#f59e0b', background: activeTab === 'team-directory' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(245, 158, 11, 0.03)', marginBottom: '5px' }}>
-              <Users size={18} /> <strong>NHÂN SỰ FIT TOUR</strong>
-            </div>
-            <div className={`nav-item ${activeTab === 'org-chart' ? 'active' : ''}`} onClick={() => { navigate('/org-chart'); setActiveTab('org-chart'); }} style={{ color: '#10b981', background: activeTab === 'org-chart' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.03)', marginBottom: '5px' }}>
-              <Target size={18} /> <strong>SƠ ĐỒ TỔ CHỨC</strong>
-            </div>
             <div className={`nav-item ${activeTab === 'my-profile' ? 'active' : ''}`} onClick={() => { navigate('/my-profile'); setActiveTab('my-profile'); }} style={{ color: '#a78bfa', background: activeTab === 'my-profile' ? 'rgba(167, 139, 250, 0.1)' : 'rgba(167, 139, 250, 0.03)', marginBottom: '5px' }}>
               <User size={18} /> <strong>TRANG CÁ NHÂN</strong>
             </div>
@@ -2480,6 +2474,18 @@ function AppContent() {
               🏢 Quản lý Team
             </div>
           )}
+          <div 
+            className={`submenu-item ${activeTab === 'team-directory' ? 'active' : ''}`} 
+            onClick={() => { navigate('/team-directory'); setActiveTab('team-directory'); setHoveredMenu(null); }}
+          >
+            📋 Danh bạ FIT Tour
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'org-chart' ? 'active' : ''}`} 
+            onClick={() => { navigate('/org-chart'); setActiveTab('org-chart'); setHoveredMenu(null); }}
+          >
+            📊 Sơ đồ Tổ chức
+          </div>
         </div>
       )}
 
