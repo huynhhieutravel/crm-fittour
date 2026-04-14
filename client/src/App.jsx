@@ -46,6 +46,7 @@ import StaffPerformanceTab from './tabs/StaffPerformanceTab';
 import GuidesTab from './tabs/GuidesTab';
 import MarketingAdsTab from './tabs/MarketingAdsTab';
 import UsersTab from './tabs/UsersTab';
+import StaffCalendarView from './components/StaffCalendarView';
 import TeamsTab from './tabs/TeamsTab';
 import ManualTab from './tabs/ManualTab';
 import MyProfileTab from './tabs/MyProfileTab';
@@ -149,7 +150,7 @@ function AppContent() {
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
     if (path.startsWith('group/')) return path.replace('/', '-');
-    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'my-profile', 'audit-logs'];
+    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'my-profile', 'audit-logs'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
 
@@ -162,7 +163,7 @@ function AppContent() {
     if (path.startsWith('guides')) { setActiveTab('guides'); return; }
     if (path.startsWith('manual')) { setActiveTab('manual'); return; }
     if (path.startsWith('group/')) { setActiveTab(path.replace('/', '-')); return; }
-    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'my-profile', 'audit-logs'];
+    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'my-profile', 'audit-logs'];
     
     // Extracted base path (e.g., departures/view/1 -> departures)
     const basePath = path.split('/')[0];
@@ -476,7 +477,7 @@ function AppContent() {
       return;
     }
     const path = fullPath.split('/')[0];
-    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'media-settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'group-dashboard'];
+    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'group-dashboard'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {
@@ -1998,6 +1999,11 @@ function AppContent() {
                   <UserCheck /> Quản lý Nhân sự
                 </div>
               )}
+              {checkView('users') && (
+                <div className={`nav-item ${activeTab === 'staff-calendar' ? 'active' : ''}`} onClick={() => navigate('/staff-calendar')}>
+                  <Calendar /> Lịch Nhân sự
+                </div>
+              )}
               {(user?.role === 'admin') && (
                 <div className={`nav-item ${activeTab === 'teams' ? 'active' : ''}`} onClick={() => navigate('/teams')}>
                   <Users /> Quản lý Team
@@ -2797,6 +2803,15 @@ function AppContent() {
             onEditRolePerms={() => setShowRolePermModal(true)}
             onEditUserPerms={(u) => setUserToEditPerms(u)}
           />
+        )}
+
+        {activeTab === 'staff-calendar' && (checkPerm('users', 'view') || user?.role === 'admin' || user?.role === 'manager') && (
+          <div className="content-area">
+            <div className="content-header">
+              <h1>Lịch Sinh nhật & Kỷ niệm Nhân sự</h1>
+            </div>
+            <StaffCalendarView users={users} />
+          </div>
         )}
 
         {activeTab === 'teams' && user?.role === 'admin' && (
