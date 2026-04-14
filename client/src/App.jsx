@@ -2029,7 +2029,7 @@ function AppContent() {
             <FileText /> Quy chế lương HDV
           </div>
           <div className={`nav-item ${activeTab === 'licenses' ? 'active' : ''}`} onClick={() => navigate('/licenses')}>
-            <FileText /> Giấy phép
+            <FileText /> Biểu Mẫu Văn Phòng
           </div>
           <div className={`nav-item ${activeTab === 'bu-rules' ? 'active' : ''}`} onClick={() => navigate('/bu-rules')}>
             <FileText /> Quy tắc chọn BU
@@ -2555,7 +2555,7 @@ function AppContent() {
             activeTab === 'management-dashboard' ? 'Tổng quan Marketing' :
             activeTab === 'bus' ? 'Quản lý Khối Kinh doanh (BU)' :
             activeTab === 'internal-docs' ? 'Quy chế lương HDV' :
-            activeTab === 'licenses' ? 'Giấy phép' :
+            activeTab === 'licenses' ? 'Biểu Mẫu Văn Phòng' :
             activeTab === 'bu-rules' ? 'Quy tắc chọn BU cho Lead' :
             activeTab === 'manual' ? 'Sổ tay HDSD CRM' :
             activeTab === 'op-tours' ? 'Lịch khởi hành' :

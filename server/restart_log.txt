@@ -789,3 +789,126 @@ Dạ hiện tại bên em có nhiều"
 [FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
 [FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
 [2026-04-14T14:24:34.553Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[CSKH-Engine 2026-04-14T14:30:00.004Z] === START ===
+[CSKH-Engine 2026-04-14T14:30:00.168Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T14:30:00.178Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:30:00.179Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:30:00.180Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:30:00.182Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:30:00.204Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:30:00.205Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:30:00.206Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T14:30:00.206Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T14:36:33.575Z] GET /api/leads
+[2026-04-14T14:36:33.584Z] GET /api/leads
+[2026-04-14T14:36:33.584Z] GET /api/tours
+[2026-04-14T14:36:33.584Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T14:36:33.585Z] GET /api/guides
+[2026-04-14T14:36:33.586Z] GET /api/settings
+[2026-04-14T14:36:33.593Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T14:36:33.594Z] GET /api/departures
+[2026-04-14T14:36:33.595Z] GET /api/tours
+[2026-04-14T14:36:33.595Z] GET /api/users
+[2026-04-14T14:36:33.595Z] GET /api/guides
+[2026-04-14T14:36:33.595Z] GET /api/departures
+[2026-04-14T14:36:33.602Z] GET /api/customers
+[2026-04-14T14:36:33.632Z] GET /api/customers
+[2026-04-14T14:36:33.655Z] GET /api/business-units
+[2026-04-14T14:36:33.759Z] GET /api/settings
+[2026-04-14T14:36:33.760Z] GET /api/permissions/my
+[2026-04-14T14:36:33.760Z] GET /api/users/roles
+[2026-04-14T14:36:33.812Z] GET /api/users/roles
+[2026-04-14T14:36:33.819Z] GET /api/users
+[2026-04-14T14:36:33.826Z] GET /api/business-units
+[2026-04-14T14:36:33.828Z] GET /api/permissions/my
+[2026-04-14T14:36:34.528Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T14:36:34.529Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T14:36:57.552Z] GET /api/leads
+[2026-04-14T14:36:57.557Z] GET /api/tours
+[2026-04-14T14:36:57.557Z] GET /api/departures
+[2026-04-14T14:36:57.558Z] GET /api/guides
+[2026-04-14T14:36:57.558Z] GET /api/leads
+[2026-04-14T14:36:57.558Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T14:36:57.559Z] GET /api/customers
+[2026-04-14T14:36:57.560Z] GET /api/settings
+[2026-04-14T14:36:57.561Z] GET /api/tours
+[2026-04-14T14:36:57.562Z] GET /api/departures
+[2026-04-14T14:36:57.563Z] GET /api/customers
+[2026-04-14T14:36:57.564Z] GET /api/guides
+[2026-04-14T14:36:57.565Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T14:36:57.581Z] GET /api/users
+[2026-04-14T14:36:57.657Z] GET /api/settings
+[2026-04-14T14:36:57.666Z] GET /api/business-units
+[2026-04-14T14:36:57.676Z] GET /api/permissions/my
+[2026-04-14T14:36:57.676Z] GET /api/users/roles
+[2026-04-14T14:36:57.677Z] GET /api/users
+[2026-04-14T14:36:57.739Z] GET /api/business-units
+[2026-04-14T14:36:57.741Z] GET /api/users/roles
+[2026-04-14T14:36:57.745Z] GET /api/permissions/my
+[2026-04-14T14:36:58.527Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T14:36:58.527Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1

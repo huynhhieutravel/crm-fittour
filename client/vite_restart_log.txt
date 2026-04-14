@@ -35,3 +35,5 @@
 9:23:34 PM [vite] (client) hmr update /src/App.jsx
 9:23:53 PM [vite] (client) hmr update /src/App.jsx
 9:24:33 PM [vite] (client) hmr update /src/tabs/TravelSupportTab.jsx
+9:36:33 PM [vite] (client) hmr update /src/App.jsx
+9:36:56 PM [vite] (client) hmr update /src/App.jsx
