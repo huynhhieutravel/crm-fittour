@@ -38,7 +38,7 @@ import {
 const GroupDashboardTab = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dateFilter, setDateFilter] = useState("month-select");
+  const [dateFilter, setDateFilter] = useState("year");
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedQuarter, setSelectedQuarter] = useState(
     Math.floor(new Date().getMonth() / 3) + 1,
@@ -292,10 +292,10 @@ const GroupDashboardTab = () => {
             {/* Advanced Filters Group */}
             <div className="segmented-control glass text-white">
               <button
-                onClick={() => setDateFilter("month-select")}
-                className={`segment-btn ${dateFilter === "month-select" ? "active" : ""}`}
+                onClick={() => setDateFilter("year")}
+                className={`segment-btn ${dateFilter === "year" ? "active" : ""}`}
               >
-                Tháng
+                Năm
               </button>
               <button
                 onClick={() => setDateFilter("quarter")}
@@ -304,10 +304,10 @@ const GroupDashboardTab = () => {
                 Quý
               </button>
               <button
-                onClick={() => setDateFilter("year")}
-                className={`segment-btn ${dateFilter === "year" ? "active" : ""}`}
+                onClick={() => setDateFilter("month-select")}
+                className={`segment-btn ${dateFilter === "month-select" ? "active" : ""}`}
               >
-                Năm
+                Tháng
               </button>
               <button
                 onClick={() => setDateFilter("custom")}
