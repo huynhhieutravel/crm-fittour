@@ -373,12 +373,15 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                     </td>
                                     <td style={{ padding: '10px 16px' }}>
                                         {p.guide_names && p.guide_names.length > 0 ? (
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                                {p.guide_names.map((name, i) => (
-                                                    <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '0.8rem', fontWeight: 600, color: '#92400e', background: '#fef3c7', padding: '3px 8px', borderRadius: '6px', border: '1px solid #fde68a' }}>
-                                                        <UserCheck size={11} /> {name}
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', maxWidth: '160px' }} title={p.guide_names.join(', ')}>
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '0.8rem', fontWeight: 600, color: '#92400e', background: '#fef3c7', padding: '3px 8px', borderRadius: '6px', border: '1px solid #fde68a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+                                                    <UserCheck size={11} style={{ flexShrink: 0 }} /> <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.guide_names[0]}</span>
+                                                </span>
+                                                {p.guide_names.length > 1 && (
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800, color: '#b45309', background: '#fffbeb', padding: '0 6px', borderRadius: '6px', border: '1px dashed #fcd34d', cursor: 'help' }}>
+                                                        +{p.guide_names.length - 1}
                                                     </span>
-                                                ))}
+                                                )}
                                             </div>
                                         ) : (
                                             <span style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>—</span>

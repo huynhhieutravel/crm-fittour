@@ -1048,3 +1048,65 @@ Dạ em gửi anh/chị thông tin"
 [2026-04-14T15:04:08.984Z] GET /api/users
 [2026-04-14T15:04:16.949Z] GET /api/users
 [2026-04-14T15:04:26.006Z] GET /api/users
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Chơn Quang Nguyễn. Đang tạo Lead...
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "8fb1c5f23d4ef45b8d9daba46f9c714ce594ce069f950686a21b1602e0eb00d5"
+    ],
+    "fb_login_id": "8545189045608079"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4399,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Dao Nguyen. Đang tạo Lead...
+[BU-AUTO] ⛔ Skip "le giang" - bản gốc có dấu nhưng khác từ | msg: "Dạ em chào anh/chị ạ. Tour *Lệ Giang - Shangrila* bên em có "
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "lệ giang" -> BU1 | msg: "Dạ em chào anh/chị ạ. Tour *Lệ Giang - Shangrila* bên em có "
+[BU-AUTO] Poller Lead #4400 (Dao Nguyen) → Auto BU: BU1
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "38537f1288ca02196e24c2641ac3da54d17b2f1fce264ed9dde9c2ab305f46c0"
+    ],
+    "fb_login_id": "26457639027208207"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4400,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AyG3Tu65DYn-L4e3CLhLH_s' }
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AI2A3_K5lqrsbiuc8LNFXWN' }
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
