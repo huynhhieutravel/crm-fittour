@@ -530,6 +530,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
                                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '4px' }}>LIÊN KẾT NHANH TÀI KHOẢN (Tự điền ảnh/tên)</label>
                                 <select 
                                     style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}
+                                    value={selectedNode.data.userId || ''}
                                     onChange={(e) => handleLinkUser(e.target.value)}
                                 >
                                     <option value="">-- Chọn user hệ thống --</option>
