@@ -214,7 +214,8 @@ const GroupDashboardTab = () => {
     "Thành công": "#10b981", // green
     "Đã quyết toán": "#3b82f6", // blue
     "Chưa thành công": "#ef4444", // red
-    "Chưa xác định": "#94a3b8" // slate
+    "Chưa xác định": "#94a3b8", // slate
+    "Khác": "#475569" // dark slate
   };
 
   const monthOptions = [
@@ -523,11 +524,11 @@ const GroupDashboardTab = () => {
           </div>
           <div style={{ height: "350px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: 20, right: 40, bottom: 20, left: 40 }}>
+              <PieChart margin={{ top: 20, right: 80, bottom: 20, left: 80 }}>
                 <Pie
                   data={chartStatusStats}
                   cx="50%" cy="50%"
-                  innerRadius={80} outerRadius={105} paddingAngle={4}
+                  innerRadius={70} outerRadius={95} paddingAngle={4}
                   dataKey="count" nameKey="status" isAnimationActive={false}
                   label={({ status, percent }) => percent > 0.05 ? `${status} (${(percent * 100).toFixed(0)}%)` : ''}
                 >
