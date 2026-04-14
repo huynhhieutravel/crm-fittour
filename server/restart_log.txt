@@ -912,3 +912,26 @@ Dạ hiện tại bên em có nhiều"
 [BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
 [FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
 [FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đan"
+[BU-AUTO] Khong match BU cho tin nhan: "FITTOUR xin chào khách hàng thân yêuuuu, không biết mình đang quan tâm tới Tour/"
