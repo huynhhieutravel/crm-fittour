@@ -1144,3 +1144,206 @@ Dạ em gửi anh/chị thông tin"
 [BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
 [BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
 [BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Trang Phạm. Đang tạo Lead...
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "Mông Cổ" -> BU2 | msg: "Dạ FIT Tour xin chào Quý khách.
+
+Dạ em gửi anh/chị thông tin"
+[BU-AUTO] Poller Lead #4401 (Trang Phạm) → Auto BU: BU2
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "1ce317be27a11a5a13d6f0c72d84f64b2c1f1229d765fd131143cbcabd337646"
+    ],
+    "fb_login_id": "24711317441899295"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4401,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AuvZKGc_VrVBw3A1r7_94SC' }
+[CSKH-Engine 2026-04-14T15:30:00.040Z] === START ===
+[CSKH-Engine 2026-04-14T15:30:00.210Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T15:30:00.219Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T15:30:00.220Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T15:30:00.221Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T15:30:00.222Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T15:30:00.251Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T15:30:00.252Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T15:30:00.252Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T15:30:00.252Z] === COMPLETE ===
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CSKH-Engine 2026-04-14T15:45:00.048Z] === START ===
+[CSKH-Engine 2026-04-14T15:45:00.080Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T15:45:00.099Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T15:45:00.101Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T15:45:00.103Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T15:45:00.104Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T15:45:00.120Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T15:45:00.121Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T15:45:00.122Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T15:45:00.122Z] === COMPLETE ===
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "

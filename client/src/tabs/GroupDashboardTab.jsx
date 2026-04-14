@@ -502,7 +502,7 @@ const GroupDashboardTab = () => {
           </div>
           <div style={{ height: "350px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={chartTimeSeries} margin={{ top: 10, right: 30, left: 20, bottom: 0 }}>
+              <ComposedChart data={chartTimeSeries} margin={{ top: 25, right: 30, left: 20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} dy={10} />
                 <YAxis yAxisId="left" tickFormatter={(val) => formatMoneyLarge(val)} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
@@ -523,14 +523,10 @@ const GroupDashboardTab = () => {
                 />
                 <Legend verticalAlign="top" height={36} iconType="circle" />
                 <Bar yAxisId="left" dataKey="revenue" name="Doanh thu" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40}>
-                  <LabelList dataKey="revenue" position="top" style={{ fontSize: "11px", fontWeight: "bold", fill: "#059669" }} formatter={(val) => val > 0 ? formatMoneyLarge(val) : ""} />
+                  <LabelList dataKey="revenue" position="top" style={{ fontSize: "10px", fontWeight: "bold", fill: "#059669" }} formatter={(val) => val > 0 ? formatMoneyLarge(val) : ""} />
                 </Bar>
-                <Bar yAxisId="left" dataKey="profit" name="Lợi nhuận" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={40}>
-                  <LabelList dataKey="profit" position="top" style={{ fontSize: "11px", fontWeight: "bold", fill: "#d97706" }} formatter={(val) => val > 0 ? formatMoneyLarge(val) : ""} />
-                </Bar>
-                <Line yAxisId="right" type="monotone" dataKey="count" name="Số dự án" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }}>
-                  <LabelList dataKey="count" position="top" style={{ fontSize: "11px", fontWeight: "bold", fill: "#3b82f6" }} formatter={(val) => val > 0 ? val : ""} />
-                </Line>
+                <Bar yAxisId="left" dataKey="profit" name="Lợi nhuận" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                <Line yAxisId="right" type="monotone" dataKey="count" name="Số dự án" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -555,7 +551,37 @@ const GroupDashboardTab = () => {
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
                 <XAxis type="number" hide />
                 <YAxis type="category" dataKey="sales_name" axisLine={false} tickLine={false} tick={{ fontSize: 13, fontWeight: 700, fill: "#475569" }} width={140} />
-                <Tooltip cursor={{ fill: "#f8fafc" }} contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)" }} />
+                <Tooltip 
+                  cursor={{ fill: "#f8fafc" }} 
+                  content={({ active, payload }) => {
+                    if (!active || !payload || !payload.length) return null;
+                    const d = payload[0].payload;
+                    const rev = Number(d.total_revenue || 0);
+                    const prof = Number(d.total_profit || 0);
+                    const won = Number(d.won_projects || 0);
+                    const total = Number(d.total_projects || 0);
+                    const share = totalRevenue > 0 ? ((rev / totalRevenue) * 100).toFixed(1) : '0.0';
+                    const wr = total > 0 ? ((won / total) * 100).toFixed(0) : '0';
+                    const margin = rev > 0 ? ((prof / rev) * 100).toFixed(1) : '0.0';
+                    return (
+                      <div style={{ background: 'white', borderRadius: '14px', padding: '14px 18px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.12)', border: '1px solid #f1f5f9', minWidth: '220px' }}>
+                        <div style={{ fontWeight: 800, fontSize: '14px', color: '#1e293b', marginBottom: '10px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>{d.sales_name}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px', fontSize: '12px' }}>
+                          <div style={{ color: '#64748b' }}>Chốt đơn:</div>
+                          <div style={{ fontWeight: 700, color: '#ec4899', textAlign: 'right' }}>{won} Deal</div>
+                          <div style={{ color: '#64748b' }}>Tổng DA:</div>
+                          <div style={{ fontWeight: 700, color: '#475569', textAlign: 'right' }}>{total} (WR: {wr}%)</div>
+                          <div style={{ color: '#64748b' }}>Doanh thu:</div>
+                          <div style={{ fontWeight: 700, color: '#10b981', textAlign: 'right' }}>{formatMoneyLarge(rev)}</div>
+                          <div style={{ color: '#64748b' }}>Lợi nhuận:</div>
+                          <div style={{ fontWeight: 700, color: '#f59e0b', textAlign: 'right' }}>{formatMoneyLarge(prof)} ({margin}%)</div>
+                          <div style={{ color: '#64748b' }}>Market Share:</div>
+                          <div style={{ fontWeight: 800, color: '#6366f1', textAlign: 'right' }}>{share}%</div>
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
                 <Bar dataKey="won_projects" name="Dự án Thành công" fill="#ec4899" radius={[0, 6, 6, 0]} barSize={24} minPointSize={2}>
                   <LabelList dataKey="won_projects" position="right" style={{ fontSize: "12px", fontWeight: "bold", fill: "#ec4899" }} formatter={(val) => `${val} Deal`} />
                 </Bar>
