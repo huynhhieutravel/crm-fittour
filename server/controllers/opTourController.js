@@ -9,7 +9,7 @@ exports.getAllOpTours = async (req, res) => {
   try {
     const result = await db.query(`
       SELECT 
-        td.id, td.tour_template_id, td.code as tour_code, tt.name as tour_name, 
+        td.id, td.tour_template_id, td.code as tour_code, COALESCE(tt.name, td.tour_info->>'tour_name') as tour_name, 
         td.start_date, td.end_date, td.market, td.status,
         td.total_revenue, td.actual_revenue, td.total_expense, td.profit,
         td.tour_info, td.expenses, td.guides_json as guides, td.itinerary, 
@@ -37,7 +37,10 @@ exports.getAllOpTours = async (req, res) => {
       FROM tour_departures td
       LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
       LEFT JOIN guides g ON td.guide_id = g.id
-      ORDER BY td.start_date DESC
+      ORDER BY 
+         CASE WHEN td.start_date < CURRENT_DATE THEN 1 ELSE 0 END ASC,
+         CASE WHEN td.start_date >= CURRENT_DATE THEN td.start_date END ASC,
+         CASE WHEN td.start_date < CURRENT_DATE THEN td.start_date END DESC
     `);
     res.json(result.rows);
   } catch (error) {
@@ -50,7 +53,7 @@ exports.getPublicOpTours = async (req, res) => {
   try {
     const result = await db.query(`
       SELECT 
-        td.id, td.code as tour_code, tt.name as tour_name, 
+        td.id, td.code as tour_code, COALESCE(tt.name, td.tour_info->>'tour_name') as tour_name, 
         td.start_date, td.end_date, td.market, td.status,
         td.tour_info, td.max_participants,
         (
@@ -65,7 +68,10 @@ exports.getPublicOpTours = async (req, res) => {
         ) AS total_reserved
       FROM tour_departures td
       LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
-      ORDER BY td.start_date DESC
+      ORDER BY 
+         CASE WHEN td.start_date < CURRENT_DATE THEN 1 ELSE 0 END ASC,
+         CASE WHEN td.start_date >= CURRENT_DATE THEN td.start_date END ASC,
+         CASE WHEN td.start_date < CURRENT_DATE THEN td.start_date END DESC
     `);
     
     const publicTours = result.rows.map(row => {
@@ -97,7 +103,7 @@ exports.getOpTourById = async (req, res) => {
   const { id } = req.params;
   try {
     const result = await db.query(`
-      SELECT td.*, tt.name as tour_name, tt.code as template_code, tt.duration as template_duration,
+      SELECT td.*, COALESCE(tt.name, td.tour_info->>'tour_name') as tour_name, tt.code as template_code, tt.duration as template_duration,
              g.name as guide_name
       FROM tour_departures td
       LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
@@ -285,6 +291,15 @@ exports.addOpTourBooking = async (req, res) => {
     const userRoleName = req.user.role_name || req.user.role || '';
     const isPrivileged = ['admin', 'manager', 'operator'].includes(userRoleName);
 
+    // Determine Assignment properties
+    let assignId = req.user ? req.user.id : null;
+    let assignName = req.user ? req.user.full_name : 'Sales';
+    
+    if (isPrivileged && bookingData.created_by) {
+        assignId = bookingData.created_by;
+        assignName = bookingData.created_by_name || assignName;
+    }
+
     if (!isNewBooking) {
         // Permission check
         const bCheck = await client.query('SELECT created_by FROM bookings WHERE id = $1', [bookingData.id]);
@@ -297,23 +312,33 @@ exports.addOpTourBooking = async (req, res) => {
         }
 
         // Update existing booking
-        await client.query(`
+        let updateQuery = `
             UPDATE bookings
             SET customer_id = $1, pax_count = $2,
                 base_price = $3, surcharge = $4, discount = $5, total_price = $6, paid = $7,
                 booking_status = $8, raw_details = $9, notes = $10, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $11 AND tour_departure_id = $12
-        `, [
+        `;
+        const updateParams = [
             bookingData.customer_id || null, paxCount,
             Number(bookingData.base_price) || 0, Number(bookingData.surcharge) || 0, Number(bookingData.discount) || 0, totalPrice, paidAmount,
-            bookingStatus, JSON.stringify(rawDetails), bookingData.notes || null, bookingData.id, id
-        ]);
+            bookingStatus, JSON.stringify(rawDetails), bookingData.notes || null
+        ];
+
+        let paramCounter = 11;
+        if (isPrivileged && bookingData.created_by) {
+             updateQuery += `, created_by = $${paramCounter++}, created_by_name = $${paramCounter++} `;
+             updateParams.push(assignId, assignName);
+        }
+
+        updateQuery += ` WHERE id = $${paramCounter++} AND tour_departure_id = $${paramCounter++} `;
+        updateParams.push(bookingData.id, id);
+
+        await client.query(updateQuery, updateParams);
         newBooking = bookingData;
     } else {
         // Generate booking code
         const bookingCode = `BK-${Date.now().toString(36).toUpperCase()}`;
         
-        // Create new booking
         const insertRes = await client.query(`
             INSERT INTO bookings (
                 booking_code, tour_departure_id, customer_id, pax_count,
@@ -327,7 +352,7 @@ exports.addOpTourBooking = async (req, res) => {
             Number(bookingData.base_price) || 0, Number(bookingData.surcharge) || 0, Number(bookingData.discount) || 0, totalPrice, paidAmount,
             bookingStatus, paidAmount >= totalPrice && totalPrice > 0 ? 'paid' : (paidAmount > 0 ? 'partial' : 'unpaid'),
             JSON.stringify(rawDetails), bookingData.notes || null,
-            req.user ? req.user.id : null, req.user ? req.user.full_name : 'Sales'
+            assignId, assignName
         ]);
         newBooking = { ...bookingData, id: insertRes.rows[0].id, booking_code: bookingCode };
     }
@@ -394,10 +419,10 @@ exports.addOpTourBooking = async (req, res) => {
                 const custFound = custCheck.rows[0];
                await db.query(`
                   UPDATE customers 
-                  SET id_card = COALESCE(NULLIF($1, ''), id_card),
-                      birth_date = COALESCE(NULLIF($2, '')::date, birth_date),
-                      email = COALESCE(NULLIF($4, ''), email),
-                      passport_url = COALESCE(NULLIF($5, ''), passport_url)
+                  SET id_card = COALESCE(NULLIF(id_card, ''), NULLIF($1, '')),
+                      birth_date = COALESCE(birth_date, NULLIF($2, '')::date),
+                      email = COALESCE(NULLIF(email, ''), NULLIF($4, '')),
+                      passport_url = COALESCE(NULLIF(passport_url, ''), NULLIF($5, ''))
                   WHERE id = $3
                `, [cmnd, dob, custFound.id, m.email ? m.email.trim() : '', m.passportUrl || '']);
             } else {

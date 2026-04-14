@@ -154,7 +154,7 @@ const SettingsTab = ({
           <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <Globe size={20} color="#6366f1" /> Cấu hình Meta Webhook
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem', width: '100%' }}>
+          <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem', width: '100%' }}>
             <div className="modal-form-group">
               <label>PIXEL ID (DATASET ID)</label>
               <input 
@@ -312,6 +312,7 @@ const SettingsTab = ({
         </div>
       )}
 
+
       {/* BU Management - Redesigned to be FULL WIDTH and VERTICAL STACK */}
       {onlyBU && (
         <div style={{ 
@@ -354,7 +355,7 @@ const SettingsTab = ({
             }}>
               <h3 style={{ marginBottom: '1.5rem', fontWeight: 800 }}>🆕 Tạo Khối BU mới</h3>
               <form onSubmit={handleCreateBU}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                   <div className="modal-form-group">
                     <label>MÃ BU (Ví dụ: BU5)</label>
                     <input className="modal-input" required value={newBU.id} onChange={e => setNewBU({...newBU, id: e.target.value.toUpperCase()})} />
@@ -394,7 +395,7 @@ const SettingsTab = ({
             return (
               <div 
                 key={bu.id} 
-                className="bu-config-row animate-fade-in" 
+                className="bu-config-row animate-fade-in mobile-stack-grid mobile-stack-grid" 
                 style={{ 
                   padding: '1.5rem 2rem', 
                   borderRadius: '16px', 

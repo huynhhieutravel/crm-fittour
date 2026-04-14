@@ -111,7 +111,7 @@ const DeparturesTab = ({
       </div>
 
       <div className="filter-bar">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr) auto', gap: '1rem', alignItems: 'end' }}>
+        <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr) auto', gap: '1rem', alignItems: 'end' }}>
           <div className="filter-group">
             <label>TÌM KIẾM</label>
             <div style={{ position: 'relative' }}>

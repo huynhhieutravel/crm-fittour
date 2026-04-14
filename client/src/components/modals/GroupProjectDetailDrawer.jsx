@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Save, Building, Users, Briefcase, MapPin, Calendar, DollarSign, Activity, Plus, ExternalLink, UserCheck } from 'lucide-react';
 import Select from 'react-select';
-import { MARKET_OPTIONS } from '../../constants/markets';
+import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
 export default function GroupProjectDetailDrawer({ project, onClose, refreshList, currentUser, addToast, users }) {
+    const marketOptions = useMarkets();
     const [formData, setFormData] = useState({
         name: '', group_leader_id: '', source: '', status: 'Báo giá', destination: '',
         expected_pax: 0, price_per_pax: 0, departure_date: '', return_date: '', expected_month: '', total_revenue: 0, profit: 0, assigned_to: '', guide_ids: []
@@ -23,8 +24,14 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
         if (project) {
             setFormData({
                 ...project,
-                departure_date: project.departure_date ? String(project.departure_date).split('T')[0] : '',
-                return_date: project.return_date ? String(project.return_date).split('T')[0] : '',
+                departure_date: project.departure_date ? (() => {
+                    const d = new Date(project.departure_date);
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                })() : '',
+                return_date: project.return_date ? (() => {
+                    const d = new Date(project.return_date);
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                })() : '',
                 price_per_pax: project.price_per_pax ? Number(project.price_per_pax) : 0,
                 total_revenue: project.total_revenue ? Number(project.total_revenue) : 0,
                 profit: project.profit ? Number(project.profit) : 0,
@@ -177,12 +184,12 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                 </div>
 
                 {/* BODY */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '2.5rem', display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: '2rem', alignContent: 'start' }}>
+                <div className="mobile-stack-grid mobile-stack-grid" style={{ flex: 1, overflowY: 'auto', padding: '2.5rem', display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: '2rem', alignContent: 'start' }}>
                     <div className="card" style={{ background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                         <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1rem', fontWeight: 700, color: '#475569', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Activity size={18} color="#94a3b8" /> THÔNG TIN CƠ BẢN
                         </h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1.25rem' }}>
+                        <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1.25rem' }}>
                             <div className="form-group" style={{ gridColumn: 'span 2' }}>
                                 <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block' }}>TÊN ĐOÀN / DỰ ÁN *</label>
                                 <input type="text" style={{ ...drawerInputStyle, color: '#0f172a', fontWeight: 600, borderColor: '#94a3b8' }} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} disabled={isViewOnly} placeholder="Nhập tên dự án..." />
@@ -284,11 +291,11 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                         <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1rem', fontWeight: 700, color: '#475569', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <MapPin size={18} color="#94a3b8" /> CHI TIẾT DỊCH VỤ
                         </h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1.25rem' }}>
+                        <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1.25rem' }}>
                             <div className="form-group" style={{ gridColumn: 'span 2' }}>
                                 <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block' }}>TUYẾN ĐIỂM (DESTINATION)</label>
                                 <Select 
-                                    options={MARKET_OPTIONS}
+                                    options={marketOptions}
                                     value={formData.destination ? { label: formData.destination, value: formData.destination } : null}
                                     onChange={o => setFormData({...formData, destination: o ? o.value : ''})}
                                     styles={reactSelectStyles}

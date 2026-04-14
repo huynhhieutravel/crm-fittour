@@ -170,7 +170,7 @@ const TeamsTab = ({ addToast, users = [] }) => {
       </div>
 
       {/* Teams Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '1rem' }}>
+      <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '1rem' }}>
         {teams.map(team => {
           const color = getTeamColor(team.code);
           const isExpanded = expandedTeam === team.id;

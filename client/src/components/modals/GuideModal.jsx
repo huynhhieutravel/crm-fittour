@@ -36,7 +36,7 @@ const GuideModal = ({
                 <label>HỌ VÀ TÊN HDV *</label>
                 <input className="modal-input" required value={newGuide.name || ''} onChange={e => setNewGuide({...newGuide, name: e.target.value})} />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="modal-form-group">
                   <label>SỐ ĐIỆN THOẠI *</label>
                   <input className="modal-input" required value={newGuide.phone || ''} onChange={e => setNewGuide({...newGuide, phone: e.target.value})} />
@@ -47,7 +47,7 @@ const GuideModal = ({
                 </div>
               </div>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="modal-form-group">
                   <label>SỐ HỘ CHIẾU</label>
                   <input className="modal-input" value={newGuide.passport || ''} onChange={e => setNewGuide({...newGuide, passport: e.target.value})} placeholder="Số Passport..." />

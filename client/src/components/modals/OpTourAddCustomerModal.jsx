@@ -4,7 +4,7 @@ import { X, Search, Plus } from 'lucide-react';
 import AsyncSelect from 'react-select/async';
 import CustomerProfileSlider from '../CustomerProfileSlider';
 
-export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initialData }) {
+export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initialData, currentUser }) {
   // Auto-generate B-XXXX (4-5 digits) for a new booking code
   const generateReservationCode = () => `B-${Math.floor(10000 + Math.random() * 90000)}`;
 
@@ -21,6 +21,19 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
     bank: 'Chọn',
     branch: 'Chi Nhánh'
   });
+
+  const isPrivileged = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'operator' || currentUser?.role_name === 'admin' || currentUser?.role_name === 'manager' || currentUser?.role_name === 'operator' || currentUser?.role === 'group_manager';
+  
+  const [salesList, setSalesList] = useState([]);
+  const [selectedSalesId, setSelectedSalesId] = useState('');
+
+  useEffect(() => {
+    if (isPrivileged) {
+       axios.get('/api/users', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+            .then(res => setSalesList(res.data.users || res.data || []))
+            .catch(console.error);
+    }
+  }, [isPrivileged]);
 
   const [isQuickAdd, setIsQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState('');
@@ -140,8 +153,8 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       const newMembers = [...prev];
       const memberData = {
         phone: cust.phone || '', name: cust.name || '', gender: cust.gender || 'Chọn',
-        dob: cust.birth_date ? cust.birth_date.split('T')[0] : '', docId: cust.id_card || '', 
-        expiryDate: cust.id_expiry ? cust.id_expiry.split('T')[0] : '',
+        dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA') : '', docId: cust.id_card || '', 
+        expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA') : '',
         passportUrl: cust.passport_url || ''
       };
       
@@ -203,8 +216,14 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
           setMembers([]);
           setPaidAmount(0);
        }
+       
+       if (initialData && initialData.created_by) {
+           setSelectedSalesId(initialData.created_by);
+       } else {
+           setSelectedSalesId(currentUser?.id || '');
+       }
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData, currentUser]);
 
   useEffect(() => {
     const totalQty = pricingRows.reduce((sum, r) => sum + Number(r.qty || 0), 0);
@@ -418,10 +437,10 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                 name: cust.name || m.name,
                 email: cust.email || m.email,
                 gender: cust.gender || m.gender,
-                dob: cust.birth_date ? cust.birth_date.split('T')[0] : m.dob,
+                dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA') : m.dob,
                 docType: cust.id_card ? 'CMTND' : m.docType,
                 docId: cust.id_card || m.docId,
-                expiryDate: cust.id_expiry ? cust.id_expiry.split('T')[0] : m.expiryDate,
+                expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA') : m.expiryDate,
                 crmNote: cust.ghi_chu || '',
                 customerId: cust.id || null,
                 tripCount: parseInt(cust.total_trips || cust.crm_trip_count || 0),
@@ -478,6 +497,8 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       total: totalPrice,
       paid: paidAmount || 0,
       status: (paidAmount > 0 && paidAmount < totalPrice) ? 'Đã đặt cọc' : (paidAmount >= totalPrice && totalPrice > 0 ? 'Đã thanh toán' : (initialData?.status || 'Giữ chỗ')),
+      created_by: selectedSalesId,
+      created_by_name: salesList.find(u => u.id == selectedSalesId)?.full_name || currentUser?.full_name || 'Sales',
       raw_details: { bookingInfo, pricingRows, members } // Lưu tất cả data gốc dưới dạng JSONB
     };
 
@@ -503,8 +524,24 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
           
           <h4 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px' }}>#1 Thông tin chung</h4>
           
+          {isPrivileged && (
+             <div style={{ marginBottom: '20px', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#334155' }}>👤 Sale phụ trách (Quản lý):</label>
+                <select 
+                   value={selectedSalesId} 
+                   onChange={e => setSelectedSalesId(e.target.value)} 
+                   style={{ flex: 1, maxWidth: '300px', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', background: 'white' }}
+                >
+                   <option value="">-- Chọn Sale --</option>
+                   {salesList.map(u => (
+                      <option key={u.id} value={u.id}>{u.full_name || u.username}</option>
+                   ))}
+                </select>
+             </div>
+          )}
+
           {/* Form row 1 */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 1fr) minmax(200px, 1fr) 100px 150px', gap: '15px', alignItems: 'flex-end', marginBottom: '30px' }}>
+          <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 1fr) minmax(200px, 1fr) 100px 150px', gap: '15px', alignItems: 'flex-end', marginBottom: '30px' }}>
              <div style={{ position: 'relative', zIndex: 10 }}>
                 <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px' }}>Tìm kiếm khách hàng*: <span style={{color:'red'}}>(*)</span></label>
                 
@@ -705,7 +742,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                          <h4 style={{ margin: 0, color: '#475569', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>DỊCH VỤ KÈM THEO (CỘNG VÀO TỔNG THU CỦA ĐỘ TUỔI NÀY)</h4>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) 150px 100px 150px 40px', gap: '15px', marginBottom: '10px', fontWeight: 'bold', fontSize: '11px', color: '#64748b' }}>
+                      <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) 150px 100px 150px 40px', gap: '15px', marginBottom: '10px', fontWeight: 'bold', fontSize: '11px', color: '#64748b' }}>
                          <div>DỊCH VỤ</div>
                          <div>ĐƠN GIÁ (VND)</div>
                          <div>SỐ LƯỢNG</div>
@@ -713,7 +750,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                          <div></div>
                       </div>
                       {row.extraServices.map((svc) => (
-                        <div key={svc.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) 150px 100px 150px 40px', gap: '15px', alignItems: 'center', marginBottom: '10px' }}>
+                        <div key={svc.id} className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) 150px 100px 150px 40px', gap: '15px', alignItems: 'center', marginBottom: '10px' }}>
                            <input type="text" value={svc.name} placeholder="Nhập tên dịch vụ..." onChange={e => handleRowExtraServiceChange(row.id, svc.id, 'name', e.target.value)} style={{ padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', fontWeight: 'bold' }} />
                            <input type="text" value={formatCurrency(svc.price)} onChange={e => handleRowExtraServiceChange(row.id, svc.id, 'price', e.target.value)} style={{ padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', textAlign: 'right' }} />
                            <input type="number" value={svc.qty} onChange={e => handleRowExtraServiceChange(row.id, svc.id, 'qty', e.target.value)} style={{ padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', textAlign: 'center' }} />

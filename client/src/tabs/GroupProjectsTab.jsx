@@ -312,7 +312,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                         <div style={{ color: '#1e293b', fontWeight: 600 }}>
                                             {p.departure_date ? new Date(p.departure_date).toLocaleDateString('vi-VN') : '---'}
                                         </div>
-                                        {p.return_date && String(p.return_date).split('T')[0] !== String(p.departure_date).split('T')[0] && (
+                                        {p.return_date && new Date(p.return_date).toLocaleDateString('en-CA') !== new Date(p.departure_date).toLocaleDateString('en-CA') && (
                                             <div style={{ color: '#64748b', fontSize: '0.75rem' }}>
                                                 → {new Date(p.return_date).toLocaleDateString('vi-VN')}
                                             </div>

@@ -18,7 +18,7 @@ export const AddTemplateModal = ({
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>📦 THIẾT KẾ SẢN PHẨM TOUR MỚI</h2>
           <button className="icon-btn" onClick={() => setShowAddTemplateModal(false)}><X size={24} /></button>
         </div>
-        <form onSubmit={handleAddTemplate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <form onSubmit={handleAddTemplate} className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
           <div className="modal-form-group">
             <label>MÃ TOUR / SẢN PHẨM *</label>
             <input className="modal-input" required value={newTemplate.code || ''} onChange={e => setNewTemplate({...newTemplate, code: e.target.value})} placeholder="Vd: BK6N5D" />
@@ -174,7 +174,7 @@ export const EditTemplateModal = ({
         </div>
 
         {activeTab === 'info' && (
-        <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <form onSubmit={handleSubmit} className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
           <div className="modal-form-group">
             <label>MÃ TOUR *</label>
             <input className="modal-input" required value={formData.code || ''} onChange={e => setFormData({...formData, code: e.target.value})} />
@@ -385,7 +385,7 @@ export const AddDepartureModal = ({
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>📅 LÊN LỊCH KHỞI HÀNH THỰC TẾ</h2>
           <button className="icon-btn" onClick={() => setShowAddDepartureModal(false)}><X size={24} /></button>
         </div>
-        <form onSubmit={handleAddDeparture} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <form onSubmit={handleAddDeparture} className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
           <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
             <label>SẢN PHẨM TOUR *</label>
             <select className="modal-select" required value={newDeparture.tour_template_id} onChange={e => setNewDeparture({...newDeparture, tour_template_id: e.target.value})}>
@@ -627,7 +627,7 @@ export const EditDepartureModal = ({
 
         {/* 1. THÔNG TIN VẬN HÀNH */}
         <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.5rem' }}>1. THÔNG TIN VẬN HÀNH</h3>
-        <form id="edit-departure-form" onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+        <form id="edit-departure-form" onSubmit={handleSubmit} className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
           <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
             <label>SẢN PHẨM TOUR *</label>
             <select className="modal-select" required value={editingDeparture.tour_template_id} disabled>
@@ -641,11 +641,11 @@ export const EditDepartureModal = ({
           </div>
           <div className="modal-form-group">
             <label>NGÀY KHỞI HÀNH *</label>
-            <input className="modal-input" type="date" required value={editingDeparture.start_date ? new Date(editingDeparture.start_date).toISOString().split('T')[0] : ''} onChange={e => setEditingDeparture({...editingDeparture, start_date: e.target.value})} />
+            <input className="modal-input" type="date" required value={editingDeparture.start_date ? new Date(editingDeparture.start_date).toLocaleDateString('en-CA') : ''} onChange={e => setEditingDeparture({...editingDeparture, start_date: e.target.value})} />
           </div>
           <div className="modal-form-group">
             <label>NGÀY KẾT THÚC (DỰ KIẾN)</label>
-            <input className="modal-input" type="date" value={editingDeparture.end_date ? new Date(editingDeparture.end_date).toISOString().split('T')[0] : ''} onChange={e => setEditingDeparture({...editingDeparture, end_date: e.target.value})} />
+            <input className="modal-input" type="date" value={editingDeparture.end_date ? new Date(editingDeparture.end_date).toLocaleDateString('en-CA') : ''} onChange={e => setEditingDeparture({...editingDeparture, end_date: e.target.value})} />
           </div>
           
           <div style={{ gridColumn: 'span 2', background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>

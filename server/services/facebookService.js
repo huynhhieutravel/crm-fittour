@@ -29,26 +29,28 @@ const isAutoGreeting = (text) => {
     return lower.includes('fit xin chào') && lower.includes('team fit') && lower.includes('lịch trình');
 };
 
-// Auto-classify BU from message keywords (ưu tiên sort_order: BU1 trước)
-// FIX v2: Word boundary + stopwords + lọc greeting template
+// Auto-classify BU from message keywords
+// v5: Smart Diacritic-Aware Matching
+// - Pass 1: So keyword GỐC (có dấu) với tin nhắn GỐC → phân biệt "nhật" vs "nhất"
+// - Pass 2: So keyword bỏ dấu, nhưng CHỈ chấp nhận nếu từ gốc KHÔNG có dấu (khách gõ không dấu)
 const classifyBUFromMessage = async (messageText) => {
     if (!messageText || messageText.trim().length < 2) return null;
     
     // Normalize: lowercase + remove diacritics
     const normalize = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0111/g, 'd').replace(/\u0110/g, 'D');
-    const normalizedMsg = normalize(messageText);
+    // Check if a string contains Vietnamese diacritics
+    const hasDiacritics = (str) => str.toLowerCase() !== normalize(str);
     
-    // Stopwords: tu tieng Viet pho bien bi trung keyword sau khi bo dau
+    const normalizedMsg = normalize(messageText);
+    const msgLower = messageText.toLowerCase();
+    
+    // Stopwords: CHỈ chặn những từ quá ngắn / 1 ký tự gây false positive tuyệt đối
+    // "nhat" KHÔNG còn ở đây → đã được xử lý bởi smart matching (nhật ≠ nhất)
     const STOPWORDS = new Set([
-        'nhat',   // nhat, nhat (trung Nhat Ban)
-        'nhan',   // nhan, nhan
-        'lai',    // lai, lai
-        'chi',    // chi, chi
-        'gia',    // gia, gia
-        'ay',     // ay
-        'an',     // an, an
+        'y',      // ý → y (1 ký tự, trùng tên người VD: "Ý Đặng Quốc")
         'cho',    // cho
-        'doan',   // doan = đoàn (group) vs đoạn (giai đoạn) → false positive
+        'ay',     // ấy
+        'an',     // ăn/an
     ]);
     
     try {
@@ -67,18 +69,48 @@ const classifyBUFromMessage = async (messageText) => {
                 const normalizedKw = normalize(keyword);
                 if (normalizedKw.length < 1) continue;
                 
-                // Skip stopwords - tu qua pho bien gay false positive
+                // Skip absolute stopwords (quá ngắn, không thể phân biệt)
                 if (normalizedKw.length <= 4 && STOPWORDS.has(normalizedKw)) continue;
                 
-                // LUON dung word boundary cho moi keyword
-                const escaped = normalizedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const boundary = '[\\s,;.!?()\\[\\]"\\-]';
-                const regex = new RegExp('(?:^|' + boundary + ')' + escaped + '(?:$|' + boundary + ')', 'i');
-                const matched = regex.test(normalizedMsg);
+                // === PASS 1: So keyword GỐC với tin nhắn GỐC (có dấu) ===
+                // "nhật" chỉ match "nhật", KHÔNG match "nhất"
+                const kwLower = keyword.toLowerCase().trim();
+                const escapedOrig = kwLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                // Unicode-aware word boundary: ký tự không phải chữ cái bao quanh
+                const regexOriginal = new RegExp('(?:^|[^\\p{L}\\p{N}])' + escapedOrig + '(?:$|[^\\p{L}\\p{N}])', 'iu');
                 
-                if (matched) {
-                    console.log('[BU-AUTO] Matched keyword "' + keyword + '" -> ' + bu.id + ' (' + bu.label + ') cho tin nhan: "' + messageText.substring(0, 60) + '..."');
+                if (regexOriginal.test(' ' + msgLower + ' ')) {
+                    console.log('[BU-AUTO] ✅ Pass1 (dấu chính xác) "' + keyword + '" -> ' + bu.id + ' | msg: "' + messageText.substring(0, 60) + '"');
                     return bu.id;
+                }
+                
+                // === PASS 2: So keyword BỎ DẤU, nhưng CHỈ chấp nhận nếu từ gốc KHÔNG CÓ DẤU ===
+                // "nhat" match "nhat" (khách gõ ko dấu) ✅
+                // "nhat" KHÔNG match "nhất" (vì "nhất" có dấu → khác từ) ❌
+                const escapedNorm = normalizedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regexNorm = new RegExp('\\b' + escapedNorm + '\\b', 'i');
+                
+                if (regexNorm.test(normalizedMsg)) {
+                    // Tìm thấy trong bản bỏ dấu → kiểm tra bản gốc có dấu hay không
+                    const origWords = msgLower.split(/\s+/).map(w => w.replace(/[^a-zA-Z\u00C0-\u024F\u1E00-\u1EFF\u0110\u0111]/g, ''));
+                    const kwWordCount = kwLower.split(/\s+/).length;
+                    
+                    let foundNoDiacritics = false;
+                    for (let i = 0; i <= origWords.length - kwWordCount; i++) {
+                        const segment = origWords.slice(i, i + kwWordCount).join(' ');
+                        // Từ gốc bỏ dấu = keyword bỏ dấu VÀ từ gốc KHÔNG có dấu → khách gõ không dấu
+                        if (normalize(segment) === normalizedKw && !hasDiacritics(segment)) {
+                            foundNoDiacritics = true;
+                            break;
+                        }
+                    }
+                    
+                    if (foundNoDiacritics) {
+                        console.log('[BU-AUTO] ✅ Pass2 (ko dấu) "' + keyword + '" -> ' + bu.id + ' | msg: "' + messageText.substring(0, 60) + '"');
+                        return bu.id;
+                    } else {
+                        console.log('[BU-AUTO] ⛔ Skip "' + keyword + '" - bản gốc có dấu nhưng khác từ | msg: "' + messageText.substring(0, 60) + '"');
+                    }
                 }
             }
         }
@@ -456,8 +488,8 @@ exports.syncRecentConversations = async () => {
         const { token, pageId } = await getPageToken();
         if (!token || !pageId) return;
 
-        // Kéo 5 cuộc trò chuyện gần nhất để tìm khách hàng mới kèm 5 tin nhắn cực gần đễ trích xuất ghi chú, SĐT và Link
-        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=link,participants{id,name},messages.limit(5){message,from}&limit=5&access_token=${token}`;
+        // Kéo 5 cuộc trò chuyện gần nhất để tìm khách hàng mới kèm 5 tin nhắn cực gần đễ trích xuất ghi chú, SĐT và Link, kèm shares để lấy Ads Title
+        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=link,participants{id,name},messages.limit(5){message,from,shares}&limit=5&access_token=${token}`;
         const res = await axios.get(endpoint);
         
         if (!res.data || !res.data.data) return;
@@ -496,10 +528,20 @@ exports.syncRecentConversations = async () => {
                     );
 
                     currentLeadId = leadResult.rows[0].id;
+                    
+                    let adContextText = '';
+                    for (const m of messagesList) {
+                        if (m.shares && m.shares.data && m.shares.data.length > 0) {
+                            for (const share of m.shares.data) {
+                                if (share.description) adContextText += share.description + ' ';
+                                if (share.name) adContextText += share.name + ' ';
+                            }
+                        }
+                    }
 
-                    // Auto-classify BU from ALL messages (lọc bỏ tin chào mừng tự động)
+                    // Auto-classify BU from ALL messages + shares ad_context
                     const allConvMsgs = messagesList.filter(m => !isAutoGreeting(m.message)).map(m => (m.message || '')).join(' ');
-                    const autoBUPoller = await classifyBUFromMessage(allConvMsgs || actualMessageText);
+                    const autoBUPoller = await classifyBUFromMessage(allConvMsgs + ' ' + (actualMessageText || '') + ' ' + adContextText);
                     if (autoBUPoller) {
                         await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller, currentLeadId]);
                         console.log(`[BU-AUTO] Poller Lead #${currentLeadId} (${userName}) → Auto BU: ${autoBUPoller}`);
@@ -544,52 +586,74 @@ exports.syncRecentConversations = async () => {
                         await db.query('UPDATE leads SET fb_conversation_link = $1 WHERE id = $2 AND (fb_conversation_link IS NULL OR fb_conversation_link != $1)', [fbLink, currentLeadId]);
                     }
                     
-                    // Cờ kiểm tra: Nếu user Msg cuối cùng không khớp Last message (tức là webhook bị nghẽn chưa catch)
-                    if (userMsgObj && actualMessageText !== oldConv.last_message) {
+                    const existingMsgsRes = await db.query('SELECT content, sender_type FROM messages WHERE conversation_id = $1 ORDER BY id DESC LIMIT 15', [oldConv.id]);
+                    const existingMsgSet = new Set(existingMsgsRes.rows.map(m => `${m.sender_type}|${m.content}`));
+                    
+                    let hasAnyNewMsg = false;
+                    let lastIteratedMessage = oldConv.last_message;
+                    
+                    let adContextText = '';
+
+                    // Duyệt ngược để chèn theo đúng thời gian (cũ -> mới)
+                    for (let i = messagesList.length - 1; i >= 0; i--) {
+                        const msg = messagesList[i];
                         
-                        const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [currentLeadId]);
-                        if (leadRes.rows.length > 0) {
-                            const oldLead = leadRes.rows[0];
-
-                            // Chỉ tạo Lead mới nếu Lead cũ ĐÃ ĐÓNG (Chốt đơn / Thất bại)
-                            if (['Chốt đơn', 'Thất bại'].includes(oldLead.status)) {
-                                console.log(`[FB POLLER] Phát hiện KHÁCH QUEN CŨ (Lead đã đóng) nhắn Fanpage: ${userName}. Tạo Lead mới...`);
-                                const newLeadResult = await db.query(
-                                    'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email, fb_conversation_link) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4 LIMIT 1), $5, $6, $7) RETURNING *',
-                                    [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email, fbLink]
-                                );
-                                
-                                const safeMsg1 = actualMessageText || '(Hình ảnh/Đính kèm)';
-                                await db.query('UPDATE conversations SET lead_id = $1, last_message = $2, updated_at = NOW() WHERE id = $3', [newLeadResult.rows[0].id, safeMsg1, oldConv.id]);
-                                await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', safeMsg1]);
-
-                                metaCapi.sendLeadEvent(newLeadResult.rows[0]).catch(err => console.error(err));
-                            } else {
-                                // Lead vẫn Active => Nổi lên đầu mảng
-                                const safeMsg2 = actualMessageText || '(Hình ảnh/Đính kèm)';
-                                await db.query('UPDATE leads SET created_at = NOW(), last_contacted_at = NOW() WHERE id = $1', [oldLead.id]);
-                                await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [safeMsg2, oldConv.id]);
-                                await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', safeMsg2]);
-
-                                // [BU-AUTO] Poller: Nếu lead chưa có BU → classify TẤT CẢ (lọc greeting)
-                                if (!oldLead.bu_group) {
-                                    const allPollerMsgs = await db.query(
-                                        'SELECT content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
-                                        [oldConv.id]
-                                    );
-                                    const allPollerText = allPollerMsgs.rows.filter(m => !isAutoGreeting(m.content)).map(m => m.content || '').join(' ');
-                                    const autoBUPoller2 = await classifyBUFromMessage(allPollerText);
-                                    if (autoBUPoller2) {
-                                        await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller2, oldLead.id]);
-                                        console.log(`[BU-AUTO] Poller Lead #${oldLead.id} (${oldLead.name}) → Auto BU: ${autoBUPoller2} (từ tin nhắn tiếp theo)`);
+                        if (msg.shares && msg.shares.data && msg.shares.data.length > 0) {
+                            for (const share of msg.shares.data) {
+                                if (share.description) adContextText += share.description + ' ';
+                                if (share.name) adContextText += share.name + ' ';
+                            }
+                        }
+                        
+                        if (!msg.message || msg.message.trim() === '') continue;
+                        
+                        const senderType = (msg.from && msg.from.id === psid) ? 'customer' : 'page';
+                        const matchKey = `${senderType}|${msg.message}`;
+                        
+                        if (!existingMsgSet.has(matchKey)) {
+                            await db.query(
+                                'INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)',
+                                [oldConv.id, senderType, msg.message]
+                            );
+                            hasAnyNewMsg = true;
+                            lastIteratedMessage = msg.message;
+                            existingMsgSet.add(matchKey); // To duplicate handles within same block
+                            
+                            if (senderType === 'customer') {
+                                // Cập nhật Lead's last_contacted_at
+                                const leadRes = await db.query('SELECT status, name, phone, email FROM leads WHERE id = $1', [currentLeadId]);
+                                if (leadRes.rows.length > 0) {
+                                    const oldLead = leadRes.rows[0];
+                                    if (['Chốt đơn', 'Thất bại'].includes(oldLead.status)) {
+                                        console.log(`[FB POLLER] Khách Cũ (Đã Đóng) nhắn Fanpage: ${userName}. Tạo Lead mới...`);
+                                        const newLeadResult = await db.query(
+                                            'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email, fb_conversation_link) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4 LIMIT 1), $5, $6, $7) RETURNING *',
+                                            [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email, fbLink]
+                                        );
+                                        currentLeadId = newLeadResult.rows[0].id;
+                                        await db.query('UPDATE conversations SET lead_id = $1 WHERE id = $2', [currentLeadId, oldConv.id]);
+                                        metaCapi.sendLeadEvent(newLeadResult.rows[0]).catch(err => console.error(err));
+                                    } else {
+                                        await db.query('UPDATE leads SET created_at = NOW(), last_contacted_at = NOW() WHERE id = $1', [currentLeadId]);
                                     }
                                 }
                             }
-                        } else {
-                            // Kẹt lead, update bình thường
-                            const safeMsg3 = actualMessageText || '(Hình ảnh/Đính kèm)';
-                            await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [safeMsg3, oldConv.id]);
-                            await db.query('INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)', [oldConv.id, 'customer', safeMsg3]);
+                        }
+                    }
+
+                    if (hasAnyNewMsg) {
+                        await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [lastIteratedMessage, oldConv.id]);
+                    }
+                    
+                    // Classification for existing lead if BU missing (Luôn chạy nếu chưa có BU)
+                    const leadCheckRe = await db.query('SELECT bu_group, name FROM leads WHERE id = $1', [currentLeadId]);
+                    if (leadCheckRe.rows.length > 0 && !leadCheckRe.rows[0].bu_group) {
+                        const allPollerMsgs = await db.query('SELECT content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC', [oldConv.id]);
+                        const allPollerText = allPollerMsgs.rows.filter(m => !isAutoGreeting(m.content)).map(m => m.content || '').join(' ');
+                        const autoBUPoller2 = await classifyBUFromMessage(allPollerText + ' ' + adContextText);
+                        if (autoBUPoller2) {
+                            await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller2, currentLeadId]);
+                            console.log(`[BU-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto BU: ${autoBUPoller2}`);
                         }
                     }
                 }
@@ -611,3 +675,5 @@ exports.startPolling = () => {
     setTimeout(exports.syncRecentConversations, 5000);
     console.log('[FB POLLER] Hệ thống tự động quét Lead Facebook đã khởi động (Chống kẹt Webhook).');
 };
+
+exports.classifyBUFromMessage = classifyBUFromMessage;

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Search, Plus, MapPin, Shield, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle , Star, ExternalLink } from 'lucide-react';
 import Select from 'react-select';
 import InsuranceDetailDrawer from '../components/modals/InsuranceDetailDrawer';
-import { MARKET_OPTIONS } from '../constants/markets';
+import { useMarkets } from '../hooks/useMarkets';
 
 const INSURANCE_CLASS_OPTIONS = [
     { value: 'full_package', label: 'Bảo Hiểm Trọn Gói' },
@@ -50,6 +50,7 @@ export default function InsurancesTab({ currentUser, addToast, handleDeleteInsur
     const [totalItems, setTotalItems] = useState(0);
 
     // Filters
+    const marketOptions = useMarkets();
     const [marketFilter, setMarketFilter] = useState('');
     const [starFilter, setStarFilter] = useState('');
 
@@ -154,7 +155,7 @@ export default function InsurancesTab({ currentUser, addToast, handleDeleteInsur
                 <div className="filter-group" style={{ flex: '0 0 240px', margin: 0 }}>
                     <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>THỊ TRƯỜNG INBOUND/MICE</label>
                     <Select
-                        options={MARKET_OPTIONS}
+                        options={marketOptions}
                         value={marketFilter ? { label: marketFilter, value: marketFilter } : null}
                         onChange={option => setMarketFilter(option ? option.value : '')}
                         styles={reactSelectStyles}

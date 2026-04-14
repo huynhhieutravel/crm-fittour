@@ -62,14 +62,14 @@ const EditLeadModal = ({
     try {
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) return '';
-      return date.toISOString().split('T')[0];
+      return new Date(date).toLocaleDateString('en-CA');
     } catch (e) {
       return '';
     }
   };
 
   return (
-    <div className="animate-fade-in" style={{ padding: '2rem', background: 'white', borderRadius: '1.5rem', border: '1px solid #e2e8f0', maxWidth: '1000px', margin: '0 auto' }}>
+    <div className="animate-fade-in edit-lead-container">
       <div style={{ color: '#64748b', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.5rem' }}>FIT Tour CRM / Leads</div>
       <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
         Chỉnh sửa Hồ sơ Lead
@@ -117,11 +117,11 @@ const EditLeadModal = ({
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
-        <button type="button" className="btn-pro-cancel" style={{ width: 'auto', border: 'none', background: 'white', fontWeight: 800, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }} onClick={() => setEditingLead(null)}>
+      <div className="modal-header-actions">
+        <button type="button" className="btn-pro-cancel" style={{ border: 'none', background: 'white', fontWeight: 800, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }} onClick={() => setEditingLead(null)}>
           <ChevronLeft size={18} strokeWidth={3} /> QUAY LẠI
         </button>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <div className="modal-header-actions-group">
           {!editingLead.is_locked && (
              <button type="button" className="btn-pro-save" style={{ width: 'auto', background: '#10b981' }} onClick={() => {
                setEditingLead({...editingLead, status: 'Chốt đơn'});
@@ -136,7 +136,7 @@ const EditLeadModal = ({
         </div>
       </div>
       
-      <form onSubmit={handleUpdateLead} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+      <form onSubmit={handleUpdateLead} className="modal-grid-3">
         {/* SECTION 1: TIẾN ĐỘ XỬ LÝ (PROCESS) */}
         <div style={{ gridColumn: 'span 3', padding: '10px 0', borderBottom: '1px solid #f1f5f9', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <TrendingUp size={18} color="#6366f1" />
@@ -300,7 +300,7 @@ const EditLeadModal = ({
           </div>
         </div>
 
-        <div style={{ gridColumn: 'span 3', display: 'flex', gap: '1rem', marginTop: '1.5rem', paddingTop: '2rem', borderTop: '1px solid #f1f5f9' }}>
+        <div className="modal-header-actions-group" style={{ gridColumn: '1 / -1', marginTop: '1.5rem', paddingTop: '2rem', borderTop: '1px solid #f1f5f9' }}>
           {!editingLead.is_locked && (
             <button type="submit" className="btn-pro-save" disabled={loading} style={{ opacity: loading ? 0.7 : 1 }}>
               <CheckCircle size={18} strokeWidth={3} /> {loading ? 'ĐANG LƯU...' : 'CẬP NHẬT HỒ SƠ'}

@@ -70,7 +70,7 @@ const GuidesTab = ({
             const activeCount = guides ? guides.filter(g => g.status === 'Active').length : 0;
             const inRangeTours = tourDepartures ? tourDepartures.filter(td => {
                  if (!td.start_date) return false;
-                 const sd = td.start_date.split('T')[0];
+                 const sd = new Date(td.start_date).toLocaleDateString('en-CA');
                  return sd >= calcStart && sd <= calcEnd;
             }) : [];
             const tCount = inRangeTours.length;
@@ -136,7 +136,7 @@ const GuidesTab = ({
 
       {guideActiveTab === 'list' ? (
         <>
-          <div className="filter-bar" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) 130px 150px 150px 180px auto', gap: '1rem', alignItems: 'end' }}>
+          <div className="filter-bar mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) 130px 150px 150px 180px auto', gap: '1rem', alignItems: 'end' }}>
             <div className="filter-group">
               <label>DANH SÁCH HƯỚNG DẪN VIÊN</label>
               <div style={{ position: 'relative' }}>
@@ -477,14 +477,14 @@ const GuidesTab = ({
                 <input 
                   type="date" 
                   className="filter-input" 
-                  value={guideTimeFilter.startDate.toISOString().split('T')[0]} 
+                  value={guideTimeFilter.startDate ? new Date(guideTimeFilter.startDate).toLocaleDateString('en-CA') : ''} 
                   onChange={(e) => setGuideTimeFilter({ ...guideTimeFilter, startDate: new Date(e.target.value) })}
                 />
                 <ChevronRight size={16} color="#94a3b8" />
                 <input 
                   type="date" 
                   className="filter-input" 
-                  value={guideTimeFilter.endDate.toISOString().split('T')[0]} 
+                  value={guideTimeFilter.endDate ? new Date(guideTimeFilter.endDate).toLocaleDateString('en-CA') : ''} 
                   onChange={(e) => setGuideTimeFilter({ ...guideTimeFilter, endDate: new Date(e.target.value) })}
                 />
               </div>

@@ -28,9 +28,12 @@ async function convertLeadToCustomer(client, leadId, userId) {
         // Update existing customer WITHOUT overwriting original lead_id
         const res = await client.query(
             `UPDATE customers SET 
-                name = $1, email = $2, gender = $3, birth_date = $4, 
-                nationality = COALESCE(nationality, $5),
-                facebook_psid = COALESCE(facebook_psid, $6)
+                name = COALESCE(NULLIF($1, ''), name), 
+                email = COALESCE(NULLIF($2, ''), email), 
+                gender = COALESCE(NULLIF($3, ''), gender), 
+                birth_date = COALESCE($4::date, birth_date), 
+                nationality = COALESCE(NULLIF($5, ''), nationality),
+                facebook_psid = COALESCE(NULLIF($6, ''), facebook_psid)
              WHERE id = $7 RETURNING *`,
             [
                 normalizedName, 

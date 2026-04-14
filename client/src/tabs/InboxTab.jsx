@@ -12,7 +12,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 
-const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid }) => {
+const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid, onGoBack }) => {
   // API Data States
   const [conversations, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
@@ -197,9 +197,17 @@ const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid }) => {
     <div className="inbox-wrapper">
       <div className="inbox-container">
         {/* LEFT COLUMN: LIST */}
-        <div className="inbox-sidebar">
+        <div className={`inbox-sidebar ${selectedConv ? 'mobile-hidden' : ''}`}>
           {/* List Header */}
           <div className="inbox-header">
+            {onGoBack && (
+              <button 
+                onClick={onGoBack} 
+                style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '5px', background: '#ffe4e6', color: '#e11d48', padding: '6px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+              >
+                <ChevronLeft size={16} /> Quay lại Lead Marketing
+              </button>
+            )}
             <h2 className="title">
               Hộp thư đến
               <span className="badge">{totalRows}</span>
@@ -307,12 +315,19 @@ const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid }) => {
         </div>
 
         {/* RIGHT COLUMN: CHAT PANEL */}
-        <div className="inbox-chat">
+        <div className={`inbox-chat ${!selectedConv ? 'mobile-hidden' : ''}`}>
           {selectedConv ? (
             <>
               {/* Chat Header */}
               <div className="chat-header">
                 <div className="chat-title-group">
+                  <button 
+                    className="mobile-back-to-list" 
+                    onClick={() => setSelectedConv(null)}
+                    style={{ background: 'none', border: 'none', padding: '0 8px 0 0', cursor: 'pointer', display: 'none', color: '#4f46e5', fontWeight: 'bold' }}
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
                   <div className="chat-avatar">
                     {(selectedConv.lead_name || "K").charAt(0).toUpperCase()}
                   </div>
@@ -886,6 +901,44 @@ const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid }) => {
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
+        }
+
+        /* MOBILE RESPONSIVE OVERRIDES */
+        @media screen and (max-width: 768px) {
+          .inbox-wrapper {
+             height: calc(100vh - 100px);
+          }
+          .inbox-sidebar.mobile-hidden, .inbox-chat.mobile-hidden {
+            display: none !important;
+          }
+          .inbox-sidebar {
+            width: 100% !important;
+            border-right: none !important;
+          }
+          .inbox-chat {
+            width: 100% !important;
+          }
+          .mobile-back-to-list {
+            display: flex !important;
+            align-items: center;
+          }
+          .chat-header {
+            padding: 10px 15px;
+            height: auto;
+            min-height: 70px;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 12px;
+          }
+          .chat-title-group {
+            width: 100%;
+          }
+          .inbox-danger-btn, .inbox-action-btn {
+            flex: 1;
+            justify-content: center;
+            padding: 10px;
+          }
         }
       `}</style>
     </div>

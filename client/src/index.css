@@ -1947,3 +1947,461 @@ body {
   .modal-overlay { position: static; background: white !important; }
   .icon-btn, .btn-secondary, button { display: none !important; }
 }
+
+/* =========================================
+   Mobile Responsive - Leads Marketing
+   ========================================= */
+@media screen and (max-width: 768px) {
+  .custom-leads-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .lead-filter-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .data-table-container {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+  }
+  
+  .data-table thead {
+    display: none;
+  }
+  
+  .data-table, .data-table tbody, .data-table tr, .data-table td {
+    display: block;
+    width: 100%;
+  }
+  
+  .data-table tr {
+    margin-bottom: 1.5rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  }
+  
+  .data-table td {
+    border-bottom: 1px dashed #e2e8f0;
+    padding: 0.85rem 0;
+    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .data-table td > * {
+    max-width: 60%;
+    text-align: right;
+  }
+  
+  .data-table td.col-info {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  
+  .data-table td.col-info > div {
+    max-width: 100%;
+    align-items: flex-end;
+  }
+  
+  .data-table td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    justify-content: flex-end;
+  }
+  
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-right: 1rem;
+    text-align: left;
+  }
+
+  .status-select, .table-select-ghost, .table-searchable-select {
+    width: auto !important;
+    min-width: 0 !important;
+  }
+}
+
+@media screen and (min-width: 769px) {
+  .lead-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr) auto;
+    gap: 1rem;
+    align-items: end;
+  }
+  .custom-leads-stats {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* Sidebar Mobile Enhancement */
+@media screen and (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 2000;
+    transform: translateX(-100%);
+    width: 260px !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 25px rgba(0,0,0,0.5);
+  }
+
+  .mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1999;
+    animation: fadeIn 0.3s;
+  }
+
+  .sidebar-toggle-btn {
+    display: none !important;
+  }
+
+  .mobile-sidebar-close-btn {
+    display: flex;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 1002;
+    transition: background 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-sidebar-close-btn:hover {
+    background: rgba(239, 68, 68, 0.8); /* Red on hover */
+  }
+
+  .main-content {
+    width: 100%;
+    padding: 1rem;
+    padding-top: 70px; /* Space for fixed mobile header */
+  }
+
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    z-index: 1000;
+    padding: 10px 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 0;
+    flex-direction: row !important;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .header h1 {
+    font-size: 1.1rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 50vw;
+  }
+
+  .mobile-header-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .filter-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .filter-options-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .filter-divider {
+    margin-left: 0 !important;
+    border-left: none !important;
+    padding-left: 0 !important;
+  }
+  .filter-date-group {
+    flex-wrap: wrap;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  .filter-date-label {
+    width: 100%;
+    margin-bottom: 2px;
+  }
+  .filter-date-inputs-wrapper {
+    display: flex;
+    width: 100%;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .filter-date-input {
+    flex: 1;
+    min-width: 0; 
+    height: 40px !important;
+    padding: 0 4px !important;
+  }
+  .filter-options-actions {
+    margin-left: 0 !important;
+    width: 100%;
+    justify-content: space-between;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-select, .table-select-ghost, .table-searchable-select {
+    width: 100% !important;
+    max-width: none !important;
+    font-size: 0.85rem !important;
+    padding: 6px 12px !important;
+    height: auto !important;
+  }
+}
+
+@media screen and (min-width: 769px) {
+  .mobile-header-menu-btn, .mobile-sidebar-close-btn {
+    display: none !important;
+  }
+
+  .filter-options-container {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .filter-options-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .filter-divider {
+    margin-left: 1rem;
+    border-left: 1px solid #e2e8f0;
+    padding-left: 1rem;
+  }
+  .filter-date-inputs-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .filter-date-input {
+    padding: 4px 8px;
+    height: 32px;
+  }
+  .filter-options-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+/* Responsive overrides for CRM Modals/Forms */
+.modal-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.modal-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.edit-lead-container {
+  padding: 2rem;
+  background: white;
+  border-radius: 1.5rem;
+  border: 1px solid #e2e8f0;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+@media screen and (max-width: 768px) {
+  .modal-grid-2, .modal-grid-3 {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  .modal-grid-2 > *, .modal-grid-3 > * {
+    grid-column: 1 / -1 !important;
+  }
+  
+  .edit-lead-container {
+    padding: 1rem !important;
+  }
+
+  .modal-content {
+    width: 95% !important;
+    padding: 1.25rem !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+}
+
+.modal-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.modal-header-actions-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media screen and (max-width: 768px) {
+  .modal-header-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .modal-header-actions-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  .modal-header-actions button,
+  .modal-header-actions-group button {
+    width: 100% !important;
+    justify-content: center;
+  }
+}
+
+.bulk-actions-popup {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@media screen and (max-width: 768px) {
+  .bulk-actions-popup {
+    flex-wrap: wrap;
+    width: 95vw;
+    padding: 12px;
+    gap: 10px;
+    justify-content: center;
+    bottom: 20px;
+  }
+  .bulk-actions-popup select,
+  .bulk-actions-popup button {
+    flex: 1 1 100%;
+    width: 100%;
+    font-size: 0.85rem;
+    padding: 10px 12px !important;
+  }
+  .bulk-actions-popup .bulk-divider {
+    display: none;
+  }
+}
+
+/* Fallback for stats grid (Dashboard, etc.) */
+@media screen and (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .stat-card {
+    padding: 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+  .stat-card h3 {
+    font-size: 1rem !important; /* Make numbers fit */
+  }
+  .stat-card p {
+    font-size: 0.75rem !important; /* Make labels fit */
+  }
+}
+
+/* Fallback for injected inline grids across CRM */
+@media screen and (max-width: 768px) {
+  .mobile-stack-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  .mobile-stack-grid > * {
+    grid-column: 1 / -1 !important;
+  }
+  
+  .drawer-content {
+    width: 100% !important;
+    border-radius: 0 !important;
+  }
+}
+

@@ -138,8 +138,7 @@ export const RolePermissionModal = ({ open, onClose, addToast }) => {
         granted: rolePerms[permId]
       }));
       
-      await axios.post('/api/permissions/role', {
-        role_id: selectedRole,
+      await axios.put(`/api/permissions/role/${selectedRole}`, {
         permissions: updates
       }, { headers: { Authorization: `Bearer ${token}` } });
       
@@ -246,7 +245,7 @@ export const RolePermissionModal = ({ open, onClose, addToast }) => {
                 <p>Vui lòng chọn chức vụ ở thanh công cụ phía trên để bắt đầu phân quyền.</p>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem' }}>
+              <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem' }}>
                 {Object.entries(modulesInGroup).map(([modCode, perms]) => {
                   const moduleName = MODULE_NAMES[modCode] || modCode;
                   const allChecked = perms.every(p => rolePerms[p.id]);
@@ -317,7 +316,12 @@ export const UserPermissionOverrideModal = ({ open, onClose, user, addToast }) =
       if (groups.length > 0) setActiveGroup(groups[0]);
       
       const rMap = {}; resRole.data.forEach(rp => { rMap[rp.permission_id] = rp.granted; }); setRolePerms(rMap);
-      const uMap = {}; resUser.data.forEach(up => { uMap[up.permission_id] = up.granted; }); setUserPerms(uMap);
+      const uMap = {}; resUser.data.forEach(up => { 
+        if (up.user_override !== null && up.user_override !== undefined) {
+          uMap[up.permission_id] = up.user_override; 
+        }
+      }); 
+      setUserPerms(uMap);
     } catch (err) { addToast('Lỗi tải cấu hình cá nhân', 'error'); } finally { setLoading(false); }
   };
 
@@ -347,8 +351,8 @@ export const UserPermissionOverrideModal = ({ open, onClose, user, addToast }) =
         granted: userPerms[permId]
       }));
       
-      await axios.post('/api/permissions/user', {
-        user_id: user.id, permissions: updates
+      await axios.put(`/api/permissions/user/${user.id}`, {
+        overrides: updates
       }, { headers: { Authorization: `Bearer ${token}` } });
       
       addToast('Cập nhật Ngoại Lệ quyền Nhân sự thành công!'); onClose();
@@ -422,7 +426,7 @@ export const UserPermissionOverrideModal = ({ open, onClose, user, addToast }) =
             {loading ? (
               <div style={{ textAlign: 'center', marginTop: '10%' }}><RefreshCw size={40} className="animate-spin text-primary" style={{ margin: '0 auto 1rem auto' }}/></div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem' }}>
+              <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1.5rem' }}>
                 {Object.entries(modulesInGroup).map(([modCode, perms]) => {
                   const moduleName = MODULE_NAMES[modCode] || modCode;
                   

@@ -473,7 +473,7 @@ const ManualLeadsGuide = () => (
           Bên cột ngoài cùng là khu căn cứ điểm của Sale, nó gồm 4 chức năng chính:
         </p>
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+        <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
           <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
             <strong>🖊️ (Chỉnh sửa Form)</strong><br/>
             Dùng khi bạn muốn vào hẳn hồ sơ to để sửa Email, Facebook URL, Cấp độ, Sản phẩm quan tâm, hoặc gán khách này cho sếp chăm.

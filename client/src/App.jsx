@@ -10,7 +10,9 @@ import {
 } from 'react-router-dom';
 
 import SettingsTab from './tabs/SettingsTab';
+import MarketSettingsTab from './tabs/MarketSettingsTab';
 import MediaSettingsTab from './tabs/MediaSettingsTab';
+import AuditLogTab from './tabs/AuditLogTab';
 import BookingsTab from './tabs/BookingsTab';
 import CostingsTab from './tabs/CostingsTab';
 import CustomersTab from './tabs/CustomersTab';
@@ -29,17 +31,20 @@ import LicensesTab from './tabs/LicensesTab';
 import BURulesTab from './tabs/BURulesTab';
 import InsurancesTab from './tabs/InsurancesTab';
 import OpToursTab from './tabs/OpToursTab';
+import TravelSupportTab from './tabs/TravelSupportTab';
 import PaymentVouchersTab from './tabs/PaymentVouchersTab';
 // ═══ Tour Đoàn Tab Imports ═══
 import GroupProjectsTab from './tabs/GroupProjectsTab';
 import GroupLeadersTab from './tabs/GroupLeadersTab';
 import B2BCompaniesTab from './tabs/B2BCompaniesTab';
 import DashboardTab from './tabs/DashboardTab';
+import ManagementDashboardTab from './tabs/ManagementDashboardTab';
 import GroupDashboardTab from './tabs/GroupDashboardTab';
 import LeadsTab from './tabs/LeadsTab';
 import LeadsDashboardTab from './tabs/LeadsDashboardTab';
 import StaffPerformanceTab from './tabs/StaffPerformanceTab';
 import GuidesTab from './tabs/GuidesTab';
+import MarketingAdsTab from './tabs/MarketingAdsTab';
 import UsersTab from './tabs/UsersTab';
 import TeamsTab from './tabs/TeamsTab';
 import ManualTab from './tabs/ManualTab';
@@ -59,6 +64,8 @@ import AgencySharePage from './pages/AgencySharePage';
 import ServiceContractViewer from './pages/ServiceContractViewer';
 
 import { 
+  Menu,
+  X,
   Users, 
   Map, 
   LayoutDashboard, 
@@ -103,12 +110,17 @@ import {
   Shield,
   Briefcase,
   Building,
-  Activity
+  Activity,
+  MapPin
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import DataDeletion from './pages/DataDeletion';
 import OrgChartTab from './tabs/OrgChartTab';
+import CskhBoardTab from './tabs/CskhBoardTab';
+import CskhTodoTab from './tabs/CskhTodoTab';
+import CskhSearchTab from './tabs/CskhSearchTab';
+import CskhRulesTab from './tabs/CskhRulesTab';
 
 const addToastGlobal = (message, setToasts, type = 'success') => {
   const id = Date.now();
@@ -137,9 +149,30 @@ function AppContent() {
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
     if (path.startsWith('group/')) return path.replace('/', '-');
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'my-profile'];
+    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'my-profile', 'audit-logs'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
+
+  useEffect(() => {
+    const path = location.pathname.substring(1);
+    if (!path) {
+      setActiveTab('dashboard');
+      return;
+    }
+    if (path.startsWith('guides')) { setActiveTab('guides'); return; }
+    if (path.startsWith('manual')) { setActiveTab('manual'); return; }
+    if (path.startsWith('group/')) { setActiveTab(path.replace('/', '-')); return; }
+    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'my-profile', 'audit-logs'];
+    
+    // Extracted base path (e.g., departures/view/1 -> departures)
+    const basePath = path.split('/')[0];
+    if (validTabs.includes(path)) {
+       setActiveTab(path);
+    } else if (validTabs.includes(basePath)) {
+       setActiveTab(basePath);
+    }
+  }, [location.pathname]);
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [inboxPsid, setInboxPsid] = useState(null);
   const [user, setUser] = useState(null);
@@ -199,7 +232,7 @@ function AppContent() {
     nationality: 'Việt Nam', id_card: '', id_expiry: '', address: '', 
     preferred_contact: 'Zalo', role: 'booker', customer_segment: 'New Customer',
     tour_interests: '', special_requests: '', internal_notes: '',
-    location_city: '', travel_season: '', created_at: new Date().toISOString().split('T')[0]
+    location_city: '', travel_season: '', created_at: new Date().toLocaleDateString('en-CA')
   });
 
   // Sidebar Submenu State
@@ -207,6 +240,7 @@ function AppContent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     return localStorage.getItem('sidebar_collapsed') === 'true';
   });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hoveredMenu, setHoveredMenu] = useState(null);
   const [hoveredRect, setHoveredRect] = useState(null);
   const menuTimerRef = useRef(null);
@@ -442,7 +476,7 @@ function AppContent() {
       return;
     }
     const path = fullPath.split('/')[0];
-    const validTabs = ['dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'media-settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'group-dashboard'];
+    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'media-settings', 'users', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'group-dashboard'];
     if (path && validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/' && isLoggedIn) {
@@ -1207,7 +1241,7 @@ function AppContent() {
         nationality: 'Việt Nam', id_card: '', id_expiry: '', address: '', 
         preferred_contact: 'Zalo', role: 'booker', customer_segment: 'New Customer',
         tour_interests: '', special_requests: '', internal_notes: '',
-        location_city: '', travel_season: '', created_at: new Date().toISOString().split('T')[0]
+        location_city: '', travel_season: '', created_at: new Date().toLocaleDateString('en-CA')
       });
       addToast('Đã thêm khách hàng mới thành công.');
     } catch (err) {
@@ -1241,8 +1275,8 @@ function AppContent() {
       };
       if (dataToSend.created_at && dataToSend.created_at.includes('T')) delete dataToSend.created_at;
       if (dataToSend.first_deal_date && dataToSend.first_deal_date.includes('T')) delete dataToSend.first_deal_date;
-      if (dataToSend.birth_date) dataToSend.birth_date = dataToSend.birth_date.split('T')[0];
-      if (dataToSend.id_expiry) dataToSend.id_expiry = dataToSend.id_expiry.split('T')[0];
+      if (dataToSend.birth_date) dataToSend.birth_date = new Date(dataToSend.birth_date).toLocaleDateString('en-CA');
+      if (dataToSend.id_expiry) dataToSend.id_expiry = new Date(dataToSend.id_expiry).toLocaleDateString('en-CA');
       await axios.put(`/api/customers/${editingCustomer.id}`, dataToSend, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -1672,7 +1706,13 @@ function AppContent() {
 
   return (
     <div className="app-container">
-      <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`} ref={sidebarRef}>
+      {isMobileMenuOpen && (
+        <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)} />
+      )}
+      <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isMobileMenuOpen ? 'mobile-open' : ''}`} ref={sidebarRef}>
+        <button className="mobile-sidebar-close-btn" onClick={() => setIsMobileMenuOpen(false)}>
+          <X size={20} />
+        </button>
         <button className="sidebar-toggle-btn" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} title="Thu/Phóng Menu">
           {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
@@ -1682,7 +1722,7 @@ function AppContent() {
 
         <div className="sidebar-nav-scroll">
           <div className="nav-section-title">Tổng quan</div>
-          <div className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => navigate('/dashboard')}>
+          <div className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => { navigate('/dashboard'); setIsMobileMenuOpen(false); }}>
             <LayoutDashboard /> Dashboard
           </div>
           
@@ -1708,6 +1748,29 @@ function AppContent() {
                 >
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Users /> Lead Marketing
+                  </div>
+                  <ChevronRight size={14} opacity={0.5} />
+                </div>
+              )}
+              {checkView('leads') && (
+                <div 
+                  className={`nav-item ${(activeTab === 'marketing-ads' || activeTab === 'management-dashboard') ? 'active' : ''}`} 
+                  onClick={() => navigate('/marketing-ads')}
+                  onMouseEnter={(e) => {
+                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHoveredRect(rect);
+                    setHoveredMenu('marketing-ads');
+                  }}
+                  onMouseLeave={() => {
+                    menuTimerRef.current = setTimeout(() => {
+                      setHoveredMenu(null);
+                    }, 150);
+                  }}
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Target /> Marketing Ads
                   </div>
                   <ChevronRight size={14} opacity={0.5} />
                 </div>
@@ -1780,6 +1843,13 @@ function AppContent() {
                   <DollarSign /> Phiếu Thu / Chi
                 </div>
               )}
+
+              <div 
+                className={`nav-item ${activeTab === 'travel-support' ? 'active' : ''}`}
+                onClick={() => navigate('/travel-support')}
+              >
+                <Briefcase /> Dịch vụ Hỗ trợ
+              </div>
 
               {/* Old Lịch khởi hành tab removed — merged into OpTours above */}
               
@@ -1934,12 +2004,20 @@ function AppContent() {
                 </div>
               )}
               {checkView('settings') && (
+                <div className={`nav-item ${activeTab === 'market-settings' ? 'active' : ''}`} onClick={() => navigate('/market-settings')}>
+                  <MapPin /> Quản lý Thị trường
+                </div>
+              )}
+              {checkView('settings') && (
                 <>
                   <div className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => navigate('/settings')}>
                     <Settings /> Cấu hình Meta
                   </div>
                   <div className={`nav-item ${activeTab === 'media-settings' ? 'active' : ''}`} onClick={() => navigate('/media-settings')}>
                     <ImageIcon /> Quản lý Media (Rác)
+                  </div>
+                  <div className={`nav-item ${activeTab === 'audit-logs' ? 'active' : ''}`} onClick={() => navigate('/audit-logs')}>
+                    <Activity /> Nhật ký hệ thống
                   </div>
                 </>
               )}
@@ -2083,6 +2161,45 @@ function AppContent() {
         </div>
       )}
 
+      {hoveredMenu === 'marketing-ads' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('marketing-ads');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'marketing-ads' ? 'active' : ''}`} 
+            onClick={() => { navigate('/marketing-ads'); setHoveredMenu(null); }} 
+          >
+            Quản trị Chiến dịch (Data/KPI)
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'management-dashboard' ? 'active' : ''}`} 
+            onClick={() => { navigate('/management-dashboard'); setHoveredMenu(null); }} 
+            style={{ borderTop: '1px solid #e2e8f0', marginTop: '4px', paddingTop: '8px', color: '#db2777', fontWeight: 'bold' }}
+          >
+            📈 Tổng Quan Marketing
+          </div>
+        </div>
+      )}
+
       {/* Old departures flyout removed — replaced by op-tours flyout */}
 
       {hoveredMenu === 'op-tours' && hoveredRect && (
@@ -2202,13 +2319,38 @@ function AppContent() {
             className={`submenu-item ${activeTab === 'customers' && customerActiveTab === 'list' ? 'active' : ''}`} 
             onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('list'); setHoveredMenu(null); }}
           >
-            Danh sách Khách hàng
+            📋 Danh sách Khách hàng
           </div>
           <div 
             className={`submenu-item ${activeTab === 'customers' && customerActiveTab === 'calendar' ? 'active' : ''}`} 
             onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('calendar'); setHoveredMenu(null); }}
           >
-            Lịch Chăm sóc
+            📅 Lịch Chăm sóc
+          </div>
+          <div style={{ height: '1px', background: '#e2e8f0', margin: '4px 0' }} />
+          <div 
+            className={`submenu-item ${activeTab === 'customers' && customerActiveTab === 'cskh-board' ? 'active' : ''}`} 
+            onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('cskh-board'); setHoveredMenu(null); }}
+          >
+            🏥 CSKH Board
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'customers' && customerActiveTab === 'cskh-todo' ? 'active' : ''}`} 
+            onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('cskh-todo'); setHoveredMenu(null); }}
+          >
+            ✅ Todo List
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'customers' && customerActiveTab === 'cskh-search' ? 'active' : ''}`} 
+            onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('cskh-search'); setHoveredMenu(null); }}
+          >
+            🔍 Tìm KH hàng loạt
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'customers' && customerActiveTab === 'cskh-rules' ? 'active' : ''}`} 
+            onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('cskh-rules'); setHoveredMenu(null); }}
+          >
+            ⚙️ Cấu hình Rules
           </div>
         </div>
       )}
@@ -2392,16 +2534,25 @@ function AppContent() {
 
       <main className="main-content">
         <div className="breadcrumb-container">
-          <div className="breadcrumb">CRM / {activeTab === 'op-tours' ? 'LỊCH KHỞI HÀNH' : activeTab.toUpperCase()}</div>
+          <div className="breadcrumb">CRM / {
+              activeTab === 'op-tours' ? 'LỊCH KHỞI HÀNH' : 
+              activeTab === 'management-dashboard' ? 'TỔNG QUAN MARKETING' : 
+              activeTab.toUpperCase()
+          }</div>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           </div>
         </div>
 
         <header className="header">
-          <h1>{
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button className="mobile-header-menu-btn" onClick={() => setIsMobileMenuOpen(true)}>
+              <Menu size={20} />
+            </button>
+            <h1>{
             activeTab === 'dashboard' ? 'Tổng quan hệ thống' : 
             activeTab === 'leads' ? 'Quản lý Lead Marketing' : 
             activeTab === 'leads-dashboard' ? 'Dashboard Lead Marketing' :
+            activeTab === 'management-dashboard' ? 'Tổng quan Marketing' :
             activeTab === 'bus' ? 'Quản lý Khối Kinh doanh (BU)' :
             activeTab === 'internal-docs' ? 'Quy chế lương HDV' :
             activeTab === 'licenses' ? 'Giấy phép' :
@@ -2412,6 +2563,7 @@ function AppContent() {
             activeTab === 'my-profile' ? 'Trang cá nhân' :
             activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
           }</h1>
+          </div>
           <div className="user-profile">
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{user?.username || 'Người dùng'}</div>
@@ -2447,6 +2599,11 @@ function AppContent() {
                 setEditingLead={setEditingLead}
               />
             )}
+            
+            {/* Management Dashboard now standalone route from the sub-menu */}
+            {activeTab === 'management-dashboard' && (
+              <ManagementDashboardTab user={user} />
+            )}
 
             {activeTab === 'manual' && <ManualTab />}
             {activeTab === 'internal-docs' && <InternalDocsTab />}
@@ -2455,6 +2612,7 @@ function AppContent() {
 
             {activeTab === 'leads' && (
               <LeadsTab 
+                currentUser={user}
                 leads={leads}
                 filteredLeads={filteredLeads}
                 leadFilters={leadFilters}
@@ -2486,12 +2644,21 @@ function AppContent() {
               <StaffPerformanceTab />
             )}
 
+            {activeTab === 'marketing-ads' && (
+              <MarketingAdsTab addToast={addToast} currentUser={user} bus={bus.filter(b => b.is_active !== false)} />
+            )}
+
         {activeTab === 'inbox' && (
           <InboxTab 
             setEditingLead={setEditingLead}
             leads={leads}
             initialPsid={inboxPsid}
             clearInitialPsid={() => setInboxPsid(null)}
+            onGoBack={() => {
+              setInboxPsid(null);
+              navigate('/leads');
+              setActiveTab('leads');
+            }}
           />
         )}
 
@@ -2516,6 +2683,10 @@ function AppContent() {
 
         {activeTab === 'vouchers' && (
           <PaymentVouchersTab currentUser={user} />
+        )}
+
+        {activeTab === 'travel-support' && (
+          <TravelSupportTab users={users} currentUser={user} checkPerm={checkPerm} />
         )}
 
         {activeTab === 'departures' && pathParts[1] === 'view' && pathParts[2] && (
@@ -2584,7 +2755,7 @@ function AppContent() {
           <RemindersTab handleViewDeparture={handleViewDeparture} />
         )}
 
-        {activeTab === 'customers' && (
+        {activeTab === 'customers' && customerActiveTab !== 'cskh-board' && customerActiveTab !== 'cskh-todo' && customerActiveTab !== 'cskh-search' && customerActiveTab !== 'cskh-rules' && (
           <CustomersTab 
             customers={customers}
             customerFilters={customerFilters}
@@ -2595,6 +2766,22 @@ function AppContent() {
             users={users}
             customerActiveTab={customerActiveTab}
           />
+        )}
+
+        {activeTab === 'customers' && customerActiveTab === 'cskh-board' && (
+          <CskhBoardTab users={users} />
+        )}
+
+        {activeTab === 'customers' && customerActiveTab === 'cskh-todo' && (
+          <CskhTodoTab users={users} customers={customers} />
+        )}
+
+        {activeTab === 'customers' && customerActiveTab === 'cskh-search' && (
+          <CskhSearchTab users={users} tourTemplates={tourTemplates} />
+        )}
+
+        {activeTab === 'customers' && customerActiveTab === 'cskh-rules' && (
+          <CskhRulesTab />
         )}
 
         {activeTab === 'users' && (checkPerm('users', 'view') || user?.role === 'admin' || user?.role === 'manager') && (
@@ -2641,8 +2828,16 @@ function AppContent() {
           />
         )}
         
+        {activeTab === 'market-settings' && (
+          <MarketSettingsTab />
+        )}
+
         {activeTab === 'media-settings' && (
           <MediaSettingsTab addToast={addToast} />
+        )}
+
+        {activeTab === 'audit-logs' && (
+          <AuditLogTab />
         )}
 
         {activeTab === 'bus' && (

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Search, Plus, MapPin, Map, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle , Star, ExternalLink } from 'lucide-react';
 import Select from 'react-select';
 import LandtourDetailDrawer from '../components/modals/LandtourDetailDrawer';
-import { MARKET_OPTIONS } from '../constants/markets';
+import { useMarkets } from '../hooks/useMarkets';
 
 const LANDTOUR_CLASS_OPTIONS = [
     { value: 'full_package', label: 'Land Tour Trọn Gói' },
@@ -50,6 +50,7 @@ export default function LandtoursTab({ currentUser, addToast, handleDeleteLandto
     const [totalItems, setTotalItems] = useState(0);
 
     // Filters
+    const marketOptions = useMarkets();
     const [marketFilter, setMarketFilter] = useState('');
     const [starFilter, setStarFilter] = useState('');
 
@@ -154,7 +155,7 @@ export default function LandtoursTab({ currentUser, addToast, handleDeleteLandto
                 <div className="filter-group" style={{ flex: '0 0 240px', margin: 0 }}>
                     <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>THỊ TRƯỜNG INBOUND/MICE</label>
                     <Select
-                        options={MARKET_OPTIONS}
+                        options={marketOptions}
                         value={marketFilter ? { label: marketFilter, value: marketFilter } : null}
                         onChange={option => setMarketFilter(option ? option.value : '')}
                         styles={reactSelectStyles}

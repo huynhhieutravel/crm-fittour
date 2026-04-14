@@ -19,14 +19,14 @@ const MyProfileTab = ({ currentUser, addToast }) => {
         full_name: res.data.full_name || '',
         email: res.data.email || '',
         phone: res.data.phone || '',
-        birth_date: res.data.birth_date ? res.data.birth_date.split('T')[0] : '',
+        birth_date: res.data.birth_date ? new Date(res.data.birth_date).toLocaleDateString('en-CA') : '',
         gender: res.data.gender || '',
         id_card: res.data.id_card || '',
         passport_url: res.data.passport_url || '',
-        id_expiry: res.data.id_expiry ? res.data.id_expiry.split('T')[0] : '',
+        id_expiry: res.data.id_expiry ? new Date(res.data.id_expiry).toLocaleDateString('en-CA') : '',
         address: res.data.address || '',
         facebook_url: res.data.facebook_url || '',
-        created_at: res.data.created_at ? res.data.created_at.split('T')[0] : '',
+        created_at: res.data.created_at ? new Date(res.data.created_at).toLocaleDateString('en-CA') : '',
         position: res.data.position || '',
         avatar_url: res.data.avatar_url || ''
       });
@@ -147,7 +147,7 @@ const MyProfileTab = ({ currentUser, addToast }) => {
             <User size={18} color="#3b82f6" /> Thông tin cá nhân
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+          <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
             <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
               <label>HỌ VÀ TÊN</label>
               <input className="modal-input" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} style={{ fontWeight: 700 }} />

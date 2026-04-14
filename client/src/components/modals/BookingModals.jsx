@@ -171,7 +171,7 @@ export const AddBookingModal = ({
           
           {/* Section: Khách hàng & Lịch trình */}
           <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+            <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
               
               <div className="modal-form-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -391,7 +391,7 @@ export const AddBookingModal = ({
           {formData.tour_departure_id && !bookingToEdit && (
              <div style={{ background: '#f0fdf4', padding: '1rem', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
                <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#166534', marginBottom: '1rem' }}>💸 Ghi nhận thu Cọc Đơn Hàng ngay</h4>
-               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+               <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                   <div className="modal-form-group">
                     <label style={{ color: '#15803d' }}>SỐ TIỀN CỌC (VND)</label>
                     <input 
@@ -425,7 +425,7 @@ export const AddBookingModal = ({
           )}
 
           {/* Section: Bổ sung */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="modal-form-group">
               <label>TRẠNG THÁI THANH TOÁN</label>
               <select className="modal-select" value={formData.payment_status} onChange={e => setFormData({...formData, payment_status: e.target.value})}>

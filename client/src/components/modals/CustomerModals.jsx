@@ -74,7 +74,7 @@ export const AddCustomerModal = ({
           <button className="icon-btn" onClick={() => setShowAddCustomerModal(false)}><X size={24} /></button>
         </div>
         
-        <form onSubmit={handleAddCustomer} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <form onSubmit={handleAddCustomer} className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
           <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
             <label>HỌ TÊN KHÁCH HÀNG (VIẾT HOA) *</label>
             <input className="modal-input" required 
@@ -96,7 +96,7 @@ export const AddCustomerModal = ({
 
           <div className="modal-form-group">
             <label>TRỞ THÀNH KHÁCH TỪ KHI NÀO?</label>
-            <input className="modal-input" type="date" value={newCustomer.created_at || new Date().toISOString().split('T')[0]} onChange={e => setNewCustomer({...newCustomer, created_at: e.target.value})} />
+            <input className="modal-input" type="date" value={newCustomer.created_at || new Date().toLocaleDateString('en-CA')} onChange={e => setNewCustomer({...newCustomer, created_at: e.target.value})} />
           </div>
           <div className="modal-form-group">
             <label>NGÀY SINH</label>
@@ -164,7 +164,7 @@ export const AddCustomerModal = ({
 
           <div className="modal-form-group">
             <label>NGÀY CHỐT ĐƠN ĐẦU TIÊN</label>
-            <input className="modal-input" type="date" value={newCustomer.first_deal_date ? newCustomer.first_deal_date.split('T')[0] : ''} onChange={e => setNewCustomer({...newCustomer, first_deal_date: e.target.value})} />
+            <input className="modal-input" type="date" value={newCustomer.first_deal_date ? new Date(newCustomer.first_deal_date).toLocaleDateString('en-CA') : ''} onChange={e => setNewCustomer({...newCustomer, first_deal_date: e.target.value})} />
           </div>
           <div className="modal-form-group">
             <label>NHÂN VIÊN CHĂM SÓC</label>
@@ -334,7 +334,7 @@ export const EditCustomerModal = ({
         <form onSubmit={handleUpdateCustomer} style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
           
           {activeTab === 'overview' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
 
           <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
             <label>HỌ TÊN KHÁCH HÀNG (VIẾT HOA) *</label>
@@ -356,11 +356,11 @@ export const EditCustomerModal = ({
 
           <div className="modal-form-group">
             <label>TRỞ THÀNH KHÁCH TỪ KHI NÀO?</label>
-            <input className="modal-input" type="date" value={editingCustomer.created_at ? editingCustomer.created_at.split('T')[0] : ''} onChange={e => setEditingCustomer({...editingCustomer, created_at: e.target.value})} />
+            <input className="modal-input" type="date" value={editingCustomer.created_at ? new Date(editingCustomer.created_at).toLocaleDateString('en-CA') : ''} onChange={e => setEditingCustomer({...editingCustomer, created_at: e.target.value})} />
           </div>
           <div className="modal-form-group">
             <label>NGÀY SINH</label>
-            <input className="modal-input" type="date" value={editingCustomer.birth_date ? editingCustomer.birth_date.split('T')[0] : ''} onChange={e => setEditingCustomer({...editingCustomer, birth_date: e.target.value})} />
+            <input className="modal-input" type="date" value={editingCustomer.birth_date ? new Date(editingCustomer.birth_date).toLocaleDateString('en-CA') : ''} onChange={e => setEditingCustomer({...editingCustomer, birth_date: e.target.value})} />
           </div>
           <div className="modal-form-group">
             <label>GIỚI TÍNH</label>
@@ -391,7 +391,7 @@ export const EditCustomerModal = ({
           </div>
           <div className="modal-form-group">
             <label>NGÀY HẾT HẠN PASSPORT</label>
-            <input className="modal-input" type="date" value={editingCustomer.id_expiry ? editingCustomer.id_expiry.split('T')[0] : ''} onChange={e => setEditingCustomer({...editingCustomer, id_expiry: e.target.value})} />
+            <input className="modal-input" type="date" value={editingCustomer.id_expiry ? new Date(editingCustomer.id_expiry).toLocaleDateString('en-CA') : ''} onChange={e => setEditingCustomer({...editingCustomer, id_expiry: e.target.value})} />
           </div>
 
           <div className="modal-form-group">
@@ -414,9 +414,9 @@ export const EditCustomerModal = ({
           )}
 
           {activeTab === 'insight' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
               
-              <div style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="mobile-stack-grid mobile-stack-grid" style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="modal-form-group">
                   <label>VAI TRÒ</label>
                   <select className="modal-select" value={editingCustomer.role || 'booker'} onChange={e => setEditingCustomer({...editingCustomer, role: e.target.value})}>
@@ -436,7 +436,7 @@ export const EditCustomerModal = ({
                           <Award size={18} color={tier.color} />
                           <span style={{ fontWeight: 800, fontSize: '1.1rem', color: tier.color }}>{tier.badge} {tier.label}</span>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', fontSize: '0.8rem' }}>
+                        <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', fontSize: '0.8rem' }}>
                           <div style={{ background: 'white', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
                             <div style={{ color: '#94a3b8', fontWeight: 600, marginBottom: '2px' }}>Trước CRM</div>
                             {currentUser && ['admin', 'manager'].includes(currentUser.role) ? (
@@ -460,7 +460,7 @@ export const EditCustomerModal = ({
                 </div>
                 <div className="modal-form-group">
                   <label>NGÀY CHỐT ĐƠN ĐẦU</label>
-                  <input className="modal-input" type="date" value={editingCustomer.first_deal_date ? (typeof editingCustomer.first_deal_date === 'string' ? editingCustomer.first_deal_date.split('T')[0] : new Date(editingCustomer.first_deal_date).toISOString().split('T')[0]) : ''} onChange={e => setEditingCustomer({...editingCustomer, first_deal_date: e.target.value})} />
+                  <input className="modal-input" type="date" value={editingCustomer.first_deal_date ? (typeof editingCustomer.first_deal_date === 'string' ? new Date(editingCustomer.first_deal_date).toLocaleDateString('en-CA') : new Date(editingCustomer.first_deal_date).toLocaleDateString('en-CA')) : ''} onChange={e => setEditingCustomer({...editingCustomer, first_deal_date: e.target.value})} />
                 </div>
                 <div className="modal-form-group">
                   <label>NHÂN VIÊN CHĂM SÓC</label>
@@ -577,7 +577,7 @@ export const EditCustomerModal = ({
           )}
 
           {activeTab === 'history_interaction' && (
-            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+            <div className="mobile-stack-grid mobile-stack-grid" style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
               
               {/* Cột Lịch sử mua hàng */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

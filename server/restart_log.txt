@@ -1,0 +1,674 @@
+[dotenv@17.3.1] injecting env (6) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+Server is running on port 5001
+[FB POLLER] Hệ thống tự động quét Lead Facebook đã khởi động (Chống kẹt Webhook).
+[CRON] reminderEngine đã đính kèm vào luồng hệ thống.
+[CSKH-Engine 2026-04-14T12:53:03.218Z] CSKH Cron Engine attached to system.
+(node:22346) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[CRON] Khởi chạy quét Reminder tự động...
+[CRON] Quét Reminder tự động hoàn tất thành công.
+[FB] Resolved Page Token for: FIT TOUR - Du lịch có GUU (107694084435854)
+[CSKH-Engine 2026-04-14T12:53:11.220Z] === START ===
+[CSKH-Engine 2026-04-14T12:53:11.221Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T12:53:11.226Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T12:53:11.228Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T12:53:11.229Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T12:53:11.230Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T12:53:11.260Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T12:53:11.262Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T12:53:11.262Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T12:53:11.262Z] === COMPLETE ===
+[2026-04-14T12:54:08.878Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:54:08.889Z] GET /api/leads
+[2026-04-14T12:54:08.898Z] GET /api/tours
+[2026-04-14T12:54:08.901Z] GET /api/departures
+[2026-04-14T12:54:08.901Z] GET /api/guides
+[2026-04-14T12:54:08.902Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T12:54:08.912Z] GET /api/customers
+[2026-04-14T12:54:08.938Z] GET /api/users
+[2026-04-14T12:54:09.044Z] GET /api/business-units
+[2026-04-14T12:54:09.046Z] GET /api/settings
+[2026-04-14T12:54:09.047Z] GET /api/permissions/my
+[2026-04-14T12:54:09.053Z] GET /api/users/roles
+[2026-04-14T12:54:09.056Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:54:09.087Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:54:09.091Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:54:09.346Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T12:54:38.920Z] GET /api/leads
+[2026-04-14T12:54:38.931Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:54:38.935Z] GET /api/tours
+[2026-04-14T12:54:38.936Z] GET /api/departures
+[2026-04-14T12:54:38.937Z] GET /api/guides
+[2026-04-14T12:54:38.937Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T12:54:38.965Z] GET /api/customers
+[2026-04-14T12:54:38.968Z] GET /api/users
+[2026-04-14T12:54:39.055Z] GET /api/business-units
+[2026-04-14T12:54:39.060Z] GET /api/settings
+[2026-04-14T12:54:39.062Z] GET /api/users/roles
+[2026-04-14T12:54:39.091Z] GET /api/permissions/my
+[2026-04-14T12:54:39.093Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:54:39.097Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:54:39.100Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:54:39.395Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T12:55:09.973Z] POST /api/travel-support
+[2026-04-14T12:55:09.996Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:56:25.225Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:56:37.516Z] GET /api/leads
+[2026-04-14T12:56:37.530Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:56:37.538Z] GET /api/tours
+[2026-04-14T12:56:37.539Z] GET /api/departures
+[2026-04-14T12:56:37.540Z] GET /api/guides
+[2026-04-14T12:56:37.540Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T12:56:37.561Z] GET /api/customers
+[2026-04-14T12:56:37.571Z] GET /api/users
+[2026-04-14T12:56:37.643Z] GET /api/settings
+[2026-04-14T12:56:37.644Z] GET /api/business-units
+[2026-04-14T12:56:37.645Z] GET /api/permissions/my
+[2026-04-14T12:56:37.646Z] GET /api/users/roles
+[2026-04-14T12:56:37.688Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:56:37.692Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:56:37.695Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T12:56:37.996Z] GET /api/bookings?page=1&limit=30
+[CSKH-Engine 2026-04-14T13:00:00.014Z] === START ===
+[CSKH-Engine 2026-04-14T13:00:00.027Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T13:00:00.036Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:00:00.038Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:00:00.039Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:00:00.040Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:00:00.063Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:00:00.064Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:00:00.064Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T13:00:00.064Z] === COMPLETE ===
+[2026-04-14T13:00:37.791Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:01:12.630Z] GET /api/leads
+[2026-04-14T13:01:12.631Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:01:12.631Z] GET /api/departures
+[2026-04-14T13:01:12.631Z] GET /api/guides
+[2026-04-14T13:01:12.633Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:01:12.634Z] GET /api/tours
+[2026-04-14T13:01:12.660Z] GET /api/customers
+[2026-04-14T13:01:12.749Z] GET /api/users
+[2026-04-14T13:01:12.750Z] GET /api/settings
+[2026-04-14T13:01:12.752Z] GET /api/business-units
+[2026-04-14T13:01:12.754Z] GET /api/permissions/my
+[2026-04-14T13:01:12.754Z] GET /api/users/roles
+[2026-04-14T13:01:12.758Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:01:12.782Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:01:12.786Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:01:13.113Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:01:18.608Z] PUT /api/travel-support/1
+[2026-04-14T13:01:18.617Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:01:19.862Z] PUT /api/travel-support/1
+[2026-04-14T13:01:19.869Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:02:35.073Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:02:52.381Z] GET /api/leads
+[2026-04-14T13:02:52.388Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:02:52.400Z] GET /api/tours
+[2026-04-14T13:02:52.403Z] GET /api/departures
+[2026-04-14T13:02:52.404Z] GET /api/guides
+[2026-04-14T13:02:52.405Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:02:52.424Z] GET /api/customers
+[2026-04-14T13:02:52.427Z] GET /api/users
+[2026-04-14T13:02:52.510Z] GET /api/settings
+[2026-04-14T13:02:52.513Z] GET /api/business-units
+[2026-04-14T13:02:52.517Z] GET /api/permissions/my
+[2026-04-14T13:02:52.557Z] GET /api/users/roles
+[2026-04-14T13:02:52.557Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:02:52.561Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:02:52.564Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:02:52.856Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:04:50.049Z] GET /api/marketing-ads?bu_name=All&year=2026&month=4&week_number=
+[2026-04-14T13:04:50.051Z] GET /api/marketing-ads/kpis?year=2026
+[2026-04-14T13:04:50.074Z] GET /api/marketing-ads?bu_name=All&year=2026&month=4&week_number=
+[2026-04-14T13:04:50.075Z] GET /api/marketing-ads/kpis?year=2026
+[2026-04-14T13:04:53.981Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:04:53.990Z] GET /api/travel-support?start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:07:00.287Z] GET /api/leads
+[2026-04-14T13:07:00.290Z] GET /api/departures
+[2026-04-14T13:07:00.292Z] GET /api/tours
+[2026-04-14T13:07:00.292Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:07:00.297Z] GET /api/customers
+[2026-04-14T13:07:00.298Z] GET /api/settings
+[2026-04-14T13:07:00.337Z] GET /api/guides
+[2026-04-14T13:07:00.349Z] GET /api/users
+[2026-04-14T13:07:00.591Z] GET /api/business-units
+[2026-04-14T13:07:00.592Z] GET /api/permissions/my
+[2026-04-14T13:07:00.601Z] GET /api/users/roles
+[2026-04-14T13:07:00.660Z] GET /api/users/roles
+[2026-04-14T13:07:00.839Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:07:11.031Z] GET /api/leads
+[2026-04-14T13:07:11.032Z] GET /api/departures
+[2026-04-14T13:07:11.033Z] GET /api/tours
+[2026-04-14T13:07:11.034Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:07:11.034Z] GET /api/guides
+[2026-04-14T13:07:11.034Z] GET /api/customers
+[2026-04-14T13:07:11.062Z] GET /api/users
+[2026-04-14T13:07:11.159Z] GET /api/settings
+[2026-04-14T13:07:11.163Z] GET /api/business-units
+[2026-04-14T13:07:11.213Z] GET /api/users/roles
+[2026-04-14T13:07:11.214Z] GET /api/permissions/my
+[2026-04-14T13:07:11.217Z] GET /api/users/roles
+[2026-04-14T13:07:11.518Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:08:26.627Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:08:26.688Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:09:34.843Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:11:26.662Z] GET /api/leads
+[2026-04-14T13:11:26.664Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:11:26.665Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:11:26.665Z] GET /api/departures
+[2026-04-14T13:11:26.667Z] GET /api/tours
+[2026-04-14T13:11:26.668Z] GET /api/customers
+[2026-04-14T13:11:26.704Z] GET /api/settings
+[2026-04-14T13:11:26.705Z] GET /api/business-units
+[2026-04-14T13:11:26.796Z] GET /api/users
+[2026-04-14T13:11:26.798Z] GET /api/guides
+[2026-04-14T13:11:26.801Z] GET /api/permissions/my
+[2026-04-14T13:11:26.802Z] GET /api/users/roles
+[2026-04-14T13:11:26.838Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:11:26.843Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:11:26.846Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:11:27.136Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:11:29.345Z] GET /api/travel-support?timeRange=today&start_date=2026-04-14&end_date=2026-04-14&service_type=All&sale_id=&search=
+[2026-04-14T13:11:30.200Z] GET /api/travel-support?timeRange=yesterday&start_date=2026-04-13&end_date=2026-04-13&service_type=All&sale_id=&search=
+[2026-04-14T13:11:30.680Z] GET /api/travel-support?timeRange=week&start_date=2026-04-13&end_date=2026-04-19&service_type=All&sale_id=&search=
+[2026-04-14T13:11:31.132Z] GET /api/travel-support?timeRange=month&start_date=2026-04-01&end_date=2026-04-30&service_type=All&sale_id=&search=
+[2026-04-14T13:11:31.775Z] GET /api/travel-support?timeRange=quarter&start_date=2026-04-01&end_date=2026-06-30&service_type=All&sale_id=&search=
+[2026-04-14T13:11:32.584Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&search=
+[2026-04-14T13:11:33.041Z] GET /api/travel-support?timeRange=quarter&start_date=2026-04-01&end_date=2026-06-30&service_type=All&sale_id=&search=
+[2026-04-14T13:11:40.548Z] PUT /api/travel-support/1
+[2026-04-14T13:11:40.558Z] GET /api/travel-support?timeRange=quarter&start_date=2026-04-01&end_date=2026-06-30&service_type=All&sale_id=&search=
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:14:29.275Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:14:29.324Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[CSKH-Engine 2026-04-14T13:15:00.046Z] === START ===
+[CSKH-Engine 2026-04-14T13:15:00.062Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T13:15:00.074Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:15:00.078Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:15:00.079Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:15:00.080Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:15:00.103Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:15:00.104Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:15:00.105Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T13:15:00.105Z] === COMPLETE ===
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:15:57.961Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:16:30.044Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:19:27.634Z] GET /api/leads
+[2026-04-14T13:19:27.640Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:19:27.642Z] GET /api/departures
+[2026-04-14T13:19:27.643Z] GET /api/guides
+[2026-04-14T13:19:27.643Z] GET /api/customers
+[2026-04-14T13:19:27.644Z] GET /api/settings
+[2026-04-14T13:19:27.681Z] GET /api/tours
+[2026-04-14T13:19:27.687Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:19:27.690Z] GET /api/permissions/my
+[2026-04-14T13:19:27.693Z] GET /api/users
+[2026-04-14T13:19:27.776Z] GET /api/business-units
+[2026-04-14T13:19:27.778Z] GET /api/users/roles
+[2026-04-14T13:19:27.779Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:19:27.822Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:19:27.828Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:19:28.087Z] GET /api/bookings?page=1&limit=30
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:22:13.028Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:23:20.169Z] GET /api/leads
+[2026-04-14T13:23:20.178Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:23:20.185Z] GET /api/tours
+[2026-04-14T13:23:20.195Z] GET /api/departures
+[2026-04-14T13:23:20.200Z] GET /api/guides
+[2026-04-14T13:23:20.201Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:23:20.224Z] GET /api/customers
+[2026-04-14T13:23:20.294Z] GET /api/users
+[2026-04-14T13:23:20.311Z] GET /api/business-units
+[2026-04-14T13:23:20.312Z] GET /api/settings
+[2026-04-14T13:23:20.317Z] GET /api/permissions/my
+[2026-04-14T13:23:20.349Z] GET /api/users/roles
+[2026-04-14T13:23:20.349Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:23:20.353Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:23:20.355Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:23:20.645Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:23:25.728Z] GET /api/leads
+[2026-04-14T13:23:25.730Z] GET /api/tours
+[2026-04-14T13:23:25.730Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:23:25.731Z] GET /api/departures
+[2026-04-14T13:23:25.731Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:23:25.731Z] GET /api/customers
+[2026-04-14T13:23:25.736Z] GET /api/users
+[2026-04-14T13:23:25.782Z] GET /api/guides
+[2026-04-14T13:23:25.826Z] GET /api/settings
+[2026-04-14T13:23:25.828Z] GET /api/business-units
+[2026-04-14T13:23:25.848Z] GET /api/permissions/my
+[2026-04-14T13:23:25.851Z] GET /api/users/roles
+[2026-04-14T13:23:25.852Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:23:25.854Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:23:25.857Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:23:26.214Z] GET /api/bookings?page=1&limit=30
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:24:32.384Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[CSKH-Engine 2026-04-14T13:30:00.022Z] === START ===
+[CSKH-Engine 2026-04-14T13:30:00.051Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T13:30:00.062Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:30:00.063Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:30:00.065Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:30:00.066Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:30:00.094Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:30:00.094Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:30:00.095Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T13:30:00.095Z] === COMPLETE ===
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:32:03.281Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:33:10.165Z] GET /api/leads
+[2026-04-14T13:33:10.170Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:33:10.186Z] GET /api/tours
+[2026-04-14T13:33:10.187Z] GET /api/departures
+[2026-04-14T13:33:10.189Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:33:10.190Z] GET /api/customers
+[2026-04-14T13:33:10.211Z] GET /api/users
+[2026-04-14T13:33:10.216Z] GET /api/guides
+[2026-04-14T13:33:10.287Z] GET /api/settings
+[2026-04-14T13:33:10.289Z] GET /api/business-units
+[2026-04-14T13:33:10.289Z] GET /api/permissions/my
+[2026-04-14T13:33:10.314Z] GET /api/users/roles
+[2026-04-14T13:33:10.315Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:33:10.320Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:33:10.322Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:33:10.631Z] GET /api/bookings?page=1&limit=30
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Nguyen Mai Huong. Đang tạo Lead...
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "Ladakh" -> BU4 | msg: "Dạ FIT Tour xin chào Quý khách.
+
+Em gửi anh/chị thông tin to"
+[BU-AUTO] Poller Lead #4393 (Nguyen Mai Huong) → Auto BU: BU4
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "2ed1f756afe512aa22168dc2aca6e50ae944d29eab44a711af739c692925f7f2"
+    ],
+    "fb_login_id": "26802961329298952"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4393,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'A4_AZo55XAZ9NYQBSb-IKJs' }
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:35:48.034Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Trần Khang. Đang tạo Lead...
+[BU-AUTO] ⛔ Skip "doan" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI đã chuyển đoạn chat này cho bạn. Giá tour Alaska"
+[BU-AUTO] ⛔ Skip "đoàn" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI đã chuyển đoạn chat này cho bạn. Giá tour Alaska"
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "Alaska" -> BU2 | msg: "Tác nhân AI đã chuyển đoạn chat này cho bạn. Giá tour Alaska"
+[BU-AUTO] Poller Lead #4394 (Trần Khang) → Auto BU: BU2
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "1485277eb369933ff18d0949e0399b0398ec758e5396f43669d03935066f9bf9"
+    ],
+    "fb_login_id": "26279802754994691"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4394,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'Aool_RqnUbjyUCpOyFxOYXI' }
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:37:36.904Z] GET /api/marketing-ads?bu_name=All&year=2026&month=4&week_number=
+[2026-04-14T13:37:36.914Z] GET /api/marketing-ads/kpis?year=2026
+[2026-04-14T13:37:36.916Z] GET /api/leads
+[2026-04-14T13:37:36.917Z] GET /api/settings
+[2026-04-14T13:37:36.919Z] GET /api/tours
+[2026-04-14T13:37:36.920Z] GET /api/departures
+[2026-04-14T13:37:36.921Z] GET /api/guides
+[2026-04-14T13:37:36.936Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:37:36.938Z] GET /api/customers
+[2026-04-14T13:37:36.957Z] GET /api/users
+[2026-04-14T13:37:37.056Z] GET /api/business-units
+[2026-04-14T13:37:37.062Z] GET /api/permissions/my
+[2026-04-14T13:37:37.067Z] GET /api/marketing-ads?bu_name=All&year=2026&month=4&week_number=
+[2026-04-14T13:37:37.082Z] GET /api/marketing-ads/kpis?year=2026
+[2026-04-14T13:37:37.083Z] GET /api/marketing-ads?bu_name=All&year=2026&month=4&week_number=
+[2026-04-14T13:37:37.091Z] GET /api/marketing-ads?bu_name=All&year=2026&month=4&week_number=
+[2026-04-14T13:37:37.100Z] GET /api/marketing-ads/kpis?year=2026
+[2026-04-14T13:37:37.104Z] GET /api/marketing-ads/kpis?year=2026
+[2026-04-14T13:37:37.351Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:37:45.587Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:37:45.600Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:37:49.446Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:37:49.463Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:39:19.100Z] PUT /api/travel-support/1
+[2026-04-14T13:39:19.132Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Hương Đinh. Đang tạo Lead...
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Minh cần báo giá tour Chào Hương! Chúng tôi có thể giúp"
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "e7989f247f8d55884052863c774cb6df4384f154d36ae74cc90c55ae239c8f14"
+    ],
+    "fb_login_id": "35626021110315412"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4395,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AZTD2qTWCCvIYl2PfVOWVUA' }
+[2026-04-14T13:41:46.352Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:41:46.362Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[BU-AUTO] ⛔ Skip "tan cuong" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Minh cần báo giá tour Chào Hương! C"
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "tân cương" -> BU1 | msg: "Tác nhân AI sẽ phản hồi. Minh cần báo giá tour Chào Hương! C"
+[BU-AUTO] Poller Lead #4395 (Hương Đinh) → Auto BU: BU1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:42:41.488Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:42:41.501Z] GET /api/leads
+[2026-04-14T13:42:41.502Z] GET /api/tours
+[2026-04-14T13:42:41.503Z] GET /api/departures
+[2026-04-14T13:42:41.503Z] GET /api/customers
+[2026-04-14T13:42:41.504Z] GET /api/guides
+[2026-04-14T13:42:41.529Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:42:41.547Z] GET /api/users
+[2026-04-14T13:42:41.613Z] GET /api/settings
+[2026-04-14T13:42:41.616Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:42:41.619Z] GET /api/permissions/my
+[2026-04-14T13:42:41.647Z] GET /api/business-units
+[2026-04-14T13:42:41.648Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:42:41.650Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:42:41.936Z] GET /api/bookings?page=1&limit=30
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:44:08.693Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:44:08.703Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:44:28.997Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:44:29.002Z] GET /api/leads
+[2026-04-14T13:44:29.005Z] GET /api/tours
+[2026-04-14T13:44:29.007Z] GET /api/departures
+[2026-04-14T13:44:29.008Z] GET /api/guides
+[2026-04-14T13:44:29.008Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:44:29.028Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:44:29.032Z] GET /api/customers
+[2026-04-14T13:44:29.046Z] GET /api/users
+[2026-04-14T13:44:29.049Z] GET /api/business-units
+[2026-04-14T13:44:29.050Z] GET /api/settings
+[2026-04-14T13:44:29.050Z] GET /api/permissions/my
+[2026-04-14T13:44:29.054Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:44:29.087Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:44:29.466Z] GET /api/bookings?page=1&limit=30
+[CSKH-Engine 2026-04-14T13:45:00.047Z] === START ===
+[CSKH-Engine 2026-04-14T13:45:00.059Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T13:45:00.068Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:45:00.069Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:45:00.070Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:45:00.071Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:45:00.089Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:45:00.090Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T13:45:00.091Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T13:45:00.091Z] === COMPLETE ===
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:45:22.346Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:45:22.355Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:45:37.369Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:45:37.371Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:45:57.127Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:45:57.130Z] GET /api/leads
+[2026-04-14T13:45:57.131Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:45:57.132Z] GET /api/tours
+[2026-04-14T13:45:57.133Z] GET /api/departures
+[2026-04-14T13:45:57.133Z] GET /api/guides
+[2026-04-14T13:45:57.164Z] GET /api/customers
+[2026-04-14T13:45:57.164Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:45:57.178Z] GET /api/users
+[2026-04-14T13:45:57.244Z] GET /api/settings
+[2026-04-14T13:45:57.246Z] GET /api/business-units
+[2026-04-14T13:45:57.250Z] GET /api/permissions/my
+[2026-04-14T13:45:57.279Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:45:57.283Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:45:57.590Z] GET /api/bookings?page=1&limit=30
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:46:11.694Z] GET /api/leads
+[2026-04-14T13:46:11.709Z] GET /api/tours
+[2026-04-14T13:46:11.710Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:46:11.711Z] GET /api/customers
+[2026-04-14T13:46:11.712Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:46:11.713Z] GET /api/departures
+[2026-04-14T13:46:11.738Z] GET /api/guides
+[2026-04-14T13:46:11.797Z] GET /api/users
+[2026-04-14T13:46:11.798Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:46:11.844Z] GET /api/settings
+[2026-04-14T13:46:11.845Z] GET /api/permissions/my
+[2026-04-14T13:46:11.847Z] GET /api/business-units
+[2026-04-14T13:46:11.849Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:46:11.850Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:46:12.179Z] GET /api/bookings?page=1&limit=30
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:47:59.799Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:47:59.817Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:49:03.034Z] GET /api/travel-support?timeRange=quarter&start_date=2026-04-01&end_date=2026-06-30&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:49:03.851Z] GET /api/travel-support?timeRange=month&start_date=2026-04-01&end_date=2026-04-30&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:49:04.208Z] GET /api/travel-support?timeRange=quarter&start_date=2026-04-01&end_date=2026-06-30&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:49:04.981Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:49:21.010Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:49:21.015Z] GET /api/leads
+[2026-04-14T13:49:21.020Z] GET /api/tours
+[2026-04-14T13:49:21.023Z] GET /api/departures
+[2026-04-14T13:49:21.024Z] GET /api/guides
+[2026-04-14T13:49:21.038Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:49:21.053Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:49:21.058Z] GET /api/business-units
+[2026-04-14T13:49:21.067Z] GET /api/customers
+[2026-04-14T13:49:21.137Z] GET /api/users
+[2026-04-14T13:49:21.167Z] GET /api/settings
+[2026-04-14T13:49:21.168Z] GET /api/permissions/my
+[2026-04-14T13:49:21.169Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:49:21.170Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T13:49:21.484Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:49:46.875Z] POST /api/travel-support
+[2026-04-14T13:49:46.898Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0904881258 cho Lead ID 4391
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Huyen Pham. Đang tạo Lead...
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "Trung Quốc" -> BU1 | msg: "Dạ FIT Tour xin chào Quý khách.
+
+Dạ hiện tại bên em có nhiều"
+[BU-AUTO] Poller Lead #4396 (Huyen Pham) → Auto BU: BU1
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "dd035921d15204f6d1247c3e64c379075f99cebbc38bd12926ae4f13883257ae"
+    ],
+    "fb_login_id": "34927709380207888"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4396,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AUIrM2x5J4z7ntCtNJ-gSnV' }
+[FB POLLER] Trích xuất SĐT 0908881727 cho Lead ID 4396
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB] Resolved Page Token for: FIT TOUR - Du lịch có GUU (107694084435854)
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:57:26.179Z] GET /api/leads
+[2026-04-14T13:57:26.188Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:57:26.190Z] GET /api/tours
+[2026-04-14T13:57:26.190Z] GET /api/guides
+[2026-04-14T13:57:26.191Z] GET /api/departures
+[2026-04-14T13:57:26.191Z] GET /api/customers
+[2026-04-14T13:57:26.260Z] GET /api/settings
+[2026-04-14T13:57:26.261Z] GET /api/users
+[2026-04-14T13:57:26.263Z] GET /api/business-units
+[2026-04-14T13:57:26.265Z] GET /api/permissions/my
+[2026-04-14T13:57:26.542Z] GET /api/leads
+[2026-04-14T13:57:26.543Z] GET /api/tours
+[2026-04-14T13:57:26.543Z] GET /api/departures
+[2026-04-14T13:57:26.543Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:57:26.543Z] GET /api/customers
+[2026-04-14T13:57:26.543Z] GET /api/guides
+[2026-04-14T13:57:26.548Z] GET /api/settings
+[2026-04-14T13:57:26.559Z] GET /api/users
+[2026-04-14T13:57:26.561Z] GET /api/permissions/my
+[2026-04-14T13:57:26.562Z] GET /api/business-units
+[2026-04-14T13:57:26.683Z] GET /api/users/roles
+[2026-04-14T13:57:26.687Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T13:57:26.696Z] GET /api/users/roles
+[2026-04-14T13:57:27.507Z] GET /api/bookings?page=1&limit=30
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:59:03.520Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T13:59:23.523Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[CSKH-Engine 2026-04-14T14:00:00.033Z] === START ===
+[CSKH-Engine 2026-04-14T14:00:00.047Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T14:00:00.062Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:00:00.063Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:00:00.065Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:00:00.067Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:00:00.095Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:00:00.096Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T14:00:00.097Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-14T14:00:00.097Z] === COMPLETE ===
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Huynh Phuc Hau. Đang tạo Lead...
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "Mông Cổ" -> BU2 | msg: "Tác nhân AI sẽ phản hồi. Giá Tour Mông cổ tự lái bao nhiêu? "
+[BU-AUTO] Poller Lead #4397 (Huynh Phuc Hau) → Auto BU: BU2
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "8c50ffbca9cd59c0be84bf0a98e81d99e7ab914a0f7ec88dce348a1e49ce973d"
+    ],
+    "fb_login_id": "26602793416020187"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4397,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AlqLOllo6CApR4ZAQahrJAz' }
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Trích xuất SĐT 0903162961 cho Lead ID 4392
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1

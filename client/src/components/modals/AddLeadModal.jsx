@@ -75,7 +75,7 @@ const AddLeadModal = ({
           </div>
         )}
 
-        <form onSubmit={handleAddLead} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <form onSubmit={handleAddLead} className="modal-grid-2">
           <div className="modal-form-group" style={existingCustomer ? { opacity: 0.5 } : {}}>
             <label>TÊN KHÁCH HÀNG *</label>
             <input className="modal-input" required value={newLead.name} onChange={e => setNewLead({...newLead, name: e.target.value})} placeholder="Nguyễn Văn A..." />
@@ -172,7 +172,7 @@ const AddLeadModal = ({
             <textarea className="modal-textarea" value={newLead.consultation_note} onChange={e => setNewLead({...newLead, consultation_note: e.target.value})} placeholder="Nội dung tư vấn sơ bộ..." />
           </div>
 
-          <div style={{ gridColumn: 'span 2', display: 'flex', gap: '1rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
+          <div className="modal-header-actions-group" style={{ gridColumn: '1 / -1', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
             <button type="submit" className="btn-pro-save">
               <PlusCircle size={18} strokeWidth={3} /> LƯU HỒ SƠ MỚI
             </button>

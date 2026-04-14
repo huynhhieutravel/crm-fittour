@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Search, Plus, MapPin, Star, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle , ExternalLink } from 'lucide-react';
 import Select from 'react-select';
 import HotelDetailDrawer from '../components/modals/HotelDetailDrawer';
-import { MARKET_OPTIONS } from '../constants/markets';
+import { useMarkets } from '../hooks/useMarkets';
 
 const STAR_OPTIONS = [
     { value: '5_star', label: '5 Sao' },
@@ -51,6 +51,7 @@ export default function HotelsTab({ currentUser, addToast, handleDeleteHotel }) 
     const [totalItems, setTotalItems] = useState(0);
 
     // Filters
+    const marketOptions = useMarkets();
     const [marketFilter, setMarketFilter] = useState('');
     const [starFilter, setStarFilter] = useState('');
 
@@ -155,7 +156,7 @@ export default function HotelsTab({ currentUser, addToast, handleDeleteHotel }) 
                 <div className="filter-group" style={{ flex: '0 0 240px', margin: 0 }}>
                     <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>THỊ TRƯỜNG INBOUND/MICE</label>
                     <Select
-                        options={MARKET_OPTIONS}
+                        options={marketOptions}
                         value={marketFilter ? { label: marketFilter, value: marketFilter } : null}
                         onChange={option => setMarketFilter(option ? option.value : '')}
                         styles={reactSelectStyles}

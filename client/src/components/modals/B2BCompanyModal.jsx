@@ -223,7 +223,7 @@ const B2BCompanyModal = ({ company, onClose, onUpdateSuccess, users = [] }) => {
         <form onSubmit={handleUpdate} style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
           
           {(!company.id || activeTab === 'overview') && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
               <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
                 <label>TÊN DOANH NGHIỆP *</label>
                 <input className="modal-input" required 
@@ -280,8 +280,8 @@ const B2BCompanyModal = ({ company, onClose, onUpdateSuccess, users = [] }) => {
           )}
 
           {activeTab === 'insight' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
+              <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="modal-form-group">
                   <label>NGÀY CHỐT ĐƠN ĐẦU / KHỞI HÀNH LẦN ĐẦU</label>
                   <input className="modal-input" type="date" value={formData.first_deal_date} onChange={e => setFormData({...formData, first_deal_date: e.target.value})} />
@@ -349,7 +349,7 @@ const B2BCompanyModal = ({ company, onClose, onUpdateSuccess, users = [] }) => {
           )}
 
           {activeTab === 'history_interaction' && extendedData && (
-            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+            <div className="mobile-stack-grid mobile-stack-grid" style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
               
               {/* Trưởng đoàn & Lịch sử dự án */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%' }}>

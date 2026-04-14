@@ -1,13 +1,110 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useMarkets, getChildMarkets } from '../hooks/useMarkets';
+import Select from 'react-select';
 import { Plus, Search, CalendarDays, Users, Download, X, Plane, Copy } from 'lucide-react';
 import * as XLSX from 'xlsx-js-style';
 import OpTourDetailDrawer from '../components/modals/OpTourDetailDrawer';
 import OpTourAddCustomerModal from '../components/modals/OpTourAddCustomerModal';
 import OpTourBookingListModal from '../components/modals/OpTourBookingListModal';
 
+const MarketFilterBar = ({ activeMarket, setActiveMarket, marketOptions }) => {
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const isAll = activeMarket === 'Tất cả';
+
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingBottom: '10px' }}>
+        <button 
+          onClick={() => setActiveMarket('Tất cả')}
+          style={{ 
+            padding: '6px 16px', borderRadius: '4px', fontWeight: '600', fontSize: '13px', whiteSpace: 'nowrap', border: '1px solid #e2e8f0', cursor: 'pointer',
+            backgroundColor: isAll ? 'white' : 'white', color: isAll ? '#1e293b' : '#64748b',
+            boxShadow: isAll ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+          }}>
+          Tất cả
+        </button>
+        {marketOptions.map(group => {
+           const isGroupActive = activeMarket === group.label || group.options?.some(o => o.value === activeMarket);
+           const hasChildren = group.options && group.options.length > 0;
+           
+           return (
+             <div key={group.id} style={{ position: 'relative' }}>
+                <button
+                  onClick={() => {
+                     if (hasChildren) {
+                        if (isGroupActive && openDropdown !== group.id) {
+                            setOpenDropdown(group.id);
+                        } else if (openDropdown === group.id) {
+                            setOpenDropdown(null);
+                        } else {
+                            setActiveMarket(group.label);
+                            setOpenDropdown(group.id);
+                        }
+                     } else {
+                        setActiveMarket(group.label);
+                        setOpenDropdown(null);
+                     }
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', textTransform: 'uppercase',
+                    padding: '6px 16px', borderRadius: '4px', fontWeight: '700', fontSize: '12px', whiteSpace: 'nowrap', border: '1px solid #e2e8f0',
+                    backgroundColor: isGroupActive ? '#ff4b2b' : 'white', color: isGroupActive ? 'white' : '#64748b',
+                    boxShadow: isGroupActive ? '0 2px 4px rgba(255, 75, 43, 0.3)' : 'none',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <span>{group.label}</span>
+                  {hasChildren && <span style={{ fontSize: '10px', marginLeft: '2px', transition: 'transform 0.2s', transform: openDropdown === group.id ? 'rotate(180deg)' : 'rotate(0)' }}>▼</span>}
+                </button>
+                
+                {openDropdown === group.id && hasChildren && (
+                   <div style={{
+                      position: 'absolute', top: '100%', left: 0, marginTop: '4px', background: 'white',
+                      border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                      zIndex: 9999, minWidth: '160px', padding: '4px', display: 'flex', flexDirection: 'column', gap: '2px'
+                   }}>
+                      <div 
+                         onClick={() => { setActiveMarket(group.label); setOpenDropdown(null); }}
+                         style={{
+                            padding: '8px 12px', fontSize: '13px', cursor: 'pointer', borderRadius: '4px',
+                            backgroundColor: activeMarket === group.label ? '#fff7ed' : 'transparent',
+                            color: activeMarket === group.label ? '#ea580c' : '#475569',
+                            fontWeight: activeMarket === group.label ? '600' : '500'
+                         }}
+                         onMouseEnter={(e) => e.target.style.backgroundColor = activeMarket === group.label ? '#fff7ed' : '#f1f5f9'}
+                         onMouseLeave={(e) => e.target.style.backgroundColor = activeMarket === group.label ? '#fff7ed' : 'transparent'}
+                      >
+                         Tất cả {group.label}
+                      </div>
+                      <div style={{ height: '1px', background: '#e2e8f0', margin: '2px 0' }} />
+                      {group.options.map(child => (
+                         <div 
+                           key={child.id}
+                           onClick={() => { setActiveMarket(child.value); setOpenDropdown(null); }}
+                           style={{
+                              padding: '8px 12px', fontSize: '13px', cursor: 'pointer', borderRadius: '4px',
+                              backgroundColor: activeMarket === child.value ? '#fff7ed' : 'transparent',
+                              color: activeMarket === child.value ? '#ea580c' : '#1e293b',
+                              fontWeight: activeMarket === child.value ? '600' : '400'
+                           }}
+                           onMouseEnter={(e) => e.target.style.backgroundColor = activeMarket === child.value ? '#fff7ed' : '#f1f5f9'}
+                           onMouseLeave={(e) => e.target.style.backgroundColor = activeMarket === child.value ? '#fff7ed' : 'transparent'}
+                         >
+                           {child.label}
+                         </div>
+                      ))}
+                   </div>
+                )}
+             </div>
+           );
+        })}
+    </div>
+  );
+};
+
 export default function OpToursTab({ currentUser }) {
   const [tours, setTours] = useState([]);
+  const marketOptions = useMarkets();
   const [loading, setLoading] = useState(true);
   const [airlinesList, setAirlinesList] = useState([]);
   const [activeMarket, setActiveMarket] = useState('Tất cả');
@@ -169,9 +266,14 @@ export default function OpToursTab({ currentUser }) {
 
     // Data rows
     allMembers.forEach((m, i) => {
+      const formatName = (str) => {
+          if (!str) return '';
+          return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toUpperCase();
+      };
+      
       wsData.push([
         i + 1,
-        m.name || '',
+        formatName(m.name),
         m.gender || '',
         m.dob || '',
         m.docId || '',
@@ -402,8 +504,8 @@ export default function OpToursTab({ currentUser }) {
       tour_code: newCode,
       tour_name: tour.tour_name || '',
       tour_template_id: tour.tour_template_id || '',
-      start_date: tour.start_date ? tour.start_date.split('T')[0] : '',
-      end_date: tour.end_date ? tour.end_date.split('T')[0] : '',
+      start_date: tour.start_date ? new Date(tour.start_date).toLocaleDateString('en-CA') : '',
+      end_date: tour.end_date ? new Date(tour.end_date).toLocaleDateString('en-CA') : '',
       market: tour.market || '',
       status: 'Mở bán',
       tour_info: { ...(tour.tour_info || {}) },
@@ -424,7 +526,11 @@ export default function OpToursTab({ currentUser }) {
   const filteredTours = tours.filter(t => {
     const matchSearch = t.tour_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                         t.tour_code?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchMarket = activeMarket === 'Tất cả' || t.market === activeMarket;
+    const childMarkets = getChildMarkets(activeMarket, marketOptions);
+    const tourMarkets = t.market ? t.market.split(',').map(m => m.trim()) : [];
+    const matchMarket = activeMarket === 'Tất cả' || 
+                        tourMarkets.includes(activeMarket) || 
+                        tourMarkets.some(m => childMarkets.includes(m));
     const matchStatus = activeStatus === 'Tất cả' || t.status === activeStatus || (activeStatus === 'Mở bán' && !t.status);
     
     const matchStart = filterStartDate ? new Date(t.start_date) >= new Date(filterStartDate) : true;
@@ -488,7 +594,7 @@ export default function OpToursTab({ currentUser }) {
       </div>
 
       {/* Summary Top Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px', marginBottom: '20px' }}>
+      <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px', marginBottom: '20px' }}>
          <div onClick={() => setActiveStatus('Tất cả')} style={{ background: '#f97316', color: 'white', padding: '15px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)' }}>
             <div style={{ fontSize: '14px', fontWeight: '500' }}>Tổng số Tour</div>
             <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{countAll}</div>
@@ -516,7 +622,7 @@ export default function OpToursTab({ currentUser }) {
       </div>
 
       {/* Advanced Filter Form Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto', gap: '10px', alignItems: 'end', marginBottom: '20px', overflowX: 'auto' }}>
+      <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto', gap: '10px', alignItems: 'end', marginBottom: '20px', overflowX: 'auto' }}>
         <div>
           <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '5px', display: 'block', fontWeight: '500' }}>Tìm kiếm:</label>
           <input type="text" placeholder="Mã, tên tour.." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '4px', outline: 'none' }} />
@@ -600,26 +706,13 @@ export default function OpToursTab({ currentUser }) {
          </button>
       </div>
 
-      {/* Market Filter Pills Layer */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '15px' }}>
-        {uniqueMarkets.map(m => (
-           <button 
-             key={m}
-             onClick={() => setActiveMarket(m)}
-             style={{
-                background: 'white',
-                color: activeMarket === m ? '#1e293b' : '#64748b',
-                border: activeMarket === m ? '1px solid #1e293b' : '1px solid #e2e8f0',
-                padding: '6px 16px',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: activeMarket === m ? '600' : '400',
-                cursor: 'pointer',
-                letterSpacing: '0.2px',
-                textTransform: 'uppercase'
-             }}
-           >{m}</button>
-        ))}
+      {/* Market Filter: Pill Action Bar */}
+      <div style={{ marginBottom: '15px' }}>
+         <MarketFilterBar 
+            activeMarket={activeMarket} 
+            setActiveMarket={setActiveMarket} 
+            marketOptions={marketOptions} 
+         />
       </div>
       <hr style={{ borderTop: '1px solid #e2e8f0', margin: '0 0 15px 0' }} />
 
@@ -904,6 +997,7 @@ export default function OpToursTab({ currentUser }) {
       <OpTourAddCustomerModal 
         isOpen={isCustomerModalOpen} 
         initialData={editingBookingData}
+        currentUser={currentUser}
         onClose={() => setIsCustomerModalOpen(false)} 
         onSave={async (data) => {
           try {

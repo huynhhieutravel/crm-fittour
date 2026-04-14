@@ -131,7 +131,7 @@ const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEdit
   const handleStartEditReminder = (r, label) => {
     setEditingReminderId(r.id);
     setEditReminderTitle(label);
-    setEditReminderDate(r.due_date ? new Date(r.due_date).toISOString().split('T')[0] : '');
+    setEditReminderDate(r.due_date ? new Date(r.due_date).toLocaleDateString('en-CA') : '');
   };
 
   const handleSaveEditReminder = async (id) => {

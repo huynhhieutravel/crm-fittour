@@ -96,6 +96,11 @@ app.use('/api/b2b-companies', b2bCompaniesRoutes);
 app.use('/api/costings', costingRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/op-tours', opToursRoutes);
+app.use('/api/travel-support', require('./routes/travelSupport'));
+
+// ═══ CSKH (Chăm Sóc Khách Hàng) ═══
+const cskhRoutes = require('./routes/cskh');
+app.use('/api/cskh', cskhRoutes);
 
 const dashboardRoutes = require('./routes/dashboard');
 
@@ -109,6 +114,18 @@ app.use('/api/permissions', permissionRoutes);
 
 const orgChartRoutes = require('./routes/orgChart');
 app.use('/api/org-chart', orgChartRoutes);
+
+const marketRoutes = require('./routes/markets');
+app.use('/api/markets', marketRoutes);
+
+const auditLogRoutes = require('./routes/auditLogs');
+app.use('/api/audit-logs', auditLogRoutes);
+
+const marketingAdsRoutes = require('./routes/marketingAds');
+app.use('/api/marketing-ads', marketingAdsRoutes);
+
+const managementDashboardRoutes = require('./routes/managementDashboard');
+app.use('/api/management-dashboard', managementDashboardRoutes);
 
 app.get('/', (req, res) => {
     res.send('FIT Tour CRM API is running...');
@@ -150,4 +167,12 @@ server.listen(PORT, () => {
     // Start Auto-delete Media Cron Engine (60 days)
     const { startMediaCleanupCron } = require('./cron/mediaCleanup');
     startMediaCleanupCron();
+
+    // Start Auto-delete Audit Logs Cron Engine (30 days)
+    const { startAuditLogCleanupCron } = require('./cron/auditLogCleanup');
+    startAuditLogCleanupCron();
+
+    // Start CSKH Auto-Sync Cron Engine (every 15 min)
+    const { startCskhCron } = require('./cron/cskhEngine');
+    startCskhCron();
 });

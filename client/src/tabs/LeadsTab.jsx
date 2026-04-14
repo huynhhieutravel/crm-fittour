@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   UserPlus, 
   MessageSquare, 
@@ -13,11 +13,13 @@ import {
   Package,
   X,
   Eye,
-  Lock
+  Lock,
+  Phone
 } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
 import axios from 'axios';
 const LeadsTab = ({ 
+  currentUser,
   leads, 
   filteredLeads, 
   leadFilters, 
@@ -42,8 +44,14 @@ const LeadsTab = ({
   handleConvertLead,
   navigateToInbox
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(30);
+  const [currentPage, setCurrentPage] = useState(() => {
+    const saved = sessionStorage.getItem('leadsCurrentPage');
+    return saved ? parseInt(saved, 10) : 1;
+  });
+  const [itemsPerPage, setItemsPerPage] = useState(() => {
+    const saved = sessionStorage.getItem('leadsItemsPerPage');
+    return saved ? (saved === 'all' ? 'all' : parseInt(saved, 10)) : 30;
+  });
 
   const [selectedLeadIds, setSelectedLeadIds] = useState([]);
   const [bulkActionStatus, setBulkActionStatus] = useState('');
@@ -56,6 +64,12 @@ const LeadsTab = ({
     setEditingPhoneId(lead.id);
     setTempPhone(lead.phone || '');
   };
+
+  const baseUsersOptions = users.map(u => ({ id: u.id, name: u.username }));
+  const sortedUsersOptions = currentUser ? [
+    ...baseUsersOptions.filter(u => u.id === currentUser.id),
+    ...baseUsersOptions.filter(u => u.id !== currentUser.id)
+  ] : baseUsersOptions;
 
   const handlePhoneSave = (id) => {
     if (tempPhone.trim() !== '') {
@@ -117,9 +131,23 @@ const LeadsTab = ({
     }
   };
 
+  const isInitialMount = useRef(true);
+
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     setCurrentPage(1);
   }, [leadFilters]);
+
+  useEffect(() => {
+    sessionStorage.setItem('leadsCurrentPage', currentPage);
+  }, [currentPage]);
+
+  useEffect(() => {
+    sessionStorage.setItem('leadsItemsPerPage', itemsPerPage);
+  }, [itemsPerPage]);
 
   const actualItemsPerPage = itemsPerPage === 'all' ? Math.max(1, filteredLeads.length) : itemsPerPage;
   const totalPages = Math.ceil(filteredLeads.length / actualItemsPerPage) || 1;
@@ -133,12 +161,19 @@ const LeadsTab = ({
 
   return (
     <>
-      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+      <div className="stats-grid custom-leads-stats">
         <div className="stat-card purple">
           <div className="stat-icon-bg"><UserPlus size={24} /></div>
           <div className="stat-content">
             <span className="stat-label">HỒ SƠ MỚI</span>
             <div className="stat-value">{filteredLeads.filter(l => l.status === 'Mới').length}</div>
+          </div>
+        </div>
+        <div className="stat-card blue">
+          <div className="stat-icon-bg"><Phone size={24} /></div>
+          <div className="stat-content">
+            <span className="stat-label">CÓ SĐT</span>
+            <div className="stat-value">{filteredLeads.filter(l => l.phone && l.phone.trim() !== '').length}</div>
           </div>
         </div>
         <div className="stat-card orange">
@@ -157,8 +192,8 @@ const LeadsTab = ({
         </div>
       </div>
 
-      <div className="filter-bar">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr) auto', gap: '1rem', alignItems: 'end' }}>
+      <div className="filter-bar" style={{ display: 'flex', flexDirection: 'column-reverse', gap: '1rem' }}>
+        <div className="lead-filter-grid">
           <div className="filter-group">
             <label>TÌM KIẾM</label>
             <div style={{ position: 'relative' }}>
@@ -244,22 +279,24 @@ const LeadsTab = ({
           </button>
         </div>
         
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.85rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-          <span style={{ fontWeight: 600, color: '#64748b', marginRight: '0.5rem' }}>THỜI GIAN:</span>
-          {[
-            { id: 'today', label: 'Hôm nay' },
-            { id: 'yesterday', label: 'Hôm qua' },
-            { id: 'week', label: 'Tuần này' },
-            { id: 'month', label: 'Tháng này' },
-            { id: 'quarter', label: 'Quý này' },
-            { id: 'all', label: 'Tất cả' }
-          ].map(p => (
-            <button key={p.id} className={`preset-btn ${(leadFilters.timeRange === p.id && !leadFilters.startDate && !leadFilters.endDate) ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, timeRange: p.id, startDate: '', endDate: ''})}>
-              {p.label}
-            </button>
-          ))}
+        <div className="filter-options-container">
+          <div className="filter-options-group">
+            <span style={{ fontWeight: 600, color: '#64748b', marginRight: '0.5rem' }}>THỜI GIAN:</span>
+            {[
+              { id: 'today', label: 'Hôm nay' },
+              { id: 'yesterday', label: 'Hôm qua' },
+              { id: 'week', label: 'Tuần này' },
+              { id: 'month', label: 'Tháng này' },
+              { id: 'quarter', label: 'Quý này' },
+              { id: 'all', label: 'Tất cả' }
+            ].map(p => (
+              <button key={p.id} className={`preset-btn ${(leadFilters.timeRange === p.id && !leadFilters.startDate && !leadFilters.endDate) ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, timeRange: p.id, startDate: '', endDate: ''})}>
+                {p.label}
+              </button>
+            ))}
+          </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
+          <div className="filter-options-group filter-divider">
             <span style={{ color: '#64748b', fontWeight: 600 }}>SĐT:</span>
             {[
               { id: '', label: 'Tất cả' },
@@ -272,14 +309,16 @@ const LeadsTab = ({
             ))}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
-            <span style={{ color: '#64748b', fontWeight: 600 }}>Tùy chọn:</span>
-            <input type="date" className="filter-input" style={{ padding: '4px 8px', height: '32px' }} value={leadFilters.startDate || ''} onChange={e => setLeadFilters({...leadFilters, timeRange: 'custom', startDate: e.target.value})} />
-            <span style={{ color: '#94a3b8' }}>-</span>
-            <input type="date" className="filter-input" style={{ padding: '4px 8px', height: '32px' }} value={leadFilters.endDate || ''} onChange={e => setLeadFilters({...leadFilters, timeRange: 'custom', endDate: e.target.value})} />
+          <div className="filter-options-group filter-divider filter-date-group">
+            <span className="filter-date-label" style={{ color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>Tùy chọn:</span>
+            <div className="filter-date-inputs-wrapper">
+              <input type="date" className="filter-input filter-date-input" value={leadFilters.startDate || ''} onChange={e => setLeadFilters({...leadFilters, timeRange: 'custom', startDate: e.target.value})} />
+              <span className="filter-date-separator" style={{ color: '#94a3b8' }}>-</span>
+              <input type="date" className="filter-input filter-date-input" value={leadFilters.endDate || ''} onChange={e => setLeadFilters({...leadFilters, timeRange: 'custom', endDate: e.target.value})} />
+            </div>
           </div>
 
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="filter-options-actions">
             {(leadFilters.status || leadFilters.bu_group || leadFilters.assigned_to || leadFilters.search || leadFilters.hasPhone || (leadFilters.tours && leadFilters.tours.length > 0) || leadFilters.startDate || leadFilters.endDate) && (
               <button 
                 type="button"
@@ -347,7 +386,7 @@ const LeadsTab = ({
           <tbody>
             {currentLeads.map(lead => (
               <tr key={lead.id} className={selectedLeadIds.includes(lead.id) ? "selected-row" : ""}>
-                <td style={{ textAlign: 'center' }}>
+                <td data-label="Chọn" style={{ textAlign: 'center' }}>
                   <input 
                     type="checkbox" 
                     disabled={lead.is_locked}
@@ -359,7 +398,7 @@ const LeadsTab = ({
                     style={{ cursor: lead.is_locked ? 'not-allowed' : 'pointer', width: '16px', height: '16px', opacity: lead.is_locked ? 0.4 : 1 }}
                   />
                 </td>
-                <td style={{ color: '#64748b', fontSize: '0.85rem' }}>
+                <td data-label="Ngày Tạo" style={{ color: '#64748b', fontSize: '0.85rem' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <span style={{ fontWeight: 600, color: '#334155' }}>{new Date(lead.created_at).toLocaleDateString('vi-VN')}</span>
                     <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(lead.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -382,7 +421,7 @@ const LeadsTab = ({
                     )}
                   </div>
                 </td>
-                <td>
+                <td data-label="Thông Tin Lead">
                   <div className="lead-info">
                     <span className="lead-name" style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {lead.name}
@@ -486,7 +525,7 @@ const LeadsTab = ({
                     </div>
                   </div>
                 </td>
-                <td>
+                <td data-label="Sản Phẩm Quan Tâm">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <SearchableSelect 
                       options={tours}
@@ -507,7 +546,7 @@ const LeadsTab = ({
                     />
                   </div>
                 </td>
-                <td>
+                <td data-label="Nguồn & Nhóm">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       {getSourceIcon(lead.source)}
@@ -524,9 +563,9 @@ const LeadsTab = ({
                     </div>
                   </div>
                 </td>
-                <td>
+                <td data-label="Tư Vấn Viên">
                   <SearchableSelect 
-                    options={users.map(u => ({ id: u.id, name: u.username }))}
+                    options={sortedUsersOptions}
                     value={lead.assigned_to}
                     onChange={(val) => !lead.is_locked && handleQuickUpdate(lead.id, 'assigned_to', val)}
                     placeholder="Chưa giao"
@@ -544,7 +583,7 @@ const LeadsTab = ({
                     className="table-searchable-select"
                   />
                 </td>
-                <td>
+                <td data-label="Trạng Thái Tư Vấn">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <select disabled={lead.is_locked} className={`status-select badge-${lead.status} ${lead.is_locked ? 'opacity-70' : ''}`} value={lead.status} onChange={e => handleQuickUpdate(lead.id, 'status', e.target.value)}>
                       {LEAD_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -554,7 +593,7 @@ const LeadsTab = ({
                     </select>
                   </div>
                 </td>
-                <td>
+                <td data-label="Thời Gian Liên Hệ">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.75rem', color: '#64748b' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Clock size={10} /> LH: {lead.last_contacted_at ? new Date(lead.last_contacted_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--'}
@@ -564,7 +603,7 @@ const LeadsTab = ({
                     </div>
                   </div>
                 </td>
-                <td>
+                <td data-label="Thao Tác">
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
                     <button 
                       type="button" 
@@ -632,9 +671,9 @@ const LeadsTab = ({
       )}
 
       {selectedLeadIds.length > 0 && (
-        <div style={{ position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)', background: '#1e293b', color: 'white', padding: '12px 24px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', zIndex: 9999, animation: 'fadeIn 0.2s ease-out' }}>
+        <div className="bulk-actions-popup">
           <div style={{ fontWeight: 800 }}>Đã chọn {selectedLeadIds.length} lead</div>
-          <div style={{ height: '24px', width: '1px', background: 'rgba(255,255,255,0.2)' }}></div>
+          <div className="bulk-divider" style={{ height: '24px', width: '1px', background: 'rgba(255,255,255,0.2)' }}></div>
           <select value={bulkActionStatus} onChange={e => setBulkActionStatus(e.target.value)} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '6px', outline: 'none' }}>
             <option value="" style={{ color: 'black' }}>-- Đổi trạng thái --</option>
             {LEAD_STATUSES.map(s => <option key={s} value={s} style={{ color: 'black' }}>{s}</option>)}

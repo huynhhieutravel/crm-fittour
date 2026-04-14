@@ -341,7 +341,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                     <option value="MEETING">Hẹn gặp</option>
                     <option value="OTHER">Khác</option>
                   </select>
-                  <input type="date" className="modal-input" style={{ flex: 1 }} value={newEvent.event_date ? new Date(newEvent.event_date).toISOString().split('T')[0] : ''} onChange={e => setNewEvent({...newEvent, event_date: e.target.value})} />
+                  <input type="date" className="modal-input" style={{ flex: 1 }} value={newEvent.event_date ? new Date(newEvent.event_date).toLocaleDateString('en-CA') : ''} onChange={e => setNewEvent({...newEvent, event_date: e.target.value})} />
                   <button className="btn-pro-save" onClick={handleAddEventSubmit}>{editingEventId ? 'Lưu' : 'Tạo'}</button>
                   {editingEventId && (
                     <button className="btn-ghost" style={{ padding: '0 12px' }} onClick={() => { setEditingEventId(null); setNewEvent({ title: '', event_type: 'CALL', event_date: '' }); }}>Hủy</button>

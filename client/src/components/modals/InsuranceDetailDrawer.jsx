@@ -3,13 +3,14 @@ import StarRating from '../common/StarRating';
 import axios from 'axios';
 import { X, Save, Plus, Trash2, Shield, ShoppingBag, Users, FileText, Send, Clock, PlusCircle , ExternalLink, Link2 } from 'lucide-react';
 import Select from 'react-select';
-import { MARKET_OPTIONS } from '../../constants/markets';
+import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
 export default function InsuranceDetailDrawer({ insurance, onClose, refreshList, currentUser, addToast }) {
     const [activeTab, setActiveTab] = useState('general');
     
     // States - match actual DB columns
+    const marketOptions = useMarkets();
     const [formData, setFormData] = useState({
         code: '', name: '', tax_id: '', phone: '', email: '',
         country: '', province: '', address: '', notes: '',
@@ -195,7 +196,7 @@ export default function InsuranceDetailDrawer({ insurance, onClose, refreshList,
                                 <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
                                     <Shield size={18} color="#cbd5e1" /> Thông tin Bảo Hiểm
                                </h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem 2rem' }}>
+                                <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem 2rem' }}>
                                     <div>
                                         <label style={labelStyle}>Mã NCC Bảo Hiểm *</label>
                                         <input type="text" style={{ ...drawerInputStyle, background: '#f1f5f9', color: '#64748b', fontWeight: 600 }} value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} disabled={isViewOnly} placeholder="INS-..." />
@@ -224,7 +225,7 @@ export default function InsuranceDetailDrawer({ insurance, onClose, refreshList,
                                     <div>
                                         <label style={labelStyle}>Thị trường MICE/Inbound</label>
                                         <Select 
-                                            options={MARKET_OPTIONS}
+                                            options={marketOptions}
                                             value={formData.market ? { label: formData.market, value: formData.market } : null}
                                             onChange={option => setFormData({...formData, market: option ? option.value : ''})}
                                             styles={reactSelectStyles}
@@ -244,7 +245,7 @@ export default function InsuranceDetailDrawer({ insurance, onClose, refreshList,
                                     </div>
                                     <div style={{ gridColumn: 'span 2' }}>
                                         <label style={labelStyle}>Địa chỉ chi tiết</label>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: '1rem' }}>
+                                        <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: '1rem' }}>
                                             <input type="text" style={drawerInputStyle} value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} disabled={isViewOnly} placeholder="Quốc gia" />
                                             <input type="text" style={drawerInputStyle} value={formData.province} onChange={e => setFormData({...formData, province: e.target.value})} disabled={isViewOnly} placeholder="Tỉnh / Thành phố" />
                                             <input type="text" style={drawerInputStyle} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} disabled={isViewOnly} placeholder="Số nhà, Đường..." />

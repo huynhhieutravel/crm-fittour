@@ -73,12 +73,15 @@ exports.handleWebhookEvent = async (req, res) => {
                                     // Nếu lead chưa có BU → check lại sau mỗi page reply
                                     const leadId = echoConvRes.rows[0].lead_id;
                                     if (leadId) {
-                                        const leadCheck = await db.query('SELECT bu_group FROM leads WHERE id = $1', [leadId]);
+                                        const leadCheck = await db.query('SELECT bu_group, name FROM leads WHERE id = $1', [leadId]);
                                         if (leadCheck.rows.length > 0 && !leadCheck.rows[0].bu_group) {
                                             const allMsgs = await db.query('SELECT content FROM messages WHERE conversation_id = $1', [echoConvId]);
                                             const allText = allMsgs.rows.map(m => m.content || '').join(' ');
-                                            const autoBU = await facebookService.classifyBUFromMessage_exported ? null : null;
-                                            // BU check sẽ được thực hiện bởi tin nhắn customer tiếp theo
+                                            const autoBU = await facebookService.classifyBUFromMessage(allText);
+                                            if (autoBU) {
+                                                await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU, leadId]);
+                                                console.log(`[BU-AUTO] Echo Webhook Lead #${leadId} (${leadCheck.rows[0].name}) → Auto BU: ${autoBU}`);
+                                            }
                                         }
                                     }
                                 }

@@ -3,13 +3,14 @@ import StarRating from '../common/StarRating';
 import axios from 'axios';
 import { X, Save, Plus, Trash2, Building, BedDouble, CalendarDays, Users, FileText, Send, Clock, PlusCircle, ExternalLink, Link2 } from 'lucide-react';
 import Select from 'react-select';
-import { MARKET_OPTIONS } from '../../constants/markets';
+import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
 export default function HotelDetailDrawer({ hotel, onClose, refreshList, currentUser, addToast }) {
     const [activeTab, setActiveTab] = useState('general');
     
     // States
+    const marketOptions = useMarkets();
     const [formData, setFormData] = useState({
         code: '', name: '', tax_id: '', build_year: '', phone: '', email: '',
         country: '', province: '', address: '', notes: '', star_rate: '',
@@ -75,7 +76,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                 setActiveContractId(hotel.contracts[0].id);
                 if (hotel.contracts[0].rates) {
                     const mappedServices = hotel.contracts[0].rates.map(r => ({
-                        id: r.id, sku: r.sku, name: r.room_name, start_date: r.start_date?.split('T')[0] || '', end_date: r.end_date?.split('T')[0] || '',
+                        id: r.id, sku: r.sku, name: r.room_name, start_date: new Date(r.start_date).toLocaleDateString('en-CA') || '', end_date: new Date(r.end_date).toLocaleDateString('en-CA') || '',
                         day_type: r.day_type, contract_price: r.contract_price, net_price: r.net_price, sell_price: r.sell_price, description: r.description, notes: r.notes
                     }));
                     setServices(mappedServices);
@@ -89,7 +90,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
 
             if (hotel.allotments) {
                  const mappedAllots = hotel.allotments.map(a => ({
-                    id: a.id, sku: a.sku, name: a.room_name, start_date: a.start_date?.split('T')[0] || '', end_date: a.end_date?.split('T')[0] || '',
+                    id: a.id, sku: a.sku, name: a.room_name, start_date: new Date(a.start_date).toLocaleDateString('en-CA') || '', end_date: new Date(a.end_date).toLocaleDateString('en-CA') || '',
                     day_type: a.day_type, allotment_count: a.allotment_count, cut_off_days: a.cut_off_days, net_price: a.net_price, sell_price: a.sell_price, description: a.description, notes: a.notes
                 }));
                 setAllotments(mappedAllots);
@@ -178,7 +179,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
         const contract = availableContracts.find(c => c.id === parseInt(contractId));
         if (contract && contract.rates) {
             const mappedServices = contract.rates.map(r => ({
-                id: r.id, sku: r.sku, name: r.room_name, start_date: r.start_date?.split('T')[0] || '', end_date: r.end_date?.split('T')[0] || '',
+                id: r.id, sku: r.sku, name: r.room_name, start_date: new Date(r.start_date).toLocaleDateString('en-CA') || '', end_date: new Date(r.end_date).toLocaleDateString('en-CA') || '',
                 day_type: r.day_type, contract_price: r.contract_price, net_price: r.net_price, sell_price: r.sell_price, description: r.description, notes: r.notes
             }));
             setServices(mappedServices);
@@ -266,7 +267,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                 <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
                                     <Building size={18} color="#cbd5e1" /> Thông tin cơ sở
                                </h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1.25rem 2rem' }}>
+                                <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1.25rem 2rem' }}>
                                     <div className="form-group">
                                         <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Mã Nhà Cung Cấp *</label>
                                         <input type="text" style={{ ...drawerInputStyle, background: '#f1f5f9', color: '#64748b', fontWeight: 600 }} value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} disabled={isViewOnly} placeholder="HOTEL-..." />
@@ -297,7 +298,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                     <div className="form-group">
                                         <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Thị trường MICE/Inbound</label>
                                         <Select 
-                                            options={MARKET_OPTIONS}
+                                            options={marketOptions}
                                             value={hotel?.market ? { label: hotel.market, value: hotel.market } : (formData.market ? { label: formData.market, value: formData.market } : null)}
                                             onChange={option => setFormData({...formData, market: option ? option.value : ''})}
                                             styles={reactSelectStyles}
@@ -309,7 +310,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                     </div>
                                     <div className="form-group" style={{ gridColumn: 'span 2' }}>
                                         <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Địa chỉ chi tiết</label>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: '1rem' }}>
+                                        <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: '1rem' }}>
                                             <input type="text" style={drawerInputStyle} value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} disabled={isViewOnly} placeholder="Quốc gia" />
                                             <input type="text" style={drawerInputStyle} value={formData.province} onChange={e => setFormData({...formData, province: e.target.value})} disabled={isViewOnly} placeholder="Tỉnh / Ban" />
                                             <input type="text" style={drawerInputStyle} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} disabled={isViewOnly} placeholder="Số nhà, Đường..." />

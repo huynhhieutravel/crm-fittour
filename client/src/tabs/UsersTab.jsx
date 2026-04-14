@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, UserPlus, Shield, Edit3, Key, Trash2, Mail, Clock, UserCog, Users } from 'lucide-react';
+import { Search, UserPlus, Shield, Edit3, Key, Trash2, Mail, Clock, UserCog, Users, Phone } from 'lucide-react';
 
 const UsersTab = ({ 
   users, 

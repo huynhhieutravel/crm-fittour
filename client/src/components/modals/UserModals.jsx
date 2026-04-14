@@ -45,7 +45,7 @@ export const AddUserModal = ({
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Thêm Nhân Viên Mới</h2>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.25rem' }}>
+        <form onSubmit={handleSubmit} className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gap: '1.25rem' }}>
           <div className="modal-form-group">
             <label><User size={14} style={{ marginRight: '4px' }}/> TÊN ĐĂNG NHẬP *</label>
             <input className="modal-input" required value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} placeholder="Ví dụ: nva_sale" />
@@ -119,12 +119,12 @@ export const EditUserModal = ({
       setFormData({
         full_name: user.full_name || '', email: user.email || '', phone: user.phone || '',
         role_id: user.role_id || '', is_active: user.is_active !== false, permissions: user.permissions || {},
-        birth_date: user.birth_date ? user.birth_date.split('T')[0] : '',
+        birth_date: user.birth_date ? new Date(user.birth_date).toLocaleDateString('en-CA') : '',
         gender: user.gender || '', id_card: user.id_card || '',
         passport_url: user.passport_url || '',
-        id_expiry: user.id_expiry ? user.id_expiry.split('T')[0] : '',
+        id_expiry: user.id_expiry ? new Date(user.id_expiry).toLocaleDateString('en-CA') : '',
         address: user.address || '', facebook_url: user.facebook_url || '',
-        created_at: user.created_at ? user.created_at.split('T')[0] : '',
+        created_at: user.created_at ? new Date(user.created_at).toLocaleDateString('en-CA') : '',
         position: user.position || '', avatar_url: user.avatar_url || ''
       });
     }
@@ -200,18 +200,15 @@ export const EditUserModal = ({
         </div>
 
         <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', padding: '0 1.5rem' }}>
-          {[{ id: 'personal', label: '👤 Thông tin cá nhân' }, { id: 'permissions', label: '🔐 Phân quyền' }].map(tab => (
-            <button type="button" key={tab.id} onClick={() => setActiveTab(tab.id)}
-              style={{ background: 'none', border: 'none', padding: '0.8rem 1rem', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
-                color: activeTab === tab.id ? '#3b82f6' : '#64748b',
-                borderBottom: activeTab === tab.id ? '2px solid #3b82f6' : '2px solid transparent' }}
-            >{tab.label}</button>
-          ))}
+          <button type="button" onClick={() => setActiveTab('personal')}
+            style={{ background: 'none', border: 'none', padding: '0.8rem 1rem', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+              color: '#3b82f6', borderBottom: '2px solid #3b82f6' }}
+          >👤 Thông tin cá nhân</button>
         </div>
 
         <form onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
           {activeTab === 'personal' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+            <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
               <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
                 <label>TÊN ĐĂNG NHẬP (KHÔNG THỂ SỬA)</label>
                 <input className="modal-input" disabled value={user.username} style={{ background: '#f8fafc', cursor: 'not-allowed' }} />
@@ -281,7 +278,7 @@ export const EditUserModal = ({
                 <label>🔗 LINK FACEBOOK</label>
                 <input className="modal-input" value={formData.facebook_url} onChange={e => setFormData({...formData, facebook_url: e.target.value})} placeholder="https://facebook.com/..." />
               </div>
-              <div style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+              <div className="mobile-stack-grid mobile-stack-grid" style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                 <div className="modal-form-group">
                   <label>📅 NGÀY GIA NHẬP</label>
                   <input className="modal-input" type="date" value={formData.created_at} onChange={e => setFormData({...formData, created_at: e.target.value})} />
@@ -317,34 +314,7 @@ export const EditUserModal = ({
             </div>
           )}
 
-          {activeTab === 'permissions' && (
-            <div>
-              <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '1rem' }}>*Tick để ghi đè (thêm/bớt) quyền cho riêng nhân sự này.</p>
-              <table className="data-table" style={{ fontSize: '0.85rem' }}>
-                <thead style={{ background: '#f8fafc' }}><tr><th style={{ textAlign: 'left' }}>MODULE</th><th style={{ textAlign: 'center' }}>XEM</th><th style={{ textAlign: 'center' }}>THÊM</th><th style={{ textAlign: 'center' }}>SỬA</th><th style={{ textAlign: 'center' }}>XÓA</th></tr></thead>
-                <tbody>
-                  {Object.entries(grouped).map(([groupName, mods]) => (
-                    <React.Fragment key={groupName}>
-                      <tr><td colSpan="5" style={{ background: groupName.includes('Đoàn') ? '#fef3c7' : '#e0f2fe', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', padding: '8px 12px', color: groupName.includes('Đoàn') ? '#92400e' : '#0369a1' }}>{groupName}</td></tr>
-                      {mods.map(mod => {
-                        const p = formData.permissions[mod.key] || { can_view: false, can_create: false, can_edit: false, can_delete: false };
-                        const togglePerm = (action) => setFormData(prev => ({ ...prev, permissions: { ...prev.permissions, [mod.key]: { ...p, [action]: !p[action] } } }));
-                        return (
-                          <tr key={mod.key}>
-                            <td style={{ fontWeight: 600, paddingLeft: '20px' }}>{mod.label}</td>
-                            <td style={{ textAlign: 'center' }}><input type="checkbox" checked={p.can_view} onChange={() => togglePerm('can_view')} /></td>
-                            <td style={{ textAlign: 'center' }}><input type="checkbox" checked={p.can_create} onChange={() => togglePerm('can_create')} /></td>
-                            <td style={{ textAlign: 'center' }}><input type="checkbox" checked={p.can_edit} onChange={() => togglePerm('can_edit')} /></td>
-                            <td style={{ textAlign: 'center' }}><input type="checkbox" checked={p.can_delete} onChange={() => togglePerm('can_delete')} /></td>
-                          </tr>
-                        );
-                      })}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
             <button type="submit" className="btn-pro-save" style={{ flex: 1 }}>CẬP NHẬT</button>

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { X, Plus, Trash2, Save, MoreHorizontal } from 'lucide-react';
 import Select from 'react-select';
 import { CKEditor } from 'ckeditor4-react';
+import { useMarkets } from '../../hooks/useMarkets';
 
 export default function OpTourDetailDrawer({ onClose, tour }) {
   const [formData, setFormData] = useState({
@@ -21,12 +22,14 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
         transport: 'Đường hàng không'
     }
   });
+  const [errorMsg, setErrorMsg] = useState('');
   
   const [loading, setLoading] = useState(false);
   const [guides, setGuides] = useState([]);
   const [airlinesList, setAirlinesList] = useState([]);
   const [tourTemplates, setTourTemplates] = useState([]);
   const [operatorsList, setOperatorsList] = useState([]);
+  const marketOptions = useMarkets();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,8 +78,8 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
         ...tour,
         tour_template_id: tour.tour_template_id || '',
         status: tour.status || 'Mở bán',
-        start_date: tour.start_date ? tour.start_date.split('T')[0] : '',
-        end_date: tour.end_date ? tour.end_date.split('T')[0] : '',
+        start_date: tour.start_date ? new Date(tour.start_date).toLocaleDateString('en-CA') : '',
+        end_date: tour.end_date ? new Date(tour.end_date).toLocaleDateString('en-CA') : '',
         tour_info: tour.tour_info || {},
       });
     }
@@ -112,7 +115,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
     
     // tour_template_id is required for new tours
     if (!tour?.id && !tour_template_id) {
-        alert('Vui lòng chọn Sản phẩm Tour trước khi tạo mới.');
+        setErrorMsg('Vui lòng chọn Sản phẩm Tour trước khi tạo mới.');
         return;
     }
     
@@ -123,18 +126,18 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
         !transport || !pickup_point || !dropoff_point || 
         !booking_deadline || !close_time) {
         
-        let msg = "Cần kiểm tra: \n";
-        if (!tour_code) msg += "- Mã tour\n";
-        if (!start_date) msg += "- Khởi hành\n";
-        if (!end_date) msg += "- Ngày về\n";
-        if (total_seats === '' || total_seats == null) msg += "- Số chỗ nhận\n";
-        if (price_adult === '' || price_adult == null) msg += "- Giá người lớn\n";
-        if (!pickup_point) msg += "- Điểm đón\n";
-        if (!dropoff_point) msg += "- Điểm trả\n";
-        if (!booking_deadline) msg += "- Thời gian nhận chỗ\n";
-        if (!close_time) msg += "- Thời gian đóng\n";
+        let msg = "Cần kiểm tra: ";
+        if (!tour_code) msg += "Mã tour, ";
+        if (!start_date) msg += "Khởi hành, ";
+        if (!end_date) msg += "Ngày về, ";
+        if (total_seats === '' || total_seats == null) msg += "Số chỗ nhận, ";
+        if (price_adult === '' || price_adult == null) msg += "Giá người lớn, ";
+        if (!pickup_point) msg += "Điểm đón, ";
+        if (!dropoff_point) msg += "Điểm trả, ";
+        if (!booking_deadline) msg += "Thời gian nhận chỗ, ";
+        if (!close_time) msg += "Thời gian đóng, ";
 
-        alert('Vui lòng điền đầy đủ các trường có đánh dấu (* đỏ).\n\n' + msg);
+        setErrorMsg('Vui lòng điền đầy đủ các trường: ' + msg.replace(/, $/, ''));
         return;
     }
     
@@ -142,11 +145,12 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
     const { dep_airline, departure_flight, ret_airline, return_flight } = formData.tour_info || {};
     if (transport === 'Đường hàng không') {
         if (!dep_airline || !departure_flight || !ret_airline || !return_flight) {
-            let flightMsg = "- Hành trình đi (Hãng & Chuyến bay)\n- Hành trình về (Hãng & Chuyến bay)\n";
-            alert('Vui lòng điền đầy đủ các thông tin chuyến bay bắt buộc (* đỏ) khi phương tiện là Hàng không.\n\nCần kiểm tra:\n' + flightMsg);
+            setErrorMsg('Vui lòng điền đủ thông tin Hành trình đi & về (Hãng & Chuyến bay) khi đi bằng Hàng không.');
             return;
         }
     }
+    
+    setErrorMsg('');
     
     // Normalize into formData
     formData.tour_info = { ...formData.tour_info, transport };
@@ -166,11 +170,10 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
       }
-      alert('Lưu thành công!');
       onClose();
     } catch (error) {
       console.error('Save error', error);
-      alert('Lỗi lưu tour');
+      setErrorMsg('Lỗi lưu tour: ' + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
     }
@@ -190,7 +193,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
         <div style={{ padding: '15px 20px', background: 'white', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>TOUR FIT: {formData.tour_name || 'Tạo mới'}</h3>
-             <small style={{ color: '#64748b' }}>Phiên bản test cấu trúc Group</small>
+             {errorMsg && <div style={{ color: '#ef4444', fontWeight: 600, fontSize: '14px', marginTop: '5px' }}>⚠️ {errorMsg}</div>}
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
             <button 
@@ -234,7 +237,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
 
           <div style={{ background: 'white', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
              <h4 style={{ color: '#f59e0b', margin: '0 0 15px 0', fontSize: '15px' }}>Thông tin Tour</h4>
-             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '15px' }}>
+             <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '15px' }}>
                 <div style={{ gridColumn: 'span 2' }}>
                    <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Mã tour: <span style={{color:'red'}}>(*)</span></label>
                    <input type="text" style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formData.tour_code} onChange={e => handleChange('tour_code', e.target.value)} />
@@ -267,12 +270,15 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
                    <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Nhóm/Thị trường:</label>
-                   <select style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formData.market} onChange={e => handleChange('market', e.target.value)}>
-                     <option value="">Chọn Tuyến điểm...</option>
-                     {["Việt Nam (MICE)", "TP.HCM", "Hà Nội", "Nha Trang", "Vũng Tàu", "Phú Yên", "Nhật Bản", "Hàn Quốc", "Đài Loan", "Châu Âu", "Mỹ", "Trung Quốc", "Giang Nam"].map(d => (
-                        <option key={d} value={d}>{d}</option>
-                     ))}
-                   </select>
+                   <Select
+                       options={marketOptions}
+                       value={formData.market ? formData.market.split(',').map(m => ({ label: m.trim(), value: m.trim() })) : []}
+                       onChange={options => handleChange('market', options ? options.map(o => o.value).join(',') : '')}
+                       isMulti
+                       isClearable
+                       placeholder="Tìm Tuyến điểm..."
+                       styles={{ control: (base) => ({ ...base, minHeight: '36px', borderColor: '#cbd5e1', fontSize: '13px' }), menu: (base) => ({ ...base, fontSize: '13px' }) }}
+                   />
                 </div>
                 <div style={{ gridColumn: 'span 1' }}>
                     <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Khởi hành: <span style={{color:'red'}}>(*)</span></label>
@@ -315,7 +321,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
           <div style={{ background: 'white', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
              <h4 style={{ color: '#f59e0b', margin: '0 0 15px 0', fontSize: '15px' }}>Thời gian nhận chỗ</h4>
              
-             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '15px', alignItems: 'center' }}>
+             <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '15px', alignItems: 'center' }}>
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px', whiteSpace: 'nowrap' }}>
                    <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', width: '130px', flexShrink: 0 }}>Số chỗ nhận <span style={{color:'red'}}>(*)</span></label>
                    <input type="number" style={{ flex: 1, minWidth: '60px', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formData.tour_info.total_seats || 0} onChange={e => handleChange('total_seats', e.target.value, true)} />

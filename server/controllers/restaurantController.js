@@ -4,7 +4,7 @@ const { logActivity } = require('../utils/logger');
 // === RESTAURANTS ===
 exports.getRestaurants = async (req, res) => {
     try {
-        const { search, province, restaurant_class, market, page = 1, limit = 30 } = req.query;
+        const { search, province, restaurant_class, market, market_group, page = 1, limit = 30 } = req.query;
         const offset = (page - 1) * limit;
 
         let query = 'SELECT * FROM restaurants WHERE 1=1';
@@ -19,7 +19,15 @@ exports.getRestaurants = async (req, res) => {
             params.push(`%${search}%`);
             paramIndex++;
         }
-        if (market) {
+        if (market_group) {
+            const markets = market_group.split(",").map(m => m.trim());
+            const placeholders = markets.map((_, i) => `$${paramIndex + i}`).join(", ");
+            const filterClause = ` AND market IN (${placeholders})`;
+            query += filterClause;
+            countQuery += filterClause;
+            params.push(...markets);
+            paramIndex += markets.length;
+        } else if (market) {
             const filterClause = ` AND market = $${paramIndex}`;
             query += filterClause;
             countQuery += filterClause;

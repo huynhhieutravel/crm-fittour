@@ -658,7 +658,7 @@ const CostingsTab = ({ user }) => {
 
             <div className="modal-body">
               {/* DASHBOARD CARDS - Dàn 4 cột 1 hàng */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+              <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
                 <div className="cost-stat-card" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>DOANH THU THỰC TẾ</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e293b' }}>{activeRev.toLocaleString('vi-VN')} ₫</div>

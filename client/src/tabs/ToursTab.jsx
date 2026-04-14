@@ -1,5 +1,7 @@
 import React from 'react';
 import { Search, Plus, Trash2, Edit3, Eye } from 'lucide-react';
+import Select from 'react-select';
+import { useMarkets } from '../hooks/useMarkets';
 
 const ToursTab = ({ 
   tourTemplates, 
@@ -12,6 +14,7 @@ const ToursTab = ({
   bus,
   currentUser
 }) => {
+  const marketOptions = useMarkets();
   const uniqueDestinations = [...new Set(tourTemplates.map(t => t.destination).filter(Boolean))].sort();
   const tourTypes = ['Group Tour', 'Private Tour', 'Luxury Tour', 'MICE Tour'];
 
@@ -66,17 +69,20 @@ const ToursTab = ({
           </select>
         </div>
 
-        <div className="filter-group" style={{ flex: '0 0 200px', margin: 0 }}>
+        <div className="filter-group" style={{ flex: '0 0 250px', margin: 0 }}>
           <label style={{ marginBottom: '8px', display: 'block' }}>ĐIỂM ĐẾN</label>
-          <select 
-            className="filter-input"
-            style={{ width: '100%', height: '44px' }}
-            value={tourFilters.destination || ''}
-            onChange={e => setTourFilters({...tourFilters, destination: e.target.value})}
-          >
-            <option value="">-- Tất cả điểm --</option>
-            {uniqueDestinations.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
+          <Select
+            options={marketOptions}
+            value={tourFilters.destination ? { value: tourFilters.destination, label: tourFilters.destination } : null}
+            onChange={option => setTourFilters({...tourFilters, destination: option ? option.value : ''})}
+            isClearable
+            placeholder="-- Tất cả điểm --"
+            styles={{
+              control: (base) => ({ ...base, height: '44px', borderColor: '#e2e8f0', fontSize: '0.9rem' }),
+              menu: (base) => ({ ...base, fontSize: '0.85rem', zIndex: 20 }),
+              groupHeading: (base) => ({ ...base, fontWeight: 700, color: '#1e293b', textTransform: 'uppercase' })
+            }}
+          />
         </div>
 
         <div style={{ marginLeft: 'auto', paddingTop: '24px', display: 'flex', gap: '1rem' }}>

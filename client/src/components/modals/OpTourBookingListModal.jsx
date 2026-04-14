@@ -98,8 +98,13 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
     wsData.push(headerRow);
 
     members.forEach((m, i) => {
+      const formatName = (str) => {
+          if (!str) return '';
+          return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toUpperCase();
+      };
+      
       wsData.push([
-        i + 1, m.name || '', m.dob || '', m.gender || '', m.ageType || '',
+        i + 1, formatName(m.name), m.dob || '', m.gender || '', m.ageType || '',
         m.docId || '', m.issueDate || '', m.expiryDate || '',
         m.phone || '', m.roomType || '', m.roomCode || '', 
         (i === 0 && bookingNote) ? (bookingNote + (m.note ? ` - ${m.note}` : '')) : (m.note || '')
@@ -225,7 +230,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
         <div style={{ padding: '20px', overflowY: 'auto', flex: 1, background: 'white' }}>
           
           {/* TOP 6 CARDS */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px', marginBottom: '20px' }}>
+          <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px', marginBottom: '20px' }}>
              <div style={{ background: 'linear-gradient(135deg, #f472b6, #ec4899)', boxShadow: '0 4px 10px rgba(236,72,153,0.3)', color: 'white', padding: '15px', borderRadius: '8px', position: 'relative', minHeight: '85px', overflow: 'hidden' }}>
                 <div style={{ fontSize: '28px', fontWeight: 'bold', position: 'absolute', top: '8px', right: '15px' }}>{countGiuCho}</div>
                 <div style={{ position: 'absolute', bottom: '12px', left: '15px', fontSize: '14px', fontWeight: '500' }}>Giữ chỗ</div>
@@ -628,7 +633,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                  </ul>
               </div>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
+              <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
                  <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Chọn tour</label>
                  <Select 
                     options={activeTours.map(t => ({ value: t.id, label: `${t.tour_code} - ${t.tour_name}` }))}
@@ -643,19 +648,19 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                  const t = activeTours.find(x => x.id === transferTourId);
                  return (
                     <>
-                       <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
+                       <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
                           <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Mã tour</label>
                           <input type="text" disabled value={t.tour_code || ''} style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc', color: '#64748b' }} />
                        </div>
-                       <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
+                       <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
                           <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Tên tour</label>
                           <input type="text" disabled value={t.tour_name || ''} style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc', color: '#64748b' }} />
                        </div>
-                       <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
+                       <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
                           <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Ngày đi</label>
                           <input type="text" disabled value={t.start_date ? new Date(t.start_date).toLocaleDateString('vi-VN') : ''} style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc', color: '#64748b' }} />
                        </div>
-                       <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '20px' }}>
+                       <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '20px' }}>
                           <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Ngày về</label>
                           <input type="text" disabled value={t.end_date ? new Date(t.end_date).toLocaleDateString('vi-VN') : ''} style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc', color: '#64748b' }} />
                        </div>
@@ -663,19 +668,19 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                  )
               })() : (
                  <>
-                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
+                    <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
                        <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Mã tour</label>
                        <input type="text" disabled value="" style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc' }} />
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
+                    <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
                        <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Tên tour</label>
                        <input type="text" disabled value="No matches found" style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc', color: '#94a3b8' }} />
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
+                    <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
                        <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Ngày đi</label>
                        <input type="text" disabled value="" style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc' }} />
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '30px' }}>
+                    <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '30px' }}>
                        <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Ngày về</label>
                        <input type="text" disabled value="" style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc' }} />
                     </div>

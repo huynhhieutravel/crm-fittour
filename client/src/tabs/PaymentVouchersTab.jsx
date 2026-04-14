@@ -92,7 +92,7 @@ export default function PaymentVouchersTab() {
 
       {/* Basic Filters row similar to Screenshot 2 */}
       <div style={{ background: '#fff', padding: '15px 20px', borderRadius: '8px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1.5fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr)', gap: '15px', marginBottom: '15px' }}>
+        <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1.5fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr)', gap: '15px', marginBottom: '15px' }}>
             <div>
                <label style={{ display: 'block', fontSize: '13px', color: '#64748b', fontWeight: 'bold', marginBottom: '6px' }}>Tìm kiếm:</label>
                <input 
@@ -138,7 +138,7 @@ export default function PaymentVouchersTab() {
       </div>
 
       {/* 5 Stats Cards matching Screenshot */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '15px', marginBottom: '20px' }}>
+      <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '15px', marginBottom: '20px' }}>
         <div style={{ background: '#f59e0b', color: '#fff', padding: '20px', borderRadius: '8px', position: 'relative', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
            <div style={{ position: 'relative', zIndex: 2 }}>
              <div style={{ fontSize: '32px', fontWeight: 'bold', textAlign: 'right' }}>{box1}</div>

@@ -166,7 +166,7 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
                </div>
                <form onSubmit={handleCreate} style={{ padding: '20px', background: '#fff' }}>
                  
-                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '20px' }}>
+                 <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '20px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Tên phiếu thu / Nội dung (*)</label>
                       <input 
@@ -324,7 +324,7 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
             </div>
             
             <div style={{ padding: '20px', overflowY: 'auto' }}>
-               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px', fontSize: '14px' }}>
+               <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px', fontSize: '14px' }}>
                   <div>
                      <div style={{ color: '#64748b', marginBottom: '4px' }}>Nội dung</div>
                      <div style={{ fontWeight: 'bold', color: '#1e293b' }}>{viewVoucher.title}</div>
