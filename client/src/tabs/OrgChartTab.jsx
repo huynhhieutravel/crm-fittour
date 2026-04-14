@@ -428,6 +428,9 @@ const OrgChartTab = ({ currentUser, addToast }) => {
                             </button>
                         ) : (
                             <>
+                                <button onClick={handleAutoGenerate} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: '#6366f1', color: '#fff', borderRadius: '8px', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+                                    ✨ Tạo sơ đồ chuẩn (04/2026)
+                                </button>
                                 <button onClick={handleAddNode} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: '#10b981', color: '#fff', borderRadius: '8px', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
                                     <Plus size={16} /> Thêm Thẻ Mới
                                 </button>
