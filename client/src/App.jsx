@@ -1995,18 +1995,26 @@ function AppContent() {
             <>
               <div className="nav-section-title">Hệ thống & Nhân sự</div>
               {checkView('users') && (
-                <div className={`nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => navigate('/users')}>
-                  <UserCheck /> Quản lý Nhân sự
-                </div>
-              )}
-              {checkView('users') && (
-                <div className={`nav-item ${activeTab === 'staff-calendar' ? 'active' : ''}`} onClick={() => navigate('/staff-calendar')} style={{ paddingLeft: '2.8rem', fontSize: '0.85rem' }}>
-                  <Calendar /> Lịch Nhân sự
-                </div>
-              )}
-              {(user?.role === 'admin') && (
-                <div className={`nav-item ${activeTab === 'teams' ? 'active' : ''}`} onClick={() => navigate('/teams')}>
-                  <Users /> Quản lý Team
+                <div 
+                  className={`nav-item ${['users','staff-calendar','teams'].includes(activeTab) ? 'active' : ''}`} 
+                  onClick={() => { navigate('/users'); setActiveTab('users'); }}
+                  style={{ justifyContent: 'space-between' }}
+                  onMouseEnter={(e) => {
+                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHoveredRect(rect);
+                    setHoveredMenu('hr-menu');
+                  }}
+                  onMouseLeave={() => {
+                    menuTimerRef.current = setTimeout(() => {
+                      setHoveredMenu(null);
+                    }, 150);
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <UserCheck /> Quản lý Nhân sự
+                  </div>
+                  <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
               {checkView('settings') && (
@@ -2426,6 +2434,52 @@ function AppContent() {
           >
             Quản lý Bảo Hiểm
           </div>
+        </div>
+      )}
+
+      {hoveredMenu === 'hr-menu' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('hr-menu');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'users' ? 'active' : ''}`} 
+            onClick={() => { navigate('/users'); setActiveTab('users'); setHoveredMenu(null); }}
+          >
+            👥 Danh sách Nhân sự
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'staff-calendar' ? 'active' : ''}`} 
+            onClick={() => { navigate('/staff-calendar'); setActiveTab('staff-calendar'); setHoveredMenu(null); }}
+          >
+            🎂 Lịch Nhân sự
+          </div>
+          {(user?.role === 'admin') && (
+            <div 
+              className={`submenu-item ${activeTab === 'teams' ? 'active' : ''}`} 
+              onClick={() => { navigate('/teams'); setActiveTab('teams'); setHoveredMenu(null); }}
+            >
+              🏢 Quản lý Team
+            </div>
+          )}
         </div>
       )}
 
