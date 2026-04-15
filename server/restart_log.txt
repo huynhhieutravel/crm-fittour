@@ -1923,3 +1923,2168 @@ Dạ em gửi anh/chị thông tin"
 [2026-04-14T16:47:25.711Z] GET /api/permissions/my
 [2026-04-14T16:47:26.008Z] GET /api/bookings?page=1&limit=30
 [2026-04-14T16:47:26.587Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T16:52:44.515Z] GET /api/leads
+[2026-04-14T16:52:44.532Z] GET /api/guides
+[2026-04-14T16:52:44.534Z] GET /api/tours
+[2026-04-14T16:52:44.535Z] GET /api/departures
+[2026-04-14T16:52:44.536Z] GET /api/users
+[2026-04-14T16:52:44.537Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:52:45.030Z] GET /api/customers
+[2026-04-14T16:52:45.076Z] GET /api/business-units
+[2026-04-14T16:52:45.077Z] GET /api/settings
+[2026-04-14T16:52:45.082Z] GET /api/permissions/my
+[2026-04-14T16:52:45.149Z] GET /api/users/roles
+[2026-04-14T16:52:46.863Z] GET /api/leads
+[2026-04-14T16:52:46.864Z] GET /api/tours
+[2026-04-14T16:52:46.865Z] GET /api/users
+[2026-04-14T16:52:46.865Z] GET /api/settings
+[2026-04-14T16:52:46.866Z] GET /api/guides
+[2026-04-14T16:52:46.866Z] GET /api/departures
+[2026-04-14T16:52:46.876Z] GET /api/customers
+[2026-04-14T16:52:46.996Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:52:46.997Z] GET /api/business-units
+[2026-04-14T16:52:47.000Z] GET /api/permissions/my
+[2026-04-14T16:52:48.033Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T16:52:49.158Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T17:08:36.985Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 00:00:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[FB] Resolved Page Token for: FIT TOUR - Du lịch có GUU (107694084435854)
+[2026-04-14T17:26:04.640Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 00:15:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T17:33:34.851Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 00:30:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Lỗi tổng lấy dữ liệu Facebook API: read ECONNRESET
+[FB POLLER] Lỗi tổng lấy dữ liệu Facebook API: read ECONNRESET
+[2026-04-14T18:05:50.895Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 00:45:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2026-04-14T18:05:50.898Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 01:00:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Trần Đào Kim Anh. Đang tạo Lead...
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "7039cfc1a8ff1d26d1b51c813079fe61fb5b16e1df1d25a9a86d502935f287c1"
+    ],
+    "fb_login_id": "26262884220060415"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4402,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'A1O6amE1lNjPsd-dfBbBgxW' }
+[2026-04-14T18:21:28.545Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 01:15:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[FB] Resolved Page Token for: FIT TOUR - Du lịch có GUU (107694084435854)
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T18:37:12.355Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 01:30:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T18:52:43.330Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 01:45:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T19:09:59.220Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 02:00:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T19:44:36.177Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 02:15:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2026-04-14T19:44:36.182Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 02:30:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[FB] Resolved Page Token for: FIT TOUR - Du lịch có GUU (107694084435854)
+[2026-04-14T19:53:45.604Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 02:45:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Lỗi tổng lấy dữ liệu Facebook API: read ECONNRESET
+[2026-04-14T20:08:51.892Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 03:00:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T20:23:59.208Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 03:15:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T20:39:57.491Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 03:30:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T20:54:45.264Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 03:45:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[FB] Resolved Page Token for: FIT TOUR - Du lịch có GUU (107694084435854)
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T21:27:06.304Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 04:00:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2026-04-14T21:27:06.307Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 04:15:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T21:43:07.085Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 04:30:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T21:55:46.498Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 04:45:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[FB] Resolved Page Token for: FIT TOUR - Du lịch có GUU (107694084435854)
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T22:24:06.219Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 05:00:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2026-04-14T22:24:06.224Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 05:15:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T22:24:36.249Z] GET /api/tours
+[2026-04-14T22:24:36.253Z] GET /api/leads
+[2026-04-14T22:24:36.253Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:24:36.255Z] GET /api/departures
+[2026-04-14T22:24:36.256Z] GET /api/customers
+[2026-04-14T22:24:36.256Z] GET /api/guides
+[2026-04-14T22:24:36.273Z] GET /api/users
+[2026-04-14T22:24:36.365Z] GET /api/settings
+[2026-04-14T22:24:36.384Z] GET /api/business-units
+[2026-04-14T22:24:36.386Z] GET /api/permissions/my
+[2026-04-14T22:24:36.388Z] GET /api/users/roles
+[2026-04-14T22:24:36.394Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-14T22:24:36.395Z] GET /api/reminders/today
+[2026-04-14T22:24:36.409Z] GET /api/reminders/today
+[2026-04-14T22:24:36.413Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-14T22:24:36.749Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T22:27:35.093Z] GET /api/leads
+[2026-04-14T22:27:35.094Z] GET /api/tours
+[2026-04-14T22:27:35.095Z] GET /api/departures
+[2026-04-14T22:27:35.095Z] GET /api/guides
+[2026-04-14T22:27:35.095Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:27:35.096Z] GET /api/customers
+[2026-04-14T22:27:35.215Z] GET /api/users
+[2026-04-14T22:27:35.216Z] GET /api/business-units
+[2026-04-14T22:27:35.217Z] GET /api/settings
+[2026-04-14T22:27:35.217Z] GET /api/permissions/my
+[2026-04-14T22:27:35.218Z] GET /api/users/roles
+[2026-04-14T22:27:35.224Z] GET /api/users/roles
+[2026-04-14T22:27:35.589Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:27:35.845Z] GET /api/leads
+[2026-04-14T22:27:35.857Z] GET /api/tours
+[2026-04-14T22:27:35.860Z] GET /api/departures
+[2026-04-14T22:27:35.861Z] GET /api/customers
+[2026-04-14T22:27:35.870Z] GET /api/guides
+[2026-04-14T22:27:35.872Z] GET /api/users
+[2026-04-14T22:27:35.872Z] GET /api/tours
+[2026-04-14T22:27:35.875Z] GET /api/leads
+[2026-04-14T22:27:35.876Z] GET /api/guides
+[2026-04-14T22:27:35.876Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:27:35.877Z] GET /api/customers
+[2026-04-14T22:27:35.877Z] GET /api/departures
+[2026-04-14T22:27:36.029Z] GET /api/users
+[2026-04-14T22:27:36.032Z] GET /api/settings
+[2026-04-14T22:27:36.085Z] GET /api/business-units
+[2026-04-14T22:27:36.086Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:27:36.087Z] GET /api/settings
+[2026-04-14T22:27:36.089Z] GET /api/business-units
+[2026-04-14T22:27:36.093Z] GET /api/permissions/my
+[2026-04-14T22:27:36.094Z] GET /api/permissions/my
+[2026-04-14T22:27:36.193Z] GET /api/users/roles
+[2026-04-14T22:27:36.226Z] GET /api/users/roles
+[2026-04-14T22:27:36.761Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:27:36.762Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[CSKH-Engine 2026-04-14T22:30:00.086Z] === START ===
+[CSKH-Engine 2026-04-14T22:30:00.102Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T22:30:00.111Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T22:30:00.112Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T22:30:00.113Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T22:30:00.114Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T22:30:00.133Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-14T22:30:00.147Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 2 task(s)
+[CSKH-Engine 2026-04-14T22:30:00.183Z] [Overdue] Marked 775 task(s) as overdue
+[CSKH-Engine 2026-04-14T22:30:00.183Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[2026-04-14T22:33:57.378Z] GET /api/leads
+[2026-04-14T22:33:57.387Z] GET /api/tours
+[2026-04-14T22:33:57.388Z] GET /api/departures
+[2026-04-14T22:33:57.388Z] GET /api/guides
+[2026-04-14T22:33:57.389Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:33:57.389Z] GET /api/customers
+[2026-04-14T22:33:57.509Z] GET /api/users
+[2026-04-14T22:33:57.513Z] GET /api/settings
+[2026-04-14T22:33:57.516Z] GET /api/business-units
+[2026-04-14T22:33:57.518Z] GET /api/permissions/my
+[2026-04-14T22:33:57.559Z] GET /api/users/roles
+[2026-04-14T22:33:57.804Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:33:58.371Z] GET /api/users/me
+[2026-04-14T22:33:58.377Z] GET /api/users/me
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[CSKH-Engine 2026-04-14T22:45:00.023Z] === START ===
+[CSKH-Engine 2026-04-14T22:45:00.181Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T22:45:00.192Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T22:45:00.193Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T22:45:00.195Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T22:45:00.196Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T22:45:00.425Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 771 task(s)
+[CSKH-Engine 2026-04-14T22:45:00.425Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T22:45:00.451Z] [Overdue] Marked 771 task(s) as overdue
+[CSKH-Engine 2026-04-14T22:45:00.452Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Trích xuất SĐT 0367816939 cho Lead ID 4401
+[FB POLLER] Lỗi đồng bộ cho hội thoại lẻ, bỏ qua để chạy tiếp: inconsistent types deduced for parameter $1
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Quyen Ha. Đang tạo Lead...
+[BU-AUTO] ⛔ Skip "doan" - bản gốc có dấu nhưng khác từ | msg: "Dạ em chào anh/chị. Tour *Đường Tàu Thanh Tạng - Chuyến Tàu "
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "đoàn" -> BU3 | msg: "Dạ em chào anh/chị. Tour *Đường Tàu Thanh Tạng - Chuyến Tàu "
+[BU-AUTO] Poller Lead #4403 (Quyen Ha) → Auto BU: BU3
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "5f64b1db4f5f9051e3999803c23a12f69557837cb73e24bca7d80aac0a162218"
+    ],
+    "fb_login_id": "8424320060922802"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4403,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AZ6pDuYRmTecMmsaanNHs9L' }
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB] Resolved Page Token for: FIT TOUR - Du lịch có GUU (107694084435854)
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-14T22:56:55.551Z] GET /api/leads
+[2026-04-14T22:56:55.572Z] GET /api/departures
+[2026-04-14T22:56:55.573Z] GET /api/tours
+[2026-04-14T22:56:55.573Z] GET /api/guides
+[2026-04-14T22:56:55.573Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:56:55.573Z] GET /api/customers
+[2026-04-14T22:56:55.636Z] GET /api/users
+[2026-04-14T22:56:55.763Z] GET /api/settings
+[2026-04-14T22:56:55.769Z] GET /api/permissions/my
+[2026-04-14T22:56:55.773Z] GET /api/users/roles
+[2026-04-14T22:56:55.775Z] GET /api/business-units
+[2026-04-14T22:56:55.784Z] GET /api/users/roles
+[2026-04-14T22:56:55.914Z] GET /api/leads
+[2026-04-14T22:56:55.917Z] GET /api/leads
+[2026-04-14T22:56:55.921Z] GET /api/settings
+[2026-04-14T22:56:55.927Z] GET /api/tours
+[2026-04-14T22:56:55.936Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:56:55.937Z] GET /api/customers
+[2026-04-14T22:56:55.939Z] GET /api/departures
+[2026-04-14T22:56:55.942Z] GET /api/guides
+[2026-04-14T22:56:55.943Z] GET /api/tours
+[2026-04-14T22:56:55.945Z] GET /api/departures
+[2026-04-14T22:56:55.948Z] GET /api/guides
+[2026-04-14T22:56:55.949Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:56:55.950Z] GET /api/business-units
+[2026-04-14T22:56:55.950Z] GET /api/customers
+[2026-04-14T22:56:56.045Z] GET /api/users
+[2026-04-14T22:56:56.048Z] GET /api/settings
+[2026-04-14T22:56:56.051Z] GET /api/permissions/my
+[2026-04-14T22:56:56.064Z] GET /api/users/roles
+[2026-04-14T22:56:56.068Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:56:56.129Z] GET /api/users/roles
+[2026-04-14T22:56:56.176Z] GET /api/users
+[2026-04-14T22:56:56.180Z] GET /api/business-units
+[2026-04-14T22:56:56.240Z] GET /api/permissions/my
+[2026-04-14T22:56:56.846Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:56:56.846Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-14T22:57:28.740Z] GET /api/leads
+[2026-04-14T22:57:28.749Z] GET /api/tours
+[2026-04-14T22:57:28.755Z] GET /api/departures
+[2026-04-14T22:57:28.757Z] GET /api/guides
+[2026-04-14T22:57:28.757Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:57:28.758Z] GET /api/customers
+[2026-04-14T22:57:28.786Z] GET /api/users
+[2026-04-14T22:57:28.791Z] GET /api/settings
+[2026-04-14T22:57:29.253Z] GET /api/business-units
+[2026-04-14T22:57:29.255Z] GET /api/permissions/my
+[2026-04-14T22:57:29.262Z] GET /api/users/roles
+[2026-04-14T22:57:29.264Z] GET /api/leads
+[2026-04-14T22:57:29.267Z] GET /api/tours
+[2026-04-14T22:57:29.269Z] GET /api/guides
+[2026-04-14T22:57:29.270Z] GET /api/leads
+[2026-04-14T22:57:29.275Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:57:29.279Z] GET /api/customers
+[2026-04-14T22:57:29.309Z] GET /api/tours
+[2026-04-14T22:57:29.321Z] GET /api/departures
+[2026-04-14T22:57:29.322Z] GET /api/guides
+[2026-04-14T22:57:29.323Z] GET /api/departures
+[2026-04-14T22:57:29.325Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:57:29.327Z] GET /api/customers
+[2026-04-14T22:57:29.335Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:57:29.511Z] GET /api/users/roles
+[2026-04-14T22:57:29.525Z] GET /api/users
+[2026-04-14T22:57:29.526Z] GET /api/settings
+[2026-04-14T22:57:29.526Z] GET /api/business-units
+[2026-04-14T22:57:29.526Z] GET /api/permissions/my
+[2026-04-14T22:57:29.526Z] GET /api/users/roles
+[2026-04-14T22:57:29.540Z] GET /api/settings
+[2026-04-14T22:57:29.549Z] GET /api/users
+[2026-04-14T22:57:29.557Z] GET /api/users/roles
+[2026-04-14T22:57:29.730Z] GET /api/business-units
+[2026-04-14T22:57:29.745Z] GET /api/permissions/my
+[2026-04-14T22:57:29.841Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:57:29.849Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:57:43.642Z] GET /api/reminders/today
+[2026-04-14T22:57:43.674Z] GET /api/leads
+[2026-04-14T22:57:43.681Z] GET /api/tours
+[2026-04-14T22:57:43.682Z] GET /api/departures
+[2026-04-14T22:57:43.683Z] GET /api/guides
+[2026-04-14T22:57:43.683Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-14T22:57:43.754Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:57:43.756Z] GET /api/customers
+[2026-04-14T22:57:43.757Z] GET /api/users
+[2026-04-14T22:57:43.758Z] GET /api/settings
+[2026-04-14T22:57:43.840Z] GET /api/business-units
+[2026-04-14T22:57:43.935Z] GET /api/permissions/my
+[2026-04-14T22:57:43.971Z] GET /api/users/roles
+[2026-04-14T22:57:43.974Z] GET /api/reminders/today
+[2026-04-14T22:57:43.975Z] GET /api/users/me
+[2026-04-14T22:57:43.976Z] GET /api/departures
+[2026-04-14T22:57:43.976Z] GET /api/tours
+[2026-04-14T22:57:43.976Z] GET /api/guides
+[2026-04-14T22:57:43.976Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:57:43.977Z] GET /api/leads
+[2026-04-14T22:57:43.978Z] GET /api/leads
+[2026-04-14T22:57:43.980Z] GET /api/guides
+[2026-04-14T22:57:43.982Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:57:43.983Z] GET /api/customers
+[2026-04-14T22:57:43.984Z] GET /api/settings
+[2026-04-14T22:57:43.985Z] GET /api/users
+[2026-04-14T22:57:43.988Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-14T22:57:43.989Z] GET /api/users/roles
+[2026-04-14T22:57:43.989Z] GET /api/customers
+[2026-04-14T22:57:43.990Z] GET /api/business-units
+[2026-04-14T22:57:44.012Z] GET /api/users
+[2026-04-14T22:57:44.017Z] GET /api/settings
+[2026-04-14T22:57:44.072Z] GET /api/tours
+[2026-04-14T22:57:44.097Z] GET /api/business-units
+[2026-04-14T22:57:44.098Z] GET /api/permissions/my
+[2026-04-14T22:57:44.098Z] GET /api/users/roles
+[2026-04-14T22:57:44.098Z] GET /api/users/me
+[2026-04-14T22:57:44.224Z] GET /api/departures
+[2026-04-14T22:57:44.226Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:57:44.230Z] GET /api/users/roles
+[2026-04-14T22:57:44.317Z] GET /api/permissions/my
+[2026-04-14T22:57:44.842Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T22:57:44.843Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CSKH-Engine 2026-04-14T23:00:00.011Z] === START ===
+[CSKH-Engine 2026-04-14T23:00:00.023Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T23:00:00.034Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:00:00.035Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:00:00.036Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:00:00.037Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:00:00.383Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 771 task(s)
+[CSKH-Engine 2026-04-14T23:00:00.384Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:00:00.400Z] [Overdue] Marked 771 task(s) as overdue
+[CSKH-Engine 2026-04-14T23:00:00.400Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Claire Nguyen. Đang tạo Lead...
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "Mông Cổ" -> BU2 | msg: "Dạ FIT Tour xin chào anh/chị ạ.
+
+Dạ, em gửi anh/chị thông ti"
+[BU-AUTO] Poller Lead #4404 (Claire Nguyen) → Auto BU: BU2
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "361206b248ed057f8001c04b4eeef5083be9322cba99e9259385327a79931c6f"
+    ],
+    "fb_login_id": "24634400989590414"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4404,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AsA6KuyBOqlA7qwuSBv1K9p' }
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CSKH-Engine 2026-04-14T23:15:00.023Z] === START ===
+[CSKH-Engine 2026-04-14T23:15:00.040Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T23:15:00.053Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:15:00.055Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:15:00.056Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:15:00.057Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:15:00.258Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 771 task(s)
+[CSKH-Engine 2026-04-14T23:15:00.259Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:15:00.270Z] [Overdue] Marked 771 task(s) as overdue
+[CSKH-Engine 2026-04-14T23:15:00.270Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CSKH-Engine 2026-04-14T23:30:00.004Z] === START ===
+[CSKH-Engine 2026-04-14T23:30:00.018Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T23:30:00.029Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:30:00.031Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:30:00.033Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:30:00.034Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:30:00.268Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 771 task(s)
+[CSKH-Engine 2026-04-14T23:30:00.269Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:30:00.284Z] [Overdue] Marked 771 task(s) as overdue
+[CSKH-Engine 2026-04-14T23:30:00.284Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-14T23:38:48.278Z] GET /api/leads
+[2026-04-14T23:38:48.308Z] GET /api/departures
+[2026-04-14T23:38:48.309Z] GET /api/tours
+[2026-04-14T23:38:48.313Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T23:38:48.315Z] GET /api/customers
+[2026-04-14T23:38:48.316Z] GET /api/guides
+[2026-04-14T23:38:48.368Z] GET /api/users
+[2026-04-14T23:38:48.384Z] GET /api/settings
+[2026-04-14T23:38:48.385Z] GET /api/business-units
+[2026-04-14T23:38:48.476Z] GET /api/permissions/my
+[2026-04-14T23:38:48.484Z] GET /api/users/roles
+[2026-04-14T23:38:48.490Z] GET /api/users/roles
+[2026-04-14T23:38:48.757Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T23:38:48.869Z] GET /api/leads
+[2026-04-14T23:38:48.870Z] GET /api/customers
+[2026-04-14T23:38:48.870Z] GET /api/tours
+[2026-04-14T23:38:48.871Z] GET /api/guides
+[2026-04-14T23:38:48.871Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T23:38:48.872Z] GET /api/departures
+[2026-04-14T23:38:48.880Z] GET /api/leads
+[2026-04-14T23:38:48.881Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T23:38:48.883Z] GET /api/tours
+[2026-04-14T23:38:48.884Z] GET /api/departures
+[2026-04-14T23:38:48.885Z] GET /api/customers
+[2026-04-14T23:38:48.885Z] GET /api/guides
+[2026-04-14T23:38:48.886Z] GET /api/users
+[2026-04-14T23:38:48.891Z] GET /api/users
+[2026-04-14T23:38:48.894Z] GET /api/settings
+[2026-04-14T23:38:48.897Z] GET /api/business-units
+[2026-04-14T23:38:48.898Z] GET /api/permissions/my
+[2026-04-14T23:38:49.065Z] GET /api/business-units
+[2026-04-14T23:38:49.119Z] GET /api/permissions/my
+[2026-04-14T23:38:49.120Z] GET /api/settings
+[2026-04-14T23:38:49.121Z] GET /api/users/roles
+[2026-04-14T23:38:49.134Z] GET /api/users/roles
+[2026-04-14T23:38:49.840Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T23:38:49.840Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-14T23:42:36.374Z] GET /api/leads
+[2026-04-14T23:42:36.383Z] GET /api/tours
+[2026-04-14T23:42:36.384Z] GET /api/guides
+[2026-04-14T23:42:36.384Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T23:42:36.384Z] GET /api/departures
+[2026-04-14T23:42:36.385Z] GET /api/customers
+[2026-04-14T23:42:36.422Z] GET /api/users
+[2026-04-14T23:42:36.435Z] GET /api/settings
+[2026-04-14T23:42:36.452Z] GET /api/business-units
+[2026-04-14T23:42:36.453Z] GET /api/permissions/my
+[2026-04-14T23:42:36.562Z] GET /api/users/roles
+[2026-04-14T23:42:36.598Z] GET /api/users/roles
+[2026-04-14T23:42:36.793Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T23:42:36.892Z] GET /api/leads
+[2026-04-14T23:42:36.893Z] GET /api/tours
+[2026-04-14T23:42:36.893Z] GET /api/departures
+[2026-04-14T23:42:36.893Z] GET /api/leads
+[2026-04-14T23:42:36.893Z] GET /api/guides
+[2026-04-14T23:42:36.894Z] GET /api/customers
+[2026-04-14T23:42:36.894Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T23:42:36.894Z] GET /api/tours
+[2026-04-14T23:42:36.894Z] GET /api/guides
+[2026-04-14T23:42:36.895Z] GET /api/departures
+[2026-04-14T23:42:36.895Z] GET /api/settings
+[2026-04-14T23:42:36.896Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T23:42:36.900Z] GET /api/customers
+[2026-04-14T23:42:36.901Z] GET /api/users
+[2026-04-14T23:42:36.907Z] GET /api/settings
+[2026-04-14T23:42:36.919Z] GET /api/business-units
+[2026-04-14T23:42:36.920Z] GET /api/permissions/my
+[2026-04-14T23:42:36.928Z] GET /api/users/roles
+[2026-04-14T23:42:37.045Z] GET /api/users/roles
+[2026-04-14T23:42:37.058Z] GET /api/users
+[2026-04-14T23:42:37.060Z] GET /api/business-units
+[2026-04-14T23:42:37.091Z] GET /api/permissions/my
+[2026-04-14T23:42:37.837Z] GET /api/bookings?page=1&limit=30
+[2026-04-14T23:42:37.838Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CSKH-Engine 2026-04-14T23:45:00.010Z] === START ===
+[CSKH-Engine 2026-04-14T23:45:00.021Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-14T23:45:00.029Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:45:00.031Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:45:00.032Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:45:00.033Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:45:00.276Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 771 task(s)
+[CSKH-Engine 2026-04-14T23:45:00.277Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-14T23:45:00.291Z] [Overdue] Marked 771 task(s) as overdue
+[CSKH-Engine 2026-04-14T23:45:00.291Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-14T23:46:47.297Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-14T23:46:47.308Z] GET /api/reminders/today
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-14T23:52:29.004Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T23:52:29.051Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T23:52:40.982Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-14T23:52:40.998Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB] Resolved Page Token for: FIT TOUR - Du lịch có GUU (107694084435854)
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CSKH-Engine 2026-04-15T00:00:00.018Z] === START ===
+[CSKH-Engine 2026-04-15T00:00:00.034Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-15T00:00:00.045Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:00:00.047Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:00:00.048Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:00:00.050Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:00:00.366Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 771 task(s)
+[CSKH-Engine 2026-04-15T00:00:00.367Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:00:00.367Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-15T00:00:00.367Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:01:15.034Z] GET /api/org-chart
+[2026-04-15T00:01:15.037Z] GET /api/users
+[2026-04-15T00:01:15.038Z] GET /api/users/teams
+[2026-04-15T00:01:15.049Z] GET /api/org-chart
+[2026-04-15T00:01:15.064Z] GET /api/users/teams
+[2026-04-15T00:01:15.098Z] GET /api/users
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:07:54.578Z] GET /api/reminders/today
+[2026-04-15T00:07:54.589Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-15T00:07:54.629Z] GET /api/reminders/today
+[2026-04-15T00:07:54.630Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:08:19.513Z] GET /api/messages/conversations?page=1&limit=15&search=
+[2026-04-15T00:08:19.573Z] GET /api/messages/conversations?page=1&limit=15&search=
+[2026-04-15T00:08:19.589Z] GET /api/messages/3868
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CSKH-Engine 2026-04-15T00:15:00.005Z] === START ===
+[CSKH-Engine 2026-04-15T00:15:00.019Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-15T00:15:00.032Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:15:00.034Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:15:00.035Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:15:00.036Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:15:00.057Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:15:00.058Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:15:00.059Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-15T00:15:00.059Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:16:56.879Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:16:56.892Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:20:36.086Z] GET /api/org-chart
+[2026-04-15T00:20:36.101Z] GET /api/reminders/today
+[2026-04-15T00:20:36.102Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-15T00:20:36.103Z] GET /api/users
+[2026-04-15T00:20:36.104Z] GET /api/leads
+[2026-04-15T00:20:36.105Z] GET /api/users/teams
+[2026-04-15T00:20:36.106Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:20:36.107Z] GET /api/org-chart
+[2026-04-15T00:20:36.107Z] GET /api/leads
+[2026-04-15T00:20:36.108Z] GET /api/users/teams
+[2026-04-15T00:20:36.109Z] GET /api/tours
+[2026-04-15T00:20:36.109Z] GET /api/users
+[2026-04-15T00:20:36.169Z] GET /api/departures
+[2026-04-15T00:20:36.175Z] GET /api/tours
+[2026-04-15T00:20:36.187Z] GET /api/guides
+[2026-04-15T00:20:36.193Z] GET /api/departures
+[2026-04-15T00:20:36.226Z] GET /api/guides
+[2026-04-15T00:20:36.310Z] GET /api/settings
+[2026-04-15T00:20:36.344Z] GET /api/business-units
+[2026-04-15T00:20:36.345Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:20:36.347Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:20:36.370Z] GET /api/customers
+[2026-04-15T00:20:36.441Z] GET /api/customers
+[2026-04-15T00:20:36.464Z] GET /api/settings
+[2026-04-15T00:20:36.475Z] GET /api/users/roles
+[2026-04-15T00:20:36.475Z] GET /api/permissions/my
+[2026-04-15T00:20:36.475Z] GET /api/business-units
+[2026-04-15T00:20:36.476Z] GET /api/org-chart
+[2026-04-15T00:20:36.476Z] GET /api/users/teams
+[2026-04-15T00:20:36.476Z] GET /api/permissions/my
+[2026-04-15T00:20:36.478Z] GET /api/reminders/today
+[2026-04-15T00:20:36.480Z] GET /api/org-chart
+[2026-04-15T00:20:36.499Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-15T00:20:36.501Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:20:36.502Z] GET /api/org-chart
+[2026-04-15T00:20:36.504Z] GET /api/users
+[2026-04-15T00:20:36.507Z] GET /api/users/teams
+[2026-04-15T00:20:36.507Z] GET /api/users/teams
+[2026-04-15T00:20:36.512Z] GET /api/users
+[2026-04-15T00:20:36.518Z] GET /api/reminders/today
+[2026-04-15T00:20:36.581Z] GET /api/org-chart
+[2026-04-15T00:20:36.608Z] GET /api/org-chart
+[2026-04-15T00:20:36.611Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:20:36.614Z] GET /api/users/teams
+[2026-04-15T00:20:36.617Z] GET /api/users/teams
+[2026-04-15T00:20:36.623Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-15T00:20:36.630Z] GET /api/reminders/today
+[2026-04-15T00:20:36.631Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:20:36.637Z] GET /api/users
+[2026-04-15T00:20:36.640Z] GET /api/users
+[2026-04-15T00:20:36.642Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:20:36.651Z] GET /api/org-chart
+[2026-04-15T00:20:36.660Z] GET /api/users/teams
+[2026-04-15T00:20:36.687Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:20:36.688Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-15T00:20:36.695Z] GET /api/users
+[2026-04-15T00:20:36.705Z] GET /api/users
+[2026-04-15T00:20:36.730Z] GET /api/users
+[2026-04-15T00:20:36.738Z] GET /api/users
+[2026-04-15T00:20:36.888Z] GET /api/leads
+[2026-04-15T00:20:36.893Z] GET /api/org-chart
+[2026-04-15T00:20:36.900Z] GET /api/users
+[2026-04-15T00:20:36.912Z] GET /api/users/teams
+[2026-04-15T00:20:36.913Z] GET /api/tours
+[2026-04-15T00:20:36.916Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:20:36.917Z] GET /api/departures
+[2026-04-15T00:20:36.978Z] GET /api/guides
+[2026-04-15T00:20:37.061Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:20:37.063Z] GET /api/customers
+[2026-04-15T00:20:37.065Z] GET /api/settings
+[2026-04-15T00:20:37.067Z] GET /api/business-units
+[2026-04-15T00:20:37.075Z] GET /api/permissions/my
+[2026-04-15T00:20:37.075Z] GET /api/users/roles
+[2026-04-15T00:20:37.099Z] GET /api/org-chart
+[2026-04-15T00:20:37.100Z] GET /api/users/teams
+[2026-04-15T00:20:37.102Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:20:37.103Z] GET /api/users
+[2026-04-15T00:20:37.106Z] GET /api/org-chart
+[2026-04-15T00:20:37.107Z] GET /api/users/teams
+[2026-04-15T00:20:37.108Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:20:37.116Z] GET /api/org-chart
+[2026-04-15T00:20:37.117Z] GET /api/users/teams
+[2026-04-15T00:20:37.118Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:20:37.119Z] GET /api/users
+[2026-04-15T00:20:37.129Z] GET /api/users
+[2026-04-15T00:20:37.138Z] GET /api/users
+[2026-04-15T00:20:37.819Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:21:14.408Z] GET /api/leads
+[2026-04-15T00:21:14.414Z] GET /api/settings
+[2026-04-15T00:21:14.420Z] GET /api/departures
+[2026-04-15T00:21:14.422Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:21:14.423Z] GET /api/customers
+[2026-04-15T00:21:14.423Z] GET /api/users
+[2026-04-15T00:21:14.424Z] GET /api/leads
+[2026-04-15T00:21:14.425Z] GET /api/tours
+[2026-04-15T00:21:14.426Z] GET /api/tours
+[2026-04-15T00:21:14.426Z] GET /api/departures
+[2026-04-15T00:21:14.427Z] GET /api/guides
+[2026-04-15T00:21:14.427Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:21:14.427Z] GET /api/customers
+[2026-04-15T00:21:14.463Z] GET /api/guides
+[2026-04-15T00:21:14.470Z] GET /api/settings
+[2026-04-15T00:21:14.664Z] GET /api/business-units
+[2026-04-15T00:21:14.667Z] GET /api/permissions/my
+[2026-04-15T00:21:14.680Z] GET /api/users/roles
+[2026-04-15T00:21:14.717Z] GET /api/business-units
+[2026-04-15T00:21:14.723Z] GET /api/users
+[2026-04-15T00:21:14.738Z] GET /api/permissions/my
+[2026-04-15T00:21:14.739Z] GET /api/users/roles
+[2026-04-15T00:21:14.835Z] GET /api/leads
+[2026-04-15T00:21:14.836Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:21:14.836Z] GET /api/departures
+[2026-04-15T00:21:14.836Z] GET /api/guides
+[2026-04-15T00:21:14.836Z] GET /api/tours
+[2026-04-15T00:21:14.837Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:21:14.837Z] GET /api/customers
+[2026-04-15T00:21:14.837Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:21:14.844Z] GET /api/users
+[2026-04-15T00:21:14.852Z] GET /api/settings
+[2026-04-15T00:21:14.958Z] GET /api/business-units
+[2026-04-15T00:21:14.959Z] GET /api/permissions/my
+[2026-04-15T00:21:14.960Z] GET /api/users/roles
+[2026-04-15T00:21:14.974Z] GET /api/users/roles
+[2026-04-15T00:21:15.814Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:21:48.578Z] GET /api/leads
+[2026-04-15T00:21:48.581Z] GET /api/reminders/today
+[2026-04-15T00:21:48.583Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-15T00:21:48.585Z] GET /api/departures
+[2026-04-15T00:21:48.586Z] GET /api/guides
+[2026-04-15T00:21:48.586Z] GET /api/users
+[2026-04-15T00:21:48.632Z] GET /api/settings
+[2026-04-15T00:21:48.653Z] GET /api/tours
+[2026-04-15T00:21:48.694Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:21:48.701Z] GET /api/customers
+[2026-04-15T00:21:48.702Z] GET /api/business-units
+[2026-04-15T00:21:48.704Z] GET /api/permissions/my
+[2026-04-15T00:21:48.729Z] GET /api/users/roles
+[2026-04-15T00:21:48.731Z] GET /api/reminders/today
+[2026-04-15T00:21:48.738Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-15T00:21:48.744Z] GET /api/reminders/today
+[2026-04-15T00:21:48.748Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-15T00:21:48.750Z] GET /api/reminders/today
+[2026-04-15T00:21:48.758Z] GET /api/dashboard/overview?startDate=2026-03-31T17%3A00%3A00.000Z&endDate=2026-04-30T16%3A59%3A59.000Z
+[2026-04-15T00:21:49.073Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[2026-04-15T00:22:07.940Z] GET /api/leads
+[2026-04-15T00:22:07.941Z] GET /api/tours
+[2026-04-15T00:22:07.942Z] GET /api/guides
+[2026-04-15T00:22:07.943Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:22:07.944Z] GET /api/departures
+[2026-04-15T00:22:07.944Z] GET /api/customers
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:22:08.053Z] GET /api/users
+[2026-04-15T00:22:08.151Z] GET /api/settings
+[2026-04-15T00:22:08.152Z] GET /api/business-units
+[2026-04-15T00:22:08.153Z] GET /api/permissions/my
+[2026-04-15T00:22:08.154Z] GET /api/users/roles
+[2026-04-15T00:22:08.353Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CSKH-Engine 2026-04-15T00:30:00.008Z] === START ===
+[CSKH-Engine 2026-04-15T00:30:00.165Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-15T00:30:00.175Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:30:00.176Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:30:00.177Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:30:00.178Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:30:00.200Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:30:00.201Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:30:00.202Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-15T00:30:00.202Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Thanh Bình. Đang tạo Lead...
+[BU-AUTO] ⛔ Skip "tan cuong" - bản gốc có dấu nhưng khác từ | msg: "Dạ em chào anh ạ. Tour Tân Cương có khởi hành từ TP.HCM anh "
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "tân cương" -> BU1 | msg: "Dạ em chào anh ạ. Tour Tân Cương có khởi hành từ TP.HCM anh "
+[BU-AUTO] Poller Lead #4405 (Thanh Bình) → Auto BU: BU1
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "7238e1c90fee74b8a1fc28c7ac44f0ca8c71dfeb7a387c9f56a970cd99dcf9a4"
+    ],
+    "fb_login_id": "26463033213350668"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4405,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AC7Xh5UtaIzebK1htnTkoZ6' }
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:43:11.709Z] GET /api/leads
+[2026-04-15T00:43:11.710Z] GET /api/tours
+[2026-04-15T00:43:11.711Z] GET /api/departures
+[2026-04-15T00:43:11.712Z] GET /api/guides
+[2026-04-15T00:43:11.713Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:43:11.714Z] GET /api/customers
+[2026-04-15T00:43:11.775Z] GET /api/users
+[2026-04-15T00:43:11.815Z] GET /api/settings
+[2026-04-15T00:43:11.837Z] GET /api/business-units
+[2026-04-15T00:43:11.896Z] GET /api/permissions/my
+[2026-04-15T00:43:11.926Z] GET /api/users/roles
+[2026-04-15T00:43:12.192Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[CSKH-Engine 2026-04-15T00:45:00.080Z] === START ===
+[CSKH-Engine 2026-04-15T00:45:00.094Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-15T00:45:00.103Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:45:00.104Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:45:00.106Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:45:00.108Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:45:00.134Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:45:00.135Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-15T00:45:00.135Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-15T00:45:00.135Z] === COMPLETE ===
+[2026-04-15T00:45:01.504Z] GET /api/tours
+[2026-04-15T00:45:01.505Z] GET /api/leads
+[2026-04-15T00:45:01.507Z] GET /api/departures
+[2026-04-15T00:45:01.508Z] GET /api/guides
+[2026-04-15T00:45:01.508Z] GET /api/customers
+[2026-04-15T00:45:01.509Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:45:01.517Z] GET /api/users
+[2026-04-15T00:45:01.681Z] GET /api/settings
+[2026-04-15T00:45:01.683Z] GET /api/business-units
+[2026-04-15T00:45:01.685Z] GET /api/permissions/my
+[2026-04-15T00:45:01.703Z] GET /api/users/roles
+[2026-04-15T00:45:01.986Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:45:11.168Z] GET /api/leads
+[2026-04-15T00:45:11.171Z] GET /api/tours
+[2026-04-15T00:45:11.172Z] GET /api/guides
+[2026-04-15T00:45:11.174Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:45:11.175Z] GET /api/customers
+[2026-04-15T00:45:11.175Z] GET /api/departures
+[2026-04-15T00:45:11.188Z] GET /api/users
+[2026-04-15T00:45:11.208Z] GET /api/settings
+[2026-04-15T00:45:11.227Z] GET /api/business-units
+[2026-04-15T00:45:11.233Z] GET /api/permissions/my
+[2026-04-15T00:45:11.320Z] GET /api/users/roles
+[2026-04-15T00:45:11.655Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:45:16.912Z] GET /api/leads
+[2026-04-15T00:45:16.912Z] GET /api/tours
+[2026-04-15T00:45:16.912Z] GET /api/guides
+[2026-04-15T00:45:16.913Z] GET /api/departures
+[2026-04-15T00:45:16.913Z] GET /api/customers
+[2026-04-15T00:45:16.914Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:45:16.922Z] GET /api/users
+[2026-04-15T00:45:16.938Z] GET /api/settings
+[2026-04-15T00:45:16.971Z] GET /api/business-units
+[2026-04-15T00:45:17.047Z] GET /api/users/roles
+[2026-04-15T00:45:17.049Z] GET /api/permissions/my
+[2026-04-15T00:45:17.397Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:47:36.093Z] GET /api/leads
+[2026-04-15T00:47:36.096Z] GET /api/tours
+[2026-04-15T00:47:36.097Z] GET /api/departures
+[2026-04-15T00:47:36.098Z] GET /api/guides
+[2026-04-15T00:47:36.099Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:47:36.099Z] GET /api/customers
+[2026-04-15T00:47:36.186Z] GET /api/settings
+[2026-04-15T00:47:36.242Z] GET /api/business-units
+[2026-04-15T00:47:36.244Z] GET /api/users
+[2026-04-15T00:47:36.246Z] GET /api/permissions/my
+[2026-04-15T00:47:36.248Z] GET /api/users/roles
+[2026-04-15T00:47:36.577Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:47:41.826Z] GET /api/leads
+[2026-04-15T00:47:41.827Z] GET /api/customers
+[2026-04-15T00:47:41.827Z] GET /api/tours
+[2026-04-15T00:47:41.827Z] GET /api/departures
+[2026-04-15T00:47:41.827Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:47:41.827Z] GET /api/guides
+[2026-04-15T00:47:41.896Z] GET /api/users
+[2026-04-15T00:47:41.950Z] GET /api/settings
+[2026-04-15T00:47:41.952Z] GET /api/business-units
+[2026-04-15T00:47:41.954Z] GET /api/permissions/my
+[2026-04-15T00:47:41.956Z] GET /api/users/roles
+[2026-04-15T00:47:42.318Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:47:50.051Z] GET /api/leads
+[2026-04-15T00:47:50.053Z] GET /api/tours
+[2026-04-15T00:47:50.053Z] GET /api/departures
+[2026-04-15T00:47:50.053Z] GET /api/customers
+[2026-04-15T00:47:50.053Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:47:50.053Z] GET /api/guides
+[2026-04-15T00:47:50.076Z] GET /api/users
+[2026-04-15T00:47:50.091Z] GET /api/business-units
+[2026-04-15T00:47:50.097Z] GET /api/settings
+[2026-04-15T00:47:50.099Z] GET /api/permissions/my
+[2026-04-15T00:47:50.104Z] GET /api/users/roles
+[2026-04-15T00:47:50.535Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:48:40.032Z] GET /api/leads
+[2026-04-15T00:48:40.037Z] GET /api/tours
+[2026-04-15T00:48:40.037Z] GET /api/guides
+[2026-04-15T00:48:40.038Z] GET /api/departures
+[2026-04-15T00:48:40.038Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:48:40.044Z] GET /api/leads
+[2026-04-15T00:48:40.045Z] GET /api/settings
+[2026-04-15T00:48:40.047Z] GET /api/users
+[2026-04-15T00:48:40.050Z] GET /api/tours
+[2026-04-15T00:48:40.051Z] GET /api/departures
+[2026-04-15T00:48:40.059Z] GET /api/customers
+[2026-04-15T00:48:40.061Z] GET /api/guides
+[2026-04-15T00:48:40.063Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:48:40.117Z] GET /api/users
+[2026-04-15T00:48:40.169Z] GET /api/settings
+[2026-04-15T00:48:40.169Z] GET /api/business-units
+[2026-04-15T00:48:40.195Z] GET /api/customers
+[2026-04-15T00:48:40.212Z] GET /api/permissions/my
+[2026-04-15T00:48:40.247Z] GET /api/business-units
+[2026-04-15T00:48:40.419Z] GET /api/users/roles
+[2026-04-15T00:48:40.424Z] GET /api/tours
+[2026-04-15T00:48:40.425Z] GET /api/departures
+[2026-04-15T00:48:40.426Z] GET /api/guides
+[2026-04-15T00:48:40.426Z] GET /api/permissions/my
+[2026-04-15T00:48:40.427Z] GET /api/settings
+[2026-04-15T00:48:40.445Z] GET /api/users
+[2026-04-15T00:48:40.469Z] GET /api/leads
+[2026-04-15T00:48:40.474Z] GET /api/business-units
+[2026-04-15T00:48:40.485Z] GET /api/permissions/my
+[2026-04-15T00:48:40.487Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:48:40.506Z] GET /api/customers
+[2026-04-15T00:48:40.511Z] GET /api/users/roles
+[2026-04-15T00:48:40.516Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:48:40.651Z] GET /api/users/roles
+[2026-04-15T00:48:40.670Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:48:40.677Z] GET /api/users/roles
+[2026-04-15T00:48:40.681Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:48:40.919Z] GET /api/leads
+[2026-04-15T00:48:40.920Z] GET /api/settings
+[2026-04-15T00:48:40.921Z] GET /api/tours
+[2026-04-15T00:48:40.923Z] GET /api/departures
+[2026-04-15T00:48:40.924Z] GET /api/customers
+[2026-04-15T00:48:40.924Z] GET /api/guides
+[2026-04-15T00:48:40.928Z] GET /api/users
+[2026-04-15T00:48:40.928Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:48:40.965Z] GET /api/business-units
+[2026-04-15T00:48:41.053Z] GET /api/permissions/my
+[2026-04-15T00:48:41.054Z] GET /api/users/roles
+[2026-04-15T00:48:41.068Z] GET /api/users/roles
+[2026-04-15T00:48:41.884Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:49:56.966Z] GET /api/leads
+[2026-04-15T00:49:56.971Z] GET /api/departures
+[2026-04-15T00:49:56.971Z] GET /api/tours
+[2026-04-15T00:49:56.972Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:49:56.972Z] GET /api/guides
+[2026-04-15T00:49:56.973Z] GET /api/customers
+[2026-04-15T00:49:57.085Z] GET /api/users
+[2026-04-15T00:49:57.136Z] GET /api/settings
+[2026-04-15T00:49:57.137Z] GET /api/business-units
+[2026-04-15T00:49:57.140Z] GET /api/permissions/my
+[2026-04-15T00:49:57.143Z] GET /api/users/roles
+[2026-04-15T00:49:57.447Z] GET /api/bookings?page=1&limit=30
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần "
+[BU-AUTO] Khong match BU cho tin nhan: "Tác nhân AI sẽ phản hồi. Để thiết kế tour riêng, bên em cần ít nhất 2 người để c"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang "
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ FIT Tour xin chào Quý khách. Dạ, hành trình anh/chị đang quan tâm là *Chuyến "
+[2026-04-15T00:53:02.768Z] GET /api/leads
+[2026-04-15T00:53:02.786Z] GET /api/guides
+[2026-04-15T00:53:02.787Z] GET /api/departures
+[2026-04-15T00:53:02.790Z] GET /api/customers
+[2026-04-15T00:53:02.791Z] GET /api/users
+[2026-04-15T00:53:02.793Z] GET /api/tours
+[2026-04-15T00:53:02.876Z] GET /api/leads
+[2026-04-15T00:53:02.877Z] GET /api/tours
+[2026-04-15T00:53:02.878Z] GET /api/departures
+[2026-04-15T00:53:02.878Z] GET /api/guides
+[2026-04-15T00:53:02.880Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:53:02.882Z] GET /api/customers
+[2026-04-15T00:53:03.170Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:53:03.171Z] GET /api/settings
+[2026-04-15T00:53:03.172Z] GET /api/users
+[2026-04-15T00:53:03.245Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:53:03.247Z] GET /api/settings
+[2026-04-15T00:53:03.279Z] GET /api/business-units
+[2026-04-15T00:53:03.421Z] GET /api/business-units
+[2026-04-15T00:53:03.424Z] GET /api/users/roles
+[2026-04-15T00:53:03.426Z] GET /api/permissions/my
+[2026-04-15T00:53:03.427Z] GET /api/permissions/my
+[2026-04-15T00:53:03.427Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:53:03.501Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:53:03.516Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:53:03.709Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:53:03.710Z] GET /api/leads
+[2026-04-15T00:53:03.713Z] GET /api/tours
+[2026-04-15T00:53:03.713Z] GET /api/guides
+[2026-04-15T00:53:03.714Z] GET /api/departures
+[2026-04-15T00:53:03.715Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:53:03.716Z] GET /api/customers
+[2026-04-15T00:53:03.723Z] GET /api/users
+[2026-04-15T00:53:03.733Z] GET /api/settings
+[2026-04-15T00:53:03.736Z] GET /api/business-units
+[2026-04-15T00:53:03.823Z] GET /api/permissions/my
+[2026-04-15T00:53:03.823Z] GET /api/users/roles
+[2026-04-15T00:53:03.823Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:53:03.843Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:53:03.850Z] GET /api/travel-support?timeRange=all&start_date=&end_date=&service_type=All&sale_id=&status=All&search=
+[2026-04-15T00:53:03.924Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:53:03.940Z] GET /api/bookings?page=1&limit=30
+[2026-04-15T00:53:04.915Z] GET /api/bookings?page=1&limit=30
+[FB POLLER] Lỗi tổng lấy dữ liệu Facebook API: getaddrinfo ENOTFOUND graph.facebook.com
+[2026-04-15T01:00:37.144Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 08:00:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[FB] Could not resolve page accounts, using token directly
+[2026-04-15T01:52:44.145Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 08:15:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2026-04-15T01:52:44.293Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 08:30:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[2026-04-15T01:52:44.294Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 08:45:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[FB] Could not resolve page accounts, using token directly
+[2026-04-15T02:08:44.502Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 09:00:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[FB] Could not resolve page accounts, using token directly
+[2026-04-15T02:23:51.572Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 09:15:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[FB] Could not resolve page accounts, using token directly
+[FB] Could not resolve page accounts, using token directly
+[2026-04-15T02:32:14.352Z] [PID: 22346] [32m[NODE-CRON][32m [33m[WARN][0m missed execution at Wed Apr 15 2026 09:30:00 GMT+0700 (Indochina Time)! Possible blocking IO or high CPU user at the same process used by node-cron.
+[FB] Could not resolve page accounts, using token directly
+[FB] Resolved Page Token for: FIT TOUR - Du lịch có GUU (107694084435854)
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Tuan Tran. Đang tạo Lead...
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "Trung Quốc" -> BU1 | msg: "Dạ, tour này không có sẵn quanh năm đâu ạ. Vì đây là hành tr"
+[BU-AUTO] Poller Lead #4406 (Tuan Tran) → Auto BU: BU1
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "796aaa49e8536dc4733b8b87c3f2df74cd9038e336ea8a6515a345cb54d7e70d"
+    ],
+    "fb_login_id": "26133475523014626"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4406,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AjNvO_lttDLJzp6rk9SkkoW' }
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Minh Nguyệt. Đang tạo Lead...
+[BU-AUTO] ⛔ Skip "tan cuong" - bản gốc có dấu nhưng khác từ | msg: "Dạ, em chào anh/chị ạ. Không biết anh/chị còn quan tâm đến t"
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "tân cương" -> BU1 | msg: "Dạ, em chào anh/chị ạ. Không biết anh/chị còn quan tâm đến t"
+[BU-AUTO] Poller Lead #4407 (Minh Nguyệt) → Auto BU: BU1
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "dcd4e11b06f43b9d59e0a0ec3017c208134a1d13812ebe6723cc2c6112b1da1a"
+    ],
+    "fb_login_id": "35159241323689270"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4407,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'ABxfd8S8X_PV65wkJVBwuJS' }
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Nguyễn Thu Thùy Dương. Đang tạo Lead...
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "Mông Cổ" -> BU2 | msg: "Tác nhân AI sẽ phản hồi. Khởi hành từ HCM - Giá 78,900,000/p"
+[BU-AUTO] Poller Lead #4408 (Nguyễn Thu Thùy Dương) → Auto BU: BU2
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "58ed01bd01c4400444528c19189941aa60ece4a92dad39dd8f18c3871b691881"
+    ],
+    "fb_login_id": "26797379713233671"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4408,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AuRjW1USlN8QlYstCtHKXm9' }
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Anna Nguyen. Đang tạo Lead...
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "Mông Cổ" -> BU2 | msg: "xin chào, mình đang quan tâm đến tour Mông Cổ đúng không ạ? "
+[BU-AUTO] Poller Lead #4409 (Anna Nguyen) → Auto BU: BU2
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "0e97698315bf7194ae042ecc7d25c1c282d349ae173a72e797478df9e67916f3"
+    ],
+    "fb_login_id": "26046858651662572"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4409,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AH51yKErn7Uvmw6_Nimxl69' }
+[CSKH-Engine 2026-04-15T02:45:00.013Z] === START ===
+[CSKH-Engine 2026-04-15T02:45:00.026Z] Loaded 6 active rules
+[CSKH-Engine 2026-04-15T02:45:00.043Z] [Rule #1] Nhắc chuẩn bị giấy tờ, visa (T-7): Created 0 task(s)
+[CSKH-Engine 2026-04-15T02:45:00.045Z] [Rule #2] Nhắc trước ngày bay (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-15T02:45:00.046Z] [Rule #3] Hỏi thăm sau tour (T+3): Created 0 task(s)
+[CSKH-Engine 2026-04-15T02:45:00.048Z] [Rule #4] Gợi ý tour mới (T+30): Created 0 task(s)
+[CSKH-Engine 2026-04-15T02:45:00.075Z] [Rule #5] Khách lâu không đi tour (90 ngày): Created 0 task(s)
+[CSKH-Engine 2026-04-15T02:45:00.076Z] [Rule #6] Chúc mừng sinh nhật (T-1): Created 0 task(s)
+[CSKH-Engine 2026-04-15T02:45:00.077Z] [Overdue] Marked 0 task(s) as overdue
+[CSKH-Engine 2026-04-15T02:45:00.077Z] === COMPLETE ===
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[BU-AUTO] ⛔ Skip "nhat" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] ⛔ Skip "nhật" - bản gốc có dấu nhưng khác từ | msg: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã"
+[BU-AUTO] Khong match BU cho tin nhan: "mình xin lịch trình ngày 23/4~2/5/25 của Tibet vs ạ Dạ em đã chuyển thông tin củ"
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Nhi Khanh. Đang tạo Lead...
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "Trung Quốc" -> BU1 | msg: "Dạ em chào anh/chị, không biết anh/chị còn đang tìm hiểu về "
+[BU-AUTO] Poller Lead #4410 (Nhi Khanh) → Auto BU: BU1
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "bfd6f80321b0677b12541eaf104f64bb04fbcf3f532d9a7e3d8bf0eaaad761cb"
+    ],
+    "fb_login_id": "34845729578408997"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4410,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Nguyen Duc Minh. Đang tạo Lead...
+[BU-AUTO] ✅ Pass1 (dấu chính xác) "Trung Quốc" -> BU1 | msg: "Dạ FIT Tour xin chào anh/chị. Hiện tại bên em có nhiều dòng "
+[BU-AUTO] Poller Lead #4411 (Nguyen Duc Minh) → Auto BU: BU1
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "4834f43006b80ba3505301c3d95dc606aa677ad0500839de11cbc1931f4c023a"
+    ],
+    "fb_login_id": "35876352345285157"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4411,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AW750TrlObLED2kgJ5wONio' }
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AnW1CN3KjlnLKTilosSVfij' }
+[FB POLLER] Phát hiện khách mới chat với Fanpage: Trang Cao. Đang tạo Lead...
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ em chào anh/chị ạ. Anh/chị có cần em tư vấn thêm về các tour du lịch không ạ?"
+[CAPI] CAPI Payload for event: Lead
+{
+  "event_name": "Lead",
+  "user_data": {
+    "external_id": [
+      "baaa487026d73680cae9b2c2672f38b28e1128f2d60cd75665c2b8b937c77648"
+    ],
+    "fb_login_id": "25684538297886899"
+  },
+  "custom_data": {
+    "lead_event_source": "FIT Tour CRM",
+    "event_source": "crm",
+    "lead_id": 4412,
+    "lead_source": "Messenger",
+    "content_name": "General Inquiry"
+  }
+}
+[CAPI] ✅ Event "Lead" sent successfully. { events_received: 1, fbtrace_id: 'AXWhlsx4UcCMajhkwkyjs57' }
+[BU-AUTO] Khong match BU cho tin nhan: "Dạ em chào anh/chị ạ. Anh/chị có cần em tư vấn thêm về các tour du lịch không ạ?"

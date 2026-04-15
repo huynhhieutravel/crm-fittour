@@ -206,3 +206,34 @@
 11:47:08 PM [vite] (client) hmr update /src/App.jsx
 11:47:25 PM [vite] (client) hmr update /src/App.jsx
 11:47:47 PM [vite] (client) hmr update /src/tabs/UsersTab.jsx
+5:27:34 AM [vite] (client) hmr update /src/App.jsx
+5:56:54 AM [vite] (client) hmr update /src/App.jsx
+5:57:28 AM [vite] (client) hmr update /src/App.jsx
+5:57:43 AM [vite] (client) hmr update /src/App.jsx
+6:06:56 AM [vite] (client) hmr update /src/tabs/OrgChartTab.jsx
+6:10:34 AM [vite] (client) hmr update /src/tabs/OrgChartTab.jsx
+6:16:12 AM [vite] (client) hmr update /src/tabs/OrgChartTab.jsx
+6:27:15 AM [vite] (client) hmr update /src/tabs/OrgChartTab.jsx
+6:30:07 AM [vite] (client) hmr update /src/tabs/OrgChartTab.jsx
+6:32:34 AM [vite] (client) hmr update /src/tabs/OrgChartTab.jsx
+6:38:47 AM [vite] (client) hmr update /src/App.jsx
+6:42:36 AM [vite] (client) hmr update /src/App.jsx
+6:46:47 AM [vite] (client) hmr update /src/tabs/DashboardTab.jsx
+7:05:52 AM [vite] (client) hmr update /src/tabs/InboxTab.jsx
+7:20:35 AM [vite] (client) hmr update /src/App.jsx
+7:20:35 AM [vite] (client) warning: The character "}" is not valid inside a JSX element
+2913|              }
+2914|            <OrgChartTab currentUser={user} addToast={addToast} />
+2915|          )}
+   |           ^
+2916|  
+2917|          {activeTab === 'settings' &&
+
+  Plugin: vite:esbuild
+  File: /Volumes/T7 Loki SS/WORK Hiếu/crm-fittour/client/src/App.jsx
+7:21:14 AM [vite] (client) hmr update /src/App.jsx
+7:24:46 AM [vite] (client) hmr update /src/tabs/WorkflowTab.jsx
+7:33:16 AM [vite] (client) hmr update /src/tabs/WorkflowTab.jsx
+7:44:36 AM [vite] (client) hmr update /src/tabs/WorkflowTab.jsx
+7:46:14 AM [vite] (client) hmr update /src/tabs/WorkflowTab.jsx
+7:48:39 AM [vite] (client) hmr update /src/App.jsx

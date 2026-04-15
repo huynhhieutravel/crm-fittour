@@ -122,6 +122,7 @@ import CskhBoardTab from './tabs/CskhBoardTab';
 import CskhTodoTab from './tabs/CskhTodoTab';
 import CskhSearchTab from './tabs/CskhSearchTab';
 import CskhRulesTab from './tabs/CskhRulesTab';
+import WorkflowTab from './tabs/WorkflowTab';
 
 const addToastGlobal = (message, setToasts, type = 'success') => {
   const id = Date.now();
@@ -150,7 +151,7 @@ function AppContent() {
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
     if (path.startsWith('group/')) return path.replace('/', '-');
-    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'my-profile', 'audit-logs'];
+    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
 
@@ -163,7 +164,7 @@ function AppContent() {
     if (path.startsWith('guides')) { setActiveTab('guides'); return; }
     if (path.startsWith('manual')) { setActiveTab('manual'); return; }
     if (path.startsWith('group/')) { setActiveTab(path.replace('/', '-')); return; }
-    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'my-profile', 'audit-logs'];
+    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs'];
     
     // Extracted base path (e.g., departures/view/1 -> departures)
     const basePath = path.split('/')[0];
@@ -2034,6 +2035,9 @@ function AppContent() {
               )}
 
           <div className="nav-section-title">Tài Liệu Nội Bộ</div>
+          <div className={`nav-item ${activeTab === 'workflow' ? 'active' : ''}`} onClick={() => navigate('/workflow')}>
+            <FileText /> Luồng xử lý CRM
+          </div>
           <div className={`nav-item ${activeTab === 'internal-docs' ? 'active' : ''}`} onClick={() => navigate('/internal-docs')}>
             <FileText /> Quy chế lương HDV
           </div>
@@ -2887,6 +2891,9 @@ function AppContent() {
 
         {activeTab === 'org-chart' && (
           <OrgChartTab currentUser={user} addToast={addToast} />
+        )}
+        {activeTab === 'workflow' && (
+          <WorkflowTab />
         )}
 
         {activeTab === 'settings' && (
