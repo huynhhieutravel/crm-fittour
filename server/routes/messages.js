@@ -34,9 +34,12 @@ router.get('/conversations', auth, async (req, res) => {
         // Lấy dữ liệu
         const dataQueryArgs = [...queryArgs, limitNum, offset];
         const dataQuery = `
-            SELECT c.*, l.name as lead_name, l.status as lead_status
+            SELECT c.*, l.name as lead_name, l.status as lead_status,
+                   l.bu_group as assigned_bu, l.assigned_to as assigned_to_id,
+                   COALESCE(u.full_name, l.assigned_to::text) as assigned_to_name
             FROM conversations c
             LEFT JOIN leads l ON c.lead_id = l.id
+            LEFT JOIN users u ON l.assigned_to = u.id
             ${whereClause}
             ORDER BY c.updated_at DESC
             LIMIT $${queryArgs.length + 1} OFFSET $${queryArgs.length + 2}

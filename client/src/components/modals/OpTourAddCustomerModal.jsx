@@ -3,6 +3,7 @@ import axios from 'axios';
 import { X, Search, Plus } from 'lucide-react';
 import AsyncSelect from 'react-select/async';
 import CustomerProfileSlider from '../CustomerProfileSlider';
+import { scanPassportImage } from '../../utils/passportOcr';
 
 export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initialData, currentUser }) {
   // Auto-generate B-XXXX (4-5 digits) for a new booking code
@@ -42,6 +43,146 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   const [showProfileSlider, setShowProfileSlider] = useState(false);
   const [fullProfileData, setFullProfileData] = useState(null);
   const [uploadingPassportId, setUploadingPassportId] = useState(null);
+  const [scanningPassportId, setScanningPassportId] = useState(null);
+
+  const handleBulkScanPassport = async (file) => {
+    if (!file) return;
+    setScanningPassportId('global');
+    try {
+      const scanResult = await scanPassportImage(file);
+      const ocrValid = scanResult && scanResult.valid;
+      
+      let uploadedUrl = '';
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await axios.post('/api/media/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (res.data && res.data.url) uploadedUrl = res.data.url;
+      } catch (uploadErr) {
+        console.warn('Upload sau scan lỗi (OCR vẫn OK):', uploadErr.message);
+      }
+      
+      if (ocrValid || uploadedUrl) {
+         setMembers(prev => {
+            const updated = [...prev];
+            let targetIdx = updated.findIndex(m => !m.name && !m.docId);
+            if (targetIdx === -1) {
+                updated.push({
+                   id: Date.now(),
+                   phone: '', name: '', email: '', ageType: 'Người lớn', gender: 'Chọn',
+                   dob: '', docType: 'Hộ chiếu', docId: '', issueDate: '', expiryDate: '', passportUrl: '',
+                   flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
+                   note: '', roomType: '-Chọn-', hotel: '', roomCode: '', customerSegment: '', tripCount: 0, crmNote: ''
+                });
+                targetIdx = updated.length - 1;
+            }
+            const targetM = { ...updated[targetIdx] };
+            if (uploadedUrl) targetM.passportUrl = uploadedUrl;
+            if (ocrValid) {
+                if (scanResult.surname || scanResult.givenName) {
+                  targetM.name = `${scanResult.surname || ''} ${scanResult.givenName || ''}`.trim();
+                }
+                if (scanResult.gender) {
+                  const g = scanResult.gender.toUpperCase();
+                  targetM.gender = g === 'M' ? 'Nam' : (g === 'F' ? 'Nữ' : 'Chọn');
+                }
+                if (scanResult.dobDisplay) {
+                   const [dd, mm, yyyy] = scanResult.dobDisplay.split('/');
+                   if (yyyy && mm && dd) targetM.dob = `${yyyy}-${mm}-${dd}`;
+                }
+                if (scanResult.docId) {
+                   targetM.docId = scanResult.docId;
+                   targetM.docType = 'Hộ chiếu';
+                }
+                if (scanResult.doiDisplay) {
+                   const [dd, mm, yyyy] = scanResult.doiDisplay.split('/');
+                   if (yyyy && mm && dd) targetM.issueDate = `${yyyy}-${mm}-${dd}`;
+                }
+                if (scanResult.expiryDisplay) {
+                   const [dd, mm, yyyy] = scanResult.expiryDisplay.split('/');
+                   if (yyyy && mm && dd) targetM.expiryDate = `${yyyy}-${mm}-${dd}`;
+                }
+            }
+            updated[targetIdx] = targetM;
+            return updated;
+         });
+      } else {
+         alert(scanResult?.error || "Không nhận diện được Hộ chiếu từ ảnh này!");
+      }
+    } catch (err) {
+      console.error('OCR Bulk Scan error:', err);
+      alert('Lỗi khi quét ảnh OCR: ' + (err.message || 'Unknown error'));
+    } finally {
+      setScanningPassportId(null);
+    }
+  };
+
+  const handleScanPassport = async (memberId, file) => {
+    if (!file) return;
+    setScanningPassportId(memberId);
+    try {
+      const scanResult = await scanPassportImage(file);
+      const ocrValid = scanResult && scanResult.valid;
+      
+      let uploadedUrl = '';
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await axios.post('/api/media/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (res.data && res.data.url) uploadedUrl = res.data.url;
+      } catch (uploadErr) {
+        console.warn('Upload sau scan lỗi (OCR vẫn OK):', uploadErr.message);
+      }
+      
+      if (ocrValid || uploadedUrl) {
+         setMembers(prev => prev.map(m => {
+           if (m.id === memberId) {
+             const updated = { ...m };
+             if (uploadedUrl) updated.passportUrl = uploadedUrl;
+             if (ocrValid) {
+                 if (scanResult.surname || scanResult.givenName) {
+                   updated.name = `${scanResult.surname || ''} ${scanResult.givenName || ''}`.trim();
+                 }
+                 if (scanResult.gender) {
+                   const g = scanResult.gender.toUpperCase();
+                   updated.gender = g === 'M' ? 'Nam' : (g === 'F' ? 'Nữ' : 'Chọn');
+                 }
+                 if (scanResult.dobDisplay) {
+                    const [dd, mm, yyyy] = scanResult.dobDisplay.split('/');
+                    if (yyyy && mm && dd) updated.dob = `${yyyy}-${mm}-${dd}`;
+                 }
+                 if (scanResult.docId) {
+                    updated.docId = scanResult.docId;
+                    updated.docType = 'Hộ chiếu';
+                 }
+                 if (scanResult.doiDisplay) {
+                    const [dd, mm, yyyy] = scanResult.doiDisplay.split('/');
+                    if (yyyy && mm && dd) updated.issueDate = `${yyyy}-${mm}-${dd}`;
+                 }
+                 if (scanResult.expiryDisplay) {
+                    const [dd, mm, yyyy] = scanResult.expiryDisplay.split('/');
+                    if (yyyy && mm && dd) updated.expiryDate = `${yyyy}-${mm}-${dd}`;
+                 }
+             }
+             return updated;
+           }
+           return m;
+         }));
+      } else {
+         alert(scanResult?.error || "Không nhận diện được Hộ chiếu từ ảnh này!");
+      }
+    } catch (err) {
+      console.error('OCR Scan error:', err);
+      alert('Lỗi khi quét ảnh OCR: ' + (err.message || 'Unknown error'));
+    } finally {
+      setScanningPassportId(null);
+    }
+  };
+
 
   const handleUploadPassport = async (memberId, file) => {
     if (!file) return;
@@ -773,9 +914,18 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
           <div style={{ marginTop: '30px', borderTop: '2px solid #e2e8f0', paddingTop: '20px' }}>
              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
                 <h4 style={{ margin: 0, color: '#1e293b', fontSize: '16px' }}>#3 Danh sách thành viên (Tuỳ chọn)</h4>
-                <button style={{ background: '#ef4444', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                   <Plus size={12} /> Import
-                </button>
+                
+                <label style={{ 
+                   background: '#10b981', 
+                   color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px',
+                   fontWeight: 'bold', boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                }}>
+                   {scanningPassportId === 'global' ? (
+                      <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.5)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                   ) : '🔍'}
+                   Quét hộ chiếu điền thông tin nhanh
+                   <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { handleBulkScanPassport(e.target.files[0]); e.target.value = ''; }} />
+                </label>
              </div>
              
              {members.map((m, idx) => (
@@ -783,7 +933,29 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                   <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#ef4444', paddingBottom: '8px', paddingRight: '5px' }}>#{idx + 1}</div>
                   <button style={{ background: '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', width: '30px', height: '30px', cursor: 'pointer', flexShrink: 0 }}>+</button>
 
-                  
+                  <div style={{ flexShrink: 0, paddingBottom: '2px' }}>
+                     <label style={{ 
+                        background: '#10b981', 
+                        border: '1px solid #059669', 
+                        borderRadius: '4px', padding: '0 8px', height: '30px', 
+                        display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer',
+                        fontSize: '11px', fontWeight: 'bold', color: 'white',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                     }} title="Tải ảnh Hộ chiếu để quét tự động điền thông tin khách này (OCR)">
+                        {scanningPassportId === m.id ? (
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              <div style={{ width: '12px', height: '12px', border: '2px solid rgba(255,255,255,0.5)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                              <span>Đang quét...</span>
+                           </div>
+                        ) : (
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ fontSize: '13px' }}>🔍</span> Quét Hộ chiếu
+                           </div>
+                        )}
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { handleScanPassport(m.id, e.target.files[0]); e.target.value = ''; }} />
+                     </label>
+                  </div>
+
                   <div style={{ width: '110px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Điện thoại:</label>
                      <input type="text" value={m.phone} onChange={e => handleMemberChange(m.id, 'phone', e.target.value)} onBlur={e => handleMemberPhoneBlur(m.id, e.target.value)} placeholder="Nhập để tra cứu..." style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: idx === 0 ? '#f1f5f9' : 'white', cursor: idx === 0 ? 'not-allowed' : 'text', color: idx === 0 ? '#64748b' : 'inherit' }} disabled={idx === 0} title={idx === 0 ? "Số điện thoại người đặt (Booker) bị khóa mặc định" : ""} />

@@ -272,15 +272,8 @@ const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid, onGoBa
                           </span>
                         </div>
                         <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-                          {(() => {
-                            const lObj = leads.find(l => l.id === conv.lead_id);
-                            return (
-                              <>
-                                <span style={{ fontSize: '10px', padding: '1px 4px', borderRadius: '4px', background: lObj?.assigned_bu ? '#e0e7ff' : '#fee2e2', color: lObj?.assigned_bu ? '#4338ca' : '#b91c1c', fontWeight: 'bold' }}>BU: {lObj?.assigned_bu || 'Chưa phân'}</span>
-                                <span style={{ fontSize: '10px', padding: '1px 4px', borderRadius: '4px', background: lObj?.assigned_to ? '#dcfce7' : '#fee2e2', color: lObj?.assigned_to ? '#15803d' : '#b91c1c', fontWeight: 'bold' }}>Sale: {lObj?.assigned_to || 'Chưa phân'}</span>
-                              </>
-                            );
-                          })()}
+                                <span style={{ fontSize: '10px', padding: '1px 4px', borderRadius: '4px', background: conv.assigned_bu ? '#e0e7ff' : '#fee2e2', color: conv.assigned_bu ? '#4338ca' : '#b91c1c', fontWeight: 'bold' }}>BU: {conv.assigned_bu || 'Chưa phân'}</span>
+                                <span style={{ fontSize: '10px', padding: '1px 4px', borderRadius: '4px', background: conv.assigned_to_name ? '#dcfce7' : '#fee2e2', color: conv.assigned_to_name ? '#15803d' : '#b91c1c', fontWeight: 'bold' }}>Sale: {conv.assigned_to_name || 'Chưa phân'}</span>
                         </div>
                         <p className={`msg ${isSelected ? "active" : ""}`}>
                           {conv.last_message || "..."}
@@ -348,17 +341,10 @@ const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid, onGoBa
                     </h2>
                     <div className="chat-source">
                       <span className="dot"></span> Meta Messenger
-                      {(() => {
-                        const sLead = leads.find(l => l.id === selectedConv.lead_id);
-                        return (
-                          <>
                             <span style={{ color: '#cbd5e1', margin: '0 4px' }}>|</span>
-                            BU: <span style={{ color: sLead?.assigned_bu ? '#334155' : '#ef4444', fontWeight: '800' }}>{sLead?.assigned_bu || 'Chưa phân'}</span>
+                            BU: <span style={{ color: selectedConv?.assigned_bu ? '#334155' : '#ef4444', fontWeight: '800' }}>{selectedConv?.assigned_bu || 'Chưa phân'}</span>
                             <span style={{ color: '#cbd5e1', margin: '0 4px' }}>|</span>
-                            Sale: <span style={{ color: sLead?.assigned_to ? '#334155' : '#ef4444', fontWeight: '800' }}>{sLead?.assigned_to || 'Chưa phân'}</span>
-                          </>
-                        );
-                      })()}
+                            Sale: <span style={{ color: selectedConv?.assigned_to_name ? '#334155' : '#ef4444', fontWeight: '800' }}>{selectedConv?.assigned_to_name || 'Chưa phân'}</span>
                     </div>
                   </div>
                 </div>

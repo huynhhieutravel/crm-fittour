@@ -112,7 +112,8 @@ import {
   Briefcase,
   Building,
   Activity,
-  MapPin
+  MapPin,
+  ScanText
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -123,6 +124,7 @@ import CskhTodoTab from './tabs/CskhTodoTab';
 import CskhSearchTab from './tabs/CskhSearchTab';
 import CskhRulesTab from './tabs/CskhRulesTab';
 import WorkflowTab from './tabs/WorkflowTab';
+import PassportBulkScanner from './components/tools/PassportBulkScanner';
 
 const addToastGlobal = (message, setToasts, type = 'success') => {
   const id = Date.now();
@@ -151,7 +153,7 @@ function AppContent() {
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
     if (path.startsWith('group/')) return path.replace('/', '-');
-    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs'];
+    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
 
@@ -164,7 +166,7 @@ function AppContent() {
     if (path.startsWith('guides')) { setActiveTab('guides'); return; }
     if (path.startsWith('manual')) { setActiveTab('manual'); return; }
     if (path.startsWith('group/')) { setActiveTab(path.replace('/', '-')); return; }
-    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs'];
+    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr'];
     
     // Extracted base path (e.g., departures/view/1 -> departures)
     const basePath = path.split('/')[0];
@@ -1845,6 +1847,12 @@ function AppContent() {
               )}
 
               {checkView('op_tours') && (
+                 <div className={`nav-item ${activeTab === 'passport-ocr' ? 'active' : ''}`} onClick={() => { navigate('/passport-ocr'); setActiveTab('passport-ocr'); }}>
+                   <ScanText size={18} /> Công cụ OCR Hộ chiếu
+                 </div>
+              )}
+
+              {checkView('op_tours') && (
                 <div 
                   className={`nav-item ${activeTab === 'vouchers' ? 'active' : ''}`}
                   onClick={() => navigate('/vouchers')}
@@ -2038,6 +2046,7 @@ function AppContent() {
           <div className={`nav-item ${activeTab === 'workflow' ? 'active' : ''}`} onClick={() => navigate('/workflow')}>
             <FileText /> Luồng xử lý CRM
           </div>
+
           <div className={`nav-item ${activeTab === 'internal-docs' ? 'active' : ''}`} onClick={() => navigate('/internal-docs')}>
             <FileText /> Quy chế lương HDV
           </div>
@@ -2966,6 +2975,9 @@ function AppContent() {
         )}
         {activeTab === 'group-projects' && (
           <GroupProjectsTab currentUser={user} addToast={addToast} users={users} handleDeleteProject={(id) => setGroupProjectToDelete(id)} />
+        )}
+        {activeTab === 'passport-ocr' && (
+          <PassportBulkScanner />
         )}
 
         {activeTab === 'b2b-companies' && (
