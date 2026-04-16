@@ -175,9 +175,9 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
 
   const defaultPricingRows = [
     { id: 1, ageType: 'Người lớn', name: '', price: 25490000, qty: 1, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 25490000, internalNote: '', customerNote: '', extraServices: [] },
-    { id: 2, ageType: 'Trẻ em (6 - 11)', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
-    { id: 3, ageType: 'Trẻ em (2 - 5)', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
-    { id: 4, ageType: 'Trẻ nhỏ', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+    { id: 2, ageType: 'Trẻ em', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+    { id: 3, ageType: 'Trẻ em (2-10)', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+    { id: 4, ageType: 'Em bé (<2)', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
   ];
 
   const [pricingRows, setPricingRows] = useState(defaultPricingRows);
@@ -199,9 +199,9 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
           });
           const initialRows = raw.pricingRows || [
             { id: 1, ageType: 'Người lớn', name: '', price: initialData.base_price || 25490000, qty: initialData.qty || 1, surcharge: initialData.surcharge || 0, discount: initialData.discount || 0, comPerPax: 0, comCTV: 0, total: initialData.total || 25490000, internalNote: '', customerNote: '', extraServices: [] },
-            { id: 2, ageType: 'Trẻ em (6 - 11)', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
-            { id: 3, ageType: 'Trẻ em (2 - 5)', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
-            { id: 4, ageType: 'Trẻ nhỏ', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+            { id: 2, ageType: 'Trẻ em', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+            { id: 3, ageType: 'Trẻ em (2-10)', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+            { id: 4, ageType: 'Em bé (<2)', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
           ];
           setPricingRows(initialRows.map(r => ({ ...r, extraServices: r.extraServices || [] })));
           setMembers(raw.members || []);
@@ -846,9 +846,9 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                      <label style={{ fontSize: '10px' }}>Độ tuổi:</label>
                      <select value={m.ageType} onChange={e => handleMemberChange(m.id, 'ageType', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }}>
                         <option>Người lớn</option>
-                        <option>Trẻ em (6 - 11)</option>
-                        <option>Trẻ em (2 - 5)</option>
-                        <option>Trẻ nhỏ</option>
+                        <option>Trẻ em</option>
+                        <option>Trẻ em (2-10)</option>
+                        <option>Em bé (&lt;2)</option>
                         <option>Chưa rõ</option>
                      </select>
                   </div>
@@ -903,6 +903,11 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                   </div>
 
                   {/* Additional fields hidden in the horizontal scroll... */}
+                  <div style={{ width: '80px', flexShrink: 0 }}>
+                     <label style={{ fontSize: '10px' }}>Mã phòng:</label>
+                     <input type="text" value={m.roomCode || ''} onChange={e => handleMemberChange(m.id, 'roomCode', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                  </div>
+                  
                   <div style={{ width: '60px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Vé đi:</label>
                      <input type="text" value={m.flightOut || ''} onChange={e => handleMemberChange(m.id, 'flightOut', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />

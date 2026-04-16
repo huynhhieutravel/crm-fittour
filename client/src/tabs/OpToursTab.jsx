@@ -253,7 +253,6 @@ export default function OpToursTab({ currentUser }) {
       'MÃ PHÒNG',
       'ĐỘ TUỔI',
       'NGÀY CẤP',
-      'LOẠI PHÒNG',
       'SALE PHỤ TRÁCH',
       'TỔNG',
       'GIÁ TOUR',
@@ -283,7 +282,6 @@ export default function OpToursTab({ currentUser }) {
         m.roomCode || '',
         m.ageType || '',
         m.issueDate || '',
-        m.roomType || '',
         m.salesPerson || '',
         m.bTotal !== '' ? Number(m.bTotal) : '',
         m.bTourPrice !== '' ? Number(m.bTourPrice) : '',
@@ -348,8 +346,8 @@ export default function OpToursTab({ currentUser }) {
           }
           
           // Specific column alignments
-          if (C === 1 || C === 18) cell.s.alignment = leftAlign; // Name, Note
-          if (C === 13 || C === 14 || C === 15 || C === 16) {
+          if (C === 1 || C === 17) cell.s.alignment = leftAlign; // Name, Note
+          if (C === 12 || C === 13 || C === 14 || C === 15) {
              cell.s.alignment = rightAlign;
              if(typeof cell.v === 'number') {
                 cell.z = '#,##0'; // Number format
@@ -363,7 +361,7 @@ export default function OpToursTab({ currentUser }) {
       { wch: 6 },   // A: 0 STT
       { wch: 30 },  // B: 1 Name
       { wch: 10 },  // C: 2 Giới tính
-      { wch: 16 },  // D: 3 DOB (Increased!)
+      { wch: 16 },  // D: 3 DOB
       { wch: 16 },  // E: 4 Số Hộ chiếu
       { wch: 14 },  // F: 5 Ngày hết hạn
       { wch: 12 },  // G: 6 QUỐC TỊCH
@@ -371,14 +369,13 @@ export default function OpToursTab({ currentUser }) {
       { wch: 12 },  // I: 8 MÃ PHÒNG
       { wch: 12 },  // J: 9 ĐỘ TUỔI
       { wch: 14 },  // K: 10 NGÀY CẤP
-      { wch: 14 },  // L: 11 LOẠI PHÒNG
-      { wch: 18 },  // M: 12 SALE PHỤ TRÁCH
-      { wch: 16 },  // N: 13 TỔNG
-      { wch: 16 },  // O: 14 GIÁ TOUR
-      { wch: 16 },  // P: 15 ĐÃ CỌC
-      { wch: 16 },  // Q: 16 CÒN LẠI
-      { wch: 18 },  // R: 17 TRẠNG THÁI TT
-      { wch: 25 },  // S: 18 GHI CHÚ
+      { wch: 18 },  // L: 11 SALE PHỤ TRÁCH
+      { wch: 16 },  // M: 12 TỔNG
+      { wch: 16 },  // N: 13 GIÁ TOUR
+      { wch: 16 },  // O: 14 ĐÃ CỌC
+      { wch: 16 },  // P: 15 CÒN LẠI
+      { wch: 18 },  // Q: 16 TRẠNG THÁI TT
+      { wch: 25 },  // R: 17 GHI CHÚ
     ];
 
     ws['!merges'] = [
@@ -412,6 +409,193 @@ export default function OpToursTab({ currentUser }) {
     XLSX.utils.book_append_sheet(wb, ws, 'Danh sách khách');
     const safeName = (tourCode || 'Tour').replace(/[\s\/\\]+/g, '_');
     XLSX.writeFile(wb, `DanhSachKhach_${safeName}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
+  const exportAllChinaMembersXlsx = () => {
+    if (!viewingAllMembers) return;
+    const { tour, allMembers } = viewingAllMembers;
+
+    const wsData = [];
+    
+    // Row 1: Header
+    wsData.push(['TRIP INFORMATION AND NAMELIST 行程信息和名单', '', '', '', '', '', '', '', '', '', '']);
+    
+    // Row 2: Tour Name
+    wsData.push(['FIT TOUR', '', '', '', 'Tour 行程', '', 'TP.HCM - THƯỢNG HẢI (TQ)', '', '', '', '']);
+    
+    // Row 3: Banner & Operator
+    wsData.push(['', '', '', '', 'Banner\n欢迎横幅', '', 'WELCOME FIT TOUR', '', 'Điều hành 计调', '', '']);
+    
+    // Row 4: Tour Leader
+    wsData.push(['', '', '', '', 'Tour Leader\n旅游领队', '', '', '', 'HANI NGUYEN', '', '']);
+    
+    // Row 5: Flight Header
+    wsData.push(['FLIGHT DETAIL\n航班详情', '', 'DATE\n日期', 'JOURNEY\n行程', 'FLIGHT NUMBER\n航班', 'DEPARTURE\n起飞 (时间)', 'ARRIVAL\n到达 (时间)', '', '', '', '']);
+    
+    // Row 6: Flight From
+    wsData.push(['From HAN\n胡志明市', '', 'TH26MAR', 'SGN WUH', 'CZ8318', '0240', '0730', '7KG HLXT+\n23KG HLKG', '', '', '']);
+    
+    // Row 7: Flight Return
+    wsData.push(['Return 往回', '', 'WE01APR', 'WUH SGN', 'CZ8317', '2210', '0105+1', '', '', '', '']);
+    
+    // Row 8: Empty or space
+    wsData.push([]);
+    
+    // Row 9: Passenger Header
+    wsData.push([
+      'STT', 
+      'Surname\n性', 
+      'Given name\n名', 
+      'Gender\n性别', 
+      'DOB 生日\n(yyyymmdd)', 
+      'Passport no\n护照号', 
+      'DOE 到期日期\n(yyyy/mm/dd)', 
+      'Nationality\n国籍', 
+      'Rooming\n分房', 
+      'SĐT\n手机号码', 
+      'NOTE\n备注'
+    ]);
+
+    const formatToYYYYMMDD = (dateStr) => {
+       if (!dateStr) return '';
+       const parts = dateStr.includes('/') ? dateStr.split('/') : dateStr.includes('-') ? dateStr.split('-') : [];
+       if (parts.length === 3) {
+          if (parts[2].length === 4) return `${parts[2]}${parts[1]}${parts[0]}`; // DD/MM/YYYY
+          if (parts[0].length === 4) return `${parts[0]}${parts[1]}${parts[2]}`; // YYYY-MM-DD
+       }
+       return dateStr.replace(/[-/]/g, '');
+    };
+
+    const formatName = (str) => {
+       if (!str) return '';
+       return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toUpperCase();
+    };
+
+    allMembers.forEach((m, i) => {
+      const fullName = formatName(m.name || '').trim();
+      let surname = '';
+      let givenName = '';
+      if (fullName) {
+        const parts = fullName.split(' ');
+        if (parts.length > 1) {
+          surname = parts[0];
+          givenName = parts.slice(1).join(' ');
+        } else {
+          surname = fullName;
+          givenName = '';
+        }
+      }
+
+      const gender = m.gender === 'Nam' ? 'M' : m.gender === 'Nữ' ? 'F' : '';
+      const dob = formatToYYYYMMDD(m.dob);
+      const doe = formatToYYYYMMDD(m.expiryDate);
+      const rooming = m.roomCode || '';
+      
+      const note = m.bNote || m.note || '';
+
+      wsData.push([
+        i + 1, 
+        surname, 
+        givenName, 
+        gender, 
+        dob, 
+        m.docId || '', 
+        doe, 
+        'VNM', // Nationality Default
+        rooming, 
+        m.phone || '', 
+        note
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    const borderAll = { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } };
+    const centerAlign = { vertical: "center", horizontal: "center", wrapText: true };
+    const orangeBg = { fgColor: { rgb: "ED7D31" } };
+
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellRef = XLSX.utils.encode_cell({ c: C, r: R });
+        if (!ws[cellRef]) ws[cellRef] = { v: '', t: 's' };
+        const cell = ws[cellRef];
+        
+        cell.s = { ...cell.s, font: { name: "Times New Roman", sz: 11 } };
+        
+        // Row 1 (Index 0) - Title
+        if (R === 0) {
+           cell.s.font.bold = true;
+           cell.s.font.sz = 14;
+           cell.s.alignment = centerAlign;
+           cell.s.fill = orangeBg;
+           cell.s.border = borderAll;
+        }
+
+        // Row 5 (Index 4) - Flight Header
+        if (R === 4) {
+           cell.s.font.bold = true;
+           cell.s.alignment = centerAlign;
+           cell.s.fill = orangeBg;
+           cell.s.border = borderAll;
+        }
+
+        // Row 9 (Index 8) - Passenger Header
+        if (R === 8) {
+           cell.s.font.bold = true;
+           cell.s.alignment = centerAlign;
+           cell.s.fill = orangeBg;
+           cell.s.border = borderAll;
+        }
+
+        // Apply borders for standard data grids
+        if ((R >= 1 && R <= 6) || R >= 8) {
+           cell.s.border = borderAll;
+        }
+
+        if (R > 8 && C === 1) cell.s.font.color = { rgb: "FF0000" };
+        if (R > 8 && C === 2) { cell.s.font.color = { rgb: "FF0000" }; cell.s.font.bold = true; }
+        if (R === 3 && C === 8) cell.s.font.color = { rgb: "FF0000" };
+        if ((R === 5 || R === 6) && (C >= 2 && C <= 7)) {
+           cell.s.font.color = { rgb: "FF0000" };
+           cell.s.font.bold = true;
+           cell.s.alignment = centerAlign;
+        }
+        
+        if (R >= 8) cell.s.alignment = centerAlign;
+      }
+    }
+
+    ws['!cols'] = [
+      { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 8 }, { wch: 15 }, { wch: 15 },
+      { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
+    ];
+
+    ws['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } },
+      { s: { r: 1, c: 0 }, e: { r: 3, c: 3 } }, 
+      { s: { r: 1, c: 4 }, e: { r: 1, c: 5 } }, 
+      { s: { r: 1, c: 6 }, e: { r: 1, c: 10 } }, 
+      { s: { r: 2, c: 4 }, e: { r: 2, c: 5 } }, 
+      { s: { r: 2, c: 6 }, e: { r: 2, c: 7 } }, 
+      { s: { r: 2, c: 8 }, e: { r: 2, c: 10 } }, 
+      { s: { r: 3, c: 4 }, e: { r: 3, c: 5 } }, 
+      { s: { r: 3, c: 6 }, e: { r: 3, c: 7 } }, 
+      { s: { r: 3, c: 8 }, e: { r: 3, c: 10 } }, 
+      
+      { s: { r: 4, c: 0 }, e: { r: 4, c: 1 } }, 
+      { s: { r: 5, c: 0 }, e: { r: 5, c: 1 } }, 
+      { s: { r: 6, c: 0 }, e: { r: 6, c: 1 } }, 
+      { s: { r: 4, c: 7 }, e: { r: 6, c: 10 } },
+    ];
+
+    ws['!rows'] = [{ hpx: 30 }, { hpx: 25 }, { hpx: 25 }, { hpx: 25 }, { hpx: 35 }, { hpx: 35 }, { hpx: 35 }];
+    ws['!rows'][8] = { hpx: 35 };
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Danh sách khách TQ');
+    const safeTourName = (tour?.tour_code || 'Tour').replace(/[\s\/\\]+/g, '_');
+    XLSX.writeFile(wb, `DS_TQ_${safeTourName}_${new Date().toISOString().slice(0,10)}.xlsx`);
   };
 
   useEffect(() => {
@@ -483,22 +667,12 @@ export default function OpToursTab({ currentUser }) {
   }
 
   const handleCopyTour = (tour) => {
-    // Auto-generate tour code: {TEMPLATE_CODE}-DEP-{SEQ}
-    // Đếm số lần departure đã tồn tại để tạo số thứ tự tiếp theo
-    const baseCode = tour.template_code || tour.tour_code?.split('-DEP-')[0] || 'TOUR';
-    
-    // Tìm số thứ tự lớn nhất hiện có cho cùng sản phẩm tour
-    let maxSeq = 0;
-    tours.forEach(t => {
-      const code = t.tour_code || '';
-      if (code.startsWith(baseCode + '-DEP-')) {
-        const seqPart = code.replace(baseCode + '-DEP-', '');
-        const num = parseInt(seqPart, 10);
-        if (!isNaN(num) && num > maxSeq) maxSeq = num;
-      }
-    });
-    const nextSeq = String(maxSeq + 1).padStart(2, '0');
-    const newCode = `${baseCode}-DEP-${nextSeq}`;
+    // Auto-generate tour code: {TEMPLATE_CODE}-{YYYYMMDD}
+    // Set a default based on the previous code and previous start date (if any).
+    // The user will change start_date which will auto-update this via handleChange in OpTourDetailDrawer.
+    const baseCode = tour.template_code || tour.tour_code?.split('-')[0] || 'TOUR';
+    const dateStr = tour.start_date ? new Date(tour.start_date).toLocaleDateString('en-CA').replace(/-/g, '') : '';
+    const newCode = dateStr ? `${baseCode}-${dateStr}` : `${baseCode}-COPY`;
 
     const cloned = {
       tour_code: newCode,
@@ -1037,6 +1211,12 @@ export default function OpToursTab({ currentUser }) {
               </div>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                 <button 
+                  onClick={exportAllChinaMembersXlsx}
+                  style={{ background: '#f59e0b', color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                >
+                  <Download size={16} /> Tải DS Tour TQ
+                </button>
+                <button 
                   onClick={exportAllMembersXlsx}
                   style={{ background: '#ef4444', color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
                 >
@@ -1052,7 +1232,7 @@ export default function OpToursTab({ currentUser }) {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 1 }}>
-                    {['STT', 'Tên', 'Phân loại', 'Giới tính', 'Ngày sinh', 'Số hộ chiếu/CMT', 'Ngày hết hạn', 'Quốc tịch', 'Số điện thoại', 'Mã phòng', 'Độ tuổi', 'Ngày cấp', 'Loại phòng', 'Sale phụ trách', 'Tổng', 'Giá Tour', 'Đã cọc', 'Còn lại', 'Trạng thái thanh toán', 'Ghi chú'].map((h, hi) => (
+                    {['STT', 'Tên', 'Phân loại', 'Giới tính', 'Ngày sinh', 'Số hộ chiếu/CMT', 'Ngày hết hạn', 'Quốc tịch', 'Số điện thoại', 'Mã phòng', 'Độ tuổi', 'Ngày cấp', 'Sale phụ trách', 'Tổng', 'Giá Tour', 'Đã cọc', 'Còn lại', 'Trạng thái thanh toán', 'Ghi chú'].map((h, hi) => (
                       <th key={hi} style={{ padding: '8px 6px', borderRight: '1px solid #e2e8f0', textAlign: 'center', whiteSpace: 'nowrap', fontSize: '11px', fontWeight: 700, color: '#334155' }}>{h}</th>
                     ))}
                   </tr>
@@ -1099,7 +1279,6 @@ export default function OpToursTab({ currentUser }) {
                       <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{m.roomCode || ''}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', borderRight: '1px solid #f1f5f9' }}>{m.ageType || ''}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{m.issueDate || ''}</td>
-                      <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{m.roomType || ''}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', borderRight: '1px solid #f1f5f9' }}>{m.salesPerson || ''}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'right', fontWeight: m.bTotal !== '' ? 700 : 400, borderRight: '1px solid #f1f5f9' }}>{m.bTotal !== '' ? fmtMoney(m.bTotal) : ''}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'right', borderRight: '1px solid #f1f5f9' }}>{m.bTourPrice ? fmtMoney(m.bTourPrice) : ''}</td>

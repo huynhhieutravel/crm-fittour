@@ -86,14 +86,27 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
   }, [tour]);
 
   const handleChange = (field, value, isInfo = false) => {
-    if (isInfo) {
-      setFormData(prev => ({
-        ...prev,
-        tour_info: { ...prev.tour_info, [field]: value }
-      }));
-    } else {
-      setFormData(prev => ({ ...prev, [field]: value }));
-    }
+    setFormData(prev => {
+      const newData = { ...prev };
+      if (isInfo) {
+        newData.tour_info = { ...newData.tour_info, [field]: value };
+      } else {
+        newData[field] = value;
+      }
+      
+      // Auto-generate tour_code: [TemplateCode]-[YYYYMMDD]
+      if (field === 'tour_template_id' || field === 'start_date') {
+        const templateId = field === 'tour_template_id' ? value : newData.tour_template_id;
+        const startDate = field === 'start_date' ? value : newData.start_date;
+        if (templateId && startDate) {
+           const selectedTemplate = tourTemplates.find(t => t.id == templateId);
+           const tCode = selectedTemplate?.code || newData.tour_code?.split('-')[0] || 'TOUR';
+           const dateStr = startDate.replace(/-/g, '');
+           newData.tour_code = `${tCode}-${dateStr}`;
+        }
+      }
+      return newData;
+    });
   };
 
   const formatCurrency = (val) => {
@@ -225,7 +238,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
               <span style={{ fontSize: '24px' }}>📋</span>
               <div>
                 <div style={{ fontWeight: 800, color: '#92400e', fontSize: '14px', marginBottom: '2px' }}>
-                  📋 BẢN SAO TOUR — Mã tour tự động kèm số thứ tự (DEP-01, 02...)
+                  📋 BẢN SAO TOUR — Mã tour mặc định [Địa Danh]-[Ngày khởi hành YYYYMMDD]
                 </div>
                 <div style={{ color: '#a16207', fontSize: '12px' }}>
                   ⚠️ Hãy sửa <strong>Ngày khởi hành</strong>, <strong>Ngày về</strong> cho đúng lịch mới. Booking &amp; Phiếu thu cũ KHÔNG copy theo.
@@ -383,7 +396,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 </div>
 
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px' }}>Giá trẻ em (2-5)</label>
+                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px' }}>Giá trẻ em</label>
                    <div style={{ display: 'flex', gap: '5px', flex: 1 }}>
                      <input type="number" placeholder="%" value={formData.tour_info.price_child_2_5_percent || ''} onChange={e => {
                          const percent = Number(e.target.value);
@@ -402,7 +415,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 </div>
 
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px' }}>Giá trẻ em (6-11)</label>
+                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px' }}>Giá trẻ em (2-10)</label>
                    <div style={{ display: 'flex', gap: '5px', flex: 1 }}>
                      <input type="number" placeholder="%" value={formData.tour_info.price_child_6_11_percent || ''} onChange={e => {
                          const percent = Number(e.target.value);
@@ -421,7 +434,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 </div>
 
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px' }}>Giá em bé</label>
+                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px' }}>Giá em bé (&lt;2)</label>
                    <div style={{ display: 'flex', gap: '5px', flex: 1 }}>
                      <input type="number" placeholder="%" value={formData.tour_info.price_infant_percent || ''} onChange={e => {
                          const percent = Number(e.target.value);

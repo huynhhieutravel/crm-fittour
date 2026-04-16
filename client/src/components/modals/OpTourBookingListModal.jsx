@@ -91,7 +91,6 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
       'NGÀY CẤP',
       'NGÀY HẾT HẠN',
       'SỐ ĐIỆN THOẠI',
-      'LOẠI PHÒNG',
       'MÃ PHÒNG',
       'GHI CHÚ'
     ];
@@ -106,7 +105,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
       wsData.push([
         i + 1, formatName(m.name), m.dob || '', m.gender || '', m.ageType || '',
         m.docId || '', m.issueDate || '', m.expiryDate || '',
-        m.phone || '', m.roomType || '', m.roomCode || '', 
+        m.phone || '', m.roomCode || '', 
         (i === 0 && bookingNote) ? (bookingNote + (m.note ? ` - ${m.note}` : '')) : (m.note || '')
       ]);
     });
@@ -175,6 +174,206 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
     XLSX.writeFile(wb, `DanhSach_${safeTourName}_${safeBooking}_${new Date().toISOString().slice(0,10)}.xlsx`);
   };
 
+  const exportChinaTourXlsx = (members, bookingName, bookingNote = '') => {
+    const wsData = [];
+    
+    // Row 1: Header
+    wsData.push(['TRIP INFORMATION AND NAMELIST 行程信息和名单', '', '', '', '', '', '', '', '', '', '']);
+    
+    // Row 2: Tour Name
+    wsData.push(['FIT TOUR', '', '', '', 'Tour 行程', '', 'TP.HCM - THƯỢNG HẢI (TQ)', '', '', '', '']);
+    
+    // Row 3: Banner & Operator
+    wsData.push(['', '', '', '', 'Banner\n欢迎横幅', '', 'WELCOME FIT TOUR', '', 'Điều hành 计调', '', '']);
+    
+    // Row 4: Tour Leader
+    wsData.push(['', '', '', '', 'Tour Leader\n旅游领队', '', '', '', 'HANI NGUYEN', '', '']);
+    
+    // Row 5: Flight Header
+    wsData.push(['FLIGHT DETAIL\n航班详情', '', 'DATE\n日期', 'JOURNEY\n行程', 'FLIGHT NUMBER\n航班', 'DEPARTURE\n起飞 (时间)', 'ARRIVAL\n到达 (时间)', '', '', '', '']);
+    
+    // Row 6: Flight From
+    wsData.push(['From HAN\n胡志明市', '', 'TH26MAR', 'SGN WUH', 'CZ8318', '0240', '0730', '7KG HLXT+\n23KG HLKG', '', '', '']);
+    
+    // Row 7: Flight Return
+    wsData.push(['Return 往回', '', 'WE01APR', 'WUH SGN', 'CZ8317', '2210', '0105+1', '', '', '', '']);
+    
+    // Row 8: Empty or space
+    wsData.push([]);
+    
+    // Row 9: Passenger Header
+    wsData.push([
+      'STT', 
+      'Surname\n性', 
+      'Given name\n名', 
+      'Gender\n性别', 
+      'DOB 生日\n(yyyymmdd)', 
+      'Passport no\n护照号', 
+      'DOE 到期日期\n(yyyy/mm/dd)', 
+      'Nationality\n国籍', 
+      'Rooming\n分房', 
+      'SĐT\n手机号码', 
+      'NOTE\n备注'
+    ]);
+
+    const formatToYYYYMMDD = (dateStr) => {
+       if (!dateStr) return '';
+       const parts = dateStr.includes('/') ? dateStr.split('/') : dateStr.includes('-') ? dateStr.split('-') : [];
+       if (parts.length === 3) {
+          if (parts[2].length === 4) return `${parts[2]}${parts[1]}${parts[0]}`; // DD/MM/YYYY
+          if (parts[0].length === 4) return `${parts[0]}${parts[1]}${parts[2]}`; // YYYY-MM-DD
+       }
+       return dateStr.replace(/[-/]/g, '');
+    };
+
+    const formatName = (str) => {
+       if (!str) return '';
+       return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toUpperCase();
+    };
+
+    members.forEach((m, i) => {
+      const fullName = formatName(m.name || '').trim();
+      let surname = '';
+      let givenName = '';
+      if (fullName) {
+        const parts = fullName.split(' ');
+        if (parts.length > 1) {
+          surname = parts[0];
+          givenName = parts.slice(1).join(' ');
+        } else {
+          surname = fullName;
+          givenName = '';
+        }
+      }
+
+      const gender = m.gender === 'Nam' ? 'M' : m.gender === 'Nữ' ? 'F' : '';
+      const dob = formatToYYYYMMDD(m.dob);
+      const doe = formatToYYYYMMDD(m.expiryDate);
+      const rooming = m.roomCode || '';
+      const note = (i === 0 && bookingNote) ? (bookingNote + (m.note ? ` - ${m.note}` : '')) : (m.note || '');
+
+      wsData.push([
+        i + 1, 
+        surname, 
+        givenName, 
+        gender, 
+        dob, 
+        m.docId || '', 
+        doe, 
+        'VNM', // Nationality Default
+        rooming, 
+        m.phone || '', 
+        note
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    const borderAll = { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } };
+    const centerAlign = { vertical: "center", horizontal: "center", wrapText: true };
+    const orangeBg = { fgColor: { rgb: "ED7D31" } }; // Standard orange
+
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellRef = XLSX.utils.encode_cell({ c: C, r: R });
+        if (!ws[cellRef]) ws[cellRef] = { v: '', t: 's' };
+        const cell = ws[cellRef];
+        
+        cell.s = { ...cell.s, font: { name: "Times New Roman", sz: 11 } };
+        
+        // Row 1 (Index 0) - Title
+        if (R === 0) {
+           cell.s.font.bold = true;
+           cell.s.font.sz = 14;
+           cell.s.alignment = centerAlign;
+           cell.s.fill = orangeBg;
+           cell.s.border = borderAll;
+        }
+
+        // Row 5 (Index 4) - Flight Header
+        if (R === 4) {
+           cell.s.font.bold = true;
+           cell.s.alignment = centerAlign;
+           cell.s.fill = orangeBg;
+           cell.s.border = borderAll;
+        }
+
+        // Row 9 (Index 8) - Passenger Header
+        if (R === 8) {
+           cell.s.font.bold = true;
+           cell.s.alignment = centerAlign;
+           cell.s.fill = orangeBg;
+           cell.s.border = borderAll;
+        }
+
+        // Apply borders for standard data grids
+        if ((R >= 1 && R <= 6) || R >= 8) {
+           cell.s.border = borderAll;
+        }
+
+        // Formatting text colors based on the hardcoded template
+        // Surname column values red
+        if (R > 8 && C === 1) {
+           cell.s.font.color = { rgb: "FF0000" };
+        }
+        // Given name column values red
+        if (R > 8 && C === 2) {
+           cell.s.font.color = { rgb: "FF0000" };
+           cell.s.font.bold = true;
+        }
+        // Tour Leader text red
+        if (R === 3 && C === 8) {
+           cell.s.font.color = { rgb: "FF0000" };
+        }
+        if ((R === 5 || R === 6) && (C === 2 || C === 3 || C === 4 || C === 5 || C === 6 || C === 7)) {
+           cell.s.font.color = { rgb: "FF0000" }; // the flight info details red
+           cell.s.font.bold = true;
+           cell.s.alignment = centerAlign;
+        }
+        
+        if (R >= 8) {
+           cell.s.alignment = centerAlign;
+        }
+      }
+    }
+
+    ws['!cols'] = [
+      { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 8 }, { wch: 15 }, { wch: 15 },
+      { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
+    ];
+
+    ws['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } }, // TRIP INFORMATION AND NAMELIST
+      { s: { r: 1, c: 0 }, e: { r: 3, c: 3 } },  // FIT TOUR Logo
+      { s: { r: 1, c: 4 }, e: { r: 1, c: 5 } },  // Tour 行程
+      { s: { r: 1, c: 6 }, e: { r: 1, c: 10 } }, // TP.HCM - THƯỢNG HẢI
+      { s: { r: 2, c: 4 }, e: { r: 2, c: 5 } },  // Banner
+      { s: { r: 2, c: 6 }, e: { r: 2, c: 7 } },  // WELCOME FIT TOUR
+      { s: { r: 2, c: 8 }, e: { r: 2, c: 10 } }, // Điều hành
+      { s: { r: 3, c: 4 }, e: { r: 3, c: 5 } },  // Tour Leader
+      { s: { r: 3, c: 6 }, e: { r: 3, c: 7 } },  // Blank next to Tour Leader
+      { s: { r: 3, c: 8 }, e: { r: 3, c: 10 } }, // HANI NGUYEN
+      
+      // Flight section merging
+      { s: { r: 4, c: 0 }, e: { r: 4, c: 1 } },  // FLIGHT DETAIL
+      { s: { r: 5, c: 0 }, e: { r: 5, c: 1 } },  // From HAN
+      { s: { r: 6, c: 0 }, e: { r: 6, c: 1 } },  // Return 往回
+      { s: { r: 4, c: 7 }, e: { r: 6, c: 10 } }, // Baggage
+    ];
+
+    ws['!rows'] = [
+      { hpx: 30 }, { hpx: 25 }, { hpx: 25 }, { hpx: 25 }, { hpx: 35 }, { hpx: 35 }, { hpx: 35 }
+    ];
+    // Set heights for the Header row
+    ws['!rows'][8] = { hpx: 35 };
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Danh sách khách TQ');
+    const safeTourName = (tour?.tour_code || 'Tour').replace(/[\s\/\\]+/g, '_');
+    const safeBooking = (bookingName || 'Khach').replace(/[\s\/\\]+/g, '_');
+    XLSX.writeFile(wb, `DS_TQ_${safeTourName}_${safeBooking}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
   // Calculate top cards stats
   const formatMoney = (val) => Number(val || 0).toLocaleString('vi-VN');
   
@@ -206,7 +405,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
        const qty = Number(row.qty || 0);
        if (row.ageType?.includes('Người lớn')) sumNguoiLon += qty;
        else if (row.ageType?.includes('Trẻ em')) sumTreEm += qty;
-       else if (row.ageType?.includes('Trẻ nhỏ')) sumTreNho += qty;
+       else if (row.ageType?.includes('Trẻ nhỏ') || row.ageType?.includes('Em bé')) sumTreNho += qty;
     });
   });
 
@@ -545,6 +744,18 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                       const inNote = raw.pricingRows?.[0]?.internalNote || '';
                       const cuNote = raw.pricingRows?.[0]?.note || '';
                       const combined = [inNote, cuNote].filter(Boolean).join(' | ');
+                      exportChinaTourXlsx(viewingMembers.members, viewingMembers.booking?.name, combined);
+                    }}
+                    style={{ background: '#f59e0b', color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                  >
+                    <Download size={16} /> Tải DS Tour TQ
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const raw = viewingMembers.booking?.raw_details || {};
+                      const inNote = raw.pricingRows?.[0]?.internalNote || '';
+                      const cuNote = raw.pricingRows?.[0]?.note || '';
+                      const combined = [inNote, cuNote].filter(Boolean).join(' | ');
                       exportMembersXlsx(viewingMembers.members, viewingMembers.booking?.name, combined);
                     }}
                     style={{ background: '#ef4444', color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
@@ -570,14 +781,13 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                       <th style={{ padding: '10px 8px', borderRight: '1px solid #e2e8f0', textAlign: 'center', minWidth: '110px' }}>CMT/ Hộ chiếu</th>
                       <th style={{ padding: '10px 8px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Ngày cấp</th>
                       <th style={{ padding: '10px 8px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Ngày hết hạn</th>
-                      <th style={{ padding: '10px 8px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Loại phòng</th>
                       <th style={{ padding: '10px 8px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Mã phòng</th>
                       <th style={{ padding: '10px 8px', textAlign: 'center' }}>Ghi chú</th>
                     </tr>
                   </thead>
                   <tbody>
                     {viewingMembers.members.length === 0 ? (
-                      <tr><td colSpan="12" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Chưa có thành viên nào.</td></tr>
+                      <tr><td colSpan="11" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Chưa có thành viên nào.</td></tr>
                     ) : viewingMembers.members.map((m, i) => (
                       <tr key={m.id || i} style={{ borderBottom: '1px solid #f1f5f9', background: i % 2 === 0 ? 'white' : '#fafbfc' }}>
                         <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 'bold', color: '#64748b' }}>{i + 1}</td>
@@ -589,7 +799,6 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                         <td style={{ padding: '10px 8px', textAlign: 'center' }}>{m.docId || '---'}</td>
                         <td style={{ padding: '10px 8px', textAlign: 'center' }}>{m.issueDate || '---'}</td>
                         <td style={{ padding: '10px 8px', textAlign: 'center' }}>{m.expiryDate || '---'}</td>
-                        <td style={{ padding: '10px 8px', textAlign: 'center' }}>{m.roomType || '---'}</td>
                         <td style={{ padding: '10px 8px', textAlign: 'center' }}>{m.roomCode || '---'}</td>
                       <td style={{ padding: '10px 8px', textAlign: 'center', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={m.note}>
                           {(i === 0 && (() => {
