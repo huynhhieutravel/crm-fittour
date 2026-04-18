@@ -490,7 +490,7 @@ const LeadsTab = ({
                           onClick={(e) => { e.stopPropagation(); if (!lead.is_locked) handlePhoneEdit(lead); }}
                         >
                           {lead.is_locked && <Lock size={12} color="#94a3b8" />}
-                          {(lead.is_locked && lead.masked_phone) ? lead.masked_phone : (lead.phone || 'Chưa định danh SĐT...')}
+                          {(lead.is_locked && lead.masked_phone) ? lead.masked_phone : (lead.phone || 'Chưa có SĐT')}
                         </span>
                       )}
                       {(lead.facebook_psid || lead.meta_lead_id) && (
