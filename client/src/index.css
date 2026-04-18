@@ -667,7 +667,7 @@ select.form-control {
   flex-direction: column;
 }
 
-.lead-name { color: #1e293b; font-weight: 700; font-size: 1rem; }
+.lead-name { color: #1e293b; font-weight: 700; font-size: 0.9rem; margin-bottom: 2px; }
 .lead-phone { color: #6366f1; font-size: 0.85rem; font-weight: 500; }
 
 .source-tag {
@@ -2135,4 +2135,98 @@ select.form-control {
   .global-search-trigger .search-kbd {
     display: none;
   }
+}
+
+/* ============================================================ */
+/* MOBILE RESPONSIVE TABLE CARDS (Visa Module Style)            */
+/* ============================================================ */
+@media (max-width: 768px) {
+  .mobile-card-table {
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  .mobile-card-table thead {
+    display: none; /* Hide desktop headers */
+  }
+
+  .mobile-card-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .mobile-card-table tr {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    margin-bottom: 1.25rem;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+    position: relative;
+    transition: transform 0.2s ease;
+  }
+  
+  /* Make hovering float on mobile */
+  .mobile-card-table tr:active {
+    transform: scale(0.98);
+  }
+
+  .mobile-card-table td {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.9rem;
+    text-align: right;
+  }
+
+  /* Remove border for the last item in the card */
+  .mobile-card-table td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-top: 0.5rem;
+    justify-content: flex-end; /* right align buttons usually */
+  }
+
+  /* The magic data-label generator */
+  .mobile-card-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #64748b;
+    margin-right: 1rem;
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* Styling for prominent names in mobile card */
+  .mobile-card-table td.card-highlight-name {
+    flex-direction: column;
+    align-items: flex-start;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .mobile-card-table td.card-highlight-name::before {
+    display: none; /* Hide label for the main title */
+  }
+}
+
+/* Thêm logic thu gọn SearchableSelect dùng trong bảng để gọn gàng hơn */
+.table-searchable-select .searchable-select-trigger {
+  padding: 4px 10px !important;
+  min-height: 32px !important;
+  border-radius: 6px !important;
 }

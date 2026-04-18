@@ -265,7 +265,7 @@ export default function VisasTab({ currentUser, addToast }) {
 
             {/* Table */}
             <div className="data-table-container" style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-                <table className="data-table" style={{ fontSize: '0.85rem' }}>
+                <table className="data-table mobile-card-table" style={{ fontSize: '0.85rem' }}>
                     <thead>
                         <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #e2e8f0' }}>
 
@@ -293,12 +293,12 @@ export default function VisasTab({ currentUser, addToast }) {
                                         onMouseLeave={e => e.currentTarget.style.background = 'white'}
                                     >
                                         {/* STT */}
-                                        <td style={{ padding: '10px', verticalAlign: 'top', fontWeight: 500, color: '#64748b', textAlign: 'center' }}>
+                                        <td data-label="STT:" style={{ padding: '10px', verticalAlign: 'top', fontWeight: 500, color: '#64748b', textAlign: 'center' }}>
                                             {(currentPage - 1) * 30 + index + 1}
                                         </td>
 
                                         {/* Mã hệ thống */}
-                                        <td style={{ padding: '10px', verticalAlign: 'top' }} onClick={() => { setSelectedVisaId(v.id); setIsDrawerOpen(true); }}>
+                                        <td data-label="Mã hồ sơ:" style={{ padding: '10px', verticalAlign: 'top' }} onClick={() => { setSelectedVisaId(v.id); setIsDrawerOpen(true); }}>
                                             <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.85rem', marginBottom: '2px' }}>
                                                 <FileText size={13} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle', color: '#3b82f6' }} />
                                                 {v.code}
@@ -308,12 +308,12 @@ export default function VisasTab({ currentUser, addToast }) {
                                         </td>
 
                                         {/* Tên đơn */}
-                                        <td style={{ padding: '10px', verticalAlign: 'top' }} onClick={() => { setSelectedVisaId(v.id); setIsDrawerOpen(true); }}>
+                                        <td className="card-highlight-name" data-label="Tên đơn:" style={{ padding: '10px', verticalAlign: 'top' }} onClick={() => { setSelectedVisaId(v.id); setIsDrawerOpen(true); }}>
                                             <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.85rem' }}>{v.name || '--'}</div>
                                         </td>
 
                                         {/* Khách hàng */}
-                                        <td style={{ padding: '10px', verticalAlign: 'top' }} onClick={() => { setSelectedVisaId(v.id); setIsDrawerOpen(true); }}>
+                                        <td data-label="Khách hàng:" style={{ padding: '10px', verticalAlign: 'top' }} onClick={() => { setSelectedVisaId(v.id); setIsDrawerOpen(true); }}>
                                             <div style={{ fontWeight: 600, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                                                 <span>👤 {v.customer_name || '--'}</span>
                                                 {v.customer_type && (
@@ -329,12 +329,12 @@ export default function VisasTab({ currentUser, addToast }) {
                                         </td>
 
                                         {/* Ngày nhận */}
-                                        <td style={{ padding: '10px', verticalAlign: 'top', fontSize: '0.85rem', color: '#475569' }}>
+                                        <td data-label="Ngày nhận:" style={{ padding: '10px', verticalAlign: 'top', fontSize: '0.85rem', color: '#475569' }}>
                                             {v.receipt_date ? new Date(v.receipt_date).toLocaleDateString('vi-VN') : '--'}
                                         </td>
 
                                         {/* Chờ duyệt */}
-                                        <td style={{ padding: '10px', verticalAlign: 'top', textAlign: 'center' }}>
+                                        <td data-label="Phê duyệt:" style={{ padding: '10px', verticalAlign: 'top', textAlign: 'center' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); handleQuickStatus(v.id, 'Đã duyệt'); }}
@@ -362,7 +362,7 @@ export default function VisasTab({ currentUser, addToast }) {
                                         </td>
 
                                         {/* Phần thu */}
-                                        <td style={{ padding: '10px', verticalAlign: 'top', fontSize: '0.8rem' }}>
+                                        <td data-label="Báo cáo Thu:" style={{ padding: '10px', verticalAlign: 'top', fontSize: '0.8rem' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                                                 <div><span style={{ color: '#64748b' }}>Tổng thu: </span><span style={{ fontWeight: 700, color: '#1e293b' }}>{formatCurrency(ft.totalRevenue)}</span></div>
                                                 <div><span style={{ color: '#64748b' }}>Đã thu: </span><span style={{ fontWeight: 600, color: Number(v.total_collected) >= ft.totalRevenue && ft.totalRevenue > 0 ? '#16a34a' : (Number(v.total_collected) > 0 ? '#f59e0b' : '#64748b') }}>{formatCurrency(Number(v.total_collected))}</span></div>
@@ -371,7 +371,7 @@ export default function VisasTab({ currentUser, addToast }) {
                                         </td>
 
                                         {/* Phần chi */}
-                                        <td style={{ padding: '10px', verticalAlign: 'top', fontSize: '0.8rem' }}>
+                                        <td data-label="Báo cáo Chi:" style={{ padding: '10px', verticalAlign: 'top', fontSize: '0.8rem' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                                                 <div><span style={{ color: '#64748b' }}>Tổng chi: </span><span style={{ fontWeight: 700, color: '#1e293b' }}>{formatCurrency(ft.totalCost)}</span></div>
                                                 <div><span style={{ color: '#64748b' }}>Đã chi: </span><span style={{ fontWeight: 600, color: Number(v.total_paid) > 0 ? '#16a34a' : '#64748b' }}>{formatCurrency(Number(v.total_paid))}</span></div>

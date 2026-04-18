@@ -494,7 +494,7 @@ const LeadsTab = ({
                         </span>
                       )}
                       {(lead.facebook_psid || lead.meta_lead_id) && (
-                        <div title="Đơn từ luồng tự động Meta" style={{ background: '#e0f2fe', color: '#0284c7', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <div title="Đơn từ luồng tự động Meta" style={{ background: '#e0f2fe', color: '#0284c7', fontSize: '0.55rem', padding: '1px 4px', borderRadius: '4px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '3px' }}>
                            META
                         </div>
                       )}
@@ -583,7 +583,7 @@ const LeadsTab = ({
                       background: 'transparent',
                       padding: '0',
                       minHeight: 'auto',
-                      minWidth: '150px',
+                      minWidth: '110px',
                       fontSize: '0.85rem',
                       fontWeight: 600,
                       opacity: lead.is_locked ? 0.7 : 1,
