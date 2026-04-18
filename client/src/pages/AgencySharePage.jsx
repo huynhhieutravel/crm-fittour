@@ -165,8 +165,7 @@ export default function AgencySharePage() {
           <thead>
             <tr style={{ borderBottom: '2px solid #ddd' }}>
               <th style={{ padding: '10px 5px', textAlign: 'left', width: '40px' }}>STT</th>
-              <th style={{ padding: '10px 5px', textAlign: 'left', width: '100px' }}>Mã Tour</th>
-              <th style={{ padding: '10px 5px', textAlign: 'left' }}>Tên Tour</th>
+              <th style={{ padding: '10px 5px', textAlign: 'left' }}>Sản phẩm Tour</th>
               <th style={{ padding: '10px 5px', textAlign: 'center' }}>Ngày<br/>khởi hành</th>
               <th style={{ padding: '10px 5px', textAlign: 'center' }}>Ngày đóng<br/>chỗ</th>
               <th style={{ padding: '10px 5px', textAlign: 'center' }}>Tổng</th>
@@ -200,9 +199,9 @@ export default function AgencySharePage() {
               return (
                 <tr key={t.id} style={{ borderBottom: '1px solid #eee' }}>
                   <td style={{ padding: '15px 5px', verticalAlign: 'top' }}>{index + 1}</td>
-                  <td style={{ padding: '15px 5px', verticalAlign: 'top', color: '#2196f3', fontWeight: 'bold' }}>{t.tour_code}</td>
                   <td style={{ padding: '15px 5px', verticalAlign: 'top' }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '13px' }}>{t.tour_name}</div>
+                    <div style={{ color: '#2196f3', fontWeight: 'bold', marginBottom: '4px', fontSize: '12px' }}>{t.tour_code}</div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '13px', color: '#1e293b' }}>{t.tour_name}</div>
                     {flightDetailsHtml}
                   </td>
                   <td style={{ padding: '15px 5px', verticalAlign: 'top', textAlign: 'center', fontWeight: 'bold' }}>{formatDateSafe(t.start_date)}</td>
