@@ -926,8 +926,7 @@ export default function OpToursTab({ currentUser }) {
             <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#1e293b', borderTop: '1px solid #e2e8f0' }}>
               <th style={{ padding: '12px 8px', width: '30px' }}><input type="checkbox" /></th>
               <th style={{ padding: '12px 8px', width: '30px', fontWeight: 'bold' }}>STT</th>
-              <th style={{ padding: '12px 8px', fontWeight: 'bold' }}>Mã Tour</th>
-              <th style={{ padding: '12px 8px', fontWeight: 'bold' }}>Tên Tour</th>
+              <th style={{ padding: '12px 8px', fontWeight: 'bold' }}>Sản phẩm Tour</th>
               <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center' }}>Ngày khởi hành</th>
               <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'right' }}>Giá</th>
               <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center' }}>Hoa<br/>Hồng</th>
@@ -983,11 +982,9 @@ export default function OpToursTab({ currentUser }) {
                    <style>{`
                       .note-tooltip-container:hover .note-tooltip { display: block !important; }
                    `}</style>
-                   <div style={{ color: '#2563eb', fontWeight: '500', cursor: 'pointer' }} onClick={() => handleOpenDrawer(tour)}>
+                   <div style={{ color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', marginBottom: '4px', fontSize: '12px' }} onClick={() => handleOpenDrawer(tour)}>
                       {tour.tour_code}
                    </div>
-                </td>
-                <td style={{ padding: '12px 8px' }}>
                    <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '13px', color: '#1e293b' }}>
                       {tour.tour_name}
                    </div>
