@@ -199,6 +199,20 @@ exports.cancelVoucher = async (req, res) => {
         // Set status to Cancelled
         await db.query(`UPDATE payment_vouchers SET status = 'Đã hủy' WHERE id = $1`, [id]);
         
+        // --- INJECT SYSTEM ALERT ---
+        try {
+            const systemAlertController = require('./systemAlertController');
+            await systemAlertController.createAlert(
+                voucher.created_by,
+                'PAYMENT_REJECTED',
+                '❌ Kế Toán Hủy Phiếu Thu',
+                `Phiếu thu ${voucher.payment_method} trị giá ${Number(voucher.amount).toLocaleString('vi-VN')}đ của đơn ${voucher.booking_code || 'Chưa rõ'} vừa bị Kế toán từ chối hoặc Tự hủy. Hãy kiểm tra lại!`,
+                voucher.booking_id,
+                null
+            );
+        } catch(e) { console.error('Alert Error:', e); }
+        // ---------------------------
+
         res.json({ message: 'Hủy phiếu thu thành công và đã hoàn tất khấu trừ lệnh.' });
     } catch (err) {
         console.error(err);

@@ -40,6 +40,7 @@ import GroupProjectsTab from './tabs/GroupProjectsTab';
 import GroupLeadersTab from './tabs/GroupLeadersTab';
 import B2BCompaniesTab from './tabs/B2BCompaniesTab';
 import DashboardTab from './tabs/DashboardTab';
+import WorkspaceTab from './tabs/workspace/WorkspaceTab';
 import ManagementDashboardTab from './tabs/ManagementDashboardTab';
 import GroupDashboardTab from './tabs/GroupDashboardTab';
 import LeadsTab from './tabs/LeadsTab';
@@ -70,6 +71,7 @@ import ServiceContractViewer from './pages/ServiceContractViewer';
 import { 
   Menu,
   X,
+  Home,
   Users, 
   Map, 
   LayoutDashboard, 
@@ -156,7 +158,7 @@ function AppContent() {
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
     if (path.startsWith('group/')) return path.replace('/', '-');
-    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr'];
+    const validTabs = ['workspace', 'dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
 
@@ -169,7 +171,7 @@ function AppContent() {
     if (path.startsWith('guides')) { setActiveTab('guides'); return; }
     if (path.startsWith('manual')) { setActiveTab('manual'); return; }
     if (path.startsWith('group/')) { setActiveTab(path.replace('/', '-')); return; }
-    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers'];
+    const validTabs = ['workspace', 'dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers'];
     
     // Extracted base path (e.g., departures/view/1 -> departures)
     const basePath = path.split('/')[0];
@@ -1728,6 +1730,11 @@ function AppContent() {
         </div>
 
         <div className="sidebar-nav-scroll">
+          <div className="nav-section-title">Góc Cá Nhân</div>
+          <div className={`nav-item ${activeTab === 'workspace' ? 'active' : ''}`} onClick={() => { navigate('/workspace'); setIsMobileMenuOpen(false); }}>
+            <Home /> Lối Tắt Làm Việc
+          </div>
+
           <div className="nav-section-title">Tổng quan</div>
           <div className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => { navigate('/dashboard'); setIsMobileMenuOpen(false); }}>
             <LayoutDashboard /> Dashboard
@@ -2718,6 +2725,21 @@ function AppContent() {
           />
         ) : (
           <>
+            {activeTab === 'workspace' && (
+              <WorkspaceTab 
+                currentUser={user}
+                leads={leads}
+                setEditingLead={setEditingLead}
+                setShowAddLeadModal={setShowAddLeadModal}
+                bookings={bookings}
+                customers={customers}
+                departures={tourDepartures}
+                tourTemplates={tourTemplates}
+                users={users}
+                checkPerm={checkPerm}
+              />
+            )}
+
             {activeTab === 'dashboard' && (
               <DashboardTab 
                 leads={leads}

@@ -55,7 +55,10 @@ exports.getAllCustomers = async (req, res) => {
             // Bypass data isolation if explicitly searching (to prevent duplicates)
             const isSearching = search && search.trim().length > 0;
             
-            if (!isSearching) {
+            // TEMPORARY BYPASS: Mở hết data Khách hàng cho mọi người theo yêu cầu mởi hệ thống
+            const TEMPORARY_OPEN_ALL = true;
+            
+            if (!isSearching && !TEMPORARY_OPEN_ALL) {
                 if (scope.scope === 'team' || scope.scope === 'own') {
                     scopeClause = `WHERE c.assigned_to = ANY($1)`;
                     scopeParams = [scope.userIds];

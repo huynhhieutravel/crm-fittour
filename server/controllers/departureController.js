@@ -212,6 +212,39 @@ exports.updateDeparture = async (req, res) => {
         
         const result = await db.query(query, values);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy lịch khởi hành' });
+
+        // --- INJECT SYSTEM ALERT FOR SALES ---
+        try {
+            let alertMessage = null;
+            let alertType = null;
+            if (updates.status === 'Huỷ' && current.status !== 'Huỷ') {
+                alertMessage = `🚨 Ops vừa HUỶ lịch khởi hành ${result.rows[0].code || id}. Bạn đang có khách trong đoàn này!`;
+                alertType = 'TOUR_CANCELLED';
+            } else if (updates.start_date && (current.start_date && updates.start_date !== current.start_date.toISOString().split('T')[0])) {
+                alertMessage = `⚠️ Ops đã ĐỔI NGÀY bay của Tour ${result.rows[0].code || id} sang ${updates.start_date}. Hãy báo ngay cho Khách!`;
+                alertType = 'TOUR_CHANGED';
+            }
+
+            if (alertMessage) {
+                // Find all sales who have bookings on this departure
+                const salesRes = await db.query(`SELECT DISTINCT assigned_to FROM bookings WHERE tour_departure_id = $1 AND assigned_to IS NOT NULL AND booking_status != 'Huỷ'`, [id]);
+                if (salesRes.rows.length > 0) {
+                    const systemAlertController = require('./systemAlertController');
+                    for (const row of salesRes.rows) {
+                        await systemAlertController.createAlert(
+                            row.assigned_to,
+                            alertType,
+                            alertType === 'TOUR_CANCELLED' ? '❌ TOUR ĐÃ HUỶ' : '🔄 TOUR ĐỔI LỊCH BAY',
+                            alertMessage,
+                            id,
+                            null
+                        );
+                    }
+                }
+            }
+        } catch(e) { console.error('Alert Error Departure:', e); }
+        // ------------------------------------
+
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ message: err.message });
