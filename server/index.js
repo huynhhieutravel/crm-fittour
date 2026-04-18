@@ -90,6 +90,7 @@ app.use('/api/airlines', airlineRoutes);
 app.use('/api/landtours', landtourRoutes);
 app.use('/api/insurances', insuranceRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/visas', visaRoutes);
 
 // ═══ Tour Đoàn (Group) NCC API ═══
 const opToursRoutes = require('./routes/opTours');
