@@ -78,7 +78,6 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/settings', tourTypeRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/system-alerts', systemAlertsRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/business-units', buRoutes);
