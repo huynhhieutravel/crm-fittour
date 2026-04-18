@@ -705,7 +705,13 @@ export default function OpToursTab({ currentUser }) {
     const matchMarket = activeMarket === 'Tất cả' || 
                         tourMarkets.includes(activeMarket) || 
                         tourMarkets.some(m => childMarkets.includes(m));
-    const matchStatus = activeStatus === 'Tất cả' || t.status === activeStatus || (activeStatus === 'Mở bán' && !t.status);
+    const matchStatus = 
+      activeStatus === 'Tất cả' || 
+      t.status === activeStatus || 
+      (activeStatus === 'Mở bán' && !t.status) ||
+      (activeStatus === 'Còn chỗ' && Number(t.tour_info?.total_seats || t.max_participants || 0) > 0 && (Number(t.tour_info?.total_seats || t.max_participants || 0) - Number(t.total_sold || 0) - Number(t.total_reserved || 0)) > 0 && t.status !== 'Hoàn thành' && t.status !== 'Huỷ' && t.status !== 'Hủy') ||
+      (activeStatus === 'Hết chỗ' && Number(t.tour_info?.total_seats || t.max_participants || 0) > 0 && (Number(t.total_sold || 0) + Number(t.total_reserved || 0)) >= Number(t.tour_info?.total_seats || t.max_participants || 0) && t.status !== 'Hoàn thành' && t.status !== 'Huỷ' && t.status !== 'Hủy');
+
     
     const matchStart = filterStartDate ? new Date(t.start_date) >= new Date(filterStartDate) : true;
     const matchEnd = filterEndDate ? new Date(t.end_date) <= new Date(filterEndDate) : true;
@@ -738,6 +744,24 @@ export default function OpToursTab({ currentUser }) {
   const countFull = tours.filter(t => t.status === 'Đã đầy').length;
   const countCompleted = tours.filter(t => t.status === 'Hoàn thành').length;
   const countCancelled = tours.filter(t => t.status === 'Hủy' || t.status === 'Huỷ').length;
+
+  const countAvailableTours = tours.filter(t => {
+    if (t.status === 'Hoàn thành' || t.status === 'Huỷ' || t.status === 'Hủy') return false;
+    const total = Number(t.tour_info?.total_seats || t.max_participants || 0);
+    if (total === 0) return false;
+    const sold = Number(t.total_sold || 0);
+    const reserved = Number(t.total_reserved || 0);
+    return (total - sold - reserved) > 0;
+  }).length;
+
+  const countSoldOutTours = tours.filter(t => {
+    if (t.status === 'Hoàn thành' || t.status === 'Huỷ' || t.status === 'Hủy') return false;
+    const total = Number(t.tour_info?.total_seats || t.max_participants || 0);
+    if (total === 0) return false;
+    const sold = Number(t.total_sold || 0);
+    const reserved = Number(t.total_reserved || 0);
+    return (sold + reserved) >= total;
+  }).length;
 
   if (loading) return <div className="p-8 text-center text-gray-500">Đang tải dữ liệu...</div>;
 
@@ -863,20 +887,11 @@ export default function OpToursTab({ currentUser }) {
          <button onClick={() => handleOpenDrawer(null)} style={{ background: '#22c55e', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>
            <Plus size={14} /> Tạo tour
          </button>
-         <button style={{ background: '#22c55e', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }} title="Tính năng đang được thiết kế">
-           <Plus size={14} /> Tạo hàng loạt
-         </button>
          <button onClick={exportAllMembersXlsx} style={{ background: '#f97316', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>
            <Plus size={14} /> Export
          </button>
          <button onClick={() => window.open('/simple-list-share/lich_dai_ly', '_blank')} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>
            <Users size={14} /> Lịch cho đại lý
-         </button>
-         <button style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }} title="Tính năng đang được thiết kế">
-           <Users size={14} /> Lịch cho khách
-         </button>
-         <button style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }} title="Tính năng đang được thiết kế">
-           Danh sách giữ chỗ
          </button>
       </div>
 
@@ -900,9 +915,8 @@ export default function OpToursTab({ currentUser }) {
          <span onClick={() => setActiveStatus('Huỷ')} style={{ cursor: 'pointer', color: activeStatus === 'Huỷ' ? '#1e293b' : '#64748b', fontWeight: activeStatus === 'Huỷ' ? 'bold' : 'normal', borderBottom: activeStatus === 'Huỷ' ? '2px solid #10b981' : 'none', paddingBottom: '3px' }}>Huỷ ({countCancelled})</span>
          
          {/* System calculated metrics */}
-         <span style={{ cursor: 'pointer', color: '#3b82f6', fontWeight: 'bold' }}>Còn chỗ ({tours.reduce((acc, t) => acc + (Number(t.tour_info?.total_seats || t.max_participants) || 0), 0)})</span>
-         <span style={{ cursor: 'pointer', color: '#ef4444', fontWeight: 'bold' }}>Hết chỗ (-)</span>
-         <span style={{ cursor: 'pointer', color: '#64748b', fontWeight: '500' }}>Chưa thu hết (-)</span>
+         <span onClick={() => setActiveStatus('Còn chỗ')} style={{ cursor: 'pointer', color: activeStatus === 'Còn chỗ' ? '#1e293b' : '#3b82f6', fontWeight: activeStatus === 'Còn chỗ' ? 'bold' : 'normal', borderBottom: activeStatus === 'Còn chỗ' ? '2px solid #3b82f6' : 'none', paddingBottom: '3px' }}>Còn chỗ ({countAvailableTours})</span>
+         <span onClick={() => setActiveStatus('Hết chỗ')} style={{ cursor: 'pointer', color: activeStatus === 'Hết chỗ' ? '#1e293b' : '#ef4444', fontWeight: activeStatus === 'Hết chỗ' ? 'bold' : 'normal', borderBottom: activeStatus === 'Hết chỗ' ? '2px solid #ef4444' : 'none', paddingBottom: '3px' }}>Hết chỗ ({countSoldOutTours})</span>
       </div>
 
       {/* Primary Table - Compact Design */}

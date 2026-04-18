@@ -12,7 +12,10 @@ const ToursTab = ({
   handleDeleteTour,
   handleUpdateTemplate,
   bus,
-  currentUser
+  currentUser,
+  canCreate,
+  canEdit,
+  canDelete
 }) => {
   const marketOptions = useMarkets();
   const uniqueDestinations = [...new Set(tourTemplates.map(t => t.destination).filter(Boolean))].sort();
@@ -97,13 +100,15 @@ const ToursTab = ({
           >
             📥 CSV
           </a>
-          <button 
-            className="btn-pro-save" 
-            style={{ height: '44px', padding: '0 1.5rem', whiteSpace: 'nowrap' }} 
-            onClick={() => setShowAddTemplateModal(true)}
-          >
-            <Plus size={18} strokeWidth={3} style={{ marginRight: '8px' }} /> SẢN PHẨM MỚI
-          </button>
+          {canCreate && (
+            <button 
+              className="btn-pro-save" 
+              style={{ height: '44px', padding: '0 1.5rem', whiteSpace: 'nowrap' }} 
+              onClick={() => setShowAddTemplateModal(true)}
+            >
+              <Plus size={18} strokeWidth={3} style={{ marginRight: '8px' }} /> SẢN PHẨM MỚI
+            </button>
+          )}
         </div>
       </div>
 
@@ -153,7 +158,9 @@ const ToursTab = ({
                 </td>
                 <td>
                   <button 
+                    disabled={!canEdit}
                     onClick={() => {
+                        if (!canEdit) return;
                         if (window.confirm(`Bạn muốn ${template.is_active !== false ? 'TẠM NGƯNG' : 'MỞ LẠI'} tour này trên hệ thống Facebook Ads?`)) {
                             handleUpdateTemplate({...template, is_active: template.is_active === false ? true : false});
                         }
@@ -186,14 +193,16 @@ const ToursTab = ({
                     >
                       <Eye size={14} />
                     </button>
-                    <button 
-                      className="icon-btn-square" 
-                      title="Sửa sản phẩm" 
-                      onClick={() => setEditingTemplate(template)}
-                    >
-                      <Edit3 size={14} />
-                    </button>
-                    {['admin', 'manager'].includes(currentUser?.role) && (
+                    {canEdit && (
+                      <button 
+                        className="icon-btn-square" 
+                        title="Sửa sản phẩm" 
+                        onClick={() => setEditingTemplate(template)}
+                      >
+                        <Edit3 size={14} />
+                      </button>
+                    )}
+                    {canDelete && (
                       <button 
                         className="icon-btn-square danger" 
                         title="Xoá sản phẩm" 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, UserPlus, Save, LogOut, Shield, Mail, User, Lock, Trash2 } from 'lucide-react';
 import axios from 'axios';
+import { formatRoleDisplayName } from '../../utils/roleUtils';
 
 export const AddUserModal = ({ 
   show, 
@@ -192,7 +193,7 @@ export const EditUserModal = ({
               </div>
               <div>
                 <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>{user.full_name}</h2>
-                <div style={{ fontSize: '0.78rem', color: '#64748b' }}>@{user.username} • {user.role_name?.toUpperCase()}</div>
+                <div style={{ fontSize: '0.78rem', color: '#64748b' }}>@{user.username} • {formatRoleDisplayName(user.role_name).toUpperCase()}</div>
               </div>
             </div>
           )}

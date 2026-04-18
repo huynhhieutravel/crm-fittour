@@ -44,7 +44,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
 
   const isOwnerOrAdmin = (b) => {
       // If admin, manager, điều hành (operator)
-      if (currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'group_manager' || currentUser?.role === 'operator') return true;
+      if (currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'group_manager' || currentUser?.role === 'operator' || String(currentUser?.role || '').includes('operations')) return true;
       // If sales owner
       if (b?.created_by == currentUser?.id || b?.created_by_name === currentUser?.username) return true;
       return false;

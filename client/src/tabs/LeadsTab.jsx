@@ -65,11 +65,20 @@ const LeadsTab = ({
     setTempPhone(lead.phone || '');
   };
 
-  const baseUsersOptions = users.map(u => ({ id: u.id, name: u.username }));
-  const sortedUsersOptions = currentUser ? [
-    ...baseUsersOptions.filter(u => u.id === currentUser.id),
-    ...baseUsersOptions.filter(u => u.id !== currentUser.id)
-  ] : baseUsersOptions;
+  const saleUsers = users.filter(u => {
+    if (u.is_active === false) return false;
+    if (['admin', 'manager', 'sales', 'marketing'].includes(u.role_name)) return true;
+    return !!(u.permissions && u.permissions.leads && (u.permissions.leads.can_view || u.permissions.leads.can_edit));
+  }).sort((a, b) => {
+    if (currentUser) {
+       if (a.id === currentUser.id) return -1;
+       if (b.id === currentUser.id) return 1;
+    }
+    return (a.username || '').localeCompare(b.username || '');
+  });
+
+  const baseUsersOptions = saleUsers.map(u => ({ id: u.id, name: u.username }));
+  const sortedUsersOptions = baseUsersOptions;
 
   const handlePhoneSave = (id) => {
     if (tempPhone.trim() !== '') {
@@ -253,7 +262,7 @@ const LeadsTab = ({
             <select className="filter-select" value={leadFilters.assigned_to} onChange={e => setLeadFilters({...leadFilters, assigned_to: e.target.value})}>
               <option value="">-- Tất cả --</option>
               <option value="NO_STAFF">⚠ Chưa giao ai</option>
-              {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
+              {saleUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
             </select>
           </div>
           <button 
@@ -359,7 +368,7 @@ const LeadsTab = ({
       </div>
 
       <div className="data-table-container">
-        <table className="data-table">
+        <table className="data-table card-view-table">
           <thead>
             <tr>
               <th style={{ width: '40px', textAlign: 'center' }}>

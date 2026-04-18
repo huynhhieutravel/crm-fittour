@@ -1,9 +1,12 @@
-import React, { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Cake, Award, Phone, Mail } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Cake, Award, Phone, Plane } from 'lucide-react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const StaffCalendarView = ({ users = [] }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [filterType, setFilterType] = useState('all'); // 'all', 'birthday', 'anniversary'
+  const [filterType, setFilterType] = useState('all'); // 'all', 'birthday', 'anniversary', 'leave'
+  const [leaves, setLeaves] = useState([]);
 
   const monthNames = [
     "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
@@ -19,6 +22,25 @@ const StaffCalendarView = ({ users = [] }) => {
   const days = [];
   for (let i = 0; i < firstDay; i++) days.push(null);
   for (let i = 1; i <= daysInMonth; i++) days.push(i);
+
+  // Fetch Leaves
+  useEffect(() => {
+    const fetchMonthLeaves = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const m = currentDate.getMonth() + 1;
+        const y = currentDate.getFullYear();
+        const res = await axios.get('/api/leaves', {
+          params: { month: m, year: y, status: 'approved', limit: 1000 },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setLeaves(res.data.data || []);
+      } catch (err) {
+        console.error('Error fetching leaves', err);
+      }
+    };
+    fetchMonthLeaves();
+  }, [currentDate.getMonth(), currentDate.getFullYear()]);
 
   // Build events from users data
   const events = useMemo(() => {
@@ -72,28 +94,77 @@ const StaffCalendarView = ({ users = [] }) => {
       }
     });
 
+    // Merge leaves
+    leaves.forEach(l => {
+        const start = new Date(l.start_date);
+        const end = new Date(l.end_date);
+        
+        let cur = new Date(start);
+        while(cur <= end) {
+            if (cur.getMonth() === currentMonth && cur.getFullYear() === currentYear) {
+                evList.push({
+                    user_id: l.user_id,
+                    type: 'leave',
+                    day: cur.getDate(),
+                    label: `🏖️ ${l.user_name || l.full_name}`,
+                    sub: l.reason || 'Nghỉ phép',
+                    phone: '',
+                    role: l.leave_type === 'annual' ? 'Nghỉ năm' : (l.leave_type === 'sick' ? 'Nghỉ ốm' : 'Nghỉ thai sản/khác'),
+                    leave_details: l
+                });
+            }
+            cur.setDate(cur.getDate() + 1);
+        }
+    });
+
     return evList;
-  }, [users, currentDate]);
+  }, [users, leaves, currentDate]);
 
   const filteredEvents = events.filter(e => {
     if (filterType === 'birthday') return e.type === 'birthday';
     if (filterType === 'anniversary') return e.type === 'anniversary';
+    if (filterType === 'leave') return e.type === 'leave';
     return true;
   });
 
   // Summary counts
   const birthdayCount = events.filter(e => e.type === 'birthday').length;
   const anniversaryCount = events.filter(e => e.type === 'anniversary').length;
+  const leaveCount = Array.from(new Set(events.filter(e => e.type === 'leave').map(e => `${e.day}-${e.user_id}`))).length;
 
   const renderEventChip = (ev, index) => {
-    const isBirthday = ev.type === 'birthday';
-    const bgColor = isBirthday ? '#fef3c7' : '#dbeafe';
-    const color = isBirthday ? '#92400e' : '#1e40af';
-    const borderColor = isBirthday ? '#fde68a' : '#93c5fd';
+    let bgColor = '#f8fafc', color = '#475569', borderColor = '#e2e8f0';
+    if (ev.type === 'birthday') {
+        bgColor = '#fef3c7'; color = '#92400e'; borderColor = '#fde68a';
+    } else if (ev.type === 'anniversary') {
+        bgColor = '#dbeafe'; color = '#1e40af'; borderColor = '#93c5fd';
+    } else if (ev.type === 'leave') {
+        bgColor = '#fae8ff'; color = '#86198f'; borderColor = '#f5d0fe';
+    }
+
+    const handleClick = () => {
+        if (ev.type === 'leave') {
+            const l = ev.leave_details;
+            Swal.fire({
+                title: `🏖️ Đơn nghỉ phép của ${ev.label.replace('🏖️ ', '')}`,
+                html: `
+                    <div style="text-align: left; font-size: 14px; line-height: 1.6;">
+                        <p><b>⏱️ Loại nghỉ:</b> ${ev.role}</p>
+                        <p><b>📅 Thời gian gốc:</b> ${new Date(l.start_date).toLocaleDateString('vi-VN')} đến ${new Date(l.end_date).toLocaleDateString('vi-VN')} (${l.total_days} ngày)</p>
+                        <p><b>📝 Lý do:</b> ${l.reason || 'Không có'}</p>
+                        <p><b>🤝 Người bàn giao:</b> ${l.handover_name || 'Không có'}</p>
+                    </div>
+                `,
+                icon: 'info',
+                confirmButtonText: 'Đóng'
+            });
+        }
+    };
 
     return (
       <div
         key={`${ev.type}-${ev.user_id}-${index}`}
+        onClick={handleClick}
         style={{
           backgroundColor: bgColor,
           color: color,
@@ -103,7 +174,7 @@ const StaffCalendarView = ({ users = [] }) => {
           fontSize: '0.7rem',
           fontWeight: 600,
           marginBottom: '3px',
-          cursor: 'default',
+          cursor: ev.type === 'leave' ? 'pointer' : 'default',
           display: 'flex',
           flexDirection: 'column',
           gap: '1px',
@@ -138,6 +209,9 @@ const StaffCalendarView = ({ users = [] }) => {
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Award size={14} color="#2563eb" /> <strong style={{ color: '#1e40af' }}>{anniversaryCount}</strong> kỷ niệm
             </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Plane size={14} color="#c026d3" /> <strong style={{ color: '#86198f' }}>{leaveCount}</strong> lượt nghỉ phép
+            </span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -147,6 +221,7 @@ const StaffCalendarView = ({ users = [] }) => {
               { key: 'all', label: 'Tất cả' },
               { key: 'birthday', label: '🎂 Sinh nhật' },
               { key: 'anniversary', label: '🏅 Kỷ niệm' },
+              { key: 'leave', label: '🏖️ Nghỉ phép' },
             ].map(f => (
               <button
                 key={f.key}

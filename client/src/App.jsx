@@ -23,6 +23,7 @@ import RemindersTab from './tabs/RemindersTab';
 import HotelsTab from './tabs/HotelsTab';
 import RestaurantsTab from './tabs/RestaurantsTab';
 import TransportsTab from './tabs/TransportsTab';
+import VisasTab from './tabs/VisasTab';
 import TicketsTab from './tabs/TicketsTab';
 import AirlinesTab from './tabs/AirlinesTab';
 import LandtoursTab from './tabs/LandtoursTab';
@@ -32,6 +33,7 @@ import BURulesTab from './tabs/BURulesTab';
 import InsurancesTab from './tabs/InsurancesTab';
 import OpToursTab from './tabs/OpToursTab';
 import TravelSupportTab from './tabs/TravelSupportTab';
+import LeaveRequestsTab from './tabs/LeaveRequestsTab';
 import PaymentVouchersTab from './tabs/PaymentVouchersTab';
 // ═══ Tour Đoàn Tab Imports ═══
 import GroupProjectsTab from './tabs/GroupProjectsTab';
@@ -53,6 +55,7 @@ import MyProfileTab from './tabs/MyProfileTab';
 import TeamDirectoryTab from './tabs/TeamDirectoryTab';
 import AddLeadModal from './components/modals/AddLeadModal';
 import EditLeadModal from './components/modals/EditLeadModal';
+import CommandPalette from './components/CommandPalette';
 import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
 import { AddBookingModal } from './components/modals/BookingModals';
 import { AddUserModal, EditUserModal, ChangePasswordModal } from './components/modals/UserModals';
@@ -153,7 +156,7 @@ function AppContent() {
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
     if (path.startsWith('group/')) return path.replace('/', '-');
-    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr'];
+    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr'];
     return (path && validTabs.includes(path)) ? path : 'dashboard';
   });
 
@@ -166,7 +169,7 @@ function AppContent() {
     if (path.startsWith('guides')) { setActiveTab('guides'); return; }
     if (path.startsWith('manual')) { setActiveTab('manual'); return; }
     if (path.startsWith('group/')) { setActiveTab(path.replace('/', '-')); return; }
-    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr'];
+    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers'];
     
     // Extracted base path (e.g., departures/view/1 -> departures)
     const basePath = path.split('/')[0];
@@ -1852,6 +1855,12 @@ function AppContent() {
                  </div>
               )}
 
+              {checkView('visas') && (
+                 <div className={`nav-item ${activeTab === 'visas' ? 'active' : ''}`} onClick={() => { navigate('/visas'); setActiveTab('visas'); }}>
+                   <MapPin size={18} /> Quản lý Visa
+                 </div>
+              )}
+
               {checkView('op_tours') && (
                 <div 
                   className={`nav-item ${activeTab === 'vouchers' ? 'active' : ''}`}
@@ -1950,7 +1959,7 @@ function AppContent() {
           {(['group_projects', 'group_leaders'].some(mod => checkView(mod))) && (
             <>
               <div className="nav-section-title" style={{ color: '#d97706' }}>Tour Đoàn 🔒</div>
-              {checkView('group_projects') && (
+              {checkPerm('group_projects', 'view_dashboard') && (
                 <div 
                   className={`nav-item ${activeTab === 'group-dashboard' ? 'active' : ''}`} 
                   onClick={() => { navigate('/group/dashboard'); setActiveTab('group-dashboard'); }}
@@ -2362,12 +2371,14 @@ function AppContent() {
           >
             🔍 Tìm KH hàng loạt
           </div>
-          <div 
-            className={`submenu-item ${activeTab === 'customers' && customerActiveTab === 'cskh-rules' ? 'active' : ''}`} 
-            onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('cskh-rules'); setHoveredMenu(null); }}
-          >
-            ⚙️ Cấu hình Rules
-          </div>
+          {['admin', 'manager'].includes(user?.role) && (
+            <div 
+              className={`submenu-item ${activeTab === 'customers' && customerActiveTab === 'cskh-rules' ? 'active' : ''}`} 
+              onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('cskh-rules'); setHoveredMenu(null); }}
+            >
+              ⚙️ Cấu hình Rules
+            </div>
+          )}
         </div>
       )}
 
@@ -2469,6 +2480,12 @@ function AppContent() {
             📋 Danh bạ FIT Tour
           </div>
           <div 
+            className={`submenu-item ${activeTab === 'leaves' ? 'active' : ''}`} 
+            onClick={() => { navigate('/leaves'); setActiveTab('leaves'); setHoveredMenu(null); }}
+          >
+            🌴 Quản lý Nghỉ Phép
+          </div>
+          <div 
             className={`submenu-item ${activeTab === 'org-chart' ? 'active' : ''}`} 
             onClick={() => { navigate('/org-chart'); setActiveTab('org-chart'); setHoveredMenu(null); }}
           >
@@ -2496,6 +2513,14 @@ function AppContent() {
               >
                 👥 Danh sách Nhân sự
               </div>
+              {checkPerm('users', 'change_permissions') && (
+                <div 
+                  className="submenu-item" 
+                  onClick={() => { setShowRolePermModal(true); setHoveredMenu(null); }}
+                >
+                  🛡 Phân Quyền Chức vụ
+                </div>
+              )}
             </>
           )}
         </div>
@@ -2641,15 +2666,37 @@ function AppContent() {
             activeTab === 'my-profile' ? 'Trang cá nhân' :
             activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
           }</h1>
-          </div>
-          <div className="user-profile" onClick={() => navigate('/my-profile')} style={{ cursor: 'pointer' }} title="Trang cá nhân">
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{user?.username || 'Người dùng'}</div>
-              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{user?.role?.toUpperCase() || 'NHÂN VIÊN'}</div>
+            {/* Global Search Dummy Input */}
+            <div 
+              className="global-search-trigger"
+              style={{
+                display: 'flex', alignItems: 'center', backgroundColor: '#f1f5f9', cursor: 'text',
+                padding: '6px 16px', borderRadius: '20px', border: '1px solid #e2e8f0',
+                color: '#64748b', fontSize: '14px', gap: '8px'
+              }}
+              onClick={() => window.dispatchEvent(new Event('open-command-palette'))}
+            >
+              <Search size={16} />
+              <span className="search-text" style={{ flex: 1 }}>Tìm kiếm...</span>
+              <kbd className="search-kbd" style={{ backgroundColor: '#ffffff', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', border: '1px solid #cbd5e1' }}>Cmd K</kbd>
             </div>
-            <div className="user-avatar">{user?.username?.substring(0,1).toUpperCase() || 'U'}</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div className="user-profile" onClick={() => navigate('/my-profile')} style={{ cursor: 'pointer' }} title="Trang cá nhân">
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{user?.username || 'Người dùng'}</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{user?.role?.toUpperCase() || 'NHÂN VIÊN'}</div>
+              </div>
+              <div className="user-avatar">{user?.username?.substring(0,1).toUpperCase() || 'U'}</div>
+            </div>
           </div>
         </header>
+
+        <CommandPalette onNavigate={(id) => {
+            if (validTabs.includes(id)) {
+                setActiveTab(id);
+            }
+        }} />
 
         {(activeTab === 'dashboard' || activeTab === 'leads' || activeTab === 'inbox') && editingLead ? (
           <EditLeadModal 
@@ -2730,6 +2777,9 @@ function AppContent() {
           <InboxTab 
             setEditingLead={setEditingLead}
             leads={leads}
+            users={users}
+            currentUser={user}
+            bus={bus}
             initialPsid={inboxPsid}
             clearInitialPsid={() => setInboxPsid(null)}
             onGoBack={() => {
@@ -2752,6 +2802,9 @@ function AppContent() {
             handleUpdateTemplate={handleUpdateTemplate}
             bus={bus}
             currentUser={user}
+            canCreate={checkPerm('tours', 'create')}
+            canEdit={checkPerm('tours', 'edit')}
+            canDelete={checkPerm('tours', 'delete')}
           />
         )}
 
@@ -2765,6 +2818,10 @@ function AppContent() {
 
         {activeTab === 'travel-support' && (
           <TravelSupportTab users={users} currentUser={user} checkPerm={checkPerm} />
+        )}
+
+        {activeTab === 'leaves' && (
+          <LeaveRequestsTab users={users} currentUser={user} checkPerm={checkPerm} />
         )}
 
         {activeTab === 'departures' && pathParts[1] === 'view' && pathParts[2] && (
@@ -2858,7 +2915,7 @@ function AppContent() {
           <CskhSearchTab users={users} tourTemplates={tourTemplates} />
         )}
 
-        {activeTab === 'customers' && customerActiveTab === 'cskh-rules' && (
+        {activeTab === 'customers' && customerActiveTab === 'cskh-rules' && ['admin', 'manager'].includes(user?.role) && (
           <CskhRulesTab />
         )}
 
@@ -2877,7 +2934,7 @@ function AppContent() {
           />
         )}
 
-        {activeTab === 'staff-calendar' && (checkPerm('users', 'view') || user?.role === 'admin' || user?.role === 'manager') && (
+        {activeTab === 'staff-calendar' && (
           <div className="content-area">
             <div className="content-header">
               <h1>Lịch Sinh nhật & Kỷ niệm Nhân sự</h1>
@@ -2944,6 +3001,9 @@ function AppContent() {
         {activeTab === 'hotels' && (
           <HotelsTab currentUser={user} addToast={addToast} handleDeleteHotel={(id) => setHotelToDelete(id)} />
         )}
+        {activeTab === 'visas' && (
+          <VisasTab currentUser={user} addToast={addToast} />
+        )}
         {activeTab === 'restaurants' && (
           <RestaurantsTab currentUser={user} addToast={addToast} handleDeleteRestaurant={(id) => setRestaurantToDelete(id)} />
         )}
@@ -2970,11 +3030,11 @@ function AppContent() {
         {activeTab === 'group-leaders' && (
           <GroupLeadersTab currentUser={user} addToast={addToast} users={users} handleDeleteLeader={(id) => setGroupLeaderToDelete(id)} />
         )}
-        {activeTab === 'group-dashboard' && (
+        {activeTab === 'group-dashboard' && checkPerm('group_projects', 'view_dashboard') && (
           <GroupDashboardTab />
         )}
         {activeTab === 'group-projects' && (
-          <GroupProjectsTab currentUser={user} addToast={addToast} users={users} handleDeleteProject={(id) => setGroupProjectToDelete(id)} />
+          <GroupProjectsTab currentUser={{...user, myPermissions}} addToast={addToast} users={users} handleDeleteProject={(id) => setGroupProjectToDelete(id)} canViewProfit={checkPerm('group_projects', 'view_profit')} />
         )}
         {activeTab === 'passport-ocr' && (
           <PassportBulkScanner />

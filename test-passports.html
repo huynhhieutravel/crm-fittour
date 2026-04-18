@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { 
+    background: #1e293b; 
+    font-family: 'Times New Roman', Times, serif; 
+    padding: 60px; 
+    display: flex; 
+    flex-wrap: wrap;
+    gap: 60px; 
+    justify-content: center;
+    perspective: 1000px;
+  }
+
+  .passport {
+    width: 600px;
+    height: 420px;
+    background: #fff;
+    border-radius: 12px;
+    position: relative;
+    padding: 20px 30px;
+    box-sizing: border-box;
+    transform: rotateX(8deg) rotateY(-5deg) rotateZ(2deg);
+    box-shadow: 20px 30px 40px rgba(0,0,0,0.5), inset 0 0 100px rgba(0,0,0,0.05);
+    background-image: url('data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><g fill="%23e0f2fe" fill-opacity="0.4" fill-rule="evenodd"><circle cx="2" cy="2" r="2"/></g></svg>');
+    filter: contrast(90%) brightness(95%) sepia(10%);
+  }
+
+  .glare {
+    position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 100%);
+    pointer-events: none; border-radius: 12px; transform: rotateZ(10deg);
+  }
+
+  .header { text-align: center; color: #1e3a8a; }
+  .header h4 { margin: 0; font-size: 16px; letter-spacing: 1px;}
+  .header h5 { margin: 2px 0 0 0; font-size: 11px; font-weight: normal; letter-spacing: 0.5px;}
+  .title { text-align: center; font-size: 22px; font-weight: bold; margin: 15px 0; letter-spacing: 2px; color: #000; }
+  .photo { position: absolute; left: 30px; top: 120px; width: 130px; height: 170px; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-family: sans-serif; font-size: 12px; background: linear-gradient(45deg, #e2e8f0, #f8fafc); }
+  .details { margin-left: 160px; font-size: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 15px; }
+  .details div { margin-bottom: 2px; }
+  .label { font-size: 11px; color: #475569; font-weight: 500;}
+  .value { font-weight: bold; font-size: 15px; text-transform: uppercase; color: #0f172a; margin-top: 1px;}
+  .mrz {
+    position: absolute; bottom: 25px; left: 30px; right: 30px;
+    font-family: 'OCR-B', 'Courier New', Courier, monospace;
+    font-size: 18px; line-height: 1.6; letter-spacing: 2px; color: #1e293b; font-weight: 600;
+  }
+  .info { width: 100%; text-align: center; color: white; font-family: sans-serif; font-size: 18px; margin-bottom: 20px;}
+</style>
+</head>
+<body>
+
+<div class="info">
+  <b>📸 BỘ TEST CẢNH BÁO HẾT HẠN (DƯỚI 6 THÁNG)</b><br>
+  (Dùng Cmd+Shift+4 chụp màn hình từng phần và Up lên tool nhé)
+</div>
+
+<!-- ================= PASSPORT 1 (HỢP LỆ - Còn 5 năm) ================= -->
+<div class="passport">
+  <div class="glare"></div>
+  <div class="header">
+    <h4>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h4>
+    <h5>SOCIALIST REPUBLIC OF VIET NAM</h5>
+  </div>
+  <div class="title">HỘ CHIẾU / PASSPORT</div>
+  <div class="photo">Ảnh chân dung</div>
+  <div class="details">
+    <div style="grid-column: span 2;">
+      <div class="label">Họ / Surname</div>
+      <div class="value">TRAN</div>
+    </div>
+    <div style="grid-column: span 2;">
+      <div class="label">Chữ đệm và tên / Given names</div>
+      <div class="value">THI THANH BINH</div>
+    </div>
+    <div style="grid-column: span 2;">
+      <div class="label">Quốc tịch / Nationality</div>
+      <div class="value">VIỆT NAM / VIETNAMESE</div>
+    </div>
+    <div>
+      <div class="label">Ngày sinh / Date of birth</div>
+      <div class="value">12/05/1992</div>
+    </div>
+    <div>
+      <div class="label">Giới tính / Sex</div>
+      <div class="value">Nữ / F</div>
+    </div>
+    <div>
+      <div class="label">Ngày cấp / Date of issue</div>
+      <div class="value">20/11/2021</div>
+    </div>
+    <div>
+      <div class="label">Ngày hết hạn / Date of expiry</div>
+      <div class="value">20/11/2031</div>
+    </div>
+  </div>
+  <div class="mrz">
+    P&lt;VNMTRAN&lt;&lt;THI&lt;THANH&lt;BINH&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>
+    B1234567&lt;8VNM9205121F311120101234567890&lt;&lt;24
+  </div>
+</div>
+
+<!-- ================= PASSPORT 2 (BÁO ĐỘNG ĐỎ - Dưới 6 tháng - Tháng 8/2026) ================= -->
+<div class="passport" style="transform: rotateX(12deg) rotateY(8deg) rotateZ(-3deg); filter: contrast(100%) sepia(5%);">
+  <div class="glare" style="background: linear-gradient(220deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 30%);"></div>
+  <div class="header">
+    <h4>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h4>
+    <h5>SOCIALIST REPUBLIC OF VIET NAM</h5>
+  </div>
+  <div class="title">HỘ CHIẾU / PASSPORT</div>
+  <div class="photo">Ảnh chân dung</div>
+  <div class="details">
+    <div style="grid-column: span 2;">
+      <div class="label">Họ / Surname</div>
+      <div class="value">LE HOANG</div>
+    </div>
+    <div style="grid-column: span 2;">
+      <div class="label">Chữ đệm và tên / Given names</div>
+      <div class="value">MINH QUAN</div>
+    </div>
+    <div style="grid-column: span 2;">
+      <div class="label">Quốc tịch / Nationality</div>
+      <div class="value">VIỆT NAM / VIETNAMESE</div>
+    </div>
+    <div>
+      <div class="label">Ngày sinh / Date of birth</div>
+      <div class="value">08/10/1988</div>
+    </div>
+    <div>
+      <div class="label">Giới tính / Sex</div>
+      <div class="value">Nam / M</div>
+    </div>
+    <div>
+      <div class="label">Ngày cấp / Date of issue</div>
+      <div class="value">10/08/2016</div>
+    </div>
+    <div>
+      <div class="label">Ngày hết hạn / Date of expiry</div>
+      <div class="value">10/08/2026</div>
+    </div>
+  </div>
+  <div class="mrz">
+    P&lt;VNMLE&lt;HOANG&lt;&lt;MINH&lt;QUAN&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>
+    C9876543&lt;2VNM8810080M260810707908812345&lt;&lt;02
+  </div>
+</div>
+
+<!-- ================= PASSPORT 3 (ĐÃ HẾT HẠN LUÔN - Năm 2025) ================= -->
+<div class="passport" style="transform: rotateX(5deg) rotateY(-8deg) rotateZ(5deg);">
+  <div class="glare" style="background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 20%);"></div>
+  <div class="header">
+    <h4>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h4>
+    <h5>SOCIALIST REPUBLIC OF VIET NAM</h5>
+  </div>
+  <div class="title">HỘ CHIẾU / PASSPORT</div>
+  <div class="photo">Ảnh chân dung</div>
+  <div class="details">
+    <div style="grid-column: span 2;">
+      <div class="label">Họ / Surname</div>
+      <div class="value">NGUYEN</div>
+    </div>
+    <div style="grid-column: span 2;">
+      <div class="label">Chữ đệm và tên / Given names</div>
+      <div class="value">BAO KANG</div>
+    </div>
+    <div style="grid-column: span 2;">
+      <div class="label">Quốc tịch / Nationality</div>
+      <div class="value">VIỆT NAM / VIETNAMESE</div>
+    </div>
+    <div>
+      <div class="label">Ngày sinh / Date of birth</div>
+      <div class="value">30/01/2005</div>
+    </div>
+    <div>
+      <div class="label">Giới tính / Sex</div>
+      <div class="value">Nam / M</div>
+    </div>
+    <div>
+      <div class="label">Ngày cấp / Date of issue</div>
+      <div class="value">01/01/2015</div>
+    </div>
+    <div>
+      <div class="label">Ngày hết hạn / Date of expiry</div>
+      <div class="value">01/01/2025</div>
+    </div>
+  </div>
+  <div class="mrz">
+    P&lt;VNMNGUYEN&lt;&lt;BAO&lt;KANG&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>
+    E2233445&lt;0VNM0501305M250101401122334455&lt;&lt;24
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, UserPlus, Shield, Edit3, Key, Trash2, Mail, Clock, UserCog, Users, Phone } from 'lucide-react';
+import { formatRoleDisplayName } from '../utils/roleUtils';
 
 const UsersTab = ({ 
   users, 
@@ -88,7 +89,7 @@ const UsersTab = ({
             >
               <option value="ALL">-- Tất cả --</option>
               {roles.map(r => (
-                <option key={r.id} value={r.name}>{r.name.toUpperCase()}</option>
+                <option key={r.id} value={r.name}>{formatRoleDisplayName(r.name).toUpperCase()}</option>
               ))}
             </select>
           </div>
@@ -107,15 +108,7 @@ const UsersTab = ({
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          {checkPerm && checkPerm('users', 'change_permissions') && (
-            <button 
-              className="btn-pro-save" 
-              onClick={onEditRolePerms}
-              style={{ width: 'auto', padding: '0.75rem 1.5rem', background: '#059669', boxShadow: '0 4px 12px rgba(5, 150, 105, 0.2)' }}
-            >
-              <Shield size={18} strokeWidth={3} /> PHÂN QUYỀN CHỨC VỤ
-            </button>
-          )}
+
           {checkPerm && checkPerm('users', 'create') && (
             <button 
               className="btn-pro-save" 
@@ -217,7 +210,7 @@ const UsersTab = ({
                       textTransform: 'uppercase'
                     }}>
                       {roleStyle.icon}
-                      {u.role_name}
+                      {formatRoleDisplayName(u.role_name).toUpperCase()}
                     </div>
                   </td>
                   <td>

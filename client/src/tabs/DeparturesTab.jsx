@@ -94,7 +94,7 @@ const DeparturesTab = ({
             <span className="stat-label">LOAD FACTOR TB</span>
             <div className="stat-value">
               {tourDepartures.length > 0 
-                ? Math.round(tourDepartures.reduce((acc, d) => acc + (d.sold_pax / (d.max_participants || 1) * 100), 0) / tourDepartures.length) 
+                ? Math.round((tourDepartures.reduce((acc, d) => acc + (d.sold_pax || 0), 0) / (tourDepartures.reduce((acc, d) => acc + (d.max_participants || 0), 0) || 1)) * 100) 
                 : 0}%
             </div>
           </div>

@@ -3,6 +3,9 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
+import './assets/styles/tablet.css'
+import './assets/styles/mobile.css'
+import './assets/styles/print.css'
 import Swal from 'sweetalert2';
 
 // Khởi tạo ghi đè tự động alert mặc định của trình duyệt để sửa lỗi popup chớp tắt

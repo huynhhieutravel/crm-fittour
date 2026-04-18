@@ -1,0 +1,10 @@
+/* =========================================
+   FIT Tour CRM — Tablet Responsive
+   Tất cả CSS cho màn hình ≤ 1024px
+   ========================================= */
+
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -23,12 +23,13 @@ const parseMoney = (val) => {
   return parseFloat(val.toString().replace(/\./g, '')) || 0;
 };
 
-const TravelSupportTab = ({ users = [], currentUser, checkPerm }) => {
+const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   
+
   const [fastAdd, setFastAdd] = useState({
     sale_id: currentUser?.id || '',
     service_type: 'Visa',
@@ -274,20 +275,31 @@ const TravelSupportTab = ({ users = [], currentUser, checkPerm }) => {
   const canEdit = (checkPerm && checkPerm('travel_support', 'edit')) || userRole === 'admin';
   const canDelete = (checkPerm && checkPerm('travel_support', 'delete')) || userRole === 'admin';
 
+  const saleUsers = users.filter(u => 
+    u.is_active !== false && 
+    (['admin', 'manager', 'sales', 'marketing'].includes(u.role_name) || u.permissions?.leads?.can_view || u.permissions?.leads?.can_edit)
+  ).sort((a, b) => {
+    if (currentUser) {
+       if (a.id === currentUser.id) return -1;
+       if (b.id === currentUser.id) return 1;
+    }
+    return (a.username || '').localeCompare(b.username || '');
+  });
+
   return (
     <div className="travel-support-container" style={{ padding: '0', background: 'transparent' }}>
       
       {/* Bộ lọc */}
       <div className="filter-bar" style={{ marginBottom: '1rem' }}>
-        <div className="filter-options-container" style={{ margin: 0, width: '100%', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'end' }}>
-          <div className="filter-group" style={{ flex: '0 0 320px' }}>
+        <div className="lead-filter-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr) auto', width: '100%' }}>
+          <div className="filter-group">
             <label>TÌM KIẾM</label>
             <div style={{ position: 'relative' }}>
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
               <input className="filter-input" style={{ width: '100%', paddingLeft: '36px' }} placeholder="Tìm nội dung..." value={filters.search} onChange={e => { setFilters({...filters, search: e.target.value}); setCurrentPage(1); }} />
             </div>
           </div>
-          <div className="filter-group" style={{ flex: '0 0 180px' }}>
+          <div className="filter-group">
             <label>LOẠI DỊCH VỤ</label>
             <select className="filter-select" value={filters.service_type} onChange={e => { setFilters({...filters, service_type: e.target.value}); setCurrentPage(1); }}>
               <option value="All">-- Tất cả loại --</option>
@@ -302,14 +314,14 @@ const TravelSupportTab = ({ users = [], currentUser, checkPerm }) => {
               <option value="Khác...">9. Khác...</option>
             </select>
           </div>
-          <div className="filter-group" style={{ flex: '0 0 180px' }}>
+          <div className="filter-group">
             <label>SALE</label>
             <select className="filter-select" value={filters.sale_id} onChange={e => { setFilters({...filters, sale_id: e.target.value}); setCurrentPage(1); }}>
               <option value="">-- Tất cả Sale --</option>
-              {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
+              {saleUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
             </select>
           </div>
-          <div className="filter-group" style={{ flex: '0 0 160px' }}>
+          <div className="filter-group">
             <label>TRẠNG THÁI</label>
             <select className="filter-select" value={filters.status} onChange={e => { setFilters({...filters, status: e.target.value}); setCurrentPage(1); }}>
               <option value="All">-- Tất cả --</option>

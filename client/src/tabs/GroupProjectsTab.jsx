@@ -1,3 +1,4 @@
+import { canCreate, canDelete, canEdit } from '../utils/permissions';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Plus, MapPin, Edit2, Trash2, Calendar, Users, Briefcase, Eye, UserCheck } from 'lucide-react';
@@ -22,7 +23,7 @@ const reactSelectStyles = {
     valueContainer: (base) => ({ ...base, padding: '0 12px', height: '42px', display: 'flex', alignItems: 'center' })
 };
 
-export default function GroupProjectsTab({ currentUser, addToast, users, handleDeleteProject }) {
+export default function GroupProjectsTab({ currentUser, addToast, users, handleDeleteProject, canViewProfit = true }) {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -154,7 +155,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
 
     const userOptions = (users || []).filter(u => u.is_active !== false && (
         (u.teams || []).some(t => String(t.name || '').toLowerCase().includes('đoàn') || String(t.name || '').toLowerCase().includes('mice')) ||
-        ['admin', 'manager', 'group_manager', 'group_staff'].includes(u.role_name) ||
+        ['admin', 'manager', 'group_manager', 'group_staff', 'group_operations', 'group_operations_lead'].includes(u.role_name) ||
         u.role === 'admin' || u.role === 'manager'
     )).map(u => ({
         value: u.id.toString(), label: u.full_name || u.username
@@ -276,7 +277,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                     <div style={{ color: '#94a3b8', fontWeight: 600, background: '#f1f5f9', padding: '6px 12px', borderRadius: '6px' }}>
                       {filtered.length} Dự án
                     </div>
-                    {(currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'operations' || currentUser?.role === 'group_manager' || currentUser?.role === 'group_staff') && (
+                    {canCreate(currentUser?.role, 'group') && (
                         <button className="btn btn-primary" onClick={handleAddProject} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '36px', padding: '0 1rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, background: '#2563eb', color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)', cursor: 'pointer' }}>
                             <Plus size={16} /> Thêm Dự Án
                         </button>
@@ -295,7 +296,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                             <th style={{ padding: '12px 16px', textAlign: 'left' }}>TUYẾN ĐIỂM</th>
                             <th style={{ padding: '12px 16px', textAlign: 'center' }}>QUY MÔ</th>
                             <th style={{ padding: '12px 16px', textAlign: 'right' }}>DỰ KIẾN THU</th>
-                            <th style={{ padding: '12px 16px', textAlign: 'right' }}>LỢI NHUẬN</th>
+                            {canViewProfit && <th style={{ padding: '12px 16px', textAlign: 'right' }}>LỢI NHUẬN</th>}
                             <th style={{ padding: '12px 16px', textAlign: 'left' }}>B2B / ĐẠI DIỆN</th>
                             <th style={{ padding: '12px 16px', textAlign: 'left' }}>SALE</th>
                             <th style={{ padding: '12px 16px', textAlign: 'left' }}>HDV</th>
@@ -359,9 +360,11 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                         <div style={{ fontWeight: 'bold', color: '#16a34a' }}>{formatMoney(p.total_revenue)}</div>
                                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{formatMoney(p.price_per_pax)} / Pax</div>
                                     </td>
+                                    {canViewProfit && (
                                     <td style={{ padding: '10px 16px', textAlign: 'right' }}>
                                         <div style={{ fontWeight: 'bold', color: p.profit > 0 ? '#ea580c' : '#94a3b8' }}>{formatMoney(p.profit)}</div>
                                     </td>
+                                    )}
                                     <td style={{ padding: '10px 16px', fontSize: '0.85rem' }}>
                                         <div style={{ fontWeight: 600, color: '#0f172a' }}>{p.company_name || 'Khách Lẻ'}</div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748b', marginTop: '4px', fontSize: '0.75rem' }}>
@@ -415,6 +418,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                     currentUser={currentUser}
                     addToast={addToast}
                     users={users}
+                    canViewProfit={canViewProfit}
                 />
             )}
         </div>

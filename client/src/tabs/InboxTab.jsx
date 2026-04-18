@@ -10,9 +10,11 @@ import {
   User,
   Clock,
   MessageCircle,
+  Filter,
+  X,
 } from "lucide-react";
 
-const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid, onGoBack }) => {
+const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, initialPsid, clearInitialPsid, onGoBack }) => {
   // API Data States
   const [conversations, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
@@ -26,6 +28,12 @@ const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid, onGoBa
   const [searchKey, setSearchKey] = useState("");
   const [searchInput, setSearchInput] = useState("");
 
+  // Filter States
+  const [filterBu, setFilterBu] = useState("");
+  const [filterSale, setFilterSale] = useState("");
+  const [filterAssignment, setFilterAssignment] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+
   // Bulk Delete States
   const [selectedIds, setSelectedIds] = useState([]);
 
@@ -36,9 +44,13 @@ const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid, onGoBa
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
+      const params = { page, limit: 15, search: searchKey };
+      if (filterBu) params.bu = filterBu;
+      if (filterSale) params.sale_id = filterSale;
+      if (filterAssignment) params.assignment = filterAssignment;
       const res = await axios.get(`/api/messages/conversations`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { page, limit: 15, search: searchKey },
+        params,
       });
       setConversations(res.data.data);
       setTotalPages(res.data.pagination.totalPages);
@@ -49,7 +61,7 @@ const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid, onGoBa
     } finally {
       setLoading(false);
     }
-  }, [page, searchKey]);
+  }, [page, searchKey, filterBu, filterSale, filterAssignment]);
 
   useEffect(() => {
     fetchConversations();
@@ -107,6 +119,45 @@ const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid, onGoBa
   const handleSelectConv = (conv) => {
     setSelectedConv(conv);
     fetchMessages(conv.id);
+  };
+
+  const sortedSaleUsers = users.filter(u => 
+    u.is_active !== false && 
+    (['admin', 'manager', 'sales', 'marketing'].includes(u.role_name) || u.permissions?.leads?.can_view || u.permissions?.leads?.can_edit)
+  ).sort((a, b) => {
+    if (currentUser) {
+       if (a.id === currentUser.id) return -1;
+       if (b.id === currentUser.id) return 1;
+    }
+    return (a.username || '').localeCompare(b.username || '');
+  });
+
+  const handleUpdateAssignment = async (field, value) => {
+    if (!selectedConv || !selectedConv.lead_id) {
+      alert("Khách hàng này chưa có hồ sơ Lead. Hãy nhấn 'XEM HỒ SƠ LEAD' để tạo mới.");
+      return;
+    }
+    try {
+      const payload = { [field]: value || '' };
+      const token = localStorage.getItem("token");
+      await axios.put(`/api/leads/${selectedConv.lead_id}`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const newConv = { ...selectedConv };
+      if (field === 'bu_group') {
+        newConv.assigned_bu = value || null;
+      } else if (field === 'assigned_to') {
+        const u = users.find(x => x.id == value);
+        newConv.assigned_to_name = u ? u.full_name || u.username : null;
+        newConv.assigned_to_id = value || null;
+      }
+      setSelectedConv(newConv);
+      setConversations(prev => prev.map(c => c.id === newConv.id ? newConv : c));
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi cập nhật: " + err.message);
+    }
   };
 
   const handleSearchSubmit = (e) => {
@@ -222,6 +273,92 @@ const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid, onGoBa
               />
               <Search size={15} className="search-icon" />
             </form>
+
+            {/* Filter Toggle */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                background: (filterBu || filterSale || filterAssignment) ? '#eef2ff' : '#f8fafc',
+                color: (filterBu || filterSale || filterAssignment) ? '#4f46e5' : '#64748b',
+                border: `1px solid ${(filterBu || filterSale || filterAssignment) ? '#c7d2fe' : '#e2e8f0'}`,
+                borderRadius: '8px', padding: '6px 12px', cursor: 'pointer',
+                fontSize: '12px', fontWeight: 600, marginTop: '8px', width: '100%',
+                justifyContent: 'center', transition: 'all 0.2s'
+              }}
+            >
+              <Filter size={14} />
+              Bộ lọc
+              {(filterBu || filterSale || filterAssignment) && (
+                <span style={{ background: '#4f46e5', color: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>
+                  {[filterBu, filterSale, filterAssignment].filter(Boolean).length}
+                </span>
+              )}
+            </button>
+
+            {/* Filter Dropdowns */}
+            {showFilters && (
+              <div style={{
+                display: 'flex', flexDirection: 'column', gap: '8px',
+                marginTop: '8px', padding: '10px', background: '#f8fafc',
+                borderRadius: '10px', border: '1px solid #e2e8f0',
+                animation: 'fadeIn 0.2s ease'
+              }}>
+                <select
+                  value={filterBu}
+                  onChange={(e) => { setFilterBu(e.target.value); setPage(1); }}
+                  style={{
+                    width: '100%', padding: '8px 10px', borderRadius: '8px',
+                    border: '1px solid #e2e8f0', fontSize: '13px',
+                    background: 'white', color: '#334155', cursor: 'pointer'
+                  }}
+                >
+                  <option value="">-- Tất cả BU --</option>
+                  {bus.map(b => <option key={b.id} value={b.id}>{b.label || b.id}</option>)}
+                </select>
+
+                <select
+                  value={filterSale}
+                  onChange={(e) => { setFilterSale(e.target.value); setPage(1); }}
+                  style={{
+                    width: '100%', padding: '8px 10px', borderRadius: '8px',
+                    border: '1px solid #e2e8f0', fontSize: '13px',
+                    background: 'white', color: '#334155', cursor: 'pointer'
+                  }}
+                >
+                  <option value="">-- Tất cả Sale --</option>
+                  {sortedSaleUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
+                </select>
+
+                <select
+                  value={filterAssignment}
+                  onChange={(e) => { setFilterAssignment(e.target.value); setPage(1); }}
+                  style={{
+                    width: '100%', padding: '8px 10px', borderRadius: '8px',
+                    border: '1px solid #e2e8f0', fontSize: '13px',
+                    background: 'white', color: '#334155', cursor: 'pointer'
+                  }}
+                >
+                  <option value="">-- Trạng thái --</option>
+                  <option value="assigned">✅ Đã phân công</option>
+                  <option value="unassigned">⚠️ Chưa phân công</option>
+                </select>
+
+                {(filterBu || filterSale || filterAssignment) && (
+                  <button
+                    onClick={() => { setFilterBu(''); setFilterSale(''); setFilterAssignment(''); setPage(1); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                      background: '#fee2e2', color: '#dc2626', border: 'none',
+                      borderRadius: '8px', padding: '6px', cursor: 'pointer',
+                      fontSize: '12px', fontWeight: 600
+                    }}
+                  >
+                    <X size={14} /> Xóa bộ lọc
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Conversations List */}
@@ -342,9 +479,25 @@ const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid, onGoBa
                     <div className="chat-source">
                       <span className="dot"></span> Meta Messenger
                             <span style={{ color: '#cbd5e1', margin: '0 4px' }}>|</span>
-                            BU: <span style={{ color: selectedConv?.assigned_bu ? '#334155' : '#ef4444', fontWeight: '800' }}>{selectedConv?.assigned_bu || 'Chưa phân'}</span>
+                            BU: <select 
+                                  value={selectedConv?.assigned_bu || ""} 
+                                  onChange={(e) => handleUpdateAssignment('bu_group', e.target.value)}
+                                  className="chat-header-select"
+                                  style={{ color: selectedConv?.assigned_bu ? '#334155' : '#ef4444' }}
+                                >
+                                  <option value="">Chưa phân</option>
+                                  {bus.map(b => <option key={b.id} value={b.id}>{b.label || b.id}</option>)}
+                                </select>
                             <span style={{ color: '#cbd5e1', margin: '0 4px' }}>|</span>
-                            Sale: <span style={{ color: selectedConv?.assigned_to_name ? '#334155' : '#ef4444', fontWeight: '800' }}>{selectedConv?.assigned_to_name || 'Chưa phân'}</span>
+                            Sale: <select 
+                                    value={selectedConv?.assigned_to_id || ""} 
+                                    onChange={(e) => handleUpdateAssignment('assigned_to', e.target.value)}
+                                    className="chat-header-select"
+                                    style={{ color: selectedConv?.assigned_to_name ? '#334155' : '#ef4444' }}
+                                  >
+                                    <option value="">Chưa phân</option>
+                                    {sortedSaleUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
+                                  </select>
                     </div>
                   </div>
                 </div>
@@ -757,6 +910,28 @@ const InboxTab = ({ leads, setEditingLead, initialPsid, clearInitialPsid, onGoBa
           background-color: #10b981;
           border-radius: 4px;
           animation: pulse 2s infinite;
+        }
+
+        .chat-header-select {
+          background: transparent;
+          border: 1px dashed transparent;
+          border-radius: 4px;
+          font-size: 0.75rem;
+          font-weight: 800;
+          outline: none;
+          cursor: pointer;
+          padding: 0 4px;
+          transition: all 0.2s;
+        }
+
+        .chat-header-select option {
+          color: #1e293b;
+          font-weight: 500;
+        }
+        
+        .chat-header-select:hover {
+          border-color: #cbd5e1;
+          background: #f8fafc;
         }
 
         .inbox-action-btn {

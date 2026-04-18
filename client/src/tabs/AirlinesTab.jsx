@@ -1,3 +1,4 @@
+import { canCreate, canDelete, canEdit } from '../utils/permissions';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Plus, MapPin, Plane, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle , Star, ExternalLink } from 'lucide-react';
@@ -177,7 +178,7 @@ export default function AirlinesTab({ currentUser, addToast, handleDeleteAirline
                 </div>
                 
                 <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-end', height: '100%', paddingTop: '1.4rem' }}>
-                    {(currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'operations') && (
+                    {canCreate(currentUser?.role, 'suppliers') && (
                         <button className="btn btn-primary" onClick={handleAddAirline} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '44px', padding: '0 1.5rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, background: '#2563eb', color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)', cursor: 'pointer' }}>
                             <Plus size={18} /> Thêm Mới
                         </button>

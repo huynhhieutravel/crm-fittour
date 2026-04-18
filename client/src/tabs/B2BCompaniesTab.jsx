@@ -166,7 +166,7 @@ const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list
         <div style={{ minWidth: '200px' }}>
           <select className="filter-select" style={{ width: '100%' }} value={assignedFilter} onChange={e => setAssignedFilter(e.target.value)}>
             <option value="">Tất cả Sale phụ trách</option>
-            {users.filter(u => ['group_manager', 'group_staff'].includes(u.role_name)).map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
+            {users.filter(u => ['group_manager', 'group_staff', 'group_operations', 'group_operations_lead'].includes(u.role_name)).map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
           </select>
         </div>
       </div>
@@ -235,7 +235,7 @@ const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list
                     }}
                   >
                     <option value="">-- Chưa gán --</option>
-                    {users.filter(u => ['group_manager', 'group_staff'].includes(u.role_name)).map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
+                    {users.filter(u => ['group_manager', 'group_staff', 'group_operations', 'group_operations_lead'].includes(u.role_name)).map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
                   </select>
                 </td>
                 <td style={{ padding: '14px 16px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>

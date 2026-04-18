@@ -18,9 +18,17 @@ router.put('/tasks/:id', authenticateToken, permCheckAny(cskhEditPerm), cskhCont
 router.post('/tasks/:id/process', authenticateToken, permCheckAny(cskhEditPerm), cskhController.processTask);
 router.post('/tasks/:id/skip', authenticateToken, permCheckAny(cskhEditPerm), cskhController.skipTask);
 
+// Admin or Manager only middleware for rules
+const adminOrManagerOnly = (req, res, next) => {
+    if (req.user && ['admin', 'manager'].includes(req.user.role)) {
+        return next();
+    }
+    return res.status(403).json({ message: 'Chỉ Admin và Manager mới có quyền Cấu hình Roles' });
+};
+
 // Rules config
 router.get('/rules', authenticateToken, permCheckAny(cskhPerm), cskhController.getRules);
-router.put('/rules/:id', authenticateToken, permCheckAny(cskhEditPerm), cskhController.updateRule);
+router.put('/rules/:id', authenticateToken, adminOrManagerOnly, cskhController.updateRule);
 
 // Bulk customer search
 router.get('/search-customers', authenticateToken, permCheckAny(cskhPerm), cskhController.searchCustomers);

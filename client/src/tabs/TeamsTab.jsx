@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Plus, Star, Trash2, UserPlus, UserMinus, Crown, ChevronDown, ChevronUp, Edit3, X, Shield } from 'lucide-react';
+import { formatRoleDisplayName } from '../utils/roleUtils';
 
 const API = import.meta.env.VITE_API_URL || '';
 
@@ -275,7 +276,7 @@ const TeamsTab = ({ addToast, users = [] }) => {
                           onClick={() => handleAddMember(team.id, u.id)}
                           >
                             <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{u.full_name}</span>
-                            <span style={{ fontSize: '0.72rem', color: '#64748b' }}>@{u.username} • {u.role_name}</span>
+                            <span style={{ fontSize: '0.72rem', color: '#64748b' }}>@{u.username} • {formatRoleDisplayName(u.role_name).toUpperCase()}</span>
                           </div>
                         ))
                       )}
@@ -317,7 +318,7 @@ const TeamsTab = ({ addToast, users = [] }) => {
                                 )}
                               </div>
                               <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                                @{m.username} • {m.role_name?.toUpperCase()}
+                                @{m.username} • {formatRoleDisplayName(m.role_name).toUpperCase()}
                               </span>
                             </div>
                           </div>

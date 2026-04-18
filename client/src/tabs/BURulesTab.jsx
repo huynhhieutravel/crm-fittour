@@ -49,7 +49,7 @@ const BURulesTab = ({ currentUser }) => {
             <div style={{ display: 'flex', borderBottom: '2px solid #e2e8f0', marginBottom: '24px', gap: '0' }}>
                 {[
                     { key: 'overview', label: '📋 Tổng quan & Ví dụ' },
-                    { key: 'code-rules', label: '🖥️ Quy tắc Code (Chi tiết)' },
+                    ...(currentUser?.role === 'admin' ? [{ key: 'code-rules', label: '🖥️ Quy tắc Code (Chi tiết)' }] : []),
                 ].map(tab => (
                     <button key={tab.key}
                         onClick={() => setActiveTab(tab.key)}

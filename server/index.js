@@ -39,6 +39,7 @@ const authRoutes = require('./routes/auth');
 const noteRoutes = require('./routes/notes');
 const messageRoutes = require('./routes/messages');
 const userRoutes = require('./routes/users');
+const visaRoutes = require('./routes/visaRoutes');
 const tourTypeRoutes = require('./routes/settings');
 const webhookRoutes = require('./routes/webhook');
 const activityRoutes = require('./routes/activity');
@@ -66,6 +67,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tours', tourRoutes);
 app.use('/api/public/contracts', publicContractsRoutes);
 app.use('/api/vouchers', require('./routes/vouchers'));
+app.use('/api/leaves', require('./routes/leaves'));
 app.use('/api/departures', departureRoutes);
 app.use('/api/guides', guideRoutes);
 app.use('/api/leads', leadRoutes);
@@ -75,6 +77,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/settings', tourTypeRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/visas', visaRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/business-units', buRoutes);
 app.use('/api/meta/catalog', catalogRoutes);
@@ -156,23 +159,27 @@ const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
     
-    // Start FB Poller for Messenger Sync bypass
-    const facebookService = require('./services/facebookService');
-    facebookService.startPolling();
+    if (process.env.DISABLE_BACKGROUND_JOBS === 'true') {
+        console.log('🛑 [SAFETY] Đang chạy Localhost: Đã TẮT tính năng nhận Lead Facebook và tự động gửi tin nhắn Zalo/CSKH để không ảnh hưởng Live Web.');
+    } else {
+        // Start FB Poller for Messenger Sync bypass
+        const facebookService = require('./services/facebookService');
+        facebookService.startPolling();
 
-    // Start Tour Care Reminder Cron Engine
-    const { startCronJobs } = require('./cron/reminderEngine');
-    startCronJobs();
+        // Start Tour Care Reminder Cron Engine
+        const { startCronJobs } = require('./cron/reminderEngine');
+        startCronJobs();
 
-    // Start Auto-delete Media Cron Engine (60 days)
-    const { startMediaCleanupCron } = require('./cron/mediaCleanup');
-    startMediaCleanupCron();
+        // Start Auto-delete Media Cron Engine (60 days)
+        const { startMediaCleanupCron } = require('./cron/mediaCleanup');
+        startMediaCleanupCron();
 
-    // Start Auto-delete Audit Logs Cron Engine (30 days)
-    const { startAuditLogCleanupCron } = require('./cron/auditLogCleanup');
-    startAuditLogCleanupCron();
+        // Start Auto-delete Audit Logs Cron Engine (30 days)
+        const { startAuditLogCleanupCron } = require('./cron/auditLogCleanup');
+        startAuditLogCleanupCron();
 
-    // Start CSKH Auto-Sync Cron Engine (every 15 min)
-    const { startCskhCron } = require('./cron/cskhEngine');
-    startCskhCron();
+        // Start CSKH Auto-Sync Cron Engine (every 15 min)
+        const { startCskhCron } = require('./cron/cskhEngine');
+        startCskhCron();
+    }
 });

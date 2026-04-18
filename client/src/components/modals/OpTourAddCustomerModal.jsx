@@ -23,7 +23,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
     branch: 'Chi Nhánh'
   });
 
-  const isPrivileged = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'operator' || currentUser?.role_name === 'admin' || currentUser?.role_name === 'manager' || currentUser?.role_name === 'operator' || currentUser?.role === 'group_manager';
+  const isPrivileged = currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'operator' || currentUser?.role_name === 'admin' || currentUser?.role_name === 'manager' || currentUser?.role_name === 'operator' || currentUser?.role === 'group_manager' || String(currentUser?.role || '').includes('operations');
   
   const [salesList, setSalesList] = useState([]);
   const [selectedSalesId, setSelectedSalesId] = useState('');

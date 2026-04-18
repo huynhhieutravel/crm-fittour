@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { X, Calendar, MapPin, Users, CheckCircle, Clock, AlertCircle, Award } from 'lucide-react';
+import { formatRoleDisplayName } from '../../utils/roleUtils';
 
 // Helper: Tính phân khúc VIP tự động
 function computeVipTier(totalTrips) {
@@ -171,7 +172,7 @@ export const AddCustomerModal = ({
             <select className="modal-select" value={newCustomer.assigned_to || ''} onChange={e => setNewCustomer({...newCustomer, assigned_to: e.target.value})}>
               <option value="">-- Chọn nhân viên --</option>
               {users.filter(u => u.is_active !== false).map(u => (
-                <option key={u.id} value={u.id}>{u.username} ({u.role_name})</option>
+                <option key={u.id} value={u.id}>{u.username} ({formatRoleDisplayName(u.role_name)})</option>
               ))}
             </select>
           </div>
@@ -467,7 +468,7 @@ export const EditCustomerModal = ({
                   <select className="modal-select" value={editingCustomer.assigned_to || ''} onChange={e => setEditingCustomer({...editingCustomer, assigned_to: e.target.value})}>
                     <option value="">-- Chọn nhân viên --</option>
                     {users.filter(u => u.is_active !== false).map(u => (
-                      <option key={u.id} value={u.id}>{u.username} ({u.role_name})</option>
+                      <option key={u.id} value={u.id}>{u.username} ({formatRoleDisplayName(u.role_name)})</option>
                     ))}
                   </select>
                 </div>

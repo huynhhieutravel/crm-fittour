@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { createPortal } from 'react-dom';
 import { X, Calendar, MapPin, Users, CheckCircle, Clock, AlertCircle, Award, CalendarPlus, ExternalLink } from 'lucide-react';
+import { formatRoleDisplayName } from '../../utils/roleUtils';
 
 export const INDUSTRY_OPTIONS = [
   'Sản xuất', 'Giáo dục', 'CNTT', 'Y tế', 'Bán lẻ', 'Dịch vụ', 
@@ -271,8 +272,8 @@ const B2BCompanyModal = ({ company, onClose, onUpdateSuccess, users = [] }) => {
                 <label>NHÂN VIÊN CHĂM SÓC</label>
                 <select className="modal-select" value={formData.assigned_to || ''} onChange={e => setFormData({...formData, assigned_to: e.target.value})}>
                   <option value="">-- Chọn nhân viên --</option>
-                  {users.filter(u => u.is_active !== false && ['group_manager', 'group_staff'].includes(u.role_name)).map(u => (
-                    <option key={u.id} value={u.id}>{u.full_name || u.username} ({u.role_name})</option>
+                  {users.filter(u => u.is_active !== false && ['group_manager', 'group_staff', 'group_operations', 'group_operations_lead'].includes(u.role_name)).map(u => (
+                    <option key={u.id} value={u.id}>{u.full_name || u.username} ({formatRoleDisplayName(u.role_name)})</option>
                   ))}
                 </select>
               </div>

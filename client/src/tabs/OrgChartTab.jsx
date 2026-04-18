@@ -12,6 +12,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import axios from 'axios';
 import { Save, Plus, Trash2, Edit3, X, User, Target } from 'lucide-react';
+import { formatRoleDisplayName } from '../utils/roleUtils';
 
 // --- CUSTOM NODE COMPONENT ---
 const CustomNode = ({ data, selected }) => {
@@ -206,7 +207,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
                         data: { 
                             ...n.data, 
                             label: user.full_name, 
-                            position: user.position || user.role_name,
+                            position: user.position || formatRoleDisplayName(user.role_name),
                             avatarUrl: user.avatar_url || '',
                             userId: user.id
                         } 
@@ -623,7 +624,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
                             </div>
                             <div style={{ textAlign: 'center' }}>
                                 <h3 style={{ margin: '0 0 4px', fontSize: '1.25rem', color: '#1e293b' }}>{viewingUser.full_name}</h3>
-                                <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748b', fontWeight: 600 }}>{viewingUser.position || viewingUser.role_name}</p>
+                                <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748b', fontWeight: 600 }}>{viewingUser.position || formatRoleDisplayName(viewingUser.role_name)}</p>
                             </div>
 
                             <div style={{ width: '100%', height: '1px', background: '#e2e8f0', margin: '4px 0' }}></div>

@@ -6,6 +6,7 @@ exports.createVoucher = async (req, res) => {
             tour_id,
             booking_id,
             booking_code,
+            visa_id,
             title,
             amount,
             payment_method,
@@ -28,13 +29,32 @@ exports.createVoucher = async (req, res) => {
                     return res.status(400).json({ message: `Số tiền thu (${Number(amount).toLocaleString('vi-VN')}đ) vượt quá số tiền còn nợ (${remaining.toLocaleString('vi-VN')}đ)!` });
                 }
             }
+        } else if (visa_id) {
+            const visaCheck = await db.query('SELECT finance_data, total_collected FROM visas WHERE id = $1', [visa_id]);
+            if (visaCheck.rows.length > 0) {
+                const v = visaCheck.rows[0];
+                let expectedRevenue = 0;
+                try {
+                    const financeDataRaw = JSON.parse(v.finance_data || '[]');
+                    const suppliers = Array.isArray(financeDataRaw) ? financeDataRaw : (financeDataRaw.suppliers || []);
+                    expectedRevenue = suppliers.reduce((sum, sup) => sum + (sup.services || []).reduce((s2, svc) => {
+                        const base = (Number(svc.sale_price) || 0) * (Number(svc.fx) || 1) * (Number(svc.quantity) || 1);
+                        return s2 + base + (Number(svc.surcharge) || 0) + (Number(svc.vat) || 0);
+                    }, 0), 0);
+                } catch (e) { console.error('Error parsing visa finance_data:', e); }
+                
+                const remaining = expectedRevenue - Number(v.total_collected || 0);
+                if (Number(amount) > remaining) {
+                    return res.status(400).json({ message: `Số tiền thu (${Number(amount).toLocaleString('vi-VN')}đ) vượt quá số tiền khách còn nợ (${remaining.toLocaleString('vi-VN')}đ). (Tổng dự kiến: ${expectedRevenue.toLocaleString()})!` });
+                }
+            }
         }
 
         // Auto-generate code e.g., PT-B8734-080426-A3
         const d = new Date();
         const ddmmyy = `${String(d.getDate()).padStart(2, '0')}${String(d.getMonth()+1).padStart(2, '0')}${String(d.getFullYear()).slice(2)}`;
         
-        let prefix = booking_code ? booking_code : ((booking_id ? String(booking_id).substring(0, 6) : 'UNK'));
+        let prefix = booking_code ? booking_code : ((booking_id ? String(booking_id).substring(0, 6) : (visa_id ? `HS${visa_id}` : 'UNK')));
         // Clean prefix if it has BK_ at start to keep it short
         if (prefix.startsWith('BK_')) prefix = prefix.substring(3);
         
@@ -45,15 +65,15 @@ exports.createVoucher = async (req, res) => {
 
         const insertQuery = `
             INSERT INTO payment_vouchers (
-                voucher_code, tour_id, booking_id, title, amount,
+                voucher_code, tour_id, booking_id, visa_id, title, amount,
                 payment_method, payer_name, payer_phone, notes,
                 created_by, created_by_name, status, attachment_url
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'Đã duyệt', $12)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'Đã duyệt', $13)
             RETURNING *
         `;
 
         const values = [
-            voucher_code, tour_id, booking_id, title, amount,
+            voucher_code, tour_id, booking_id, visa_id || null, title, amount,
             payment_method, payer_name, payer_phone, notes,
             created_by, created_by_name, attachment_url || null
         ];
@@ -85,6 +105,8 @@ exports.createVoucher = async (req, res) => {
                     await db.query(`UPDATE bookings SET booking_status = $1 WHERE id = $2`, [autoStatus, booking_id]);
                 }
             }
+        } else if (visa_id && amount > 0) {
+            await db.query(`UPDATE visas SET total_collected = total_collected + $1 WHERE id = $2`, [amount, visa_id]);
         }
 
         res.status(201).json(r.rows[0]);
@@ -170,6 +192,8 @@ exports.cancelVoucher = async (req, res) => {
                     await db.query(`UPDATE bookings SET booking_status = $1 WHERE id = $2`, [autoStatus, voucher.booking_id]);
                 }
             }
+        } else if (voucher.visa_id && voucher.amount > 0) {
+            await db.query(`UPDATE visas SET total_collected = GREATEST(0, total_collected - $1) WHERE id = $2`, [voucher.amount, voucher.visa_id]);
         }
 
         // Set status to Cancelled
@@ -215,6 +239,8 @@ exports.deleteVoucher = async (req, res) => {
                     await db.query(`UPDATE bookings SET booking_status = $1 WHERE id = $2`, [autoStatus, voucher.booking_id]);
                 }
             }
+        } else if (voucher.status !== 'Đã hủy' && voucher.visa_id && voucher.amount > 0) {
+            await db.query(`UPDATE visas SET total_collected = GREATEST(0, total_collected - $1) WHERE id = $2`, [voucher.amount, voucher.visa_id]);
         }
 
         await db.query('DELETE FROM payment_vouchers WHERE id = $1', [id]);
@@ -222,5 +248,16 @@ exports.deleteVoucher = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error deleting voucher', error: err.message });
+    }
+};
+
+exports.getVouchersByVisa = async (req, res) => {
+    try {
+        const { visaId } = req.params;
+        const result = await db.query('SELECT * FROM payment_vouchers WHERE visa_id = $1 ORDER BY created_at DESC', [visaId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error fetching vouchers by visa', error: err.message });
     }
 };

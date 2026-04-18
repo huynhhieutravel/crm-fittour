@@ -146,7 +146,7 @@ const GroupLeaderProfileSlider = ({ leader, onClose, onAddNote, users = [], comp
             ) : (
               <select className="modal-select" value={editForm.assigned_to} onChange={e => setEditForm({...editForm, assigned_to: e.target.value ? parseInt(e.target.value) : ''})}>
                 <option value="">-- Chọn Sale --</option>
-                {users.filter(u => ['group_manager', 'group_staff'].includes(u.role_name)).map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
+                {users.filter(u => ['group_manager', 'group_staff', 'group_operations', 'group_operations_lead'].includes(u.role_name)).map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
               </select>
             )}
           </div>

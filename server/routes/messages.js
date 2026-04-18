@@ -5,21 +5,40 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const facebookService = require('../services/facebookService');
 
-// 1. Lấy danh sách hội thoại có phân trang và tìm kiếm
+// 1. Lấy danh sách hội thoại có phân trang, tìm kiếm và bộ lọc
 router.get('/conversations', auth, async (req, res) => {
     try {
-        const { page = 1, limit = 20, search = '' } = req.query;
+        const { page = 1, limit = 20, search = '', bu = '', sale_id = '', assignment = '' } = req.query;
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
         const offset = (pageNum - 1) * limitNum;
 
         let queryArgs = [];
-        let whereClause = '';
+        let conditions = [];
 
         if (search) {
             queryArgs.push(`%${search}%`);
-            whereClause = `WHERE l.name ILIKE $1 OR c.last_message ILIKE $1 OR c.external_id ILIKE $1`;
+            conditions.push(`(l.name ILIKE $${queryArgs.length} OR c.last_message ILIKE $${queryArgs.length} OR c.external_id ILIKE $${queryArgs.length})`);
         }
+
+        if (bu) {
+            queryArgs.push(bu);
+            conditions.push(`l.bu_group = $${queryArgs.length}`);
+        }
+
+        if (sale_id) {
+            queryArgs.push(parseInt(sale_id));
+            conditions.push(`l.assigned_to = $${queryArgs.length}`);
+        }
+
+        // Filter by assignment status
+        if (assignment === 'assigned') {
+            conditions.push(`(l.assigned_to IS NOT NULL AND l.bu_group IS NOT NULL AND l.bu_group != '')`);
+        } else if (assignment === 'unassigned') {
+            conditions.push(`(l.assigned_to IS NULL OR l.bu_group IS NULL OR l.bu_group = '')`);
+        }
+
+        const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
 
         // Đếm tổng số lượng
         const countQuery = `

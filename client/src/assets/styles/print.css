@@ -1,0 +1,12 @@
+/* =========================================
+   FIT Tour CRM — Print Styles
+   CSS cho chế độ in ấn
+   ========================================= */
+
+@media print {
+  body * { visibility: hidden; }
+  .modal-content, .modal-content * { visibility: visible; }
+  .modal-content { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; background: white !important; }
+  .modal-overlay { position: static; background: white !important; }
+  .icon-btn, .btn-secondary, button { display: none !important; }
+}

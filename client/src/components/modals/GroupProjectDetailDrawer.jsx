@@ -6,7 +6,7 @@ import CreatableSelect from 'react-select/creatable';
 import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
-export default function GroupProjectDetailDrawer({ project, onClose, refreshList, currentUser, addToast, users }) {
+export default function GroupProjectDetailDrawer({ project, onClose, refreshList, currentUser, addToast, users, canViewProfit = true }) {
     const marketOptions = useMarkets();
     const [formData, setFormData] = useState({
         name: '', group_leader_id: '', source: '', status: 'Báo giá', destination: '',
@@ -148,7 +148,17 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
         }
     };
 
-    const isViewOnly = checkViewOnly(currentUser?.role, 'group');
+    // Smart edit permission: edit = all, edit_own = only assigned to me
+    const legacyViewOnly = checkViewOnly(currentUser?.role, 'group');
+    const isViewOnly = (() => {
+        if (currentUser?.role === 'admin') return false;
+        if (currentUser?.myPermissions?.group_projects?.edit) return false;
+        if (currentUser?.myPermissions?.group_projects?.edit_own) {
+            // Only allow edit if this project is assigned to current user
+            return project ? (project.assigned_to !== currentUser?.id) : false;
+        }
+        return legacyViewOnly;
+    })();
 
     const drawerInputStyle = { 
         padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', 
@@ -354,10 +364,12 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                                 <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block' }}>DOANH THU ĐỀ XUẤT (VNĐ)</label>
                                 <input type="text" style={{ ...drawerInputStyle, color: '#16a34a', fontWeight: 'bold' }} value={formattedRevenue} onChange={handleRevenueChange} disabled={isViewOnly} placeholder="0" />
                             </div>
+                            {canViewProfit && (
                             <div className="form-group">
                                 <label style={{ fontSize: '0.85rem', color: '#ea580c', fontWeight: 600, marginBottom: '8px', display: 'block' }}>LỢI NHUẬN (VNĐ)</label>
                                 <input type="text" style={{ ...drawerInputStyle, color: '#ea580c', fontWeight: 'bold' }} value={formattedProfit} onChange={handleProfitChange} disabled={isViewOnly} placeholder="0" />
                             </div>
+                            )}
                         </div>
                     </div>
                 </div>
