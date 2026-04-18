@@ -159,13 +159,29 @@ function AppContent() {
     if (path.startsWith('manual')) return 'manual';
     if (path.startsWith('group/')) return path.replace('/', '-');
     const validTabs = ['workspace', 'dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr'];
-    return (path && validTabs.includes(path)) ? path : 'dashboard';
+    
+    let defaultTab = 'dashboard';
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        if (u && (u.role === 'sales' || u.role === 'sale' || u.role_name === 'sales' || u.role_name === 'sale')) {
+          defaultTab = 'workspace';
+        }
+      } catch(e) {}
+    }
+    
+    return (path && validTabs.includes(path)) ? path : defaultTab;
   });
 
   useEffect(() => {
     const path = location.pathname.substring(1);
     if (!path) {
-      setActiveTab('dashboard');
+      let defaultTab = 'dashboard';
+      if (user && (user.role === 'sales' || user.role === 'sale' || user.role_name === 'sales' || user.role_name === 'sale')) {
+        defaultTab = 'workspace';
+      }
+      setActiveTab(defaultTab);
       return;
     }
     if (path.startsWith('guides')) { setActiveTab('guides'); return; }
@@ -1537,10 +1553,15 @@ function AppContent() {
     try {
       const res = await axios.post('/api/auth/login', loginData);
       localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      setUser(res.data.user);
+      const u = res.data.user;
+      localStorage.setItem('user', JSON.stringify(u));
+      setUser(u);
       setIsLoggedIn(true);
-      navigate('/');
+      if (u.role === 'sales' || u.role === 'sale' || u.role_name === 'sales' || u.role_name === 'sale') {
+        navigate('/workspace');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Đăng nhập thất bại');
     }
