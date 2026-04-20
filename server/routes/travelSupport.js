@@ -11,9 +11,10 @@ router.get('/', async (req, res) => {
     try {
         const { start_date, end_date, service_type, sale_id, status } = req.query;
         let query = `
-            SELECT t.*, u.username as sale_name 
+            SELECT t.*, u.username as sale_name, u2.username as op_name 
             FROM travel_support_services t
             LEFT JOIN users u ON t.sale_id = u.id
+            LEFT JOIN users u2 ON t.op_id = u2.id
             WHERE 1=1
         `;
         let params = [];
@@ -57,7 +58,7 @@ router.post('/', async (req, res) => {
             service_type, group_name, service_name, usage_date,
             departure_date, return_date, route,
             quantity, unit_cost, unit_price, tax, collected_amount, 
-            total_cost, total_income, notes, status, sale_id: body_sale_id
+            total_cost, total_income, notes, status, sale_id: body_sale_id, op_id
         } = req.body;
 
         const sale_id = body_sale_id || req.user.id; 
@@ -73,16 +74,16 @@ router.post('/', async (req, res) => {
 
         const query = `
             INSERT INTO travel_support_services (
-                sale_id, service_type, group_name, service_name, usage_date,
+                sale_id, op_id, service_type, group_name, service_name, usage_date,
                 departure_date, return_date, route,
                 quantity, unit_cost, total_cost, unit_price, total_income,
                 tax, profit, collected_amount, notes, status
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
             RETURNING *
         `;
 
         const result = await db.query(query, [
-            sale_id, service_type, group_name || '', service_name, usage_date || null,
+            sale_id, op_id || null, service_type, group_name || '', service_name, usage_date || null,
             departure_date || null, return_date || null, route || '',
             qty, uCost, final_total_cost, uPrice, final_total_income,
             tTax, profit, parseFloat(collected_amount) || 0, notes || '', status || 'pending'
@@ -149,7 +150,7 @@ router.put('/:id', async (req, res) => {
             service_type, group_name, service_name, usage_date,
             departure_date, return_date, route,
             quantity, unit_cost, unit_price, tax, collected_amount,
-            total_cost, total_income, notes, status, sale_id
+            total_cost, total_income, notes, status, sale_id, op_id
         } = req.body;
 
         const qty = parseFloat(quantity) || 0;
@@ -168,8 +169,9 @@ router.put('/:id', async (req, res) => {
                 quantity = $8, unit_cost = $9, total_cost = $10, unit_price = $11, total_income = $12,
                 tax = $13, profit = $14, collected_amount = $15, notes = $16, status = $17,
                 sale_id = COALESCE($18, sale_id),
+                op_id = $19,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id = $19
+            WHERE id = $20
             RETURNING *
         `;
 
@@ -178,7 +180,7 @@ router.put('/:id', async (req, res) => {
             departure_date || null, return_date || null, route || '',
             qty, uCost, final_total_cost, uPrice, final_total_income,
             tTax, profit, parseFloat(collected_amount) || 0, notes || '', status || 'pending',
-            sale_id || null, id
+            sale_id || null, op_id || null, id
         ]);
 
         if (result.rows.length === 0) {

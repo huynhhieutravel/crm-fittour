@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, DollarSign, Package, Calendar, Clock, ChevronRight, FileText, ChevronLeft, CreditCard, Ship, Train, MoreHorizontal, User } from 'lucide-react';
 
 const SERVICE_TYPES = [
-  { value: 'Visa', label: '1. Visa' },
-  { value: 'Lưu trú', label: '2. Lưu trú' },
-  { value: 'Hàng không', label: '3. Hàng không' },
-  { value: 'Vận chuyển', label: '4. Vận chuyển' },
-  { value: 'Nhà hàng', label: '5. Nhà hàng' },
-  { value: 'Vé tham quan', label: '6. Vé tham quan' },
-  { value: 'Bảo hiểm du lịch', label: '7. Bảo hiểm du lịch' },
-  { value: 'Thuê SIM', label: '8. Thuê SIM' },
-  { value: 'Khác...', label: '9. Khác...' }
+  { value: 'Lưu trú', label: '1. Lưu trú' },
+  { value: 'Hàng không', label: '2. Hàng không' },
+  { value: 'Vận chuyển', label: '3. Vận chuyển' },
+  { value: 'Nhà hàng', label: '4. Nhà hàng' },
+  { value: 'Vé tham quan', label: '5. Vé tham quan' },
+  { value: 'Bảo hiểm du lịch', label: '6. Bảo hiểm du lịch' },
+  { value: 'Thuê SIM', label: '7. Thuê SIM' },
+  { value: 'Khác...', label: '8. Khác...' }
 ];
 
 // Hàm định dạng số có dấu chấm phân cách
@@ -43,7 +42,8 @@ const TravelSupportModal = ({ isOpen, onClose, onSave, editingItem, users = [], 
     collected_amount: 0,
     notes: '',
     status: 'pending',
-    sale_id: ''
+    sale_id: '',
+    op_id: ''
   });
 
   useEffect(() => {
@@ -71,7 +71,8 @@ const TravelSupportModal = ({ isOpen, onClose, onSave, editingItem, users = [], 
         collected_amount: 0,
         notes: '',
         status: 'pending',
-        sale_id: ''
+        sale_id: '',
+        op_id: ''
       });
     }
   }, [editingItem, isOpen]);
@@ -84,6 +85,24 @@ const TravelSupportModal = ({ isOpen, onClose, onSave, editingItem, users = [], 
 
   const profit = parseMoney(formData.total_income) - parseMoney(formData.total_cost) - parseMoney(formData.tax);
   const remaining = parseMoney(formData.total_income) - parseMoney(formData.collected_amount);
+
+  const sortedUsers = [...users].sort((a, b) => (a.username || '').localeCompare(b.username || ''));
+
+  const opsUsers = users.filter(u => {
+    if (u.is_active === false) return false;
+    const info = ((u.role_name || '') + ' ' + (u.department || '')).toLowerCase();
+    return info.includes('điều hành') || info.includes('ops') || info.includes('visa') || info.includes('sale') || info.includes('sales');
+  }).sort((a, b) => {
+    const getPriority = (u) => {
+      const p = ((u.role_name || '') + ' ' + (u.department || '')).toLowerCase();
+      if (p.includes('điều hành') || p.includes('ops')) return 1;
+      if (p.includes('visa')) return 2;
+      return 3;
+    };
+    const pa = getPriority(a), pb = getPriority(b);
+    if (pa !== pb) return pa - pb;
+    return (a.username || '').localeCompare(b.username || '');
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -104,6 +123,24 @@ const TravelSupportModal = ({ isOpen, onClose, onSave, editingItem, users = [], 
         </div>
 
         <form onSubmit={handleSubmit} className="mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+
+               {/* 1. Nhân sự */}
+               <div className="modal-form-group">
+                 <label>SALE PHỤ TRÁCH</label>
+                 <select className="modal-select" value={formData.sale_id} onChange={e => updateForm('sale_id', e.target.value)}>
+                    <option value="">-- Chọn Sale --</option>
+                    {sortedUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
+                 </select>
+               </div>
+               <div className="modal-form-group">
+                 <label>NHÂN SỰ ĐH</label>
+                 <select className="modal-select" value={formData.op_id || ''} onChange={e => updateForm('op_id', e.target.value)}>
+                    <option value="">-- Điều hành --</option>
+                    {opsUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
+                 </select>
+               </div>
+
+               {/* 2. Loại + Tên dịch vụ */}
                <div className="modal-form-group">
                  <label>LOẠI DỊCH VỤ *</label>
                  <select className="modal-select" required value={formData.service_type} onChange={e => updateForm('service_type', e.target.value)}>
@@ -112,59 +149,52 @@ const TravelSupportModal = ({ isOpen, onClose, onSave, editingItem, users = [], 
                  </select>
                </div>
                <div className="modal-form-group">
-                 <label>SỐ LƯỢNG</label>
-                 <input type="number" step="any" className="modal-input" value={formData.quantity} onChange={e => updateForm('quantity', e.target.value)} />
-               </div>
-               <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
-                 <label>NỘI DUNG DỊCH VỤ / ĐOÀN (1 DÒNG) *</label>
-                 <input className="modal-input" required placeholder="Visa Nhật / Đoàn Công ty ABC..." value={formData.service_name} onChange={e => updateForm('service_name', e.target.value)} />
-               </div>
-
-               <div className="modal-form-group">
                  <label>NGÀY SỬ DỤNG</label>
                  <input type="date" className="modal-input" value={formData.usage_date} onChange={e => updateForm('usage_date', e.target.value)} />
                </div>
-               <div className="modal-form-group">
+               <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
+                 <label>NỘI DUNG DỊCH VỤ / ĐOÀN (1 DÒNG) *</label>
+                 <input className="modal-input" required placeholder="Đoàn Công ty ABC / Khách sạn XYZ..." value={formData.service_name} onChange={e => updateForm('service_name', e.target.value)} />
+               </div>
+
+               {/* 3. Tuyến */}
+               <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
                  <label>TUYẾN / HÀNH TRÌNH (NẾU CÓ)</label>
                  <input className="modal-input" placeholder="VD: SGN-HAN..." value={formData.route} onChange={e => updateForm('route', e.target.value)} />
                </div>
 
-               <div className="nav-section-title" style={{ gridColumn: 'span 2', marginTop: '1rem' }}>Doanh thu & Chi phí</div>
+               {/* 4. Tài chính — theo thứ tự bảng */}
+               <div className="nav-section-title" style={{ gridColumn: 'span 2', marginTop: '0.5rem' }}>Doanh thu & Chi phí</div>
 
+               <div className="modal-form-group">
+                 <label style={{ color: '#991b1b' }}>GIÁ VỐN (ĐƠN VỊ)</label>
+                 <input type="text" className="modal-input" value={formatMoney(formData.unit_cost)} onChange={e => updateForm('unit_cost', parseMoney(e.target.value))} />
+               </div>
                <div className="modal-form-group">
                  <label style={{ color: '#1e40af' }}>GIÁ BÁN (ĐƠN VỊ)</label>
                  <input type="text" className="modal-input" value={formatMoney(formData.unit_price)} onChange={e => updateForm('unit_price', parseMoney(e.target.value))} />
                </div>
                <div className="modal-form-group">
-                 <label style={{ color: '#991b1b' }}>GIÁ VỐN (ĐƠN VỊ)</label>
-                 <input type="text" className="modal-input" value={formatMoney(formData.unit_cost)} onChange={e => updateForm('unit_cost', parseMoney(e.target.value))} />
+                 <label>SỐ LƯỢNG</label>
+                 <input type="number" step="any" className="modal-input" value={formData.quantity} onChange={e => updateForm('quantity', e.target.value)} />
                </div>
-
-               <div className="modal-form-group">
-                 <label>TỔNG THU (TỰ TÍNH/SỬA)</label>
-                 <input type="text" className="modal-input" style={{ background: '#eff6ff', fontWeight: 700, color: '#1e40af' }} value={formatMoney(formData.total_income)} onChange={e => updateForm('total_income', parseMoney(e.target.value))} />
-               </div>
-               <div className="modal-form-group">
-                 <label>TỔNG CHI (TỰ TÍNH/SỬA)</label>
-                 <input type="text" className="modal-input" style={{ background: '#fff1f2', fontWeight: 700, color: '#991b1b' }} value={formatMoney(formData.total_cost)} onChange={e => updateForm('total_cost', parseMoney(e.target.value))} />
-               </div>
-
                <div className="modal-form-group">
                  <label>THUẾ / PHÍ THÊM</label>
                  <input type="text" className="modal-input" value={formatMoney(formData.tax)} onChange={e => updateForm('tax', parseMoney(e.target.value))} />
                </div>
+
+               <div className="modal-form-group">
+                 <label>TỔNG CHI (TỰ TÍNH/SỬA)</label>
+                 <input type="text" className="modal-input" style={{ background: '#fff1f2', fontWeight: 700, color: '#991b1b' }} value={formatMoney(formData.total_cost)} onChange={e => updateForm('total_cost', parseMoney(e.target.value))} />
+               </div>
+               <div className="modal-form-group">
+                 <label>TỔNG THU (TỰ TÍNH/SỬA)</label>
+                 <input type="text" className="modal-input" style={{ background: '#eff6ff', fontWeight: 700, color: '#1e40af' }} value={formatMoney(formData.total_income)} onChange={e => updateForm('total_income', parseMoney(e.target.value))} />
+               </div>
+
                <div className="modal-form-group">
                  <label style={{ color: '#4f46e5' }}>KHÁCH ĐÃ TRẢ</label>
                  <input type="text" className="modal-input" style={{ fontWeight: 800, border: '1px solid #c7d2fe' }} value={formatMoney(formData.collected_amount)} onChange={e => updateForm('collected_amount', parseMoney(e.target.value))} />
-               </div>
-
-               <div className="nav-section-title" style={{ gridColumn: 'span 2', marginTop: '1rem' }}>Bổ sung thông tin</div>
-               <div className="modal-form-group">
-                 <label>NHÂN VIÊN PHỤ TRÁCH</label>
-                 <select className="modal-select" value={formData.sale_id} onChange={e => updateForm('sale_id', e.target.value)}>
-                    <option value="">-- Chọn Sale --</option>
-                    {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
-                 </select>
                </div>
                <div className="modal-form-group">
                  <label>TRẠNG THÁI</label>
@@ -175,6 +205,8 @@ const TravelSupportModal = ({ isOpen, onClose, onSave, editingItem, users = [], 
                    <option value="cancelled">❌ ĐÃ HỦY</option>
                  </select>
                </div>
+
+               {/* 5. Ghi chú */}
                <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
                  <label>GHI CHÚ / NHẮC NHỞ</label>
                  <textarea className="modal-textarea" rows={3} placeholder="Ghi chú thêm thông tin..." value={formData.notes} onChange={e => updateForm('notes', e.target.value)} />

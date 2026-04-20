@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { X, Plus, Save, FileText, CheckCircle } from 'lucide-react';
+import { X, Plus, Save, FileText, CheckCircle, Printer, Trash2 } from 'lucide-react';
+import PrintVoucherTemplate from '../print/PrintVoucherTemplate';
+import html2canvas from 'html2canvas';
 
 export default function BookingVouchersModal({ booking, tour, onClose, onRefresh }) {
   const [vouchers, setVouchers] = useState([]);
@@ -9,6 +11,25 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [viewVoucher, setViewVoucher] = useState(null);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [voucherImageBase64, setVoucherImageBase64] = useState(null);
+
+
+  useEffect(() => {
+    if (viewVoucher) {
+       setVoucherImageBase64(null);
+       setTimeout(() => {
+          const node = document.getElementById('voucher-capture-node');
+          if (node) {
+             html2canvas(node, { scale: 2, backgroundColor: '#ffffff' })
+               .then(canvas => {
+                  setVoucherImageBase64(canvas.toDataURL('image/png'));
+               })
+               .catch(err => console.error('html2canvas error', err));
+          }
+       }, 300);
+    }
+  }, [viewVoucher]);
 
   const [newVoucher, setNewVoucher] = useState({
     title: 'Thanh toán đợt 1',
@@ -128,12 +149,52 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
     }
   };
 
+  const handlePrint = () => {
+    setIsPrinting(true);
+    setTimeout(() => {
+      window.print();
+      setIsPrinting(false);
+    }, 100);
+  };
+
+  const handleDeleteVoucher = async (id, code, amount, status) => {
+    Swal.fire({
+      title: 'CẢNH BÁO',
+      text: `Xóa vĩnh viễn phiếu thu ${code} khỏi hệ thống? Chức năng này dành cho Kế toán để xóa bỏ Phiếu tạo sai hoàn toàn khỏi CSDL.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Đồng ý Xóa',
+      cancelButtonText: 'Đóng'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          setLoading(true);
+          const token = localStorage.getItem('token');
+          const res = await axios.delete(`/api/vouchers/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          alert(res.data.message);
+          setViewVoucher(null);
+          fetchVouchers();
+          if (onRefresh) onRefresh();
+        } catch (err) {
+          console.error(err);
+          alert(err.response?.data?.message || 'Có lỗi xảy ra khi xóa phiếu thu');
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  };
+
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1900, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}>
       <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '900px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '20px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
           <div>
             <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
               <FileText color="#2563eb" />
@@ -141,9 +202,25 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
             </h2>
             <p style={{ fontSize: '14px', color: '#64748b', marginTop: '6px', marginBottom: 0 }}>Khách hàng: <b>{booking?.name}</b> - {tour?.tour_code}</p>
           </div>
-          <button onClick={onClose} style={{ padding: '8px', background: '#f1f5f9', border: 'none', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
-            <X size={20} />
-          </button>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '13px', background: '#fff', padding: '8px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+              <div>
+                <div style={{ color: '#64748b', marginBottom: '2px' }}>Tổng hợp đồng</div>
+                <div style={{ fontWeight: 'bold', color: '#1e293b', whiteSpace: 'nowrap' }}>{Number(booking?.total || booking?.total_price || 0).toLocaleString('vi-VN')} đ</div>
+              </div>
+              <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '16px' }}>
+                <div style={{ color: '#64748b', marginBottom: '2px' }}>Đã thu</div>
+                <div style={{ fontWeight: 'bold', color: '#16a34a', whiteSpace: 'nowrap' }}>{Number(booking?.paid || 0).toLocaleString('vi-VN')} đ</div>
+              </div>
+              <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '16px' }}>
+                <div style={{ color: '#64748b', marginBottom: '2px' }}>Còn nợ</div>
+                <div style={{ fontWeight: 'bold', color: '#ef4444', whiteSpace: 'nowrap' }}>{Number((booking?.total || booking?.total_price || 0) - (booking?.paid || 0)).toLocaleString('vi-VN')} đ</div>
+              </div>
+            </div>
+            <button onClick={onClose} style={{ padding: '8px', background: '#e2e8f0', border: 'none', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569', transition: 'all 0.2s', alignSelf: 'center' }}>
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
@@ -314,60 +391,55 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
         </div>
       </div>
 
-      {/* Popup Xem Lại Phiếu Thu */}
+      {/* Popup Xem Lại Phiếu Thu (Clean A4 Document View) */}
       {viewVoucher && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1910, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)' }}>
-          <div style={{ background: '#fff', borderRadius: '12px', width: '600px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', color: '#1e293b' }}>Chi tiết: {viewVoucher.voucher_code}</h3>
-              <button onClick={() => setViewVoucher(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} color="#64748b" /></button>
-            </div>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1910, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)' }}>
+          <div style={{ position: 'relative', background: '#fff', width: '100%', maxWidth: '820px', maxHeight: '95vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', borderRadius: '4px' }}>
             
-            <div style={{ padding: '20px', overflowY: 'auto' }}>
-               <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px', fontSize: '14px' }}>
-                  <div>
-                     <div style={{ color: '#64748b', marginBottom: '4px' }}>Nội dung</div>
-                     <div style={{ fontWeight: 'bold', color: '#1e293b' }}>{viewVoucher.title}</div>
-                  </div>
-                  <div>
-                     <div style={{ color: '#64748b', marginBottom: '4px' }}>Số tiền thu</div>
-                     <div style={{ fontWeight: 'bold', color: '#16a34a', fontSize: '16px' }}>{Number(viewVoucher.amount).toLocaleString()}đ</div>
-                  </div>
-                  <div>
-                     <div style={{ color: '#64748b', marginBottom: '4px' }}>Phương thức</div>
-                     <div style={{ fontWeight: 500 }}>{viewVoucher.payment_method}</div>
-                  </div>
-                  <div>
-                     <div style={{ color: '#64748b', marginBottom: '4px' }}>Người đóng tiền</div>
-                     <div style={{ fontWeight: 500 }}>{viewVoucher.payer_name || '-'}</div>
-                  </div>
-                  <div style={{ gridColumn: 'span 2' }}>
-                     <div style={{ color: '#64748b', marginBottom: '4px' }}>Ghi chú</div>
-                     <div style={{ background: '#f8fafc', padding: '10px', borderRadius: '6px' }}>{viewVoucher.notes || 'Không có ghi chú'}</div>
-                  </div>
-               </div>
+            {/* Action Buttons floating at the top right */}
+            <div className="no-print" style={{ position: 'sticky', top: 0, zIndex: 100, display: 'flex', justifyContent: 'flex-end', padding: '16px 16px 12px 0', background: '#fff' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={handlePrint} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#fff', color: '#1e293b', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', fontWeight: 500 }}>
+                     <Printer size={16} /> In / Lưu PDF
+                  </button>
+                  <button onClick={() => setViewVoucher(null)} style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '4px', color: '#475569' }}>
+                    <X size={20} />
+                  </button>
+                </div>
+            </div>
+
+            <div style={{ padding: '0', minHeight: '400px' }}>
                
-               {viewVoucher.attachment_url ? (
-                  <div>
-                     <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#334155' }}>Ảnh chứng từ:</div>
-                     <img 
-                       src={viewVoucher.attachment_url} 
-                       alt="Chứng từ" 
-                       style={{ width: '100%', borderRadius: '8px', border: '1px solid #e2e8f0' }} 
-                       onError={(e) => { e.target.style.display = 'none'; e.target.insertAdjacentHTML('afterend', '<p style="color: red; font-size: 13px; margin-top: 10px;">Không thể tải ảnh, có thể ảnh đã bị hệ thống dọn dẹp sau 60 ngày hoặc đã bị Admin xóa.</p>'); }}
-                     />
-                  </div>
-               ) : (
-                  <div style={{ padding: '20px', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', color: '#64748b', fontStyle: 'italic' }}>
-                    Không có ảnh đính kèm
-                  </div>
+               <div id="voucher-capture-node" style={{ background: '#fff', borderRadius: '2px', boxShadow: voucherImageBase64 ? 'none' : '0 10px 15px -3px rgba(0,0,0,0.1)', width: '100%', maxWidth: '800px', marginBottom: '24px', overflow: 'hidden', position: voucherImageBase64 ? 'absolute' : 'relative', top: voucherImageBase64 ? '-9999px' : 'auto', left: voucherImageBase64 ? '-9999px' : 'auto' }}>
+                  <PrintVoucherTemplate voucher={viewVoucher} tour={tour} booking={booking} />
+               </div>
+
+               {voucherImageBase64 && (
+                   <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+                       <img src={voucherImageBase64} alt="Phiếu Thu" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '2px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.2)' }} />
+                       <div style={{ textAlign: 'center', marginTop: '16px', color: '#16a34a', fontSize: '14px', background: '#dcfce7', padding: '10px', borderRadius: '8px', border: '1px solid #bbf7d0', fontWeight: 500 }}>
+                         💡 Ảnh chất lượng cao đã sẵn sàng! Chuột phải (hoặc nhấn giữ) vào ảnh để <b>Copy Image</b> (Sao chép hình ảnh) và gửi thẳng vào Zalo Khách.
+                       </div>
+                   </div>
                )}
+
             </div>
-            
-            <div style={{ padding: '16px 20px', borderTop: '1px solid #e2e8f0', textAlign: 'right' }}>
-               <button onClick={() => setViewVoucher(null)} style={{ padding: '8px 20px', background: '#e2e8f0', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', color: '#475569' }}>Đóng</button>
-            </div>
+
           </div>
+        </div>
+      )}
+
+      {/* Hidden Print Layout */}
+      {isPrinting && (
+        <div className="voucher-print-wrapper" style={{ 
+          position: 'fixed', 
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: '#fff', 
+          zIndex: 99999, 
+          padding: 0,
+          margin: 0
+        }}>
+          <PrintVoucherTemplate voucher={viewVoucher} tour={tour} booking={booking} />
         </div>
       )}
     </div>

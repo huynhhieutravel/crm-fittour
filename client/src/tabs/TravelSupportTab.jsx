@@ -32,7 +32,8 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
 
   const [fastAdd, setFastAdd] = useState({
     sale_id: currentUser?.id || '',
-    service_type: 'Visa',
+    op_id: '',
+    service_type: 'Lưu trú',
     service_name: '',
     usage_date: new Date().toLocaleDateString('en-CA'),
     unit_cost: 0,
@@ -140,7 +141,8 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
       });
       setFastAdd({
         sale_id: currentUser?.id || '',
-        service_type: 'Visa',
+        op_id: '',
+        service_type: 'Lưu trú',
         service_name: '',
         usage_date: new Date().toLocaleDateString('en-CA'),
         unit_cost: 0,
@@ -286,12 +288,32 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
     return (a.username || '').localeCompare(b.username || '');
   });
 
+  const opsUsers = users.filter(u => {
+    if (u.is_active === false) return false;
+    const info = ((u.role_name || '') + ' ' + (u.department || '')).toLowerCase();
+    return info.includes('điều hành') || info.includes('ops') || info.includes('visa') || info.includes('sale') || info.includes('sales');
+  }).sort((a, b) => {
+    if (currentUser) {
+       if (a.id === currentUser.id) return -1;
+       if (b.id === currentUser.id) return 1;
+    }
+    const getPriority = (u) => {
+      const p = ((u.role_name || '') + ' ' + (u.department || '')).toLowerCase();
+      if (p.includes('điều hành') || p.includes('ops')) return 1;
+      if (p.includes('visa')) return 2;
+      return 3;
+    };
+    const pa = getPriority(a), pb = getPriority(b);
+    if (pa !== pb) return pa - pb;
+    return (a.username || '').localeCompare(b.username || '');
+  });
+
   return (
     <div className="travel-support-container" style={{ padding: '0', background: 'transparent' }}>
       
       {/* Bộ lọc */}
       <div className="filter-bar" style={{ marginBottom: '1rem' }}>
-        <div className="lead-filter-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr) auto', width: '100%' }}>
+        <div className="lead-filter-grid travel-support-filters" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', width: '100%', alignItems: 'end' }}>
           <div className="filter-group">
             <label>TÌM KIẾM</label>
             <div style={{ position: 'relative' }}>
@@ -303,15 +325,14 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
             <label>LOẠI DỊCH VỤ</label>
             <select className="filter-select" value={filters.service_type} onChange={e => { setFilters({...filters, service_type: e.target.value}); setCurrentPage(1); }}>
               <option value="All">-- Tất cả loại --</option>
-              <option value="Visa">1. Visa</option>
-              <option value="Lưu trú">2. Lưu trú</option>
-              <option value="Hàng không">3. Hàng không</option>
-              <option value="Vận chuyển">4. Vận chuyển</option>
-              <option value="Nhà hàng">5. Nhà hàng</option>
-              <option value="Vé tham quan">6. Vé tham quan</option>
-              <option value="Bảo hiểm du lịch">7. Bảo hiểm du lịch</option>
-              <option value="Thuê SIM">8. Thuê SIM</option>
-              <option value="Khác...">9. Khác...</option>
+              <option value="Lưu trú">1. Lưu trú</option>
+              <option value="Hàng không">2. Hàng không</option>
+              <option value="Vận chuyển">3. Vận chuyển</option>
+              <option value="Nhà hàng">4. Nhà hàng</option>
+              <option value="Vé tham quan">5. Vé tham quan</option>
+              <option value="Bảo hiểm du lịch">6. Bảo hiểm du lịch</option>
+              <option value="Thuê SIM">7. Thuê SIM</option>
+              <option value="Khác...">8. Khác...</option>
             </select>
           </div>
           <div className="filter-group">
@@ -334,7 +355,7 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
         </div>
 
         <div className="filter-options-container" style={{ marginTop: '1rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div className="filter-options-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div className="filter-options-group" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontWeight: 600, color: '#64748b', marginRight: '0.5rem' }}>THỜI GIAN:</span>
             {[
               { id: 'today', label: 'Hôm nay' },
@@ -350,7 +371,7 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
             ))}
           </div>
 
-          <div className="filter-options-group filter-divider" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div className="filter-options-group filter-divider" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ color: '#64748b', fontWeight: 600 }}>Tùy chọn:</span>
             <input type="date" className="filter-input" style={{ width: '130px', padding: '8px' }} value={filters.start_date} onChange={e => { setFilters({...filters, start_date: e.target.value, timeRange: 'custom'}); setCurrentPage(1); }} />
             <span style={{ color: '#cbd5e1' }}>-</span>
@@ -359,11 +380,40 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
         </div>
       </div>
 
+      <style>{`
+        .travel-support-compact th, .travel-support-compact td {
+           padding: 6px 12px !important;
+        }
+        .td-mobile-only { display: none; }
+        @media (max-width: 1400px) {
+           .fast-add-row {
+              display: none !important;
+           }
+        }
+        @media (max-width: 768px) {
+           .travel-support-filters {
+              display: flex !important;
+              flex-direction: column;
+           }
+           .travel-support-filters > * {
+              width: 100%;
+           }
+           .travel-support-filters button {
+              width: 100%;
+              justify-content: center;
+           }
+           .travel-support-compact {
+              min-width: unset !important;
+           }
+           .td-mobile-only { display: flex !important; }
+           .td-desktop-only { display: none !important; }
+        }
+      `}</style>
       <div className="data-table-container" style={{ overflowX: 'auto', minHeight: '500px', borderRadius: '16px', background: 'white' }}>
-        <table className="data-table" style={{ minWidth: '1850px', tableLayout: 'fixed' }}>
+        <table className="data-table travel-support-compact mobile-card-table" style={{ minWidth: '1350px', tableLayout: 'auto' }}>
           <thead>
             <tr>
-              <th style={{ width: '40px', textAlign: 'center' }}>
+              <th style={{ width: '35px', textAlign: 'center' }}>
                 <input type="checkbox"
                   checked={currentItems.length > 0 && selectedIds.length === currentItems.length}
                   onChange={(e) => {
@@ -375,64 +425,71 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
                   }}
                 />
               </th>
-              <th style={{ width: '40px', textAlign: 'center' }}>STT</th>
-              <th style={{ width: '130px' }}>&nbsp;&nbsp;SALE</th>
-              <th style={{ width: '150px' }}>LOẠI DỊCH VỤ</th>
-              <th style={{ width: '400px' }}>TÊN DỊCH VỤ / ĐOÀN (1 DÒNG)</th>
-              <th style={{ textAlign: 'center', width: '160px' }}>NGÀY DÙNG</th>
-              <th style={{ textAlign: 'right', width: '170px' }}>GIÁ THÀNH</th>
-              <th style={{ textAlign: 'center', width: '70px' }}>SL</th>
-              <th style={{ textAlign: 'right', width: '170px' }}>TỔNG CHI</th>
-              <th style={{ textAlign: 'right', width: '170px' }}>TỔNG THU</th>
-              <th style={{ textAlign: 'right', width: '170px' }}>ĐÃ THU</th>
-              <th style={{ textAlign: 'right', width: '170px' }}>CÒN LẠI</th>
-              <th style={{ textAlign: 'center', width: '130px' }}>TRẠNG THÁI</th>
-              <th style={{ width: '80px', textAlign: 'center' }}></th>
+              <th style={{ width: '35px', textAlign: 'center' }}>STT</th>
+              <th style={{ width: '120px' }}>&nbsp;&nbsp;SALE</th>
+              <th style={{ width: '130px' }}>ĐH</th>
+              <th style={{ width: '120px' }}>LOẠI DV</th>
+              <th style={{ minWidth: '180px' }}>TÊN DỊCH VỤ / ĐOÀN</th>
+              <th style={{ textAlign: 'center', width: '110px' }}>NGÀY DÙNG</th>
+              <th style={{ textAlign: 'right', width: '90px' }}>GIÁ THÀNH</th>
+              <th style={{ textAlign: 'center', width: '40px' }}>SL</th>
+              <th style={{ textAlign: 'right', width: '90px' }}>TỔNG CHI</th>
+              <th style={{ textAlign: 'right', width: '90px' }}>TỔNG THU</th>
+              <th style={{ textAlign: 'right', width: '90px' }}>ĐÃ THU</th>
+              <th style={{ textAlign: 'right', width: '85px' }}>CÒN LẠI</th>
+              <th style={{ textAlign: 'center', width: '95px' }}>TRẠNG THÁI</th>
+              <th style={{ width: '70px', textAlign: 'center' }}></th>
             </tr>
           </thead>
           <tbody>
             {/* FAST ADD ROW */}
             {canCreate && (
-              <tr style={{ background: '#f8fafc' }} className="fast-add-row">
+                  <tr style={{ background: '#f8fafc' }} className="fast-add-row">
                  <td style={{ textAlign: 'center' }}></td>
                  <td style={{ textAlign: 'center' }}><Plus size={14} color="#6366f1" /></td>
-                 <td style={{ padding: '8px 4px' }}>
-                    <select className="table-select-ghost" required style={{ fontWeight: 800, width: '100%', height: '40px', borderRadius: '10px' }} value={fastAdd.sale_id} onChange={e => updateFastAdd('sale_id', e.target.value)}>
+                 <td style={{ padding: '6px 4px', minWidth: '120px' }}>
+                    <select className="table-select-ghost" required style={{ fontWeight: 800, width: '100%', height: '36px', borderRadius: '8px', fontSize: '0.82rem' }} value={fastAdd.sale_id} onChange={e => updateFastAdd('sale_id', e.target.value)}>
                       <option value="">Sale</option>
-                      {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
+                      {saleUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
                     </select>
                  </td>
-                 <td style={{ padding: '8px 4px' }}>
-                    <select className="table-select-ghost" style={{ width: '100%', height: '40px', borderRadius: '10px' }} value={fastAdd.service_type} onChange={e => updateFastAdd('service_type', e.target.value)}>
-                      <option value="Visa">1. Visa</option><option value="Lưu trú">2. Lưu trú</option><option value="Hàng không">3. Hàng không</option><option value="Vận chuyển">4. Vận chuyển</option><option value="Nhà hàng">5. Nhà hàng</option><option value="Vé tham quan">6. Vé tham quan</option><option value="Bảo hiểm du lịch">7. Bảo hiểm du lịch</option><option value="Thuê SIM">8. Thuê SIM</option><option value="Khác...">9. Khác...</option>
+                 <td style={{ padding: '6px 4px', minWidth: '130px' }}>
+                    <select className="table-select-ghost" style={{ fontWeight: 800, width: '100%', height: '36px', borderRadius: '8px', fontSize: '0.82rem' }} value={fastAdd.op_id} onChange={e => updateFastAdd('op_id', e.target.value)}>
+                      <option value="">-- ĐH --</option>
+                      {opsUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
                     </select>
                  </td>
-                 <td style={{ padding: '8px 8px' }}>
-                   <input type="text" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0 12px' }} placeholder="Nhập tên..." value={fastAdd.service_name} onChange={e => updateFastAdd('service_name', e.target.value)} />
+                 <td style={{ padding: '6px 4px', minWidth: '120px' }}>
+                    <select className="table-select-ghost" style={{ width: '100%', height: '36px', borderRadius: '8px', fontSize: '0.82rem' }} value={fastAdd.service_type} onChange={e => updateFastAdd('service_type', e.target.value)}>
+                      <option value="Lưu trú">1. Lưu trú</option><option value="Hàng không">2. Hàng không</option><option value="Vận chuyển">3. Vận chuyển</option><option value="Nhà hàng">4. Nhà hàng</option><option value="Vé tham quan">5. Vé tham quan</option><option value="Bảo hiểm du lịch">6. Bảo hiểm du lịch</option><option value="Thuê SIM">7. Thuê SIM</option><option value="Khác...">8. Khác...</option>
+                    </select>
                  </td>
-                 <td style={{ textAlign: 'center', padding: '8px 4px' }}>
-                    <input type="date" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', width: '100%', borderRadius: '10px' }} value={fastAdd.usage_date} onChange={e => updateFastAdd('usage_date', e.target.value)} />
+                 <td style={{ padding: '6px 8px' }}>
+                   <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0 12px' }} placeholder="Nhập tên..." value={fastAdd.service_name} onChange={e => updateFastAdd('service_name', e.target.value)} />
                  </td>
-                 <td style={{ textAlign: 'right', padding: '8px 4px' }}>
-                    <input type="text" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', textAlign: 'right', borderRadius: '10px' }} placeholder="Vốn" value={formatMoney(fastAdd.unit_cost)} onChange={e => updateFastAdd('unit_cost', parseMoney(e.target.value))} />
+                 <td style={{ textAlign: 'center', padding: '6px 4px' }}>
+                    <input type="date" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', width: '100%', borderRadius: '8px' }} value={fastAdd.usage_date} onChange={e => updateFastAdd('usage_date', e.target.value)} />
                  </td>
-                 <td style={{ textAlign: 'center', padding: '8px 4px' }}>
-                    <input type="number" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', textAlign: 'center', width: '100%', borderRadius: '10px' }} value={fastAdd.quantity} onChange={e => updateFastAdd('quantity', parseFloat(e.target.value) || 1)} />
+                 <td style={{ textAlign: 'right', padding: '6px 4px' }}>
+                    <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'right', borderRadius: '8px' }} placeholder="Vốn" value={formatMoney(fastAdd.unit_cost)} onChange={e => updateFastAdd('unit_cost', parseMoney(e.target.value))} />
                  </td>
-                 <td style={{ textAlign: 'right', padding: '8px 4px' }}>
-                    <input type="text" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', textAlign: 'right', color: '#991b1b', borderRadius: '10px', background: '#fff5f5' }} value={formatMoney(fastAdd.total_cost)} onChange={e => updateFastAdd('total_cost', parseMoney(e.target.value))} />
+                 <td style={{ textAlign: 'center', padding: '6px 4px' }}>
+                    <input type="number" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'center', width: '100%', borderRadius: '8px' }} value={fastAdd.quantity} onChange={e => updateFastAdd('quantity', parseFloat(e.target.value) || 1)} />
                  </td>
-                 <td style={{ textAlign: 'right', padding: '8px 4px' }}>
-                    <input type="text" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', textAlign: 'right', color: '#1e40af', borderRadius: '10px', background: '#f0f7ff' }} value={formatMoney(fastAdd.total_income)} onChange={e => updateFastAdd('total_income', parseMoney(e.target.value))} />
+                 <td style={{ textAlign: 'right', padding: '6px 4px' }}>
+                    <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'right', color: '#991b1b', borderRadius: '8px', background: '#fff5f5' }} value={formatMoney(fastAdd.total_cost)} onChange={e => updateFastAdd('total_cost', parseMoney(e.target.value))} />
                  </td>
-                 <td style={{ textAlign: 'right', padding: '8px 4px' }}>
-                    <input type="text" className="modal-input" style={{ fontSize: '0.86rem', height: '40px', textAlign: 'right', color: '#6366f1', borderRadius: '10px' }} placeholder="Đã thu" value={formatMoney(fastAdd.collected_amount)} onChange={e => updateFastAdd('collected_amount', parseMoney(e.target.value))} />
+                 <td style={{ textAlign: 'right', padding: '6px 4px' }}>
+                    <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'right', color: '#1e40af', borderRadius: '8px', background: '#f0f7ff' }} value={formatMoney(fastAdd.total_income)} onChange={e => updateFastAdd('total_income', parseMoney(e.target.value))} />
                  </td>
-                 <td style={{ textAlign: 'right', color: '#f59e0b', fontSize: '1rem', paddingRight: '12px', fontWeight: 600 }}>
+                 <td style={{ textAlign: 'right', padding: '6px 4px' }}>
+                    <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'right', color: '#6366f1', borderRadius: '8px' }} placeholder="Đã thu" value={formatMoney(fastAdd.collected_amount)} onChange={e => updateFastAdd('collected_amount', parseMoney(e.target.value))} />
+                 </td>
+                 <td style={{ textAlign: 'right', color: '#f59e0b', fontSize: '0.9rem', paddingRight: '12px', fontWeight: 600 }}>
                     {formatMoney(parseMoney(fastAdd.total_income) - parseMoney(fastAdd.collected_amount))}
                  </td>
                  <td style={{ textAlign: 'center' }}>
-                    <button onClick={handleFastAddSubmit} className="btn-pro-save" style={{ width: '42px', height: '42px', padding: 0, borderRadius: '12px' }}><Save size={20} /></button>
+                    <button onClick={handleFastAddSubmit} className="btn-pro-save" style={{ width: '36px', height: '36px', padding: 0, borderRadius: '8px' }}><Save size={18} /></button>
                  </td>
               </tr>
             )}
@@ -447,8 +504,8 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
                  const userRole = (currentUser?.role || '').toLowerCase();
                  const canEditLocked = (checkPerm && checkPerm('travel_support', 'unlock')) || userRole === 'admin';
                  
-                 return (
-                  <tr key={item.id} style={{ cursor: (isLocked && !canEditLocked) ? 'default' : 'pointer', fontSize: '0.94rem', background: selectedIds.includes(item.id) ? '#eff6ff' : (isLocked ? '#fafafa' : ''), opacity: isLocked ? 0.8 : 1 }} onClick={() => { if (canEdit && (!isLocked || canEditLocked)) { setEditingItem(item); setIsModalOpen(true); } }}>
+                  return (
+                  <tr key={item.id} style={{ cursor: (isLocked && !canEditLocked) ? 'default' : 'pointer', fontSize: '0.85rem', background: selectedIds.includes(item.id) ? '#eff6ff' : (isLocked ? '#fafafa' : ''), opacity: isLocked ? 0.8 : 1 }} onClick={() => { if (canEdit && (!isLocked || canEditLocked)) { setEditingItem(item); setIsModalOpen(true); } }}>
                     <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
                        <input type="checkbox" 
                          checked={selectedIds.includes(item.id)}
@@ -458,18 +515,20 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
                          }}
                        />
                     </td>
-                    <td style={{ textAlign: 'center', color: '#94a3b8' }}>{idx + 1 + indexOfFirstItem}</td>
-                    <td>{item.sale_name || '---'}</td>
-                    <td><span style={{ fontSize: '0.75rem', color: '#6366f1', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '2px 8px', borderRadius: '6px' }}>{item.service_type}</span></td>
-                    <td>{item.service_name}</td>
-                    <td style={{ textAlign: 'center' }}>{item.usage_date ? new Date(item.usage_date).toLocaleDateString('vi-VN') : '--'}</td>
-                    <td style={{ textAlign: 'right' }}>{formatMoney(item.unit_cost)}</td>
-                    <td style={{ textAlign: 'center' }}>{item.quantity || 1}</td>
-                    <td style={{ textAlign: 'right', color: '#64748b' }}>{formatMoney(total_cost)}</td>
-                    <td style={{ textAlign: 'right' }}>{formatMoney(total_income)}</td>
-                    <td style={{ textAlign: 'right', color: '#6366f1' }}>{formatMoney(collected)}</td>
-                    <td style={{ textAlign: 'right', color: balance > 0 ? '#f59e0b' : '#10b981' }}>{formatMoney(balance)}</td>
-                    <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                    <td data-label="STT" className="td-desktop-only" style={{ textAlign: 'center', color: '#94a3b8' }}>{idx + 1 + indexOfFirstItem}</td>
+                    <td data-label="" className="td-mobile-only card-highlight-name">{item.service_name} <span style={{ fontSize: '0.75rem', color: '#6366f1', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '2px 8px', borderRadius: '6px', marginLeft: '6px' }}>{item.service_type}</span></td>
+                    <td data-label="Sale">{item.sale_name || '---'}</td>
+                    <td data-label="Điều hành">{item.op_name || '---'}</td>
+                    <td data-label="Loại DV" className="td-desktop-only"><span style={{ fontSize: '0.75rem', color: '#6366f1', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '2px 8px', borderRadius: '6px' }}>{item.service_type}</span></td>
+                    <td data-label="Tên DV" className="td-desktop-only">{item.service_name}</td>
+                    <td data-label="Ngày dùng" style={{ textAlign: 'center' }}>{item.usage_date ? new Date(item.usage_date).toLocaleDateString('vi-VN') : '--'}</td>
+                    <td data-label="Giá thành" style={{ textAlign: 'right' }}>{formatMoney(item.unit_cost)}</td>
+                    <td data-label="SL" style={{ textAlign: 'center' }}>{item.quantity || 1}</td>
+                    <td data-label="Tổng chi" style={{ textAlign: 'right', color: '#64748b' }}>{formatMoney(total_cost)}</td>
+                    <td data-label="Tổng thu" style={{ textAlign: 'right' }}>{formatMoney(total_income)}</td>
+                    <td data-label="Đã thu" style={{ textAlign: 'right', color: '#6366f1' }}>{formatMoney(collected)}</td>
+                    <td data-label="Còn nợ" style={{ textAlign: 'right', color: balance > 0 ? '#f59e0b' : '#10b981' }}>{formatMoney(balance)}</td>
+                    <td data-label="Trạng thái" style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
                        <select 
                          disabled={!canEdit || (isLocked && !canEditLocked)}
                          className={`status-select-inline ${item.status === 'paid' ? 'status-guaranteed' : item.status === 'cancelled' ? 'status-cancelled' : 'status-open'}`} 

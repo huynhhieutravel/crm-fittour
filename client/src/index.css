@@ -2236,3 +2236,8 @@ select.form-control {
   50% { opacity: 0.3; }
   100% { opacity: 1; }
 }
+
+/* Fix SweetAlert2 z-index so it doesn't hide behind custom modals */
+.swal2-container {
+  z-index: 999999 !important;
+}
