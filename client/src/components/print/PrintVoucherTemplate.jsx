@@ -72,8 +72,8 @@ const PrintVoucherTemplate = forwardRef(({ voucher, tour, booking }, ref) => {
           <div style={{ flex: 1 }}>{voucher.payer_phone || '...'}</div>
         </div>
         <div style={{ display: 'flex' }}>
-          <div style={{ fontWeight: 'bold', width: '180px' }}>Địa chỉ:</div>
-          <div style={{ flex: 1 }}>Việt Nam</div>
+          <div style={{ fontWeight: 'bold', width: '180px' }}>Email:</div>
+          <div style={{ flex: 1 }}>{booking?.customer_email || booking?.email || voucher?.payer_email || '...'}</div>
         </div>
         <div style={{ display: 'flex' }}>
           <div style={{ fontWeight: 'bold', width: '180px' }}>Lý do (Nội dung):</div>
