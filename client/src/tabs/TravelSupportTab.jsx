@@ -410,7 +410,7 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
         }
       `}</style>
       <div className="data-table-container" style={{ overflowX: 'auto', minHeight: '500px', borderRadius: '16px', background: 'white' }}>
-        <table className="data-table travel-support-compact mobile-card-table" style={{ minWidth: '1350px', tableLayout: 'auto' }}>
+        <table className="data-table travel-support-compact mobile-card-table" style={{ minWidth: '1500px', tableLayout: 'auto' }}>
           <thead>
             <tr>
               <th style={{ width: '35px', textAlign: 'center' }}>
@@ -431,12 +431,12 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
               <th style={{ width: '120px' }}>LOẠI DV</th>
               <th style={{ minWidth: '180px' }}>TÊN DỊCH VỤ / ĐOÀN</th>
               <th style={{ textAlign: 'center', width: '110px' }}>NGÀY DÙNG</th>
-              <th style={{ textAlign: 'right', width: '90px' }}>GIÁ THÀNH</th>
+              <th style={{ textAlign: 'right', width: '110px' }}>GIÁ THÀNH</th>
               <th style={{ textAlign: 'center', width: '40px' }}>SL</th>
-              <th style={{ textAlign: 'right', width: '90px' }}>TỔNG CHI</th>
-              <th style={{ textAlign: 'right', width: '90px' }}>TỔNG THU</th>
-              <th style={{ textAlign: 'right', width: '90px' }}>ĐÃ THU</th>
-              <th style={{ textAlign: 'right', width: '85px' }}>CÒN LẠI</th>
+              <th style={{ textAlign: 'right', width: '110px' }}>TỔNG CHI</th>
+              <th style={{ textAlign: 'right', width: '110px' }}>TỔNG THU</th>
+              <th style={{ textAlign: 'right', width: '110px' }}>ĐÃ THU</th>
+              <th style={{ textAlign: 'right', width: '100px' }}>CÒN LẠI</th>
               <th style={{ textAlign: 'center', width: '95px' }}>TRẠNG THÁI</th>
               <th style={{ width: '70px', textAlign: 'center' }}></th>
             </tr>
@@ -470,20 +470,20 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
                  <td style={{ textAlign: 'center', padding: '6px 4px' }}>
                     <input type="date" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', width: '100%', borderRadius: '8px' }} value={fastAdd.usage_date} onChange={e => updateFastAdd('usage_date', e.target.value)} />
                  </td>
-                 <td style={{ textAlign: 'right', padding: '6px 4px' }}>
-                    <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'right', borderRadius: '8px' }} placeholder="Vốn" value={formatMoney(fastAdd.unit_cost)} onChange={e => updateFastAdd('unit_cost', parseMoney(e.target.value))} />
+                 <td style={{ textAlign: 'right', padding: '6px 4px', minWidth: '110px' }}>
+                    <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'right', borderRadius: '8px', width: '100%' }} placeholder="Vốn" value={formatMoney(fastAdd.unit_cost)} onChange={e => updateFastAdd('unit_cost', parseMoney(e.target.value))} />
                  </td>
                  <td style={{ textAlign: 'center', padding: '6px 4px' }}>
                     <input type="number" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'center', width: '100%', borderRadius: '8px' }} value={fastAdd.quantity} onChange={e => updateFastAdd('quantity', parseFloat(e.target.value) || 1)} />
                  </td>
-                 <td style={{ textAlign: 'right', padding: '6px 4px' }}>
-                    <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'right', color: '#991b1b', borderRadius: '8px', background: '#fff5f5' }} value={formatMoney(fastAdd.total_cost)} onChange={e => updateFastAdd('total_cost', parseMoney(e.target.value))} />
+                 <td style={{ textAlign: 'right', padding: '6px 4px', minWidth: '110px' }}>
+                    <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'right', color: '#991b1b', borderRadius: '8px', background: '#fff5f5', width: '100%' }} value={formatMoney(fastAdd.total_cost)} onChange={e => updateFastAdd('total_cost', parseMoney(e.target.value))} />
                  </td>
-                 <td style={{ textAlign: 'right', padding: '6px 4px' }}>
-                    <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'right', color: '#1e40af', borderRadius: '8px', background: '#f0f7ff' }} value={formatMoney(fastAdd.total_income)} onChange={e => updateFastAdd('total_income', parseMoney(e.target.value))} />
+                 <td style={{ textAlign: 'right', padding: '6px 4px', minWidth: '110px' }}>
+                    <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'right', color: '#1e40af', borderRadius: '8px', background: '#f0f7ff', width: '100%' }} value={formatMoney(fastAdd.total_income)} onChange={e => updateFastAdd('total_income', parseMoney(e.target.value))} />
                  </td>
-                 <td style={{ textAlign: 'right', padding: '6px 4px' }}>
-                    <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'right', color: '#6366f1', borderRadius: '8px' }} placeholder="Đã thu" value={formatMoney(fastAdd.collected_amount)} onChange={e => updateFastAdd('collected_amount', parseMoney(e.target.value))} />
+                 <td style={{ textAlign: 'right', padding: '6px 4px', minWidth: '110px' }}>
+                    <input type="text" className="modal-input" style={{ fontSize: '0.82rem', height: '36px', textAlign: 'right', color: '#6366f1', borderRadius: '8px', width: '100%' }} placeholder="Đã thu" value={formatMoney(fastAdd.collected_amount)} onChange={e => updateFastAdd('collected_amount', parseMoney(e.target.value))} />
                  </td>
                  <td style={{ textAlign: 'right', color: '#f59e0b', fontSize: '0.9rem', paddingRight: '12px', fontWeight: 600 }}>
                     {formatMoney(parseMoney(fastAdd.total_income) - parseMoney(fastAdd.collected_amount))}
