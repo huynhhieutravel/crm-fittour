@@ -408,6 +408,8 @@ function AppContent() {
 
   useEffect(() => {
     const fullPath = location.pathname.substring(1);
+    // /tai-lieu/* is a standalone page — skip tab sync entirely
+    if (fullPath.startsWith('tai-lieu')) return;
     if (!fullPath) {
       let defaultTab = 'dashboard';
       if (user && (user.role === 'sales' || user.role === 'sale' || user.role_name === 'sales' || user.role_name === 'sale')) {
