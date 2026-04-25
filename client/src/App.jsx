@@ -1737,6 +1737,11 @@ function AppContent() {
 
 
 
+  // ── Route Guard: /tai-lieu/* phải render DocumentsPage riêng, KHÔNG dùng sidebar ──
+  if (location.pathname.startsWith('/tai-lieu')) {
+    return <DocumentsPage />;
+  }
+
   return (
     <div className="app-container">
       {isMobileMenuOpen && (
