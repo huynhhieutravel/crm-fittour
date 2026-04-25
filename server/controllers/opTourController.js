@@ -10,33 +10,32 @@ exports.getAllOpTours = async (req, res) => {
     const result = await db.query(`
       SELECT 
         td.id, td.tour_template_id, td.code as tour_code, COALESCE(tt.name, td.tour_info->>'tour_name') as tour_name, 
-        td.start_date, td.end_date, td.market, td.status,
+        td.start_date, td.end_date, td.market, td.market_ids, td.status,
         td.total_revenue, td.actual_revenue, td.total_expense, td.profit,
         td.tour_info, td.expenses, td.guides_json as guides, td.itinerary, 
         td.created_at, td.updated_at,
         td.max_participants,
         td.actual_price, td.discount_price,
         td.guide_id, td.operator_id,
-        tt.code as template_code, tt.duration as template_duration,
+        tt.code as template_code, tt.duration as template_duration, tt.bu_group,
         g.name as guide_name,
-        (
-          SELECT COALESCE(SUM(b.pax_count), 0)
-          FROM bookings b
-          WHERE b.tour_departure_id = td.id AND b.booking_status NOT IN ('Huỷ')
-        ) AS total_sold,
-        (
-          SELECT COALESCE(SUM(b.pax_count), 0)
-          FROM bookings b
-          WHERE b.tour_departure_id = td.id AND b.booking_status IN ('Giữ chỗ', 'Mới')
-        ) AS total_reserved,
-        (
-          SELECT COALESCE(SUM(COALESCE(b.paid, 0)), 0)
-          FROM bookings b
-          WHERE b.tour_departure_id = td.id AND b.booking_status NOT IN ('Huỷ')
-        ) AS total_paid
+        COALESCE(ba.total_sold, 0) AS total_sold,
+        COALESCE(ba.total_reserved, 0) AS total_reserved,
+        COALESCE(ba.total_paid, 0) AS total_paid,
+        COALESCE(ba.total_booking_amount, 0) AS total_booking_amount
       FROM tour_departures td
       LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
       LEFT JOIN guides g ON td.guide_id = g.id
+      LEFT JOIN (
+        SELECT 
+          tour_departure_id,
+          SUM(CASE WHEN booking_status NOT IN ('Huỷ') THEN pax_count ELSE 0 END) AS total_sold,
+          SUM(CASE WHEN booking_status IN ('Giữ chỗ', 'Mới') THEN pax_count ELSE 0 END) AS total_reserved,
+          SUM(CASE WHEN booking_status NOT IN ('Huỷ') THEN COALESCE(paid, 0) ELSE 0 END) AS total_paid,
+          SUM(CASE WHEN booking_status NOT IN ('Huỷ') THEN COALESCE(total_price, 0) ELSE 0 END) AS total_booking_amount
+        FROM bookings
+        GROUP BY tour_departure_id
+      ) ba ON ba.tour_departure_id = td.id
       ORDER BY 
          CASE WHEN td.start_date < CURRENT_DATE THEN 1 ELSE 0 END ASC,
          CASE WHEN td.start_date >= CURRENT_DATE THEN td.start_date END ASC,
@@ -54,7 +53,7 @@ exports.getPublicOpTours = async (req, res) => {
     const result = await db.query(`
       SELECT 
         td.id, td.code as tour_code, COALESCE(tt.name, td.tour_info->>'tour_name') as tour_name, 
-        td.start_date, td.end_date, td.market, td.status,
+        td.start_date, td.end_date, td.market, td.market_ids, td.status,
         td.tour_info, td.max_participants,
         (
           SELECT COALESCE(SUM(b.pax_count), 0)
@@ -68,6 +67,7 @@ exports.getPublicOpTours = async (req, res) => {
         ) AS total_reserved
       FROM tour_departures td
       LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+      WHERE COALESCE(tt.is_active, true) = true
       ORDER BY 
          CASE WHEN td.start_date < CURRENT_DATE THEN 1 ELSE 0 END ASC,
          CASE WHEN td.start_date >= CURRENT_DATE THEN td.start_date END ASC,
@@ -82,6 +82,7 @@ exports.getPublicOpTours = async (req, res) => {
             start_date: row.start_date,
             end_date: row.end_date,
             market: row.market,
+            market_ids: row.market_ids,
             status: row.status,
             tour_info: row.tour_info,
             max_participants: row.max_participants,
@@ -103,7 +104,7 @@ exports.getOpTourById = async (req, res) => {
   const { id } = req.params;
   try {
     const result = await db.query(`
-      SELECT td.*, COALESCE(tt.name, td.tour_info->>'tour_name') as tour_name, tt.code as template_code, tt.duration as template_duration,
+      SELECT td.*, COALESCE(tt.name, td.tour_info->>'tour_name') as tour_name, tt.code as template_code, tt.duration as template_duration, tt.bu_group,
              g.name as guide_name
       FROM tour_departures td
       LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
@@ -127,7 +128,7 @@ exports.getOpTourById = async (req, res) => {
 };
 
 exports.createOpTour = async (req, res) => {
-  const { tour_code, tour_name, start_date, end_date, market, status, tour_info, revenues, expenses, guides, itinerary, tour_template_id } = req.body;
+  const { tour_code, tour_name, start_date, end_date, market, market_ids, status, tour_info, revenues, expenses, guides, itinerary, tour_template_id } = req.body;
   try {
     const sDate = start_date || null;
     const eDate = end_date || null;
@@ -142,12 +143,12 @@ exports.createOpTour = async (req, res) => {
 
     const result = await db.query(
       `INSERT INTO tour_departures 
-       (code, tour_template_id, start_date, end_date, market, status, 
+       (code, tour_template_id, start_date, end_date, market, market_ids, status, 
         tour_info, expenses, guides_json, itinerary, max_participants) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
        RETURNING *`,
       [
-        code, tour_template_id, sDate, eDate, market || null, status || 'Mở bán', 
+        code, tour_template_id, sDate, eDate, market || null, market_ids ? JSON.stringify(market_ids) : '[]', status || 'Mở bán', 
         JSON.stringify(tour_info || {}), 
         JSON.stringify(expenses || []), 
         JSON.stringify(guides || []), 
@@ -172,7 +173,7 @@ exports.createOpTour = async (req, res) => {
 
 exports.updateOpTour = async (req, res) => {
   const { id } = req.params;
-  const { tour_code, tour_name, tour_template_id, start_date, end_date, market, status, total_revenue, actual_revenue, total_expense, profit, tour_info, revenues, expenses, guides, itinerary } = req.body;
+  const { tour_code, tour_name, tour_template_id, start_date, end_date, market, market_ids, status, total_revenue, actual_revenue, total_expense, profit, tour_info, revenues, expenses, guides, itinerary } = req.body;
   
   try {
     const sDate = start_date || null;
@@ -188,19 +189,21 @@ exports.updateOpTour = async (req, res) => {
            total_revenue = $6, actual_revenue = $7, total_expense = $8, profit = $9,
            tour_info = $10, expenses = $11, guides_json = $12, itinerary = $13, 
            max_participants = COALESCE($14, max_participants),
-           tour_template_id = COALESCE($16, tour_template_id),
+           tour_template_id = COALESCE($15, tour_template_id),
+           market_ids = $16,
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $15 RETURNING *`,
+       WHERE id = $17 RETURNING *`,
        [
          tour_code, sDate, eDate, market, status, 
          tRev, aRev, tExp, pfit, 
          JSON.stringify(tour_info || {}), 
          JSON.stringify(expenses || []), 
          JSON.stringify(guides || []), 
-         itinerary, 
+         itinerary ? (typeof itinerary === 'string' ? itinerary : JSON.stringify(itinerary)) : null, 
          tour_info?.total_seats || null,
-         id,
-         tour_template_id || null
+         tour_template_id || null,
+         market_ids ? JSON.stringify(market_ids) : '[]',
+         id
        ]
     );
 
@@ -403,7 +406,8 @@ exports.addOpTourBooking = async (req, res) => {
           if (!memberName || memberName.startsWith('Khách ')) continue;
 
           const name = memberName.toUpperCase();
-          const cmnd = m.docId || '';
+          // Ưu tiên dùng personalId (CCCD 12 số trích xuất từ Hộ chiếu) làm id_card, nếu không có mới dùng docId (Số hộ chiếu)
+          const cmnd = m.personalId || m.docId || '';
           const dob = m.dob || null;
           
           try {
@@ -437,7 +441,46 @@ exports.addOpTourBooking = async (req, res) => {
           } catch (autoErr) {
             console.warn('Auto-convert member warning:', autoErr.message);
           }
+        } else if (m.docId && m.docId.trim() !== '') {
+          // Nhánh 2: Không có SĐT nhưng CÓ số Hộ chiếu/CCCD → Tra cứu bằng id_card
+          const memberName = m.name ? m.name.trim() : '';
+          if (!memberName || memberName.startsWith('Khách ')) continue;
+
+          const name = memberName.toUpperCase();
+          // Tương tự, ưu tiên personalId nếu có
+          const cmnd = m.personalId ? m.personalId.trim() : (m.docId ? m.docId.trim() : '');
+          const dob = m.dob || null;
+
+          try {
+            const custCheck = await db.query(
+              `SELECT id FROM customers WHERE UPPER(TRIM(id_card)) = $1 LIMIT 1`,
+              [cmnd.toUpperCase()]
+            );
+
+            if (custCheck.rows.length > 0) {
+              // Đã tồn tại → Bổ sung thông tin thiếu (không ghi đè data cũ)
+              const custFound = custCheck.rows[0];
+              await db.query(`
+                UPDATE customers 
+                SET birth_date = COALESCE(birth_date, NULLIF($1, '')::date),
+                    email = COALESCE(NULLIF(email, ''), NULLIF($2, '')),
+                    name = COALESCE(NULLIF(name, ''), $3)
+                WHERE id = $4
+              `, [dob, m.email ? m.email.trim() : '', name, custFound.id]);
+            } else {
+              // Chưa tồn tại → Tạo mới customer với phone rỗng
+              await db.query(
+                `INSERT INTO customers 
+                 (name, phone, id_card, birth_date, email, customer_segment, past_trip_count, role, assigned_to)
+                 VALUES ($1, '', $2, NULLIF($3, '')::date, NULLIF($4, ''), 'New Customer', 0, 'passenger', $5)`,
+                [name, cmnd, dob, m.email ? m.email.trim() : '', req.user ? req.user.id : null]
+              );
+            }
+          } catch (autoErr) {
+            console.warn('Auto-convert member (by passport) warning:', autoErr.message);
+          }
         }
+        // else: Không SĐT, không HC → không tạo customer, data vẫn lưu trong raw_details của booking
       }
     }  // end passenger block
 
@@ -566,5 +609,116 @@ exports.deleteOpTourBooking = async (req, res) => {
   } catch (error) {
     console.error('Error deleting booking:', error);
     res.status(500).json({ error: 'Lỗi khi xóa Booking' });
+  }
+};
+
+exports.bulkDeleteOpTours = async (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: 'Không có ID nào được gửi' });
+
+  try {
+    let successCount = 0, failCount = 0;
+    for (const id of ids) {
+      const bookingCheck = await db.query('SELECT COUNT(*) as cnt FROM bookings WHERE tour_departure_id = $1', [id]);
+      if (Number(bookingCheck.rows[0].cnt) > 0) {
+        failCount++;
+        continue;
+      }
+      const result = await db.query('DELETE FROM tour_departures WHERE id = $1', [id]);
+      if (result.rowCount > 0) successCount++;
+    }
+    let msg = `Đã xóa ${successCount} tour.`;
+    if (failCount > 0) msg += ` Bỏ qua ${failCount} tour do đang có Booking.`;
+    res.json({ message: msg });
+  } catch (error) {
+    console.error('Error in bulkDeleteOpTours:', error);
+    res.status(500).json({ error: 'Lỗi khi xóa hàng loạt' });
+  }
+};
+
+exports.transferOpTourBooking = async (req, res) => {
+  const { id, bookingId } = req.params;
+  const { targetTourId } = req.body;
+  
+  if (!targetTourId) return res.status(400).json({ error: 'Vui lòng chọn Tour đích cần chuyển tới.' });
+  if (id == targetTourId) return res.status(400).json({ error: 'Tour đích phải khác Tour hiện tại.' });
+
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // 1. Check existing booking and verify source tour
+    const bCheck = await client.query('SELECT * FROM bookings WHERE id = $1 AND tour_departure_id = $2 FOR UPDATE', [bookingId, id]);
+    if (bCheck.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'Không tìm thấy Booking trên Tour này.' });
+    }
+    const booking = bCheck.rows[0];
+
+    // Authorize
+    const userRoleName = req.user.role_name || req.user.role || '';
+    const isPrivileged = ['admin', 'manager', 'operator', 'accountant'].includes(userRoleName);
+    if (!isPrivileged && booking.created_by != req.user.id) {
+        await client.query('ROLLBACK');
+        return res.status(403).json({ error: 'Lỗi phân quyền! Bạn không có quyền chuyển Booking của người khác.' });
+    }
+
+    // 2. Fetch target tour details
+    const tCheck = await client.query('SELECT status, tour_info, max_participants FROM tour_departures WHERE id = $1 FOR UPDATE', [targetTourId]);
+    if (tCheck.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'Tour đích không tồn tại.' });
+    }
+    const targetTour = tCheck.rows[0];
+    if (targetTour.status && targetTour.status.toLowerCase().includes('hủy')) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: 'Không thể chuyển sang một Tour đang ở trạng thái Hủy.' });
+    }
+
+    // 3. Verify target tour capacity (optional but good)
+    const rawTourInfo = targetTour.tour_info || {};
+    const tourInfo = typeof rawTourInfo === 'string' ? JSON.parse(rawTourInfo) : rawTourInfo;
+    const totalSeats = Number(tourInfo.total_seats || targetTour.max_participants || 0);
+    const allowOverbooking = tourInfo.allow_overbooking === true;
+
+    if (!allowOverbooking && totalSeats > 0) {
+        const currentBookedRes = await client.query(`SELECT SUM(pax_count) as total_booked FROM bookings WHERE tour_departure_id = $1 AND (booking_status != 'Huỷ' AND booking_status != 'Hủy')`, [targetTourId]);
+        const currentBooked = Number(currentBookedRes.rows[0].total_booked || 0);
+        const incomingQty = Number(booking.pax_count || 0);
+        
+        if (currentBooked + incomingQty > totalSeats) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: `Tour đích không đủ chỗ! (Chỉ còn ${Math.max(0, totalSeats - currentBooked)} chỗ, Booking cần ${incomingQty} chỗ).` });
+        }
+    }
+
+    // 4. Update the booking
+    let rawDetails = booking.raw_details;
+    try {
+      if (typeof rawDetails === 'string') rawDetails = JSON.parse(rawDetails);
+    } catch (e) {
+      rawDetails = {};
+    }
+    if (!rawDetails || typeof rawDetails !== 'object') rawDetails = {};
+
+    rawDetails.transferHistory = rawDetails.transferHistory || [];
+    rawDetails.transferHistory.push({
+        from_tour_id: id,
+        to_tour_id: targetTourId,
+        date: new Date().toISOString(),
+        by: req.user?.id || 0
+    });
+
+    const updateQuery = 'UPDATE bookings SET tour_departure_id = $1, raw_details = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3';
+    await client.query(updateQuery, [targetTourId, JSON.stringify(rawDetails), bookingId]);
+
+    await client.query('COMMIT');
+    res.json({ message: 'Chuyển tour thành công!' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error transferring booking:', error);
+    res.status(500).json({ error: 'Lỗi hệ thống khi chuyển tour: ' + error.message });
+  } finally {
+    client.release();
   }
 };

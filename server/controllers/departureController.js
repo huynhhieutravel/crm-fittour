@@ -39,7 +39,7 @@ exports.getAllDepartures = async (req, res) => {
         const result = await db.query(`
             SELECT 
                 td.*, 
-                tt.name as template_name, tt.duration as template_duration,
+                tt.name as template_name, tt.duration as template_duration, tt.bu_group,
                 g.name as guide_name,
                 (SELECT COALESCE(SUM(pax_count), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ')) as sold_pax
             FROM tour_departures td

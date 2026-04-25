@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, UserPlus, Shield, Edit3, Key, Trash2, Mail, Clock, UserCog, Users, Phone } from 'lucide-react';
 import { formatRoleDisplayName } from '../utils/roleUtils';
 
@@ -18,6 +19,7 @@ const UsersTab = ({
   const [selectedRole, setSelectedRole] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   const [selectedTeam, setSelectedTeam] = useState('ALL');
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState(null);
 
   // Extract unique teams from users (now users have `teams` array)
   const allTeamNames = [...new Set(users.flatMap(u => (u.teams || []).map(t => t.name)).filter(Boolean))];
@@ -245,11 +247,18 @@ const UsersTab = ({
                             onClick={() => onChangePassword(u)}
                           ><Key size={14} /></button>
                         )}
-                        {checkPerm && checkPerm('users', 'delete') && (
+                        {currentUser && currentUser.role === 'admin' && (
                           <button 
                             className="icon-btn-square danger" 
-                            title="Xóa thành viên" 
-                            onClick={() => onDeleteUser(u.id)}
+                            title={u.is_active !== false ? "Chỉ admin mới có thể xóa và tài khoản phải ở trạng thái TẠM DỪNG" : "Xóa thành viên"}
+                            style={{ opacity: u.is_active !== false ? 0.3 : 1, cursor: u.is_active !== false ? 'not-allowed' : 'pointer' }}
+                            onClick={() => {
+                              if (u.is_active !== false) {
+                                alert("Cảnh báo: Bạn chỉ có thể xóa tài khoản khi đã chuyển trạng thái sang Tạm dừng (is_active = false). Vui lòng Sửa thông tin tài khoản để tạm dừng trước.");
+                                return;
+                              }
+                              setDeleteConfirmUser(u);
+                            }}
                           ><Trash2 size={14} /></button>
                         )}
                       </div>
@@ -272,6 +281,46 @@ const UsersTab = ({
           </tbody>
         </table>
       </div>
+
+      {deleteConfirmUser && createPortal(
+        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="modal-content animate-scale-in" style={{ background: '#fff', padding: '2rem', borderRadius: '12px', maxWidth: '400px', width: '90%', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', color: '#ef4444', marginBottom: '1.5rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Trash2 size={24} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Xác nhận xóa tài khoản</h3>
+              </div>
+            </div>
+            
+            <p style={{ margin: '0 0 1.5rem 0', color: '#475569', lineHeight: 1.5 }}>
+              Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản <strong>{deleteConfirmUser.full_name}</strong> (@{deleteConfirmUser.username})?<br/><br/>Hành động này không thể hoàn tác và có thể ảnh hưởng đến các dữ liệu liên kết.
+            </p>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button 
+                className="btn-pro-cancel" 
+                onClick={() => setDeleteConfirmUser(null)}
+                style={{ padding: '0.6rem 1.25rem', borderRadius: '8px', cursor: 'pointer', border: '1px solid #e2e8f0', background: 'white', fontWeight: 600 }}
+              >
+                Hủy bỏ
+              </button>
+              <button 
+                className="btn-pro-save" 
+                onClick={() => {
+                  onDeleteUser(deleteConfirmUser.id);
+                  setDeleteConfirmUser(null);
+                }}
+                style={{ padding: '0.6rem 1.25rem', borderRadius: '8px', cursor: 'pointer', background: '#ef4444', color: 'white', border: 'none', fontWeight: 600 }}
+              >
+                Đồng ý Xóa
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

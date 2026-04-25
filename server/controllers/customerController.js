@@ -82,7 +82,7 @@ exports.getAllCustomers = async (req, res) => {
 
         if (search) {
             const searchParam = `$${paramOffset + 1}`;
-            queryStr += ` ${scopeClause ? 'AND' : 'WHERE'} (c.name ILIKE ${searchParam} OR c.phone ILIKE ${searchParam}) `;
+            queryStr += ` ${scopeClause ? 'AND' : 'WHERE'} (c.name ILIKE ${searchParam} OR c.phone ILIKE ${searchParam} OR c.id_card ILIKE ${searchParam} OR c.email ILIKE ${searchParam}) `;
             scopeParams.push(`%${search}%`);
         }
 
@@ -229,7 +229,9 @@ exports.getCustomerById = async (req, res) => {
         `, [req.params.id]);
 
         const bookings = await db.query(`
-            SELECT b.*, tt.name as tour_name, td.start_date as departure_date, td.status as departure_status
+            SELECT b.*, 
+                   COALESCE(tt.name, td.tour_info->>'tour_name', td.code) as tour_name, 
+                   td.start_date as departure_date, td.status as departure_status
             FROM bookings b
             LEFT JOIN tour_templates tt ON b.tour_id = tt.id
             LEFT JOIN tour_departures td ON b.tour_departure_id = td.id

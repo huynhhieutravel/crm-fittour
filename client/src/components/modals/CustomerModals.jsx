@@ -87,8 +87,8 @@ export const AddCustomerModal = ({
           </div>
 
           <div className="modal-form-group">
-            <label>SỐ ĐIỆN THOẠI (unique) *</label>
-            <input className="modal-input" required value={newCustomer.phone} onChange={e => setNewCustomer({...newCustomer, phone: e.target.value})} placeholder="090..." />
+            <label>SỐ ĐIỆN THOẠI</label>
+            <input className="modal-input" value={newCustomer.phone} onChange={e => setNewCustomer({...newCustomer, phone: e.target.value})} placeholder="090... (hoặc để trống nếu có HC)" />
           </div>
           <div className="modal-form-group">
             <label>EMAIL</label>
@@ -347,8 +347,8 @@ export const EditCustomerModal = ({
           </div>
 
           <div className="modal-form-group">
-            <label>SỐ ĐIỆN THOẠI *</label>
-            <input className="modal-input" required value={editingCustomer.phone} onChange={e => setEditingCustomer({...editingCustomer, phone: e.target.value})} />
+            <label>SỐ ĐIỆN THOẠI</label>
+            <input className="modal-input" value={editingCustomer.phone || ''} onChange={e => setEditingCustomer({...editingCustomer, phone: e.target.value})} placeholder="Có thể để trống nếu có HC" />
           </div>
           <div className="modal-form-group">
             <label>EMAIL</label>

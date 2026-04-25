@@ -136,7 +136,7 @@ export const AddBookingModal = ({
 
   if (!show) return null;
 
-  const customerOptions = customers.map(c => ({ value: c.id, label: `${c.name} - ${c.phone}` }));
+  const customerOptions = customers.map(c => ({ value: c.id, label: `${c.name}${c.phone ? ' - ' + c.phone : (c.id_card ? ' - HC:' + c.id_card : '')}` }));
   const currCustomerValue = formData.customer_id ? customerOptions.find(o => o.value === formData.customer_id) : null;
 
   const departureOptions = departures.map(d => ({ 
@@ -183,7 +183,7 @@ export const AddBookingModal = ({
                 {isNewCustomer ? (
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <input className="modal-input" required placeholder="Họ và tên..." value={newCustomerInfo.name} onChange={e => setNewCustomerInfo({...newCustomerInfo, name: e.target.value})} />
-                    <input className="modal-input" required placeholder="Số điện thoại..." value={newCustomerInfo.phone} onChange={e => setNewCustomerInfo({...newCustomerInfo, phone: e.target.value})} />
+                    <input className="modal-input" placeholder="Số điện thoại (hoặc để trống)..." value={newCustomerInfo.phone} onChange={e => setNewCustomerInfo({...newCustomerInfo, phone: e.target.value})} />
                   </div>
                 ) : (
                   <Select

@@ -13,11 +13,11 @@ exports.getMarkets = async (req, res) => {
         
         // Build React-Select grouped format
         const tree = parents.map(p => ({
-            label: p.name,
+            label: p.name.trim(),
             id: p.id,
             options: children
                 .filter(c => c.parent_id === p.id)
-                .map(c => ({ value: c.name, label: c.name, id: c.id }))
+                .map(c => ({ value: c.name.trim(), label: c.name.trim(), id: c.id }))
         }));
         
         res.json(tree);
@@ -33,7 +33,7 @@ exports.getMarketsFlat = async (req, res) => {
         const result = await db.query(
             'SELECT id, name, parent_id, sort_order FROM markets WHERE is_active = true ORDER BY sort_order ASC, id ASC'
         );
-        res.json(result.rows);
+        res.json(result.rows.map(r => ({ ...r, name: r.name.trim() })));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -52,7 +52,8 @@ exports.getAllMarkets = async (req, res) => {
 
         const tree = parents.map(p => ({
             ...p,
-            children: children.filter(c => c.parent_id === p.id)
+            name: p.name.trim(),
+            children: children.filter(c => c.parent_id === p.id).map(c => ({ ...c, name: c.name.trim() }))
         }));
 
         res.json(tree);

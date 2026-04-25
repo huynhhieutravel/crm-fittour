@@ -4,6 +4,9 @@ import { X, Save, Plus, Trash2, Link as LinkIcon, Paperclip, ChevronDown, Chevro
 import { canEdit, canDelete } from '../../utils/permissions';
 import { VISA_CHECKLIST_TEMPLATE } from './VisaChecklistTemplate';
 import { scanPassportImage } from '../../utils/passportOcr';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { format } from 'date-fns';
 
 export default function VisaDetailDrawer({ visaId, onClose, refreshList, currentUser, addToast }) {
     const isNew = !visaId;
@@ -583,7 +586,19 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                                 <label style={{ fontSize: '0.75rem' }}>Số ĐT / Ngày Sinh</label>
                                                 <div style={{ display: 'flex', gap: '8px' }}>
                                                     <input type="text" className="form-control" style={{ background: '#f8fafc', flex: 1 }} value={m.phone} onChange={e => updateMemberInfo(m.id, 'phone', e.target.value)} placeholder="SĐT..." />
-                                                    <input type="date" className="form-control" style={{ background: '#f8fafc', width: '130px' }} value={m.dob} onChange={e => updateMemberInfo(m.id, 'dob', e.target.value)} />
+                                                    <DatePicker
+                                                        selected={m.dob ? new Date(m.dob) : null}
+                                                        onChange={date => updateMemberInfo(m.id, 'dob', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                        dateFormat="dd/MM/yyyy"
+                                                        placeholderText="Ngày sinh"
+                                                        className="form-control"
+                                                        showYearDropdown
+                                                        showMonthDropdown
+                                                        dropdownMode="select"
+                                                        isClearable
+                                                        autoComplete="off"
+                                                        wrapperClassName="datepicker-visa-dob"
+                                                    />
                                                 </div>
                                             </div>
                                             <div>

@@ -15,3 +15,28 @@ server.log
 tmp/
 *.bak
 .antigravity/
+
+# ═══ Debug / Test / Temp files — KHÔNG deploy ═══
+test_*.js
+test_*.cjs
+client/test_*.js
+client/test_*.cjs
+client/debug*.cjs
+client/debug*.js
+client/temp_*.js
+client/temp_*.cjs
+client/setup_esm_test.js
+server/test_*.js
+server/scratch/
+server/backfill_run.js
+server/update_local_db.js
+server/scripts/migrate_market_ids.js
+backfill_passport_customers.js
+fix_links.js
+fix_sidebar.js
+
+# ═══ Trained data (large binary) ═══
+*.traineddata
+
+# ═══ Agent scratch files ═══
+.agents/tmp_scrape/

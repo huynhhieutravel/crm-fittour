@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Trash2, Edit2, CheckCircle, Mail, DollarSign, RefreshCw, FileText, UserPlus, Users, Download, ArrowRight } from 'lucide-react';
+import { X, Trash2, Edit2, CheckCircle, Mail, DollarSign, RefreshCw, FileText, UserPlus, Users, Download, ArrowRight, AlertTriangle } from 'lucide-react';
 import Select from 'react-select';
 import axios from 'axios';
 import * as XLSX from 'xlsx-js-style';
@@ -13,7 +13,33 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
   const [showTransferModal, setShowTransferModal] = useState(null);
   const [showVouchersModal, setShowVouchersModal] = useState(null);
   const [transferTourId, setTransferTourId] = useState(null);
+  const [isTransferring, setIsTransferring] = useState(false);
   const [activeTours, setActiveTours] = useState([]);
+  const [confirmTransferModal, setConfirmTransferModal] = useState(false);
+
+  const executeTransfer = async () => {
+    setIsTransferring(true);
+    try {
+      await axios.put(`/api/op-tours/${tour.id}/bookings/${showTransferModal?.id}/transfer`, { targetTourId: transferTourId }, {
+         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setConfirmTransferModal(false);
+      setShowTransferModal(null);
+      setBookings(prev => prev.filter(bk => bk.id !== showTransferModal?.id));
+      
+      if (onUpdateTour) {
+         const newTourRes = await axios.get(`/api/op-tours/${tour.id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }});
+         onUpdateTour(newTourRes.data);
+         if (onRefreshList) onRefreshList();
+      }
+    } catch (err) {
+      console.error('Transfer Error:', err);
+      const errorMsg = err.response?.data?.error || err.message || "Lỗi không xác định khi chuyển Tour";
+      alert("LỖI: " + errorMsg);
+    } finally {
+      setIsTransferring(false);
+    }
+  };
 
   React.useEffect(() => {
     if (showTransferModal) {
@@ -178,25 +204,25 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
     const wsData = [];
     
     // Row 1: Header
-    wsData.push(['TRIP INFORMATION AND NAMELIST 行程信息和名单', '', '', '', '', '', '', '', '', '', '']);
+    wsData.push(['TRIP INFORMATION AND NAMELIST 行程信息和名单', '', '', '', '', '', '', '', '', '', '', '']);
     
     // Row 2: Tour Name
-    wsData.push(['FIT TOUR', '', '', '', 'Tour 行程', '', 'TP.HCM - THƯỢNG HẢI (TQ)', '', '', '', '']);
+    wsData.push(['FIT TOUR', '', '', '', 'Tour 行程', '', 'TP.HCM - THƯỢNG HẢI (TQ)', '', '', '', '', '']);
     
     // Row 3: Banner & Operator
-    wsData.push(['', '', '', '', 'Banner\n欢迎横幅', '', 'WELCOME FIT TOUR', '', 'Điều hành 计调', '', '']);
+    wsData.push(['', '', '', '', 'Banner\n欢迎横幅', '', 'WELCOME FIT TOUR', '', 'Điều hành 计调', '', '', '']);
     
     // Row 4: Tour Leader
-    wsData.push(['', '', '', '', 'Tour Leader\n旅游领队', '', '', '', 'HANI NGUYEN', '', '']);
+    wsData.push(['', '', '', '', 'Tour Leader\n旅游领队', '', '', '', 'HANI NGUYEN', '', '', '']);
     
     // Row 5: Flight Header
-    wsData.push(['FLIGHT DETAIL\n航班详情', '', 'DATE\n日期', 'JOURNEY\n行程', 'FLIGHT NUMBER\n航班', 'DEPARTURE\n起飞 (时间)', 'ARRIVAL\n到达 (时间)', '', '', '', '']);
+    wsData.push(['FLIGHT DETAIL\n航班详情', '', 'DATE\n日期', 'JOURNEY\n行程', 'FLIGHT NUMBER\n航班', 'DEPARTURE\n起飞 (时间)', 'ARRIVAL\n到达 (时间)', '', '', '', '', '']);
     
     // Row 6: Flight From
-    wsData.push(['From HAN\n胡志明市', '', 'TH26MAR', 'SGN WUH', 'CZ8318', '0240', '0730', '7KG HLXT+\n23KG HLKG', '', '', '']);
+    wsData.push(['From HAN\n胡志明市', '', 'TH26MAR', 'SGN WUH', 'CZ8318', '0240', '0730', '7KG HLXT+\n23KG HLKG', '', '', '', '']);
     
     // Row 7: Flight Return
-    wsData.push(['Return 往回', '', 'WE01APR', 'WUH SGN', 'CZ8317', '2210', '0105+1', '', '', '', '']);
+    wsData.push(['Return 往回', '', 'WE01APR', 'WUH SGN', 'CZ8317', '2210', '0105+1', '', '', '', '', '']);
     
     // Row 8: Empty or space
     wsData.push([]);
@@ -213,7 +239,8 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
       'Nationality\n国籍', 
       'Rooming\n分房', 
       'SĐT\n手机号码', 
-      'NOTE\n备注'
+      'NOTE\n备注',
+      'PASSPORT LINK\n护照链接'
     ]);
 
     const formatToYYYYMMDD = (dateStr) => {
@@ -251,6 +278,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
       const doe = formatToYYYYMMDD(m.expiryDate);
       const rooming = m.roomCode || '';
       const note = (i === 0 && bookingNote) ? (bookingNote + (m.note ? ` - ${m.note}` : '')) : (m.note || '');
+      const fullPassportUrl = m.passportUrl ? (m.passportUrl.startsWith('/') ? `https://crm.tournuocngoai.com${m.passportUrl}` : m.passportUrl) : '';
 
       wsData.push([
         i + 1, 
@@ -263,7 +291,8 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
         'VNM', // Nationality Default
         rooming, 
         m.phone || '', 
-        note
+        note,
+        fullPassportUrl
       ]);
     });
 
@@ -335,31 +364,40 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
         if (R >= 8) {
            cell.s.alignment = centerAlign;
         }
+
+        // Highlight Passport Link column (Index 11) with RED text and make it a link
+        if (R >= 8 && C === 11) {
+           cell.s.font.color = { rgb: "FF0000" };
+           if (cell.v && String(cell.v).startsWith('http')) {
+               cell.s.font.underline = true;
+               cell.l = { Target: cell.v, Tooltip: "Xem ảnh Passport" };
+           }
+        }
       }
     }
 
     ws['!cols'] = [
       { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 8 }, { wch: 15 }, { wch: 15 },
-      { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
+      { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 30 }
     ];
 
     ws['!merges'] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } }, // TRIP INFORMATION AND NAMELIST
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 11 } }, // TRIP INFORMATION AND NAMELIST
       { s: { r: 1, c: 0 }, e: { r: 3, c: 3 } },  // FIT TOUR Logo
       { s: { r: 1, c: 4 }, e: { r: 1, c: 5 } },  // Tour 行程
-      { s: { r: 1, c: 6 }, e: { r: 1, c: 10 } }, // TP.HCM - THƯỢNG HẢI
+      { s: { r: 1, c: 6 }, e: { r: 1, c: 11 } }, // TP.HCM - THƯỢNG HẢI
       { s: { r: 2, c: 4 }, e: { r: 2, c: 5 } },  // Banner
       { s: { r: 2, c: 6 }, e: { r: 2, c: 7 } },  // WELCOME FIT TOUR
-      { s: { r: 2, c: 8 }, e: { r: 2, c: 10 } }, // Điều hành
+      { s: { r: 2, c: 8 }, e: { r: 2, c: 11 } }, // Điều hành
       { s: { r: 3, c: 4 }, e: { r: 3, c: 5 } },  // Tour Leader
       { s: { r: 3, c: 6 }, e: { r: 3, c: 7 } },  // Blank next to Tour Leader
-      { s: { r: 3, c: 8 }, e: { r: 3, c: 10 } }, // HANI NGUYEN
+      { s: { r: 3, c: 8 }, e: { r: 3, c: 11 } }, // HANI NGUYEN
       
       // Flight section merging
       { s: { r: 4, c: 0 }, e: { r: 4, c: 1 } },  // FLIGHT DETAIL
       { s: { r: 5, c: 0 }, e: { r: 5, c: 1 } },  // From HAN
       { s: { r: 6, c: 0 }, e: { r: 6, c: 1 } },  // Return 往回
-      { s: { r: 4, c: 7 }, e: { r: 6, c: 10 } }, // Baggage
+      { s: { r: 4, c: 7 }, e: { r: 6, c: 11 } }, // Baggage
     ];
 
     ws['!rows'] = [
@@ -469,9 +507,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                   <th style={{ padding: '12px', borderRight: '1px solid #e2e8f0', textAlign: 'left', minWidth: '250px' }}>Khách hàng</th>
                   <th style={{ padding: '12px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Ngày đặt</th>
                   <th style={{ padding: '12px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Ngày đóng chỗ</th>
-                  <th style={{ padding: '12px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Tổng tiền</th>
-                  <th style={{ padding: '12px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Thực thu</th>
-                  <th style={{ padding: '12px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Còn thiếu</th>
+                  <th style={{ padding: '12px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Thanh toán</th>
                   <th style={{ padding: '12px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Sales phụ trách</th>
                   <th style={{ padding: '12px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Trạng thái</th>
                   <th style={{ padding: '12px', textAlign: 'center', minWidth: '150px' }}>Chức năng</th>
@@ -480,7 +516,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
               <tbody>
                 {bookings.length === 0 ? (
                   <tr>
-                    <td colSpan="10" style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
+                    <td colSpan="8" style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
                       Chưa có booking nào. Vui lòng bấm <b>+ Thêm Giữ chỗ</b>
                     </td>
                   </tr>
@@ -575,9 +611,11 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                            <div style={{ marginTop: '8px', background: '#fbcfe8', color: '#be185d', padding: '4px 8px', borderRadius: '12px', display: 'inline-block', fontWeight: 'bold' }}>Mã đặt chỗ:{bInfo.reservationCode || String(b.id || '').substring(0,6) || '---'}</div>
                         </td>
                         <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'middle' }}>11/04/2026</td>
-                        <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'middle', color: '#f59e0b', fontWeight: 'bold' }}>{formatMoney(b.total)}</td>
-                        <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'middle', color: '#22c55e', fontWeight: 'bold' }}>{formatMoney(b.paid)}</td>
-                        <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'middle', color: '#ef4444', fontWeight: 'bold' }}>{formatMoney(b.total - b.paid)}</td>
+                        <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                           <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#f59e0b', marginBottom: '2px' }}>{formatMoney(b.total)}</div>
+                           <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#22c55e', marginBottom: '2px' }}>{formatMoney(b.paid)}</div>
+                           <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#ef4444' }}>{formatMoney(b.total - b.paid)}</div>
+                        </td>
                         <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'middle' }}>
                            {b.created_by_name || 'Sales'}
                         </td>
@@ -642,40 +680,35 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                               {isOwnerOrAdmin(b) ? (
                                 <>
                                   <button onClick={() => setShowVouchersModal(b)} style={{ width: '100%', background: '#0ea5e9', color: 'white', padding: '6px 10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>Tạo phiếu thu</button>
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px', alignItems: 'center' }}>
+                                  <button onClick={() => setShowTransferModal(b)} style={{ width: '100%', background: '#f59e0b', color: 'white', padding: '6px 10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                     <ArrowRight size={14} /> Chuyển tour
+                                  </button>
+                                  <div style={{ display: 'flex', gap: '15px', marginTop: '8px', justifyContent: 'center', alignItems: 'center' }}>
                                      <Edit2 size={18} color="#475569" cursor="pointer" onClick={() => onEditBooking(b)} title="Chỉnh sửa Booking"/>
                                      <Users size={18} color="#475569" cursor="pointer" title="Danh sách thành viên" onClick={() => setViewingMembers({ booking: b, members: raw.members || [] })} />
-                                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                        <div style={{ background: '#f59e0b', padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', display: 'flex' }} onClick={() => setShowTransferModal(b)} title="Chuyển tour">
-                                           <ArrowRight size={16} color="white" />
-                                        </div>
-                                        {/* Xóa = Chuyển trạng thái sang Hủy (Dành cho người tạo nhánh báo cáo phễu Kế toán an toàn) */}
-                                        {isOwnerOrAdmin(b) && (
-                                            <Trash2 size={18} color="#ef4444" cursor="pointer" title="Hủy Booking này"
-                                                onClick={async () => {
-                                                  if (b.status === 'Huỷ' || b.status === 'Hủy') {
-                                                      alert('Booking này đã ở trạng thái Hủy rồi!');
-                                                      return;
-                                                  }
-                                                  if (!window.confirm(`⚠️ BẠN CÓ CHẮC CHẮN MUỐN HỦY BOOKING NÀY?\n\n- Booking sẽ KHÔNG bị xóa khỏi hệ thống Kế toán để đối chiếu sau này.\n- Trạng thái sẽ chuyển thành NGUY HIỂM (HỦY).\n- Số ghế của Booking sẽ được trả lại cho Kho chỗ.`)) return;
-                                                  try {
-                                                    await axios.put(`/api/op-tours/${tour.id}/bookings/${b.id}`, { status: 'Huỷ' }, {
-                                                      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                                                    });
-                                                    setBookings(prev => prev.map(bk => bk.id === b.id ? { ...bk, status: 'Huỷ' } : bk));
-                                                    if (onUpdateTour) {
-                                                      const newTourRes = await axios.get(`/api/op-tours/${tour.id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }});
-                                                      onUpdateTour(newTourRes.data);
-                                                      if (onRefreshList) onRefreshList();
-                                                    }
-                                                    alert('Hủy booking thành công!');
-                                                  } catch (err) {
-                                                    alert(err.response?.data?.error || 'Lỗi khi hủy Booking');
-                                                  }
-                                                }}
-                                            />
-                                        )}
-                                     </div>
+                                     <Trash2 size={18} color="#ef4444" cursor="pointer" title="Hủy Booking này"
+                                         onClick={async () => {
+                                           if (b.status === 'Huỷ' || b.status === 'Hủy') {
+                                               alert('Booking này đã ở trạng thái Hủy rồi!');
+                                               return;
+                                           }
+                                           if (!window.confirm(`⚠️ BẠN CÓ CHẮC CHẮN MUỐN HỦY BOOKING NÀY?\n\n- Booking sẽ KHÔNG bị xóa khỏi hệ thống Kế toán để đối chiếu sau này.\n- Trạng thái sẽ chuyển thành NGUY HIỂM (HỦY).\n- Số ghế của Booking sẽ được trả lại cho Kho chỗ.`)) return;
+                                           try {
+                                             await axios.put(`/api/op-tours/${tour.id}/bookings/${b.id}`, { status: 'Huỷ' }, {
+                                               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                             });
+                                             setBookings(prev => prev.map(bk => bk.id === b.id ? { ...bk, status: 'Huỷ' } : bk));
+                                             if (onUpdateTour) {
+                                               const newTourRes = await axios.get(`/api/op-tours/${tour.id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }});
+                                               onUpdateTour(newTourRes.data);
+                                               if (onRefreshList) onRefreshList();
+                                             }
+                                             alert('Hủy booking thành công!');
+                                           } catch (err) {
+                                             alert(err.response?.data?.error || 'Lỗi khi hủy Booking');
+                                           }
+                                         }}
+                                     />
                                   </div>
                                 </>
                               ) : (
@@ -791,7 +824,14 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                     ) : viewingMembers.members.map((m, i) => (
                       <tr key={m.id || i} style={{ borderBottom: '1px solid #f1f5f9', background: i % 2 === 0 ? 'white' : '#fafbfc' }}>
                         <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 'bold', color: '#64748b' }}>{i + 1}</td>
-                        <td style={{ padding: '10px 8px', fontWeight: 600, color: '#1e293b' }}>{m.name || '---'}</td>
+                        <td style={{ padding: '10px 8px', fontWeight: 600, color: '#1e293b', position: 'relative' }}>
+                          {m.name || '---'}
+                          {m.passportUrl && (
+                             <a href={m.passportUrl.startsWith('/') ? `https://crm.tournuocngoai.com${m.passportUrl}` : m.passportUrl} target="_blank" rel="noreferrer" style={{ marginLeft: '8px', background: '#e0e7ff', color: '#4f46e5', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid #c7d2fe' }} title="Xem Hộ chiếu">
+                                <span role="img" aria-label="eye">👁️</span> Xem
+                             </a>
+                          )}
+                        </td>
                         <td style={{ padding: '10px 8px', textAlign: 'center', color: '#6366f1' }}>{m.phone || '---'}</td>
                         <td style={{ padding: '10px 8px', textAlign: 'center' }}>{m.gender || '---'}</td>
                         <td style={{ padding: '10px 8px', textAlign: 'center', fontSize: '12px' }}>{m.ageType || '---'}</td>
@@ -842,67 +882,98 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                  </ul>
               </div>
               
-              <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
-                 <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Chọn tour</label>
+              <div style={{ marginBottom: '25px' }}>
+                 <label style={{ fontSize: '13px', fontWeight: 'bold', display: 'block', marginBottom: '8px', color: '#334155' }}>Chọn Lịch Khởi Hành Mới</label>
                  <Select 
                     options={activeTours.map(t => ({ value: t.id, label: `${t.tour_code} - ${t.tour_name}` }))}
                     onChange={opt => setTransferTourId(opt?.value || null)}
-                    placeholder="--- CHỌN TOUR ---"
+                    placeholder="Tìm theo Mã Tour hoặc Tên Tour..."
                     isClearable
-                    styles={{ control: base => ({ ...base, minHeight: '38px', borderColor: '#cbd5e1' }) }}
+                    styles={{ 
+                       control: base => ({ ...base, minHeight: '42px', borderColor: '#cbd5e1', borderRadius: '8px', boxShadow: 'none', fontSize: '13px', '&:hover': { borderColor: '#94a3b8' } }),
+                       option: base => ({ ...base, fontSize: '13px' })
+                    }}
                  />
               </div>
 
               {transferTourId && activeTours.find(t => t.id === transferTourId) ? (() => {
                  const t = activeTours.find(x => x.id === transferTourId);
+                 
+                 // Lấy SL Chỗ và Giá
+                 const totalSeats = Number(t.max_participants || 0);
+                 const soldCount = Number(t.total_sold || 0);
+                 const reservedCount = Number(t.total_reserved || 0);
+                 const remaining = totalSeats - (soldCount + reservedCount);
+                 
+                 let priceStr = 'Chưa cập nhật';
+                 if (t.actual_price) {
+                    priceStr = Number(t.actual_price).toLocaleString('vi-VN') + ' đ';
+                 } else {
+                    try {
+                       const info = typeof t.tour_info === 'string' ? JSON.parse(t.tour_info) : (t.tour_info || {});
+                       if (info.price_adult) priceStr = Number(info.price_adult).toLocaleString('vi-VN') + ' đ';
+                    } catch(e){}
+                 }
+
                  return (
-                    <>
-                       <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
-                          <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Mã tour</label>
-                          <input type="text" disabled value={t.tour_code || ''} style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc', color: '#64748b' }} />
+                    <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '16px', marginBottom: '20px', transition: 'all 0.3s ease' }}>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                          <CheckCircle size={20} color="#16a34a" />
+                          <span style={{ fontWeight: 'bold', color: '#166534', fontSize: '15px' }}>{t.tour_name}</span>
                        </div>
-                       <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
-                          <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Tên tour</label>
-                          <input type="text" disabled value={t.tour_name || ''} style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc', color: '#64748b' }} />
+                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', color: '#15803d', fontSize: '13px' }}>
+                          <div><strong>Mã Tour:</strong> {t.tour_code}</div>
+                          <div><strong>Trạng thái:</strong> <span style={{ background: '#dcfce7', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>{t.status}</span></div>
+                          <div><strong>Còn trống:</strong> <span style={{ color: remaining <= 0 ? '#ef4444' : '#15803d', fontWeight: 'bold' }}>{remaining}</span> / {totalSeats} chỗ</div>
+                          <div><strong>Giá Gốc (Người lớn):</strong> {priceStr}</div>
+                          <div style={{ gridColumn: '1 / -1' }}><strong>Khởi hành:</strong> {t.start_date ? new Date(t.start_date).toLocaleDateString('vi-VN') : '---'} <ArrowRight size={12} style={{ margin: '0 5px', verticalAlign: 'middle' }}/> {t.end_date ? new Date(t.end_date).toLocaleDateString('vi-VN') : '---'}</div>
                        </div>
-                       <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
-                          <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Ngày đi</label>
-                          <input type="text" disabled value={t.start_date ? new Date(t.start_date).toLocaleDateString('vi-VN') : ''} style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc', color: '#64748b' }} />
-                       </div>
-                       <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '20px' }}>
-                          <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Ngày về</label>
-                          <input type="text" disabled value={t.end_date ? new Date(t.end_date).toLocaleDateString('vi-VN') : ''} style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc', color: '#64748b' }} />
-                       </div>
-                    </>
+                    </div>
                  )
               })() : (
-                 <>
-                    <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
-                       <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Mã tour</label>
-                       <input type="text" disabled value="" style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc' }} />
-                    </div>
-                    <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
-                       <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Tên tour</label>
-                       <input type="text" disabled value="No matches found" style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc', color: '#94a3b8' }} />
-                    </div>
-                    <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
-                       <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Ngày đi</label>
-                       <input type="text" disabled value="" style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc' }} />
-                    </div>
-                    <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px', alignItems: 'center', marginBottom: '30px' }}>
-                       <label style={{ fontSize: '13px', fontWeight: 'bold' }}>Ngày về</label>
-                       <input type="text" disabled value="" style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '4px', background: '#f8fafc' }} />
-                    </div>
-                 </>
+                 <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', padding: '20px', textAlign: 'center', color: '#94a3b8', marginBottom: '20px', fontSize: '13px' }}>
+                    Vui lòng chọn một Lịch khởi hành ở phía trên để xem chi tiết.
+                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '20px', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
+                 <button onClick={() => setShowTransferModal(null)} disabled={isTransferring} style={{ background: '#f1f5f9', color: '#475569', padding: '10px 24px', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: isTransferring ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    Đóng
+                 </button>
                  <button 
-                   onClick={() => alert("Tính năng Chuyển tour đang được kết nối với Backend, sẽ sớm ra mắt!")} 
-                   style={{ background: '#3b82f6', color: 'white', padding: '8px 24px', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
-                 >Lưu</button>
-                 <button onClick={() => setShowTransferModal(null)} style={{ background: '#ef4444', color: 'white', padding: '8px 24px', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}>Đóng</button>
+                   onClick={(e) => {
+                     e.preventDefault();
+                     if (!transferTourId) { alert("Vui lòng chọn Tour muốn chuyển đến."); return; }
+                     if (transferTourId === tour.id) { alert("Tour đích bị trùng với Tour hiện tại."); return; }
+                     setConfirmTransferModal(true);
+                   }} 
+                   disabled={isTransferring || !transferTourId}
+                   style={{ background: isTransferring || !transferTourId ? '#94a3b8' : '#3b82f6', color: 'white', padding: '10px 24px', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: isTransferring || !transferTourId ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}
+                 >
+                   <ArrowRight size={18} />
+                   {isTransferring ? 'Đang chuyển...' : 'Chuyển Booking Sang Tour Này'}
+                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {confirmTransferModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999999 }}>
+            <div style={{ background: 'white', padding: '24px', borderRadius: '8px', width: '450px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+               <h3 style={{ marginTop: 0, color: '#dc2626', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                 <AlertTriangle size={24}/> Xác Nhận Chuyển Booking
+               </h3>
+               <p style={{ fontSize: '14px', color: '#475569', lineHeight: '1.6' }}>
+                 Hành động này sẽ chuyển vĩnh viễn Booking này sang Lịch khởi hành mới.<br/><br/>
+                 <strong style={{ color: '#0f172a' }}>Lưu ý:</strong> Tất cả lịch sử xuất/thu Tài chính, danh sách thành viên sẽ được giữ nguyên và ăn theo Booking này sang Tour mới.
+               </p>
+               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                 <button onClick={() => setConfirmTransferModal(false)} disabled={isTransferring} style={{ padding: '8px 16px', background: '#f8fafc', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: isTransferring ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>Hủy</button>
+                 <button onClick={executeTransfer} disabled={isTransferring} style={{ padding: '8px 16px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', cursor: isTransferring ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                   {isTransferring ? 'Đang xử lý...' : 'Xác nhận Chuyển'}
+                 </button>
+               </div>
             </div>
           </div>
         )}

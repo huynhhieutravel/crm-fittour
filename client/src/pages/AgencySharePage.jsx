@@ -185,16 +185,42 @@ export default function AgencySharePage() {
               const heldCount = t.public_stats?.heldCount || 0;
               const remain = totalSeats - soldCount - heldCount;
 
-              let flightDetailsHtml = '';
-              if (t.tour_info?.flight_details) {
-                // simple split by newline for visual identicalness
-                flightDetailsHtml = String(t.tour_info.flight_details).split('\\n').map((line, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '5px', fontSize: '11px', color: '#555' }}>
-                     {/* Giả icon hãng bay dựa trên text (nếu có logo thì show, đây xài emoji tạm) */}
-                     <span style={{color: '#d32f2f', fontWeight: 'bold'}}>{line}</span>
-                  </div>
-                ));
-              }
+              const info = t.tour_info || {};
+              const depAirlineName = info.dep_airline;
+              const depFlight = info.departure_flight;
+              const retAirlineName = info.ret_airline;
+              const retFlight = info.return_flight;
+
+              let flightDetailsHtml = (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {depAirlineName && depFlight && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                        <span style={{ fontWeight: 700, color: '#e11d48', fontSize: '12px', whiteSpace: 'nowrap' }}>{depAirlineName}</span>
+                        <span style={{ fontWeight: 700, color: '#1e293b', fontSize: '12px', whiteSpace: 'pre-wrap' }}>{depFlight}</span>
+                      </div>
+                      {info.pickup_point && (
+                        <div style={{ color: '#64748b', fontSize: '11px', fontWeight: 600 }}>
+                          {info.pickup_point}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {retAirlineName && retFlight && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                        <span style={{ fontWeight: 700, color: '#e11d48', fontSize: '12px', whiteSpace: 'nowrap' }}>{retAirlineName}</span>
+                        <span style={{ fontWeight: 700, color: '#1e293b', fontSize: '12px', whiteSpace: 'pre-wrap' }}>{retFlight}</span>
+                      </div>
+                      {info.dropoff_point && (
+                        <div style={{ color: '#64748b', fontSize: '11px', fontWeight: 600 }}>
+                          {info.dropoff_point}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
 
               return (
                 <tr key={t.id} style={{ borderBottom: '1px solid #eee' }}>
@@ -206,17 +232,18 @@ export default function AgencySharePage() {
                   </td>
                   <td style={{ padding: '15px 5px', verticalAlign: 'top', textAlign: 'center', fontWeight: 'bold' }}>{formatDateSafe(t.start_date)}</td>
                   <td style={{ padding: '15px 5px', verticalAlign: 'top', textAlign: 'center' }}>
-                     {t.tour_info?.deadline_date ? formatDateSafe(t.tour_info.deadline_date) : ''}
+                     {t.tour_info?.close_time ? formatDateSafe(t.tour_info.close_time) : ''}
                   </td>
                   <td style={{ padding: '15px 5px', verticalAlign: 'top', textAlign: 'center', fontWeight: 'bold' }}>{totalSeats}</td>
                   <td style={{ padding: '15px 5px', verticalAlign: 'top', textAlign: 'center', fontWeight: 'bold' }}>{heldCount}</td>
                   <td style={{ padding: '15px 5px', verticalAlign: 'top', textAlign: 'center', color: '#2196f3', fontWeight: 'bold' }}>{soldCount}</td>
                   <td style={{ padding: '15px 5px', verticalAlign: 'top', textAlign: 'center', color: '#e53935', fontWeight: 'bold' }}>{remain}</td>
-                  {/* Public prices are 0 normally to be safe unless specified explicitly for agencies, using DB values or 0 */}
                   <td style={{ padding: '15px 5px', verticalAlign: 'top', textAlign: 'right', fontWeight: 'bold' }}>
-                    {t.tour_info?.b2b_price ? fmtMoney(t.tour_info.b2b_price) : '0'}
+                    {t.tour_info?.price_adult ? fmtMoney(t.tour_info.price_adult) : '0'}
                   </td>
-                  <td style={{ padding: '15px 5px', verticalAlign: 'top', textAlign: 'right', color: '#4caf50' }}>{t.tour_info?.b2b_commission ? fmtMoney(t.tour_info.b2b_commission) : '0'}</td>
+                  <td style={{ padding: '15px 5px', verticalAlign: 'top', textAlign: 'right', color: '#4caf50', fontWeight: 'bold' }}>
+                    {t.tour_info?.discount ? fmtMoney(t.tour_info.discount) : '0'}
+                  </td>
                   <td style={{ padding: '15px 5px', verticalAlign: 'top' }} className="text-gray-500 text-xs">{t.tour_info?.internal_notes || ''}</td>
                   <td style={{ padding: '15px 5px', verticalAlign: 'top', textAlign: 'center' }}>
                     <button style={{ background: '#4caf50', color: 'white', border: 'none', padding: '5px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>+ Giữ chỗ</button>

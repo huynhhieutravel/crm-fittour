@@ -41,7 +41,7 @@ router.get('/', async (req, res) => {
             params.push(status);
         }
 
-        query += ` ORDER BY usage_date DESC, created_at DESC`;
+        query += ` ORDER BY id DESC`;
 
         const result = await db.query(query, params);
         res.json(result.rows);

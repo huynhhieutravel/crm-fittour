@@ -458,10 +458,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
           TỔNG QUAN THÁNG (KPI)
         </button>
         <button 
-          onClick={() => {
-            setActiveSubTab('progress');
-            if (filters.bu_name === 'All') setFilters({...filters, bu_name: 'BU1'});
-          }}
+          onClick={() => setActiveSubTab('progress')}
           style={{ background: 'none', border: 'none', borderBottom: activeSubTab === 'progress' ? '3px solid #3b82f6' : '3px solid transparent', padding: '12px 0', fontSize: '15px', fontWeight: 600, color: activeSubTab === 'progress' ? '#3b82f6' : '#64748b', cursor: 'pointer', transition: 'all 0.2s' }}
         >
           TỔNG QUAN TUẦN
@@ -1233,13 +1230,23 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                : THANG_OPTIONS;
             const targetMonth = isMonthlyZoom ? parseInt(filters.month) : 0;
             // Target month KPI overrides if implemented later, fallback to year target (month = 0)
-            const currentKpi = kpiData.kpis.find(k => k.bu_name === filters.bu_name && k.month === targetMonth) 
-                               || kpiData.kpis.find(k => k.bu_name === filters.bu_name && k.month === 0) 
-                               || {};
+            let currentKpi = {};
+            if (filters.bu_name === 'All') {
+              const kpiList = kpiData.kpis.filter(k => k.month === targetMonth).length > 0 
+                              ? kpiData.kpis.filter(k => k.month === targetMonth) 
+                              : kpiData.kpis.filter(k => k.month === 0);
+              currentKpi = {
+                budget: kpiList.reduce((sum, k) => sum + parseFloat(k.budget || 0), 0)
+              };
+            } else {
+              currentKpi = kpiData.kpis.find(k => k.bu_name === filters.bu_name && k.month === targetMonth) 
+                                 || kpiData.kpis.find(k => k.bu_name === filters.bu_name && k.month === 0) 
+                                 || {};
+            }
 
             const getAgg = (monthFilter, weekFilter) => {
               return kpiData.aggregates
-                .filter(a => a.bu_name === filters.bu_name && 
+                .filter(a => (filters.bu_name === 'All' ? true : a.bu_name === filters.bu_name) && 
                             (monthFilter ? parseInt(a.month) === parseInt(monthFilter) : true) && 
                             (weekFilter ? parseInt(a.week_number) === parseInt(weekFilter) : true))
                 .reduce((acc, curr) => ({

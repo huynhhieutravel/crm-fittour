@@ -64,10 +64,13 @@ function extractVisual(rawText) {
   let passportNo = '';
   let gender = '';
 
-  // Helper: chỉ chấp nhận từ IN HOA thuần túy (>= 2 chữ cái)
-  const isStrictUpper = (w) => {
+  // Helper: Chấp nhận từ IN HOA thuần túy hoặc Title Case (do Tesseract hay nhìn nhầm)
+  const isNameWord = (w) => {
     const letters = w.replace(/[^a-zA-Z]/g, '');
-    return letters.length >= 2 && letters === letters.toUpperCase();
+    if (letters.length < 2) return false;
+    const isUpper = letters === letters.toUpperCase();
+    const isTitle = letters[0] === letters[0].toUpperCase() && letters.slice(1) === letters.slice(1).toLowerCase();
+    return isUpper || isTitle;
   };
 
   for (let i = 0; i < lines.length; i++) {
@@ -76,9 +79,9 @@ function extractVisual(rawText) {
     // ─── SURNAME ───
     if ((/Surname/i.test(line) || /^H[oọ]\s*\//i.test(line)) && !surname) {
       const after = line.split(/(?:Surname|H[oọ])/i).pop().trim();
-      const tokens = removeVietnameseTones(after).split(/\s+/).filter(isStrictUpper);
+      const tokens = removeVietnameseTones(after).split(/\s+/).filter(isNameWord);
       if (tokens.length >= 1) {
-        surname = tokens.map(t => t.replace(/[^A-Z]/g, '')).join(' ');
+        surname = tokens.map(t => t.replace(/[^a-zA-Z]/g, '').toUpperCase()).join(' ');
       } else {
         surname = findUppercaseWords(lines, i + 1, 3);
       }
@@ -87,9 +90,9 @@ function extractVisual(rawText) {
     // ─── GIVEN NAME ───
     if ((/Given\s*name/i.test(line) || /Ch[uữ]\s*[dđ][eệ]m/i.test(line)) && !givenName) {
       const after = line.split(/(?:name|t[eê]n)/i).pop().trim();
-      const tokens = removeVietnameseTones(after).split(/\s+/).filter(isStrictUpper);
+      const tokens = removeVietnameseTones(after).split(/\s+/).filter(isNameWord);
       if (tokens.length >= 1) {
-         givenName = tokens.map(t => t.replace(/[^A-Z]/g, '')).join(' ');
+         givenName = tokens.map(t => t.replace(/[^a-zA-Z]/g, '').toUpperCase()).join(' ');
       } else {
          givenName = findUppercaseWords(lines, i + 1, 3);
       }
@@ -97,7 +100,8 @@ function extractVisual(rawText) {
 
     // ─── PASSPORT NUMBER ─── 1 chữ + 7-8 số
     if (!passportNo) {
-      const m = line.match(/\b([A-Z]\d{7,8})\b/);
+      const lineForPP = line.replace(/O/ig, '0').replace(/o/g, '0');
+      const m = lineForPP.match(/\b([A-Z]\d{7,8})\b/);
       if (m && !/Surname|Given|Date|Sex|Nationality|Họ|Chữ/i.test(line)) {
         passportNo = m[1];
       }
@@ -124,12 +128,21 @@ function extractVisual(rawText) {
 function findUppercaseWords(lines, startIdx, count) {
   for (let j = startIdx; j < Math.min(startIdx + count, lines.length); j++) {
     const raw = lines[j];
+    
+    // Nếu vô tình lướt trúng các label của dòng khác thì dừng ngay!
+    if (/Qu[oố]c t[iị]ch|Nationality|Ngày sinh|Date of birth|Gi[oớ]i t[ií]nh|Sex|Ch[uữ] đ[eệ]m|Given name/i.test(raw)) {
+      break;
+    }
+
     const words = removeVietnameseTones(raw).split(/\s+/)
       .filter(w => {
         const letters = w.replace(/[^a-zA-Z]/g, '');
-        return letters.length >= 2 && letters === letters.toUpperCase();
+        if (letters.length < 2) return false;
+        const isUpper = letters === letters.toUpperCase();
+        const isTitle = letters[0] === letters[0].toUpperCase() && letters.slice(1) === letters.slice(1).toLowerCase();
+        return isUpper || isTitle;
       })
-      .map(w => w.replace(/[^A-Z]/g, ''));
+      .map(w => w.replace(/[^a-zA-Z]/g, '').toUpperCase());
     if (words.length > 0) return words.join(' ');
   }
   return '';
@@ -140,11 +153,13 @@ function findUppercaseWords(lines, startIdx, count) {
 // ═══════════════════════════════════════════════════════════
 
 function findAllDates(rawText) {
+  // Tiền xử lý để cứu các ca Tesseract đọc Ngày tháng thành chữ (VD: 22 / O2 / 203l)
+  const textForDates = rawText.replace(/O/ig, '0').replace(/l/g, '1').replace(/I/g, '1').replace(/S/ig, '5');
   const dateRx = /(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})\s*[\/\-\.]\s*(\d{4})/g;
   const found = [];
   const seen = new Set();
   let m;
-  while ((m = dateRx.exec(rawText)) !== null) {
+  while ((m = dateRx.exec(textForDates)) !== null) {
     let dd = parseInt(m[1], 10);
     let mm = parseInt(m[2], 10);
     const yyyy = m[3];
@@ -172,7 +187,7 @@ function findAllDates(rawText) {
 
 function extractMrz(rawText) {
   const allLines = rawText.split('\n').map(l => l.trim().toUpperCase()).filter(Boolean);
-  const empty = { surname: '', givenName: '', docId: '', gender: '', nationality: '', dobRaw: '', expiryRaw: '' };
+  const empty = { surname: '', givenName: '', docId: '', gender: '', nationality: '', dobRaw: '', expiryRaw: '', personalId: '' };
 
   let candidates = allLines.map(line => {
     let s = line.replace(/\s+/g, '');
@@ -233,6 +248,7 @@ function extractMrz(rawText) {
   if (nameParts.length > 1) {
     surname = nameParts[0].replace(/</g, ' ').trim();
     givenName = nameParts.slice(1).map(p => p.replace(/</g, ' ').trim()).filter(Boolean).join(' ');
+    givenName = givenName.replace(/NSK/ig, 'N K').replace(/\s+/g, ' ').trim();
   } else if (nameParts.length === 1) {
     const singleParts = nameParts[0].split('<').filter(Boolean);
     if (singleParts.length > 1) {
@@ -267,26 +283,34 @@ function extractMrz(rawText) {
 
 function tryFixedPosition(rawLine2) {
   const line2 = rawLine2.padEnd(44, '<').substring(0, 44);
-  const docId = line2.substring(0, 9).replace(/<+$/, '');
-  const nationality = line2.substring(10, 13).replace(/<+$/, '');
-  const dobRawOriginal = line2.substring(13, 19);
-  const expiryRawOriginal = line2.substring(21, 27);
-  
-  if (!/^[0-9OIZSBGCLE]{6}$/.test(dobRawOriginal)) return null;
-  if (!/^[0-9OIZSBGCLE]{6}$/.test(expiryRawOriginal)) return null;
+  const docIdRaw = line2.substring(0, 9).replace(/<+$/, '');
+  const docIdCheckDigit = line2.substring(9, 10);
+  const rawNat = line2.substring(10, 13).replace(/<+$/, '');
+  const nationality = (rawNat.startsWith('VN') || rawNat.endsWith('NM')) ? 'VNM' : rawNat;
 
-  const dobDigits = forceDigits(dobRawOriginal);
-  const expiryDigits = forceDigits(expiryRawOriginal);
+  const validDocId = tryHealDocId(docIdRaw, docIdCheckDigit, nationality);
+  
+  const dobRawOriginal = line2.substring(13, 19);
+  const dobCheckDigit = line2.substring(19, 20);
+  const expiryRawOriginal = line2.substring(21, 27);
+  const expiryCheckDigit = line2.substring(27, 28);
+  
+  const validDob = tryHealNumericMrz(dobRawOriginal, dobCheckDigit);
+  const validExpiry = tryHealNumericMrz(expiryRawOriginal, expiryCheckDigit);
   const gender = line2.substring(20, 21);
 
   if (!'MF<'.includes(gender)) return null;
 
+  const personalIdRaw = line2.substring(28, 42).replace(/<+$/, '');
+  const personalId = /^[0-9]+$/.test(personalIdRaw) && personalIdRaw.length >= 9 ? personalIdRaw : '';
+
   return {
-    docId,
+    docId: validDocId,
     nationality,
     gender: gender === '<' ? '' : gender,
-    dobRaw: dobDigits,
-    expiryRaw: expiryDigits,
+    dobRaw: validDob,
+    expiryRaw: validExpiry,
+    personalId
   };
 }
 
@@ -299,20 +323,180 @@ function tryAnchorBased(rawLine2) {
   const gender = genderMatch[2];
 
   const beforeGender = rawLine2.substring(0, genderIdx);
-  const digitsBeforeGender = beforeGender.replace(/[^0-9]/g, '');
-  const dobRaw = digitsBeforeGender.length >= 7
-    ? digitsBeforeGender.substring(digitsBeforeGender.length - 7, digitsBeforeGender.length - 1)
-    : digitsBeforeGender.substring(0, 6);
+  // Lọc chỉ giữ lại số và các chữ cái thường bị nhìn nhầm thành số
+  const validDobChars = beforeGender.replace(/[^0-9OSlIZBGQDT]/g, '');
+  const dobRaw = validDobChars.length >= 7
+    ? validDobChars.substring(validDobChars.length - 7, validDobChars.length - 1)
+    : validDobChars.substring(0, 6);
+  const dobCheckDigit = validDobChars.length >= 7 
+    ? validDobChars.substring(validDobChars.length - 1) 
+    : '';
 
   const afterGender = rawLine2.substring(genderIdx + 1);
-  const expiryDigits = afterGender.replace(/[^0-9]/g, '');
-  const expiryRaw = expiryDigits.substring(0, 6);
+  const validExpiryChars = afterGender.replace(/[^0-9OSlIZBGQDT]/g, '');
+  const expiryRawOrig = validExpiryChars.substring(0, 6);
+  const expiryCheckOrig = validExpiryChars.substring(6, 7);
 
-  const docId = rawLine2.substring(0, 9).replace(/<+$/, '');
+  const validDob = tryHealNumericMrz(dobRaw, dobCheckDigit);
+  const validExpiry = tryHealNumericMrz(expiryRawOrig, expiryCheckOrig);
+
+  let personalId = '';
+  const personalIdMatch = afterGender.substring(7).match(/^[0-9A-Z<]{9,14}/);
+  if (personalIdMatch) {
+    const pId = personalIdMatch[0].replace(/[^0-9A-Z]/g, '');
+    if (pId.length >= 9 && /^[0-9]+$/.test(pId)) personalId = pId;
+  }
+
   const natSection = rawLine2.substring(10, 13);
-  const nationality = natSection.replace(/[^A-Z]/g, '').substring(0, 3) || '';
+  const rawNat = natSection.replace(/[^A-Z]/g, '').substring(0, 3) || '';
+  const nationality = (rawNat.startsWith('VN') || rawNat.endsWith('NM')) ? 'VNM' : rawNat;
 
-  return { docId, nationality, gender, dobRaw, expiryRaw };
+  const docIdRaw = rawLine2.substring(0, 9).replace(/<+$/, '');
+  const docIdCheckDigit = rawLine2.substring(9, 10);
+  const validDocId = tryHealDocId(docIdRaw, docIdCheckDigit, nationality);
+
+  return { docId: validDocId, nationality, gender, dobRaw: validDob, expiryRaw: validExpiry, personalId };
+}
+
+function verifyIcaoCheckDigit(str, checkChar) {
+  if (!str || !checkChar) return false;
+  if (checkChar === '<') checkChar = '0';
+  
+  // Tesseract thường đọc số 0 thành O, Q, D, v.v. đối với check digit
+  let cChar = checkChar.toUpperCase();
+  if (['O', 'Q', 'D'].includes(cChar)) cChar = '0';
+  if (['I', 'L', 'T'].includes(cChar)) cChar = '1';
+  if (cChar === 'Z') cChar = '2';
+  if (cChar === 'S') cChar = '5';
+  if (cChar === 'B') cChar = '8';
+  if (cChar === 'G') cChar = '6';
+
+  const checkDigit = parseInt(cChar, 10);
+  if (isNaN(checkDigit)) return false;
+
+  const weights = [7, 3, 1];
+  let sum = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i].toUpperCase();
+    let val = 0;
+    if (char >= '0' && char <= '9') {
+      val = parseInt(char, 10);
+    } else if (char >= 'A' && char <= 'Z') {
+      val = char.charCodeAt(0) - 55;
+    } else if (char === '<') {
+      val = 0;
+    }
+    sum += val * weights[i % 3];
+  }
+  return sum % 10 === checkDigit;
+}
+
+function isValidMrzDate(yymmdd) {
+  if (yymmdd.length !== 6) return false;
+  const mm = parseInt(yymmdd.substring(2, 4), 10);
+  const dd = parseInt(yymmdd.substring(4, 6), 10);
+  return mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31;
+}
+
+function tryHealNumericMrz(rawOrig, checkChar) {
+  if (!rawOrig || rawOrig.length !== 6) return '';
+  const forced = forceDigits(rawOrig);
+  if (verifyIcaoCheckDigit(forced, checkChar) && isValidMrzDate(forced)) return forced;
+
+  // Lỗi thường gặp: S/5 -> 3, O/Q/D -> 0, 8 -> 0
+  for (let i = 0; i < forced.length; i++) {
+    if (forced[i] === '5') {
+      const trial = forced.substring(0, i) + '3' + forced.substring(i + 1);
+      if (verifyIcaoCheckDigit(trial, checkChar) && isValidMrzDate(trial)) return trial;
+    }
+    if (forced[i] === '3') {
+      const trial = forced.substring(0, i) + '5' + forced.substring(i + 1);
+      if (verifyIcaoCheckDigit(trial, checkChar) && isValidMrzDate(trial)) return trial;
+    }
+    if (forced[i] === '0') {
+      const trial = forced.substring(0, i) + '8' + forced.substring(i + 1);
+      if (verifyIcaoCheckDigit(trial, checkChar) && isValidMrzDate(trial)) return trial;
+    }
+  }
+  return ''; // Reject if cannot be healed
+}
+
+function isValidDocIdFormat(docIdRaw, nationality) {
+  // Loại bỏ các dấu < ở cuối (padding)
+  const clean = docIdRaw.replace(/<+$/, '');
+  
+  // Hộ chiếu không được phép quá ngắn
+  if (clean.length < 6) return false;
+  
+  // Hộ chiếu không được phép chứa dấu < ở giữa hoặc ở đầu
+  if (clean.includes('<')) return false;
+
+  // Với hộ chiếu Việt Nam (VNM), định dạng chuẩn là: 1 chữ cái đầu + các chữ số theo sau (ví dụ: C1234567, B1234567)
+  // Tuyệt đối không được chứa chữ cái ở phần đuôi (như O, Q, D)
+  if (nationality === 'VNM') {
+    if (!/^[A-Z][0-9]+$/.test(clean)) return false;
+  }
+
+  return true;
+}
+
+function tryHealDocId(docIdRaw, checkChar, nationality) {
+  // Nếu raw đã đúng Toán học VÀ đúng Định dạng -> Nhận luôn
+  if (verifyIcaoCheckDigit(docIdRaw, checkChar) && isValidDocIdFormat(docIdRaw, nationality)) return docIdRaw;
+
+  // Lỗi kinh điển của Passport VN: chữ O bị đọc thành số 0 hoặc ngược lại, S/5, Z/2, B/8, I/1
+  const commonConfusions = {
+    'O': ['0'], '0': ['O'], // Bỏ Q, D vì Hộ chiếu VN không dùng Q, D, tránh trùng khớp Checksum sai
+    'S': ['5'], '5': ['S'],
+    'Z': ['2'], '2': ['Z'],
+    'B': ['8'], '8': ['B'],
+    'I': ['1', 'L'], '1': ['I', 'L'], 'L': ['1', 'I'],
+    'G': ['6'], '6': ['G'],
+    'T': ['7'], '7': ['T'],
+    '<': ['C'] // Tesseract hay nhầm C thành <
+  };
+
+  // Quét từng ký tự, nếu rơi vào diện dễ nhầm lẫn -> thử đổi và check lại Toán học
+  const chars = docIdRaw.split('');
+  for (let i = 0; i < chars.length; i++) {
+    const originalChar = chars[i];
+    const alternatives = commonConfusions[originalChar];
+    
+    if (alternatives) {
+      for (const alt of alternatives) {
+        const trialChars = [...chars];
+        trialChars[i] = alt;
+        const trialStr = trialChars.join('');
+        if (verifyIcaoCheckDigit(trialStr, checkChar) && isValidDocIdFormat(trialStr, nationality)) {
+          return trialStr; // Trúng Jackpot Toán học -> Trả về luôn!
+        }
+      }
+    }
+  }
+
+  // Nếu sai nhiều ký tự (vd: <98458T0 -> sai cả < và T)
+  // Quét kết hợp (vét cạn 2 vòng) cho các chuỗi có chứa < ở đầu
+  if (chars[0] === '<') {
+    chars[0] = 'C';
+    for (let i = 1; i < chars.length; i++) {
+      const altArr = commonConfusions[chars[i]];
+      if (altArr) {
+        for (const alt of altArr) {
+          const tChars = [...chars];
+          tChars[i] = alt;
+          const tStr = tChars.join('');
+          if (verifyIcaoCheckDigit(tStr, checkChar) && isValidDocIdFormat(tStr, nationality)) {
+            return tStr;
+          }
+        }
+      }
+    }
+    // Nếu chỉ đổi < thành C mà đúng luôn thì nhận
+    const tStr = chars.join('');
+    if (verifyIcaoCheckDigit(tStr, checkChar) && isValidDocIdFormat(tStr, nationality)) return tStr;
+  }
+
+  return ''; // Reject if cannot be healed
 }
 
 function forceDigits(s) {
@@ -372,6 +556,10 @@ function mergeNameStr(vis, mrz, isTruncated = false) {
   if (mHasGarbage && !vHasGarbage) return cleanV;
   if (vHasGarbage && !mHasGarbage) return cleanM;
   
+  // Nếu MRZ bị dính chữ (ít từ hơn) hoặc Tesseract đẻ thêm chữ lạ (KMAT) 
+  // làm mất trắng khoảng cách, thì Visual (nhiều từ hơn, rõ ràng hơn) sẽ đáng tin hơn
+  if (vWords.length > mWords.length && !vHasGarbage) return cleanV;
+
   // Rào chắn cuối: nếu sự khác biệt quá lớn (do Tesseract khùng), tin tưởng MRZ nhưng clean lại
   return cleanM;
 }
@@ -384,6 +572,7 @@ function smartMerge(visual, mrz, allDates) {
   const docId = mrz.docId || visual.passportNo || '';
   const gender = mrz.gender || visual.gender || '';
   const nationality = mrz.nationality || '';
+  const personalId = mrz.personalId || '';
 
   const mrzDob = formatMrzDate(mrz.dobRaw, false);
   const mrzExpiry = formatMrzDate(mrz.expiryRaw, true);
@@ -434,7 +623,7 @@ function smartMerge(visual, mrz, allDates) {
     }
   }
 
-  return { surname, givenName, gender, docId, nationality, dobDisplay, doiDisplay, expiryDisplay };
+  return { surname, givenName, gender, docId, nationality, dobDisplay, doiDisplay, expiryDisplay, personalId };
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -447,13 +636,19 @@ function fixLine1(raw) {
   let country = '';
   let namesStartIdx = 0;
   
-  // Tìm đúng 3 ký tự (chấp nhận cả số vì Tesseract thỉnh thoảng nhìn chữ thành số VN0, V0M)
-  for (let i = 0; i < s.length; i++) {
-    if (/[A-Z0-9]/.test(s[i])) {
-      country += s[i];
-      if (country.length === 3) {
-        namesStartIdx = i + 1;
-        break;
+  const vnmIndex = s.indexOf('VNM');
+  if (vnmIndex !== -1 && vnmIndex < 5) {
+     country = 'VNM';
+     namesStartIdx = vnmIndex + 3;
+  } else {
+    // Tìm đúng 3 ký tự (chấp nhận cả số vì Tesseract thỉnh thoảng nhìn chữ thành số VN0, V0M)
+    for (let i = 0; i < s.length; i++) {
+      if (/[A-Z0-9]/.test(s[i])) {
+        country += s[i];
+        if (country.length === 3) {
+          namesStartIdx = i + 1;
+          break;
+        }
       }
     }
   }

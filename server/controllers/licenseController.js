@@ -11,11 +11,11 @@ exports.getLicenses = async (req, res) => {
 
 exports.createLicense = async (req, res) => {
     try {
-        const { name, link } = req.body;
+        const { name, link, description } = req.body;
         if (!name) return res.status(400).json({ message: 'Tên là bắt buộc' });
         const result = await db.query(
-            'INSERT INTO licenses (name, link) VALUES ($1, $2) RETURNING *',
-            [name, link || null]
+            'INSERT INTO licenses (name, link, description, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *',
+            [name, link || null, description || null]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -26,10 +26,10 @@ exports.createLicense = async (req, res) => {
 exports.updateLicense = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, link } = req.body;
+        const { name, link, description } = req.body;
         const result = await db.query(
-            'UPDATE licenses SET name=$1, link=$2, updated_at=CURRENT_TIMESTAMP WHERE id=$3 RETURNING *',
-            [name, link || null, id]
+            'UPDATE licenses SET name=$1, link=$2, description=$3, updated_at=CURRENT_TIMESTAMP WHERE id=$4 RETURNING *',
+            [name, link || null, description || null, id]
         );
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy' });
         res.json(result.rows[0]);

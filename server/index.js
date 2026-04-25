@@ -107,6 +107,12 @@ app.use('/api/travel-support', require('./routes/travelSupport'));
 const cskhRoutes = require('./routes/cskh');
 app.use('/api/cskh', cskhRoutes);
 
+// ═══ AI Copilot ═══
+const aiAssistantRoutes = require('./routes/aiAssistant');
+app.use('/api/ai', aiAssistantRoutes);
+const agentAdminRoutes = require('./routes/agentAdmin');
+app.use('/api/ai/admin', agentAdminRoutes);
+
 const dashboardRoutes = require('./routes/dashboard');
 
 app.use('/api/dashboard', dashboardRoutes);
@@ -131,6 +137,9 @@ app.use('/api/marketing-ads', marketingAdsRoutes);
 
 const managementDashboardRoutes = require('./routes/managementDashboard');
 app.use('/api/management-dashboard', managementDashboardRoutes);
+
+const ceoDashboardRoutes = require('./routes/ceoDashboard');
+app.use('/api/ceo-dashboard', ceoDashboardRoutes);
 
 app.get('/', (req, res) => {
     res.send('FIT Tour CRM API is running...');
@@ -185,3 +194,5 @@ server.listen(PORT, () => {
         startCskhCron();
     }
 });
+ 
+ 

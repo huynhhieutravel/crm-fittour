@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { X } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { format } from 'date-fns';
 
 export default function GroupLeaderAddModal({ open, onClose, onSuccess, companies = [], users = [], currentUser, addToast }) {
     const [loading, setLoading] = useState(false);
@@ -73,7 +76,19 @@ export default function GroupLeaderAddModal({ open, onClose, onSuccess, companie
                             </div>
                             <div>
                                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>Ngày sinh</label>
-                                <input type="date" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }} value={formData.dob} onChange={e => setFormData({ ...formData, dob: e.target.value })} />
+                                <DatePicker
+                                    selected={formData.dob ? new Date(formData.dob) : null}
+                                    onChange={date => setFormData({ ...formData, dob: date ? format(date, 'yyyy-MM-dd') : '' })}
+                                    dateFormat="dd/MM/yyyy"
+                                    placeholderText="dd/mm/yyyy"
+                                    className="modal-input"
+                                    showYearDropdown
+                                    showMonthDropdown
+                                    dropdownMode="select"
+                                    isClearable
+                                    autoComplete="off"
+                                    wrapperClassName="datepicker-full-width"
+                                />
                             </div>
                         </div>
                         <div style={{ marginBottom: '24px' }}>

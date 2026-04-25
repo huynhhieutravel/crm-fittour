@@ -131,6 +131,36 @@ exports.deleteTour = async (req, res) => {
     }
 };
 
+exports.bulkDeleteTours = async (req, res) => {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: 'Không có ID nào được gửi' });
+
+    try {
+        let successCount = 0, failDepsCount = 0, failLeadsCount = 0;
+        for (const tourId of ids) {
+            const depsCount = await db.query('SELECT COUNT(*)::int as c FROM tour_departures WHERE tour_template_id = $1', [tourId]);
+            if (depsCount.rows[0].c > 0) {
+                failDepsCount++;
+                continue;
+            }
+            const leadsCount = await db.query('SELECT COUNT(*)::int as c FROM leads WHERE tour_id = $1', [tourId]);
+            if (leadsCount.rows[0].c > 0) {
+                failLeadsCount++;
+                continue;
+            }
+            const result = await db.query('DELETE FROM tour_templates WHERE id = $1', [tourId]);
+            if (result.rowCount > 0) successCount++;
+        }
+        let msg = `Đã xóa ${successCount} sản phẩm tour.`;
+        if (failDepsCount > 0) msg += ` Bỏ qua ${failDepsCount} tour vì đang có Lịch Khởi Hành.`;
+        if (failLeadsCount > 0) msg += ` Bỏ qua ${failLeadsCount} tour vì có Lead liên kết.`;
+        res.json({ message: msg });
+    } catch (error) {
+        console.error('Error in bulkDeleteTours:', error);
+        res.status(500).json({ error: 'Lỗi khi xóa hàng loạt' });
+    }
+};
+
 exports.getTourNotes = async (req, res) => {
     try {
         const result = await db.query(

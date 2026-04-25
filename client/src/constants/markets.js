@@ -25,7 +25,7 @@ export const MARKET_OPTIONS = [
         ]
     },
     {
-        label: 'Trung Quốc Đại Lục',
+        label: 'Trung Quốc',
         options: [
             { value: 'Trung Quốc', label: 'Trung Quốc (Chung)' },
             { value: 'Bắc Kinh', label: 'Bắc Kinh' },
@@ -51,6 +51,18 @@ export const MARKET_OPTIONS = [
         ]
     },
     {
+        label: 'Đông Nam Á',
+        options: [
+            { value: 'Đông Nam Á', label: 'Đông Nam Á' },
+            { value: 'Bali', label: 'Bali' },
+            { value: 'Bromo', label: 'Bromo' },
+            { value: 'Campuchia', label: 'Campuchia' },
+            { value: 'Thái Lan', label: 'Thái Lan' },
+            { value: 'Singapore', label: 'Singapore' },
+            { value: 'Malaysia', label: 'Malaysia' }
+        ]
+    },
+    {
         label: 'Nam Á & Himalayas',
         options: [
             { value: 'Bhutan', label: 'Bhutan' },
@@ -63,23 +75,11 @@ export const MARKET_OPTIONS = [
         ]
     },
     {
-        label: 'Trung Á & Lân Cận',
+        label: 'Con Đường Tơ Lụa',
         options: [
             { value: 'Trung Á', label: 'Trung Á' },
             { value: 'Caucasus', label: 'Caucasus' },
             { value: 'Silk Road', label: 'Silk Road' }
-        ]
-    },
-    {
-        label: 'Đông Nam Á',
-        options: [
-            { value: 'Đông Nam Á', label: 'Đông Nam Á' },
-            { value: 'Bali', label: 'Bali' },
-            { value: 'Bromo', label: 'Bromo' },
-            { value: 'Campuchia', label: 'Campuchia' },
-            { value: 'Thái Lan', label: 'Thái Lan' },
-            { value: 'Singapore', label: 'Singapore' },
-            { value: 'Malaysia', label: 'Malaysia' }
         ]
     },
     {

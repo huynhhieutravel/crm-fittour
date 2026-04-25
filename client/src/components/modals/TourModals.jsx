@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Globe, Trash2, Download } from 'lucide-react';
 import axios from 'axios';
+import Select from 'react-select';
 export const AddTemplateModal = ({
   showAddTemplateModal,
   setShowAddTemplateModal,
@@ -41,18 +42,20 @@ export const AddTemplateModal = ({
           </div>
           <div className="modal-form-group">
             <label>ĐIỂM ĐẾN (THEO BU) *</label>
-            <select 
-              className="modal-select" 
-              required 
-              disabled={!newTemplate.bu_group}
-              value={newTemplate.destination} 
-              onChange={e => setNewTemplate({...newTemplate, destination: e.target.value})}
-            >
-              <option value="">-- Chọn điểm đến --</option>
-              {newTemplate.bu_group && bus.find(b => b.id === newTemplate.bu_group)?.countries?.map(dest => (
-                <option key={dest} value={dest}>{dest}</option>
-              ))}
-            </select>
+            <div style={{ marginTop: '5px' }}>
+              <Select
+                isMulti
+                isDisabled={!newTemplate.bu_group}
+                placeholder="-- Chọn điểm đến --"
+                options={newTemplate.bu_group ? (bus.find(b => b.id === newTemplate.bu_group)?.countries || []).map(dest => ({ label: dest, value: dest })) : []}
+                value={newTemplate.destination ? newTemplate.destination.split(',').map(d => ({ label: d.trim(), value: d.trim() })) : []}
+                onChange={opts => setNewTemplate({...newTemplate, destination: opts ? opts.map(o => o.value).join(', ') : ''})}
+                styles={{
+                  control: base => ({ ...base, borderColor: '#cbd5e1', fontSize: '14px', borderRadius: '6px' }),
+                  menu: base => ({ ...base, fontSize: '14px', zIndex: 9999 })
+                }}
+              />
+            </div>
           </div>
           <div className="modal-form-group">
             <label>THỜI LƯỢNG *</label>
@@ -197,18 +200,20 @@ export const EditTemplateModal = ({
           </div>
           <div className="modal-form-group">
             <label>ĐIỂM ĐẾN *</label>
-            <select 
-              className="modal-select" 
-              required 
-              disabled={!formData.bu_group}
-              value={formData.destination || ''} 
-              onChange={e => setFormData({...formData, destination: e.target.value})}
-            >
-              <option value="">-- Chọn điểm đến --</option>
-              {formData.bu_group && bus.find(b => b.id === formData.bu_group)?.countries?.map(dest => (
-                <option key={dest} value={dest}>{dest}</option>
-              ))}
-            </select>
+            <div style={{ marginTop: '5px' }}>
+              <Select
+                isMulti
+                isDisabled={!formData.bu_group}
+                placeholder="-- Chọn điểm đến --"
+                options={formData.bu_group ? (bus.find(b => b.id === formData.bu_group)?.countries || []).map(dest => ({ label: dest, value: dest })) : []}
+                value={formData.destination ? formData.destination.split(',').map(d => ({ label: d.trim(), value: d.trim() })) : []}
+                onChange={opts => setFormData({...formData, destination: opts ? opts.map(o => o.value).join(', ') : ''})}
+                styles={{
+                  control: base => ({ ...base, borderColor: '#cbd5e1', fontSize: '14px', borderRadius: '6px' }),
+                  menu: base => ({ ...base, fontSize: '14px', zIndex: 9999 })
+                }}
+              />
+            </div>
           </div>
           <div className="modal-form-group">
             <label>THỜI LƯỢNG *</label>

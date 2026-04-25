@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { useMarkets, getChildMarkets } from '../hooks/useMarkets';
+import { useMarkets, getChildMarkets, getChildMarketIds } from '../hooks/useMarkets';
 import Select from 'react-select';
-import { Plus, Search, CalendarDays, Users, Download, X, Plane, Copy } from 'lucide-react';
+import { Plus, Search, CalendarDays, Users, Download, X, Plane, Copy, Award, Activity, Briefcase, FileText, ShieldCheck, CheckCircle, XCircle } from 'lucide-react';
 import * as XLSX from 'xlsx-js-style';
 import OpTourDetailDrawer from '../components/modals/OpTourDetailDrawer';
 import OpTourAddCustomerModal from '../components/modals/OpTourAddCustomerModal';
 import OpTourBookingListModal from '../components/modals/OpTourBookingListModal';
 
-const MarketFilterBar = ({ activeMarket, setActiveMarket, marketOptions }) => {
+const MarketFilterBar = ({ activeMarket, setActiveMarket, marketOptions, children }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const isAll = activeMarket === 'Tất cả';
 
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingBottom: '10px' }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingBottom: '10px', alignItems: 'center' }}>
         <button 
           onClick={() => setActiveMarket('Tất cả')}
           style={{ 
@@ -98,6 +98,7 @@ const MarketFilterBar = ({ activeMarket, setActiveMarket, marketOptions }) => {
              </div>
            );
         })}
+        {children}
     </div>
   );
 };
@@ -110,11 +111,16 @@ export default function OpToursTab({ currentUser }) {
   const [activeMarket, setActiveMarket] = useState('Tất cả');
   const [activeStatus, setActiveStatus] = useState('Tất cả');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStartDate, setFilterStartDate] = useState('');
-  const [filterEndDate, setFilterEndDate] = useState('');
-  const [filterCreateDate, setFilterCreateDate] = useState('');
-  const [filterPayStatus, setFilterPayStatus] = useState('Tất cả');
+  
+  // Date filter states (Executive UI)
+  const [dateFilter, setDateFilter] = useState('all');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedQuarter, setSelectedQuarter] = useState(Math.floor(new Date().getMonth() / 3) + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [customRange, setCustomRange] = useState({ startDate: "", endDate: "" });
+  
   const [filterOperator, setFilterOperator] = useState('');
+  const [opUsers, setOpUsers] = useState([]);
   const [filterTemplate, setFilterTemplate] = useState(() => {
     const saved = sessionStorage.getItem('filterOpTourTemplateId');
     if (saved) {
@@ -129,8 +135,33 @@ export default function OpToursTab({ currentUser }) {
   const [itemsPerPage, setItemsPerPage] = useState(30);
 
   useEffect(() => {
+    axios.get('/api/users', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+      .then(res => {
+         const allUsers = Array.isArray(res.data) ? res.data : (res.data?.users || []);
+         let users = allUsers.filter(u => u.is_active !== false && u.role_name !== 'admin');
+         
+         users.sort((a, b) => {
+            const nameA = a.full_name || a.username || '';
+            const nameB = b.full_name || b.username || '';
+            return nameA.localeCompare(nameB, 'vi');
+         });
+
+         if (currentUser && currentUser.id) {
+            const currentIdx = users.findIndex(u => u.id === currentUser.id);
+            if (currentIdx > -1) {
+               const [curr] = users.splice(currentIdx, 1);
+               users.unshift(curr);
+            }
+         }
+
+         setOpUsers(users);
+      })
+      .catch(err => console.error("Error fetching users:", err));
+  }, []);
+
+  useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, activeMarket, activeStatus, filterStartDate, filterEndDate, filterCreateDate, filterOperator, filterPayStatus]);
+  }, [searchTerm, activeMarket, filterOperator, dateFilter, selectedMonth, selectedQuarter, selectedYear, customRange]);
   
   // Auto-open specific departure drawer via sessionStorage event
   useEffect(() => {
@@ -154,8 +185,68 @@ export default function OpToursTab({ currentUser }) {
   const [selectedBookingTour, setSelectedBookingTour] = useState(null);
   const [refreshBookingsTrigger, setRefreshBookingsTrigger] = useState(0);
   const [viewingAllMembers, setViewingAllMembers] = useState(null); // { tour, allMembers }
+  const [selectedTours, setSelectedTours] = useState([]);
+
+  // Advanced Filters State
+  const [selectedBU, setSelectedBU] = useState('Tất cả');
+
+  // CEO Dashboards Modals State
+  const [activeCeoModal, setActiveCeoModal] = useState(null); // 'sales' | 'health' | null
+  const [ceoDashboardData, setCeoDashboardData] = useState(null);
+  const [loadingCeoData, setLoadingCeoData] = useState(false);
+  const [healthActiveMonth, setHealthActiveMonth] = useState('Tất cả');
+  const [healthActiveBU, setHealthActiveBU] = useState('Tất cả');
+  const [salesActiveMonth, setSalesActiveMonth] = useState('Tất cả');
+  const [salesActiveBU, setSalesActiveBU] = useState('Tất cả');
+
+  const openCeoModal = async (type) => {
+    setActiveCeoModal(type);
+    if (!ceoDashboardData) {
+      setLoadingCeoData(true);
+      try {
+        const res = await axios.get(`/api/ceo-dashboard/departures?year=${new Date().getFullYear()}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        setCeoDashboardData(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingCeoData(false);
+      }
+    }
+  };
 
   const fmtMoney = (v) => Number(v || 0).toLocaleString('vi-VN');
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedTours(currentTours.map(t => t.id));
+    } else {
+      setSelectedTours([]);
+    }
+  };
+
+  const handleSelectTour = (tourId) => {
+    setSelectedTours(prev => 
+      prev.includes(tourId) ? prev.filter(id => id !== tourId) : [...prev, tourId]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedTours.length === 0) return;
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa ${selectedTours.length} tour đã chọn không?\n\nLưu ý: Hệ thống sẽ tự động bỏ qua các Tour đang có khách booking.`)) return;
+    try {
+      const res = await axios.post('/api/op-tours/bulk-delete', { ids: selectedTours }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      alert(res.data.message || 'Đã xóa thành công');
+      setSelectedTours([]);
+      fetchTours();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || 'Có lỗi xảy ra khi xóa hàng loạt');
+    }
+  };
 
   const openAllMembersList = async (tour) => {
     try {
@@ -418,25 +509,25 @@ export default function OpToursTab({ currentUser }) {
     const wsData = [];
     
     // Row 1: Header
-    wsData.push(['TRIP INFORMATION AND NAMELIST 行程信息和名单', '', '', '', '', '', '', '', '', '', '']);
+    wsData.push(['TRIP INFORMATION AND NAMELIST 行程信息和名单', '', '', '', '', '', '', '', '', '', '', '']);
     
     // Row 2: Tour Name
-    wsData.push(['FIT TOUR', '', '', '', 'Tour 行程', '', 'TP.HCM - THƯỢNG HẢI (TQ)', '', '', '', '']);
+    wsData.push(['FIT TOUR', '', '', '', 'Tour 行程', '', 'TP.HCM - THƯỢNG HẢI (TQ)', '', '', '', '', '']);
     
     // Row 3: Banner & Operator
-    wsData.push(['', '', '', '', 'Banner\n欢迎横幅', '', 'WELCOME FIT TOUR', '', 'Điều hành 计调', '', '']);
+    wsData.push(['', '', '', '', 'Banner\n欢迎横幅', '', 'WELCOME FIT TOUR', '', 'Điều hành 计调', '', '', '']);
     
     // Row 4: Tour Leader
-    wsData.push(['', '', '', '', 'Tour Leader\n旅游领队', '', '', '', 'HANI NGUYEN', '', '']);
+    wsData.push(['', '', '', '', 'Tour Leader\n旅游领队', '', '', '', 'HANI NGUYEN', '', '', '']);
     
     // Row 5: Flight Header
-    wsData.push(['FLIGHT DETAIL\n航班详情', '', 'DATE\n日期', 'JOURNEY\n行程', 'FLIGHT NUMBER\n航班', 'DEPARTURE\n起飞 (时间)', 'ARRIVAL\n到达 (时间)', '', '', '', '']);
+    wsData.push(['FLIGHT DETAIL\n航班详情', '', 'DATE\n日期', 'JOURNEY\n行程', 'FLIGHT NUMBER\n航班', 'DEPARTURE\n起飞 (时间)', 'ARRIVAL\n到达 (时间)', '', '', '', '', '']);
     
     // Row 6: Flight From
-    wsData.push(['From HAN\n胡志明市', '', 'TH26MAR', 'SGN WUH', 'CZ8318', '0240', '0730', '7KG HLXT+\n23KG HLKG', '', '', '']);
+    wsData.push(['From HAN\n胡志明市', '', 'TH26MAR', 'SGN WUH', 'CZ8318', '0240', '0730', '7KG HLXT+\n23KG HLKG', '', '', '', '']);
     
     // Row 7: Flight Return
-    wsData.push(['Return 往回', '', 'WE01APR', 'WUH SGN', 'CZ8317', '2210', '0105+1', '', '', '', '']);
+    wsData.push(['Return 往回', '', 'WE01APR', 'WUH SGN', 'CZ8317', '2210', '0105+1', '', '', '', '', '']);
     
     // Row 8: Empty or space
     wsData.push([]);
@@ -453,7 +544,8 @@ export default function OpToursTab({ currentUser }) {
       'Nationality\n国籍', 
       'Rooming\n分房', 
       'SĐT\n手机号码', 
-      'NOTE\n备注'
+      'NOTE\n备注',
+      'PASSPORT LINK\n护照链接'
     ]);
 
     const formatToYYYYMMDD = (dateStr) => {
@@ -490,8 +582,8 @@ export default function OpToursTab({ currentUser }) {
       const dob = formatToYYYYMMDD(m.dob);
       const doe = formatToYYYYMMDD(m.expiryDate);
       const rooming = m.roomCode || '';
-      
       const note = m.bNote || m.note || '';
+      const fullPassportUrl = m.passportUrl ? (m.passportUrl.startsWith('/') ? `https://crm.tournuocngoai.com${m.passportUrl}` : m.passportUrl) : '';
 
       wsData.push([
         i + 1, 
@@ -504,7 +596,8 @@ export default function OpToursTab({ currentUser }) {
         'VNM', // Nationality Default
         rooming, 
         m.phone || '', 
-        note
+        note,
+        fullPassportUrl
       ]);
     });
 
@@ -561,32 +654,40 @@ export default function OpToursTab({ currentUser }) {
            cell.s.font.bold = true;
            cell.s.alignment = centerAlign;
         }
-        
         if (R >= 8) cell.s.alignment = centerAlign;
+        
+        // Highlight Passport Link column (Index 11) with RED text and make it a link
+        if (R >= 8 && C === 11) {
+           cell.s.font.color = { rgb: "FF0000" };
+           if (cell.v && String(cell.v).startsWith('http')) {
+               cell.s.font.underline = true;
+               cell.l = { Target: cell.v, Tooltip: "Xem ảnh Passport" };
+           }
+        }
       }
     }
 
     ws['!cols'] = [
       { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 8 }, { wch: 15 }, { wch: 15 },
-      { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
+      { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 30 }
     ];
 
     ws['!merges'] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } },
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 11 } },
       { s: { r: 1, c: 0 }, e: { r: 3, c: 3 } }, 
       { s: { r: 1, c: 4 }, e: { r: 1, c: 5 } }, 
-      { s: { r: 1, c: 6 }, e: { r: 1, c: 10 } }, 
+      { s: { r: 1, c: 6 }, e: { r: 1, c: 11 } }, 
       { s: { r: 2, c: 4 }, e: { r: 2, c: 5 } }, 
       { s: { r: 2, c: 6 }, e: { r: 2, c: 7 } }, 
-      { s: { r: 2, c: 8 }, e: { r: 2, c: 10 } }, 
+      { s: { r: 2, c: 8 }, e: { r: 2, c: 11 } }, 
       { s: { r: 3, c: 4 }, e: { r: 3, c: 5 } }, 
       { s: { r: 3, c: 6 }, e: { r: 3, c: 7 } }, 
-      { s: { r: 3, c: 8 }, e: { r: 3, c: 10 } }, 
+      { s: { r: 3, c: 8 }, e: { r: 3, c: 11 } }, 
       
       { s: { r: 4, c: 0 }, e: { r: 4, c: 1 } }, 
       { s: { r: 5, c: 0 }, e: { r: 5, c: 1 } }, 
       { s: { r: 6, c: 0 }, e: { r: 6, c: 1 } }, 
-      { s: { r: 4, c: 7 }, e: { r: 6, c: 10 } },
+      { s: { r: 4, c: 7 }, e: { r: 6, c: 11 } },
     ];
 
     ws['!rows'] = [{ hpx: 30 }, { hpx: 25 }, { hpx: 25 }, { hpx: 25 }, { hpx: 35 }, { hpx: 35 }, { hpx: 35 }];
@@ -612,7 +713,7 @@ export default function OpToursTab({ currentUser }) {
       const response = await axios.get('/api/op-tours', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      setTours(response.data);
+      setTours(response.data.filter(t => !String(t.tour_name || t.code || t.tour_code || '').includes('[Tour Cũ]')));
       setLoading(false);
     } catch (error) {
       console.error('Error fetching OP tours:', error);
@@ -697,30 +798,106 @@ export default function OpToursTab({ currentUser }) {
   const uniqueStatuses = ['Tất cả', ...new Set(tours.map(t => t.status).filter(Boolean))];
 
   // Filtering
-  const filteredTours = tours.filter(t => {
-    const matchSearch = t.tour_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                        t.tour_code?.toLowerCase().includes(searchTerm.toLowerCase());
-    const childMarkets = getChildMarkets(activeMarket, marketOptions);
-    const tourMarkets = t.market ? t.market.split(',').map(m => m.trim()) : [];
-    const matchMarket = activeMarket === 'Tất cả' || 
-                        tourMarkets.includes(activeMarket) || 
-                        tourMarkets.some(m => childMarkets.includes(m));
-    const matchStatus = 
-      activeStatus === 'Tất cả' || 
-      t.status === activeStatus || 
-      (activeStatus === 'Mở bán' && !t.status) ||
-      (activeStatus === 'Còn chỗ' && Number(t.tour_info?.total_seats || t.max_participants || 0) > 0 && (Number(t.tour_info?.total_seats || t.max_participants || 0) - Number(t.total_sold || 0) - Number(t.total_reserved || 0)) > 0 && t.status !== 'Hoàn thành' && t.status !== 'Huỷ' && t.status !== 'Hủy') ||
-      (activeStatus === 'Hết chỗ' && Number(t.tour_info?.total_seats || t.max_participants || 0) > 0 && (Number(t.total_sold || 0) + Number(t.total_reserved || 0)) >= Number(t.tour_info?.total_seats || t.max_participants || 0) && t.status !== 'Hoàn thành' && t.status !== 'Huỷ' && t.status !== 'Hủy');
+  const getBounds = () => {
+      const now = new Date();
+      let start = new Date();
+      let end = new Date();
 
-    
-    const matchStart = filterStartDate ? new Date(t.start_date) >= new Date(filterStartDate) : true;
-    const matchEnd = filterEndDate ? new Date(t.end_date) <= new Date(filterEndDate) : true;
-    const matchCreated = filterCreateDate && t.created_at ? new Date(t.created_at) >= new Date(filterCreateDate) : true;
-    const matchOp = filterOperator && filterOperator !== 'Chọn' ? t.tour_info?.operators?.toLowerCase().includes(filterOperator.toLowerCase()) : true;
-    const matchTemplate = !filterTemplate || (t.tour_template_id && Number(t.tour_template_id) === Number(filterTemplate));
-    
-    return matchSearch && matchMarket && matchStatus && matchStart && matchEnd && matchCreated && matchOp && matchTemplate;
-  });
+      switch (dateFilter) {
+        case "month":
+          start = new Date(now.getFullYear(), now.getMonth(), 1);
+          end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+          break;
+        case "month-select":
+          start = new Date(selectedYear, selectedMonth, 1);
+          end = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59, 999);
+          break;
+        case "quarter":
+          start = new Date(selectedYear, (selectedQuarter - 1) * 3, 1);
+          end = new Date(selectedYear, (selectedQuarter - 1) * 3 + 3, 0, 23, 59, 59, 999);
+          break;
+        case "year":
+          start = new Date(selectedYear, 0, 1);
+          end = new Date(selectedYear, 12, 0, 23, 59, 59, 999);
+          break;
+        case "all":
+          return { startDate: null, endDate: null };
+        case "custom":
+          return {
+             startDate: customRange.startDate ? new Date(customRange.startDate + 'T00:00:00') : null,
+             endDate: customRange.endDate ? new Date(customRange.endDate + 'T23:59:59') : null
+          };
+        default:
+          return { startDate: null, endDate: null };
+      }
+      return { startDate: start, endDate: end };
+  };
+
+  const availableBUs = React.useMemo(() => {
+    const list = new Set();
+    tours.forEach(t => {
+       if (t.bu_group) list.add(t.bu_group);
+    });
+    const sorted = Array.from(list).sort();
+    return ['Tất cả', ...sorted];
+  }, [tours]);
+
+  const filteredTours = useMemo(() => {
+    // TỐI ƯU HIỆU SUẤT TỐI ĐA (O(1) thay vì O(N) trong vòng lặp)
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    const childMarketIds = getChildMarketIds(activeMarket, marketOptions);
+    const childMarkets = getChildMarkets(activeMarket, marketOptions);
+    const { startDate, endDate } = getBounds();
+    const lowerFilterOp = filterOperator && filterOperator !== 'Chọn' ? filterOperator.toLowerCase() : null;
+
+    let activeMarketId = null;
+    for (const group of marketOptions) {
+        if (group.label === activeMarket) {
+            activeMarketId = group.id;
+            break;
+        }
+        const child = group.options?.find(o => o.value === activeMarket);
+        if (child) {
+            activeMarketId = child.id;
+            break;
+        }
+    }
+
+    return tours.filter(t => {
+      // Short-circuiting evaluation to avoid unnecessary checks
+      if (selectedBU && selectedBU !== 'Tất cả' && t.bu_group !== selectedBU) return false;
+
+      const matchSearch = t.tour_name?.toLowerCase().includes(lowerSearchTerm) || 
+                          t.tour_code?.toLowerCase().includes(lowerSearchTerm);
+      if (!matchSearch) return false;
+
+      const tourMarkets = t.market ? t.market.split(',').map(m => m.trim()) : [];
+      
+      const matchMarket = activeMarket === 'Tất cả' || 
+                          (t.market_ids && t.market_ids.length > 0
+                             ? (activeMarketId && t.market_ids.includes(activeMarketId)) || t.market_ids.some(id => childMarketIds.includes(id))
+                             : (tourMarkets.includes(activeMarket) || tourMarkets.some(m => childMarkets.includes(m))));
+      if (!matchMarket) return false;
+
+      if (t.start_date) {
+          const d = new Date(t.start_date);
+          if (startDate && d < startDate) return false;
+          if (endDate && d > endDate) return false;
+      }
+
+      const matchOp = lowerFilterOp ? t.tour_info?.operators?.toLowerCase().includes(lowerFilterOp) : true;
+      if (!matchOp) return false;
+
+      const matchTemplate = !filterTemplate || (t.tour_template_id && Number(t.tour_template_id) === Number(filterTemplate));
+      if (!matchTemplate) return false;
+      
+      return true;
+    }).sort((a, b) => {
+      const timeA = a.start_date ? new Date(a.start_date).getTime() : 8640000000000000;
+      const timeB = b.start_date ? new Date(b.start_date).getTime() : 8640000000000000;
+      return timeA - timeB;
+    });
+  }, [tours, searchTerm, activeMarket, selectedBU, filterOperator, filterTemplate, dateFilter, selectedMonth, selectedQuarter, selectedYear, customRange, marketOptions]);
 
   const uniqueTemplates = Array.from(
     new Map(
@@ -765,144 +942,258 @@ export default function OpToursTab({ currentUser }) {
 
   if (loading) return <div className="p-8 text-center text-gray-500">Đang tải dữ liệu...</div>;
 
+  const getBUColor = (buName) => {
+    if (!buName) return '#fbbf24';
+    const name = String(buName).toUpperCase();
+    if (name.includes('BU1')) return '#3b82f6'; // Blue
+    if (name.includes('BU2')) return '#ef4444'; // Red
+    if (name.includes('BU4')) return '#8b5cf6'; // Purple
+    
+    // Hash dự phòng nếu sau này công ty có thêm BU mới
+    const colors = ['#f43f5e', '#d946ef', '#8b5cf6', '#3b82f6', '#0ea5e9', '#14b8a6', '#10b981', '#84cc16', '#eab308', '#f97316'];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+  };
+
   return (
-    <div className="tab-pane active" style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <div>
-          <h2 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0' }}>Lịch khởi hành (Tour FIT)</h2>
-          <p style={{ color: '#64748b', margin: '4px 0 0 0' }}>Quản lý Lịch khởi hành và Tổng số chỗ</p>
-        </div>
-        <button 
-          onClick={() => handleOpenDrawer(null)}
-          style={{
-            background: '#ff5722',
-            color: 'white',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}
-        >
-          <Plus size={18} /> TẠO TOUR MỚI
-        </button>
-      </div>
-
+    <div className="tab-pane active" style={{ padding: '10px 0' }}>
       {/* Summary Top Cards */}
-      <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px', marginBottom: '20px' }}>
-         <div onClick={() => setActiveStatus('Tất cả')} style={{ background: '#f97316', color: 'white', padding: '15px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)' }}>
-            <div style={{ fontSize: '14px', fontWeight: '500' }}>Tổng số Tour</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{countAll}</div>
+      <div className="mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '10px', marginBottom: '20px' }}>
+         <div onClick={() => setActiveStatus('Tất cả')} style={{ background: 'white', padding: '12px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: activeStatus === 'Tất cả' ? '2px solid #f97316' : '1px solid #f1f5f9' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#f97316', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+               <Briefcase size={18} color="white" />
+            </div>
+            <div style={{ minWidth: 0 }}>
+               <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Tổng số Tour</div>
+               <div style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', lineHeight: '1' }}>{countAll}</div>
+            </div>
          </div>
-         <div onClick={() => setActiveStatus('Mở bán')} style={{ background: '#0ea5e9', color: 'white', padding: '15px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)' }}>
-            <div style={{ fontSize: '14px', fontWeight: '500' }}>Mở bán</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{countOpen}</div>
+         
+         <div onClick={() => setActiveStatus('Mở bán')} style={{ background: 'white', padding: '12px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: activeStatus === 'Mở bán' ? '2px solid #0ea5e9' : '1px solid #f1f5f9' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#0ea5e9', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+               <FileText size={18} color="white" />
+            </div>
+            <div style={{ minWidth: 0 }}>
+               <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Mở bán</div>
+               <div style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', lineHeight: '1' }}>{countOpen}</div>
+            </div>
          </div>
-         <div onClick={() => setActiveStatus('Chắc chắn đi')} style={{ background: '#ec4899', color: 'white', padding: '15px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)' }}>
-            <div style={{ fontSize: '14px', fontWeight: '500' }}>Chắc chắn đi</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{countGuaranteed}</div>
+
+         <div onClick={() => setActiveStatus('Chắc chắn đi')} style={{ background: 'white', padding: '12px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: activeStatus === 'Chắc chắn đi' ? '2px solid #ec4899' : '1px solid #f1f5f9' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#ec4899', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+               <ShieldCheck size={18} color="white" />
+            </div>
+            <div style={{ minWidth: 0 }}>
+               <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Chắc chắn đi</div>
+               <div style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', lineHeight: '1' }}>{countGuaranteed}</div>
+            </div>
          </div>
-         <div onClick={() => setActiveStatus('Đã đầy')} style={{ background: '#8b5cf6', color: 'white', padding: '15px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)' }}>
-            <div style={{ fontSize: '14px', fontWeight: '500' }}>Đã đầy</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{countFull}</div>
+
+         <div onClick={() => setActiveStatus('Đã đầy')} style={{ background: 'white', padding: '12px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: activeStatus === 'Đã đầy' ? '2px solid #8b5cf6' : '1px solid #f1f5f9' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#8b5cf6', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+               <Plane size={18} color="white" />
+            </div>
+            <div style={{ minWidth: 0 }}>
+               <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Đã đầy</div>
+               <div style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', lineHeight: '1' }}>{countFull}</div>
+            </div>
          </div>
-         <div onClick={() => setActiveStatus('Hoàn thành')} style={{ background: '#84cc16', color: 'white', padding: '15px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)' }}>
-            <div style={{ fontSize: '14px', fontWeight: '500' }}>Hoàn thành</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{countCompleted}</div>
+
+         <div onClick={() => setActiveStatus('Hoàn thành')} style={{ background: 'white', padding: '12px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: activeStatus === 'Hoàn thành' ? '2px solid #84cc16' : '1px solid #f1f5f9' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#84cc16', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+               <CheckCircle size={18} color="white" />
+            </div>
+            <div style={{ minWidth: 0 }}>
+               <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Hoàn thành</div>
+               <div style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', lineHeight: '1' }}>{countCompleted}</div>
+            </div>
          </div>
-         <div onClick={() => setActiveStatus('Huỷ')} style={{ background: '#ea580c', color: 'white', padding: '15px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)' }}>
-            <div style={{ fontSize: '14px', fontWeight: '500' }}>Huỷ</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{countCancelled}</div>
+
+         <div onClick={() => setActiveStatus('Huỷ')} style={{ background: 'white', padding: '12px 10px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: activeStatus === 'Huỷ' ? '2px solid #ef4444' : '1px solid #f1f5f9' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#ef4444', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+               <XCircle size={18} color="white" />
+            </div>
+            <div style={{ minWidth: 0 }}>
+               <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Huỷ</div>
+               <div style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', lineHeight: '1' }}>{countCancelled}</div>
+            </div>
          </div>
       </div>
 
-      {/* Advanced Filter Form Row */}
-      <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto', gap: '10px', alignItems: 'end', marginBottom: '20px', overflowX: 'auto' }}>
-        <div>
-          <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '5px', display: 'block', fontWeight: '500' }}>Tìm kiếm:</label>
-          <input type="text" placeholder="Mã, tên tour.." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '4px', outline: 'none' }} />
+      {/* Advanced Filter Form Row - Executive UI */}
+      <div className="executive-filter-panel" style={{ padding: '0', marginBottom: '20px', width: '100%' }}>
+        <div className="filter-scroll-container">
+          <div className="horizontal-filter-row" style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', alignItems: 'stretch' }}>
+            
+            {/* Row 1: Search & Date Filter */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'nowrap', width: '100%', justifyContent: 'flex-start' }}>
+              <div style={{ minWidth: '220px', flexShrink: 0 }}>
+                <input type="text" placeholder="Tìm kiếm: Mã, tên tour.." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', outline: 'none', fontSize: '13px' }} />
+              </div>
+
+              <div className="segmented-control glass text-white" style={{ flexShrink: 0 }}>
+                <button
+                  onClick={() => setDateFilter('all')}
+                  className={`segment-btn ${dateFilter === 'all' ? "active" : ""}`}
+                >
+                  Tất cả
+                </button>
+                <button
+                  onClick={() => setDateFilter('month')}
+                  className={`segment-btn ${dateFilter === 'month' ? "active" : ""}`}
+                >
+                  Tháng này
+                </button>
+              </div>
+
+              <div className="filter-divider" style={{ minHeight: '30px', borderLeft: '1px solid #e2e8f0', margin: '0' }}></div>
+
+              <div className="segmented-control glass" style={{ flexShrink: 0 }}>
+                {["month-select", "quarter", "year", "custom"].map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setDateFilter(f)}
+                    className={`segment-btn ${dateFilter === f ? "active" : ""}`}
+                  >
+                    {f === "month-select" ? "Tháng" : f === "quarter" ? "Quý" : f === "year" ? "Năm" : "Tùy chọn"}
+                  </button>
+                ))}
+              </div>
+
+
+
+              {dateFilter === "month-select" && (
+                <div className="executive-select-wrapper">
+                  <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))}>
+                    {["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"].map((m, i) => (
+                      <option key={i} value={i}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {dateFilter === "quarter" && (
+                <div className="executive-select-wrapper">
+                  <select value={selectedQuarter} onChange={(e) => setSelectedQuarter(parseInt(e.target.value))}>
+                    {[1, 2, 3, 4].map((q) => <option key={q} value={q}>Quý {q}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {(["month-select", "quarter", "year"].includes(dateFilter)) && (
+                <div className="executive-select-wrapper">
+                  <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))}>
+                    {[2023, 2024, 2025, 2026, 2027].map((y) => <option key={y} value={y}>Năm {y}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {dateFilter === "custom" && (
+                <div className="flex flex-row flex-nowrap items-center gap-3">
+                  <div className="date-input-group premium">
+                    <CalendarDays size={13} className="text-indigo-500" />
+                    <input type="date" value={customRange.startDate} onChange={(e) => setCustomRange({ ...customRange, startDate: e.target.value })} />
+                  </div>
+                  <span className="text-slate-300 font-bold">→</span>
+                  <div className="date-input-group premium">
+                    <CalendarDays size={13} className="text-indigo-500" />
+                    <input type="date" value={customRange.endDate} onChange={(e) => setCustomRange({ ...customRange, endDate: e.target.value })} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ width: '100%', height: '1px', background: '#e2e8f0' }}></div>
+
+            {/* Row 2: NVĐH, BU Pills & Action Buttons */}
+            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div style={{ display: 'flex', gap: '15px', flex: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ minWidth: '180px', maxWidth: '220px' }}>
+                     <select value={filterOperator} onChange={e => setFilterOperator(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', backgroundColor: 'white', outline: 'none', fontSize: '13px', fontWeight: '500', color: '#1e293b' }}>
+                        <option value="Chọn">-- NVĐH / Duyệt --</option>
+                        {opUsers.map(u => <option key={u.id} value={u.full_name}>{u.full_name || u.username}</option>)}
+                     </select>
+                  </div>
+                  
+                  {/* BU Filter: Pill Action Bar Pushed Up */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                     {availableBUs.map(bu => {
+                        const isActive = selectedBU === bu;
+                        return (
+                           <button
+                              key={bu}
+                              onClick={() => setSelectedBU(bu)}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', textTransform: 'uppercase',
+                                padding: '6px 16px', borderRadius: '4px', fontWeight: '700', fontSize: '12px', whiteSpace: 'nowrap', border: '1px solid #e2e8f0',
+                                backgroundColor: isActive ? '#3b82f6' : 'white', color: isActive ? 'white' : '#64748b',
+                                boxShadow: isActive ? '0 2px 4px rgba(59, 130, 246, 0.3)' : 'none',
+                                transition: 'all 0.2s'
+                              }}
+                           >
+                              {bu === 'Tất cả' ? 'Tất cả BU' : bu}
+                           </button>
+                        );
+                     })}
+                  </div>
+               </div>
+
+               <div style={{ display: 'flex', gap: '10px' }}>
+                 <button onClick={() => openCeoModal('sales')} style={{ background: '#f59e0b', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+                   <Award size={14} /> Bảng Vàng Sales
+                 </button>
+                 <button onClick={() => openCeoModal('health')} style={{ background: '#ec4899', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+                   <Activity size={14} /> Sức khoẻ lịch
+                 </button>
+                 <button onClick={() => window.open('/simple-list-share/lich_dai_ly', '_blank')} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+                   <Users size={14} /> Lịch cho đại lý
+                 </button>
+               </div>
+            </div>
+
+          </div>
         </div>
-        <div>
-          <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '5px', display: 'block', fontWeight: '500' }}>Sản phẩm Tour:</label>
-          <select value={filterTemplate} onChange={e => setFilterTemplate(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: 'white', outline: 'none' }}>
-             <option value="">-- Tất cả SP Tour --</option>
-             {uniqueTemplates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-          </select>
-        </div>
-        <div>
-          <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '5px', display: 'block', fontWeight: '500' }}>Ngày Khởi hành:</label>
-          <input type="date" value={filterStartDate} onChange={e => setFilterStartDate(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', outline: 'none' }} />
-        </div>
-        <div>
-          <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '5px', display: 'block', fontWeight: '500' }}>Ngày kết thúc:</label>
-          <input type="date" value={filterEndDate} onChange={e => setFilterEndDate(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', outline: 'none' }} />
-        </div>
-        <div>
-          <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '5px', display: 'block', fontWeight: '500' }}>Ngày tạo:</label>
-          <input type="date" value={filterCreateDate} onChange={e => setFilterCreateDate(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', outline: 'none' }} />
-        </div>
-        <div>
-          <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '5px', display: 'block', fontWeight: '500' }}>Tình trạng:</label>
-          <select value={activeStatus} onChange={e => setActiveStatus(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: 'white', outline: 'none' }}>
-             {uniqueStatuses.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
-        <div>
-          <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '5px', display: 'block', fontWeight: '500' }}>TT thanh toán:</label>
-          <select value={filterPayStatus} onChange={e => setFilterPayStatus(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: 'white', outline: 'none' }}>
-             <option value="Tất cả">Tất cả</option>
-             <option value="Chưa Thanh Toán">Chưa thanh toán</option>
-             <option value="Đã cọc">Đã cọc</option>
-          </select>
-        </div>
-        <div>
-          <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '5px', display: 'block', fontWeight: '500' }}>Sắp xếp:</label>
-          <select style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: 'white', outline: 'none' }}>
-             <option>Ngày đóng chỗ (Mặc định)</option>
-             <option>Ngày khởi hành</option>
-          </select>
-        </div>
-        <div>
-          <label style={{ fontSize: '12px', color: '#64748b', marginBottom: '5px', display: 'block', fontWeight: '500' }}>NVĐH/ Duyệt:</label>
-          <select value={filterOperator} onChange={e => setFilterOperator(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: 'white', outline: 'none' }}>
-             <option value="Chọn">Chọn</option>
-          </select>
-        </div>
-        <button style={{ background: '#3b82f6', color: 'white', padding: '0 15px', border: 'none', borderRadius: '4px', cursor: 'pointer', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Search size={16} />
-        </button>
       </div>
-      
-      <div style={{ marginBottom: '20px' }}>
-         <div style={{ color: '#ea580c', fontWeight: '600', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ fontSize: '10px' }}>▼</span> Xem thêm bộ lọc
+
+      {/* Market Filter & Main Action Buttons */}
+      <MarketFilterBar 
+         activeMarket={activeMarket} 
+         setActiveMarket={setActiveMarket} 
+         marketOptions={marketOptions} 
+      >
+         <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px' }}>
+           {selectedTours.length > 0 && (
+             <button 
+               onClick={handleBulkDelete}
+               style={{
+                 background: '#ef4444', color: 'white', border: 'none', padding: '10px 20px',
+                 borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px',
+                 cursor: 'pointer', fontWeight: '600'
+               }}
+             >
+               XÓA {selectedTours.length} TOUR
+             </button>
+           )}
+           <button 
+             onClick={() => handleOpenDrawer(null)}
+             style={{
+               background: '#ff5722',
+               color: 'white',
+               border: 'none',
+               padding: '10px 20px',
+               borderRadius: '6px',
+               display: 'flex',
+               alignItems: 'center',
+               gap: '8px',
+               cursor: 'pointer',
+               fontWeight: '600'
+             }}
+           >
+             <Plus size={18} /> TẠO TOUR MỚI
+           </button>
          </div>
-      </div>
-
-      {/* Action Buttons Row */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-         <button onClick={() => handleOpenDrawer(null)} style={{ background: '#22c55e', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>
-           <Plus size={14} /> Tạo tour
-         </button>
-         <button onClick={exportAllMembersXlsx} style={{ background: '#f97316', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>
-           <Plus size={14} /> Export
-         </button>
-         <button onClick={() => window.open('/simple-list-share/lich_dai_ly', '_blank')} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>
-           <Users size={14} /> Lịch cho đại lý
-         </button>
-      </div>
-
-      {/* Market Filter: Pill Action Bar */}
-      <div style={{ marginBottom: '15px' }}>
-         <MarketFilterBar 
-            activeMarket={activeMarket} 
-            setActiveMarket={setActiveMarket} 
-            marketOptions={marketOptions} 
-         />
-      </div>
+      </MarketFilterBar>
       <hr style={{ borderTop: '1px solid #e2e8f0', margin: '0 0 15px 0' }} />
 
       {/* Sub Status Row */}
@@ -924,19 +1215,17 @@ export default function OpToursTab({ currentUser }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
           <thead>
             <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#1e293b', borderTop: '1px solid #e2e8f0' }}>
-              <th style={{ padding: '12px 8px', width: '30px' }}><input type="checkbox" /></th>
+              <th style={{ padding: '12px 8px', width: '30px' }}><input type="checkbox" checked={currentTours.length > 0 && selectedTours.length === currentTours.length} onChange={handleSelectAll} /></th>
               <th style={{ padding: '12px 8px', width: '30px', fontWeight: 'bold' }}>STT</th>
               <th style={{ padding: '12px 8px', fontWeight: 'bold' }}>Sản phẩm Tour</th>
-              <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center' }}>Ngày khởi hành</th>
+              <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center' }}>Khởi hành<br/><span style={{fontSize: '11px', fontWeight: 'normal', color: '#64748b'}}>Ngày về</span></th>
               <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'right' }}>Giá</th>
-              <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center' }}>Hoa<br/>Hồng</th>
-              <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center' }}>Đã thu<br/>(Cọc)</th>
+              <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center', lineHeight: '1.6' }}>Tổng tiền<br/><span style={{color:'#22c55e'}}>Thực thu</span><br/><span style={{color:'#ef4444'}}>Còn thiếu</span></th>
               <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center' }}>Tổng<br/>chỗ</th>
               <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center' }}>Giữ<br/>chỗ</th>
               <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center' }}>Đã<br/>bán</th>
               <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center' }}>Còn lại</th>
               <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center' }}>Ngày đóng<br/>chỗ</th>
-              <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'center' }}>Ghi chú</th>
               <th style={{ padding: '12px 8px', fontWeight: 'bold', textAlign: 'right' }}>Chức năng</th>
             </tr>
           </thead>
@@ -949,6 +1238,8 @@ export default function OpToursTab({ currentUser }) {
               let reservedQty = Number(tour.total_reserved || 0);
               let soldQty = Number(tour.total_sold || 0);
               let totalPaid = Number(tour.total_paid || 0);
+              let totalBookingAmount = Number(tour.total_booking_amount || 0);
+              let totalRemaining = totalBookingAmount - totalPaid;
               let totalComm = 0; // Comm calculated server-side in future if needed
 
               const reservedTooltip = 'Xem trong danh sách';
@@ -958,36 +1249,36 @@ export default function OpToursTab({ currentUser }) {
               
               return (
               <tr key={tour.id} style={{ borderBottom: '1px solid #f1f5f9', position: 'relative' }}>
-                <td style={{ padding: '12px 8px', borderLeft: '5px solid #fbbf24' }}><input type="checkbox" /></td>
+                <td style={{ padding: '12px 8px', borderLeft: `5px solid ${getBUColor(tour.bu_group)}` }}><input type="checkbox" checked={selectedTours.includes(tour.id)} onChange={() => handleSelectTour(tour.id)} /></td>
                 <td style={{ padding: '12px 8px', color: '#64748b' }}>{index + 1}</td>
                 <td style={{ padding: '12px 8px' }}>
-                   {tour.tour_info?.internal_notes && (
-                      <div className="note-tooltip-container" style={{ display: 'inline-flex', position: 'relative', alignItems: 'center', marginBottom: '4px' }}>
-                         <span title="Có ghi chú nội bộ" style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fcd34d', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', cursor: 'help', fontWeight: 'bold' }}>
-                            📌 GHI CHÚ LƯU Ý
-                         </span>
-                         <div className="note-tooltip" style={{
-                            position: 'absolute', bottom: '100%', left: '0', marginBottom: '8px',
-                            background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e',
-                            padding: '10px 12px', borderRadius: '6px', fontSize: '12px',
-                            width: 'max-content', maxWidth: '300px', zIndex: 50,
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-                            display: 'none', whiteSpace: 'pre-wrap', fontWeight: 'normal'
-                         }}>
-                            <div style={{ fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #fcd34d', paddingBottom: '4px' }}>📌 Ghi chú nội bộ:</div>
-                            {tour.tour_info.internal_notes}
-                         </div>
-                      </div>
-                   )}
-                   <style>{`
-                      .note-tooltip-container:hover .note-tooltip { display: block !important; }
-                   `}</style>
                    <div style={{ color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', marginBottom: '4px', fontSize: '12px' }} onClick={() => handleOpenDrawer(tour)}>
                       {tour.tour_code}
                    </div>
-                   <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '13px', color: '#1e293b' }}>
+                   <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '13px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       {tour.tour_name}
+                      {tour.tour_info?.internal_notes && (
+                         <div className="note-tooltip-container" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
+                            <span style={{ cursor: 'help', fontSize: '11px', background: '#fef3c7', color: '#d97706', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid #fcd34d', fontWeight: 'bold' }} title="Có ghi chú nội bộ">
+                               <span style={{ fontSize: '12px' }}>📝</span> Ghi chú
+                            </span>
+                            <div className="note-tooltip" style={{
+                               position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '8px',
+                               background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e',
+                               padding: '10px 12px', borderRadius: '6px', fontSize: '12px',
+                               width: 'max-content', maxWidth: '350px', zIndex: 9999,
+                               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                               display: 'none', whiteSpace: 'pre-wrap', fontWeight: 'normal'
+                            }}>
+                               <div style={{ fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #fcd34d', paddingBottom: '4px' }}>📜 Ghi chú nội bộ:</div>
+                               {tour.tour_info.internal_notes}
+                            </div>
+                         </div>
+                      )}
                    </div>
+                   <style>{`
+                      .note-tooltip-container:hover .note-tooltip { display: block !important; }
+                   `}</style>
                    <div style={{ color: '#64748b', fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
                      {(() => {
                         const info = tour.tour_info || {};
@@ -1009,33 +1300,29 @@ export default function OpToursTab({ currentUser }) {
                         return (
                           <>
                              {depAirlineName && depFlight && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '6px' }}>
-                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                      <div style={{ width: '90px', height: '35px', display: 'flex', alignItems: 'center' }}>
-                                         {depAir?.logo_url ? <img src={`/airlines/${depAir.logo_url}`} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt="logo" /> : <Plane size={20} color="#64748b" />}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '8px' }}>
+                                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                                      <span style={{ fontWeight: 700, color: '#e11d48', fontSize: '12px', whiteSpace: 'nowrap' }}>{depAirlineName}</span>
+                                      <span style={{ fontWeight: 700, color: '#1e293b', fontSize: '12px', whiteSpace: 'pre-wrap' }}>{depFlight}</span>
+                                   </div>
+                                   {info.pickup_point && (
+                                      <div style={{ color: '#64748b', fontSize: '11px', fontWeight: 600 }}>
+                                         {info.pickup_point}
                                       </div>
-                                      <span style={{ fontWeight: 700, color: '#1e293b', fontSize: '13px' }}>{String(depFlight).split(' ')[0]}</span>
-                                   </div>
-                                   <div style={{ color: '#64748b', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                      <span style={{ fontWeight: 600 }}>{info.pickup_point || 'Khác'}</span>
-                                      <span style={{ color: '#94a3b8', fontSize: '14px' }}>➔</span>
-                                      <span style={{ fontWeight: 600 }}>{info.dropoff_point || 'Khác'}</span>
-                                   </div>
+                                   )}
                                 </div>
                              )}
                              {retAirlineName && retFlight && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                      <div style={{ width: '90px', height: '35px', display: 'flex', alignItems: 'center' }}>
-                                         {retAir?.logo_url ? <img src={`/airlines/${retAir.logo_url}`} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt="logo" /> : <Plane size={20} color="#64748b" />}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '8px' }}>
+                                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                                      <span style={{ fontWeight: 700, color: '#e11d48', fontSize: '12px', whiteSpace: 'nowrap' }}>{retAirlineName}</span>
+                                      <span style={{ fontWeight: 700, color: '#1e293b', fontSize: '12px', whiteSpace: 'pre-wrap' }}>{retFlight}</span>
+                                   </div>
+                                   {info.dropoff_point && (
+                                      <div style={{ color: '#64748b', fontSize: '11px', fontWeight: 600 }}>
+                                         {info.dropoff_point}
                                       </div>
-                                      <span style={{ fontWeight: 700, color: '#1e293b', fontSize: '13px' }}>{String(retFlight).split(' ')[0]}</span>
-                                   </div>
-                                   <div style={{ color: '#64748b', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                      <span style={{ fontWeight: 600 }}>{info.dropoff_point || 'Khác'}</span>
-                                      <span style={{ color: '#94a3b8', fontSize: '14px' }}>➔</span>
-                                      <span style={{ fontWeight: 600 }}>{info.pickup_point || 'Khác'}</span>
-                                   </div>
+                                   )}
                                 </div>
                              )}
                           </>
@@ -1043,17 +1330,17 @@ export default function OpToursTab({ currentUser }) {
                      })()}
                    </div>
                 </td>
-                <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 'bold' }}>
-                   {tour.start_date ? new Date(tour.start_date).toLocaleDateString('vi-VN') : '---'}
+                <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                   <div style={{ fontWeight: 'bold', color: '#1e293b' }}>{tour.start_date ? new Date(tour.start_date).toLocaleDateString('vi-VN') : '---'}</div>
+                   <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>{tour.end_date ? new Date(tour.end_date).toLocaleDateString('vi-VN') : '---'}</div>
                 </td>
                 <td style={{ padding: '12px 8px', textAlign: 'right', fontWeight: 'bold' }}>
                     {tour.tour_info?.price_adult?.toLocaleString() || '---'}
                 </td>
-                <td style={{ padding: '12px 8px', textAlign: 'center', color: '#10b981', fontWeight: 'bold' }}>
-                    {totalComm.toLocaleString()}
-                </td>
-                <td style={{ padding: '12px 8px', textAlign: 'center', color: '#22c55e', fontWeight: 'bold' }}>
-                    {totalPaid.toLocaleString()}
+                <td style={{ padding: '8px', textAlign: 'center', fontSize: '11px' }}>
+                   <div style={{ fontWeight: 'bold', color: '#1e293b', marginBottom: '2px' }}>{totalBookingAmount > 0 ? totalBookingAmount.toLocaleString() : '---'}</div>
+                   <div style={{ color: '#22c55e', fontWeight: '600' }}>{totalPaid > 0 ? totalPaid.toLocaleString() : '0'}</div>
+                   {totalRemaining > 0 && <div style={{ color: '#ef4444', fontWeight: '600' }}>{totalRemaining.toLocaleString()}</div>}
                 </td>
                 <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 'bold' }}>
                     {total}
@@ -1068,11 +1355,9 @@ export default function OpToursTab({ currentUser }) {
                     {remaining}
                 </td>
                 <td style={{ padding: '12px 8px', textAlign: 'center', color: '#64748b' }}>
-                    {tour.tour_info?.closing_date ? new Date(tour.tour_info.closing_date).toLocaleDateString('vi-VN') : '---'}
+                    {tour.tour_info?.close_time ? new Date(tour.tour_info.close_time).toLocaleDateString('vi-VN') : '---'}
                 </td>
-                <td style={{ padding: '12px 8px', textAlign: 'center', color: '#64748b' }}>
-                    {tour.notes || ''}
-                </td>
+
                 <td style={{ padding: '12px 8px', textAlign: 'center', verticalAlign: 'middle' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
                     <button 
@@ -1182,6 +1467,7 @@ export default function OpToursTab({ currentUser }) {
       <OpTourAddCustomerModal 
         isOpen={isCustomerModalOpen} 
         initialData={editingBookingData}
+        tour={selectedBookingTour}
         currentUser={currentUser}
         onClose={() => setIsCustomerModalOpen(false)} 
         onSave={async (data) => {
@@ -1254,8 +1540,13 @@ export default function OpToursTab({ currentUser }) {
                   ) : viewingAllMembers.allMembers.map((m, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid #f1f5f9', background: i % 2 === 0 ? 'white' : '#fafbfc' }}>
                       <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 'bold', color: '#64748b', borderRight: '1px solid #f1f5f9' }}>{i + 1}</td>
-                      <td style={{ padding: '8px 6px', fontWeight: 600, color: m.isBooker ? '#ea580c' : '#1e293b', borderRight: '1px solid #f1f5f9', minWidth: '130px' }}>
+                      <td style={{ padding: '8px 6px', fontWeight: 600, color: m.isBooker ? '#ea580c' : '#1e293b', borderRight: '1px solid #f1f5f9', minWidth: '130px', position: 'relative' }}>
                         {m.name || '---'}
+                        {m.passportUrl && (
+                           <a href={m.passportUrl.startsWith('/') ? `https://crm.tournuocngoai.com${m.passportUrl}` : m.passportUrl} target="_blank" rel="noreferrer" style={{ marginLeft: '8px', background: '#e0e7ff', color: '#4f46e5', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid #c7d2fe' }} title="Xem Hộ chiếu">
+                              <span role="img" aria-label="eye">👁️</span> Xem
+                           </a>
+                        )}
                         {m.isBooker && <span style={{ color: '#ea580c' }}>*</span>}
                         {m.isBooker && <div style={{ fontSize: '10px', color: '#3b82f6', fontWeight: 700 }}>Số chỗ: {m.numSlots}</div>}
                       </td>
@@ -1316,6 +1607,343 @@ export default function OpToursTab({ currentUser }) {
         </div>
       )}
 
+      {/* CEO Dashboards Modal */}
+      {activeCeoModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100001, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+          <div className="animate-slide-up" style={{ background: 'white', borderRadius: '16px', width: '95%', maxWidth: '1200px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px rgba(0,0,0,0.25)' }}>
+            
+            <div style={{ padding: '20px 25px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', borderRadius: '16px 16px 0 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {activeCeoModal === 'sales' ? <Award size={22} color="#f59e0b" /> : <Plane size={22} color="#ec4899" />}
+                <h3 style={{ margin: 0, color: '#1e293b', fontSize: '18px', fontWeight: 800 }}>
+                  {activeCeoModal === 'sales' ? 'Bảng Vàng Sales (Top Revenue)' : 'Theo Dõi Sức Khỏe Lịch Khởi Hành'}
+                </h3>
+              </div>
+              <button onClick={() => setActiveCeoModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
+                <X size={22} color="#64748b" />
+              </button>
+            </div>
+
+            <div style={{ padding: '24px', overflowY: 'auto' }}>
+              {loadingCeoData ? (
+                <div style={{ textAlign: 'center', padding: '40px' }}><Activity size={32} color="#3b82f6" className="spin" /></div>
+              ) : (
+                <>
+                  {activeCeoModal === 'sales' && (() => {
+                    const salesDataRaw = ceoDashboardData?.sales_details || [];
+                    
+                    const uniqueMonths = ['Tất cả', ...Array.from(new Set(salesDataRaw.map(s => `Tháng ${s.month}/${s.year}`)))];
+                    const uniqueBUs = ['Tất cả', ...Array.from(new Set(salesDataRaw.map(s => s.bu_group || 'Chưa phân loại'))).filter(bu => bu !== 'BU3')];
+
+                    const filteredRaw = salesDataRaw.filter(s => {
+                      const mStr = `Tháng ${s.month}/${s.year}`;
+                      const matchMonth = salesActiveMonth === 'Tất cả' || mStr === salesActiveMonth;
+                      const matchBU = salesActiveBU === 'Tất cả' || (s.bu_group || 'Chưa phân loại') === salesActiveBU;
+                      return matchMonth && matchBU;
+                    });
+
+                    // Aggregate by sale_name
+                    const aggregatedSales = {};
+                    let totalRevenue = 0;
+                    
+                    filteredRaw.forEach(s => {
+                      if (!aggregatedSales[s.sale_name]) {
+                        aggregatedSales[s.sale_name] = { sale_name: s.sale_name, booking_count: 0, total_pax: 0, revenue: 0 };
+                      }
+                      aggregatedSales[s.sale_name].booking_count += Number(s.booking_count || 0);
+                      aggregatedSales[s.sale_name].total_pax += Number(s.total_pax || 0);
+                      aggregatedSales[s.sale_name].revenue += Number(s.revenue || 0);
+                      totalRevenue += Number(s.revenue || 0);
+                    });
+
+                    const finalSales = Object.values(aggregatedSales).sort((a, b) => b.revenue - a.revenue);
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        {/* Filters */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginRight: '4px', whiteSpace: 'nowrap' }}>THÁNG:</div>
+                            {uniqueMonths.map(m => (
+                              <button key={m} onClick={() => setSalesActiveMonth(m)}
+                                style={{
+                                  padding: '4px 12px', borderRadius: '16px', fontSize: '0.8rem', fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                                  background: salesActiveMonth === m ? '#f59e0b' : '#f1f5f9', color: salesActiveMonth === m ? 'white' : '#64748b',
+                                }}>{m}</button>
+                            ))}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginRight: '4px', whiteSpace: 'nowrap' }}>TEAM:</div>
+                            {uniqueBUs.map(bu => (
+                              <button key={bu} onClick={() => setSalesActiveBU(bu)}
+                                style={{
+                                  padding: '4px 12px', borderRadius: '16px', fontSize: '0.8rem', fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                                  background: salesActiveBU === bu ? '#3b82f6' : '#f1f5f9', color: salesActiveBU === bu ? 'white' : '#64748b',
+                                }}>{bu === 'Tất cả' ? 'Tất cả BU' : bu}</button>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div style={{ overflowX: 'auto', maxHeight: '60vh', paddingRight: '4px' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
+                            <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: '#f8fafc', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                              <tr style={{ textAlign: 'left' }}>
+                                <th style={{ padding: '12px 16px', color: '#64748b', fontSize: '0.8rem', width: '60px' }}>#</th>
+                                <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem' }}>NHÂN VIÊN</th>
+                                <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'center' }}>ĐƠN</th>
+                                <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'center' }}>KHÁCH</th>
+                                <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'right' }}>DOANH THU</th>
+                                <th style={{ padding: '12px 16px', color: '#64748b', fontSize: '0.8rem', width: '150px' }}>TỶ TRỌNG</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {finalSales.map((s, idx) => {
+                                const isTop1 = idx === 0;
+                                const isTop2 = idx === 1;
+                                const isTop3 = idx === 2;
+                                const pct = totalRevenue > 0 ? (s.revenue / totalRevenue) * 100 : 0;
+                                
+                                let rankBadge = <span style={{ width: '28px', height: '28px', background: '#f1f5f9', color: '#64748b', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800 }}>{idx + 1}</span>;
+                                if (isTop1) rankBadge = <span style={{ fontSize: '1.4rem' }}>🏆</span>;
+                                else if (isTop2) rankBadge = <span style={{ fontSize: '1.2rem' }}>🥈</span>;
+                                else if (isTop3) rankBadge = <span style={{ fontSize: '1.1rem' }}>🥉</span>;
+
+                                return (
+                                  <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: isTop1 ? '#fffbeb' : 'white', transition: 'all 0.2s' }}>
+                                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>{rankBadge}</td>
+                                    <td style={{ padding: '12px', fontWeight: 800, color: isTop1 ? '#d97706' : '#1e293b', fontSize: '0.95rem' }}>{s.sale_name}</td>
+                                    <td style={{ padding: '12px', textAlign: 'center', color: '#475569', fontWeight: 600, fontSize: '0.9rem' }}>{s.booking_count}</td>
+                                    <td style={{ padding: '12px', textAlign: 'center', color: '#10b981', fontWeight: 700, fontSize: '0.9rem' }}>{s.total_pax || 0}</td>
+                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 800, color: '#1d4ed8', fontSize: '0.95rem', whiteSpace: 'nowrap' }}>{Math.round(s.revenue).toLocaleString('vi-VN')} đ</td>
+                                    <td style={{ padding: '12px 16px' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <div style={{ flex: 1, height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+                                          <div style={{ width: `${Math.min(pct, 100)}%`, height: '100%', background: isTop1 ? '#f59e0b' : '#3b82f6' }}></div>
+                                        </div>
+                                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', minWidth: '35px', textAlign: 'right' }}>{pct.toFixed(1)}%</span>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                              {finalSales.length === 0 && (
+                                <tr><td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>Không có dữ liệu Sales cho khoảng thời gian này.</td></tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {activeCeoModal === 'health' && (() => {
+                    const healthTours = ceoDashboardData?.upcoming || [];
+                    
+                    const uniqueMonths = ['Tất cả', ...Array.from(new Set(healthTours.map(t => {
+                      const d = new Date(t.start_date);
+                      return `Tháng ${d.getMonth() + 1}/${d.getFullYear()}`;
+                    })))];
+
+                    const uniqueBUs = ['Tất cả', ...Array.from(new Set(healthTours.map(t => t.bu_group || 'Chưa phân loại'))).filter(bu => bu !== 'BU3')];
+
+                    const filteredHealthTours = healthTours.filter(t => {
+                      const d = new Date(t.start_date);
+                      const mStr = `Tháng ${d.getMonth() + 1}/${d.getFullYear()}`;
+                      const matchMonth = healthActiveMonth === 'Tất cả' || mStr === healthActiveMonth;
+                      const matchBU = healthActiveBU === 'Tất cả' || (t.bu_group || 'Chưa phân loại') === healthActiveBU;
+                      return matchMonth && matchBU;
+                    });
+
+                    const totalTours = filteredHealthTours.length;
+                    const totalSlots = filteredHealthTours.reduce((sum, t) => sum + (t.max_participants || 1), 0);
+                    const totalPax = filteredHealthTours.reduce((sum, t) => sum + Number(t.current_pax || 0), 0);
+                    const avgFillRate = totalSlots > 0 ? Math.round((totalPax / totalSlots) * 100) : 0;
+                    const missingPax = Math.max(0, totalSlots - totalPax);
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        {/* Filters */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginRight: '4px', whiteSpace: 'nowrap' }}>THÁNG:</div>
+                            {uniqueMonths.map(m => (
+                              <button key={m} onClick={() => setHealthActiveMonth(m)}
+                                style={{
+                                  padding: '4px 12px', borderRadius: '16px', fontSize: '0.8rem', fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                                  background: healthActiveMonth === m ? '#ec4899' : '#f1f5f9', color: healthActiveMonth === m ? 'white' : '#64748b',
+                                }}>{m}</button>
+                            ))}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginRight: '4px', whiteSpace: 'nowrap' }}>TEAM:</div>
+                            {uniqueBUs.map(bu => (
+                              <button key={bu} onClick={() => setHealthActiveBU(bu)}
+                                style={{
+                                  padding: '4px 12px', borderRadius: '16px', fontSize: '0.8rem', fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                                  background: healthActiveBU === bu ? '#3b82f6' : '#f1f5f9', color: healthActiveBU === bu ? 'white' : '#64748b',
+                                }}>{bu === 'Tất cả' ? 'Tất cả BU' : bu}</button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Summary */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                          <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Số Chuyến</div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a' }}>{totalTours}</div>
+                          </div>
+                          <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Lấp Đầy</div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: avgFillRate < 60 ? '#ef4444' : '#10b981' }}>{avgFillRate}%</div>
+                          </div>
+                          <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Cần Chốt</div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f59e0b' }}>{missingPax}</div>
+                          </div>
+                        </div>
+
+                        {/* Tour List */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px', maxHeight: '60vh', overflowY: 'auto', paddingRight: '4px', alignContent: 'start' }}>
+                          {filteredHealthTours.map((u, idx) => {
+                            const fillRate = Math.round((Number(u.current_pax) / (u.max_participants || 1)) * 100);
+                            const isWarning = fillRate < 60;
+                            return (
+                              <div key={idx} style={{ padding: '16px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                  <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '0.9rem' }}>{u.tour_name}</div>
+                                  <div style={{ fontSize: '0.8rem', color: '#64748b', whiteSpace: 'nowrap', marginLeft: '12px' }}>{new Date(u.start_date).toLocaleDateString('vi-VN')}</div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                                  <div style={{ flex: 1, height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                                    <div style={{ width: `${Math.min(fillRate, 100)}%`, height: '100%', background: isWarning ? '#ef4444' : '#10b981' }}></div>
+                                  </div>
+                                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: isWarning ? '#ef4444' : '#10b981', minWidth: '40px', textAlign: 'right' }}>{fillRate}%</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                                  <div style={{ color: '#64748b' }}>Hành khách: <strong>{u.current_pax} / {u.max_participants}</strong> <span style={{color: '#94a3b8', fontSize: '0.7rem', marginLeft: '6px'}}>[{u.bu_group || 'Chưa phân loại'}]</span></div>
+                                  <div style={{ fontWeight: 700, color: '#1d4ed8' }}>DT: {Math.round(u.total_revenue).toLocaleString('vi-VN')}đ</div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {filteredHealthTours.length === 0 && (
+                             <div style={{ textAlign: 'center', padding: '30px', color: '#94a3b8', fontSize: '0.9rem' }}>Không có lịch khởi hành phù hợp với bộ lọc.</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CSS Styles for Executive UI extracted from LeadsDashboard */}
+      <style>{`
+        /* Fixed Single-Row Filter Panel */
+        .executive-filter-panel {
+          background: #ffffff;
+          border-radius: 12px;
+          border: 1px solid #f1f5f9;
+        }
+        .filter-scroll-container {
+          width: 100%;
+          overflow-x: auto;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .filter-scroll-container::-webkit-scrollbar {
+          display: none;
+        }
+        
+        .horizontal-filter-row {
+          width: 100%;
+        }
+
+        .segmented-control.glass {
+          display: flex;
+          background: #f8fafc;
+          padding: 5px;
+          border-radius: 8px;
+          border: 1px solid #f1f5f9;
+          flex-shrink: 0;
+          gap: 4px;
+        }
+        .segment-btn {
+          padding: 7px 15px;
+          font-size: 11px;
+          font-weight: 800;
+          color: #64748b;
+          border-radius: 6px;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .segment-btn:hover {
+          color: #6366f1;
+        }
+        .segment-btn.active {
+          background: #ffffff;
+          color: #6366f1;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .filter-divider {
+          width: 1px;
+          background: #e2e8f0;
+          flex-shrink: 0;
+        }
+
+        .executive-select-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+          flex-shrink: 0;
+        }
+        .executive-select-wrapper::after {
+          content: '▾';
+          position: absolute;
+          right: 12px;
+          font-size: 12px;
+          color: #6366f1;
+          pointer-events: none;
+        }
+        .executive-select-wrapper select {
+          padding: 7px 30px 7px 14px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 800;
+          color: #1e293b;
+          outline: none;
+          cursor: pointer;
+          appearance: none;
+          min-width: 100px;
+        }
+
+        .date-input-group.premium {
+          display: flex;
+          align-items: center; gap: 6px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          padding: 5px 12px;
+          border-radius: 8px;
+          flex-shrink: 0;
+        }
+        .date-input-group input {
+          border: none;
+          outline: none;
+          background: transparent;
+          font-size: 10px;
+          font-weight: 800;
+          color: #1e293b;
+        }
+      `}</style>
     </div>
   );
 }

@@ -14,21 +14,21 @@ const EDIT_ROLES = {
     group: ['admin', 'manager', 'operations', 'group_manager', 'group_staff'],
     
     // Module NCC (Hotels, Restaurants, Transport, Airline, Insurance, Landtour, Ticket)
-    suppliers: ['admin', 'manager', 'operations'],
+    suppliers: ['admin', 'manager', 'operations', 'sales', 'staff'],
 };
 
 // Các role được phép XÓA (Delete)
 const DELETE_ROLES = {
     core: ['admin', 'manager'],
     group: ['admin', 'manager', 'group_manager'],
-    suppliers: ['admin', 'manager'],
+    suppliers: ['admin', 'manager', 'operations', 'sales', 'staff'],
 };
 
 // Các role được phép TẠO MỚI (Create / Nút "Thêm")
 const CREATE_ROLES = {
     core: ['admin', 'manager', 'operations'],
     group: ['admin', 'manager', 'operations', 'group_manager', 'group_staff'],
-    suppliers: ['admin', 'manager', 'operations'],
+    suppliers: ['admin', 'manager', 'operations', 'sales', 'staff'],
 };
 
 /**

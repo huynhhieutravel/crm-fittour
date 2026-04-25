@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Trash2, AlertCircle, Image as ImageIcon, Loader, Info, CheckSquare, Calendar } from 'lucide-react';
+import { Trash2, AlertCircle, Image as ImageIcon, Loader, Info, CheckSquare, Calendar, UserCheck, HardDrive } from 'lucide-react';
 
 export default function MediaSettingsTab({ addToast }) {
     const [mediaList, setMediaList] = useState([]);
     const [loading, setLoading] = useState(true);
     
+    // Sub-Tabs: all | passport | voucher | trash
+    const [activeSubTab, setActiveSubTab] = useState('all');
+
     // Filters
     const [filterStartDate, setFilterStartDate] = useState('');
     const [filterEndDate, setFilterEndDate] = useState('');
@@ -35,7 +38,7 @@ export default function MediaSettingsTab({ addToast }) {
     };
 
     const handleDelete = async (filename) => {
-        if (!window.confirm('Bạn có chắc chắn muốn xóa vĩnh viễn hình ảnh này không? Phiếu thu chứa hình này sẽ không gọi được ảnh lên nữa.')) return;
+        if (!window.confirm('Bạn có chắc chắn muốn xóa vĩnh viễn hình ảnh này không? Nếu là hình đang được sử dụng sẽ gây lỗi hiển thị.')) return;
         
         try {
             const token = localStorage.getItem('token');
@@ -78,6 +81,10 @@ export default function MediaSettingsTab({ addToast }) {
     };
 
     const filteredMediaList = mediaList.filter(m => {
+        // Tab filter
+        if (activeSubTab !== 'all' && m.type !== activeSubTab) return false;
+
+        // Date filter
         if (filterStartDate || filterEndDate) {
             const mDate = new Date(m.createdAt);
             mDate.setHours(0,0,0,0);
@@ -110,11 +117,26 @@ export default function MediaSettingsTab({ addToast }) {
         setSelectedMedia(prev => prev.includes(filename) ? prev.filter(f => f !== filename) : [...prev, filename]);
     };
 
+    const tabButtonStyle = (isActive) => ({
+        padding: '10px 20px', 
+        fontSize: '14px', 
+        fontWeight: 'bold', 
+        border: 'none', 
+        background: isActive ? '#2563eb' : '#f1f5f9', 
+        color: isActive ? 'white' : '#475569', 
+        borderRadius: '8px', 
+        cursor: 'pointer',
+        transition: '0.2s',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+    });
+
     return (
         <div style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '24px', fontWeight: 'bold', color: '#1e293b' }}>
-                    <ImageIcon size={28} color="#2563eb" /> Quản lý Media (Kho chứng từ)
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '24px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
+                    <HardDrive size={28} color="#2563eb" /> Quản lý Media (Bộ nhớ lưu trữ)
                 </h2>
                 
                 {selectedMedia.length > 0 && (
@@ -126,12 +148,27 @@ export default function MediaSettingsTab({ addToast }) {
                     </button>
                 )}
             </div>
+
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '16px' }}>
+                <button style={tabButtonStyle(activeSubTab === 'all')} onClick={() => setActiveSubTab('all')}>
+                    <HardDrive size={18} /> Tất cả
+                </button>
+                <button style={tabButtonStyle(activeSubTab === 'passport')} onClick={() => setActiveSubTab('passport')}>
+                    <UserCheck size={18} /> Hộ chiếu khách hàng
+                </button>
+                <button style={tabButtonStyle(activeSubTab === 'voucher')} onClick={() => setActiveSubTab('voucher')}>
+                    <CheckSquare size={18} /> Chứng từ Thu/Chi
+                </button>
+                <button style={tabButtonStyle(activeSubTab === 'trash')} onClick={() => setActiveSubTab('trash')}>
+                    <AlertCircle size={18} /> Thùng rác (Vô chủ)
+                </button>
+            </div>
             
             <div style={{ background: '#fffbeb', border: '1px solid #fef3c7', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', gap: '12px', alignItems: 'flex-start', color: '#92400e' }}>
                 <Info size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>
-                    Tất cả hình ảnh minh chứng Phiếu Thu tải lên sẽ được lưu trữ tại đây.
-                    Hệ thống sẽ <strong> tự động quét các file cũ (không có mã Phiếu Chi/Thu) trên 60 ngày vào 2h sáng hàng ngày</strong> để xoá, tránh đầy máy chủ.
+                    Trung tâm lưu trữ hình ảnh tải lên toàn hệ thống.
+                    Hệ thống sẽ <strong> tự động quét các file Vô chủ (Thùng rác) bị bỏ hoang trên 60 ngày vào 2h sáng hàng ngày</strong> để xoá, tránh đầy máy chủ. Các file đang thuộc Hộ chiếu khách hàng hoặc Phiếu Thu sẽ được giữ lại vĩnh viễn.
                 </p>
             </div>
             
@@ -163,7 +200,7 @@ export default function MediaSettingsTab({ addToast }) {
                             <th style={{ padding: '16px', borderBottom: '1px solid #e2e8f0' }}>Hình Ảnh</th>
                             <th style={{ padding: '16px', borderBottom: '1px solid #e2e8f0' }}>Tên File (Path)</th>
                             <th style={{ padding: '16px', borderBottom: '1px solid #e2e8f0' }}>Ngày Tải Lên</th>
-                            <th style={{ padding: '16px', borderBottom: '1px solid #e2e8f0' }}>Thuộc Phiếu Thu/Chi</th>
+                            <th style={{ padding: '16px', borderBottom: '1px solid #e2e8f0' }}>Tham chiếu hệ thống</th>
                             <th style={{ padding: '16px', borderBottom: '1px solid #e2e8f0', textAlign: 'right' }}>Dung lượng</th>
                         </tr>
                     </thead>
@@ -188,13 +225,19 @@ export default function MediaSettingsTab({ addToast }) {
                                         <td style={{ padding: '16px', fontWeight: 500, color: '#334155', maxWidth: '250px', wordBreak: 'break-all' }}>{m.filename}</td>
                                         <td style={{ padding: '16px', color: '#475569' }}>{new Date(m.createdAt).toLocaleString('vi-VN')}</td>
                                         <td style={{ padding: '16px' }}>
-                                            {m.voucherCode ? (
-                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#dcfce7', color: '#166534', padding: '6px 10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px' }}>
-                                                    <CheckSquare size={14} /> {m.voucherCode}
+                                            {m.type === 'passport' && (
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#e0e7ff', color: '#4338ca', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px' }}>
+                                                    <UserCheck size={16} /> Hộ chiếu khách: {m.ref}
                                                 </span>
-                                            ) : (
-                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#fee2e2', color: '#991b1b', padding: '6px 10px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px' }}>
-                                                    <AlertCircle size={14} /> Hệ thống không dùng (Rác)
+                                            )}
+                                            {m.type === 'voucher' && (
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#dcfce7', color: '#166534', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px' }}>
+                                                    <CheckSquare size={16} /> Phiếu Thu/Chi: {m.ref || m.voucherCode}
+                                                </span>
+                                            )}
+                                            {m.type === 'trash' && (
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#fee2e2', color: '#991b1b', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px' }}>
+                                                    <AlertCircle size={16} /> Rác (Hệ thống không dùng)
                                                 </span>
                                             )}
                                         </td>

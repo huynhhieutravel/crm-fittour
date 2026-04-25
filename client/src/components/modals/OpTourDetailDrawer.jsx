@@ -94,8 +94,8 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
         newData[field] = value;
       }
       
-      // Auto-generate tour_code: [TemplateCode]-[YYYYMMDD]
-      if (field === 'tour_template_id' || field === 'start_date') {
+      // Auto-generate tour_code: [TemplateCode]-[YYYYMMDD] ONLY for new tours
+      if ((field === 'tour_template_id' || field === 'start_date') && !tour?.id) {
         const templateId = field === 'tour_template_id' ? value : newData.tour_template_id;
         const startDate = field === 'start_date' ? value : newData.start_date;
         if (templateId && startDate) {
@@ -258,7 +258,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 <div style={{ gridColumn: 'span 3' }}>
                    <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Sản phẩm Tour: {!tour?.id && <span style={{color:'red'}}>(*)</span>}</label>
                    <Select
-                       options={tourTemplates.map(t => ({ label: `${t.code} - ${t.name}`, value: t.id, tour: t }))}
+                       options={tourTemplates.filter(t => t.is_active !== false).map(t => ({ label: `${t.code} - ${t.name}`, value: t.id, tour: t }))}
                        value={tourTemplates.map(t => ({ label: `${t.code} - ${t.name}`, value: t.id, tour: t })).find(o => o.value === formData.tour_template_id || (!formData.tour_template_id && formData.tour_name && o.tour.name === formData.tour_name)) || null}
                        onChange={opt => {
                           if (opt) {
@@ -278,31 +278,45 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                    />
                 </div>
                 <div style={{ gridColumn: 'span 3' }}>
-                   <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Hành trình bay:</label>
-                   <input type="text" style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formData.tour_info.flight_itinerary || ''} onChange={e => handleChange('flight_itinerary', e.target.value, true)} />
-                </div>
-                <div style={{ gridColumn: 'span 2' }}>
                    <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Nhóm/Thị trường:</label>
                    <Select
                        options={marketOptions}
-                       value={formData.market ? formData.market.split(',').map(m => ({ label: m.trim(), value: m.trim() })) : []}
-                       onChange={options => handleChange('market', options ? options.map(o => o.value).join(',') : '')}
+                       value={
+                          formData.market_ids && formData.market_ids.length > 0
+                            ? formData.market_ids.map(id => {
+                                for (const group of marketOptions) {
+                                  if (group.id === id) return { label: group.label, value: group.label, id: group.id };
+                                  const child = group.options?.find(o => o.id === id);
+                                  if (child) return child;
+                                }
+                                return null;
+                              }).filter(Boolean)
+                            : (formData.market ? formData.market.split(',').map(m => ({ label: m.trim(), value: m.trim() })) : [])
+                       }
+                       onChange={options => {
+                          handleChange('market', options ? options.map(o => o.value).join(',') : '');
+                          handleChange('market_ids', options ? options.map(o => o.id) : []);
+                       }}
                        isMulti
                        isClearable
                        placeholder="Tìm Tuyến điểm..."
                        styles={{ control: (base) => ({ ...base, minHeight: '36px', borderColor: '#cbd5e1', fontSize: '13px' }), menu: (base) => ({ ...base, fontSize: '13px' }) }}
                    />
                 </div>
-                <div style={{ gridColumn: 'span 1' }}>
+                <div style={{ gridColumn: 'span 2' }}>
                     <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Khởi hành: <span style={{color:'red'}}>(*)</span></label>
                     <input type="date" style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', boxSizing: 'border-box' }} value={formData.start_date} onChange={e => handleChange('start_date', e.target.value)} />
                 </div>
-                <div style={{ gridColumn: 'span 1' }}>
+                <div style={{ gridColumn: 'span 2' }}>
                     <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Ngày về: <span style={{color:'red'}}>(*)</span></label>
                     <input type="date" style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', boxSizing: 'border-box' }} value={formData.end_date} onChange={e => handleChange('end_date', e.target.value)} />
                 </div>
 
-                <div style={{ gridColumn: 'span 6' }}>
+                <div style={{ gridColumn: 'span 4' }}>
+                   <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Hành trình bay:</label>
+                   <input type="text" style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formData.tour_info.flight_itinerary || ''} onChange={e => handleChange('flight_itinerary', e.target.value, true)} />
+                </div>
+                <div style={{ gridColumn: 'span 4' }}>
                     <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Nhân viên điều hành:</label>
                     <Select
                         isMulti
@@ -313,7 +327,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                         styles={{ control: (base) => ({ ...base, minHeight: '36px', borderColor: '#cbd5e1' }) }}
                     />
                 </div>
-                <div style={{ gridColumn: 'span 6' }}>
+                <div style={{ gridColumn: 'span 4' }}>
                     <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Tour Guide:</label>
                     <Select 
                         options={guides}
@@ -363,14 +377,14 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 </div>
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                    <label style={{ fontSize: '12px', color: '#64748b', width: '100px', textAlign: 'right', paddingTop: '8px' }}>Hành trình đi {formData.tour_info?.transport === 'Đường hàng không' && <span style={{color:'red'}}>(*)</span>}</label>
-                   <div style={{ width: '220px' }}>
+                   <div style={{ width: '160px' }}>
                        <Select 
                            options={airlinesList}
                            value={airlinesList.find(a => a.value === formData.tour_info.dep_airline) || (formData.tour_info.dep_airline ? { label: formData.tour_info.dep_airline, value: formData.tour_info.dep_airline } : null)}
                            onChange={opt => handleChange('dep_airline', opt ? opt.value : '', true)}
                            isClearable
                            placeholder="Chọn Hãng bay..."
-                           styles={{ control: (base) => ({ ...base, minHeight: '36px', borderColor: '#cbd5e1' }) }}
+                           styles={{ control: (base) => ({ ...base, minHeight: '36px', borderColor: '#cbd5e1', fontSize: '13px' }), singleValue: (base) => ({ ...base, fontSize: '13px' }), option: (base) => ({...base, fontSize: '13px'}) }}
                        />
                    </div>
                    <textarea placeholder="Chuyến bay, ngày giờ (Enter xuống dòng)..." style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', minWidth: '100px', minHeight: '52px', resize: 'vertical', fontSize: '13px', lineHeight: '1.4' }} value={formData.tour_info.departure_flight || ''} onChange={e => handleChange('departure_flight', e.target.value, true)} />
@@ -382,21 +396,21 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 </div>
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                    <label style={{ fontSize: '12px', color: '#64748b', width: '100px', textAlign: 'right', paddingTop: '8px' }}>Hành trình về {formData.tour_info?.transport === 'Đường hàng không' && <span style={{color:'red'}}>(*)</span>}</label>
-                   <div style={{ width: '220px' }}>
+                   <div style={{ width: '160px' }}>
                        <Select 
                            options={airlinesList}
                            value={airlinesList.find(a => a.value === formData.tour_info.ret_airline) || (formData.tour_info.ret_airline ? { label: formData.tour_info.ret_airline, value: formData.tour_info.ret_airline } : null)}
                            onChange={opt => handleChange('ret_airline', opt ? opt.value : '', true)}
                            isClearable
                            placeholder="Chọn Hãng bay..."
-                           styles={{ control: (base) => ({ ...base, minHeight: '36px', borderColor: '#cbd5e1' }) }}
+                           styles={{ control: (base) => ({ ...base, minHeight: '36px', borderColor: '#cbd5e1', fontSize: '13px' }), singleValue: (base) => ({ ...base, fontSize: '13px' }), option: (base) => ({...base, fontSize: '13px'}) }}
                        />
                    </div>
                    <textarea placeholder="Chuyến bay, ngày giờ (Enter xuống dòng)..." style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', minWidth: '100px', minHeight: '52px', resize: 'vertical', fontSize: '13px', lineHeight: '1.4' }} value={formData.tour_info.return_flight || ''} onChange={e => handleChange('return_flight', e.target.value, true)} />
                 </div>
 
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px' }}>Giá trẻ em</label>
+                   <input type="text" value={formData.tour_info.price_child_label_1 || 'Giá trẻ em'} onChange={e => handleChange('price_child_label_1', e.target.value, true)} style={{ width: '130px', padding: '8px', border: '1px solid transparent', borderRadius: '4px', fontSize: '12px', color: '#64748b', background: 'transparent', cursor: 'text' }} onFocus={e => e.target.style.borderColor = '#cbd5e1'} onBlur={e => e.target.style.borderColor = 'transparent'} />
                    <div style={{ display: 'flex', gap: '5px', flex: 1 }}>
                      <input type="number" placeholder="%" value={formData.tour_info.price_child_2_5_percent || ''} onChange={e => {
                          const percent = Number(e.target.value);
@@ -415,7 +429,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 </div>
 
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px' }}>Giá trẻ em (2-10)</label>
+                   <input type="text" value={formData.tour_info.price_child_label_2 || 'Giá trẻ em (2-10)'} onChange={e => handleChange('price_child_label_2', e.target.value, true)} style={{ width: '130px', padding: '8px', border: '1px solid transparent', borderRadius: '4px', fontSize: '12px', color: '#64748b', background: 'transparent', cursor: 'text' }} onFocus={e => e.target.style.borderColor = '#cbd5e1'} onBlur={e => e.target.style.borderColor = 'transparent'} />
                    <div style={{ display: 'flex', gap: '5px', flex: 1 }}>
                      <input type="number" placeholder="%" value={formData.tour_info.price_child_6_11_percent || ''} onChange={e => {
                          const percent = Number(e.target.value);
@@ -434,7 +448,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 </div>
 
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <label style={{ fontSize: '12px', color: '#64748b', width: '130px' }}>Giá em bé (&lt;2)</label>
+                   <input type="text" value={formData.tour_info.price_infant_label || 'Giá em bé (<2)'} onChange={e => handleChange('price_infant_label', e.target.value, true)} style={{ width: '130px', padding: '8px', border: '1px solid transparent', borderRadius: '4px', fontSize: '12px', color: '#64748b', background: 'transparent', cursor: 'text' }} onFocus={e => e.target.style.borderColor = '#cbd5e1'} onBlur={e => e.target.style.borderColor = 'transparent'} />
                    <div style={{ display: 'flex', gap: '5px', flex: 1 }}>
                      <input type="number" placeholder="%" value={formData.tour_info.price_infant_percent || ''} onChange={e => {
                          const percent = Number(e.target.value);
@@ -447,6 +461,74 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                      <input type="text" style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={formatCurrency(formData.tour_info.price_infant)} onChange={e => { handleChange('price_infant_percent', '', true); handleChange('price_infant', parseCurrency(e.target.value), true); }} />
                    </div>
                 </div>
+                <div style={{ gridColumn: 'span 6' }}></div>
+
+                {/* === Extra Price Tiers (Dynamic) === */}
+                {(formData.tour_info.extra_price_tiers || []).map((tier, idx) => (
+                   <React.Fragment key={idx}>
+                   <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <input 
+                         type="text" 
+                         placeholder="VD: Trẻ 6-11 tuổi" 
+                         value={tier.label || ''} 
+                         onChange={e => {
+                            const tiers = [...(formData.tour_info.extra_price_tiers || [])];
+                            tiers[idx] = { ...tiers[idx], label: e.target.value };
+                            handleChange('extra_price_tiers', tiers, true);
+                         }}
+                         style={{ width: '130px', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px' }}
+                      />
+                      <div style={{ display: 'flex', gap: '5px', flex: 1 }}>
+                         <input type="number" placeholder="%" value={tier.percent || ''} onChange={e => {
+                            const percent = Number(e.target.value);
+                            const tiers = [...(formData.tour_info.extra_price_tiers || [])];
+                            const adultPrice = Number(formData.tour_info.price_adult || 0);
+                            tiers[idx] = { ...tiers[idx], percent, price: percent > 0 ? adultPrice * percent / 100 : tiers[idx].price };
+                            handleChange('extra_price_tiers', tiers, true);
+                         }} style={{ width: '50px', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', textAlign: 'center' }} />
+                         <input type="text" style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} 
+                            value={formatCurrency(tier.price)} 
+                            onChange={e => {
+                               const tiers = [...(formData.tour_info.extra_price_tiers || [])];
+                               tiers[idx] = { ...tiers[idx], percent: '', price: parseCurrency(e.target.value) };
+                               handleChange('extra_price_tiers', tiers, true);
+                            }} 
+                         />
+                      </div>
+                      <button 
+                         type="button"
+                         onClick={() => {
+                            const tiers = [...(formData.tour_info.extra_price_tiers || [])];
+                            tiers.splice(idx, 1);
+                            handleChange('extra_price_tiers', tiers, true);
+                         }}
+                         style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px', padding: '4px 8px' }}
+                         title="Xóa hàng giá này"
+                      >✕</button>
+                   </div>
+                   <div style={{ gridColumn: 'span 6' }}></div>
+                   </React.Fragment>
+                ))}
+                <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                   <div style={{ width: '130px' }}></div>
+                   <button 
+                      type="button"
+                      onClick={() => {
+                         const tiers = [...(formData.tour_info.extra_price_tiers || [])];
+                         tiers.push({ label: '', percent: '', price: 0 });
+                         handleChange('extra_price_tiers', tiers, true);
+                      }}
+                      style={{ 
+                         background: 'none', border: '1px dashed #94a3b8', borderRadius: '6px', 
+                         color: '#64748b', cursor: 'pointer', fontSize: '12px', padding: '6px 14px',
+                         display: 'flex', alignItems: 'center', gap: '4px'
+                      }}
+                   >
+                      <span style={{ fontSize: '14px' }}>＋</span> Thêm loại giá khác
+                   </button>
+                </div>
+                <div style={{ gridColumn: 'span 6' }}></div>
+
                 <div style={{ gridColumn: 'span 6', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                    <label style={{ fontSize: '12px', color: '#64748b', width: '130px', paddingTop: '8px' }}>Ghi chú nội bộ</label>
                    <textarea rows={3} style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', minHeight: '60px', resize: 'vertical' }} value={formData.tour_info.internal_notes || ''} onChange={e => handleChange('internal_notes', e.target.value, true)} />
@@ -513,7 +595,7 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 <CKEditor 
                   initData={formData.tour_info.terms_and_conditions || ''} 
                   onChange={(evt) => handleChange('terms_and_conditions', evt.editor.getData(), true)} 
-                  config={{ height: 300, extraPlugins: 'justify,colorbutton,panelbutton,font,magicline,pastefromword' }}
+                  config={{ height: 300, extraPlugins: 'justify,colorbutton,panelbutton,font,magicline,pastefromword', versionCheck: false }}
                   editorUrl="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"
                 />
              </div>

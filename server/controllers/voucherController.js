@@ -119,7 +119,13 @@ exports.createVoucher = async (req, res) => {
 exports.getVouchersByBooking = async (req, res) => {
     try {
         const { bookingId } = req.params;
-        const result = await db.query('SELECT * FROM payment_vouchers WHERE booking_id = $1 ORDER BY created_at DESC', [bookingId]);
+        const result = await db.query(`
+            SELECT pv.*, u.full_name as created_by_full_name 
+            FROM payment_vouchers pv 
+            LEFT JOIN users u ON pv.created_by = u.id 
+            WHERE pv.booking_id = $1 
+            ORDER BY pv.created_at DESC
+        `, [bookingId]);
         res.json(result.rows);
     } catch (err) {
         console.error(err);
@@ -268,7 +274,13 @@ exports.deleteVoucher = async (req, res) => {
 exports.getVouchersByVisa = async (req, res) => {
     try {
         const { visaId } = req.params;
-        const result = await db.query('SELECT * FROM payment_vouchers WHERE visa_id = $1 ORDER BY created_at DESC', [visaId]);
+        const result = await db.query(`
+            SELECT pv.*, u.full_name as created_by_full_name 
+            FROM payment_vouchers pv 
+            LEFT JOIN users u ON pv.created_by = u.id 
+            WHERE pv.visa_id = $1 
+            ORDER BY pv.created_at DESC
+        `, [visaId]);
         res.json(result.rows);
     } catch (err) {
         console.error(err);

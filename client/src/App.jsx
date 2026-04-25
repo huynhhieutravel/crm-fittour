@@ -6,7 +6,8 @@ import {
   Route,
   Navigate,
   useNavigate,
-  useLocation
+  useLocation,
+  Link
 } from 'react-router-dom';
 
 import SettingsTab from './tabs/SettingsTab';
@@ -42,6 +43,7 @@ import B2BCompaniesTab from './tabs/B2BCompaniesTab';
 import DashboardTab from './tabs/DashboardTab';
 import WorkspaceTab from './tabs/workspace/WorkspaceTab';
 import ManagementDashboardTab from './tabs/ManagementDashboardTab';
+import CEODepartureDashboardTab from './tabs/CEODepartureDashboardTab';
 import GroupDashboardTab from './tabs/GroupDashboardTab';
 import LeadsTab from './tabs/LeadsTab';
 import LeadsDashboardTab from './tabs/LeadsDashboardTab';
@@ -57,6 +59,8 @@ import TeamDirectoryTab from './tabs/TeamDirectoryTab';
 import AddLeadModal from './components/modals/AddLeadModal';
 import EditLeadModal from './components/modals/EditLeadModal';
 import CommandPalette from './components/CommandPalette';
+import AIChatDrawer from './components/AICopilot/AIChatDrawer';
+import AgentManagerTab from './tabs/AgentManagerTab';
 import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
 import { AddBookingModal } from './components/modals/BookingModals';
 import { AddUserModal, EditUserModal, ChangePasswordModal } from './components/modals/UserModals';
@@ -67,6 +71,7 @@ import GuideModal from './components/modals/GuideModal';
 import ViewDeparturePage from './pages/ViewDeparturePage';
 import AgencySharePage from './pages/AgencySharePage';
 import ServiceContractViewer from './pages/ServiceContractViewer';
+import DocumentsPage from './pages/DocumentsPage';
 
 import { 
   Menu,
@@ -118,7 +123,8 @@ import {
   Building,
   Activity,
   MapPin,
-  ScanText
+  ScanText,
+  Cpu
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -153,12 +159,14 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
+  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu'];
+
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
     if (path.startsWith('guides')) return 'guides';
     if (path.startsWith('manual')) return 'manual';
+    if (path === 'group/companies') return 'b2b-companies';
     if (path.startsWith('group/')) return path.replace('/', '-');
-    const validTabs = ['workspace', 'dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr'];
     
     let defaultTab = 'dashboard';
     const userStr = localStorage.getItem('user');
@@ -171,36 +179,21 @@ function AppContent() {
       } catch(e) {}
     }
     
-    return (path && validTabs.includes(path)) ? path : defaultTab;
+    const basePath = path.split('/')[0];
+    if (VALID_TABS.includes(path)) return path;
+    if (VALID_TABS.includes(basePath)) return basePath;
+    return defaultTab;
   });
 
-  useEffect(() => {
-    const path = location.pathname.substring(1);
-    if (!path) {
-      let defaultTab = 'dashboard';
-      if (user && (user.role === 'sales' || user.role === 'sale' || user.role_name === 'sales' || user.role_name === 'sale')) {
-        defaultTab = 'workspace';
-      }
-      setActiveTab(defaultTab);
-      return;
-    }
-    if (path.startsWith('guides')) { setActiveTab('guides'); return; }
-    if (path.startsWith('manual')) { setActiveTab('manual'); return; }
-    if (path.startsWith('group/')) { setActiveTab(path.replace('/', '-')); return; }
-    const validTabs = ['workspace', 'dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers'];
-    
-    // Extracted base path (e.g., departures/view/1 -> departures)
-    const basePath = path.split('/')[0];
-    if (validTabs.includes(path)) {
-       setActiveTab(path);
-    } else if (validTabs.includes(basePath)) {
-       setActiveTab(basePath);
-    }
-  }, [location.pathname]);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return !!(localStorage.getItem('token') && localStorage.getItem('user'));
+  });
   const [inboxPsid, setInboxPsid] = useState(null);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    try { return savedUser ? JSON.parse(savedUser) : null; } catch(e) { return null; }
+  });
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [leads, setLeads] = useState([]);
@@ -414,6 +407,40 @@ function AppContent() {
   const addToast = (msg, type) => addToastGlobal(msg, setToasts, type);
 
   useEffect(() => {
+    const fullPath = location.pathname.substring(1);
+    if (!fullPath) {
+      let defaultTab = 'dashboard';
+      if (user && (user.role === 'sales' || user.role === 'sale' || user.role_name === 'sales' || user.role_name === 'sale')) {
+        defaultTab = 'workspace';
+      }
+      setActiveTab(defaultTab);
+      return;
+    }
+    if (fullPath.startsWith('guides')) { setActiveTab('guides'); return; }
+    if (fullPath.startsWith('manual')) { setActiveTab('manual'); return; }
+    if (fullPath.startsWith('group/')) { 
+      if (fullPath === 'group/companies') {
+        setActiveTab('b2b-companies');
+        if (location.search.includes('tab=calendar')) {
+          setB2bActiveTab('calendar');
+        } else {
+          setB2bActiveTab('list');
+        }
+      } else {
+        setActiveTab(fullPath.replace('/', '-'));
+      }
+      return; 
+    }
+    
+    const basePath = fullPath.split('/')[0];
+    if (VALID_TABS.includes(fullPath)) {
+       setActiveTab(fullPath);
+    } else if (VALID_TABS.includes(basePath)) {
+       setActiveTab(basePath);
+    }
+  }, [location.pathname, location.search, user]);
+
+  useEffect(() => {
     const reqInterceptor = axios.interceptors.request.use(
       config => {
         const token = localStorage.getItem('token');
@@ -484,30 +511,7 @@ function AppContent() {
     };
   }, [navigate]);
 
-  // Sync activeTab with URL
-  useEffect(() => {
-    const fullPath = location.pathname.substring(1);
-    if (fullPath.startsWith('group/')) {
-      if (fullPath === 'group/companies') {
-        setActiveTab('b2b-companies');
-        if (location.search.includes('tab=calendar')) {
-          setB2bActiveTab('calendar');
-        } else {
-          setB2bActiveTab('list');
-        }
-      } else {
-        setActiveTab(fullPath.replace('/', '-'));
-      }
-      return;
-    }
-    const path = fullPath.split('/')[0];
-    const validTabs = ['dashboard', 'management-dashboard', 'leads', 'leads-dashboard', 'staff-performance', 'inbox', 'tours', 'departures', 'reminders', 'guides', 'bookings', 'customers', 'settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'tickets', 'internal-docs', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'group-dashboard'];
-    if (path && validTabs.includes(path)) {
-      setActiveTab(path);
-    } else if (location.pathname === '/' && isLoggedIn) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [location.pathname, isLoggedIn, navigate]);
+
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
@@ -608,7 +612,7 @@ function AppContent() {
       const response = await axios.get('/api/tours', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      setTourTemplates(response.data);
+      setTourTemplates(response.data.filter(t => !String(t.name || '').includes('[Tour Cũ]')));
     } catch (err) { console.error(err); }
   };
 
@@ -1678,7 +1682,6 @@ function AppContent() {
   };
 
   const handleDeleteUser = async (id) => {
-    if (!window.confirm('CẢNH BÁO: Hành động này sẽ xóa vĩnh viễn tài khoản nhân viên. Bạn có chắc chắn?')) return;
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`/api/users/${id}`, {
@@ -1752,22 +1755,23 @@ function AppContent() {
 
         <div className="sidebar-nav-scroll">
           <div className="nav-section-title">Góc Cá Nhân</div>
-          <div className={`nav-item ${activeTab === 'workspace' ? 'active' : ''}`} onClick={() => { navigate('/workspace'); setIsMobileMenuOpen(false); }}>
+          <Link to="/workspace" className={`nav-item ${activeTab === 'workspace' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
             <Home /> Lối Tắt Làm Việc
-          </div>
+          </Link>
 
           <div className="nav-section-title">Tổng quan</div>
-          <div className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => { navigate('/dashboard'); setIsMobileMenuOpen(false); }}>
+          <Link to="/dashboard" className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
             <LayoutDashboard /> Dashboard
-          </div>
+          </Link>
           
           {(checkView('leads') || checkView('tours')) && (
             <>
               <div className="nav-section-title">Marketing & Sales</div>
               {checkView('leads') && (
-                <div 
+                <Link 
+                  to="/leads"
                   className={`nav-item ${activeTab === 'leads' || activeTab === 'leads-dashboard' ? 'active-parent' : ''}`} 
-                  onClick={() => navigate('/leads')}
+                  onClick={() => setIsMobileMenuOpen(false)}
                   style={{ justifyContent: 'space-between' }}
                   onMouseEnter={(e) => {
                     if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
@@ -1785,15 +1789,16 @@ function AppContent() {
                     <Users /> Lead Marketing
                   </div>
                   <ChevronRight size={14} opacity={0.5} />
-                </div>
+                </Link>
               )}
 
-              <div 
+              <Link 
+                to="/travel-support"
                 className={`nav-item ${activeTab === 'travel-support' ? 'active' : ''}`}
-                onClick={() => navigate('/travel-support')}
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Briefcase /> Dịch vụ Hỗ trợ
-              </div>
+              </Link>
               {checkView('leads') && (
                 <div 
                   className={`nav-item ${(activeTab === 'marketing-ads' || activeTab === 'management-dashboard') ? 'active' : ''}`} 
@@ -1811,7 +1816,7 @@ function AppContent() {
                   }}
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Target /> Marketing Ads
                   </div>
                   <ChevronRight size={14} opacity={0.5} />
@@ -2070,23 +2075,29 @@ function AppContent() {
                   <div className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => navigate('/settings')}>
                     <Settings /> Cấu hình Meta
                   </div>
-                  <div className={`nav-item ${activeTab === 'media-settings' ? 'active' : ''}`} onClick={() => navigate('/media-settings')}>
-                    <ImageIcon /> Quản lý Media (Rác)
-                  </div>
+                  {user && (user.role === 'admin' || user.role === 'manager') && (
+                    <div className={`nav-item ${activeTab === 'media-settings' ? 'active' : ''}`} onClick={() => navigate('/media-settings')}>
+                      <ImageIcon /> Quản lý Media
+                    </div>
+                  )}
                   <div className={`nav-item ${activeTab === 'audit-logs' ? 'active' : ''}`} onClick={() => navigate('/audit-logs')}>
                     <Activity /> Nhật ký hệ thống
+                  </div>
+                  <div className={`nav-item ${activeTab === 'agent-manager' ? 'active' : ''}`} onClick={() => navigate('/agent-manager')}>
+                    <Cpu /> AI Agent Manager
                   </div>
                 </>
               )}
 
           <div className="nav-section-title">Tài Liệu Nội Bộ</div>
+          <div className={`nav-item ${activeTab === 'tai-lieu' ? 'active' : ''}`} onClick={() => navigate('/tai-lieu')}>
+            <BookOpen /> Sổ Tay FIT Tour
+          </div>
           <div className={`nav-item ${activeTab === 'workflow' ? 'active' : ''}`} onClick={() => navigate('/workflow')}>
             <FileText /> Luồng xử lý CRM
           </div>
 
-          <div className={`nav-item ${activeTab === 'internal-docs' ? 'active' : ''}`} onClick={() => navigate('/internal-docs')}>
-            <FileText /> Quy chế lương HDV
-          </div>
+
           <div className={`nav-item ${activeTab === 'licenses' ? 'active' : ''}`} onClick={() => navigate('/licenses')}>
             <FileText /> Biểu Mẫu Văn Phòng
           </div>
@@ -2284,19 +2295,29 @@ function AppContent() {
           >
             Danh sách Lịch khởi hành
           </div>
+          {(user?.role === 'admin' || user?.role === 'manager' || user?.role === 'ceo') && (
+            <div 
+              className={`submenu-item ${activeTab === 'ceo-departures-dashboard' ? 'active' : ''}`} 
+              onClick={() => { navigate('/ceo-departures-dashboard'); setHoveredMenu(null); }} 
+            >
+              📊 Dashboard LKH
+            </div>
+          )}
           {(user?.role === 'admin' || user?.role === 'operations' || user?.role === 'manager') && (
             <div 
               className={`submenu-item ${activeTab === 'costings' ? 'active' : ''}`} 
               onClick={() => { navigate('/costings'); setHoveredMenu(null); }} 
+              style={{ color: '#94a3b8' }}
             >
-              Bảng Dự Toán Tour
+              Bảng Dự Toán Tour (Draft)
             </div>
           )}
           <div 
             className={`submenu-item ${activeTab === 'reminders' ? 'active' : ''}`} 
             onClick={() => { navigate('/reminders'); setHoveredMenu(null); }}
+            style={{ color: '#94a3b8' }}
           >
-            Tiến độ Chăm sóc (Tour Care)
+            Tiến độ Chăm sóc (Draft)
           </div>
         </div>
       )}
@@ -2685,11 +2706,11 @@ function AppContent() {
             activeTab === 'leads-dashboard' ? 'Dashboard Lead Marketing' :
             activeTab === 'management-dashboard' ? 'Tổng quan Marketing' :
             activeTab === 'bus' ? 'Quản lý Khối Kinh doanh (BU)' :
-            activeTab === 'internal-docs' ? 'Quy chế lương HDV' :
             activeTab === 'licenses' ? 'Biểu Mẫu Văn Phòng' :
             activeTab === 'bu-rules' ? 'Quy tắc chọn BU cho Lead' :
             activeTab === 'manual' ? 'Sổ tay HDSD CRM' :
             activeTab === 'op-tours' ? 'Lịch khởi hành' :
+            activeTab === 'ceo-departures-dashboard' ? 'Dashboard Lịch Khởi Hành' :
             activeTab === 'team-directory' ? 'Nhân Sự FIT Tour' :
             activeTab === 'my-profile' ? 'Trang cá nhân' :
             activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
@@ -2725,6 +2746,9 @@ function AppContent() {
                 setActiveTab(id);
             }
         }} />
+
+        {/* AI Copilot Widget */}
+        <AIChatDrawer />
 
         {(activeTab === 'dashboard' || activeTab === 'leads' || activeTab === 'inbox') && editingLead ? (
           <EditLeadModal 
@@ -2774,7 +2798,7 @@ function AppContent() {
             )}
 
             {activeTab === 'manual' && <ManualTab />}
-            {activeTab === 'internal-docs' && <InternalDocsTab />}
+
             {activeTab === 'licenses' && <LicensesTab currentUser={user} addToast={addToast} />}
             {activeTab === 'bu-rules' && <BURulesTab currentUser={user} />}
 
@@ -2853,6 +2877,10 @@ function AppContent() {
 
         {activeTab === 'op-tours' && (
           <OpToursTab currentUser={user} />
+        )}
+
+        {activeTab === 'ceo-departures-dashboard' && (
+          <CEODepartureDashboardTab currentUser={user} />
         )}
 
         {activeTab === 'vouchers' && (
@@ -3028,6 +3056,10 @@ function AppContent() {
 
         {activeTab === 'audit-logs' && (
           <AuditLogTab />
+        )}
+
+        {activeTab === 'agent-manager' && (
+          <AgentManagerTab />
         )}
 
         {activeTab === 'bus' && (
@@ -3308,6 +3340,7 @@ function AppContent() {
   return (
     <>
       <Routes>
+      <Route path="/tai-lieu/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
       <Route path="/simple-list-share/lich_dai_ly" element={<AgencySharePage />} />
       <Route path="/service-confirm/:tourId/:bookingId" element={<ServiceContractViewer />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />

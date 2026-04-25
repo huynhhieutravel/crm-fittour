@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, User, Phone, Mail, Building, Calendar, Briefcase, FileText, Send, Clock, CreditCard, Tag, Edit3, Save, XCircle, ExternalLink } from 'lucide-react';
 import axios from 'axios';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { format } from 'date-fns';
 
 const GroupLeaderProfileSlider = ({ leader, onClose, onAddNote, users = [], companies = [], onLeaderUpdated, autoEdit = false, onAutoEditConsumed }) => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -108,7 +111,18 @@ const GroupLeaderProfileSlider = ({ leader, onClose, onAddNote, users = [], comp
           </div>
           <div className="modal-form-group">
             <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '6px', display: 'block' }}>NGÀY SINH</label>
-            <input className="modal-input" type="date" value={editForm.dob} onChange={e => setEditForm({...editForm, dob: e.target.value})} />
+            <DatePicker
+              selected={editForm.dob ? new Date(editForm.dob) : null}
+              onChange={date => setEditForm({...editForm, dob: date ? format(date, 'yyyy-MM-dd') : ''})}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="dd/mm/yyyy"
+              className="modal-input"
+              showYearDropdown
+              showMonthDropdown
+              dropdownMode="select"
+              isClearable
+              autoComplete="off"
+            />
           </div>
           <div className="modal-form-group">
             <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '6px', display: 'block' }}>TRẠNG THÁI</label>

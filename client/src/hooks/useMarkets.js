@@ -59,12 +59,20 @@ export function getChildMarkets(parentName, marketTree) {
     if (group && group.options) {
         return group.options.map(o => o.value);
     }
-    // Also check if parentName is itself a child value — find its siblings
-    for (const g of marketTree) {
-        const found = g.options?.find(o => o.value === parentName);
-        if (found) {
-            return g.options.map(o => o.value);
-        }
+    return [];
+}
+
+/**
+ * Get all child market IDs for a given parent group name
+ * @param {string} parentName - e.g. "Trung Quốc Đại Lục" 
+ * @param {Array} marketTree - The tree from useMarkets()
+ * @returns {number[]} - e.g. [41, 42, 45]
+ */
+export function getChildMarketIds(parentName, marketTree) {
+    if (!marketTree || !parentName) return [];
+    const group = marketTree.find(g => g.label === parentName);
+    if (group && group.options) {
+        return group.options.map(o => o.id);
     }
     return [];
 }

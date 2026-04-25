@@ -187,7 +187,7 @@ exports.getProjectStats = async (req, res) => {
             statusCondition = `created_at >= $1 AND created_at <= $2`;
         }
         const statusQuery = `
-            SELECT status, COUNT(*) as count 
+            SELECT status, COUNT(*) as count, SUM(total_revenue) as total_revenue
             FROM group_projects 
             WHERE ${statusCondition}
             GROUP BY status 
@@ -224,7 +224,6 @@ exports.getProjectStats = async (req, res) => {
             WHERE ${timeCondition}
             GROUP BY u.id, u.full_name
             ORDER BY total_profit DESC, won_projects DESC
-            LIMIT 10
         `;
         const salesRes = await db.query(salesQuery, params);
 
@@ -258,12 +257,54 @@ exports.getProjectStats = async (req, res) => {
         `;
         const timeSeriesRes = await db.query(timeSeriesQuery, tsParams);
 
+        // 6. VIP Events (Birthdays of Leaders and Anniversaries of Companies)
+        const vipEventsQuery = `
+            SELECT * FROM (
+                SELECT 
+                    'Sinh nhật trưởng đoàn' as event_type,
+                    name as title,
+                    company_name as subtitle,
+                    dob as event_date
+                FROM group_leaders
+                WHERE dob IS NOT NULL
+                  AND (
+                      EXTRACT(MONTH FROM dob) = EXTRACT(MONTH FROM CURRENT_DATE) 
+                      AND EXTRACT(DAY FROM dob) >= EXTRACT(DAY FROM CURRENT_DATE)
+                      OR 
+                      EXTRACT(MONTH FROM dob) = EXTRACT(MONTH FROM CURRENT_DATE + INTERVAL '1 month')
+                  )
+                UNION ALL
+                SELECT 
+                    'Thành lập công ty' as event_type,
+                    name as title,
+                    'Kỷ niệm thành lập' as subtitle,
+                    founded_date as event_date
+                FROM b2b_companies
+                WHERE founded_date IS NOT NULL
+                  AND (
+                      EXTRACT(MONTH FROM founded_date) = EXTRACT(MONTH FROM CURRENT_DATE) 
+                      AND EXTRACT(DAY FROM founded_date) >= EXTRACT(DAY FROM CURRENT_DATE)
+                      OR 
+                      EXTRACT(MONTH FROM founded_date) = EXTRACT(MONTH FROM CURRENT_DATE + INTERVAL '1 month')
+                  )
+            ) sub
+            ORDER BY 
+                CASE 
+                    WHEN EXTRACT(MONTH FROM event_date) < EXTRACT(MONTH FROM CURRENT_DATE) THEN EXTRACT(MONTH FROM event_date) + 12
+                    ELSE EXTRACT(MONTH FROM event_date) 
+                END ASC,
+                EXTRACT(DAY FROM event_date) ASC
+            LIMIT 5;
+        `;
+        const vipEventsRes = await db.query(vipEventsQuery);
+
         res.json({
             kpi: kpiRes.rows[0],
             statusStats: statusRes.rows,
             b2bStats: b2bRes.rows,
             salesStats: salesRes.rows,
-            timeSeries: timeSeriesRes.rows
+            timeSeries: timeSeriesRes.rows,
+            vipEvents: vipEventsRes.rows
         });
     } catch (err) {
         console.error("getProjectStats Error:", err);

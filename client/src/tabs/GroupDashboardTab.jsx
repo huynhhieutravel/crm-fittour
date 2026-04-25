@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   Users,
@@ -16,7 +17,8 @@ import {
   CheckCircle,
   Activity,
   DollarSign,
-  Building
+  Building,
+  X
 } from "lucide-react";
 import {
   PieChart,
@@ -32,10 +34,13 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  LabelList
+  LabelList,
+  LineChart
 } from "recharts";
 
 const GroupDashboardTab = () => {
+  const navigate = useNavigate();
+  const [showSalesModal, setShowSalesModal] = useState(false);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState("year");
@@ -201,12 +206,14 @@ const GroupDashboardTab = () => {
     );
   }
 
-  // Parse KPIs
-  const totalProjects = stats.kpi.total_projects || 0;
-  const totalPax = stats.kpi.total_pax || 0;
-  const totalRevenue = stats.kpi.total_revenue ? Number(stats.kpi.total_revenue) : 0;
-  const totalProfit = stats.kpi.total_profit ? Number(stats.kpi.total_profit) : 0;
-  const wonProjects = stats.kpi.won_projects ? Number(stats.kpi.won_projects) : 0;
+  // Parse KPIs safely
+  const kpi = stats.kpi || {};
+  const totalProjects = kpi.total_projects || 0;
+  const totalPax = kpi.total_pax || 0;
+  const totalRevenue = kpi.total_revenue ? Number(kpi.total_revenue) : 0;
+  const totalProfit = kpi.total_profit ? Number(kpi.total_profit) : 0;
+  const wonProjects = kpi.won_projects ? Number(kpi.won_projects) : 0;
+
 
   // Derived KPIs
   const winRate = totalProjects > 0 ? ((wonProjects / totalProjects) * 100).toFixed(1) : '0.0';
@@ -288,595 +295,648 @@ const GroupDashboardTab = () => {
 
   const chartStatusStats = (stats.statusStats || []).map(s => ({
     ...s,
-    count: Number(s.count)
+    count: Number(s.count),
+    total_revenue: Number(s.total_revenue || 0)
   }));
 
+  const getStatusData = (statusArr) => {
+    let count = 0;
+    let rev = 0;
+    statusArr.forEach(st => {
+       const found = chartStatusStats.find(s => s.status === st);
+       if (found) {
+           count += found.count;
+           rev += found.total_revenue;
+       }
+    });
+    return { count, rev };
+  };
+
+  const pipeNew = getStatusData(["Mới"]);
+  const pipeContact = getStatusData(["Đã liên hệ"]); 
+  const pipeConsult = getStatusData(["Đang tư vấn", "Đang theo dõi"]); 
+  const pipeQuote = getStatusData(["Báo giá"]);
+  const pipeWon = getStatusData(["Thành công", "Đã quyết toán"]);
+
+  const totalPipeDeals = pipeNew.count + pipeContact.count + pipeConsult.count + pipeQuote.count + pipeWon.count;
+  const totalPipeRev = pipeNew.rev + pipeContact.rev + pipeConsult.rev + pipeQuote.rev + pipeWon.rev;
+
   return (
-    <div className="dashboard-content" style={{ paddingBottom: '3rem' }}>
-      {/* Executive Single-Row Filter Bar */}
-      <div className="executive-filter-panel mb-8">
-        <div className="filter-scroll-container">
-          <div className="horizontal-filter-row">
-            {/* Advanced Filters Group */}
-            <div className="segmented-control glass text-white">
-              <button
-                onClick={() => setDateFilter("year")}
-                className={`segment-btn ${dateFilter === "year" ? "active" : ""}`}
-              >
-                Năm
-              </button>
-              <button
-                onClick={() => setDateFilter("quarter")}
-                className={`segment-btn ${dateFilter === "quarter" ? "active" : ""}`}
-              >
-                Quý
-              </button>
-              <button
-                onClick={() => setDateFilter("month-select")}
-                className={`segment-btn ${dateFilter === "month-select" ? "active" : ""}`}
-              >
-                Tháng
-              </button>
-              <button
-                onClick={() => setDateFilter("custom")}
-                className={`segment-btn ${dateFilter === "custom" ? "active" : ""}`}
-              >
-                Tùy chọn
-              </button>
-            </div>
+    <div className="dashboard-content" style={{ padding: '0 1rem 3rem 1rem', background: '#f8fafc', minHeight: '100vh' }}>
+      
+      {/* 1. Dashboard Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px' }}>
+        <div>
+          <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>
+            Tổng quan Group Dashboard 👋
+          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px', color: '#64748b' }}>
+            <span>Cập nhật: {new Date().toLocaleDateString('vi-VN')} {new Date().toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px', fontWeight: '600' }}>
+              <Activity size={12} /> Dữ liệu real-time
+            </span>
+          </div>
+        </div>
 
-            {/* Dynamic Inputs */}
-            {dateFilter === "month-select" && (
-              <div className="executive-select-wrapper">
-                <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))}>
-                  {monthOptions.map((m, i) => (<option key={i} value={i}>{m}</option>))}
-                </select>
-              </div>
-            )}
-
-            {dateFilter === "quarter" && (
-              <div className="executive-select-wrapper">
-                <select value={selectedQuarter} onChange={(e) => setSelectedQuarter(parseInt(e.target.value))}>
-                  {[1, 2, 3, 4].map((q) => (<option key={q} value={q}>Quý {q}</option>))}
-                </select>
-              </div>
-            )}
-
+        {/* Dynamic Filters aligned to the right like a Search bar in the design */}
+        <div className="segmented-control glass">
+            <button onClick={() => setDateFilter("year")} className={`segment-btn ${dateFilter === "year" ? "active" : ""}`}>Năm</button>
+            <button onClick={() => setDateFilter("quarter")} className={`segment-btn ${dateFilter === "quarter" ? "active" : ""}`}>Quý</button>
+            <button onClick={() => setDateFilter("month-select")} className={`segment-btn ${dateFilter === "month-select" ? "active" : ""}`}>Tháng</button>
+            
             {(dateFilter === "month-select" || dateFilter === "quarter" || dateFilter === "year") && (
-              <div className="executive-select-wrapper">
-                <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))}>
-                  {[2023, 2024, 2025, 2026, 2027].map((y) => (<option key={y} value={y}>Năm {y}</option>))}
-                </select>
-              </div>
+              <select className="executive-select-mini" value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))}>
+                {[2023, 2024, 2025, 2026, 2027].map((y) => (<option key={y} value={y}>{y}</option>))}
+              </select>
             )}
+        </div>
+      </div>
 
-            {dateFilter === "custom" && (
-              <div className="flex flex-row flex-nowrap items-center gap-3">
-                <div className="date-input-group premium">
-                  <Calendar size={13} className="text-indigo-500" />
-                  <input type="date" value={customRange.startDate} onChange={(e) => setCustomRange({ ...customRange, startDate: e.target.value })} />
-                </div>
-                <span className="text-slate-300 font-bold">→</span>
-                <div className="date-input-group premium">
-                  <Calendar size={13} className="text-indigo-500" />
-                  <input type="date" value={customRange.endDate} onChange={(e) => setCustomRange({ ...customRange, endDate: e.target.value })} />
-                </div>
-              </div>
-            )}
+      {/* 2. KPI Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
+        {/* Card 1 - Blue */}
+        <div style={{ background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', borderRadius: '16px', padding: '16px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ fontSize: '10px', fontWeight: '800', opacity: 0.9 }}>TỔNG DOANH THU</div>
+            <div style={{ background: 'rgba(255,255,255,0.2)', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><DollarSign size={16} /></div>
+          </div>
+          <div style={{ fontSize: '24px', fontWeight: '900', marginBottom: '8px' }}>{formatMoneyLarge(totalRevenue)}</div>
+          <div style={{ fontSize: '10px', fontWeight: '600', opacity: 0.9 }}>↑ Tất cả giai đoạn Chốt</div>
+          <div style={{ marginTop: '12px', height: '30px' }}>
+            <ResponsiveContainer width="100%" height="100%"><LineChart data={chartTimeSeries.slice(-10)}><Line type="monotone" dataKey="revenue" stroke="rgba(255,255,255,0.6)" strokeWidth={2} dot={{r:2, fill:"#fff"}}/></LineChart></ResponsiveContainer>
+          </div>
+        </div>
 
-            {dateFilter === "custom" && (
-              <button onClick={fetchStats} className="confirm-btn-premium border-none cursor-pointer p-2 px-4 rounded-xl font-bold bg-blue-600 text-white flex items-center justify-center gap-2">
-                <Filter size={14} /> Xác nhận
-              </button>
-            )}
+        {/* Card 2 - Green */}
+        <div style={{ background: 'linear-gradient(135deg, #10b981, #059669)', borderRadius: '16px', padding: '16px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ fontSize: '10px', fontWeight: '800', opacity: 0.9 }}>LỢI NHUẬN THÀNH CÔNG</div>
+            <div style={{ background: 'rgba(255,255,255,0.2)', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Briefcase size={16} /></div>
+          </div>
+          <div style={{ fontSize: '24px', fontWeight: '900', marginBottom: '8px' }}>{formatMoneyLarge(totalProfit)}</div>
+          <div style={{ fontSize: '10px', fontWeight: '600', opacity: 0.9 }}>↑ {avgProfitMargin}% Biên lợi nhuận</div>
+          <div style={{ marginTop: '12px', height: '30px' }}>
+            <ResponsiveContainer width="100%" height="100%"><LineChart data={chartTimeSeries.slice(-10)}><Line type="monotone" dataKey="profit" stroke="rgba(255,255,255,0.6)" strokeWidth={2} dot={{r:2, fill:"#fff"}}/></LineChart></ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Card 3 - Orange */}
+        <div style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', borderRadius: '16px', padding: '16px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ fontSize: '10px', fontWeight: '800', opacity: 0.9 }}>TỔNG KHÁCH (PAX)</div>
+            <div style={{ background: 'rgba(255,255,255,0.2)', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={16} /></div>
+          </div>
+          <div style={{ fontSize: '24px', fontWeight: '900', marginBottom: '8px' }}>{new Intl.NumberFormat('vi-VN').format(totalPax)}</div>
+          <div style={{ fontSize: '10px', fontWeight: '600', opacity: 0.9 }}>↑ Lũy kế khách đoàn</div>
+          <div style={{ marginTop: '12px', height: '30px' }}>
+            <ResponsiveContainer width="100%" height="100%"><LineChart data={chartTimeSeries.slice(-10)}><Line type="monotone" dataKey="count" stroke="rgba(255,255,255,0.6)" strokeWidth={2} dot={{r:2, fill:"#fff"}}/></LineChart></ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Card 4 - Pink */}
+        <div style={{ background: 'linear-gradient(135deg, #f43f5e, #e11d48)', borderRadius: '16px', padding: '16px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ fontSize: '10px', fontWeight: '800', opacity: 0.9 }}>TỶ LỆ CHỐT (WIN RATE)</div>
+            <div style={{ background: 'rgba(255,255,255,0.2)', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Target size={16} /></div>
+          </div>
+          <div style={{ fontSize: '24px', fontWeight: '900', marginBottom: '8px' }}>{winRate}%</div>
+          <div style={{ fontSize: '10px', fontWeight: '600', opacity: 0.9 }}>{wonProjects}/{totalProjects} dự án</div>
+          <div style={{ marginTop: '12px', height: '30px' }}>
+            <ResponsiveContainer width="100%" height="100%"><LineChart data={chartTimeSeries.slice(-10)}><Line type="monotone" dataKey="count" stroke="rgba(255,255,255,0.6)" strokeWidth={2} dot={{r:2, fill:"#fff"}}/></LineChart></ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* KPI Section - Four Strategic Metrics */}
-      <div className="kpi-grid mb-16">
-        <div className="stat-card premium blue">
-          <div className="stat-content">
-            <div className="stat-header">
-              <span className="stat-label">TỔNG DỰ ÁN</span>
-              <div className="stat-icon-glass">
-                <Briefcase size={20} />
-              </div>
-            </div>
-            <div className="stat-value">{totalProjects}</div>
-            <div className="stat-footer">
-              <ArrowUpRight size={14} />
-              <span>Tất cả các giai đoạn (Trừ Thất bại)</span>
-            </div>
+      {/* 3. Main Split Section */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2.5fr 1fr', gap: '20px', marginBottom: '24px' }}>
+        
+        {/* Main Chart */}
+        <div className="md-panel">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <div className="md-panel-title">DOANH THU & LỢI NHUẬN THEO THỜI GIAN</div>
+            <select className="md-select">
+              <option>Theo {dateFilter === 'year' ? 'Tháng' : dateFilter === 'quarter' ? 'Tháng' : 'Ngày'}</option>
+            </select>
           </div>
-        </div>
+          
+          {/* Custom Legend */}
+          <div style={{ display: 'flex', gap: '20px', marginBottom: '16px', fontSize: '13px', fontWeight: '600', color: '#475569' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '12px', height: '12px', background: '#3b82f6', borderRadius: '3px' }}></div> Doanh thu</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '12px', height: '12px', background: '#10b981', borderRadius: '3px' }}></div> Lợi nhuận</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '8px', height: '8px', border: '2px solid #f97316', borderRadius: '50%', background: 'white' }}></div> Số dự án</div>
+          </div>
 
-        <div className="stat-card premium green">
-          <div className="stat-content">
-            <div className="stat-header">
-              <span className="stat-label">DOANH THU THÀNH CÔNG</span>
-              <div className="stat-icon-glass">
-                <DollarSign size={20} />
-              </div>
-            </div>
-            <div className="stat-value">{formatMoneyLarge(totalRevenue)}</div>
-            <div className="stat-footer">
-              <TrendingUp size={14} />
-              <span>Chỉ áp dụng dự án Chốt đơn</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="stat-card premium orange">
-          <div className="stat-content">
-            <div className="stat-header">
-              <span className="stat-label">LỢI NHUẬN THÀNH CÔNG</span>
-              <div className="stat-icon-glass">
-                <TrendingUp size={20} />
-              </div>
-            </div>
-            <div className="stat-value" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {formatMoneyLarge(totalProfit)}
-              {totalRevenue > 0 && (
-                <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
-                  {((totalProfit / totalRevenue) * 100).toFixed(1)}% Biên LN
-                </span>
-              )}
-            </div>
-            <div className="stat-footer">
-              <Activity size={14} />
-              <span>Thước đo hiệu quả kinh doanh</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="stat-card premium rose">
-          <div className="stat-content">
-            <div className="stat-header">
-              <span className="stat-label">TỔNG KHÁCH (PAX)</span>
-              <div className="stat-icon-glass">
-                <Users size={20} />
-              </div>
-            </div>
-            <div className="stat-value">{new Intl.NumberFormat('vi-VN').format(totalPax)}</div>
-            <div className="stat-footer">
-              <Users size={14} />
-              <span>Thị phần khách số lượng lớn</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Secondary KPI Insights Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div style={{ background: 'white', borderRadius: '14px', padding: '1.25rem 1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Target size={20} color="#2563eb" />
-          </div>
-          <div>
-            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tỷ lệ chốt (Win Rate)</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#2563eb', letterSpacing: '-0.5px' }}>{winRate}%</div>
-            <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>{wonProjects}/{totalProjects} dự án</div>
-          </div>
-        </div>
-        <div style={{ background: 'white', borderRadius: '14px', padding: '1.25rem 1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #d1fae5, #a7f3d0)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <DollarSign size={20} color="#059669" />
-          </div>
-          <div>
-            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>DT Trung bình / Deal</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#059669', letterSpacing: '-0.5px' }}>{formatMoneyLarge(avgDealSize)}</div>
-            <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>Trên {wonProjects} deal thành công</div>
-          </div>
-        </div>
-        <div style={{ background: 'white', borderRadius: '14px', padding: '1.25rem 1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #fef3c7, #fde68a)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Clock size={20} color="#d97706" />
-          </div>
-          <div>
-            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>DT Pipeline (Chờ chốt)</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#d97706', letterSpacing: '-0.5px' }}>{formatMoneyLarge(pipelineRevenue)}</div>
-            <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>{pipelineProjects} dự án đang trong ống</div>
-          </div>
-        </div>
-        <div style={{ background: 'white', borderRadius: '14px', padding: '1.25rem 1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, #fce7f3, #fbcfe8)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <TrendingUp size={20} color="#db2777" />
-          </div>
-          <div>
-            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Biên LN Trung bình</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#db2777', letterSpacing: '-0.5px' }}>{avgProfitMargin}%</div>
-            <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>Hiệu suất sinh lời</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Analytics Grid - Row 1: Time Series Chart */}
-      <div className="w-full" style={{ marginBottom: '1.5rem' }}>
-        <div style={{ background: 'white', borderRadius: '16px', padding: '2rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#1e293b', margin: '0 0 4px 0' }}>Dòng tiền Doanh Thu Dự Án</h3>
-              <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>So sánh dòng tiền chốt thực tế theo diễn biến thời gian</p>
-            </div>
-            <Activity size={24} color="#3b82f6" />
-          </div>
-          <div style={{ height: "350px", width: "100%" }}>
+          <div style={{ height: "320px", width: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={chartTimeSeries} margin={{ top: 25, right: 30, left: 20, bottom: 0 }}>
+              <ComposedChart data={chartTimeSeries} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} dy={10} />
-                <YAxis yAxisId="left" tickFormatter={(val) => formatMoneyLarge(val)} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
-                <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
+                <XAxis dataKey="period" axisLine={{stroke: '#e2e8f0'}} tickLine={false} tick={{ fontSize: 12, fill: "#94a3b8" }} dy={10} />
+                <YAxis yAxisId="left" tickFormatter={(val) => formatMoneyLarge(val).replace(' Tỷ', '') + ' Tỷ'} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#94a3b8" }} />
+                <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#94a3b8" }} />
                 <Tooltip 
-                  formatter={(value, name, props) => {
-                    if (name === "Doanh thu" || name === "Lợi nhuận") {
-                        let formattedStr = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-                        if (name === "Lợi nhuận" && props.payload.revenue > 0) {
-                            const margin = ((value / props.payload.revenue) * 100).toFixed(1);
-                            formattedStr += ` (${margin}% Biên LN)`;
-                        }
-                        return [formattedStr, name];
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      const rev = payload.find(p => p.dataKey === 'revenue')?.value || 0;
+                      const prof = payload.find(p => p.dataKey === 'profit')?.value || 0;
+                      const count = payload.find(p => p.dataKey === 'count')?.value || 0;
+                      const margin = rev > 0 ? ((prof / rev) * 100).toFixed(1) : 0;
+                      return (
+                        <div style={{ background: "white", padding: "12px 16px", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)", display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <div style={{ fontSize: "14px", fontWeight: "800", color: "#1e293b", marginBottom: "4px", borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>{label}</div>
+                          <div style={{ fontSize: "12px", color: "#f97316", fontWeight: "600", display: 'flex', justifyContent: 'space-between', gap: '16px' }}><span>Số dự án:</span> <span style={{fontWeight: '800'}}>{count}</span></div>
+                          <div style={{ fontSize: "12px", color: "#3b82f6", fontWeight: "600", display: 'flex', justifyContent: 'space-between', gap: '16px' }}><span>Doanh thu:</span> <span style={{fontWeight: '800'}}>{formatMoneyLarge(rev)}</span></div>
+                          <div style={{ fontSize: "12px", color: "#10b981", fontWeight: "600", display: 'flex', justifyContent: 'space-between', gap: '16px' }}><span>Lợi nhuận:</span> <span style={{fontWeight: '800'}}>{formatMoneyLarge(prof)}</span></div>
+                          <div style={{ fontSize: "12px", color: "#8b5cf6", fontWeight: "600", display: 'flex', justifyContent: 'space-between', gap: '16px' }}><span>Biên lợi nhuận:</span> <span style={{fontWeight: '800'}}>{margin}%</span></div>
+                        </div>
+                      );
                     }
-                    return [value, name];
+                    return null;
                   }}
-                  contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)" }}
                 />
-                <Legend verticalAlign="top" height={36} iconType="circle" />
-                <Bar yAxisId="left" dataKey="revenue" name="Doanh thu" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40}>
-                  <LabelList dataKey="revenue" position="top" style={{ fontSize: "10px", fontWeight: "bold", fill: "#059669" }} formatter={(val) => val > 0 ? formatMoneyLarge(val) : ""} />
-                </Bar>
-                <Bar yAxisId="left" dataKey="profit" name="Lợi nhuận" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                <Line yAxisId="right" type="monotone" dataKey="count" name="Số dự án" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                <Bar yAxisId="left" dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={30} />
+                <Bar yAxisId="left" dataKey="profit" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={30} />
+                <Line yAxisId="right" type="monotone" dataKey="count" stroke="#f97316" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: "white", stroke: "#f97316" }} activeDot={{ r: 6 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
+
+        {/* Pipeline List */}
+        <div className="md-panel">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <div className="md-panel-title">PIPELINE DỰ ÁN</div>
+            <select className="md-select"><option>Tất cả dự án</option></select>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
+            
+            {/* NEW LEAD */}
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: `${Math.max(10, totalPipeDeals > 0 ? (pipeNew.count/totalPipeDeals)*100 : 0)}%`, background: '#eff6ff', clipPath: 'polygon(0 0, 100% 0, 95% 100%, 0 100%)', zIndex: 0, borderRadius: '12px 0 0 12px' }}></div>
+              <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ fontSize: '11px', fontWeight: '800', color: '#3b82f6', letterSpacing: '0.5px' }}>LEAD MỚI</div>
+                <div style={{ fontSize: '14px', fontWeight: '900', color: '#0f172a' }}>{pipeNew.count}</div>
+              </div>
+              <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <div style={{ fontSize: '12px', fontWeight: '800', color: '#3b82f6' }}>{formatMoneyLarge(pipeNew.rev)}</div>
+                <div style={{ fontSize: '11px', fontWeight: '800', padding: '4px 10px', borderRadius: '8px', background: '#eff6ff', color: '#3b82f6' }}>{totalPipeDeals > 0 ? ((pipeNew.count/totalPipeDeals)*100).toFixed(0) : 0}%</div>
+              </div>
+            </div>
+
+            {/* CONTACTED */}
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: `${Math.max(10, totalPipeDeals > 0 ? (pipeContact.count/totalPipeDeals)*100 : 0)}%`, background: '#ecfdf5', clipPath: 'polygon(0 0, 100% 0, 95% 100%, 0 100%)', zIndex: 0, borderRadius: '12px 0 0 12px' }}></div>
+              <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ fontSize: '11px', fontWeight: '800', color: '#10b981', letterSpacing: '0.5px' }}>ĐÃ LIÊN HỆ</div>
+                <div style={{ fontSize: '14px', fontWeight: '900', color: '#0f172a' }}>{pipeContact.count}</div>
+              </div>
+              <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <div style={{ fontSize: '12px', fontWeight: '800', color: '#10b981' }}>{formatMoneyLarge(pipeContact.rev)}</div>
+                <div style={{ fontSize: '11px', fontWeight: '800', padding: '4px 10px', borderRadius: '8px', background: '#ecfdf5', color: '#10b981' }}>{totalPipeDeals > 0 ? ((pipeContact.count/totalPipeDeals)*100).toFixed(0) : 0}%</div>
+              </div>
+            </div>
+
+            {/* CONSULTING */}
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: `${Math.max(10, totalPipeDeals > 0 ? (pipeConsult.count/totalPipeDeals)*100 : 0)}%`, background: '#fffbeb', clipPath: 'polygon(0 0, 100% 0, 95% 100%, 0 100%)', zIndex: 0, borderRadius: '12px 0 0 12px' }}></div>
+              <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ fontSize: '11px', fontWeight: '800', color: '#f59e0b', letterSpacing: '0.5px' }}>ĐANG TƯ VẤN</div>
+                <div style={{ fontSize: '14px', fontWeight: '900', color: '#0f172a' }}>{pipeConsult.count}</div>
+              </div>
+              <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <div style={{ fontSize: '12px', fontWeight: '800', color: '#f59e0b' }}>{formatMoneyLarge(pipeConsult.rev)}</div>
+                <div style={{ fontSize: '11px', fontWeight: '800', padding: '4px 10px', borderRadius: '8px', background: '#fffbeb', color: '#f59e0b' }}>{totalPipeDeals > 0 ? ((pipeConsult.count/totalPipeDeals)*100).toFixed(0) : 0}%</div>
+              </div>
+            </div>
+
+            {/* QUOTE */}
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: `${Math.max(10, totalPipeDeals > 0 ? (pipeQuote.count/totalPipeDeals)*100 : 0)}%`, background: '#faf5ff', clipPath: 'polygon(0 0, 100% 0, 95% 100%, 0 100%)', zIndex: 0, borderRadius: '12px 0 0 12px' }}></div>
+              <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ fontSize: '11px', fontWeight: '800', color: '#a855f7', letterSpacing: '0.5px' }}>BÁO GIÁ</div>
+                <div style={{ fontSize: '14px', fontWeight: '900', color: '#0f172a' }}>{pipeQuote.count}</div>
+              </div>
+              <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <div style={{ fontSize: '12px', fontWeight: '800', color: '#a855f7' }}>{formatMoneyLarge(pipeQuote.rev)}</div>
+                <div style={{ fontSize: '11px', fontWeight: '800', padding: '4px 10px', borderRadius: '8px', background: '#faf5ff', color: '#a855f7' }}>{totalPipeDeals > 0 ? ((pipeQuote.count/totalPipeDeals)*100).toFixed(0) : 0}%</div>
+              </div>
+            </div>
+
+            {/* WON */}
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: `${Math.max(10, totalPipeDeals > 0 ? (pipeWon.count/totalPipeDeals)*100 : 0)}%`, background: '#ecfdf5', clipPath: 'polygon(0 0, 100% 0, 95% 100%, 0 100%)', zIndex: 0, borderRadius: '12px 0 0 12px' }}></div>
+              <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ fontSize: '11px', fontWeight: '800', color: '#10b981', letterSpacing: '0.5px' }}>CHỐT (WON)</div>
+                <div style={{ fontSize: '14px', fontWeight: '900', color: '#0f172a' }}>{pipeWon.count}</div>
+              </div>
+              <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <div style={{ fontSize: '12px', fontWeight: '800', color: '#10b981' }}>{formatMoneyLarge(pipeWon.rev)}</div>
+                <div style={{ fontSize: '11px', fontWeight: '800', padding: '4px 10px', borderRadius: '8px', background: '#ecfdf5', color: '#10b981' }}>{totalPipeDeals > 0 ? ((pipeWon.count/totalPipeDeals)*100).toFixed(1) : 0}%</div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: '#1e293b' }}>Tổng cộng</div>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '13px', fontWeight: '800', color: '#0f172a' }}>
+              <span>{totalPipeDeals} deals</span>
+              <span>{formatMoneyLarge(totalPipeRev)}</span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      {/* Analytics Grid - Row 2: Sales & Status */}
-      <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
+      {/* 4. Bottom 4-Column Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
         
-        {/* Top Sales Performance */}
-        <div style={{ background: 'white', borderRadius: '16px', padding: '2rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#1e293b', margin: '0 0 4px 0' }}>Bảng Vàng Sales MICE</h3>
-              <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>Top nhân viên có số lượng đoàn Chốt đơn cao nhất</p>
-            </div>
-            <Users size={24} color="#ec4899" />
+        {/* Top Sales */}
+        <div className="md-panel">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div className="md-panel-title">TOP NHÂN VIÊN SALES</div>
+            <a href="#" style={{ fontSize: '12px', color: '#3b82f6', textDecoration: 'none', fontWeight: '600' }} onClick={(e) => { e.preventDefault(); setShowSalesModal(true); }}>Xem bảng xếp hạng</a>
           </div>
-          <div style={{ height: "350px", width: "100%" }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartSalesStats} layout="vertical" margin={{ left: 20, right: 30, top: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
-                <XAxis type="number" hide />
-                <YAxis type="category" dataKey="sales_name" axisLine={false} tickLine={false} tick={{ fontSize: 13, fontWeight: 700, fill: "#475569" }} width={140} />
-                <Tooltip 
-                  cursor={{ fill: "#f8fafc" }} 
-                  content={({ active, payload }) => {
-                    if (!active || !payload || !payload.length) return null;
-                    const d = payload[0].payload;
-                    const rev = Number(d.total_revenue || 0);
-                    const prof = Number(d.total_profit || 0);
-                    const won = Number(d.won_projects || 0);
-                    const total = Number(d.total_projects || 0);
-                    const share = totalRevenue > 0 ? ((rev / totalRevenue) * 100).toFixed(1) : '0.0';
-                    const wr = total > 0 ? ((won / total) * 100).toFixed(0) : '0';
-                    const margin = rev > 0 ? ((prof / rev) * 100).toFixed(1) : '0.0';
-                    return (
-                      <div style={{ background: 'white', borderRadius: '14px', padding: '14px 18px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.12)', border: '1px solid #f1f5f9', minWidth: '220px' }}>
-                        <div style={{ fontWeight: 800, fontSize: '14px', color: '#1e293b', marginBottom: '10px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>{d.sales_name}</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px', fontSize: '12px' }}>
-                          <div style={{ color: '#64748b' }}>Chốt đơn:</div>
-                          <div style={{ fontWeight: 700, color: '#ec4899', textAlign: 'right' }}>{won} Deal</div>
-                          <div style={{ color: '#64748b' }}>Tổng DA:</div>
-                          <div style={{ fontWeight: 700, color: '#475569', textAlign: 'right' }}>{total} (WR: {wr}%)</div>
-                          <div style={{ color: '#64748b' }}>Doanh thu:</div>
-                          <div style={{ fontWeight: 700, color: '#10b981', textAlign: 'right' }}>{formatMoneyLarge(rev)}</div>
-                          <div style={{ color: '#64748b' }}>Lợi nhuận:</div>
-                          <div style={{ fontWeight: 700, color: '#f59e0b', textAlign: 'right' }}>{formatMoneyLarge(prof)} ({margin}%)</div>
-                          <div style={{ color: '#64748b' }}>Market Share:</div>
-                          <div style={{ fontWeight: 800, color: '#6366f1', textAlign: 'right' }}>{share}%</div>
+          <div className="md-list">
+            {chartSalesStats.slice(0, 5).map((sales, idx) => {
+              const rev = Number(sales.total_revenue || 0);
+              const prof = Number(sales.total_profit || 0);
+              const won = Number(sales.won_projects || 0);
+              const total = Number(sales.total_projects || 0);
+              const wr = total > 0 ? ((won / total) * 100).toFixed(0) : '0';
+              const margin = rev > 0 ? ((prof / rev) * 100).toFixed(1) : '0.0';
+
+              return (
+                <div key={idx} className="md-list-item sales-item-hover" style={{ position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '24px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: idx < 3 ? '#f59e0b' : '#94a3b8' }}>
+                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
+                    </div>
+                    <img src={`https://ui-avatars.com/api/?name=${sales.sales_name.replace(' ', '+')}&background=random`} alt="avatar" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: '#1e293b' }}>{sales.sales_name}</div>
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>MICE</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: '#10b981', background: '#dcfce7', padding: '2px 8px', borderRadius: '100px' }}>
+                    {sales.won_projects} deals
+                  </div>
+
+                  {/* Tooltip Content */}
+                  <div className="sales-tooltip">
+                    <div style={{ fontWeight: 800, fontSize: '13px', color: '#1e293b', marginBottom: '8px', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>{sales.sales_name}</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px 12px', fontSize: '11px' }}>
+                      <div style={{ color: '#64748b' }}>Chốt đơn:</div>
+                      <div style={{ fontWeight: 700, color: '#ec4899', textAlign: 'right' }}>{won} Deal</div>
+                      <div style={{ color: '#64748b' }}>Tổng dự án:</div>
+                      <div style={{ fontWeight: 700, color: '#475569', textAlign: 'right' }}>{total} (Tỷ lệ: {wr}%)</div>
+                      <div style={{ color: '#64748b' }}>Doanh thu:</div>
+                      <div style={{ fontWeight: 700, color: '#10b981', textAlign: 'right' }}>{formatMoneyLarge(rev)}</div>
+                      <div style={{ color: '#64748b' }}>Biên lợi nhuận:</div>
+                      <div style={{ fontWeight: 700, color: '#f59e0b', textAlign: 'right' }}>{margin}%</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* B2B Clients */}
+        <div className="md-panel">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div className="md-panel-title">KHÁCH HÀNG CHIẾN LƯỢC (B2B)</div>
+            <a href="#" style={{ fontSize: '12px', color: '#3b82f6', textDecoration: 'none', fontWeight: '600' }} onClick={(e) => { e.preventDefault(); navigate('/group/projects'); }}>Xem tất cả</a>
+          </div>
+          <div className="md-list">
+            {chartB2BStats.slice(0, 5).map((b2b, idx) => {
+               const maxRev = chartB2BStats[0]?.total_revenue || 1;
+               const pct = ((b2b.total_revenue / totalRevenue) * 100).toFixed(1);
+               const widthPct = ((b2b.total_revenue / maxRev) * 100).toFixed(0);
+               return (
+                <div key={idx} className="md-list-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '700', color: '#64748b' }}>{idx+1}</div>
+                      <div style={{ fontSize: '12px', fontWeight: '600', color: '#1e293b' }}>{b2b.company_name}</div>
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>{pct}%</div>
+                  </div>
+                  <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${widthPct}%`, background: '#3b82f6', borderRadius: '3px' }}></div>
+                  </div>
+                </div>
+               )
+            })}
+          </div>
+        </div>
+
+        {/* Recent Activities Mock */}
+        <div className="md-panel">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div className="md-panel-title">HOẠT ĐỘNG GẦN ĐÂY</div>
+          </div>
+          <div className="md-list">
+            <div className="md-list-item">
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ color: '#3b82f6', background: '#eff6ff', padding: '6px', borderRadius: '8px' }}><Calendar size={14}/></div>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#1e293b' }}>Bạn đã tạo booking <b>#FT240424-01</b></div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>10:30 AM</div>
+                </div>
+              </div>
+            </div>
+            <div className="md-list-item">
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ color: '#10b981', background: '#dcfce7', padding: '6px', borderRadius: '8px' }}><CheckCircle size={14}/></div>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#1e293b' }}>Anh Tuấn đã mở báo giá</div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>09:45 AM</div>
+                </div>
+              </div>
+            </div>
+            <div className="md-list-item">
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ color: '#f59e0b', background: '#fef3c7', padding: '6px', borderRadius: '8px' }}><AlertCircle size={14}/></div>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#1e293b' }}>Deal Công ty ABC bị trễ follow</div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>Hôm qua, 14:20</div>
+                </div>
+              </div>
+            </div>
+            <div className="md-list-item">
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ color: '#8b5cf6', background: '#f3e8ff', padding: '6px', borderRadius: '8px' }}><Briefcase size={14}/></div>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#1e293b' }}>Bạn đã tạo dự án mới - Tour Đà Lạt</div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>Hôm qua, 09:10</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* VIP Events */}
+        <div className="md-panel">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div className="md-panel-title">SỰ KIỆN KHÁCH VIP</div>
+          </div>
+          <div className="md-list">
+            {(stats?.vipEvents || []).length > 0 ? (
+              (stats?.vipEvents || []).map((evt, idx) => {
+                const dateObj = new Date(evt.event_date);
+                const dayStr = dateObj.getDate().toString().padStart(2, '0') + '/' + (dateObj.getMonth() + 1).toString().padStart(2, '0');
+                const isB2B = evt.event_type === 'Thành lập công ty';
+                
+                return (
+                  <div key={idx} className="md-list-item">
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <div style={{ background: isB2B ? '#eff6ff' : '#fdf4ff', color: isB2B ? '#3b82f6' : '#d946ef', padding: '6px 8px', borderRadius: '8px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '10px', fontWeight: '800' }}>{dayStr}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }}>{evt.title}</div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>{evt.subtitle}</div>
+                      </div>
+                    </div>
+                    <button style={{ background: 'none', border: 'none', color: isB2B ? '#3b82f6' : '#d946ef', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Gửi quà</button>
+                  </div>
+                );
+              })
+            ) : (
+               <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '12px', padding: '20px 0' }}>Không có sự kiện VIP nào sắp tới</div>
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Sales Leaderboard Modal */}
+      {showSalesModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setShowSalesModal(false)}>
+          <div style={{ background: 'white', borderRadius: '24px', width: '100%', maxWidth: '600px', maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '24px 32px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Bảng Vàng Sales MICE</h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b', fontWeight: '600' }}>Toàn bộ danh sách xếp hạng nhân viên chốt sales</p>
+              </div>
+              <button onClick={() => setShowSalesModal(false)} style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#f1f5f9', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b' }}><X size={18} /></button>
+            </div>
+            
+            <div style={{ padding: '24px 32px', overflowY: 'auto', flex: 1 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {chartSalesStats.map((sales, idx) => {
+                  const rev = Number(sales.total_revenue || 0);
+                  const prof = Number(sales.total_profit || 0);
+                  const won = Number(sales.won_projects || 0);
+                  const total = Number(sales.total_projects || 0);
+                  const wr = total > 0 ? ((won / total) * 100).toFixed(0) : '0';
+                  const margin = rev > 0 ? ((prof / rev) * 100).toFixed(1) : '0.0';
+
+                  return (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ width: '28px', textAlign: 'center', fontSize: '16px', fontWeight: '800', color: idx < 3 ? '#f59e0b' : '#94a3b8' }}>
+                          {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
+                        </div>
+                        <img src={`https://ui-avatars.com/api/?name=${sales.sales_name.replace(' ', '+')}&background=random`} alt="avatar" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+                        <div>
+                          <div style={{ fontSize: '14px', fontWeight: '800', color: '#1e293b' }}>{sales.sales_name}</div>
+                          <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>Tỷ lệ: {wr}% • Lãi: {margin}%</div>
                         </div>
                       </div>
-                    );
-                  }}
-                />
-                <Bar dataKey="won_projects" name="Dự án Thành công" fill="#ec4899" radius={[0, 6, 6, 0]} barSize={24} minPointSize={2}>
-                  <LabelList dataKey="won_projects" position="right" style={{ fontSize: "12px", fontWeight: "bold", fill: "#ec4899" }} formatter={(val) => `${val} Deal`} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Status Distribution */}
-        <div style={{ background: 'white', borderRadius: '16px', padding: '2rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#1e293b', margin: '0 0 4px 0' }}>Tỷ Trọng Theo Giai Đoạn</h3>
-              <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>Nhịp độ đường ống kinh doanh (Pipeline)</p>
+                      
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '15px', fontWeight: '800', color: '#10b981' }}>{formatMoneyLarge(rev)}</div>
+                        <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '700', marginTop: '2px' }}>{won} / {total} dự án</div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {chartSalesStats.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '32px', color: '#94a3b8', fontSize: '14px', fontWeight: '600' }}>Không có dữ liệu sales trong giai đoạn này</div>
+                )}
+              </div>
             </div>
-            <PieChartIcon size={24} color="#8b5cf6" />
-          </div>
-          <div style={{ height: "350px", width: "100%" }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: 20, right: 50, bottom: 20, left: 50 }} style={{ overflow: 'visible' }}>
-                <Pie
-                  data={chartStatusStats}
-                  cx="50%" cy="50%"
-                  innerRadius={60} outerRadius={80} paddingAngle={4}
-                  dataKey="count" nameKey="status" isAnimationActive={false}
-                  label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
-                    const RADIAN = Math.PI / 180;
-                    const radius = outerRadius * 1.35;
-                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                    if (percent < 0.05) return null;
-                    return (
-                      <text x={x} y={y} fill="#475569" fontSize="11" fontWeight="700" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-                        <tspan x={x} dy="-0.6em">{name}</tspan>
-                        <tspan x={x} dy="1.2em">({(percent * 100).toFixed(0)}%)</tspan>
-                      </text>
-                    );
-                  }}
-                >
-                  {chartStatusStats.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.status] || COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: "16px", border: "none", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)", padding: "12px" }} />
-                <Legend verticalAlign="bottom" height={36} iconType="circle" />
-              </PieChart>
-            </ResponsiveContainer>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Analytics Grid - Row 3: B2B Companies */}
-      <div className="w-full">
-        <div style={{ background: 'white', borderRadius: '16px', padding: '2rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#1e293b', margin: '0 0 4px 0' }}>Khách hàng Chiến lược B2B (Top 10)</h3>
-              <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>Những doanh nghiệp đóng góp Doanh thu Thành công cao nhất cho Khối MICE</p>
-            </div>
-            <Building size={24} color="#06b6d4" />
-          </div>
-          <div style={{ height: "450px", width: "100%" }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartB2BStats} layout="vertical" margin={{ left: 20, right: 30, top: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
-                <XAxis type="number" hide />
-                <YAxis type="category" dataKey="company_name" axisLine={false} tickLine={false} tick={{ fontSize: 13, fontWeight: 700, fill: "#475569" }} width={200} />
-                <Tooltip 
-                  cursor={{ fill: "#f8fafc" }} 
-                  contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)" }}
-                  formatter={(value, name, props) => {
-                    if (name === "Doanh thu MICE") {
-                        let info = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-                        const prof = props.payload.total_profit || 0;
-                        if (value > 0) {
-                            const margin = ((prof / value) * 100).toFixed(1);
-                            info += ` (Mang về ${margin}% Biên LN)`;
-                        }
-                        return [info, name];
-                    }
-                    return [value, name];
-                  }}
-                />
-                <Bar dataKey="total_revenue" name="Doanh thu MICE" fill="#06b6d4" radius={[0, 6, 6, 0]} barSize={24} minPointSize={2}>
-                  <LabelList content={props => {
-                      const { x, y, width, value } = props;
-                      return (
-                          <text x={x + width + 10} y={y + 16} fill="#0ea5e9" fontSize={13} fontWeight="bold">
-                              {formatMoneyLarge(value)}
-                          </text>
-                      );
-                  }}/>
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-      
       <style>{`
-        .dashboard-content {
-          padding: 1.5rem 0 4rem 0;
+        .md-card {
+          background: #ffffff;
+          border-radius: 16px;
+          padding: 20px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+          display: flex;
+          flex-direction: column;
+          position: relative;
+          overflow: hidden;
+        }
+        .md-card-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 12px;
+        }
+        .md-card-title {
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .md-card-value {
+          font-size: 26px;
+          font-weight: 900;
+          letter-spacing: -0.5px;
+          margin-bottom: 8px;
+        }
+        .md-card-footer {
+          font-size: 11px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .md-chart-mock {
+          height: 40px;
+          width: 100%;
+          margin-top: 16px;
         }
 
-        /* Fixed Single-Row Filter Panel */
-        .executive-filter-panel {
+        .md-panel {
           background: #ffffff;
-          padding: 1rem 1.5rem;
-          border-radius: 24px;
-          border: 1px solid #f1f5f9;
-          box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-          position: sticky;
-          top: 0;
-          z-index: 40;
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+          display: flex;
+          flex-direction: column;
         }
-        .filter-scroll-container {
-          width: 100%;
-          overflow-x: auto;
-          scrollbar-width: none;
-          -ms-overflow-style: none;
+        .md-panel-title {
+          font-size: 12px;
+          font-weight: 800;
+          color: #475569;
+          letter-spacing: 0.5px;
         }
-        .filter-scroll-container::-webkit-scrollbar {
-          display: none;
+        .md-select {
+          padding: 4px 24px 4px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #475569;
+          border: 1px solid #e2e8f0;
+          border-radius: 6px;
+          background: #f8fafc;
+          outline: none;
         }
-        
-        .horizontal-filter-row {
-          display: flex !important;
-          flex-direction: row !important;
-          flex-wrap: nowrap !important;
-          align-items: center !important;
-          gap: 2rem !important;
-          min-width: max-content;
-          justify-content: flex-start;
-          width: 100%;
+
+        .md-pipeline-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          flex: 1;
+        }
+        .md-pipe-item {
+          padding: 12px 16px;
+          border-radius: 12px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .md-pipe-info {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .md-pipe-name {
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.5px;
+        }
+        .md-pipe-count {
+          font-size: 16px;
+          font-weight: 800;
+          color: #0f172a;
+        }
+        .md-pipe-stats {
+          text-align: right;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 6px;
+        }
+        .md-pipe-val {
+          font-size: 14px;
+          font-weight: 800;
+        }
+        .md-pipe-pct {
+          font-size: 11px;
+          font-weight: 800;
+          padding: 2px 8px;
+          border-radius: 100px;
+        }
+
+        .md-list {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .md-list-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
 
         .segmented-control.glass {
           display: flex;
-          background: #f8fafc;
-          padding: 5px;
-          border-radius: 16px;
-          border: 1px solid #f1f5f9;
-          flex-shrink: 0;
-          gap: 4px;
+          background: #e2e8f0;
+          padding: 4px;
+          border-radius: 10px;
         }
         .segment-btn {
-          padding: 7px 15px;
-          font-size: 11px;
-          font-weight: 800;
+          padding: 6px 16px;
+          font-size: 12px;
+          font-weight: 700;
           color: #64748b;
-          border-radius: 10px;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          border-radius: 6px;
           border: none;
           background: transparent;
           cursor: pointer;
-          white-space: nowrap;
-        }
-        .segment-btn:hover {
-          color: #6366f1;
-          background: rgba(255, 255, 255, 0.6);
         }
         .segment-btn.active {
           background: #ffffff;
-          color: #6366f1;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+          color: #0f172a;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-
-        .executive-select-wrapper {
-          position: relative;
-          display: flex;
-          align-items: center;
-          flex-shrink: 0;
-        }
-        .executive-select-wrapper::after {
-          content: '▾';
-          position: absolute;
-          right: 12px;
+        .executive-select-mini {
+          padding: 6px 12px;
           font-size: 12px;
-          color: #6366f1;
+          font-weight: 700;
+          border: none;
+          background: transparent;
+          color: #475569;
+          outline: none;
+        }
+        .sales-tooltip {
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%) translateY(10px);
+          background: white;
+          border-radius: 12px;
+          padding: 12px 16px;
+          box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1);
+          border: 1px solid #e2e8f0;
+          min-width: 220px;
+          z-index: 50;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.2s ease;
           pointer-events: none;
         }
-        .executive-select-wrapper select {
-          padding: 7px 30px 7px 14px;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          font-size: 11px;
-          font-weight: 800;
-          color: #1e293b;
-          outline: none;
-          cursor: pointer;
-          appearance: none;
-          min-width: 100px;
-        }
-
-        .date-input-group.premium {
-          display: flex;
-          align-items: center; gap: 6px;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          padding: 5px 12px;
-          border-radius: 12px;
-          flex-shrink: 0;
-        }
-        .date-input-group input {
-          border: none;
-          outline: none;
-          background: transparent;
-          font-size: 10px;
-          font-weight: 800;
-          color: #1e293b;
-        }
-
-        .confirm-btn-premium {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 18px;
-          background: #6366f1;
-          color: white;
-          border-radius: 12px;
-          font-size: 11px;
-          font-weight: 800;
-          border: none;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          flex-shrink: 0;
-        }
-        .confirm-btn-premium:hover {
-          background: #4f46e5;
-          transform: translateY(-1px);
-        }
-
-        /* KPI Premium Cards */
-        .kpi-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 1.5rem;
-          margin-bottom: 3.5rem;
-        }
-        .stat-card.premium {
-          padding: 1.75rem;
-          border-radius: 28px;
-          border: none;
-          color: white;
-          position: relative;
-          overflow: hidden;
-          box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.1);
-        }
-        .stat-card.blue { background: linear-gradient(135deg, #6366f1 0%, #4447e5 100%); }
-        .stat-card.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-        .stat-card.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-        .stat-card.rose { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); }
-
-        .stat-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 0.5rem;
-        }
-        .stat-label {
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-        }
-        .stat-icon-glass {
-          width: 36px;
-          height: 36px;
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(4px);
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .stat-value {
-          font-size: 2rem;
-          font-weight: 900;
-          letter-spacing: -1px;
-          color: white !important;
-        }
-        .stat-footer {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 10px;
-          font-weight: 700;
-          opacity: 0.8;
-          margin-top: 0.5rem;
-        }
-
-        @media (max-width: 1200px) {
-          .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        .sales-item-hover:hover .sales-tooltip {
+          opacity: 1;
+          visibility: visible;
+          transform: translateX(-50%) translateY(5px);
         }
       `}</style>
     </div>

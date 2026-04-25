@@ -111,6 +111,29 @@ router.get('/', async (req, res) => {
             console.error('Error fetching vouchers mapping for media:', dbErr);
         }
 
+        // Setup mapping for Passports attached (Customers + Bookings)
+        let passportsData = [];
+        try {
+            const [custRes, bookRes] = await Promise.all([
+                db.query('SELECT id, name, phone, passport_url FROM customers WHERE passport_url IS NOT NULL'),
+                db.query(`SELECT DISTINCT jsonb_array_elements(raw_details->'members')->>'passportUrl' as url, id as booking_id FROM bookings WHERE jsonb_typeof(raw_details->'members') = 'array'`)
+            ]);
+            
+            // Map customers
+            custRes.rows.forEach(r => {
+                passportsData.push({ url: r.passport_url, label: `${r.name || 'Khách hàng'} ${r.phone ? '('+r.phone+')' : ''}` });
+            });
+
+            // Map booking members (if they don't already exist from primary customer)
+            bookRes.rows.forEach(r => {
+                if (r.url && !passportsData.find(p => p.url === r.url)) {
+                    passportsData.push({ url: r.url, label: `Khách phụ (Booking #${r.booking_id})` });
+                }
+            });
+        } catch(dbErr) {
+            console.error('Error fetching passports mapping for media:', dbErr);
+        }
+
         const files = fs.readdirSync(uploadDir).filter(f => !f.startsWith('._') && !f.startsWith('.DS_Store'));
         const mediaList = files.map(file => {
             const stats = fs.statSync(path.join(uploadDir, file));
@@ -118,12 +141,27 @@ router.get('/', async (req, res) => {
             
             // Check if attached to any voucher
             const linkedVoucher = vouchersData.find(v => v.attachment_url === publicUrl);
+            const linkedPassport = passportsData.find(p => p.url === publicUrl);
+
+            let type = 'trash';
+            let ref = null;
+
+            if (linkedVoucher) {
+                type = 'voucher';
+                ref = linkedVoucher.voucher_code;
+            } else if (linkedPassport) {
+                type = 'passport';
+                ref = linkedPassport.label;
+            }
 
             return {
                 filename: file,
                 url: publicUrl,
                 size: stats.size,
                 createdAt: stats.birthtime,
+                type: type,
+                ref: ref,
+                // keep backward compat if any component uses voucherCode
                 voucherCode: linkedVoucher ? linkedVoucher.voucher_code : null
             };
         });

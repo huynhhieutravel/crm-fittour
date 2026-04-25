@@ -105,6 +105,17 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
     fetchItems();
   }, [filters.start_date, filters.end_date, filters.service_type, filters.sale_id, filters.status]);
 
+  // Lắng nghe tiếng gọi của AI Copilot
+  useEffect(() => {
+    const handleAiUpdate = (e) => {
+      // Chỉ tự refresh nếu không phải form khác
+      console.log("[TravelSupportTab] AI updated DB, auto refreshing...", e.detail);
+      fetchItems();
+    };
+    window.addEventListener('AI_DATA_CHANGED', handleAiUpdate);
+    return () => window.removeEventListener('AI_DATA_CHANGED', handleAiUpdate);
+  }, [filters]);
+
   const handleSave = async (formData) => {
     try {
       if (editingItem) {

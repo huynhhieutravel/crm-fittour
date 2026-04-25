@@ -5,6 +5,7 @@ const authenticateToken = require('../middleware/auth');
 const { permCheck } = require('../middleware/permCheck');
 
 router.get('/', authenticateToken, permCheck('tours', 'view'), tourController.getAllTours);
+router.post('/bulk-delete', authenticateToken, permCheck('tours', 'delete'), tourController.bulkDeleteTours);
 router.post('/', authenticateToken, permCheck('tours', 'create'), tourController.createTour);
 router.get('/:id', authenticateToken, permCheck('tours', 'view'), tourController.getTourById);
 router.put('/:id', authenticateToken, permCheck('tours', 'edit'), tourController.updateTour);

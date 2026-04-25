@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { User, Mail, Phone, Calendar, MapPin, Shield, Save, ExternalLink, Camera, Clock } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { format } from 'date-fns';
 
 const MyProfileTab = ({ currentUser, addToast }) => {
   const [profile, setProfile] = useState(null);
@@ -175,7 +178,18 @@ const MyProfileTab = ({ currentUser, addToast }) => {
 
             <div className="modal-form-group">
               <label><Calendar size={13} style={{ marginRight: '4px' }} /> NGÀY SINH</label>
-              <input className="modal-input" type="date" value={formData.birth_date} onChange={e => setFormData({...formData, birth_date: e.target.value})} />
+              <DatePicker
+                selected={formData.birth_date ? new Date(formData.birth_date) : null}
+                onChange={date => setFormData({...formData, birth_date: date ? format(date, 'yyyy-MM-dd') : ''})}
+                dateFormat="dd/MM/yyyy"
+                placeholderText="dd/mm/yyyy"
+                className="modal-input"
+                showYearDropdown
+                showMonthDropdown
+                dropdownMode="select"
+                isClearable
+                autoComplete="off"
+              />
             </div>
             <div className="modal-form-group">
               <label>GIỚI TÍNH</label>
@@ -201,7 +215,18 @@ const MyProfileTab = ({ currentUser, addToast }) => {
             </div>
             <div className="modal-form-group">
               <label><Clock size={13} style={{ marginRight: '4px' }} /> NGÀY GIA NHẬP CÔNG TY</label>
-              <input className="modal-input" type="date" value={formData.created_at} onChange={e => setFormData({...formData, created_at: e.target.value})} />
+              <DatePicker
+                selected={formData.created_at ? new Date(formData.created_at) : null}
+                onChange={date => setFormData({...formData, created_at: date ? format(date, 'yyyy-MM-dd') : ''})}
+                dateFormat="dd/MM/yyyy"
+                placeholderText="dd/mm/yyyy"
+                className="modal-input"
+                showYearDropdown
+                showMonthDropdown
+                dropdownMode="select"
+                isClearable
+                autoComplete="off"
+              />
             </div>
 
             <div className="modal-form-group">
@@ -210,7 +235,18 @@ const MyProfileTab = ({ currentUser, addToast }) => {
             </div>
             <div className="modal-form-group">
               <label>NGÀY HẾT HẠN PASSPORT</label>
-              <input className="modal-input" type="date" value={formData.id_expiry} onChange={e => setFormData({...formData, id_expiry: e.target.value})} />
+              <DatePicker
+                selected={formData.id_expiry ? new Date(formData.id_expiry) : null}
+                onChange={date => setFormData({...formData, id_expiry: date ? format(date, 'yyyy-MM-dd') : ''})}
+                dateFormat="dd/MM/yyyy"
+                placeholderText="dd/mm/yyyy"
+                className="modal-input"
+                showYearDropdown
+                showMonthDropdown
+                dropdownMode="select"
+                isClearable
+                autoComplete="off"
+              />
             </div>
 
             <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>

@@ -128,62 +128,59 @@ export default function HotelsTab({ currentUser, addToast, handleDeleteHotel }) 
         <div style={{ padding: '0 2rem' }}>
             {/* Thanh công cụ */}
             <div className="filter-bar" style={{ 
-                display: 'flex', 
-                flexDirection: 'row',
-                flexWrap: 'wrap', 
-                gap: '1rem', 
-                alignItems: 'center', 
                 backgroundColor: 'white',
                 padding: '1.25rem',
                 borderRadius: '1rem',
                 boxShadow: 'var(--shadow)',
-                marginBottom: '2rem'
+                marginBottom: '1.5rem'
             }}>
-                <div className="filter-group" style={{ flex: '1 1 300px', margin: 0 }}>
-                    <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>TÌM KIẾM NHÀ CUNG CẤP</label>
-                    <div style={{ position: 'relative' }}>
-                        <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
-                        <input
-                            className="filter-input"
-                            style={{ width: '100%', paddingLeft: '40px', height: '44px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }}
-                            type="text"
-                            placeholder="Mã, Tên khách sạn..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                <div className="ncc-filter-grid">
+                    <div className="filter-group" style={{ margin: 0 }}>
+                        <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>TÌM KIẾM NHÀ CUNG CẤP</label>
+                        <div style={{ position: 'relative' }}>
+                            <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                            <input
+                                className="filter-input"
+                                style={{ width: '100%', paddingLeft: '40px', height: '44px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }}
+                                type="text"
+                                placeholder="Mã, Tên khách sạn..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="filter-group" style={{ margin: 0 }}>
+                        <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>THỊ TRƯỜNG</label>
+                        <Select
+                            options={marketOptions}
+                            value={marketFilter ? { label: marketFilter, value: marketFilter } : null}
+                            onChange={option => setMarketFilter(option ? option.value : '')}
+                            styles={reactSelectStyles}
+                            isClearable
+                            placeholder="Chọn thị trường..."
                         />
                     </div>
-                </div>
 
-                <div className="filter-group" style={{ flex: '0 0 240px', margin: 0 }}>
-                    <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>THỊ TRƯỜNG INBOUND/MICE</label>
-                    <Select
-                        options={marketOptions}
-                        value={marketFilter ? { label: marketFilter, value: marketFilter } : null}
-                        onChange={option => setMarketFilter(option ? option.value : '')}
-                        styles={reactSelectStyles}
-                        isClearable
-                        placeholder="🔍 Chọn thị trường..."
-                    />
-                </div>
-
-                <div className="filter-group" style={{ flex: '0 0 160px', margin: 0 }}>
-                    <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>HẠNG DỊCH VỤ</label>
-                    <Select
-                        options={STAR_OPTIONS}
-                        value={STAR_OPTIONS.find(o => o.value === starFilter) || null}
-                        onChange={option => setStarFilter(option ? option.value : '')}
-                        styles={reactSelectStyles}
-                        isClearable
-                        placeholder="Mọi hạng sao"
-                    />
-                </div>
-                
-                <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'flex-end', height: '100%', paddingTop: '1.4rem' }}>
-                    {canCreate(currentUser?.role, 'suppliers') && (
-                        <button className="btn btn-primary" onClick={handleAddHotel} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '44px', padding: '0 1.5rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, background: '#2563eb', color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)', cursor: 'pointer' }}>
-                            <Plus size={18} /> Thêm Mới
-                        </button>
-                    )}
+                    <div className="filter-group" style={{ margin: 0 }}>
+                        <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>HẠNG DỊCH VỤ</label>
+                        <Select
+                            options={STAR_OPTIONS}
+                            value={STAR_OPTIONS.find(o => o.value === starFilter) || null}
+                            onChange={option => setStarFilter(option ? option.value : '')}
+                            styles={reactSelectStyles}
+                            isClearable
+                            placeholder="Tất cả"
+                        />
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                        {canCreate(currentUser?.role, 'suppliers') && (
+                            <button className="btn btn-primary" onClick={handleAddHotel} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '44px', padding: '0 1.5rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, background: '#2563eb', color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
+                                <Plus size={18} /> Thêm Mới
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 

@@ -132,7 +132,7 @@ const PrintVoucherTemplate = forwardRef(({ voucher, tour, booking }, ref) => {
             <td style={{ height: '80px', border: 'none', verticalAlign: 'top', paddingTop: '8px', color: '#16a34a' }}>
                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>✔ Đã ký</div>
                <div style={{ fontSize: '13px' }}>{`${day}/${month}/${year} ${time}`}</div>
-               <div style={{ fontWeight: 'bold', marginTop: '4px', color: '#000' }}>{booking?.created_by_name || voucher.created_by_name || 'Hệ thống'}</div>
+               <div style={{ fontWeight: 'bold', marginTop: '4px', color: '#000' }}>{voucher.created_by_full_name || booking?.created_by_name || voucher.created_by_name || 'Hệ thống'}</div>
             </td>
             <td style={{ height: '80px', border: 'none' }}></td>
           </tr>

@@ -5,7 +5,7 @@ import AsyncSelect from 'react-select/async';
 import CustomerProfileSlider from '../CustomerProfileSlider';
 import { scanPassportImage } from '../../utils/passportOcr';
 
-export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initialData, currentUser }) {
+export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initialData, currentUser, tour }) {
   // Auto-generate B-XXXX (4-5 digits) for a new booking code
   const generateReservationCode = () => `B-${Math.floor(10000 + Math.random() * 90000)}`;
 
@@ -159,6 +159,9 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                     updated.docId = scanResult.docId;
                     updated.docType = 'Hộ chiếu';
                  }
+                 if (scanResult.personalId) {
+                    updated.personalId = scanResult.personalId;
+                 }
                  if (scanResult.doiDisplay) {
                     const [dd, mm, yyyy] = scanResult.doiDisplay.split('/');
                     if (yyyy && mm && dd) updated.issueDate = `${yyyy}-${mm}-${dd}`;
@@ -255,7 +258,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
        const data = res.data?.data || res.data;
        return data.map(c => ({
          value: c.id,
-         label: `${c.name} - ${c.phone}`,
+         label: `${c.name}${c.phone ? ' - ' + c.phone : (c.id_card ? ' - HC:' + c.id_card : '')}`,
          customer: c
        }));
      } catch (err) {
@@ -296,7 +299,10 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
         phone: cust.phone || '', name: cust.name || '', gender: cust.gender || 'Chọn',
         dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA') : '', docId: cust.id_card || '', 
         expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA') : '',
-        passportUrl: cust.passport_url || ''
+        passportUrl: cust.passport_url || '',
+        customerSegment: cust.customer_segment || '',
+        tripCount: cust.total_trip_count || 0,
+        crmNote: cust.ghi_chu || ''
       };
       
       if (newMembers.length > 0) {
@@ -314,14 +320,24 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
     });
   };
 
-  const defaultPricingRows = [
-    { id: 1, ageType: 'Người lớn', name: '', price: 25490000, qty: 1, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 25490000, internalNote: '', customerNote: '', extraServices: [] },
-    { id: 2, ageType: 'Trẻ em', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
-    { id: 3, ageType: 'Trẻ em (2-10)', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
-    { id: 4, ageType: 'Em bé (<2)', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
-  ];
+  const getDefaultPricingRows = () => {
+    const defaults = [
+      { id: 1, ageType: 'Người lớn', name: '', price: tour?.tour_info?.price_adult || 25490000, qty: 1, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: tour?.tour_info?.price_adult || 25490000, internalNote: '', customerNote: '', extraServices: [] },
+      { id: 2, ageType: tour?.tour_info?.price_child_label_1 || 'Trẻ em', name: '', price: tour?.tour_info?.price_child_2_5 || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+      { id: 3, ageType: tour?.tour_info?.price_child_label_2 || 'Trẻ em (2-10)', name: '', price: tour?.tour_info?.price_child_6_11 || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+      { id: 4, ageType: tour?.tour_info?.price_infant_label || 'Em bé (<2)', name: '', price: tour?.tour_info?.price_infant || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+    ];
+    // Append dynamic extra price tiers from tour settings
+    const extras = tour?.tour_info?.extra_price_tiers || [];
+    extras.forEach((tier, i) => {
+      if (tier.label) {
+        defaults.push({ id: 100 + i, ageType: tier.label, name: '', price: tier.price || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] });
+      }
+    });
+    return defaults;
+  };
 
-  const [pricingRows, setPricingRows] = useState(defaultPricingRows);
+  const [pricingRows, setPricingRows] = useState(getDefaultPricingRows());
 
   const [members, setMembers] = useState([]);
   const [paidAmount, setPaidAmount] = useState(0);
@@ -339,10 +355,10 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
             bank: 'Chọn', branch: 'Chi Nhánh'
           });
           const initialRows = raw.pricingRows || [
-            { id: 1, ageType: 'Người lớn', name: '', price: initialData.base_price || 25490000, qty: initialData.qty || 1, surcharge: initialData.surcharge || 0, discount: initialData.discount || 0, comPerPax: 0, comCTV: 0, total: initialData.total || 25490000, internalNote: '', customerNote: '', extraServices: [] },
-            { id: 2, ageType: 'Trẻ em', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
-            { id: 3, ageType: 'Trẻ em (2-10)', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
-            { id: 4, ageType: 'Em bé (<2)', name: '', price: 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+            { id: 1, ageType: 'Người lớn', name: '', price: initialData.base_price || tour?.tour_info?.price_adult || 25490000, qty: initialData.qty || 1, surcharge: initialData.surcharge || 0, discount: initialData.discount || 0, comPerPax: 0, comCTV: 0, total: initialData.total || tour?.tour_info?.price_adult || 25490000, internalNote: '', customerNote: '', extraServices: [] },
+            { id: 2, ageType: 'Trẻ em', name: '', price: tour?.tour_info?.price_child_2_5 || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+            { id: 3, ageType: 'Trẻ em (2-10)', name: '', price: tour?.tour_info?.price_child_6_11 || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+            { id: 4, ageType: 'Em bé (<2)', name: '', price: tour?.tour_info?.price_infant || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
           ];
           setPricingRows(initialRows.map(r => ({ ...r, extraServices: r.extraServices || [] })));
           setMembers(raw.members || []);
@@ -353,7 +369,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
             gender: 'Nữ', reservationCode: generateReservationCode(), pickup: '', dropoff: '',
             bank: 'Chọn', branch: 'Chi Nhánh'
           });
-          setPricingRows(defaultPricingRows.map(r => ({...r})));
+          setPricingRows(getDefaultPricingRows());
           setMembers([]);
           setPaidAmount(0);
        }
@@ -1049,7 +1065,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                         <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={(e) => handleUploadPassport(m.id, e.target.files[0])} />
                      </label>
                      {m.passportUrl && (
-                        <a href={m.passportUrl} target="_blank" rel="noreferrer" style={{ position: 'absolute', bottom: '-4px', right: '-8px', background: '#3b82f6', color: 'white', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '10px', textDecoration: 'none' }} title="Xem Hộ chiếu">👁️</a>
+                        <a href={m.passportUrl.startsWith('/') ? `https://crm.tournuocngoai.com${m.passportUrl}` : m.passportUrl} target="_blank" rel="noreferrer" style={{ position: 'absolute', bottom: '-4px', right: '-8px', background: '#3b82f6', color: 'white', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '10px', textDecoration: 'none' }} title="Xem Hộ chiếu">👁️</a>
                      )}
                   </div>
                   <div style={{ width: '100px', flexShrink: 0 }}>

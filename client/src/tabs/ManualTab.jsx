@@ -664,6 +664,18 @@ const ManualCustomersGuide = () => (
           Hệ thống sẽ <strong>tự động đếm tổng số chuyến đi (Lịch sử Booking thành công + Số liệu nhập gốc)</strong> để thăng hạng cho Khách hàng. Sales tuyệt đối không tự sửa hạng VIP tay.
         </p>
 
+        <div style={{ padding: '1.5rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+             <Shield size={18} color="#3b82f6" /> Quy tắc đếm và Phân hạng (Logic)
+          </h3>
+          <ul style={{ color: '#475569', fontSize: '0.95rem', lineHeight: 1.6, paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '8px', margin: 0 }}>
+             <li><strong>Công thức:</strong> Tổng chuyến = (Số chuyến quá khứ nhập tay) + (Số đơn Tour thực tế trên CRM).</li>
+             <li><strong>Điều kiện đếm:</strong> Hệ thống đếm tất cả Booking có trạng thái <strong>KHÁC</strong> "Mặc định/Mới" và <strong>KHÁC</strong> "Huỷ". Nghĩa là ngay khi khách <strong>Giữ chỗ chắc chắn hoặc Đặt cọc</strong>, hệ thống đã ghi nhận 1 lần đi.</li>
+             <li><strong>Cơ chế Recalculate (An toàn):</strong> Mỗi khi có thay đổi, hệ thống sẽ <strong>quét lại toàn bộ danh sách từ đầu</strong> để tính tổng mới, chứ không phải cộng dồn dồn. Việc này đảm bảo không bao giờ bị đếm trùng (dupe) dù sếp có đổi trạng thái tour nhiều lần.</li>
+             <li><strong>Thời điểm tính:</strong> Tính ngay lập tức khi tạo Booking mới hoặc khi đổi trạng thái của Booking cũ.</li>
+          </ul>
+        </div>
+
         <ul style={{ paddingLeft: '0', display: 'flex', flexDirection: 'column', gap: '1rem', listStyle: 'none', margin: 0 }}>
           <li style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{ fontSize: '1.5rem' }}>⭐⭐⭐</span>
@@ -1101,8 +1113,11 @@ const ManualDeparturesGuide = () => (
           <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>🤖 VIP Engine: Phân Hạng Tự Động</h2>
         </div>
         <p style={{ color: '#475569', fontSize: '1.05rem', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Chạy song song với Auto-Convert. <strong>Tổng số chuyến = past_trip_count (nhập gốc) + crm_trip_count (bookings thực tế)</strong>.
+          Chạy song song với Auto-Convert. Hệ thống <strong>tự động quét sạch danh sách (Recalculate)</strong> mỗi khi có biến động để đảm bảo hạng VIP luôn chính xác 100%.
         </p>
+        <div style={{ padding: '1rem', background: '#f0f9ff', borderLeft: '4px solid #0284c7', color: '#0369a1', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+          <strong>CƠ CHẾ:</strong> Tổng số chuyến = past_trip_count (nhập gốc) + crm_trip_count (đếm tất cả bookings KHÁC 'Mới' và 'Huỷ').
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div style={{ padding: '0.75rem 1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{ fontSize: '1.3rem' }}>⭐⭐⭐</span>

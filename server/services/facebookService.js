@@ -523,7 +523,7 @@ exports.syncRecentConversations = async () => {
                     console.log(`[FB POLLER] Phát hiện khách mới chat với Fanpage: ${userName}. Đang tạo Lead...`);
                     // Tạo Lead mới tinh (Kèm kiểm tra PSID dò Khách Quen)
                     const leadResult = await db.query(
-                        'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id, phone, fb_conversation_link) VALUES ($1, $2, $3, $4, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $6 OR phone = $7 LIMIT 1), $7, $8) RETURNING *',
+                        'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id, phone, fb_conversation_link) VALUES ($1, $2, $3, $4, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $6 OR phone = $7::varchar LIMIT 1), $7::varchar, $8) RETURNING *',
                         [userName, 'Messenger', 'Mới', psid, firstMessageNote, psid, extractedPhone, fbLink]
                     );
 
@@ -627,7 +627,7 @@ exports.syncRecentConversations = async () => {
                                     if (['Chốt đơn', 'Thất bại'].includes(oldLead.status)) {
                                         console.log(`[FB POLLER] Khách Cũ (Đã Đóng) nhắn Fanpage: ${userName}. Tạo Lead mới...`);
                                         const newLeadResult = await db.query(
-                                            'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email, fb_conversation_link) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4 LIMIT 1), $5, $6, $7) RETURNING *',
+                                            'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email, fb_conversation_link) VALUES ($1, $2, $3, $4::varchar, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4::varchar LIMIT 1), $5, $6, $7) RETURNING *',
                                             [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email, fbLink]
                                         );
                                         currentLeadId = newLeadResult.rows[0].id;

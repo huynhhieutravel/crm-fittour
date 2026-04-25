@@ -6,9 +6,12 @@ exports.login = async (req, res) => {
     const { username, password } = req.body;
 
     try {
+        const usernameWithAt = username.startsWith('@') ? username : `@${username}`;
+        const usernameWithoutAt = username.startsWith('@') ? username.substring(1) : username;
+
         const result = await db.query(
-            'SELECT u.*, COALESCE(r.name, u.role) as role_name FROM users u LEFT JOIN roles r ON u.role_id = r.id WHERE u.username = $1',
-            [username]
+            'SELECT u.*, COALESCE(r.name, u.role) as role_name FROM users u LEFT JOIN roles r ON u.role_id = r.id WHERE u.username = $1 OR u.username = $2 OR u.email = $3',
+            [usernameWithAt, usernameWithoutAt, username]
         );
 
         if (result.rows.length === 0) {
