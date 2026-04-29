@@ -36,4 +36,9 @@ router.delete('/rates/:rate_id', authenticateToken, permCheck('tickets', 'edit')
 router.get('/:ticket_id/notes', authenticateToken, permCheck('tickets', 'view'), controller.getNotes);
 router.post('/:ticket_id/notes', authenticateToken, permCheck('tickets', 'edit'), controller.addNote);
 
+// Media
+router.get('/:ticket_id/media', authenticateToken, permCheck('tickets', 'view'), controller.getTicketMedia);
+router.post('/:ticket_id/media', authenticateToken, permCheck('tickets', 'edit'), controller.uploadTicketMedia);
+router.delete('/media/:media_id', authenticateToken, permCheck('tickets', 'edit'), controller.deleteTicketMedia);
+
 module.exports = router;

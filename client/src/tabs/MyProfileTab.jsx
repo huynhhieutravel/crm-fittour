@@ -5,7 +5,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 
-const MyProfileTab = ({ currentUser, addToast }) => {
+const MyProfileTab = ({ currentUser, addToast, onUpdateUser }) => {
   const [profile, setProfile] = useState(null);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -51,6 +51,9 @@ const MyProfileTab = ({ currentUser, addToast }) => {
       });
       addToast?.('Đã cập nhật hồ sơ cá nhân thành công!');
       fetchProfile();
+      if (onUpdateUser) {
+        onUpdateUser(formData);
+      }
     } catch (err) {
       alert('Lỗi: ' + (err.response?.data?.message || err.message));
     } finally {
@@ -68,8 +71,18 @@ const MyProfileTab = ({ currentUser, addToast }) => {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.data?.url) {
-        setFormData(p => ({ ...p, avatar_url: res.data.url }));
-        setProfile(p => ({ ...p, avatar_url: res.data.url }));
+        const newUrl = res.data.url;
+        setFormData(p => ({ ...p, avatar_url: newUrl }));
+        setProfile(p => ({ ...p, avatar_url: newUrl }));
+        
+        // Auto-save immediately
+        await axios.put('/api/users/me', { ...formData, avatar_url: newUrl }, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (onUpdateUser) {
+          onUpdateUser({ avatar_url: newUrl });
+        }
+        addToast?.('Đã thay đổi ảnh đại diện!');
       }
     } catch (err) {
       alert('Lỗi tải ảnh: ' + (err.response?.data?.message || err.message));
@@ -85,7 +98,16 @@ const MyProfileTab = ({ currentUser, addToast }) => {
       const res = await axios.post('/api/media/upload', fd, {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      if (res.data?.url) setFormData(p => ({ ...p, passport_url: res.data.url }));
+      if (res.data?.url) {
+        const newUrl = res.data.url;
+        setFormData(p => ({ ...p, passport_url: newUrl }));
+        
+        // Auto-save immediately
+        await axios.put('/api/users/me', { ...formData, passport_url: newUrl }, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        addToast?.('Đã tải lên ảnh hộ chiếu!');
+      }
     } catch (err) {
       alert('Lỗi tải lên: ' + (err.response?.data?.message || err.message));
     } finally {

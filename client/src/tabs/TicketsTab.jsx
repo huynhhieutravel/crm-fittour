@@ -40,7 +40,7 @@ const reactSelectStyles = {
         })
     };
 
-export default function TicketsTab({ currentUser, addToast, handleDeleteTicket }) {
+export default function TicketsTab({ currentUser, checkPerm, addToast, handleDeleteTicket }) {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
@@ -147,7 +147,7 @@ export default function TicketsTab({ currentUser, addToast, handleDeleteTicket }
                         <Select options={TRANSPORT_CLASS_OPTIONS} value={TRANSPORT_CLASS_OPTIONS.find(o => o.value === starFilter) || null} onChange={option => setStarFilter(option ? option.value : '')} styles={reactSelectStyles} isClearable placeholder="Tất cả" />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                        {canCreate(currentUser?.role, 'suppliers') && (
+                        {(checkPerm ? checkPerm('tickets', 'create') : canCreate(currentUser?.role, 'suppliers')) && (
                             <button className="btn btn-primary" onClick={handleAddTicket} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '44px', padding: '0 1.5rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, background: '#2563eb', color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                                 <Plus size={18} /> Thêm Mới
                             </button>
@@ -237,9 +237,11 @@ export default function TicketsTab({ currentUser, addToast, handleDeleteTicket }
                                             <button className="btn-icon" title="Xem / Sửa" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6', padding: '4px' }} onClick={() => handleOpenTicket(h.id)}>
                                                 <Edit2 size={16} />
                                             </button>
-                                            <button className="btn-icon" title="Xoá" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }} onClick={() => handleDeleteTicket(h.id)}>
-                                                <Trash2 size={16} />
-                                            </button>
+                                            {(checkPerm ? checkPerm('tickets', 'delete') : canDelete(currentUser?.role, 'suppliers')) && (
+                                                <button className="btn-icon" title="Xoá" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }} onClick={() => handleDeleteTicket(h.id)}>
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -281,6 +283,7 @@ export default function TicketsTab({ currentUser, addToast, handleDeleteTicket }
                     onClose={() => setIsDrawerOpen(false)} 
                     refreshList={fetchTickets}
                     currentUser={currentUser}
+                    checkPerm={checkPerm}
                     addToast={addToast}
                 />
             )}

@@ -1,3 +1,4 @@
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   UserPlus, 
@@ -115,7 +116,7 @@ const LeadsTab = ({
     if (bulkActionStatus) updates.status = bulkActionStatus;
     if (bulkActionClass) updates.classification = bulkActionClass;
 
-    if (!window.confirm(`Xác nhận cập nhật dữ liệu cho ${selectedLeadIds.length} hồ sơ?`)) return;
+    if (!await swalConfirm(`Xác nhận cập nhật dữ liệu cho ${selectedLeadIds.length} hồ sơ?`)) return;
 
     try {
         const token = localStorage.getItem('token');

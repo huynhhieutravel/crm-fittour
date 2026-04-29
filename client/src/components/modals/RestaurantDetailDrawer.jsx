@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import StarRating from '../common/StarRating';
 import axios from 'axios';
-import { X, Save, Plus, Trash2, UtensilsCrossed, ShoppingBag, Users, FileText, Send, Clock, PlusCircle, ExternalLink, Link2 } from 'lucide-react';
+import { X, Save, Plus, Trash2, UtensilsCrossed, Image, Users, FileText, Send, Clock, PlusCircle, ExternalLink, Link2, Upload, Eye, Download, File } from 'lucide-react';
 import Select from 'react-select';
 import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
+import Swal from 'sweetalert2';
 
-export default function RestaurantDetailDrawer({ restaurant, onClose, refreshList, currentUser, addToast }) {
+export default function RestaurantDetailDrawer({ restaurant, onClose, refreshList, currentUser, checkPerm, addToast }) {
     const [activeTab, setActiveTab] = useState('general');
     
     // States - match actual DB columns
@@ -28,6 +29,14 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
 
     const [restaurantNotes, setRestaurantNotes] = useState([]);
     const [newNote, setNewNote] = useState('');
+
+    // Media Gallery states
+    const [mediaFiles, setMediaFiles] = useState([]);
+    const [pendingUploads, setPendingUploads] = useState([]);
+    const [mediaLoading, setMediaLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [lightboxUrl, setLightboxUrl] = useState(null);
+    const fileInputRef = useRef(null);
 
     const fetchRestaurantNotes = async () => {
         if (!restaurant?.id) return;
@@ -53,6 +62,65 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
         }
     };
 
+    const fetchMedia = async () => {
+        if (!restaurant?.id) return;
+        setMediaLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`/api/restaurants/${restaurant.id}/media`, { headers: { Authorization: `Bearer ${token}` } });
+            setMediaFiles(res.data);
+        } catch (err) { console.error(err); }
+        finally { setMediaLoading(false); }
+    };
+
+    const handleUploadMedia = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.size > 10 * 1024 * 1024) { addToast?.('File quá lớn! Tối đa 10MB.', 'error'); return; }
+        if (mediaFiles.length + pendingUploads.length >= 10) { addToast?.('Đã đạt tối đa 10 file!', 'error'); return; }
+        
+        if (!restaurant?.id) {
+            setPendingUploads([...pendingUploads, { id: 'pending_' + Date.now(), file, file_url: URL.createObjectURL(file), file_name: file.name, file_size: file.size, file_type: file.type.startsWith('image/') ? 'image' : 'pdf', isPending: true }]);
+            if(fileInputRef.current) fileInputRef.current.value='';
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const fd = new FormData();
+            fd.append('file', file);
+            await axios.post(`/api/restaurants/${restaurant.id}/media`, fd, {
+                headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` }
+            });
+            addToast?.('Tải lên thành công!');
+            fetchMedia();
+        } catch (err) {
+            addToast?.(err.response?.data?.message || 'Lỗi tải file', 'error');
+        } finally { setUploading(false); if(fileInputRef.current) fileInputRef.current.value=''; }
+    };
+
+    const handleDeleteMedia = async (mediaId, fileName, isPending) => {
+        if (isPending) {
+            setPendingUploads(pendingUploads.filter(p => p.id !== mediaId));
+            return;
+        }
+        const result = await Swal.fire({ title: 'Xóa file?', text: `Bạn muốn xóa "${fileName}"?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Xóa', cancelButtonText: 'Hủy' });
+        if (!result.isConfirmed) return;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`/api/restaurants/media/${mediaId}`, { headers: { Authorization: `Bearer ${token}` } });
+            addToast?.('Đã xóa file!');
+            fetchMedia();
+        } catch (err) { addToast?.('Lỗi xóa file', 'error'); }
+    };
+
+    const formatFileSize = (bytes) => {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    };
+
     useEffect(() => {
         if (restaurant) {
             setFormData({
@@ -71,11 +139,14 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
             setServices(restaurant.services || []);
             
             fetchRestaurantNotes();
+            fetchMedia();
         } else {
             // New restaurant - start with empty rows
             setContacts([{ id: Date.now() + 1, name: '', position: '', phone: '', email: '' }]);
             setServices([{ id: Date.now() + 2, name: '', description: '', capacity: '' }]);
             setRestaurantNotes([]);
+            setMediaFiles([]);
+            setPendingUploads([]);
         }
     }, [restaurant]);
 
@@ -98,8 +169,24 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
                 await axios.put(`/api/restaurants/${restaurant.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
                 if (addToast) addToast('✅ Cập nhật thông tin nhà hàng thành công!');
                 refreshList();
+                onClose();
             } else {
-                await axios.post('/api/restaurants', payload, { headers: { Authorization: `Bearer ${token}` } });
+                const res = await axios.post('/api/restaurants', payload, { headers: { Authorization: `Bearer ${token}` } });
+                const newRestaurantId = res.data.id;
+                
+                // Upload pending files
+                if (pendingUploads.length > 0) {
+                    for (const pending of pendingUploads) {
+                        const fd = new FormData();
+                        fd.append('file', pending.file);
+                        try {
+                            await axios.post(`/api/restaurants/${newRestaurantId}/media`, fd, {
+                                headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` }
+                            });
+                        } catch(err) { console.error('Upload pending error', err); }
+                    }
+                }
+
                 if (addToast) addToast('✅ Tạo Nhà hàng thành công!');
                 refreshList();
                 onClose();
@@ -112,7 +199,7 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
         }
     };
 
-    const isViewOnly = checkViewOnly(currentUser?.role, 'suppliers');
+    const isViewOnly = checkPerm ? (restaurant ? !checkPerm('restaurants', 'edit') : !checkPerm('restaurants', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
 
     const handleContactChange = (index, field, value) => {
         const newContacts = [...contacts];
@@ -177,8 +264,8 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
                     <div onClick={() => setActiveTab('general')} style={tabStyle(activeTab === 'general')}>
                         <Users size={16} /> Hồ Sơ & Liên Hệ
                     </div>
-                    <div onClick={() => setActiveTab('services')} style={tabStyle(activeTab === 'services')}>
-                        <ShoppingBag size={16} /> Dịch Vụ Ẩm Thực
+                    <div onClick={() => { setActiveTab('services'); if(restaurant?.id) fetchMedia(); }} style={tabStyle(activeTab === 'services')}>
+                        <Image size={16} /> Hình Ảnh & Menu
                     </div>
                     {restaurant && (
                         <div onClick={() => setActiveTab('notes')} style={tabStyle(activeTab === 'notes')}>
@@ -229,13 +316,14 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
                                     <div>
                                         <label style={labelStyle}>Thị trường MICE/Inbound</label>
                                         <Select 
+                                            isMulti
                                             options={marketOptions}
-                                            value={formData.market ? { label: formData.market, value: formData.market } : null}
-                                            onChange={option => setFormData({...formData, market: option ? option.value : ''})}
+                                            value={formData.market ? formData.market.split(', ').map(m => ({ label: m, value: m })) : []}
+                                            onChange={options => setFormData({...formData, market: options ? options.map(o => o.value).join(', ') : ''})}
                                             styles={reactSelectStyles}
                                             isClearable
                                             isDisabled={isViewOnly}
-                                            placeholder="🔍 Gõ để tìm hoặc chọn..."
+                                            placeholder="🔍 Gõ để tìm hoặc chọn nhiều..."
                                             noOptionsMessage={() => "Không tìm thấy thị trường"}
                                         />
                                     </div>
@@ -329,56 +417,101 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
 
                     {activeTab === 'services' && (
                         <div style={{ background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', minHeight: '400px' }}>
-                            <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
-                                <ShoppingBag size={18} color="#cbd5e1" /> DANH MỤC DỊCH VỤ ẨM THỰC
-                            </h3>
-                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto' }}>
-                                <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                                    <thead style={{ background: '#f1f5f9' }}>
-                                        <tr style={{ textAlign: 'left', color: '#475569', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
-                                            <th style={{ padding: '12px 16px', fontWeight: 600, width: '25%' }}>Tên Dịch Vụ / Set Menu</th>
-                                            <th style={{ padding: '12px 16px', fontWeight: 600, width: '12%', textAlign: 'center' }}>Số Lượng</th>
-                                            <th style={{ padding: '12px 16px', fontWeight: 600, width: '18%' }}>Giá KT</th>
-                                            <th style={{ padding: '12px 16px', fontWeight: 600, width: '18%' }}>Giá Net</th>
-                                            <th style={{ padding: '12px 16px', fontWeight: 600, width: '18%' }}>Giá Bán</th>
-                                            <th style={{ padding: '12px 16px', width: '9%', textAlign: 'center' }}>Thao tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {services.map((s, i) => (
-                                            <React.Fragment key={s.id || i}>
-                                                <tr>
-                                                    <td style={{...inputCell, borderBottom: 'none'}}><input style={{...inlineInput, fontWeight: 600}} value={s.name || ''} onChange={e => handleServiceChange(i, 'name', e.target.value)} disabled={isViewOnly} placeholder="VD: Set Menu 10 món..." /></td>
-                                                    <td style={{...inputCell, borderBottom: 'none'}}><input type="number" style={{...inlineInput, width: '100%', textAlign: 'center', background: '#eef2ff', fontWeight: 600, color: '#4f46e5', borderColor: '#c7d2fe'}} value={s.capacity || ''} onChange={e => handleServiceChange(i, 'capacity', e.target.value)} disabled={isViewOnly} placeholder="0" /></td>
-                                                    <td style={{...inputCell, borderBottom: 'none'}}><input type="number" style={inlineInput} value={s.cost_price || ''} onChange={e => handleServiceChange(i, 'cost_price', e.target.value)} disabled={isViewOnly} placeholder="Giá khảo sát" /></td>
-                                                    <td style={{...inputCell, borderBottom: 'none'}}><input type="number" style={inlineInput} value={s.net_price || ''} onChange={e => handleServiceChange(i, 'net_price', e.target.value)} disabled={isViewOnly} placeholder="Giá gốc" /></td>
-                                                    <td style={{...inputCell, borderBottom: 'none'}}><input type="number" style={{...inlineInput, color: '#16a34a', fontWeight: 'bold'}} value={s.sale_price || ''} onChange={e => handleServiceChange(i, 'sale_price', e.target.value)} disabled={isViewOnly} placeholder="Giá bán" /></td>
-                                                    <td style={{...inputCell, textAlign: 'center', borderBottom: 'none'}}>
-                                                        {!isViewOnly && (
-                                                            <button style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', padding: '4px' }} onClick={() => handleDeleteService(i, s)}><Trash2 size={16} /></button>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td colSpan={3} style={{ padding: '0 8px 12px 8px', borderBottom: '1px solid #e2e8f0' }}>
-                                                        <textarea style={{...inlineInput, resize: 'vertical', minHeight: '50px'}} value={s.description || ''} onChange={e => handleServiceChange(i, 'description', e.target.value)} disabled={isViewOnly} placeholder="Chi tiết món ăn, nước uống... (Bấm Enter để xuống dòng)" />
-                                                    </td>
-                                                    <td colSpan={3} style={{ padding: '0 8px 12px 8px', borderBottom: '1px solid #e2e8f0' }}>
-                                                        <textarea style={{...inlineInput, resize: 'vertical', minHeight: '50px'}} value={s.notes || ''} onChange={e => handleServiceChange(i, 'notes', e.target.value)} disabled={isViewOnly} placeholder="Ghi chú nội bộ..." />
-                                                    </td>
-                                                </tr>
-                                            </React.Fragment>
-                                        ))}
-                                    </tbody>
-                                </table>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <h3 style={{ margin: 0, fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
+                                    <Image size={18} color="#cbd5e1" /> HÌNH ẢNH & MENU NHÀ HÀNG
+                                </h3>
+                                <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{mediaFiles.length + pendingUploads.length}/10 file</span>
                             </div>
-                            {!isViewOnly && (
-                                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
-                                    <button style={{ background: '#f8fafc', color: '#3b82f6', border: '1px dashed #cbd5e1', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer' }} onClick={() => setServices([...services, { id: Date.now(), name: '', description: '', capacity: '' }])}>
-                                        <Plus size={16} /> Thêm Dịch Vụ
-                                    </button>
+
+                            {/* Upload Zone */}
+                            {!isViewOnly && (mediaFiles.length + pendingUploads.length) < 10 && (
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = '#eff6ff'; }}
+                                    onDragLeave={e => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.background = '#f8fafc'; }}
+                                    onDrop={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.background = '#f8fafc'; if(e.dataTransfer.files[0]) { const dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]); fileInputRef.current.files = dt.files; handleUploadMedia({target:{files:e.dataTransfer.files}}); } }}
+                                    style={{
+                                        border: '2px dashed #cbd5e1', borderRadius: '12px', padding: '2rem', textAlign: 'center',
+                                        cursor: uploading ? 'wait' : 'pointer', background: '#f8fafc', transition: 'all 0.2s', marginBottom: '1.5rem'
+                                    }}
+                                >
+                                    <input ref={fileInputRef} type="file" accept="image/*,.pdf" onChange={handleUploadMedia} style={{ display: 'none' }} />
+                                    {uploading ? (
+                                        <div style={{ color: '#3b82f6', fontWeight: 600 }}>⏳ Đang tải lên...</div>
+                                    ) : (
+                                        <>
+                                            <Upload size={32} color="#94a3b8" style={{ marginBottom: '8px' }} />
+                                            <div style={{ fontSize: '0.95rem', color: '#475569', fontWeight: 600 }}>Kéo thả hoặc bấm để tải lên</div>
+                                            <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>Hỗ trợ: JPG, PNG, WebP, PDF — Tối đa 10MB / file</div>
+                                        </>
+                                    )}
                                 </div>
                             )}
+
+                            {/* Gallery Grid */}
+                            {mediaLoading ? (
+                                <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>Đang tải...</div>
+                            ) : (mediaFiles.length > 0 || pendingUploads.length > 0) ? (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                                    {[...pendingUploads, ...mediaFiles].map(m => (
+                                        <div key={m.id} style={{ border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden', background: '#fff', transition: 'box-shadow 0.2s', position: 'relative' }}
+                                            onMouseOver={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'}
+                                            onMouseOut={e => e.currentTarget.style.boxShadow = 'none'}
+                                        >
+                                            {/* Preview */}
+                                            {m.file_type === 'image' ? (
+                                                <div style={{ width: '100%', height: '160px', overflow: 'hidden', cursor: 'pointer', background: '#f1f5f9' }}
+                                                    onClick={() => setLightboxUrl(m.file_url)}
+                                                >
+                                                    <img src={m.file_url} alt={m.file_name} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s' }}
+                                                        onMouseOver={e => e.target.style.transform = 'scale(1.05)'}
+                                                        onMouseOut={e => e.target.style.transform = 'scale(1)'}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div style={{ width: '100%', height: '160px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#fef2f2', cursor: 'pointer' }}
+                                                    onClick={() => window.open(m.file_url, '_blank')}
+                                                >
+                                                    <File size={40} color="#ef4444" />
+                                                    <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 700, marginTop: '6px' }}>PDF</span>
+                                                </div>
+                                            )}
+                                            {/* Info + Actions */}
+                                            <div style={{ padding: '10px 12px' }}>
+                                                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={m.file_name}>{m.file_name}</div>
+                                                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '2px' }}>{formatFileSize(m.file_size)}</div>
+                                                <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                                                    {m.file_type === 'image' ? (
+                                                        <button onClick={() => setLightboxUrl(m.file_url)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '5px', background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer' }}><Eye size={12} /> Xem</button>
+                                                    ) : (
+                                                        <a href={m.file_url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '5px', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}><Download size={12} /> Mở PDF</a>
+                                                    )}
+                                                    {!isViewOnly && (
+                                                        <button onClick={() => handleDeleteMedia(m.id, m.file_name, m.isPending)} style={{ padding: '5px 8px', background: '#fff1f2', color: '#ef4444', border: '1px solid #fecaca', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Trash2 size={12} /></button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {m.isPending && (
+                                                <div style={{ position: 'absolute', top: 8, right: 8, background: '#f59e0b', color: 'white', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>CHƯA LƯU</div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8', border: '2px dashed #e2e8f0', borderRadius: '12px' }}>
+                                    <Image size={40} style={{ marginBottom: '1rem', opacity: 0.3 }} />
+                                    <div>Chưa có hình ảnh hoặc menu nào.</div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Lightbox */}
+                    {lightboxUrl && (
+                        <div onClick={() => setLightboxUrl(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}>
+                            <img src={lightboxUrl} alt="Preview" style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: '8px', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }} />
+                            <button onClick={() => setLightboxUrl(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', padding: '10px', cursor: 'pointer', color: 'white', display: 'flex' }}><X size={24} /></button>
                         </div>
                     )}
 

@@ -62,6 +62,7 @@ const mediaRoutes = require('./routes/media');
 const b2bCompaniesRoutes = require('./routes/b2bCompanies');
 const groupLeadersRoutes = require('./routes/groupLeaders');
 const groupProjectsRoutes = require('./routes/groupProjects');
+const miceLeadsRoutes = require('./routes/mice_leads');
 
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/auth', authRoutes);
@@ -97,6 +98,7 @@ const opToursRoutes = require('./routes/opTours');
 
 app.use('/api/group-leaders', groupLeadersRoutes);
 app.use('/api/group-projects', groupProjectsRoutes);
+app.use('/api/mice-leads', miceLeadsRoutes);
 app.use('/api/b2b-companies', b2bCompaniesRoutes);
 app.use('/api/costings', costingRoutes);
 app.use('/api/reminders', reminderRoutes);

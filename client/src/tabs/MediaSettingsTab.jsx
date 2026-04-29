@@ -1,3 +1,4 @@
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Trash2, AlertCircle, Image as ImageIcon, Loader, Info, CheckSquare, Calendar, UserCheck, HardDrive } from 'lucide-react';
@@ -38,7 +39,7 @@ export default function MediaSettingsTab({ addToast }) {
     };
 
     const handleDelete = async (filename) => {
-        if (!window.confirm('Bạn có chắc chắn muốn xóa vĩnh viễn hình ảnh này không? Nếu là hình đang được sử dụng sẽ gây lỗi hiển thị.')) return;
+        if (!await swalConfirm('Bạn có chắc chắn muốn xóa vĩnh viễn hình ảnh này không? Nếu là hình đang được sử dụng sẽ gây lỗi hiển thị.')) return;
         
         try {
             const token = localStorage.getItem('token');
@@ -55,7 +56,7 @@ export default function MediaSettingsTab({ addToast }) {
 
     const handleBulkDelete = async () => {
         if (selectedMedia.length === 0) return;
-        if (!window.confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn ${selectedMedia.length} tập tin đã chọn không?`)) return;
+        if (!await swalConfirm(`Bạn có chắc chắn muốn xóa vĩnh viễn ${selectedMedia.length} tập tin đã chọn không?`)) return;
         
         try {
             setLoading(true);

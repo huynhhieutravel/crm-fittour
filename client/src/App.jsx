@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
+import { swalConfirm } from './utils/swalHelpers';
 import { 
   BrowserRouter as Router,
   Routes,
@@ -9,6 +10,7 @@ import {
   useLocation,
   Link
 } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
 import SettingsTab from './tabs/SettingsTab';
 import MarketSettingsTab from './tabs/MarketSettingsTab';
@@ -38,6 +40,7 @@ import LeaveRequestsTab from './tabs/LeaveRequestsTab';
 import PaymentVouchersTab from './tabs/PaymentVouchersTab';
 // ═══ Tour Đoàn Tab Imports ═══
 import GroupProjectsTab from './tabs/GroupProjectsTab';
+import MiceLeadsTab from './tabs/MiceLeadsTab';
 import GroupLeadersTab from './tabs/GroupLeadersTab';
 import B2BCompaniesTab from './tabs/B2BCompaniesTab';
 import DashboardTab from './tabs/DashboardTab';
@@ -61,6 +64,7 @@ import EditLeadModal from './components/modals/EditLeadModal';
 import CommandPalette from './components/CommandPalette';
 import AIChatDrawer from './components/AICopilot/AIChatDrawer';
 import AgentManagerTab from './tabs/AgentManagerTab';
+import LeaveRequestModal from './components/modals/LeaveRequestModal';
 import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
 import { AddBookingModal } from './components/modals/BookingModals';
 import { AddUserModal, EditUserModal, ChangePasswordModal } from './components/modals/UserModals';
@@ -159,7 +163,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
-  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'group-dashboard', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu'];
+  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -194,6 +198,16 @@ function AppContent() {
     const savedUser = localStorage.getItem('user');
     try { return savedUser ? JSON.parse(savedUser) : null; } catch(e) { return null; }
   });
+
+  const handleUpdateGlobalUser = (updatedFields) => {
+    setUser(prev => {
+      if (!prev) return prev;
+      const newUser = { ...prev, ...updatedFields };
+      localStorage.setItem('user', JSON.stringify(newUser));
+      return newUser;
+    });
+  };
+
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [leads, setLeads] = useState([]);
@@ -212,6 +226,7 @@ function AppContent() {
   const [roles, setRoles] = useState([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showRolePermModal, setShowRolePermModal] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [userToEditPerms, setUserToEditPerms] = useState(null);
   const [editingUserAccount, setEditingUserAccount] = useState(null);
   const [userToChangePassword, setUserToChangePassword] = useState(null);
@@ -266,6 +281,23 @@ function AppContent() {
   useEffect(() => {
     localStorage.setItem('sidebar_collapsed', isSidebarCollapsed);
   }, [isSidebarCollapsed]);
+
+  // Auto-sync profile on load to ensure Avatar and Name are always fresh
+  useEffect(() => {
+    if (isLoggedIn) {
+      axios.get('/api/users/me', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+        .then(res => {
+          if (res.data) {
+            setUser(prev => {
+              const newUser = { ...prev, ...res.data };
+              localStorage.setItem('user', JSON.stringify(newUser));
+              return newUser;
+            });
+          }
+        })
+        .catch(err => console.error("Auto profile sync failed", err));
+    }
+  }, [isLoggedIn]);
 
   const sidebarRef = useRef(null);
 
@@ -688,7 +720,7 @@ function AppContent() {
   };
 
   const handleDeleteGuide = async (id) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xoá hướng dẫn viên này?')) return;
+    if (!await swalConfirm('Bạn có chắc chắn muốn xoá hướng dẫn viên này?', { title: 'Xác nhận xóa HDV' })) return;
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`/api/guides/${id}`, {
@@ -699,7 +731,7 @@ function AppContent() {
     } catch (err) {
       // 409 = HDV đang gắn với tour, hỏi lại lần nữa
       if (err.response && err.response.status === 409 && err.response.data.has_deps) {
-        if (window.confirm(`⚠️ ${err.response.data.message}\n\nBạn vẫn muốn xóa?`)) {
+        if (await swalConfirm(`⚠️ ${err.response.data.message}\n\nBạn vẫn muốn xóa?`, { title: 'Cảnh báo', icon: 'warning' })) {
           try {
             const token = localStorage.getItem('token');
             await axios.delete(`/api/guides/${id}?force=true`, {
@@ -819,7 +851,7 @@ function AppContent() {
       setBookingToDelete(null);
     } catch (err) {
       if (err.response && err.response.status === 409 && err.response.data.has_transactions) {
-        if (window.confirm(`⚠️ ${err.response.data.message}\n\nBạn vẫn muốn xóa?`)) {
+        if (await swalConfirm(`⚠️ ${err.response.data.message}\n\nBạn vẫn muốn xóa?`, { title: 'Cảnh báo', icon: 'warning' })) {
           try {
             const token = localStorage.getItem('token');
             await axios.delete(`/api/bookings/${bookingToDelete}?force=true`, {
@@ -1740,9 +1772,7 @@ function AppContent() {
 
 
   // ── Route Guard: /tai-lieu/* phải render DocumentsPage riêng, KHÔNG dùng sidebar ──
-  if (location.pathname.startsWith('/tai-lieu')) {
-    return <DocumentsPage />;
-  }
+  // Moved to explicit route in App.jsx main Routes block
 
   return (
     <div className="app-container">
@@ -2045,6 +2075,14 @@ function AppContent() {
                   <Briefcase /> Dự án Tour (MICE)
                 </div>
               )}
+              {checkView('mice_leads') && (
+                <div 
+                  className={`nav-item ${activeTab === 'group-mice-leads' ? 'active' : ''}`} 
+                  onClick={() => { navigate('/group/mice-leads'); setActiveTab('group-mice-leads'); }}
+                >
+                  <Filter /> MICE Leads (Tiềm năng)
+                </div>
+              )}
 
             </>
           )}
@@ -2072,7 +2110,7 @@ function AppContent() {
             <ChevronRight size={14} opacity={0.5} />
           </div>
 
-          {checkView('settings') && (
+          {checkView('markets') && (
                 <div className={`nav-item ${activeTab === 'market-settings' ? 'active' : ''}`} onClick={() => navigate('/market-settings')}>
                   <MapPin /> Quản lý Thị trường
                 </div>
@@ -2738,18 +2776,96 @@ function AppContent() {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div className="user-profile" onClick={() => navigate('/my-profile')} style={{ cursor: 'pointer' }} title="Trang cá nhân">
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{user?.username || 'Người dùng'}</div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{user?.role?.toUpperCase() || 'NHÂN VIÊN'}</div>
+            <div 
+              className="user-profile" 
+              style={{ cursor: 'pointer', position: 'relative' }} 
+              onClick={(e) => {
+                e.stopPropagation();
+                if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                setHoveredMenu(hoveredMenu === 'user-profile' ? null : 'user-profile');
+              }}
+              onMouseEnter={() => {
+                if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+              }}
+              onMouseLeave={() => {
+                menuTimerRef.current = setTimeout(() => {
+                  if (hoveredMenu === 'user-profile') setHoveredMenu(null);
+                }, 300);
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} title="Mở tuỳ chọn">
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{user?.full_name || user?.username || 'Người dùng'}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{user?.role?.toUpperCase() || 'NHÂN VIÊN'}</div>
+                </div>
+                {user?.avatar_url ? (
+                  <img src={user.avatar_url} alt="Avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #e2e8f0' }} />
+                ) : (
+                  <div className="user-avatar" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: '#4f46e5', color: 'white', fontWeight: 'bold' }}>
+                    {user?.full_name?.substring(0,1).toUpperCase() || user?.username?.substring(0,1).toUpperCase() || 'U'}
+                  </div>
+                )}
               </div>
-              <div className="user-avatar">{user?.username?.substring(0,1).toUpperCase() || 'U'}</div>
+              
+              {hoveredMenu === 'user-profile' && (
+                <div 
+                  style={{ 
+                    position: 'absolute', 
+                    right: 0, 
+                    top: '100%', 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    opacity: 1, 
+                    transform: 'none',
+                    pointerEvents: 'auto',
+                    zIndex: 9999,
+                    top: 'calc(100% + 5px)',
+                    minWidth: '150px',
+                    background: '#fff',
+                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div 
+                    className="submenu-item" 
+                    onClick={(e) => { e.stopPropagation(); navigate('/my-profile'); setHoveredMenu(null); }}
+                    style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }}
+                  >
+                    📝 Edit info
+                  </div>
+                  <div 
+                    className="submenu-item" 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setShowLeaveModal(true); 
+                      setHoveredMenu(null); 
+                    }}
+                    style={{ padding: '12px 16px', color: '#8b5cf6', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    🌴 Xin nghỉ phép
+                  </div>
+                  <div 
+                    className="submenu-item" 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      navigate('/staff-calendar');
+                      setActiveTab('staff-calendar');
+                      setHoveredMenu(null); 
+                    }}
+                    style={{ padding: '12px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer' }}
+                  >
+                    🎂 Lịch Nhân sự
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>
 
         <CommandPalette onNavigate={(id) => {
-            if (validTabs.includes(id)) {
+            if (VALID_TABS.includes(id)) {
                 setActiveTab(id);
             }
         }} />
@@ -2789,6 +2905,7 @@ function AppContent() {
                 tourTemplates={tourTemplates}
                 users={users}
                 checkPerm={checkPerm}
+                setShowLeaveModal={setShowLeaveModal}
               />
             )}
 
@@ -3026,7 +3143,7 @@ function AppContent() {
         )}
 
         {activeTab === 'my-profile' && (
-          <MyProfileTab currentUser={user} addToast={addToast} />
+          <MyProfileTab currentUser={user} addToast={addToast} onUpdateUser={handleUpdateGlobalUser} />
         )}
 
         {activeTab === 'team-directory' && (
@@ -3081,36 +3198,41 @@ function AppContent() {
         )}
 
         {activeTab === 'hotels' && (
-          <HotelsTab currentUser={user} addToast={addToast} handleDeleteHotel={(id) => setHotelToDelete(id)} />
+          <HotelsTab currentUser={user} checkPerm={checkPerm} addToast={addToast} handleDeleteHotel={(id) => setHotelToDelete(id)} />
         )}
         {activeTab === 'visas' && (
-          <VisasTab currentUser={user} addToast={addToast} />
+          <VisasTab currentUser={user} checkPerm={checkPerm} addToast={addToast} />
         )}
         {activeTab === 'restaurants' && (
-          <RestaurantsTab currentUser={user} addToast={addToast} handleDeleteRestaurant={(id) => setRestaurantToDelete(id)} />
+          <RestaurantsTab currentUser={user} checkPerm={checkPerm} addToast={addToast} handleDeleteRestaurant={(id) => setRestaurantToDelete(id)} />
         )}
         {activeTab === 'transports' && (
-          <TransportsTab currentUser={user} addToast={addToast} handleDeleteTransport={(id) => setTransportToDelete(id)} />
+          <TransportsTab currentUser={user} checkPerm={checkPerm} addToast={addToast} handleDeleteTransport={(id) => setTransportToDelete(id)} />
         )}
         {activeTab === 'tickets' && (
-          <TicketsTab currentUser={user} addToast={addToast} handleDeleteTicket={(id) => setTicketToDelete(id)} />
+          <TicketsTab currentUser={user} checkPerm={checkPerm} addToast={addToast} handleDeleteTicket={(id) => setTicketToDelete(id)} />
         )}
         {activeTab === 'airlines' && (
-          <AirlinesTab currentUser={user} addToast={addToast} handleDeleteAirline={(id) => setAirlineToDelete(id)} />
+          <AirlinesTab currentUser={user} checkPerm={checkPerm} addToast={addToast} handleDeleteAirline={(id) => setAirlineToDelete(id)} />
         )}
         {activeTab === 'landtours' && (
-          <LandtoursTab currentUser={user} addToast={addToast} handleDeleteLandtour={(id) => setLandtourToDelete(id)} />
+          <LandtoursTab currentUser={user} checkPerm={checkPerm} addToast={addToast} handleDeleteLandtour={(id) => setLandtourToDelete(id)} />
         )}
         {activeTab === 'insurances' && (
-          <InsurancesTab currentUser={user} addToast={addToast} handleDeleteInsurance={(id) => setInsuranceToDelete(id)} />
+          <InsurancesTab currentUser={user} checkPerm={checkPerm} addToast={addToast} handleDeleteInsurance={(id) => setInsuranceToDelete(id)} />
         )}
 
         {/* ═══ Tour Đoàn Tab Rendering ═══ */}
-                                                                {activeTab === 'companies' && (
-          <B2BCompaniesTab currentUser={user} addToast={addToast} handleDeleteCompany={(id) => setB2bCompanyToDelete(id)} />
+        {activeTab === 'b2b-companies' && (
+          b2bActiveTab === 'calendar' ? 
+            <GroupLeadersTab currentUser={user} addToast={addToast} users={users} activeView="calendar" /> :
+            <B2BCompaniesTab currentUser={user} addToast={addToast} users={users} handleDeleteCompany={(id) => setB2bCompanyToDelete(id)} />
         )}
         {activeTab === 'group-leaders' && (
           <GroupLeadersTab currentUser={user} addToast={addToast} users={users} handleDeleteLeader={(id) => setGroupLeaderToDelete(id)} />
+        )}
+        {activeTab === 'group-mice-leads' && (
+          <MiceLeadsTab currentUser={{...user, myPermissions}} addToast={addToast} users={users} />
         )}
         {activeTab === 'group-dashboard' && checkPerm('group_projects', 'view_dashboard') && (
           <GroupDashboardTab />
@@ -3144,6 +3266,18 @@ function AppContent() {
         users={users}
         bus={bus.filter(b => b.is_active !== false)}
       />
+
+      {showLeaveModal && (
+        <LeaveRequestModal 
+            currentUser={user} 
+            users={users} 
+            onClose={() => setShowLeaveModal(false)} 
+            onSuccess={() => { 
+                navigate('/staff-calendar');
+                setActiveTab('staff-calendar');
+            }} 
+        />
+      )}
 
       <AddBookingModal
         show={showAddBookingModal}
@@ -3347,7 +3481,8 @@ function AppContent() {
   return (
     <>
       <Routes>
-      <Route path="/tai-lieu/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
+      <Route path="/tai-lieu/:subtab/:id/*" element={<DocumentsPage />} />
+      <Route path="/tai-lieu/*" element={<DocumentsPage />} />
       <Route path="/simple-list-share/lich_dai_ly" element={<AgencySharePage />} />
       <Route path="/service-confirm/:tourId/:bookingId" element={<ServiceContractViewer />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -3557,6 +3692,7 @@ function AppContent() {
 function App() {
   return (
     <Router>
+      <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />
       <AppContent />
     </Router>
   );

@@ -1,16 +1,20 @@
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, ArrowLeft, FileText, ExternalLink, Plus, Edit2, Trash2, X, Save, BookOpen, Users, Briefcase, Calculator, ClipboardList, Star, Award } from 'lucide-react';
 import axios from 'axios';
 import '../styles/blog.css';
 import InternalDocsTab from '../tabs/InternalDocsTab';
 import HDVHub from './HDVHub';
+import MarketingHub from './MarketingHub';
+import MarketingEditor from '../components/Marketing/MarketingEditor';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Static Document Index — TẤT CẢ tài liệu nội bộ đã biết
    ═══════════════════════════════════════════════════════════════════════════ */
 const STATIC_DOCS = [
   { title: 'HUB Hướng Dẫn Viên', description: 'Bàn làm việc của HDV — checklist, SOP, sự cố, case study', category: 'HDV', path: '/tai-lieu/hdv', icon: '👨‍✈️' },
+  { title: 'HUB Marketing', description: 'Tài liệu Marketing, chuẩn mực content, format bài đăng & Báo cáo hiệu suất team', category: 'Marketing', path: '/tai-lieu/marketing', icon: '📈' },
   { title: 'HUB Kinh Doanh (Sale)', description: 'Tài liệu dành cho phòng kinh doanh, quy trình bán hàng', category: 'Sale', path: '/tai-lieu/sale', icon: '💼' },
   { title: 'HUB Điều Hành (OP)', description: 'Quy trình điều hành tour, vận hành dịch vụ', category: 'Điều hành', path: '/tai-lieu/dieu-hanh', icon: '🔧' },
   { title: 'HUB Kế Toán', description: 'Nghiệp vụ kế toán, quy trình tài chính nội bộ', category: 'Kế toán', path: '/tai-lieu/ke-toan', icon: '📊' },
@@ -258,7 +262,7 @@ const BieuMauPage = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Xóa biểu mẫu này?')) return;
+    if (!await swalConfirm('Xóa biểu mẫu này?')) return;
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`/api/licenses/${id}`, { headers: { Authorization: `Bearer ${token}` } });
@@ -441,6 +445,10 @@ const DocumentsHome = () => {
           <Link to="/tai-lieu/hdv" className="blog-top-card" style={{ background: 'linear-gradient(to right, #f8fafc, #f1f5f9)' }}>
             <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="HDV" className="blog-icon-img" />
             <span style={{ fontWeight: 600, color: '#1e293b' }}>HUB Hướng Dẫn Viên</span>
+          </Link>
+          <Link to="/tai-lieu/marketing" className="blog-top-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/1998/1998087.png" alt="Marketing" className="blog-icon-img" />
+            <span>HUB Marketing</span>
           </Link>
           <Link to="/tai-lieu/sale" className="blog-top-card">
             <img src="https://cdn-icons-png.flaticon.com/512/3135/3135673.png" alt="Sale" className="blog-icon-img" />
@@ -749,24 +757,26 @@ const MarkdownViewer = ({ fileUrl, title, author, updatedDate, breadcrumbs }) =>
    Router
    ═══════════════════════════════════════════════════════════════════════════ */
 const DocumentsPage = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<DocumentsHome />} />
-      <Route path="/bieu-mau" element={<BieuMauPage />} />
-      <Route path="/hdv" element={<HDVHub />} />
-      <Route path="/quy-che-luong-hdv" element={<BlogLayout><InternalDocsTab /></BlogLayout>} />
-      <Route path="/bo-nguyen-tac-hanh-xu-nhan-vien" element={
-        <MarkdownViewer 
-          fileUrl="/docs/bo-nguyen-tac.md" 
-          title="Bộ Nguyên Tắc Hành Xử"
-          author="Ban Giám Đốc FIT Tour"
-          updatedDate="23/04/2026"
-          breadcrumbs={[{ label: 'Quy tắc hành xử' }]}
-        />
-      } />
-      <Route path="*" element={<PlaceholderPage />} />
-    </Routes>
+  const location = useLocation();
+  const path = location.pathname;
+
+  if (path === '/tai-lieu/bieu-mau') return <BieuMauPage />;
+  if (path === '/tai-lieu/hdv') return <HDVHub />;
+  if (path === '/tai-lieu/marketing') return <MarketingHub />;
+  if (path === '/tai-lieu/marketing/create') return <MarketingEditor />;
+  if (path === '/tai-lieu/quy-che-luong-hdv') return <BlogLayout><InternalDocsTab /></BlogLayout>;
+  if (path === '/tai-lieu/bo-nguyen-tac-hanh-xu-nhan-vien') return (
+    <MarkdownViewer 
+      fileUrl="/docs/bo-nguyen-tac.md" 
+      title="Bộ Nguyên Tắc Hành Xử"
+      author="Ban Giám Đốc FIT Tour"
+      updatedDate="23/04/2026"
+      breadcrumbs={[{ label: 'Quy tắc hành xử' }]}
+    />
   );
+  if (path === '/tai-lieu' || path === '/tai-lieu/') return <DocumentsHome />;
+
+  return <PlaceholderPage />;
 };
 
 export default DocumentsPage;

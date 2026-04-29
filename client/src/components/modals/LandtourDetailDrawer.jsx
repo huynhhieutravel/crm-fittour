@@ -6,7 +6,7 @@ import Select from 'react-select';
 import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
-export default function LandtourDetailDrawer({ landtour, onClose, refreshList, currentUser, addToast }) {
+export default function LandtourDetailDrawer({ landtour, onClose, refreshList, currentUser, checkPerm, addToast }) {
     const [activeTab, setActiveTab] = useState('general');
     
     // States - match actual DB columns
@@ -112,7 +112,7 @@ export default function LandtourDetailDrawer({ landtour, onClose, refreshList, c
         }
     };
 
-    const isViewOnly = checkViewOnly(currentUser?.role, 'suppliers');
+    const isViewOnly = checkPerm ? (landtour ? !checkPerm('landtours', 'edit') : !checkPerm('landtours', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
 
     const handleContactChange = (index, field, value) => {
         const newContacts = [...contacts];
@@ -225,13 +225,14 @@ export default function LandtourDetailDrawer({ landtour, onClose, refreshList, c
                                     <div>
                                         <label style={labelStyle}>Thị trường MICE/Inbound</label>
                                         <Select 
+                                            isMulti
                                             options={marketOptions}
-                                            value={formData.market ? { label: formData.market, value: formData.market } : null}
-                                            onChange={option => setFormData({...formData, market: option ? option.value : ''})}
+                                            value={formData.market ? formData.market.split(', ').map(m => ({ label: m, value: m })) : []}
+                                            onChange={options => setFormData({...formData, market: options ? options.map(o => o.value).join(', ') : ''})}
                                             styles={reactSelectStyles}
                                             isClearable
                                             isDisabled={isViewOnly}
-                                            placeholder="🔍 Gõ để tìm hoặc chọn..."
+                                            placeholder="🔍 Gõ để tìm hoặc chọn nhiều..."
                                             noOptionsMessage={() => "Không tìm thấy thị trường"}
                                         />
                                     </div>

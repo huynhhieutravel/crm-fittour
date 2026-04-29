@@ -41,4 +41,9 @@ router.delete('/allotments/:allotment_id', authenticateToken, permCheck('hotels'
 router.get('/:hotel_id/notes', authenticateToken, permCheck('hotels', 'view'), hotelController.getHotelNotes);
 router.post('/:hotel_id/notes', authenticateToken, permCheck('hotels', 'edit'), hotelController.addHotelNote);
 
+// Media
+router.get('/:hotel_id/media', authenticateToken, permCheck('hotels', 'view'), hotelController.getHotelMedia);
+router.post('/:hotel_id/media', authenticateToken, permCheck('hotels', 'edit'), hotelController.uploadHotelMedia);
+router.delete('/media/:media_id', authenticateToken, permCheck('hotels', 'edit'), hotelController.deleteHotelMedia);
+
 module.exports = router;

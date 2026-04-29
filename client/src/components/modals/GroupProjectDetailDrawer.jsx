@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { X, Save, Building, Users, Briefcase, MapPin, Calendar, DollarSign, Activity, Plus, ExternalLink, UserCheck } from 'lucide-react';
+import { X, Save, Building, Users, Briefcase, MapPin, Calendar, DollarSign, Activity, Plus, ExternalLink, UserCheck, CheckCircle2, Circle, Rocket } from 'lucide-react';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
+import ProjectExecutionDrawer from './ProjectExecutionDrawer';
+import ProjectApprovalDrawer from './ProjectApprovalDrawer';
 import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
-export default function GroupProjectDetailDrawer({ project, onClose, refreshList, currentUser, addToast, users, canViewProfit = true }) {
+export default function GroupProjectDetailDrawer({ project, onClose, refreshList, currentUser, addToast, users, canViewProfit = true, initialOpenExecution = false, initialOpenApproval = false }) {
     const marketOptions = useMarkets();
     const [formData, setFormData] = useState({
         name: '', group_leader_id: '', source: '', status: 'Báo giá', destination: '',
-        expected_pax: 0, price_per_pax: 0, departure_date: '', return_date: '', expected_month: '', total_revenue: 0, profit: 0, assigned_to: '', guide_ids: []
+        expected_pax: 0, price_per_pax: 0, departure_date: '', return_date: '', expected_month: '', total_revenue: 0, profit: 0, assigned_to: '', guide_ids: [],
+        metadata: { sales_process: {} }
     });
     
     const [leaders, setLeaders] = useState([]);
@@ -18,6 +21,8 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
     const [loading, setLoading] = useState(false);
     const [isAddingLeader, setIsAddingLeader] = useState(false);
     const [newLeaderName, setNewLeaderName] = useState('');
+    const [showExecutionDrawer, setShowExecutionDrawer] = useState(initialOpenExecution);
+    const [showApprovalDrawer, setShowApprovalDrawer] = useState(initialOpenApproval);
 
     useEffect(() => {
         fetchLeaders();
@@ -36,7 +41,8 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                 price_per_pax: project.price_per_pax ? Number(project.price_per_pax) : 0,
                 total_revenue: project.total_revenue ? Number(project.total_revenue) : 0,
                 profit: project.profit ? Number(project.profit) : 0,
-                guide_ids: project.guide_ids || []
+                guide_ids: project.guide_ids || [],
+                metadata: project.metadata || { sales_process: {} }
             });
         }
     }, [project]);
@@ -211,7 +217,7 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
 
     return (
         <div className="drawer-overlay" style={{ position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', zIndex: 10000, display: 'flex', justifyContent: 'flex-end' }}>
-            <div className="drawer-content" style={{ width: '1000px', maxWidth: '100%', background: '#f8fafc', height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '-10px 0 30px rgba(0,0,0,0.15)', animation: 'slideInRight 0.3s' }}>
+            <div className="drawer-content" style={{ width: '100%', maxWidth: '100%', background: '#f8fafc', height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '-10px 0 30px rgba(0,0,0,0.15)', animation: 'slideInRight 0.3s' }}>
                 {/* HEAD */}
                 <div style={{ padding: '1.5rem 2.5rem', background: 'linear-gradient(to right, #1e293b, #334155)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
                     <h2 style={{ margin: 0, fontSize: '1.4rem', color: 'white', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -220,6 +226,35 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                     <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.1)', borderRadius: '50%', padding: '6px', border: 'none', cursor: 'pointer', color: 'white', display: 'flex' }}>
                         <X size={20} />
                     </button>
+                </div>
+                
+                {/* EXECUTION BUTTON */}
+                <div style={{ padding: '1rem 2.5rem', background: '#e0f2fe', borderBottom: '1px solid #bae6fd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ color: '#0369a1', fontWeight: 600, fontSize: '0.9rem' }}>
+                        Cập nhật các bước trong quy trình bán hàng (Từ bước 5 đến 12)
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <button 
+                            onClick={() => setShowApprovalDrawer(true)}
+                            style={{ 
+                                background: 'white', color: '#0369a1', padding: '10px 20px', borderRadius: '8px', 
+                                border: '1px solid #bae6fd', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px',
+                                cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                            }}
+                        >
+                            📄 BẢN TRÌNH DUYỆT (A4)
+                        </button>
+                        <button 
+                            onClick={() => setShowExecutionDrawer(true)}
+                            style={{ 
+                                background: '#0284c7', color: 'white', padding: '10px 20px', borderRadius: '8px', 
+                                border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px',
+                                cursor: 'pointer', boxShadow: '0 2px 4px rgba(2, 132, 199, 0.3)'
+                            }}
+                        >
+                            <Rocket size={18} /> TIẾN ĐỘ THỰC THI
+                        </button>
+                    </div>
                 </div>
 
                 {/* BODY */}
@@ -491,6 +526,25 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                     )}
                 </div>
             </div>
+            
+            {showExecutionDrawer && (
+                <ProjectExecutionDrawer 
+                    formData={formData} 
+                    setFormData={setFormData} 
+                    onClose={() => setShowExecutionDrawer(false)} 
+                    isViewOnly={isViewOnly} 
+                />
+            )}
+
+            {showApprovalDrawer && (
+                <ProjectApprovalDrawer 
+                    formData={formData}
+                    setFormData={setFormData}
+                    project={project}
+                    currentUser={currentUser}
+                    onClose={() => setShowApprovalDrawer(false)}
+                />
+            )}
         </div>
     );
 }

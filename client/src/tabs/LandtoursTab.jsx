@@ -37,7 +37,7 @@ const reactSelectStyles = {
         })
     };
 
-export default function LandtoursTab({ currentUser, addToast, handleDeleteLandtour }) {
+export default function LandtoursTab({ currentUser, checkPerm, addToast, handleDeleteLandtour }) {
     const [landtours, setLandtours] = useState([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
@@ -144,7 +144,7 @@ export default function LandtoursTab({ currentUser, addToast, handleDeleteLandto
                         <Select options={LANDTOUR_CLASS_OPTIONS} value={LANDTOUR_CLASS_OPTIONS.find(o => o.value === starFilter) || null} onChange={option => setStarFilter(option ? option.value : '')} styles={reactSelectStyles} isClearable placeholder="Tất cả" />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                        {canCreate(currentUser?.role, 'suppliers') && (
+                        {(checkPerm ? checkPerm('landtours', 'create') : canCreate(currentUser?.role, 'suppliers')) && (
                             <button className="btn btn-primary" onClick={handleAddLandtour} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '44px', padding: '0 1.5rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, background: '#2563eb', color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                                 <Plus size={18} /> Thêm Mới
                             </button>
@@ -231,9 +231,11 @@ export default function LandtoursTab({ currentUser, addToast, handleDeleteLandto
                                             <button className="btn-icon" title="Xem / Sửa" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6', padding: '4px' }} onClick={() => handleOpenLandtour(h.id)}>
                                                 <Edit2 size={16} />
                                             </button>
-                                            <button className="btn-icon" title="Xoá" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }} onClick={() => handleDeleteLandtour(h.id)}>
-                                                <Trash2 size={16} />
-                                            </button>
+                                            {(checkPerm ? checkPerm('landtours', 'delete') : canDelete(currentUser?.role, 'suppliers')) && (
+                                                <button className="btn-icon" title="Xoá" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }} onClick={() => handleDeleteLandtour(h.id)}>
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -275,6 +277,7 @@ export default function LandtoursTab({ currentUser, addToast, handleDeleteLandto
                     onClose={() => setIsDrawerOpen(false)} 
                     refreshList={fetchLandtours}
                     currentUser={currentUser}
+                    checkPerm={checkPerm}
                     addToast={addToast}
                 />
             )}

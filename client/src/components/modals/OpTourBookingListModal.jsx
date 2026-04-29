@@ -1,3 +1,4 @@
+import { swalConfirm } from '../../utils/swalHelpers';
 import React, { useState } from 'react';
 import { X, Trash2, Edit2, CheckCircle, Mail, DollarSign, RefreshCw, FileText, UserPlus, Users, Download, ArrowRight, AlertTriangle } from 'lucide-react';
 import Select from 'react-select';
@@ -625,7 +626,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                              onChange={async (e) => {
                                const newStatus = e.target.value;
                                if (newStatus === 'Huỷ' || newStatus === 'Hủy') {
-                                   if (!window.confirm("⚠️ XÁC NHẬN HỦY CHỖ\nBạn có chắc chắn muốn Hủy Booking này không?\nHành động này sẽ trả lại số ghế trống vào hệ thống phòng vé!")) {
+                                   if (!await swalConfirm("⚠️ XÁC NHẬN HỦY CHỖ\nBạn có chắc chắn muốn Hủy Booking này không?\nHành động này sẽ trả lại số ghế trống vào hệ thống phòng vé!")) {
                                        return;
                                    }
                                }
@@ -692,7 +693,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                                                alert('Booking này đã ở trạng thái Hủy rồi!');
                                                return;
                                            }
-                                           if (!window.confirm(`⚠️ BẠN CÓ CHẮC CHẮN MUỐN HỦY BOOKING NÀY?\n\n- Booking sẽ KHÔNG bị xóa khỏi hệ thống Kế toán để đối chiếu sau này.\n- Trạng thái sẽ chuyển thành NGUY HIỂM (HỦY).\n- Số ghế của Booking sẽ được trả lại cho Kho chỗ.`)) return;
+                                           if (!await swalConfirm(`⚠️ BẠN CÓ CHẮC CHẮN MUỐN HỦY BOOKING NÀY?\n\n- Booking sẽ KHÔNG bị xóa khỏi hệ thống Kế toán để đối chiếu sau này.\n- Trạng thái sẽ chuyển thành NGUY HIỂM (HỦY).\n- Số ghế của Booking sẽ được trả lại cho Kho chỗ.`)) return;
                                            try {
                                              await axios.put(`/api/op-tours/${tour.id}/bookings/${b.id}`, { status: 'Huỷ' }, {
                                                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }

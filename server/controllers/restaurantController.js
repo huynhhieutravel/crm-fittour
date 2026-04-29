@@ -494,3 +494,108 @@ exports.addRestaurantNote = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+// === MEDIA GALLERY ===
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const mediaUploadDir = path.join(__dirname, '../public/uploads/restaurants');
+if (!fs.existsSync(mediaUploadDir)) {
+    fs.mkdirSync(mediaUploadDir, { recursive: true });
+}
+
+const mediaStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, mediaUploadDir),
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'rest-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const mediaUpload = multer({
+    storage: mediaStorage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: (req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+        if (allowed.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Chỉ cho phép file ảnh (JPG, PNG, WebP) hoặc PDF'));
+        }
+    }
+}).single('file');
+
+exports.getRestaurantMedia = async (req, res) => {
+    try {
+        const result = await db.query(
+            'SELECT * FROM restaurant_media WHERE restaurant_id = $1 ORDER BY sort_order ASC, id ASC',
+            [req.params.restaurant_id]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.uploadRestaurantMedia = async (req, res) => {
+    const { restaurant_id } = req.params;
+
+    // Check current count before uploading
+    try {
+        const countRes = await db.query('SELECT COUNT(*) as total FROM restaurant_media WHERE restaurant_id = $1', [restaurant_id]);
+        if (parseInt(countRes.rows[0].total) >= 10) {
+            return res.status(400).json({ message: 'Tối đa 10 file cho mỗi nhà hàng. Vui lòng xóa file cũ trước.' });
+        }
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+
+    mediaUpload(req, res, async (uploadErr) => {
+        if (uploadErr) {
+            if (uploadErr.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ message: 'File quá lớn! Tối đa 10MB.' });
+            }
+            return res.status(400).json({ message: uploadErr.message });
+        }
+        if (!req.file) {
+            return res.status(400).json({ message: 'Không có file nào được tải lên.' });
+        }
+
+        try {
+            const fileUrl = `/uploads/restaurants/${req.file.filename}`;
+            const fileType = req.file.mimetype === 'application/pdf' ? 'pdf' : 'image';
+            const result = await db.query(
+                'INSERT INTO restaurant_media (restaurant_id, file_url, file_name, file_type, file_size) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+                [restaurant_id, fileUrl, req.file.originalname, fileType, req.file.size]
+            );
+            res.status(201).json(result.rows[0]);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: err.message });
+        }
+    });
+};
+
+exports.deleteRestaurantMedia = async (req, res) => {
+    try {
+        const { media_id } = req.params;
+        const mediaRes = await db.query('SELECT * FROM restaurant_media WHERE id = $1', [media_id]);
+        if (mediaRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy file' });
+
+        const media = mediaRes.rows[0];
+        // Delete physical file
+        const filename = path.basename(media.file_url);
+        const filePath = path.join(mediaUploadDir, filename);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        await db.query('DELETE FROM restaurant_media WHERE id = $1', [media_id]);
+        res.json({ message: 'Đã xóa file thành công' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
+};

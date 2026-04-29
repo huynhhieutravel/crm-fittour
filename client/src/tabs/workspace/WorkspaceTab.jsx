@@ -13,7 +13,8 @@ const WorkspaceTab = ({
   departures = [],
   tourTemplates = [],
   users = [],
-  checkPerm
+  checkPerm,
+  setShowLeaveModal
 }) => {
   const [reminders, setReminders] = useState([]);
 
@@ -76,6 +77,7 @@ const WorkspaceTab = ({
         tourTemplates={tourTemplates}
         users={users}
         checkPerm={checkPerm}
+        setShowLeaveModal={setShowLeaveModal}
       />
     );
   }

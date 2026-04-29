@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { swalConfirm } from '../../utils/swalHelpers';
+import React, { useState, useEffect, useRef } from 'react';
 import StarRating from '../common/StarRating';
 import axios from 'axios';
-import { X, Save, Plus, Trash2, Building, BedDouble, CalendarDays, Users, FileText, Send, Clock, PlusCircle, ExternalLink, Link2 } from 'lucide-react';
+import { X, Save, Plus, Trash2, Building, BedDouble, CalendarDays, Users, FileText, Send, Clock, PlusCircle, ExternalLink, Link2, Upload, File, Image as ImageIcon, Download, Eye } from 'lucide-react';
 import Select from 'react-select';
 import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
-export default function HotelDetailDrawer({ hotel, onClose, refreshList, currentUser, addToast }) {
+export default function HotelDetailDrawer({ hotel, onClose, refreshList, currentUser, checkPerm, addToast }) {
     const [activeTab, setActiveTab] = useState('general');
     
     // States
@@ -34,6 +35,13 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
     const [hotelNotes, setHotelNotes] = useState([]);
     const [newNote, setNewNote] = useState('');
 
+    const [mediaFiles, setMediaFiles] = useState([]);
+    const [pendingUploads, setPendingUploads] = useState([]);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const [lightboxMedia, setLightboxMedia] = useState(null);
+    const fileInputRef = useRef(null);
+
     const fetchHotelNotes = async () => {
         if (!hotel?.id) return;
         try {
@@ -44,6 +52,63 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
             console.error(err);
         }
     };
+
+    const fetchMedia = async () => {
+        if (!hotel?.id) return;
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`/api/hotels/${hotel.id}/media`, { headers: { Authorization: `Bearer ${token}` } });
+            setMediaFiles(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleFileUpload = async (files) => {
+        if (mediaFiles.length + pendingUploads.length >= 10) { addToast?.('Đã đạt tối đa 10 file!', 'error'); return; }
+        const validFiles = Array.from(files).filter(f => f.size <= 10 * 1024 * 1024);
+        if (validFiles.length < files.length) addToast?.('Một số file vượt quá 10MB và đã bị loại.', 'warning');
+        
+        if (!hotel?.id) {
+            const newPending = validFiles.map(f => ({ file: f, url: URL.createObjectURL(f), isPending: true }));
+            setPendingUploads(prev => [...prev, ...newPending].slice(0, 10 - mediaFiles.length));
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        setLoading(true);
+        for (const file of validFiles) {
+            try {
+                const fd = new FormData();
+                fd.append('file', file);
+                await axios.post(`/api/hotels/${hotel.id}/media`, fd, {
+                    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+                    onUploadProgress: (evt) => setUploadProgress(Math.round((evt.loaded * 100) / evt.total))
+                });
+            } catch (err) {
+                addToast?.(`Lỗi upload ${file.name}`, 'error');
+            }
+        }
+        setUploadProgress(0);
+        setLoading(false);
+        fetchMedia();
+    };
+
+    const handleDeleteMedia = async (media) => {
+        if (!await swalConfirm('Bạn có chắc chắn xóa file này?')) return;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`/api/hotels/media/${media.id}`, { headers: { Authorization: `Bearer ${token}` } });
+            fetchMedia();
+            addToast?.('Xóa thành công', 'success');
+        } catch (err) {
+            addToast?.('Xóa thất bại', 'error');
+        }
+    };
+
+    const handleDrag = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(e.type === "dragenter" || e.type === "dragover"); };
+    const handleDrop = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFileUpload(e.dataTransfer.files); };
+    const removePendingUpload = (index) => setPendingUploads(prev => prev.filter((_, i) => i !== index));
 
     const handleAddHotelNote = async () => {
         if (!newNote.trim()) return;
@@ -99,11 +164,15 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
             }
             
             fetchHotelNotes();
+            fetchMedia();
+            setPendingUploads([]);
         } else {
             setContacts([{ id: Date.now() + 1, name: '', position: '', dob: '', phone: '', email: '' }]);
             setServices([{ id: Date.now() + 2, sku: '', name: '', start_date: '', end_date: '', day_type: 'Ngày thường', contract_price: 0, net_price: 0, sell_price: 0 }]);
             setAllotments([{ id: Date.now() + 3, sku: '', name: '', start_date: '', end_date: '', day_type: 'Ngày thường', allotment_count: 0, cut_off_days: 0, net_price: 0, sell_price: 0 }]);
             setHotelNotes([]);
+            setMediaFiles([]);
+            setPendingUploads([]);
         }
     }, [hotel]);
 
@@ -123,13 +192,28 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
             if (hotel?.id) {
                 await axios.put(`/api/hotels/${hotel.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
                 if (addToast) addToast('Cập nhật thông tin thành công!', 'success'); else alert('Cập nhật thông tin thành công!');
+                refreshList();
+                onClose();
             } else {
-                await axios.post('/api/hotels', payload, { headers: { Authorization: `Bearer ${token}` } });
+                const created = await axios.post('/api/hotels', payload, { headers: { Authorization: `Bearer ${token}` } });
+                
+                // Upload pending files for new hotel
+                if (pendingUploads.length > 0 && created.data.id) {
+                    for (const p of pendingUploads) {
+                        try {
+                            const fd = new FormData();
+                            fd.append('file', p.file);
+                            await axios.post(`/api/hotels/${created.data.id}/media`, fd, {
+                                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+                            });
+                        } catch(e) { console.error("Lỗi upload file", e); }
+                    }
+                }
+                
                 if (addToast) addToast('Tạo Khách sạn thành công!', 'success'); else alert('Tạo Khách sạn thành công!');
                 refreshList();
                 onClose();
             }
-            refreshList();
         } catch (err) {
             const msg = (err.response?.data?.message || err.message);
             if (addToast) addToast('Lỗi: ' + msg, 'error'); else alert('Lỗi: ' + msg);
@@ -138,7 +222,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
         }
     };
 
-    const isViewOnly = checkViewOnly(currentUser?.role, 'suppliers');
+    const isViewOnly = checkPerm ? (hotel ? !checkPerm('hotels', 'edit') : !checkPerm('hotels', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
 
     const handleContactChange = (index, field, value) => {
         const newContacts = [...contacts];
@@ -173,8 +257,8 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
         setAllotments(allotments.filter((_, idx) => idx !== index));
     };
 
-    const handleContractChange = (contractId) => {
-        if (services.length > 0 && !window.confirm('Chuyển Hợp đồng sẽ xổ lại bảng giá, các thay đổi chưa được Lưu sẽ bị mất. Bạn có chắc chắn?')) return;
+    const handleContractChange = async (contractId) => {
+        if (services.length > 0 && !await swalConfirm('Chuyển Hợp đồng sẽ xổ lại bảng giá, các thay đổi chưa được Lưu sẽ bị mất. Bạn có chắc chắn?')) return;
         setActiveContractId(contractId);
         const contract = availableContracts.find(c => c.id === parseInt(contractId));
         if (contract && contract.rates) {
@@ -298,13 +382,14 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                     <div className="form-group">
                                         <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Thị trường MICE/Inbound</label>
                                         <Select 
+                                            isMulti
                                             options={marketOptions}
-                                            value={hotel?.market ? { label: hotel.market, value: hotel.market } : (formData.market ? { label: formData.market, value: formData.market } : null)}
-                                            onChange={option => setFormData({...formData, market: option ? option.value : ''})}
+                                            value={formData.market ? formData.market.split(', ').map(m => ({ label: m, value: m })) : []}
+                                            onChange={options => setFormData({...formData, market: options ? options.map(o => o.value).join(', ') : ''})}
                                             styles={reactSelectStyles}
                                             isClearable
                                             isDisabled={isViewOnly}
-                                            placeholder="🔍 Gõ để tìm hoặc chọn..."
+                                            placeholder="🔍 Gõ để tìm hoặc chọn nhiều..."
                                             noOptionsMessage={() => "Không tìm thấy thị trường"}
                                         />
                                     </div>
@@ -391,77 +476,141 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                     )}
 
                     {activeTab === 'rates' && (
-                        <div className="card" style={{ background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', minHeight: '400px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                                <h3 style={{ marginTop: 0, marginBottom: 0, fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
-                                    <BedDouble size={18} color="#cbd5e1" /> SẢN PHẨM / DỊCH VỤ PHÒNG
-                                </h3>
-                                {availableContracts.length > 0 && (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Hợp đồng áp dụng:</label>
-                                        <select 
-                                            value={activeContractId || ''} 
-                                            onChange={e => handleContractChange(e.target.value)}
-                                            style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', background: '#f8fafc', outline: 'none' }}
-                                        >
-                                            {availableContracts.map(c => (
-                                                <option key={c.id} value={c.id}>{c.contract_name}</option>
-                                            ))}
-                                        </select>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                            {/* HÌNH ẢNH & MEDIA BÁO GIÁ */}
+                            <div className="card" style={{ background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', marginTop: '0' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                    <h3 style={{ margin: 0, fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
+                                        <ImageIcon size={18} color="#cbd5e1" /> HÌNH ẢNH & MENU / BÁO GIÁ ĐÍNH KÈM
+                                    </h3>
+                                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{mediaFiles.length + pendingUploads.length}/10 file</span>
+                                </div>
+
+                                {!isViewOnly && (mediaFiles.length + pendingUploads.length) < 10 && (
+                                    <div 
+                                        onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
+                                        onClick={() => fileInputRef.current?.click()}
+                                        style={{ border: `2px dashed ${isDragging ? '#3b82f6' : '#cbd5e1'}`, borderRadius: '12px', padding: '2.5rem', textAlign: 'center', background: isDragging ? '#eff6ff' : '#f8fafc', cursor: 'pointer', transition: 'all 0.2s', marginBottom: '1.5rem' }}
+                                    >
+                                        <input type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" style={{ display: 'none' }} ref={fileInputRef} onChange={e => handleFileUpload(e.target.files)} />
+                                        <Upload size={32} color={isDragging ? '#3b82f6' : '#94a3b8'} style={{ margin: '0 auto 12px' }} />
+                                        <p style={{ margin: '0 0 8px', color: '#334155', fontWeight: 600 }}>Kéo thả file vào đây hoặc click để chọn</p>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Hỗ trợ: JPG, PNG, WebP, PDF (Tối đa 10MB/file)</p>
+                                        {uploadProgress > 0 && <div style={{ marginTop: '1rem', background: '#e2e8f0', borderRadius: '8px', overflow: 'hidden' }}><div style={{ width: `${uploadProgress}%`, background: '#3b82f6', height: '4px', transition: 'width 0.2s' }} /></div>}
+                                    </div>
+                                )}
+
+                                {loading && uploadProgress === 0 ? (
+                                    <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>Đang tải...</div>
+                                ) : (mediaFiles.length > 0 || pendingUploads.length > 0) ? (
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem' }}>
+                                        {[...pendingUploads, ...mediaFiles].map((m, idx) => {
+                                            const isPending = m.isPending;
+                                            const isPdf = isPending ? m.file.type === 'application/pdf' : m.file_type === 'pdf';
+                                            const fileUrl = isPending ? m.url : m.file_url;
+                                            const fileName = isPending ? m.file.name : m.file_name;
+                                            
+                                            return (
+                                                <div key={isPending ? `pending-${idx}` : m.id} style={{ position: 'relative', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden', background: '#f8fafc', aspectRatio: '1', display: 'flex', flexDirection: 'column' }}>
+                                                    {isPending && <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(245,158,11,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600, zIndex: 2 }}>Chưa lưu</div>}
+                                                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isPdf ? '#eff6ff' : '#fff', position: 'relative', overflow: 'hidden' }}>
+                                                        {isPdf ? <File size={40} color="#3b82f6" /> : <img src={fileUrl} alt={fileName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                                                        <div className="media-overlay" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: 0, transition: 'opacity 0.2s' }}>
+                                                            {isPdf ? (
+                                                                <a href={fileUrl} target="_blank" rel="noopener noreferrer" style={{ background: 'white', padding: '8px', borderRadius: '50%', color: '#0f172a' }}><Download size={18} /></a>
+                                                            ) : (
+                                                                <button onClick={() => setLightboxMedia(m)} style={{ background: 'white', padding: '8px', borderRadius: '50%', border: 'none', cursor: 'pointer', color: '#0f172a' }}><Eye size={18} /></button>
+                                                            )}
+                                                            {!isViewOnly && (
+                                                                <button onClick={() => isPending ? removePendingUpload(idx) : handleDeleteMedia(m)} style={{ background: '#ef4444', padding: '8px', borderRadius: '50%', border: 'none', cursor: 'pointer', color: 'white' }}><Trash2 size={18} /></button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ padding: '8px', fontSize: '0.75rem', color: '#475569', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', borderTop: '1px solid #e2e8f0', background: 'white' }} title={fileName}>{fileName}</div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8', border: '2px dashed #f1f5f9', borderRadius: '12px' }}>
+                                        <ImageIcon size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
+                                        <div style={{ fontSize: '0.9rem' }}>Chưa có hình ảnh hoặc file đính kèm nào</div>
                                     </div>
                                 )}
                             </div>
-                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto' }}>
-                                <table style={{ width: '100%', minWidth: '1200px', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-                                    <thead style={{ background: '#f1f5f9' }}>
-                                        <tr style={{ textAlign: 'left', color: '#475569', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
-                                            <th style={{ padding: '12px', width: '80px', fontWeight: 600 }}>SKU Code</th>
-                                            <th style={{ padding: '12px', width: '160px', fontWeight: 600 }}>Tên Hạng Phòng/Dịch Vụ</th>
-                                            <th style={{ padding: '12px', width: '120px', fontWeight: 600 }}>Hiệu lực Từ</th>
-                                            <th style={{ padding: '12px', width: '120px', fontWeight: 600 }}>Đến lúc</th>
-                                            <th style={{ padding: '12px', width: '110px', fontWeight: 600 }}>Thuộc tính</th>
-                                            <th style={{ padding: '12px', width: '100px', fontWeight: 600 }}>Giá Contract</th>
-                                            <th style={{ padding: '12px', width: '100px', fontWeight: 600 }}>Giá Net</th>
-                                            <th style={{ padding: '12px', width: '100px', fontWeight: 600 }}>Giá Bán Pub</th>
-                                            <th style={{ padding: '12px', fontWeight: 600 }}>Policy/Ghi chú</th>
-                                            <th style={{ padding: '12px', width: '40px' }}></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {services.map((s, i) => (
-                                            <tr key={s.id || i} style={{ transition: 'background 0.2s', ':hover': { background: '#f8fafc'} }}>
-                                                <td style={inputCell}><input style={inlineInput} value={s.sku} onChange={e => handleServiceChange(i, 'sku', e.target.value)} disabled={isViewOnly} placeholder="SGL" /></td>
-                                                <td style={inputCell}><input style={inlineInput} value={s.name} onChange={e => handleServiceChange(i, 'name', e.target.value)} disabled={isViewOnly} placeholder="Phòng Single" /></td>
-                                                <td style={inputCell}><input type="date" style={inlineInput} value={s.start_date} onChange={e => handleServiceChange(i, 'start_date', e.target.value)} disabled={isViewOnly} /></td>
-                                                <td style={inputCell}><input type="date" style={inlineInput} value={s.end_date} onChange={e => handleServiceChange(i, 'end_date', e.target.value)} disabled={isViewOnly} /></td>
-                                                <td style={inputCell}>
-                                                    <select style={{...inlineInput, background: '#f8fafc', borderColor: 'transparent'}} value={s.day_type} onChange={e => handleServiceChange(i, 'day_type', e.target.value)} disabled={isViewOnly}>
-                                                        <option value="Ngày thường">Ngày thường</option>
-                                                        <option value="Cuối tuần">Cuối tuần</option>
-                                                        <option value="Lễ Tết">Lễ Tết</option>
-                                                    </select>
-                                                </td>
-                                                <td style={inputCell}><input type="number" style={inlineInput} value={s.contract_price} onChange={e => handleServiceChange(i, 'contract_price', e.target.value)} disabled={isViewOnly} /></td>
-                                                <td style={inputCell}><input type="number" style={{...inlineInput, color: '#ef4444', fontWeight: 600}} value={s.net_price} onChange={e => handleServiceChange(i, 'net_price', e.target.value)} disabled={isViewOnly} /></td>
-                                                <td style={inputCell}><input type="number" style={{...inlineInput, color: '#10b981', fontWeight: 600}} value={s.sell_price} onChange={e => handleServiceChange(i, 'sell_price', e.target.value)} disabled={isViewOnly} /></td>
-                                                <td style={inputCell}><input style={inlineInput} value={s.notes} onChange={e => handleServiceChange(i, 'notes', e.target.value)} disabled={isViewOnly} placeholder="Free Bfst" /></td>
-                                                <td style={{ ...inputCell, textAlign: 'center' }}>
-                                                    {!isViewOnly && (
-                                                        <button style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', padding: '4px' }} onClick={() => handleDeleteService(i, s)}><Trash2 size={16} /></button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                            {!isViewOnly && (
-                                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
-                                    <button className="btn" style={{ background: '#f8fafc', color: '#3b82f6', border: '1px dashed #cbd5e1', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }} onClick={() => setServices([...services, { id: Date.now(), sku: '', name: '', start_date: '', end_date: '', day_type: 'Ngày thường', contract_price: 0, net_price: 0, sell_price: 0 }])}>
-                                        <Plus size={16} /> Thêm Dòng Báo Giá
-                                    </button>
+
+                            <div className="card" style={{ background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', minHeight: '400px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                                    <h3 style={{ marginTop: 0, marginBottom: 0, fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
+                                        <BedDouble size={18} color="#cbd5e1" /> SẢN PHẨM / DỊCH VỤ PHÒNG
+                                    </h3>
+                                    {availableContracts.length > 0 && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Hợp đồng áp dụng:</label>
+                                            <select 
+                                                value={activeContractId || ''} 
+                                                onChange={e => handleContractChange(e.target.value)}
+                                                style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', background: '#f8fafc', outline: 'none' }}
+                                            >
+                                                {availableContracts.map(c => (
+                                                    <option key={c.id} value={c.id}>{c.contract_name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                                <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto' }}>
+                                    <table style={{ width: '100%', minWidth: '1200px', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                                        <thead style={{ background: '#f1f5f9' }}>
+                                            <tr style={{ textAlign: 'left', color: '#475569', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                                                <th style={{ padding: '12px', width: '80px', fontWeight: 600 }}>SKU Code</th>
+                                                <th style={{ padding: '12px', width: '160px', fontWeight: 600 }}>Tên Hạng Phòng/Dịch Vụ</th>
+                                                <th style={{ padding: '12px', width: '120px', fontWeight: 600 }}>Hiệu lực Từ</th>
+                                                <th style={{ padding: '12px', width: '120px', fontWeight: 600 }}>Đến lúc</th>
+                                                <th style={{ padding: '12px', width: '110px', fontWeight: 600 }}>Thuộc tính</th>
+                                                <th style={{ padding: '12px', width: '100px', fontWeight: 600 }}>Giá Contract</th>
+                                                <th style={{ padding: '12px', width: '100px', fontWeight: 600 }}>Giá Net</th>
+                                                <th style={{ padding: '12px', width: '100px', fontWeight: 600 }}>Giá Bán Pub</th>
+                                                <th style={{ padding: '12px', fontWeight: 600 }}>Policy/Ghi chú</th>
+                                                <th style={{ padding: '12px', width: '40px' }}></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {services.map((s, i) => (
+                                                <tr key={s.id || i} style={{ transition: 'background 0.2s', ':hover': { background: '#f8fafc'} }}>
+                                                    <td style={inputCell}><input style={inlineInput} value={s.sku} onChange={e => handleServiceChange(i, 'sku', e.target.value)} disabled={isViewOnly} placeholder="SGL" /></td>
+                                                    <td style={inputCell}><input style={inlineInput} value={s.name} onChange={e => handleServiceChange(i, 'name', e.target.value)} disabled={isViewOnly} placeholder="Phòng Single" /></td>
+                                                    <td style={inputCell}><input type="date" style={inlineInput} value={s.start_date} onChange={e => handleServiceChange(i, 'start_date', e.target.value)} disabled={isViewOnly} /></td>
+                                                    <td style={inputCell}><input type="date" style={inlineInput} value={s.end_date} onChange={e => handleServiceChange(i, 'end_date', e.target.value)} disabled={isViewOnly} /></td>
+                                                    <td style={inputCell}>
+                                                        <select style={{...inlineInput, background: '#f8fafc', borderColor: 'transparent'}} value={s.day_type} onChange={e => handleServiceChange(i, 'day_type', e.target.value)} disabled={isViewOnly}>
+                                                            <option value="Ngày thường">Ngày thường</option>
+                                                            <option value="Cuối tuần">Cuối tuần</option>
+                                                            <option value="Lễ Tết">Lễ Tết</option>
+                                                        </select>
+                                                    </td>
+                                                    <td style={inputCell}><input type="number" style={inlineInput} value={s.contract_price} onChange={e => handleServiceChange(i, 'contract_price', e.target.value)} disabled={isViewOnly} /></td>
+                                                    <td style={inputCell}><input type="number" style={{...inlineInput, color: '#ef4444', fontWeight: 600}} value={s.net_price} onChange={e => handleServiceChange(i, 'net_price', e.target.value)} disabled={isViewOnly} /></td>
+                                                    <td style={inputCell}><input type="number" style={{...inlineInput, color: '#10b981', fontWeight: 600}} value={s.sell_price} onChange={e => handleServiceChange(i, 'sell_price', e.target.value)} disabled={isViewOnly} /></td>
+                                                    <td style={inputCell}><input style={inlineInput} value={s.notes} onChange={e => handleServiceChange(i, 'notes', e.target.value)} disabled={isViewOnly} placeholder="Free Bfst" /></td>
+                                                    <td style={{ ...inputCell, textAlign: 'center' }}>
+                                                        {!isViewOnly && (
+                                                            <button style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', padding: '4px' }} onClick={() => handleDeleteService(i, s)}><Trash2 size={16} /></button>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {!isViewOnly && (
+                                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                                        <button className="btn" style={{ background: '#f8fafc', color: '#3b82f6', border: '1px dashed #cbd5e1', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }} onClick={() => setServices([...services, { id: Date.now(), sku: '', name: '', start_date: '', end_date: '', day_type: 'Ngày thường', contract_price: 0, net_price: 0, sell_price: 0 }])}>
+                                            <Plus size={16} /> Thêm Dòng Báo Giá
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -590,6 +739,14 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                 </div>
 
             </div>
+
+            {/* LIGHTBOX CỦA KHÁCH SẠN */}
+            {lightboxMedia && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setLightboxMedia(null)}>
+                    <button style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '8px' }} onClick={() => setLightboxMedia(null)}><X size={32} /></button>
+                    <img src={lightboxMedia.isPending ? lightboxMedia.url : lightboxMedia.file_url} alt="Preview" style={{ maxWidth: '90%', maxHeight: '90vh', objectFit: 'contain' }} onClick={e => e.stopPropagation()} />
+                </div>
+            )}
         </div>
     );
 }

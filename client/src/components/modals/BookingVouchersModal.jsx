@@ -1,3 +1,4 @@
+import { swalConfirm } from '../../utils/swalHelpers';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Plus, Save, FileText, CheckCircle, Printer, Trash2 } from 'lucide-react';
@@ -134,7 +135,7 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
   };
 
   const handleCancelVoucher = async (id, code, amount) => {
-    if (!window.confirm(`XÁC NHẬN HỦY PHIẾU THU: ${code}?\n\nSố tiền ${Number(amount).toLocaleString('vi-VN')} vnđ sẽ MẤT khỏi mục "Đã thanh toán" của Booking hiện tại. Thao tác này sẽ lưu vết trên hóa đơn.`)) return;
+    if (!await swalConfirm(`XÁC NHẬN HỦY PHIẾU THU: ${code}?\n\nSố tiền ${Number(amount).toLocaleString('vi-VN')} vnđ sẽ MẤT khỏi mục "Đã thanh toán" của Booking hiện tại. Thao tác này sẽ lưu vết trên hóa đơn.`)) return;
     try {
       const token = localStorage.getItem('token');
       const res = await axios.put(`/api/vouchers/${id}/cancel`, {}, {

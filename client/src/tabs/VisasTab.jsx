@@ -59,7 +59,7 @@ const STATUS_STYLES = {
     'Rớt Visa':     { bg: '#fce7f3', color: '#9d174d' }
 };
 
-export default function VisasTab({ currentUser, addToast }) {
+export default function VisasTab({ currentUser, checkPerm, addToast }) {
     const [visas, setVisas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -255,7 +255,7 @@ export default function VisasTab({ currentUser, addToast }) {
                     <button onClick={handleExportExcel} style={{ height: '38px', fontSize: '0.85rem', padding: '0 14px', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'white', color: '#475569', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Download size={15} /> Xuất Excel
                     </button>
-                    {canCreate(currentUser?.role, 'visas') && (
+                    {(checkPerm ? checkPerm('visas', 'create') : canCreate(currentUser?.role, 'visas')) && (
                         <button className="btn-pro-save" onClick={() => { setSelectedVisaId(null); setIsDrawerOpen(true); }} style={{ height: '38px', fontSize: '0.85rem', padding: '0 16px' }}>
                             <Plus size={16} /> Thêm Mới
                         </button>
@@ -417,6 +417,7 @@ export default function VisasTab({ currentUser, addToast }) {
                     onClose={() => setIsDrawerOpen(false)}
                     refreshList={fetchVisas}
                     currentUser={currentUser}
+                    checkPerm={checkPerm}
                     addToast={addToast}
                 />
             )}

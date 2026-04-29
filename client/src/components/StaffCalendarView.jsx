@@ -61,7 +61,7 @@ const StaffCalendarView = ({ users = [] }) => {
             type: 'birthday',
             day: bd.getDate(),
             label: `🎂 ${u.full_name}`,
-            sub: age > 0 ? `Tròn ${age} tuổi` : '',
+            sub: '',
             phone: u.phone,
             email: u.email,
             role: u.role_name,

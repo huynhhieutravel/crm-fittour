@@ -460,3 +460,133 @@ exports.addNote = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+// === MEDIA ===
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+
+const storageDir = path.join(__dirname, '../public/uploads/tickets');
+if (!fs.existsSync(storageDir)) {
+    fs.mkdirSync(storageDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, storageDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + '-' + file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_'));
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Chỉ chấp nhận file ảnh (JPG, PNG, WEBP) hoặc PDF'));
+        }
+    }
+}).array('files', 10);
+
+exports.uploadTicketMedia = (req, res) => {
+    upload(req, res, async function (err) {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({ message: 'Lỗi tải file: ' + err.message });
+        } else if (err) {
+            return res.status(400).json({ message: err.message });
+        }
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'Không có file nào được tải lên' });
+        }
+
+        const ticket_id = req.params.ticket_id;
+        const client = await db.pool.connect();
+
+        try {
+            await client.query('BEGIN');
+            const results = [];
+            for (const file of req.files) {
+                const file_url = '/uploads/tickets/' + file.filename;
+                const file_type = file.mimetype === 'application/pdf' ? 'pdf' : 'image';
+                
+                const insertRes = await client.query(
+                    'INSERT INTO ticket_media (ticket_id, file_url, file_name, file_type, file_size) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+                    [ticket_id, file_url, file.originalname, file_type, file.size]
+                );
+                results.push(insertRes.rows[0]);
+            }
+            await client.query('COMMIT');
+
+            if (req.user) {
+                await logActivity({
+                    user_id: req.user.id,
+                    action_type: 'UPDATE',
+                    entity_type: 'TICKET',
+                    entity_id: ticket_id,
+                    details: `Tải lên ${req.files.length} file đính kèm/menu`
+                });
+            }
+
+            res.status(201).json(results);
+        } catch (error) {
+            await client.query('ROLLBACK');
+            req.files.forEach(f => {
+                if (fs.existsSync(f.path)) fs.unlinkSync(f.path);
+            });
+            console.error('Upload Error:', error);
+            res.status(500).json({ message: 'Lỗi server khi lưu file' });
+        } finally {
+            client.release();
+        }
+    });
+};
+
+exports.getTicketMedia = async (req, res) => {
+    try {
+        const { ticket_id } = req.params;
+        const result = await db.query(
+            'SELECT * FROM ticket_media WHERE ticket_id = $1 ORDER BY sort_order ASC, created_at DESC',
+            [ticket_id]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.deleteTicketMedia = async (req, res) => {
+    try {
+        const { media_id } = req.params;
+        const findRes = await db.query('SELECT * FROM ticket_media WHERE id = $1', [media_id]);
+        if (findRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy file' });
+        
+        const media = findRes.rows[0];
+        await db.query('DELETE FROM ticket_media WHERE id = $1', [media_id]);
+        
+        const filePath = path.join(__dirname, '../public', media.file_url);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        if (req.user) {
+            await logActivity({
+                user_id: req.user.id,
+                action_type: 'UPDATE',
+                entity_type: 'TICKET',
+                entity_id: media.ticket_id,
+                details: `Xóa file đính kèm: ${media.file_name}`
+            });
+        }
+
+        res.json({ message: 'Xóa file thành công' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

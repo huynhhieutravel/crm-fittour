@@ -1,3 +1,4 @@
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useMarkets, getChildMarkets, getChildMarketIds } from '../hooks/useMarkets';
@@ -234,7 +235,7 @@ export default function OpToursTab({ currentUser }) {
 
   const handleBulkDelete = async () => {
     if (selectedTours.length === 0) return;
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa ${selectedTours.length} tour đã chọn không?\n\nLưu ý: Hệ thống sẽ tự động bỏ qua các Tour đang có khách booking.`)) return;
+    if (!await swalConfirm(`Bạn có chắc chắn muốn xóa ${selectedTours.length} tour đã chọn không?\n\nLưu ý: Hệ thống sẽ tự động bỏ qua các Tour đang có khách booking.`)) return;
     try {
       const res = await axios.post('/api/op-tours/bulk-delete', { ids: selectedTours }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -754,7 +755,7 @@ export default function OpToursTab({ currentUser }) {
 
 
   const handleDeleteTour = async (id) => {
-    if (window.confirm('Bạn có chắc muốn xóa tour này?')) {
+    if (await swalConfirm('Bạn có chắc muốn xóa tour này?')) {
       try {
         await axios.delete(`/api/op-tours/${id}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }

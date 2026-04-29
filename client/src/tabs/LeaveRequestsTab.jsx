@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import Select from 'react-select';
+import LeaveRequestModal from '../components/modals/LeaveRequestModal';
 
 const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
   const [data, setData] = useState([]);
@@ -393,11 +394,18 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                 </td>
                                 <td align="center">
                                     <div style={{ background: '#f8fafc', display: 'inline-block', padding: '4px 10px', borderRadius: '15px', fontWeight: 'bold', border: '1px solid #e2e8f0', color: '#0f172a' }}>{item.total_days}</div>
-                                    {item.available_days !== null && item.available_days !== undefined && (
-                                        <div style={{ fontSize: '11px', color: '#10b981', marginTop: '6px', fontWeight: '600' }}>
-                                            (Tồn: {parseFloat(item.available_days)})
-                                        </div>
-                                    )}
+                                    {item.available_days !== null && item.available_days !== undefined && (() => {
+                                        const avail = parseFloat(item.available_days);
+                                        let color = '#10b981'; // Green
+                                        if (avail < 0) color = '#ef4444'; // Red
+                                        else if (avail <= 5) color = '#f97316'; // Orange
+                                        
+                                        return (
+                                            <div style={{ fontSize: '11px', color: color, marginTop: '6px', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                                (Tồn: {avail})
+                                            </div>
+                                        );
+                                    })()}
                                 </td>
                                 <td>
                                     <div style={{ fontSize: '13px', whiteSpace: 'pre-line', maxWidth: '300px' }}>{item.reason}</div>
@@ -429,11 +437,18 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                                 </button>
                                             </>
                                         )}
-                                        {item.status === 'pending' && (item.user_id === currentUser.id || currentUser.role === 'admin') && (
-                                            <button onClick={() => handleAction(item.id, 'delete')} style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Xóa">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        )}
+                                        {(() => {
+                                            const today = new Date();
+                                            today.setHours(0,0,0,0);
+                                            const startDate = new Date(item.start_date);
+                                            const canDelete = (item.user_id === currentUser.id || currentUser.role === 'admin') && 
+                                                              (startDate >= today || currentUser.role === 'admin');
+                                            return canDelete ? (
+                                                <button onClick={() => handleAction(item.id, 'delete')} style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Xóa">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            ) : null;
+                                        })()}
                                     </div>
                                 </td>
                             </tr>
@@ -558,7 +573,6 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                           updateBalance(b.user_id, b._temp_days);
                                       }
                                   }} style={{ padding: '5px 10px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
-                                      Lưu
                                   </button>
                               </td>
                           </tr>
@@ -573,128 +587,12 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
 
       {/* CREATE MODAL */}
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-          <div style={{ background: 'white', borderRadius: '12px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', zIndex: 10 }}>
-                <h3 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Calendar size={20} color="#3b82f6" /> Tạo Đơn Xin Nghỉ Phép
-                </h3>
-                <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
-                    <XCircle size={24} />
-                </button>
-            </div>
-            
-            <form onSubmit={handleSubmit} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ marginBottom: '5px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>Nhân viên xin phép *</label>
-                    <Select
-                        isSearchable
-                        options={users.map(u => {
-                            const tName = u.teams && u.teams.length > 0 ? u.teams[0].name : '';
-                            return {
-                                value: u.id,
-                                label: `${u.full_name || u.username} ${tName ? `(${tName})` : ''}`
-                            };
-                        })}
-                        value={form.target_user_id ? {
-                            value: form.target_user_id,
-                            label: (() => {
-                                const matchedUser = users.find(u => u.id === form.target_user_id);
-                                if (!matchedUser) return currentUser?.full_name || currentUser?.username || 'Bản thân';
-                                const tName = matchedUser.teams && matchedUser.teams.length > 0 ? matchedUser.teams[0].name : '';
-                                return `${matchedUser.full_name || matchedUser.username} ${tName ? `(${tName})` : ''}`;
-                            })()
-                        } : null}
-                        onChange={(selected) => setForm({...form, target_user_id: selected ? selected.value : currentUser?.id})}
-                        styles={{
-                            control: (base) => ({ ...base, borderRadius: '6px', border: '1px solid #cbd5e1', minHeight: '34px' }),
-                            valueContainer: (base) => ({ ...base, padding: '2px 8px' }),
-                            input: (base) => ({ ...base, margin: 0, padding: 0 })
-                        }}
-                    />
-                    <span style={{ fontSize: '11px', color: '#64748b' }}>Mặc định là tài khoản của bạn. Có thể chọn người khác nếu xin phép dùm.</span>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>Loại nghỉ phép *</label>
-                        <select required value={form.leave_type} onChange={e => setForm({...form, leave_type: e.target.value})} style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
-                            <option value="annual">Nghỉ phép năm (trừ vào quĩ phép)</option>
-                            <option value="sick">Nghỉ ốm</option>
-                            <option value="personal">Việc cá nhân</option>
-                            <option value="maternity">Nghỉ thai sản</option>
-                            <option value="other">Loại khác</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>Số điện thoại liên hệ</label>
-                        <input type="text" value={form.contact_phone} onChange={e => setForm({...form, contact_phone: e.target.value})} style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} placeholder="+84..."/>
-                    </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', alignItems: 'start' }}>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>Từ ngày *</label>
-                        <input required type="date" value={form.start_date} onChange={e => setForm({...form, start_date: e.target.value})} style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                    </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>Đến ngày *</label>
-                        <input required type="date" value={form.end_date} onChange={e => setForm({...form, end_date: e.target.value})} style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                    </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>Tổng số ngày *</label>
-                        <input required type="number" step="0.5" min="0" value={form.total_days} onChange={e => setForm({...form, total_days: parseFloat(e.target.value)})} style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                        <span style={{ fontSize: '11px', color: '#64748b' }}>Sửa thành 0.5 nửa ngày</span>
-                    </div>
-                </div>
-
-                <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '13px' }}>Lý do nghỉ *</label>
-                    <textarea required value={form.reason} onChange={e => setForm({...form, reason: e.target.value})} style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', minHeight: '60px' }} placeholder="Trình bày lý do xin nghỉ..." />
-                </div>
-
-                <div style={{ background: '#f8fafc', padding: '12px 15px', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
-                    <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Bàn giao công việc</h4>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px' }}>Người nhận bàn giao</label>
-                            <Select
-                                isClearable
-                                isSearchable
-                                placeholder="Chọn người nhận bàn giao (tìm kiếm)..."
-                                options={users.filter(u => u.id !== currentUser.id).map(u => {
-                                    const tName = u.teams && u.teams.length > 0 ? u.teams[0].name : '';
-                                    return {
-                                        value: u.id,
-                                        label: `${u.full_name || u.username} ${tName ? `(${tName})` : ''}`
-                                    };
-                                })}
-                                value={form.handover_user_id ? {
-                                    value: form.handover_user_id,
-                                    label: users.find(u => u.id === form.handover_user_id)?.full_name || ''
-                                } : null}
-                                onChange={(selected) => setForm({...form, handover_user_id: selected ? selected.value : ''})}
-                                styles={{
-                                    control: (base) => ({ ...base, borderRadius: '6px', border: '1px solid #cbd5e1', minHeight: '34px' }),
-                                    valueContainer: (base) => ({ ...base, padding: '2px 8px' }),
-                                    input: (base) => ({ ...base, margin: 0, padding: 0 })
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px' }}>Ghi chú bàn giao</label>
-                            <textarea value={form.handover_note} onChange={e => setForm({...form, handover_note: e.target.value})} style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', minHeight: '50px' }} placeholder="Đã bàn giao các task..."/>
-                        </div>
-                    </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '5px' }}>
-                    <button type="button" onClick={() => setShowModal(false)} style={{ padding: '10px 20px', background: 'white', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Hủy</button>
-                    <button type="submit" style={{ padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Gửi Đơn</button>
-                </div>
-            </form>
-          </div>
-        </div>
+        <LeaveRequestModal 
+            currentUser={currentUser} 
+            users={users} 
+            onClose={() => setShowModal(false)} 
+            onSuccess={() => { fetchData(); fetchBalance(); }} 
+        />
       )}
     </div>
   );

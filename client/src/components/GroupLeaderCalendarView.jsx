@@ -1,3 +1,4 @@
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
@@ -98,7 +99,7 @@ const GroupLeaderCalendarView = ({ users = [], leaders = [], companies = [], onL
   };
 
   const handleDeleteEvent = async () => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa sự kiện này?")) return;
+    if (!await swalConfirm("Bạn có chắc chắn muốn xóa sự kiện này?")) return;
     try {
       await axios.delete(`/api/group-leaders/events/${editingEventId}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }

@@ -1,3 +1,4 @@
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
@@ -30,7 +31,7 @@ const CustomerDuplicateManager = ({ onClose, onMerged }) => {
     const primaryId = sorted[0].id;
     const secondaryIds = sorted.slice(1).map(c => c.id);
 
-    if(!window.confirm(`Gộp ${secondaryIds.length} bản ghi rác vào hồ sơ gốc (${sorted[0].name})? Không thể hoàn tác!`)) return;
+    if(!await swalConfirm(`Gộp ${secondaryIds.length} bản ghi rác vào hồ sơ gốc (${sorted[0].name})? Không thể hoàn tác!`)) return;
 
     try {
       await axios.post('/api/customers/utils/merge', {

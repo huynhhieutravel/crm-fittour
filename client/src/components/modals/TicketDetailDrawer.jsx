@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import StarRating from '../common/StarRating';
 import axios from 'axios';
-import { X, Save, Plus, Trash2, Ticket, ShoppingBag, Users, FileText, Send, Clock, PlusCircle , ExternalLink, Link2 } from 'lucide-react';
+import { X, Save, Plus, Trash2, Ticket, ShoppingBag, Users, FileText, Send, Clock, PlusCircle, ExternalLink, Link2, ImageIcon, Upload, File, Download, Eye } from 'lucide-react';
 import Select from 'react-select';
 import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
-export default function TicketDetailDrawer({ ticket, onClose, refreshList, currentUser, addToast }) {
+export default function TicketDetailDrawer({ ticket, onClose, refreshList, currentUser, checkPerm, addToast }) {
     const [activeTab, setActiveTab] = useState('general');
     
     // States - match actual DB columns
@@ -28,6 +28,13 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
 
     const [ticketNotes, setTicketNotes] = useState([]);
     const [newNote, setNewNote] = useState('');
+
+    const [mediaFiles, setMediaFiles] = useState([]);
+    const [pendingUploads, setPendingUploads] = useState([]);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const [lightboxMedia, setLightboxMedia] = useState(null);
+    const fileInputRef = React.useRef(null);
 
     const fetchTicketNotes = async () => {
         if (!ticket?.id) return;
@@ -53,6 +60,63 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
         }
     };
 
+    const fetchMedia = async () => {
+        if (!ticket?.id) return;
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`/api/tickets/${ticket.id}/media`, { headers: { Authorization: `Bearer ${token}` } });
+            setMediaFiles(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleFileUpload = async (files) => {
+        if (mediaFiles.length + pendingUploads.length >= 10) { addToast?.('Đã đạt tối đa 10 file!', 'error'); return; }
+        const validFiles = Array.from(files).filter(f => f.size <= 10 * 1024 * 1024);
+        if (validFiles.length < files.length) addToast?.('Một số file vượt quá 10MB và đã bị loại.', 'warning');
+        
+        if (!ticket?.id) {
+            const newPending = validFiles.map(f => ({ file: f, url: URL.createObjectURL(f), isPending: true }));
+            setPendingUploads(prev => [...prev, ...newPending].slice(0, 10 - mediaFiles.length));
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        setLoading(true);
+        for (const file of validFiles) {
+            try {
+                const fd = new FormData();
+                fd.append('file', file);
+                await axios.post(`/api/tickets/${ticket.id}/media`, fd, {
+                    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+                    onUploadProgress: (evt) => setUploadProgress(Math.round((evt.loaded * 100) / evt.total))
+                });
+            } catch (err) {
+                addToast?.(`Lỗi upload ${file.name}`, 'error');
+            }
+        }
+        setUploadProgress(0);
+        setLoading(false);
+        fetchMedia();
+    };
+
+    const handleDeleteMedia = async (media) => {
+        if (!window.confirm('Bạn có chắc chắn xóa file này?')) return;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`/api/tickets/media/${media.id}`, { headers: { Authorization: `Bearer ${token}` } });
+            fetchMedia();
+            addToast?.('Xóa thành công', 'success');
+        } catch (err) {
+            addToast?.('Xóa thất bại', 'error');
+        }
+    };
+
+    const handleDrag = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(e.type === "dragenter" || e.type === "dragover"); };
+    const handleDrop = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFileUpload(e.dataTransfer.files); };
+    const removePendingUpload = (index) => setPendingUploads(prev => prev.filter((_, i) => i !== index));
+
     useEffect(() => {
         if (ticket) {
             setFormData({
@@ -71,11 +135,15 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
             setServices(ticket.services || []);
             
             fetchTicketNotes();
+            fetchMedia();
+            setPendingUploads([]);
         } else {
             // New ticket - start with empty rows
             setContacts([{ id: Date.now() + 1, name: '', position: '', phone: '', email: '' }]);
             setServices([{ id: Date.now() + 2, name: '', description: '', capacity: '' }]);
             setTicketNotes([]);
+            setMediaFiles([]);
+            setPendingUploads([]);
         }
     }, [ticket]);
 
@@ -96,10 +164,25 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
             
             if (ticket?.id) {
                 await axios.put(`/api/tickets/${ticket.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+                
                 if (addToast) addToast('✅ Cập nhật thông tin vé tham quan thành công!');
                 refreshList();
+                onClose();
             } else {
-                await axios.post('/api/tickets', payload, { headers: { Authorization: `Bearer ${token}` } });
+                const created = await axios.post('/api/tickets', payload, { headers: { Authorization: `Bearer ${token}` } });
+                
+                if (pendingUploads.length > 0 && created.data.id) {
+                    for (const p of pendingUploads) {
+                        try {
+                            const fd = new FormData();
+                            fd.append('file', p.file);
+                            await axios.post(`/api/tickets/${created.data.id}/media`, fd, {
+                                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+                            });
+                        } catch(e) { console.error("Lỗi upload file", e); }
+                    }
+                }
+                
                 if (addToast) addToast('✅ Tạo Vé Tham Quan thành công!');
                 refreshList();
                 onClose();
@@ -112,7 +195,7 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
         }
     };
 
-    const isViewOnly = checkViewOnly(currentUser?.role, 'suppliers');
+    const isViewOnly = checkPerm ? (ticket ? !checkPerm('tickets', 'edit') : !checkPerm('tickets', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
 
     const handleContactChange = (index, field, value) => {
         const newContacts = [...contacts];
@@ -178,7 +261,7 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
                         <Users size={16} /> Hồ Sơ & Liên Hệ
                     </div>
                     <div onClick={() => setActiveTab('services')} style={tabStyle(activeTab === 'services')}>
-                        <ShoppingBag size={16} /> Hạng Vé & Dịch Vụ
+                        <ImageIcon size={16} /> Hạng Vé & Bảng Giá
                     </div>
                     {ticket && (
                         <div onClick={() => setActiveTab('notes')} style={tabStyle(activeTab === 'notes')}>
@@ -229,13 +312,14 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
                                     <div>
                                         <label style={labelStyle}>Thị trường MICE/Inbound</label>
                                         <Select 
+                                            isMulti
                                             options={marketOptions}
-                                            value={formData.market ? { label: formData.market, value: formData.market } : null}
-                                            onChange={option => setFormData({...formData, market: option ? option.value : ''})}
+                                            value={formData.market ? formData.market.split(', ').map(m => ({ label: m, value: m })) : []}
+                                            onChange={options => setFormData({...formData, market: options ? options.map(o => o.value).join(', ') : ''})}
                                             styles={reactSelectStyles}
                                             isClearable
                                             isDisabled={isViewOnly}
-                                            placeholder="🔍 Gõ để tìm hoặc chọn..."
+                                            placeholder="🔍 Gõ để tìm hoặc chọn nhiều..."
                                             noOptionsMessage={() => "Không tìm thấy thị trường"}
                                         />
                                     </div>
@@ -329,55 +413,63 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
                     )}
 
                     {activeTab === 'services' && (
-                        <div style={{ background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', minHeight: '400px' }}>
-                            <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
-                                <ShoppingBag size={18} color="#cbd5e1" /> DANH MỤC HẠNG VÉ & DỊCH VỤ
-                            </h3>
-                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto' }}>
-                                <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                                    <thead style={{ background: '#f1f5f9' }}>
-                                        <tr style={{ textAlign: 'left', color: '#475569', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
-                                            <th style={{ padding: '12px 16px', fontWeight: 600, width: '25%' }}>Tên Loại Vé</th>
-                                            <th style={{ padding: '12px 16px', fontWeight: 600, width: '12%', textAlign: 'center' }}>Số Lượng</th>
-                                            <th style={{ padding: '12px 16px', fontWeight: 600, width: '18%' }}>Giá KT</th>
-                                            <th style={{ padding: '12px 16px', fontWeight: 600, width: '18%' }}>Giá Net</th>
-                                            <th style={{ padding: '12px 16px', fontWeight: 600, width: '18%' }}>Giá Bán</th>
-                                            <th style={{ padding: '12px 16px', width: '9%', textAlign: 'center' }}>Thao tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {services.map((s, i) => (
-                                            <React.Fragment key={s.id || i}>
-                                                <tr>
-                                                    <td style={{...inputCell, borderBottom: 'none'}}><input style={{...inlineInput, fontWeight: 600}} value={s.name || ''} onChange={e => handleServiceChange(i, 'name', e.target.value)} disabled={isViewOnly} placeholder="VD: Vé cáp treo..." /></td>
-                                                    <td style={{...inputCell, borderBottom: 'none'}}><input type="number" style={{...inlineInput, width: '100%', textAlign: 'center', background: '#eef2ff', fontWeight: 600, color: '#4f46e5', borderColor: '#c7d2fe'}} value={s.capacity || ''} onChange={e => handleServiceChange(i, 'capacity', e.target.value)} disabled={isViewOnly} placeholder="0" /></td>
-                                                    <td style={{...inputCell, borderBottom: 'none'}}><input type="number" style={inlineInput} value={s.cost_price || ''} onChange={e => handleServiceChange(i, 'cost_price', e.target.value)} disabled={isViewOnly} placeholder="Giá khảo sát" /></td>
-                                                    <td style={{...inputCell, borderBottom: 'none'}}><input type="number" style={inlineInput} value={s.net_price || ''} onChange={e => handleServiceChange(i, 'net_price', e.target.value)} disabled={isViewOnly} placeholder="Giá gốc" /></td>
-                                                    <td style={{...inputCell, borderBottom: 'none'}}><input type="number" style={{...inlineInput, color: '#16a34a', fontWeight: 'bold'}} value={s.sale_price || ''} onChange={e => handleServiceChange(i, 'sale_price', e.target.value)} disabled={isViewOnly} placeholder="Giá bán" /></td>
-                                                    <td style={{...inputCell, textAlign: 'center', borderBottom: 'none'}}>
-                                                        {!isViewOnly && (
-                                                            <button style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', padding: '4px' }} onClick={() => handleDeleteService(i, s)}><Trash2 size={16} /></button>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td colSpan={3} style={{ padding: '0 8px 12px 8px', borderBottom: '1px solid #e2e8f0' }}>
-                                                        <textarea style={{...inlineInput, resize: 'vertical', minHeight: '50px'}} value={s.description || ''} onChange={e => handleServiceChange(i, 'description', e.target.value)} disabled={isViewOnly} placeholder="Chi tiết quyền lợi, thời gian áp dụng... (Bấm Enter để xuống dòng)" />
-                                                    </td>
-                                                    <td colSpan={3} style={{ padding: '0 8px 12px 8px', borderBottom: '1px solid #e2e8f0' }}>
-                                                        <textarea style={{...inlineInput, resize: 'vertical', minHeight: '50px'}} value={s.notes || ''} onChange={e => handleServiceChange(i, 'notes', e.target.value)} disabled={isViewOnly} placeholder="Ghi chú nội bộ..." />
-                                                    </td>
-                                                </tr>
-                                            </React.Fragment>
-                                        ))}
-                                    </tbody>
-                                </table>
+                        <div className="card" style={{ background: 'white', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <h3 style={{ margin: 0, fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
+                                    <ImageIcon size={18} color="#cbd5e1" /> HÌNH ẢNH & BẢNG GIÁ ĐÍNH KÈM
+                                </h3>
+                                <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{mediaFiles.length + pendingUploads.length}/10 file</span>
                             </div>
-                            {!isViewOnly && (
-                                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
-                                    <button style={{ background: '#f8fafc', color: '#3b82f6', border: '1px dashed #cbd5e1', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer' }} onClick={() => setServices([...services, { id: Date.now(), name: '', description: '', capacity: '' }])}>
-                                        <Plus size={16} /> Thêm Dịch Vụ
-                                    </button>
+
+                            {!isViewOnly && (mediaFiles.length + pendingUploads.length) < 10 && (
+                                <div 
+                                    onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    style={{ border: `2px dashed ${isDragging ? '#3b82f6' : '#cbd5e1'}`, borderRadius: '12px', padding: '2.5rem', textAlign: 'center', background: isDragging ? '#eff6ff' : '#f8fafc', cursor: 'pointer', transition: 'all 0.2s', marginBottom: '1.5rem' }}
+                                >
+                                    <input type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" style={{ display: 'none' }} ref={fileInputRef} onChange={e => handleFileUpload(e.target.files)} />
+                                    <Upload size={32} color={isDragging ? '#3b82f6' : '#94a3b8'} style={{ margin: '0 auto 12px' }} />
+                                    <p style={{ margin: '0 0 8px', color: '#334155', fontWeight: 600 }}>Kéo thả file vào đây hoặc click để chọn</p>
+                                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Hỗ trợ: JPG, PNG, WebP, PDF (Tối đa 10MB/file)</p>
+                                    {uploadProgress > 0 && <div style={{ marginTop: '1rem', background: '#e2e8f0', borderRadius: '8px', overflow: 'hidden' }}><div style={{ width: `${uploadProgress}%`, background: '#3b82f6', height: '4px', transition: 'width 0.2s' }} /></div>}
+                                </div>
+                            )}
+
+                            {loading && uploadProgress === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>Đang tải...</div>
+                            ) : (mediaFiles.length > 0 || pendingUploads.length > 0) ? (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem' }}>
+                                    {[...pendingUploads, ...mediaFiles].map((m, idx) => {
+                                        const isPending = m.isPending;
+                                        const isPdf = isPending ? m.file.type === 'application/pdf' : m.file_type === 'pdf';
+                                        const fileUrl = isPending ? m.url : m.file_url;
+                                        const fileName = isPending ? m.file.name : m.file_name;
+                                        
+                                        return (
+                                            <div key={isPending ? `pending-${idx}` : m.id} style={{ position: 'relative', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden', background: '#f8fafc', aspectRatio: '1', display: 'flex', flexDirection: 'column' }}>
+                                                {isPending && <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(245,158,11,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600, zIndex: 2 }}>Chưa lưu</div>}
+                                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isPdf ? '#eff6ff' : '#fff', position: 'relative', overflow: 'hidden' }}>
+                                                    {isPdf ? <File size={40} color="#3b82f6" /> : <img src={fileUrl} alt={fileName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                                                    <div className="media-overlay" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: 0, transition: 'opacity 0.2s' }}>
+                                                        {isPdf ? (
+                                                            <a href={fileUrl} target="_blank" rel="noopener noreferrer" style={{ background: 'white', padding: '8px', borderRadius: '50%', color: '#0f172a' }}><Download size={18} /></a>
+                                                        ) : (
+                                                            <button onClick={() => setLightboxMedia(m)} style={{ background: 'white', padding: '8px', borderRadius: '50%', border: 'none', cursor: 'pointer', color: '#0f172a' }}><Eye size={18} /></button>
+                                                        )}
+                                                        {!isViewOnly && (
+                                                            <button onClick={() => isPending ? removePendingUpload(idx) : handleDeleteMedia(m)} style={{ background: '#ef4444', padding: '8px', borderRadius: '50%', border: 'none', cursor: 'pointer', color: 'white' }}><Trash2 size={18} /></button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div style={{ padding: '8px', fontSize: '0.75rem', color: '#475569', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', borderTop: '1px solid #e2e8f0', background: 'white' }} title={fileName}>{fileName}</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8', border: '2px dashed #f1f5f9', borderRadius: '12px' }}>
+                                    <ImageIcon size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
+                                    <div style={{ fontSize: '0.9rem' }}>Chưa có hình ảnh hoặc file đính kèm nào</div>
                                 </div>
                             )}
                         </div>
@@ -435,6 +527,14 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
                         </div>
                     )}
                 </div>
+
+                {/* LIGHTBOX FOR IMAGES */}
+                {lightboxMedia && (
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <button onClick={() => setLightboxMedia(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><X size={32} /></button>
+                        <img src={lightboxMedia.isPending ? lightboxMedia.url : lightboxMedia.file_url} alt="Preview" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }} />
+                    </div>
+                )}
 
                 {/* FOOTER SAVE */}
                 <div style={{ background: 'white', padding: '1.25rem 2.5rem', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '1rem', flexShrink: 0, boxShadow: '0 -4px 10px rgba(0,0,0,0.02)' }}>

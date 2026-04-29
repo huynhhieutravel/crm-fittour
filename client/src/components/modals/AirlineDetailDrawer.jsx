@@ -6,7 +6,7 @@ import Select from 'react-select';
 import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
-export default function AirlineDetailDrawer({ airline, onClose, refreshList, currentUser, addToast }) {
+export default function AirlineDetailDrawer({ airline, onClose, refreshList, currentUser, checkPerm, addToast }) {
     const [activeTab, setActiveTab] = useState('general');
     
     // States - match actual DB columns
@@ -112,7 +112,7 @@ export default function AirlineDetailDrawer({ airline, onClose, refreshList, cur
         }
     };
 
-    const isViewOnly = checkViewOnly(currentUser?.role, 'suppliers');
+    const isViewOnly = checkPerm ? (airline ? !checkPerm('airlines', 'edit') : !checkPerm('airlines', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
 
     const handleContactChange = (index, field, value) => {
         const newContacts = [...contacts];
@@ -226,12 +226,12 @@ export default function AirlineDetailDrawer({ airline, onClose, refreshList, cur
                                     <div>
                                         <label style={labelStyle}>Thị trường MICE/Inbound</label>
                                         <Select 
+                                            isMulti
                                             options={marketOptions}
                                             value={formData.market ? formData.market.split(', ').map(m => ({ label: m, value: m })) : []}
                                             onChange={options => setFormData({...formData, market: options ? options.map(o => o.value).join(', ') : ''})}
                                             styles={reactSelectStyles}
                                             isClearable
-                                            isMulti
                                             isDisabled={isViewOnly}
                                             placeholder="🔍 Gõ để tìm hoặc chọn nhiều..."
                                             noOptionsMessage={() => "Không tìm thấy thị trường"}

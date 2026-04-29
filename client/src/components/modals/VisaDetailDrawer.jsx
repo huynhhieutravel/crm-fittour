@@ -1,3 +1,4 @@
+import { swalConfirm, swalPrompt } from '../../utils/swalHelpers';
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { X, Save, Plus, Trash2, Link as LinkIcon, Paperclip, ChevronDown, ChevronRight, User, FileText, CheckCircle, AlertTriangle, ScanText } from 'lucide-react';
@@ -8,7 +9,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 
-export default function VisaDetailDrawer({ visaId, onClose, refreshList, currentUser, addToast }) {
+export default function VisaDetailDrawer({ visaId, onClose, refreshList, currentUser, checkPerm, addToast }) {
     const isNew = !visaId;
     const [loading, setLoading] = useState(!isNew);
     const [saving, setSaving] = useState(false);
@@ -662,16 +663,16 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                                                 <button 
                                                                     title="Đính kèm Link Drive"
                                                                     style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', padding: 0 }}
-                                                                    onClick={() => {
-                                                                        const link = window.prompt('Nhập link đính kèm:');
+                                                                    onClick={async () => {
+                                                                        const link = await swalPrompt('Nhập link đính kèm:');
                                                                         if (link) updateChecklistFile(currentMemberForChecklist.id, catIndex, itemIndex, link);
                                                                     }}
                                                                 >
                                                                     <Paperclip size={16} />
                                                                 </button>
-                                                                <button title="Xóa" style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', padding: 0 }} onClick={() => {
+                                                                <button title="Xóa" style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', padding: 0 }} onClick={async () => {
                                                                     // Optional feature: remove from array
-                                                                    if(window.confirm('Xóa mục này?')) {
+                                                                    if(await swalConfirm('Xóa mục này?')) {
                                                                         setForm(prev => {
                                                                             const members = [...prev.members];
                                                                             const mIdx = members.findIndex(m => m.id === currentMemberForChecklist.id);
@@ -710,8 +711,8 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                                         </div>
                                                     ))}
                                                 </div>
-                                                <button style={{ background: 'none', border: 'none', padding: '10px', paddingLeft: '11px', cursor: 'pointer', display: 'block', marginTop: '4px' }} onClick={() => {
-                                                    const name = window.prompt('Nhập tên giấy tờ muốn thêm:');
+                                                <button style={{ background: 'none', border: 'none', padding: '10px', paddingLeft: '11px', cursor: 'pointer', display: 'block', marginTop: '4px' }} onClick={async () => {
+                                                    const name = await swalPrompt('Nhập tên giấy tờ muốn thêm:');
                                                     if(name) {
                                                         setForm(prev => {
                                                             const members = [...prev.members];
@@ -1064,7 +1065,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                     <button className="btn btn-secondary" onClick={onClose} style={{ padding: '10px 24px', borderRadius: '8px', fontWeight: 600, background: '#f1f5f9', color: '#475569', border: 'none', cursor: 'pointer' }}>
                         Hủy
                     </button>
-                    {(canEdit(currentUser?.role, 'visas') || isNew) && (
+                    {(checkPerm ? (isNew ? checkPerm('visas', 'create') : checkPerm('visas', 'edit')) : (canEdit(currentUser?.role, 'visas') || isNew)) && (
                         <button className="btn btn-primary" onClick={handleSave} disabled={saving} style={{ padding: '10px 24px', borderRadius: '8px', fontWeight: 600, background: '#2563eb', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Save size={18} /> {saving ? 'Đang lưu...' : 'Lưu Hồ Sơ'}
                         </button>

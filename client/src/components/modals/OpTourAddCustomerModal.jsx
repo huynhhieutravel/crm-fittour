@@ -1,9 +1,12 @@
+import { swalConfirm } from '../../utils/swalHelpers';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Search, Plus } from 'lucide-react';
 import AsyncSelect from 'react-select/async';
 import CustomerProfileSlider from '../CustomerProfileSlider';
 import { scanPassportImage } from '../../utils/passportOcr';
+import * as XLSX from 'xlsx';
+import { toast } from 'react-hot-toast';
 
 export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initialData, currentUser, tour }) {
   // Auto-generate B-XXXX (4-5 digits) for a new booking code
@@ -44,6 +47,187 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   const [fullProfileData, setFullProfileData] = useState(null);
   const [uploadingPassportId, setUploadingPassportId] = useState(null);
   const [scanningPassportId, setScanningPassportId] = useState(null);
+
+  const [isDraggingExcel, setIsDraggingExcel] = useState(false);
+  const [isImportingExcel, setIsImportingExcel] = useState(false);
+  const [importReport, setImportReport] = useState(null);
+
+
+  
+  const parseDateFromExcel = (val) => {
+    if (!val) return '';
+    if (typeof val === 'number') {
+      const date = new Date((val - (25567 + 2)) * 86400 * 1000);
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+    const str = String(val).trim();
+    if (str.includes('/')) {
+      const parts = str.split('/');
+      if (parts.length === 3) {
+         // dd/mm/yyyy
+         const dd = parts[0].padStart(2, '0');
+         const mm = parts[1].padStart(2, '0');
+         let yyyy = parts[2];
+         if (yyyy.length === 2) yyyy = '20' + yyyy;
+         return `${yyyy}-${mm}-${dd}`;
+      }
+    }
+    return '';
+  };
+
+  const handleImportExcel = async (file) => {
+    if (!file) return;
+    setIsImportingExcel(true);
+    setImportReport(null);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+      
+      let headerRowIdx = -1;
+      let headers = [];
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i] || [];
+        const joined = row.join(' ').toLowerCase();
+        if (joined.includes('given name') && joined.includes('passport no') && joined.includes('gender')) {
+          headerRowIdx = i;
+          headers = row.map(h => String(h || '').trim().toLowerCase());
+          break;
+        }
+      }
+
+      if (headerRowIdx === -1) {
+         toast.error('Không tìm thấy bảng hợp lệ trong file Excel. Vui lòng kiểm tra lại định dạng file.');
+         setIsImportingExcel(false);
+         return;
+      }
+
+      const extractedMembers = [];
+      let validCount = 0;
+      const errors = [];
+
+      // Dò cột
+      const nameIdx = headers.findIndex(h => h && h.includes('given name'));
+      const genderIdx = headers.findIndex(h => h && h.includes('gender'));
+      const dobIdx = headers.findIndex(h => h && h.includes('dob'));
+      const passIdx = headers.findIndex(h => h && h.includes('passport no'));
+      const doiIdx = headers.findIndex(h => h && h.includes('doi'));
+      const doeIdx = headers.findIndex(h => h && h.includes('doe'));
+      const roomIdx = headers.findIndex(h => h && h.includes('room'));
+
+      for (let i = headerRowIdx + 1; i < rows.length; i++) {
+         const row = rows[i];
+         if (!row || row.length === 0) continue;
+         
+         const rawName = row[nameIdx];
+         if (!rawName || String(rawName).trim() === '') continue; // Bỏ qua dòng trống
+
+         const name = String(rawName).trim();
+         const rawRoom = roomIdx > -1 ? String(row[roomIdx] || '').trim() : '';
+         
+         // Lọc TOUR LEADER
+         if (rawRoom.toUpperCase().includes('TOUR LEADER')) {
+            continue; 
+         }
+
+         const rawGender = row[genderIdx] ? String(row[genderIdx]).trim().toUpperCase() : '';
+         const gender = rawGender === 'M' ? 'Nam' : (rawGender === 'F' ? 'Nữ' : 'Chọn');
+         const dob = parseDateFromExcel(row[dobIdx]);
+         const docId = row[passIdx] ? String(row[passIdx]).trim() : '';
+         const issueDate = parseDateFromExcel(row[doiIdx]);
+         const expiryDate = parseDateFromExcel(row[doeIdx]);
+         
+         let hasError = false;
+         let errorReason = '';
+         if (!docId) {
+            hasError = true;
+            errorReason = 'Thiếu Passport';
+         }
+
+         if (hasError) {
+            errors.push(`${name}: ${errorReason}`);
+         } else {
+            validCount++;
+         }
+
+         extractedMembers.push({
+            id: Date.now() + i,
+            phone: '', name: name, email: '', ageType: 'Người lớn', gender: gender,
+            dob: dob, docType: 'Hộ chiếu', docId: docId, issueDate: issueDate, expiryDate: expiryDate,
+            flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
+            note: '', roomType: '-Chọn-', hotel: '', roomCode: rawRoom ? `${rawRoom}` : '', customerSegment: '', tripCount: 0, crmNote: ''
+         });
+      }
+
+      // Merge vào state members
+      setMembers(prev => {
+         const newMembers = [...prev];
+         
+         for (const m of extractedMembers) {
+            // Kiểm tra trùng lặp (theo Passport hoặc theo Tên)
+            const duplicateIdx = newMembers.findIndex(existing => {
+               if (existing.docId && m.docId && String(existing.docId).trim().toUpperCase() === String(m.docId).trim().toUpperCase()) return true;
+               if (existing.name && m.name && String(existing.name).trim().toLowerCase() === String(m.name).trim().toLowerCase()) return true;
+               return false;
+            });
+
+            if (duplicateIdx !== -1) {
+               // Trùng lặp -> Giữ nguyên dòng hiện tại, chỉ điền bù những ô còn trống
+               const existing = newMembers[duplicateIdx];
+               newMembers[duplicateIdx] = {
+                  ...existing,
+                  dob: existing.dob || m.dob,
+                  docId: existing.docId || m.docId,
+                  issueDate: existing.issueDate || m.issueDate,
+                  expiryDate: existing.expiryDate || m.expiryDate,
+                  roomCode: existing.roomCode || m.roomCode,
+                  gender: (existing.gender === 'Chọn' || !existing.gender) ? m.gender : existing.gender,
+               };
+            } else {
+               // Không trùng -> Tìm dòng trống từ dòng #2 trở đi (bảo vệ dòng #1 Booker)
+               const nextEmptyIdx = newMembers.findIndex((existing, idx) => idx > 0 && !existing.name && !existing.docId);
+               if (nextEmptyIdx !== -1) {
+                  newMembers[nextEmptyIdx] = { ...newMembers[nextEmptyIdx], ...m, id: newMembers[nextEmptyIdx].id };
+               } else {
+                  newMembers.push(m);
+               }
+            }
+         }
+         return newMembers;
+      });
+
+      setImportReport({ valid: validCount, errors });
+      toast?.success(`Import thành công ${validCount} hành khách!`);
+
+    } catch (err) {
+      console.error(err);
+      toast.error('Lỗi khi đọc file Excel: ' + err.message);
+    } finally {
+      setIsImportingExcel(false);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDraggingExcel(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDraggingExcel(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDraggingExcel(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+       handleImportExcel(e.dataTransfer.files[0]);
+    }
+  };
 
   const handleBulkScanPassport = async (file) => {
     if (!file) return;
@@ -109,11 +293,11 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
             return updated;
          });
       } else {
-         alert(scanResult?.error || "Không nhận diện được Hộ chiếu từ ảnh này!");
+         toast.error(scanResult?.error || "Không nhận diện được Hộ chiếu từ ảnh này!");
       }
     } catch (err) {
       console.error('OCR Bulk Scan error:', err);
-      alert('Lỗi khi quét ảnh OCR: ' + (err.message || 'Unknown error'));
+      toast.error('Lỗi khi quét ảnh OCR: ' + (err.message || 'Unknown error'));
     } finally {
       setScanningPassportId(null);
     }
@@ -176,11 +360,11 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
            return m;
          }));
       } else {
-         alert(scanResult?.error || "Không nhận diện được Hộ chiếu từ ảnh này!");
+         toast.error(scanResult?.error || "Không nhận diện được Hộ chiếu từ ảnh này!");
       }
     } catch (err) {
       console.error('OCR Scan error:', err);
-      alert('Lỗi khi quét ảnh OCR: ' + (err.message || 'Unknown error'));
+      toast.error('Lỗi khi quét ảnh OCR: ' + (err.message || 'Unknown error'));
     } finally {
       setScanningPassportId(null);
     }
@@ -204,7 +388,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       }
     } catch (err) {
       console.error("Upload error:", err);
-      alert("Lỗi tải lên ảnh Hộ chiếu! " + (err.response?.data?.message || err.message));
+      toast.error("Lỗi tải lên ảnh Hộ chiếu! " + (err.response?.data?.message || err.message));
     } finally {
       setUploadingPassportId(null);
     }
@@ -220,13 +404,13 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       setShowProfileSlider(true);
     } catch (err) {
       console.error('Error fetching customer profile:', err);
-      alert('Không thể tải thông tin hồ sơ hoặc khách hàng không tồn tại.');
+      toast.error('Không thể tải thông tin hồ sơ hoặc khách hàng không tồn tại.');
     }
   };
 
   const handleCreateQuickCustomer = async () => {
     if (!quickAddName.trim() || !quickAddPhone.trim()) {
-      alert("Vui lòng nhập Tên và SĐT khách hàng!");
+      toast.error("Vui lòng nhập Tên và SĐT khách hàng!");
       return;
     }
     try {
@@ -242,10 +426,10 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       setIsQuickAdd(false);
       setQuickAddName('');
       setQuickAddPhone('');
-      alert("Tạo Khách hàng mới thành công và đã tự động chọn!");
+      toast.success("Tạo Khách hàng mới thành công và đã tự động chọn!");
     } catch (err) {
       console.error(err);
-      alert("Lỗi khi tạo mới khách hàng.");
+      toast.error("Lỗi khi tạo mới khách hàng.");
     }
   };
 
@@ -379,6 +563,13 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
        } else {
            setSelectedSalesId(currentUser?.id || '');
        }
+
+       // Reset các state phụ khi modal mở
+       setIsQuickAdd(false);
+       setQuickAddName('');
+       setQuickAddPhone('');
+       setImportReport(null);
+       setIsDraggingExcel(false);
     }
   }, [isOpen, initialData, currentUser]);
 
@@ -395,7 +586,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                  newMembers.push({ id: Date.now() + i, docType: 'CMTND' });
               }
           } else if (newMembers.length > totalQty) {
-              newMembers.length = totalQty;
+              // NGĂN CHẶN TRUNCATE TỰ ĐỘNG
           }
           return newMembers;
       }
@@ -416,8 +607,8 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
           });
         }
       } else if (totalQty < newMembers.length) {
-        // Need to truncate
-        return newMembers.slice(0, totalQty);
+        // NGĂN CHẶN TRUNCATE TỰ ĐỘNG GÂY MẤT DỮ LIỆU IMPORT
+        return newMembers;
       }
       return newMembers;
     });
@@ -613,9 +804,9 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!bookingInfo.customerId) {
-        alert("⚠️ BẮT BUỘC: Vui lòng tìm kiếm Khách hàng từ thanh [Tìm kiếm khách hàng]. Nếu chưa có, hãy nhấn dấu [+] để Tạo mới!");
+        toast.error("Vui lòng tìm kiếm Khách hàng từ thanh [Tìm kiếm khách hàng]. Nếu chưa có, hãy nhấn [+ Thêm mới nhanh]!");
         return;
     }
     
@@ -626,7 +817,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
     if (members.length > 0) {
         const hasInvalidMembers = members.some(m => !m.name || m.name.trim() === '');
         if (hasInvalidMembers) {
-            const confirmFill = window.confirm(`⚠️ Bạn đang để trống TÊN của một số thành viên trong nhóm (${totalQty} người).\n\nHệ thống sẽ tạm điền là "Khách...". Bạn có thể bổ sung danh sách sau khi chốt xong.\n\nTiếp tục lưu Booking này?`);
+            const confirmFill = await swalConfirm(`⚠️ Bạn đang để trống TÊN của một số thành viên trong nhóm (${totalQty} người).\n\nHệ thống sẽ tạm điền là "Khách...". Bạn có thể bổ sung danh sách sau khi chốt xong.\n\nTiếp tục lưu Booking này?`);
             if (!confirmFill) return; // Dừng lại nếu Sale muốn nhập ngay
             
             // Auto-fill các tên trống
@@ -700,27 +891,83 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
           {/* Form row 1 */}
           <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 1fr) minmax(200px, 1fr) 100px 150px', gap: '15px', alignItems: 'flex-end', marginBottom: '30px' }}>
              <div style={{ position: 'relative', zIndex: 10 }}>
-                <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px' }}>Tìm kiếm khách hàng*: <span style={{color:'red'}}>(*)</span></label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                   <label style={{ fontSize: '12px' }}>Tìm kiếm khách hàng*: <span style={{color:'red'}}>(*)</span></label>
+                   <button 
+                      onClick={() => setIsQuickAdd(!isQuickAdd)}
+                      style={{ fontSize: '11px', color: '#2563eb', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontWeight: 'bold' }}
+                   >
+                      {isQuickAdd ? 'Quay lại tìm kiếm' : '+ Thêm mới nhanh'}
+                   </button>
+                </div>
                 
-                <AsyncSelect
-                   cacheOptions
-                   loadOptions={loadCustomerOptions}
-                   defaultOptions={false}
-                   placeholder="Tìm khách hàng (Tên hoặc SĐT)..."
-                   value={bookingInfo.customerId ? { value: bookingInfo.customerId, label: bookingInfo.name + (bookingInfo.phone ? ` - ${bookingInfo.phone}` : '') } : null}
-                   onChange={(selectedOption) => {
-                      if (selectedOption) selectCustomer(selectedOption.customer);
-                   }}
-                   styles={{
-                      control: (base) => ({
-                         ...base,
-                         minHeight: '38px',
-                         border: '1px solid #cbd5e1',
-                         boxShadow: 'none',
-                         '&:hover': { border: '1px solid #94a3b8' }
-                      })
-                   }}
-                />
+                {isQuickAdd ? (
+                   <div style={{ display: 'flex', gap: '5px' }}>
+                      <input 
+                         type="text" 
+                         placeholder="Tên khách..." 
+                         value={quickAddName} 
+                         onChange={e => setQuickAddName(e.target.value)} 
+                         style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', minWidth: 0 }}
+                      />
+                      <input 
+                         type="text" 
+                         placeholder="SĐT..." 
+                         value={quickAddPhone} 
+                         onChange={e => setQuickAddPhone(e.target.value)} 
+                         style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', minWidth: 0 }}
+                      />
+                      <button 
+                         onClick={handleCreateQuickCustomer}
+                         style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: '4px', padding: '0 10px', cursor: 'pointer', fontWeight: 'bold', whiteSpace: 'nowrap' }}
+                      >
+                         Lưu
+                      </button>
+                   </div>
+                ) : (
+                   <AsyncSelect
+                      cacheOptions
+                      loadOptions={loadCustomerOptions}
+                      defaultOptions={false}
+                      placeholder="Tìm khách hàng (Tên hoặc SĐT)..."
+                      value={bookingInfo.customerId ? { value: bookingInfo.customerId, label: bookingInfo.name + (bookingInfo.phone ? ` - ${bookingInfo.phone}` : '') } : null}
+                      onChange={(selectedOption) => {
+                         if (selectedOption) selectCustomer(selectedOption.customer);
+                      }}
+                      noOptionsMessage={({ inputValue }) => {
+                         if (!inputValue) return "Gõ để tìm kiếm...";
+                         return (
+                            <div style={{ padding: '8px' }}>
+                               Không tìm thấy: <strong>{inputValue}</strong><br/>
+                               <button 
+                                  onMouseDown={(e) => {
+                                     e.preventDefault(); // Prevents select from blurring
+                                     setIsQuickAdd(true);
+                                     // Phân tích thử nếu inputValue có vẻ là số thì gán vào Phone
+                                     if (/^\d+$/.test(inputValue.replace(/\s/g, ''))) {
+                                        setQuickAddPhone(inputValue);
+                                     } else {
+                                        setQuickAddName(inputValue);
+                                     }
+                                  }} 
+                                  style={{ marginTop: '8px', background: '#3b82f6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                               >
+                                  + Thêm mới khách này
+                               </button>
+                            </div>
+                         );
+                      }}
+                      styles={{
+                         control: (base) => ({
+                            ...base,
+                            minHeight: '38px',
+                            border: '1px solid #cbd5e1',
+                            boxShadow: 'none',
+                            '&:hover': { border: '1px solid #94a3b8' }
+                         })
+                      }}
+                   />
+                )}
              </div>
              <div>
                 <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px' }}>Tên Booker*: <span style={{color:'red'}}>(*)</span></label>
@@ -928,7 +1175,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
 
           {/* DANH SÁCH THÀNH VIÊN */}
           <div style={{ marginTop: '30px', borderTop: '2px solid #e2e8f0', paddingTop: '20px' }}>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' }}>
                 <h4 style={{ margin: 0, color: '#1e293b', fontSize: '16px' }}>#3 Danh sách thành viên (Tuỳ chọn)</h4>
                 
                 <label style={{ 
@@ -939,15 +1186,108 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                    {scanningPassportId === 'global' ? (
                       <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.5)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
                    ) : '🔍'}
-                   Quét hộ chiếu điền thông tin nhanh
+                   Quét hộ chiếu
                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { handleBulkScanPassport(e.target.files[0]); e.target.value = ''; }} />
                 </label>
+
+                {/* NÚT IMPORT EXCEL VÀ DRAG & DROP ZONE */}
+                <label 
+                   onDragOver={handleDragOver}
+                   onDragLeave={handleDragLeave}
+                   onDrop={handleDrop}
+                   style={{ 
+                   background: isDraggingExcel ? '#e0f2fe' : '#3b82f6', 
+                   color: isDraggingExcel ? '#1e3a8a' : 'white', 
+                   border: isDraggingExcel ? '2px dashed #3b82f6' : '1px solid #2563eb', 
+                   padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', 
+                   display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s',
+                   fontWeight: 'bold', boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                }}>
+                   {isImportingExcel ? (
+                      <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.5)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                   ) : '📥'}
+                   {isDraggingExcel ? 'Thả file Excel vào đây...' : 'Nhập từ Excel (Kéo thả)'}
+                   <input type="file" accept=".xlsx, .xls" style={{ display: 'none' }} onChange={(e) => { handleImportExcel(e.target.files[0]); e.target.value = ''; }} />
+                </label>
              </div>
+
+             {/* BÁO CÁO SAU IMPORT */}
+             {isImportingExcel && (
+                <div style={{ marginBottom: '15px', background: '#eff6ff', padding: '10px', borderRadius: '8px', border: '1px solid #bfdbfe', fontSize: '13px', color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                   <div style={{ width: '16px', height: '16px', border: '3px solid rgba(30,58,138,0.2)', borderTopColor: '#1e3a8a', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                   Đang đọc và phân tích dữ liệu Excel...
+                </div>
+             )}
              
+             {importReport && (
+                <div style={{ marginBottom: '15px', background: importReport.errors.length > 0 ? '#fffbeb' : '#f0fdf4', padding: '12px 16px', borderRadius: '8px', border: `1px solid ${importReport.errors.length > 0 ? '#fde68a' : '#bbf7d0'}` }}>
+                   <div style={{ fontWeight: 'bold', fontSize: '13px', color: importReport.errors.length > 0 ? '#b45309' : '#16a34a', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: importReport.errors.length > 0 ? '8px' : '0' }}>
+                      {importReport.errors.length > 0 ? '⚠️' : '✅'} Phân tích Excel hoàn tất:
+                      <span style={{ color: '#15803d' }}>✔ {importReport.valid} hợp lệ</span>
+                      {importReport.errors.length > 0 && <span style={{ color: '#dc2626' }}>| ⚠ {importReport.errors.length} lỗi</span>}
+                   </div>
+                   {importReport.errors.length > 0 && (
+                      <ul style={{ margin: '0 0 0 20px', padding: 0, fontSize: '12px', color: '#b91c1c' }}>
+                         {importReport.errors.map((err, i) => <li key={i}>{err}</li>)}
+                      </ul>
+                   )}
+                </div>
+             )}
+             
+             {/* CẢNH BÁO LỆCH SỐ LƯỢNG & NÚT ĐỒNG BỘ */}
+             {(() => {
+                const totalMembers = members.filter(m => m.name || m.docId).length;
+                const totalPricingQty = pricingRows.reduce((sum, r) => sum + Number(r.qty || 0), 0);
+                if (totalMembers > 0 && totalMembers !== totalPricingQty) {
+                   return (
+                      <div style={{ marginBottom: '15px', background: '#fffbeb', padding: '10px 15px', borderRadius: '8px', border: '1px solid #fde68a', fontSize: '13px', color: '#92400e', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                         <div>
+                            ⚠️ <strong>Cảnh báo lệch số lượng:</strong> Bạn có {totalMembers} hành khách (có dữ liệu) nhưng trên Báo Giá đang tính tiền cho {totalPricingQty} khách.
+                         </div>
+                         <button 
+                            type="button"
+                            onClick={() => {
+                               const counts = { 'Người lớn': 0, 'Trẻ em': 0, 'Trẻ em (2-10)': 0, 'Em bé (<2)': 0 };
+                               
+                               members.forEach(m => {
+                                  if (m.name || m.docId) {
+                                     const type = m.ageType || 'Người lớn';
+                                     if (counts[type] !== undefined) counts[type]++;
+                                     else counts['Người lớn']++;
+                                  }
+                               });
+
+                               setPricingRows(prev => prev.map(row => {
+                                  const newQty = counts[row.ageType] || 0;
+                                  const svcTotal = (row.extraServices || []).reduce((sum, s) => sum + (s.total || 0), 0);
+                                  return {
+                                     ...row,
+                                     qty: newQty,
+                                     comCTV: newQty * Number(row.comPerPax || 0),
+                                     total: (Number(row.price || 0) * newQty) + Number(row.surcharge || 0) - Number(row.discount || 0) + svcTotal
+                                  };
+                               }));
+                               
+                               toast.success("Đã đồng bộ số lượng hành khách lên bảng Báo Giá!");
+                            }}
+                            style={{ background: '#f59e0b', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 1px 2px rgba(0,0,0,0.1)', flexShrink: 0 }}
+                         >
+                            🔄 Đồng bộ lên Báo Giá ngay
+                         </button>
+                      </div>
+                   );
+                }
+                return null;
+             })()}
+
              {members.map((m, idx) => (
                <div key={m.id} style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginBottom: '15px', overflowX: 'auto', paddingBottom: '5px' }}>
                   <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#ef4444', paddingBottom: '8px', paddingRight: '5px' }}>#{idx + 1}</div>
-                  <button style={{ background: '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', width: '30px', height: '30px', cursor: 'pointer', flexShrink: 0 }}>+</button>
+                  {idx > 0 ? (
+                     <button type="button" onClick={() => { setMembers(prev => prev.filter(p => p.id !== m.id)) }} style={{ background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', width: '30px', height: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', flexShrink: 0 }} title="Xóa hành khách này"><X size={16} /></button>
+                  ) : (
+                     <button type="button" onClick={() => { setMembers([...members, { id: Date.now(), phone: '', name: '', email: '', ageType: 'Người lớn', gender: 'Chọn', dob: '', docType: 'CMTND', docId: '', issueDate: '', expiryDate: '', passportUrl: '', flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '', note: '', roomType: '-Chọn-', hotel: '', roomCode: '', customerSegment: '', tripCount: 0, crmNote: '' }]) }} style={{ background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', width: '30px', height: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', flexShrink: 0 }} title="Thêm hành khách trống mới"><Plus size={16} /></button>
+                  )}
 
                   <div style={{ flexShrink: 0, paddingBottom: '2px' }}>
                      <label style={{ 

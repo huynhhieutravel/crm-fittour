@@ -31,7 +31,8 @@ const SalesDashboard = ({
   departures = [],
   tourTemplates = [],
   users = [],
-  checkPerm
+  checkPerm,
+  setShowLeaveModal
 }) => {
   const [activeInternalTab, setActiveInternalTab] = useState('radar');
 
@@ -117,9 +118,11 @@ const SalesDashboard = ({
           </h2>
           <p style={{ color: '#64748b' }}>Hôm nay bạn có {myNewLeads.length} Lead mới và {totalDebtBookings} Booking đang chờ thu tiền.</p>
         </div>
-        <button className="btn-pro-save" onClick={() => setShowAddLeadModal(true)}>
-          <Zap size={18} /> THÊM LEAD NHANH
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+            <button className="btn-pro-save" onClick={() => setShowLeaveModal(true)} style={{ background: '#8b5cf6' }}>
+                <CalendarHeart size={18} /> XIN NGHỈ PHÉP
+            </button>
+        </div>
       </div>
 
       {/* --- RED ALERT ZONE (V4) --- */}

@@ -1,3 +1,4 @@
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ExternalLink, Plus, Edit2, Trash2, FileText, Search, X, Save } from 'lucide-react';
@@ -50,7 +51,7 @@ export default function LicensesTab({ currentUser, addToast }) {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Bạn có chắc muốn xóa giấy phép này?')) return;
+        if (!await swalConfirm('Bạn có chắc muốn xóa giấy phép này?')) return;
         try {
             const token = localStorage.getItem('token');
             await axios.delete(`/api/licenses/${id}`, { headers: { Authorization: `Bearer ${token}` } });

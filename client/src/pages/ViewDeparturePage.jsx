@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ChevronLeft, Edit2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { swalConfirm } from '../utils/swalHelpers';
 
 const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEditDeparture }) => {
   const navigate = useNavigate();
@@ -116,7 +117,7 @@ const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEdit
   };
 
   const handleDeleteReminder = async (id) => {
-    if (!window.confirm('Bạn có chắc muốn xóa nhắc nhở này?')) return;
+    if (!await swalConfirm('Bạn có chắc muốn xóa nhắc nhở này?')) return;
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`/api/reminders/${id}`, {

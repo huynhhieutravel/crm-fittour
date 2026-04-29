@@ -36,4 +36,9 @@ router.delete('/rates/:rate_id', authenticateToken, permCheck('restaurants', 'ed
 router.get('/:restaurant_id/notes', authenticateToken, permCheck('restaurants', 'view'), restaurantController.getRestaurantNotes);
 router.post('/:restaurant_id/notes', authenticateToken, permCheck('restaurants', 'edit'), restaurantController.addRestaurantNote);
 
+// Media Gallery (Images & PDF Menus)
+router.get('/:restaurant_id/media', authenticateToken, permCheck('restaurants', 'view'), restaurantController.getRestaurantMedia);
+router.post('/:restaurant_id/media', authenticateToken, permCheck('restaurants', 'edit'), restaurantController.uploadRestaurantMedia);
+router.delete('/media/:media_id', authenticateToken, permCheck('restaurants', 'edit'), restaurantController.deleteRestaurantMedia);
+
 module.exports = router;

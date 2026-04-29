@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Plus, Star, Trash2, UserPlus, UserMinus, Crown, ChevronDown, ChevronUp, Edit3, X, Shield } from 'lucide-react';
 import { formatRoleDisplayName } from '../utils/roleUtils';
+import { swalConfirmDelete } from '../utils/swalHelpers';
 
 const API = import.meta.env.VITE_API_URL || '';
 
@@ -76,7 +77,8 @@ const TeamsTab = ({ addToast, users = [] }) => {
   };
 
   const handleDeleteTeam = async (team) => {
-    if (!confirm(`Xóa team "${team.name}"?`)) return;
+    const isConfirmed = await swalConfirmDelete(`Xóa team "${team.name}"?`, 'Không thể hoàn tác');
+    if (!isConfirmed) return;
     try {
       const res = await fetch(`${API}/api/users/teams/${team.id}`, { method: 'DELETE', headers });
       const data = await res.json();
@@ -104,7 +106,8 @@ const TeamsTab = ({ addToast, users = [] }) => {
   };
 
   const handleRemoveMember = async (teamId, userId, name) => {
-    if (!confirm(`Xóa "${name}" khỏi team?`)) return;
+    const isConfirmed = await swalConfirmDelete(`Xóa "${name}" khỏi team?`, 'Thao tác này không thể hoàn tác');
+    if (!isConfirmed) return;
     try {
       const res = await fetch(`${API}/api/users/teams/${teamId}/members/${userId}`, { method: 'DELETE', headers });
       if (res.ok) {

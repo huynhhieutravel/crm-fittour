@@ -110,7 +110,7 @@ exports.getMyBalance = async (req, res) => {
 // Tạo đơn xin nghỉ
 exports.createLeave = async (req, res) => {
     try {
-        const { target_user_id, leave_type, start_date, end_date, total_days, reason, contact_phone, handover_user_id, handover_note } = req.body;
+        const { target_user_id, leave_type, start_date, end_date, total_days, reason, contact_phone, handover_user_id, handover_note, approved_by } = req.body;
         
         if (!leave_type || !start_date || !end_date || !total_days) {
             return res.status(400).json({ error: 'Vui lòng điền đủ thông tin ngày và loại nghỉ' });
@@ -121,15 +121,32 @@ exports.createLeave = async (req, res) => {
         const q = `
             INSERT INTO leave_requests (
                 user_id, leave_type, start_date, end_date, total_days, reason, 
-                contact_phone, handover_user_id, handover_note
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
+                contact_phone, handover_user_id, handover_note, status, approved_by, approved_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'approved', $10, NOW()) RETURNING *;
         `;
         const params = [
             applyForId, leave_type, start_date, end_date, total_days, reason, 
-            contact_phone, handover_user_id || null, handover_note
+            contact_phone, handover_user_id || null, handover_note, approved_by || null
         ];
         
         const result = await db.query(q, params);
+
+        try {
+            if (req.user.id !== parseInt(applyForId)) {
+                await db.query(`
+                    INSERT INTO activity_logs (user_id, action_type, entity_type, entity_id, details)
+                    VALUES ($1, 'CREATE', 'LEAVE_REQUEST', $2, $3)
+                `, [req.user.id, result.rows[0].id, `Tạo dùm đơn xin nghỉ cho nhân viên (ID: ${applyForId})`]);
+            } else {
+                 await db.query(`
+                    INSERT INTO activity_logs (user_id, action_type, entity_type, entity_id, details)
+                    VALUES ($1, 'CREATE', 'LEAVE_REQUEST', $2, $3)
+                `, [req.user.id, result.rows[0].id, `Tự tạo đơn xin nghỉ`]);
+            }
+        } catch (logErr) {
+            console.error("Failed to log activity", logErr);
+        }
+
         res.status(201).json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -193,11 +210,25 @@ exports.deleteLeave = async (req, res) => {
             return res.status(403).json({ error: 'Không có quyền xóa đơn này' });
         }
         
-        if (leave.status !== 'pending' && req.user.role !== 'admin') {
-            return res.status(400).json({ error: 'Không thể xóa đơn đã được xử lý' });
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const startDate = new Date(leave.start_date);
+        
+        if (leave.status !== 'pending' && startDate < today && req.user.role !== 'admin') {
+            return res.status(400).json({ error: 'Không thể xóa đơn đã qua hạn hoặc đã bắt đầu nghỉ' });
         }
         
         await db.query(`DELETE FROM leave_requests WHERE id = $1`, [id]);
+        
+        try {
+            await db.query(`
+                INSERT INTO activity_logs (user_id, action_type, entity_type, entity_id, details)
+                VALUES ($1, 'DELETE', 'LEAVE_REQUEST', $2, $3)
+            `, [req.user.id, id, `Đã xóa đơn xin nghỉ phép từ ngày ${new Date(leave.start_date).toLocaleDateString('vi-VN')} của ID: ${leave.user_id}`]);
+        } catch (logErr) {
+            console.error("Failed to log activity", logErr);
+        }
+
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });

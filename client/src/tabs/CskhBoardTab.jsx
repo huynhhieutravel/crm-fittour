@@ -1,3 +1,4 @@
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Phone, PhoneOff, PhoneMissed, X, Clock, Search, RefreshCw, CheckCircle, AlertTriangle, User, MapPin, Calendar, Tag, ChevronDown } from 'lucide-react';
@@ -92,7 +93,7 @@ const CskhBoardTab = ({ users = [] }) => {
   };
 
   const handleSkip = async (taskId) => {
-    if (!window.confirm('Bỏ qua task này?')) return;
+    if (!await swalConfirm('Bỏ qua task này?')) return;
     try {
       await axios.post(`/api/cskh/tasks/${taskId}/skip`, {}, { headers });
       fetchTasks();

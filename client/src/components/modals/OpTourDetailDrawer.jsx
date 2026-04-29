@@ -55,14 +55,25 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
                 setOperatorsList(usersRes.data
                   .filter(u => {
                       if (u.is_active === false || u.role_name === 'admin') return false;
-                      const hasOpRole = ['operations', 'manager'].includes(u.role_name);
+                      const hasOpRole = ['operations', 'manager', 'operations_lead', 'operator', 'operator_manager', 'group_operations', 'group_operations_lead'].includes(u.role_name);
                       const inOpTeam = u.teams && u.teams.some(t => 
                           (t.name && t.name.toLowerCase().includes('điều hành')) || 
-                          (t.code && t.code.toLowerCase() === 'operations')
+                          (t.code && t.code.toLowerCase() === 'operations') ||
+                          (t.code && t.code.toLowerCase().includes('op'))
                       );
                       return hasOpRole || inOpTeam;
                   })
-                  .map(u => ({ label: u.full_name, value: u.full_name }))
+                  .map(u => {
+                      let roleLabel = 'Khác';
+                      const r = u.role_name || '';
+                      if (r === 'operator_manager') roleLabel = 'Trưởng ĐH';
+                      else if (r.includes('operat')) roleLabel = 'Điều hành';
+                      else if (r.includes('sale_lead') || r.includes('sales_lead')) roleLabel = 'Trưởng Sale';
+                      else if (r.includes('sale')) roleLabel = 'Sale';
+                      else if (r.includes('manager')) roleLabel = 'Quản lý';
+                      else if (r.includes('account')) roleLabel = 'Kế toán';
+                      return { label: `${u.full_name} - ${roleLabel}`, value: u.full_name };
+                  })
                 );
             }
         } catch (e) {

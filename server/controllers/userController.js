@@ -8,6 +8,7 @@ exports.getAllUsers = async (req, res) => {
         const usersRes = await db.query(`
             SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active, u.created_at,
                    u.birth_date, u.gender, u.id_card, u.passport_url, u.id_expiry, u.address, u.facebook_url,
+                   u.position, u.avatar_url,
                    r.name as role_name, r.id as role_id,
                    COALESCE(
                        (SELECT json_agg(json_build_object('id', t.id, 'name', t.name, 'code', t.code) ORDER BY t.name)
@@ -487,6 +488,7 @@ exports.getMyProfile = async (req, res) => {
         const result = await db.query(`
             SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active, u.created_at,
                    u.birth_date, u.gender, u.id_card, u.passport_url, u.id_expiry, u.address, u.facebook_url,
+                   u.position, u.avatar_url,
                    r.name as role_name, r.id as role_id,
                    COALESCE(
                        (SELECT json_agg(json_build_object('id', t.id, 'name', t.name, 'code', t.code) ORDER BY t.name)

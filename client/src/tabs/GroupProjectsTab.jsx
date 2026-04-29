@@ -1,7 +1,7 @@
 import { canCreate, canDelete, canEdit } from '../utils/permissions';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Plus, MapPin, Edit2, Trash2, Calendar, Users, Briefcase, Eye, UserCheck } from 'lucide-react';
+import { Search, Plus, MapPin, Edit2, Trash2, Calendar, Users, Briefcase, Eye, UserCheck, Rocket } from 'lucide-react';
 import Select from 'react-select';
 import GroupProjectDetailDrawer from '../components/modals/GroupProjectDetailDrawer';
 
@@ -16,11 +16,59 @@ const STATUS_OPTIONS = [
 
 
 const reactSelectStyles = {
-    control: (base) => ({
-        ...base, height: '44px', minHeight: '44px', borderRadius: '8px', 
-        borderColor: '#cbd5e1', boxShadow: 'none', '&:hover': { borderColor: '#94a3b8' }
+    control: (base, state) => ({
+        ...base,
+        height: '44px',
+        minHeight: '44px',
+        borderRadius: '10px',
+        borderColor: state.isFocused ? '#2563eb' : '#e2e8f0',
+        boxShadow: 'none',
+        fontSize: '0.9rem',
+        fontWeight: 500,
+        color: '#1e293b',
+        backgroundColor: 'white',
+        transition: 'all 0.2s',
+        '&:hover': { borderColor: state.isFocused ? '#2563eb' : '#cbd5e1' }
     }),
-    valueContainer: (base) => ({ ...base, padding: '0 12px', height: '42px', display: 'flex', alignItems: 'center' })
+    valueContainer: (base) => ({
+        ...base,
+        padding: '0 14px',
+        height: '42px',
+        display: 'flex',
+        alignItems: 'center'
+    }),
+    placeholder: (base) => ({
+        ...base,
+        color: '#94a3b8'
+    }),
+    singleValue: (base) => ({
+        ...base,
+        color: '#1e293b'
+    }),
+    menu: (base) => ({
+        ...base,
+        borderRadius: '12px',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+        border: '1px solid #f1f5f9',
+        overflow: 'hidden',
+        padding: '4px'
+    }),
+    option: (base, state) => ({
+        ...base,
+        borderRadius: '8px',
+        margin: '2px 0',
+        padding: '10px 12px',
+        fontSize: '0.85rem',
+        fontWeight: 500,
+        cursor: 'pointer',
+        backgroundColor: state.isSelected 
+            ? '#2563eb' 
+            : state.isFocused 
+                ? '#f1f5f9' 
+                : 'transparent',
+        color: state.isSelected ? 'white' : '#475569',
+        '&:active': { backgroundColor: '#e2e8f0' }
+    })
 };
 
 export default function GroupProjectsTab({ currentUser, addToast, users, handleDeleteProject, canViewProfit = true }) {
@@ -41,6 +89,8 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
     // Modal state
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState(null);
+    const [openExecutionInitially, setOpenExecutionInitially] = useState(false);
+    const [openApprovalInitially, setOpenApprovalInitially] = useState(false);
 
     useEffect(() => {
         fetchProjects();
@@ -83,13 +133,16 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
         if (handleDeleteProject) handleDeleteProject(id);
     };
 
-    const handleOpenProject = (project) => {
+    const handleOpenProject = (project, openExecution = false, openApproval = false) => {
         setSelectedProject(project);
+        setOpenExecutionInitially(openExecution);
+        setOpenApprovalInitially(openApproval);
         setIsDrawerOpen(true);
     };
 
     const handleAddProject = () => {
         setSelectedProject(null);
+        setOpenExecutionInitially(false);
         setIsDrawerOpen(true);
     };
 
@@ -176,113 +229,163 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
 
     return (
         <div style={{ padding: '0 2rem' }}>
+            <style>
+                {`
+                .filter-preset-group {
+                    display: flex;
+                    gap: 8px;
+                    padding: 4px;
+                    background: #f1f5f9;
+                    border-radius: 10px;
+                }
+                .preset-btn {
+                    padding: 6px 16px;
+                    border-radius: 8px;
+                    border: none;
+                    background: transparent;
+                    color: #64748b;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                .preset-btn:hover {
+                    color: #1e293b;
+                    background: rgba(255,255,255,0.5);
+                }
+                .preset-btn.active {
+                    background: white;
+                    color: #2563eb;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                }
+                .filter-label {
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    color: #94a3b8;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
+                    margin-bottom: 8px;
+                    display: block;
+                }
+                `}
+            </style>
+
             <div className="filter-bar" style={{ 
-                display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', 
-                backgroundColor: 'white', padding: '1.25rem', borderRadius: '1rem', 
-                boxShadow: 'var(--shadow)', marginBottom: '2rem'
+                display: 'flex', flexDirection: 'column', gap: '1.25rem', 
+                backgroundColor: 'white', padding: '1.5rem', borderRadius: '1.25rem', 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.04)', marginBottom: '2rem',
+                border: '1px solid #f1f5f9'
             }}>
-                <div className="filter-group" style={{ flex: '2 1 300px', margin: 0 }}>
-                    <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>TÌM KIẾM ĐOÀN / ĐẠI DIỆN</label>
-                    <div style={{ position: 'relative' }}>
-                        <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
-                        <input
-                            type="text"
-                            placeholder="Nhập tên đoàn..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            style={{ width: '100%', paddingLeft: '40px', height: '44px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', fontSize: '0.85rem' }}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-start' }}>
+                    <div className="filter-group" style={{ flex: '2 1 300px' }}>
+                        <label className="filter-label">Tìm kiếm đoàn / Đại diện</label>
+                        <div style={{ position: 'relative' }}>
+                            <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                            <input
+                                type="text"
+                                placeholder="Tên đoàn, công ty, người đại diện..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                style={{ width: '100%', paddingLeft: '44px', height: '44px', borderRadius: '10px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '0.9rem', transition: 'all 0.2s' }}
+                                onFocus={(e) => e.target.style.borderColor = '#2563eb'}
+                                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="filter-group" style={{ flex: '1 1 200px' }}>
+                        <label className="filter-label">Tình trạng</label>
+                        <Select
+                            options={STATUS_OPTIONS}
+                            value={statusFilter === '' ? { value: '', label: '🚫 Trừ thất bại' } : STATUS_OPTIONS.find(o => o.value === statusFilter) || null}
+                            onChange={option => setStatusFilter(option ? option.value : '')}
+                            styles={reactSelectStyles}
+                            isClearable
+                            placeholder="Trừ thất bại"
+                        />
+                    </div>
+
+                    <div className="filter-group" style={{ flex: '1 1 200px' }}>
+                        <label className="filter-label">Nhân viên phụ trách</label>
+                        <Select
+                            options={userOptions}
+                            value={userOptions.find(o => o.value === userFilter) || null}
+                            onChange={option => setUserFilter(option ? option.value : '')}
+                            styles={reactSelectStyles}
+                            isClearable
+                            placeholder="Chọn Sales"
                         />
                     </div>
                 </div>
-
-                <div className="filter-group" style={{ flex: '1 1 200px', margin: 0 }}>
-                    <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>TÌNH TRẠNG</label>
-                    <Select
-                        options={STATUS_OPTIONS}
-                        value={statusFilter === '' ? { value: '', label: '🚫 Trừ thất bại' } : STATUS_OPTIONS.find(o => o.value === statusFilter) || null}
-                        onChange={option => setStatusFilter(option ? option.value : '')}
-                        styles={reactSelectStyles}
-                        isClearable
-                        placeholder="Trừ thất bại"
-                    />
-                </div>
-
-                <div className="filter-group" style={{ flex: '1 1 200px', margin: 0 }}>
-                    <label style={{ marginBottom: '8px', display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>NHÂN VIÊN</label>
-                    <Select
-                        options={userOptions}
-                        value={userOptions.find(o => o.value === userFilter) || null}
-                        onChange={option => setUserFilter(option ? option.value : '')}
-                        styles={reactSelectStyles}
-                        isClearable
-                        placeholder="Chọn Sales"
-                    />
-                </div>
-
-                <div style={{ flexBasis: '100%', height: 0 }}></div>
                 
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.85rem', flexWrap: 'wrap', width: '100%' }}>
-                  <span style={{ fontWeight: 600, color: '#64748b', marginRight: '0.5rem' }}>THỜI GIAN:</span>
-                  {[
-                    { id: 'all', label: 'Tất cả' },
-                    { id: 'month', label: 'Tháng' },
-                    { id: 'quarter', label: 'Quý' },
-                    { id: 'year', label: 'Năm' },
-                    { id: 'custom', label: 'Tùy chọn' }
-                  ].map(p => (
-                    <button key={p.id} className={`preset-btn ${timeFilterMode === p.id ? 'active' : ''}`} onClick={() => setTimeFilterMode(p.id)}>
-                      {p.label}
-                    </button>
-                  ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        <span className="filter-label" style={{ margin: 0 }}>Thời gian:</span>
+                        <div className="filter-preset-group">
+                            {[
+                                { id: 'all', label: 'Tất cả' },
+                                { id: 'month', label: 'Tháng' },
+                                { id: 'quarter', label: 'Quý' },
+                                { id: 'year', label: 'Năm' },
+                                { id: 'custom', label: 'Tùy chọn' }
+                            ].map(p => (
+                                <button key={p.id} className={`preset-btn ${timeFilterMode === p.id ? 'active' : ''}`} onClick={() => setTimeFilterMode(p.id)}>
+                                    {p.label}
+                                </button>
+                            ))}
+                        </div>
 
-                  {timeFilterMode === 'month' && (
-                      <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem', alignItems: 'center', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
-                          <select className="filter-select" style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }} value={selectedMonth} onChange={e => setSelectedMonth(parseInt(e.target.value))}>
-                              {Array.from({ length: 12 }, (_, i) => <option key={i+1} value={i+1}>Tháng {i+1}</option>)}
-                          </select>
-                          <select className="filter-select" style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }} value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
-                              {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>Năm {y}</option>)}
-                          </select>
-                      </div>
-                  )}
+                        {timeFilterMode === 'month' && (
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: '#f8fafc', padding: '4px 8px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                <select style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', fontWeight: 600, color: '#475569' }} value={selectedMonth} onChange={e => setSelectedMonth(parseInt(e.target.value))}>
+                                    {Array.from({ length: 12 }, (_, i) => <option key={i+1} value={i+1}>Tháng {i+1}</option>)}
+                                </select>
+                                <span style={{ color: '#cbd5e1' }}>|</span>
+                                <select style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', fontWeight: 600, color: '#475569' }} value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
+                                    {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>Năm {y}</option>)}
+                                </select>
+                            </div>
+                        )}
 
-                  {timeFilterMode === 'quarter' && (
-                      <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem', alignItems: 'center', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
-                          <select className="filter-select" style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }} value={selectedQuarter} onChange={e => setSelectedQuarter(parseInt(e.target.value))}>
-                              {[1, 2, 3, 4].map(q => <option key={q} value={q}>Quý {q}</option>)}
-                          </select>
-                          <select className="filter-select" style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }} value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
-                              {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>Năm {y}</option>)}
-                          </select>
-                      </div>
-                  )}
+                        {timeFilterMode === 'quarter' && (
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: '#f8fafc', padding: '4px 8px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                <select style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', fontWeight: 600, color: '#475569' }} value={selectedQuarter} onChange={e => setSelectedQuarter(parseInt(e.target.value))}>
+                                    {[1, 2, 3, 4].map(q => <option key={q} value={q}>Quý {q}</option>)}
+                                </select>
+                                <span style={{ color: '#cbd5e1' }}>|</span>
+                                <select style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', fontWeight: 600, color: '#475569' }} value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
+                                    {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>Năm {y}</option>)}
+                                </select>
+                            </div>
+                        )}
 
-                  {timeFilterMode === 'year' && (
-                      <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem', alignItems: 'center', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
-                          <select className="filter-select" style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }} value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
-                              {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>Năm {y}</option>)}
-                          </select>
-                      </div>
-                  )}
+                        {timeFilterMode === 'year' && (
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: '#f8fafc', padding: '4px 8px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                <select style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', fontWeight: 600, color: '#475569' }} value={selectedYear} onChange={e => setSelectedYear(parseInt(e.target.value))}>
+                                    {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>Năm {y}</option>)}
+                                </select>
+                            </div>
+                        )}
 
-                  {timeFilterMode === 'custom' && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem', borderLeft: '1px solid #e2e8f0', paddingLeft: '1rem' }}>
-                        <input type="date" className="filter-input" style={{ padding: '4px 8px', height: '32px', border: '1px solid #cbd5e1', borderRadius: '6px', outline: 'none' }} value={customStartDate} onChange={e => setCustomStartDate(e.target.value)} />
-                        <span style={{ color: '#94a3b8' }}>-</span>
-                        <input type="date" className="filter-input" style={{ padding: '4px 8px', height: '32px', border: '1px solid #cbd5e1', borderRadius: '6px', outline: 'none' }} value={customEndDate} onChange={e => setCustomEndDate(e.target.value)} />
-                      </div>
-                  )}
-                  
-                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ color: '#94a3b8', fontWeight: 600, background: '#f1f5f9', padding: '6px 12px', borderRadius: '6px' }}>
-                      {filtered.length} Dự án
+                        {timeFilterMode === 'custom' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#f8fafc', padding: '4px 8px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                <input type="date" style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', color: '#475569' }} value={customStartDate} onChange={e => setCustomStartDate(e.target.value)} />
+                                <span style={{ color: '#cbd5e1' }}>-</span>
+                                <input type="date" style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', color: '#475569' }} value={customEndDate} onChange={e => setCustomEndDate(e.target.value)} />
+                            </div>
+                        )}
                     </div>
-                    {canCreate(currentUser?.role, 'group') && (
-                        <button className="btn btn-primary" onClick={handleAddProject} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '36px', padding: '0 1rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, background: '#2563eb', color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)', cursor: 'pointer' }}>
-                            <Plus size={16} /> Thêm Dự Án
-                        </button>
-                    )}
-                  </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ fontSize: '0.85rem', color: '#64748b', background: '#f8fafc', padding: '8px 16px', borderRadius: '20px', border: '1px solid #e2e8f0', fontWeight: 600 }}>
+                            <span style={{ color: '#2563eb' }}>{filtered.length}</span> Dự án
+                        </div>
+                        {canCreate(currentUser?.role, 'group') && (
+                            <button className="btn btn-primary" onClick={handleAddProject} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', height: '40px', padding: '0 1.25rem', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 700, background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', color: 'white', border: 'none', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e => e.currentTarget.style.transform = 'translateY(-1px)'} onMouseOut={e => e.currentTarget.style.transform = 'none'}>
+                                <Plus size={18} strokeWidth={3} /> Thêm Dự Án
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -324,9 +427,34 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                         )}
                                     </td>
                                     <td style={{ padding: '10px 16px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a', fontWeight: 600 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a', fontWeight: 600, fontSize: '0.85rem' }}>
                                             <Briefcase size={16} color="#3b82f6" />
                                             {p.name}
+                                        </div>
+                                        <div style={{ marginTop: '6px' }}>
+                                            <button 
+                                                onClick={() => handleOpenProject(p, true)}
+                                                style={{
+                                                    background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd',
+                                                    padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600,
+                                                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px'
+                                                }}
+                                                title="Mở bảng tiến độ thực thi"
+                                            >
+                                                <Rocket size={12} /> Tiến độ thực thi
+                                            </button>
+                                            <button 
+                                                onClick={() => handleOpenProject(p, false, true)}
+                                                style={{
+                                                    background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0',
+                                                    padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600,
+                                                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                                    marginTop: '4px'
+                                                }}
+                                                title="Mở bản trình duyệt A4"
+                                            >
+                                                📄 Bản trình duyệt
+                                            </button>
                                         </div>
                                     </td>
                                     <td style={{ padding: '6px 8px', textAlign: 'center' }}>
@@ -334,8 +462,8 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                             value={p.status || 'Báo giá'}
                                             onChange={(e) => handleInlineStatusChange(p.id, e.target.value)}
                                             style={{
-                                                padding: '6px 10px', fontSize: '0.8rem', fontWeight: 700,
-                                                cursor: 'pointer', borderColor: 'transparent', minWidth: '140px',
+                                                padding: '4px 8px', fontSize: '0.75rem', fontWeight: 700,
+                                                cursor: 'pointer', borderColor: 'transparent', minWidth: '130px',
                                                 appearance: 'none', background: stColors.bg, color: stColors.color,
                                                 borderRadius: '6px', outline: 'none', textAlign: 'center'
                                             }}
@@ -353,16 +481,16 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                             {p.destination || 'Chưa xác định'}
                                         </div>
                                     </td>
-                                    <td style={{ padding: '10px 16px', textAlign: 'center', fontWeight: 'bold' }}>
+                                    <td style={{ padding: '10px 16px', textAlign: 'center', fontWeight: 'bold', fontSize: '0.85rem' }}>
                                         {p.expected_pax} Pax
                                     </td>
                                     <td style={{ padding: '10px 16px', textAlign: 'right' }}>
-                                        <div style={{ fontWeight: 'bold', color: '#16a34a' }}>{formatMoney(p.total_revenue)}</div>
+                                        <div style={{ fontWeight: 'bold', color: '#16a34a', fontSize: '0.85rem' }}>{formatMoney(p.total_revenue)}</div>
                                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{formatMoney(p.price_per_pax)} / Pax</div>
                                     </td>
                                     {canViewProfit && (
                                     <td style={{ padding: '10px 16px', textAlign: 'right' }}>
-                                        <div style={{ fontWeight: 'bold', color: p.profit > 0 ? '#ea580c' : '#94a3b8' }}>{formatMoney(p.profit)}</div>
+                                        <div style={{ fontWeight: 'bold', color: p.profit > 0 ? '#ea580c' : '#94a3b8', fontSize: '0.85rem' }}>{formatMoney(p.profit)}</div>
                                     </td>
                                     )}
                                     <td style={{ padding: '10px 16px', fontSize: '0.85rem' }}>
@@ -419,6 +547,8 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                     addToast={addToast}
                     users={users}
                     canViewProfit={canViewProfit}
+                    initialOpenExecution={openExecutionInitially}
+                    initialOpenApproval={openApprovalInitially}
                 />
             )}
         </div>

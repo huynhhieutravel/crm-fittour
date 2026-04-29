@@ -1,3 +1,4 @@
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import {
@@ -176,7 +177,7 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
   const handleDeleteSingle = async () => {
     if (!selectedConv) return;
     if (
-      !window.confirm(
+      !await swalConfirm(
         `Bạn có chắc chắn muốn xóa hội thoại của khách hàng này? Mọi tin nhắn sẽ bị xóa vĩnh viễn.`,
       )
     )
@@ -207,7 +208,7 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
     if (
-      !window.confirm(
+      !await swalConfirm(
         `Bạn có chắc chắn muốn xóa VĨNH VIỄN ${selectedIds.length} hội thoại cùng tất cả tin nhắn bên trong?`,
       )
     )

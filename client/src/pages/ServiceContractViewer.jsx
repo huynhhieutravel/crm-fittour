@@ -1,3 +1,4 @@
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -500,8 +501,8 @@ export default function ServiceContractViewer() {
                         <Mail size={18} /> Gửi Email
                     </button>
 
-                    <button onClick={() => {
-                        if(window.confirm('Bạn có chắc chắn muốn xóa mọi chỉnh sửa và đặt lại mẫu Hợp đồng nguyên bản?')) {
+                    <button onClick={async () => {
+                        if(await swalConfirm('Bạn có chắc chắn muốn xóa mọi chỉnh sửa và đặt lại mẫu Hợp đồng nguyên bản?')) {
                             window.location.reload();
                         }
                     }} style={{ 
