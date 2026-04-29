@@ -3481,6 +3481,7 @@ function AppContent() {
   return (
     <>
       <Routes>
+      <Route path="/tai-lieu" element={<DocumentsPage />} />
       <Route path="/tai-lieu/:subtab/:id/*" element={<DocumentsPage />} />
       <Route path="/tai-lieu/*" element={<DocumentsPage />} />
       <Route path="/simple-list-share/lich_dai_ly" element={<AgencySharePage />} />
