@@ -513,18 +513,11 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                             return (
                                                 <div key={isPending ? `pending-${idx}` : m.id} style={{ position: 'relative', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden', background: '#f8fafc', aspectRatio: '1', display: 'flex', flexDirection: 'column' }}>
                                                     {isPending && <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(245,158,11,0.9)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600, zIndex: 2 }}>Chưa lưu</div>}
-                                                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isPdf ? '#eff6ff' : '#fff', position: 'relative', overflow: 'hidden' }}>
+                                                    {!isViewOnly && (
+                                                        <button onClick={(e) => { e.stopPropagation(); isPending ? removePendingUpload(idx) : handleDeleteMedia(m); }} style={{ position: 'absolute', top: '8px', right: '8px', background: '#ef4444', color: 'white', padding: '4px', borderRadius: '50%', border: 'none', cursor: 'pointer', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} title="Xóa file"><Trash2 size={14} /></button>
+                                                    )}
+                                                    <div onClick={() => { if (isPdf) { window.open(fileUrl, '_blank'); } else { setLightboxMedia(m); } }} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isPdf ? '#eff6ff' : '#fff', position: 'relative', overflow: 'hidden', cursor: 'pointer' }} title="Nhấn để xem nội dung">
                                                         {isPdf ? <File size={40} color="#3b82f6" /> : <img src={fileUrl} alt={fileName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                                                        <div className="media-overlay" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: 0, transition: 'opacity 0.2s' }}>
-                                                            {isPdf ? (
-                                                                <a href={fileUrl} target="_blank" rel="noopener noreferrer" style={{ background: 'white', padding: '8px', borderRadius: '50%', color: '#0f172a' }}><Download size={18} /></a>
-                                                            ) : (
-                                                                <button onClick={() => setLightboxMedia(m)} style={{ background: 'white', padding: '8px', borderRadius: '50%', border: 'none', cursor: 'pointer', color: '#0f172a' }}><Eye size={18} /></button>
-                                                            )}
-                                                            {!isViewOnly && (
-                                                                <button onClick={() => isPending ? removePendingUpload(idx) : handleDeleteMedia(m)} style={{ background: '#ef4444', padding: '8px', borderRadius: '50%', border: 'none', cursor: 'pointer', color: 'white' }}><Trash2 size={18} /></button>
-                                                            )}
-                                                        </div>
                                                     </div>
                                                     <div style={{ padding: '8px', fontSize: '0.75rem', color: '#475569', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', borderTop: '1px solid #e2e8f0', background: 'white' }} title={fileName}>{fileName}</div>
                                                 </div>
