@@ -20,7 +20,7 @@ exports.getAllLeads = async (req, res) => {
         }
 
         const result = await db.query(`
-            SELECT l.*, tt.name as tour_name, u.full_name as assigned_to_name,
+            SELECT l.*, tt.name as tour_name, tt.destination as tour_destination, u.full_name as assigned_to_name,
                    (SELECT COUNT(*)::int FROM lead_notes WHERE lead_id = l.id) as notes_count,
                    (SELECT content FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note,
                    (SELECT created_at FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note_at,

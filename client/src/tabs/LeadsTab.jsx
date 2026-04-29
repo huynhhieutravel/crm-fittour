@@ -386,6 +386,7 @@ const LeadsTab = ({
               <th className="col-date">NGÀY TẠO</th>
               <th className="col-info">THÔNG TIN LEAD</th>
               <th className="col-product">SẢN PHẨM QUAN TÂM</th>
+              <th className="col-market" style={{ width: '120px' }}>THỊ TRƯỜNG</th>
               <th className="col-source">NGUỒN & NHÓM</th>
               <th className="col-staff">TƯ VẤN VIÊN</th>
               <th className="col-status">TRẠNG THÁI TƯ VẤN</th>
@@ -556,6 +557,22 @@ const LeadsTab = ({
                     />
                   </div>
                 </td>
+                <td data-label="Thị trường">
+                  {lead.tour_destination ? (
+                    <span style={{ 
+                      display: 'inline-flex', alignItems: 'center', gap: '4px',
+                      background: '#f0fdf4', color: '#15803d', 
+                      padding: '3px 10px', borderRadius: '6px', 
+                      fontSize: '0.78rem', fontWeight: 700,
+                      border: '1px solid #bbf7d0',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      🌍 {lead.tour_destination}
+                    </span>
+                  ) : (
+                    <span style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>—</span>
+                  )}
+                </td>
                 <td data-label="Nguồn & Nhóm">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -696,7 +713,7 @@ const LeadsTab = ({
         </div>
       )}
 
-      {hoveredNote.id && (
+      {hoveredNote?.id && (
         <div className="dark-tooltip animate-fade-in" style={{ 
           position: 'fixed',
           top: hoveredNote.y - 8,
