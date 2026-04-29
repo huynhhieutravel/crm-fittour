@@ -2,7 +2,7 @@
 
 # ================================================================
 # FIT Tour CRM - VPS Deployment Script
-# Target: crm.tournuocngoai.com
+# Target: erp.fittour.vn
 # 
 # ⚠️ QUAN TRỌNG: Script này BẮT BUỘC chạy bước FIX PERMISSIONS
 # sau mỗi lần build/deploy. KHÔNG ĐƯỢC BỎ QUA hoặc SỬA XÓA bước này.
@@ -12,7 +12,7 @@
 set -e  # Dừng ngay khi có lỗi
 
 PROJECT_DIR="/var/www/fittour-crm"
-DOMAIN="crm.tournuocngoai.com"
+DOMAIN="erp.fittour.vn"
 WEB_USER="www-data"
 WEB_GROUP="www-data"
 

@@ -25,7 +25,8 @@ const MODULE_NAMES = {
   settings: 'Cấu hình hệ thống',
   licenses: 'Chữ ký số cá nhân',
   messenger: 'CSKH Messenger',
-  guides: 'Thiết lập Hướng dẫn viên'
+  guides: 'Thiết lập Hướng dẫn viên',
+  markets: 'Cài đặt: Thị trường'
 };
 
 const shortActionLabel = (label) => {

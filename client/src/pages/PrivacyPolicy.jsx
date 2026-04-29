@@ -81,7 +81,7 @@ function PrivacyPolicy() {
             <p>Nếu bạn có bất kỳ thắc mắc hoặc yêu cầu nào liên quan đến việc bảo mật dữ liệu, vui lòng liên hệ:</p>
             <div style={{ marginTop: '1rem', color: 'white', fontWeight: 500 }}>
               <p>📍 FIT TOUR - Hệ thống Quản lý Khách hàng Tập trung</p>
-              <p>🌐 Website: crm.tournuocngoai.com</p>
+              <p>🌐 Website: erp.fittour.vn</p>
               <p>💬 Hỗ trợ kỹ thuật: Qua Facebook Messenger chính thức của trang.</p>
             </div>
           </section>

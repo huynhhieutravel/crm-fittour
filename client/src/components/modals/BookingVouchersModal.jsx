@@ -68,8 +68,8 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
         setSelectedFile(null);
         return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-        alert('File vượt quá giới hạn 10MB!');
+    if (file.size > 20 * 1024 * 1024) {
+        alert('File vượt quá giới hạn 20MB!');
         e.target.value = '';
         return;
     }
@@ -305,7 +305,7 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
                       />
                     </div>
                     <div style={{ gridColumn: 'span 2' }}>
-                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Ảnh chứng từ (Tối đa 10MB)</label>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Ảnh chứng từ (Tối đa 20MB)</label>
                       <input 
                         type="file" 
                         accept="image/*"

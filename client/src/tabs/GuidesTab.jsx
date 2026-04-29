@@ -136,7 +136,7 @@ const GuidesTab = ({
 
       {guideActiveTab === 'list' ? (
         <>
-          <div className="filter-bar mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) 130px 150px 150px 180px auto', gap: '1rem', alignItems: 'end' }}>
+          <div className="filter-bar mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 2fr) 150px 180px 150px auto', gap: '1.5rem', alignItems: 'end' }}>
             <div className="filter-group">
               <label>DANH SÁCH HƯỚNG DẪN VIÊN</label>
               <div style={{ position: 'relative' }}>
@@ -159,9 +159,9 @@ const GuidesTab = ({
               </select>
             </div>
             <div className="filter-group">
-              <label>GIAO VIỆC</label>
+              <label>LỊCH CÔNG TÁC</label>
               <select className="filter-select" value={guideFilters.assignment || ''} onChange={e => setGuideFilters({...guideFilters, assignment: e.target.value})}>
-                <option value="">-- Thuộc tính --</option>
+                <option value="">-- Tất cả --</option>
                 <option value="has_tour">Có tour đang/sắp chạy</option>
                 <option value="no_tour">Đang rảnh / Chưa có tour</option>
               </select>
@@ -169,7 +169,7 @@ const GuidesTab = ({
             <div className="filter-group">
               <label>NGÔN NGỮ</label>
               <select className="filter-select" value={guideFilters.language || ''} onChange={e => setGuideFilters({...guideFilters, language: e.target.value})}>
-                <option value="">-- Loại ngôn ngữ --</option>
+                <option value="">-- Tất cả --</option>
                 <option value="Tiếng Việt">Tiếng Việt</option>
                 <option value="Tiếng Anh">Tiếng Anh</option>
                 <option value="Tiếng Pháp">Tiếng Pháp</option>

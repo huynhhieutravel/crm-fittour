@@ -1405,7 +1405,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                         <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={(e) => handleUploadPassport(m.id, e.target.files[0])} />
                      </label>
                      {m.passportUrl && (
-                        <a href={m.passportUrl.startsWith('/') ? `https://crm.tournuocngoai.com${m.passportUrl}` : m.passportUrl} target="_blank" rel="noreferrer" style={{ position: 'absolute', bottom: '-4px', right: '-8px', background: '#3b82f6', color: 'white', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '10px', textDecoration: 'none' }} title="Xem Hộ chiếu">👁️</a>
+                        <a href={m.passportUrl.startsWith('/') ? `https://erp.fittour.vn${m.passportUrl}` : m.passportUrl} target="_blank" rel="noreferrer" style={{ position: 'absolute', bottom: '-4px', right: '-8px', background: '#3b82f6', color: 'white', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '10px', textDecoration: 'none' }} title="Xem Hộ chiếu">👁️</a>
                      )}
                   </div>
                   <div style={{ width: '100px', flexShrink: 0 }}>

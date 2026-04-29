@@ -68,13 +68,13 @@ const SalesDashboard = ({
   };
 
   // --- LEADS ---
-  const myLeads = leads.filter(l => l.assigned_to === currentUser.id);
+  const myLeads = leads.filter(l => l.assigned_to === currentUser?.id);
   const myNewLeads = myLeads.filter(l => l.status === 'Mới');
   const myCallingLeads = myLeads.filter(l => ['Đang liên hệ', 'Tiềm năng'].includes(l.status));
   const myWonLeads = myLeads.filter(l => l.status === 'Chốt đơn');
 
   // --- BOOKINGS (Pending Deposits / Debts) ---
-  const myBookings = bookings.filter(b => b.assigned_to === currentUser.id);
+  const myBookings = bookings.filter(b => b.assigned_to === currentUser?.id);
   const pendingBookings = myBookings.filter(b => b.booking_status !== 'Huỷ' && b.payment_status === 'Chưa thanh toán');
   const partialBookings = myBookings.filter(b => b.booking_status !== 'Huỷ' && b.payment_status === 'Thanh toán 1 phần');
   const totalDebtBookings = pendingBookings.length + partialBookings.length;

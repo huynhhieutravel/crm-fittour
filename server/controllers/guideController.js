@@ -32,10 +32,20 @@ exports.getAllGuides = async (req, res) => {
 };
 
 exports.createGuide = async (req, res) => {
-    const { name, phone, email, languages, rating, status, experience, bio, specialties, avatar_url, dob, address, gender, passport } = req.body;
+    const { 
+        name, phone, email, languages, rating, status, experience, bio, specialties, 
+        avatar_url, dob, address, gender, passport,
+        passport_expiry, id_card, id_card_date, guide_card_type, 
+        guide_card_number, guide_card_expiry, passport_url, guide_card_url 
+    } = req.body;
     try {
         const result = await db.query(
-            'INSERT INTO guides (name, phone, email, languages, rating, status, experience, bio, specialties, avatar_url, dob, address, gender, passport) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *',
+            `INSERT INTO guides (
+                name, phone, email, languages, rating, status, experience, bio, specialties, 
+                avatar_url, dob, address, gender, passport,
+                passport_expiry, id_card, id_card_date, guide_card_type, 
+                guide_card_number, guide_card_expiry, passport_url, guide_card_url
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) RETURNING *`,
             [
                 name, phone, email, languages, 
                 rating || 5, 
@@ -45,7 +55,15 @@ exports.createGuide = async (req, res) => {
                 (dob && dob.trim() !== '') ? dob : null, 
                 address,
                 gender,
-                passport
+                passport,
+                (passport_expiry && passport_expiry.trim() !== '') ? passport_expiry : null,
+                id_card,
+                (id_card_date && id_card_date.trim() !== '') ? id_card_date : null,
+                guide_card_type,
+                guide_card_number,
+                (guide_card_expiry && guide_card_expiry.trim() !== '') ? guide_card_expiry : null,
+                passport_url,
+                guide_card_url
             ]
         );
         res.status(201).json(result.rows[0]);
@@ -66,10 +84,20 @@ exports.getGuideById = async (req, res) => {
 };
 
 exports.updateGuide = async (req, res) => {
-    const { name, phone, email, languages, rating, status, experience, bio, specialties, avatar_url, dob, address, gender, passport } = req.body;
+    const { 
+        name, phone, email, languages, rating, status, experience, bio, specialties, 
+        avatar_url, dob, address, gender, passport,
+        passport_expiry, id_card, id_card_date, guide_card_type, 
+        guide_card_number, guide_card_expiry, passport_url, guide_card_url 
+    } = req.body;
     try {
         const result = await db.query(
-            'UPDATE guides SET name=$1, phone=$2, email=$3, languages=$4, rating=$5, status=$6, experience=$7, bio=$8, specialties=$9, avatar_url=$10, dob=$11, address=$12, gender=$13, passport=$14 WHERE id=$15 RETURNING *',
+            `UPDATE guides SET 
+                name=$1, phone=$2, email=$3, languages=$4, rating=$5, status=$6, experience=$7, bio=$8, specialties=$9, 
+                avatar_url=$10, dob=$11, address=$12, gender=$13, passport=$14,
+                passport_expiry=$15, id_card=$16, id_card_date=$17, guide_card_type=$18, 
+                guide_card_number=$19, guide_card_expiry=$20, passport_url=$21, guide_card_url=$22 
+            WHERE id=$23 RETURNING *`,
             [
                 name, phone, email, languages || '', 
                 rating || null, 
@@ -80,6 +108,14 @@ exports.updateGuide = async (req, res) => {
                 address || '', 
                 gender,
                 passport,
+                (passport_expiry && passport_expiry.trim() !== '') ? passport_expiry : null,
+                id_card,
+                (id_card_date && id_card_date.trim() !== '') ? id_card_date : null,
+                guide_card_type,
+                guide_card_number,
+                (guide_card_expiry && guide_card_expiry.trim() !== '') ? guide_card_expiry : null,
+                passport_url,
+                guide_card_url,
                 req.params.id
             ]
         );

@@ -19,7 +19,7 @@
 - **Lưu ý Code đối với System User:** Bọn System User này là "thực thể ma", nếu bạn gọi `/me/accounts` để lấy danh sách Fanpage, nó sẽ trả về **mảng rỗng `[]`**. Thay vào đó, mã Code tự động đồng bộ phải gọi `/me` và lấy trực tiếp `PAGE_ID` cụ thể hoặc đọc thẳng từ Settings Database.
 
 ## 3. Quản lý Database & Cấm kỵ
-- **Script `auto_import_db.js`:** Đây là script CẤM KỴ trên môi trường Production (`crm.tournuocngoai.com`). Kịch bản này chứa lệnh `TRUNCATE TABLE` xóa trạch dữ liệu bảng `settings` và các bảng khác. Việc lỡ tay kích hoạt kịch bản này sẽ **Xóa sạch Token đồ thị Hệ thống** và làm sập toàn bộ đường dây vận chuyển Lead.
+- **Script `auto_import_db.js`:** Đây là script CẤM KỴ trên môi trường Production (`erp.fittour.vn`). Kịch bản này chứa lệnh `TRUNCATE TABLE` xóa trạch dữ liệu bảng `settings` và các bảng khác. Việc lỡ tay kích hoạt kịch bản này sẽ **Xóa sạch Token đồ thị Hệ thống** và làm sập toàn bộ đường dây vận chuyển Lead.
 - Việc Backup / Khôi phục Data giữa Local (`localhost`) và Production (`VPS`) chỉ được thao tác thông qua cơ chế Append (Thêm mới) hoặc Update chọn lọc. 
 
 ## 4. Biên Dịch Môi Trường React (Frontend Build)

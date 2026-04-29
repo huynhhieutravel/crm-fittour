@@ -441,8 +441,8 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                             const today = new Date();
                                             today.setHours(0,0,0,0);
                                             const startDate = new Date(item.start_date);
-                                            const canDelete = (item.user_id === currentUser.id || currentUser.role === 'admin') && 
-                                                              (startDate >= today || currentUser.role === 'admin');
+                                            const canDelete = (item.user_id === currentUser?.id || currentUser?.role === 'admin') && 
+                                                              (startDate >= today || currentUser?.role === 'admin');
                                             return canDelete ? (
                                                 <button onClick={() => handleAction(item.id, 'delete')} style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Xóa">
                                                     <Trash2 size={16} />

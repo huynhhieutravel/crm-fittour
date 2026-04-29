@@ -17,7 +17,7 @@ const mediaUpload = multer({
             cb(null, 'hot-' + uniqueSuffix + path.extname(file.originalname));
         }
     }),
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
     fileFilter: (req, file, cb) => {
         const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
         if (allowed.includes(file.mimetype)) {

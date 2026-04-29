@@ -279,7 +279,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
       const doe = formatToYYYYMMDD(m.expiryDate);
       const rooming = m.roomCode || '';
       const note = (i === 0 && bookingNote) ? (bookingNote + (m.note ? ` - ${m.note}` : '')) : (m.note || '');
-      const fullPassportUrl = m.passportUrl ? (m.passportUrl.startsWith('/') ? `https://crm.tournuocngoai.com${m.passportUrl}` : m.passportUrl) : '';
+      const fullPassportUrl = m.passportUrl ? (m.passportUrl.startsWith('/') ? `https://erp.fittour.vn${m.passportUrl}` : m.passportUrl) : '';
 
       wsData.push([
         i + 1, 
@@ -828,7 +828,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                         <td style={{ padding: '10px 8px', fontWeight: 600, color: '#1e293b', position: 'relative' }}>
                           {m.name || '---'}
                           {m.passportUrl && (
-                             <a href={m.passportUrl.startsWith('/') ? `https://crm.tournuocngoai.com${m.passportUrl}` : m.passportUrl} target="_blank" rel="noreferrer" style={{ marginLeft: '8px', background: '#e0e7ff', color: '#4f46e5', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid #c7d2fe' }} title="Xem Hộ chiếu">
+                             <a href={m.passportUrl.startsWith('/') ? `https://erp.fittour.vn${m.passportUrl}` : m.passportUrl} target="_blank" rel="noreferrer" style={{ marginLeft: '8px', background: '#e0e7ff', color: '#4f46e5', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid #c7d2fe' }} title="Xem Hộ chiếu">
                                 <span role="img" aria-label="eye">👁️</span> Xem
                              </a>
                           )}

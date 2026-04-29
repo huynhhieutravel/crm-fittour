@@ -31,11 +31,11 @@ class MetaCatalogService {
     row[1] = (tour.name || `Tên tour trống (ID: ${tour.id})`).substring(0, 150); // name
     row[2] = description; // description
     row[3] = `${parseInt(parseFloat(tour.base_price || 0)) || 0} VND`; // price
-    row[4] = tour.image_url || 'https://crm.tournuocngoai.com/default-tour.jpg'; // image[0].url
+    row[4] = tour.image_url || 'https://erp.fittour.vn/default-tour.jpg'; // image[0].url
     
     row[8] = 'Tour'; // type[0]
     
-    row[10] = tour.website_link || 'https://crm.tournuocngoai.com/'; // url
+    row[10] = tour.website_link || 'https://erp.fittour.vn/'; // url
     
     row[12] = (tour.bu_group || '').substring(0, 100); // custom_label_0
     row[13] = (tour.tour_type || '').substring(0, 100); // custom_label_1
@@ -65,9 +65,9 @@ class MetaCatalogService {
       name: (tour.name || `Tên tour trống`).substring(0, 150),
       description: description,
       price: `${parseInt(parseFloat(tour.base_price || 0)) || 0} VND`,
-      url: tour.website_link || 'https://crm.tournuocngoai.com/',
+      url: tour.website_link || 'https://erp.fittour.vn/',
       image: [
-        { url: tour.image_url || 'https://crm.tournuocngoai.com/default-tour.jpg' }
+        { url: tour.image_url || 'https://erp.fittour.vn/default-tour.jpg' }
       ],
       type: ["Tour"],
       address: {

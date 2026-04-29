@@ -584,7 +584,7 @@ export default function OpToursTab({ currentUser }) {
       const doe = formatToYYYYMMDD(m.expiryDate);
       const rooming = m.roomCode || '';
       const note = m.bNote || m.note || '';
-      const fullPassportUrl = m.passportUrl ? (m.passportUrl.startsWith('/') ? `https://crm.tournuocngoai.com${m.passportUrl}` : m.passportUrl) : '';
+      const fullPassportUrl = m.passportUrl ? (m.passportUrl.startsWith('/') ? `https://erp.fittour.vn${m.passportUrl}` : m.passportUrl) : '';
 
       wsData.push([
         i + 1, 
@@ -1544,7 +1544,7 @@ export default function OpToursTab({ currentUser }) {
                       <td style={{ padding: '8px 6px', fontWeight: 600, color: m.isBooker ? '#ea580c' : '#1e293b', borderRight: '1px solid #f1f5f9', minWidth: '130px', position: 'relative' }}>
                         {m.name || '---'}
                         {m.passportUrl && (
-                           <a href={m.passportUrl.startsWith('/') ? `https://crm.tournuocngoai.com${m.passportUrl}` : m.passportUrl} target="_blank" rel="noreferrer" style={{ marginLeft: '8px', background: '#e0e7ff', color: '#4f46e5', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid #c7d2fe' }} title="Xem Hộ chiếu">
+                           <a href={m.passportUrl.startsWith('/') ? `https://erp.fittour.vn${m.passportUrl}` : m.passportUrl} target="_blank" rel="noreferrer" style={{ marginLeft: '8px', background: '#e0e7ff', color: '#4f46e5', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid #c7d2fe' }} title="Xem Hộ chiếu">
                               <span role="img" aria-label="eye">👁️</span> Xem
                            </a>
                         )}

@@ -30,7 +30,7 @@ function TermsOfService() {
             <h2 style={{ color: 'white', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', fontSize: '1.5rem' }}>
               <Globe size={24} color="var(--secondary)" /> 1. Định nghĩa và Phạm vi
             </h2>
-            <p><strong>"Dịch vụ"</strong> đề cập đến hệ thống FIT TOUR CRM (crm.tournuocngoai.com), bao gồm tất cả các tính năng quản lý Lead, Booking, và tích hợp tin nhắn đa nền tảng.</p>
+            <p><strong>"Dịch vụ"</strong> đề cập đến hệ thống FIT TOUR ERP (erp.fittour.vn), bao gồm tất cả các tính năng quản lý Lead, Booking, và tích hợp tin nhắn đa nền tảng.</p>
             <p style={{ marginTop: '0.5rem' }}><strong>"Người dùng"</strong> đề cập đến bất kỳ cá nhân hoặc tổ chức nào được cấp quyền truy cập vào hệ thống để quản lý dữ liệu khách hàng của FIT TOUR.</p>
           </section>
 

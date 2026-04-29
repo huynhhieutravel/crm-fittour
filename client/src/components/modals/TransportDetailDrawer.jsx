@@ -73,8 +73,8 @@ export default function TransportDetailDrawer({ transport, onClose, refreshList,
 
     const handleFileUpload = async (files) => {
         if (mediaFiles.length + pendingUploads.length >= 10) { addToast?.('Đã đạt tối đa 10 file!', 'error'); return; }
-        const validFiles = Array.from(files).filter(f => f.size <= 10 * 1024 * 1024);
-        if (validFiles.length < files.length) addToast?.('Một số file vượt quá 10MB và đã bị loại.', 'warning');
+        const validFiles = Array.from(files).filter(f => f.size <= 20 * 1024 * 1024);
+        if (validFiles.length < files.length) addToast?.('Một số file vượt quá 20MB và đã bị loại.', 'warning');
         
         if (!transport?.id) {
             const newPending = validFiles.map(f => ({ file: f, url: URL.createObjectURL(f), isPending: true }));
@@ -432,7 +432,7 @@ export default function TransportDetailDrawer({ transport, onClose, refreshList,
                                     <input type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" style={{ display: 'none' }} ref={fileInputRef} onChange={e => handleFileUpload(e.target.files)} />
                                     <Upload size={32} color={isDragging ? '#3b82f6' : '#94a3b8'} style={{ margin: '0 auto 12px' }} />
                                     <p style={{ margin: '0 0 8px', color: '#334155', fontWeight: 600 }}>Kéo thả file vào đây hoặc click để chọn</p>
-                                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Hỗ trợ: JPG, PNG, WebP, PDF (Tối đa 10MB/file)</p>
+                                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Hỗ trợ: JPG, PNG, WebP, PDF (Tối đa 20MB/file)</p>
                                     {uploadProgress > 0 && <div style={{ marginTop: '1rem', background: '#e2e8f0', borderRadius: '8px', overflow: 'hidden' }}><div style={{ width: `${uploadProgress}%`, background: '#3b82f6', height: '4px', transition: 'width 0.2s' }} /></div>}
                                 </div>
                             )}

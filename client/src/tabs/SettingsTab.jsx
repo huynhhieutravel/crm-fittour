@@ -300,7 +300,7 @@ const SettingsTab = ({
               style={{ background: '#fffbeb', color: '#d97706', border: '1px solid #f59e0b', width: 'auto', padding: '0 2rem', textDecoration: 'none', display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center' }}
               onClick={() => {
                 if(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    alert('Chức năng Đồng bộ API Meta bị khóa trên Localhost để tránh ghi đè dữ liệu thật. Vui lòng thao tác trên crm.tournuocngoai.com.');
+                    alert('Chức năng Đồng bộ API Meta bị khóa trên Localhost để tránh ghi đè dữ liệu thật. Vui lòng thao tác trên erp.fittour.vn.');
                     return;
                 }
                 handleTestMeta('catalog');

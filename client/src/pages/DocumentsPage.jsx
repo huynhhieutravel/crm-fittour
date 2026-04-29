@@ -8,11 +8,13 @@ import InternalDocsTab from '../tabs/InternalDocsTab';
 import HDVHub from './HDVHub';
 import MarketingHub from './MarketingHub';
 import MarketingEditor from '../components/Marketing/MarketingEditor';
+import BrandGuidelinePage from './BrandGuidelinePage';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Static Document Index — TẤT CẢ tài liệu nội bộ đã biết
    ═══════════════════════════════════════════════════════════════════════════ */
 const STATIC_DOCS = [
+  { title: 'Brand Identity Guideline', description: 'Tài liệu hướng dẫn nhận diện thương hiệu FIT Tour, bao gồm logo, màu sắc, font chữ...', category: 'Marketing', path: '/tai-lieu/brand-guideline', icon: '🎨' },
   { title: 'HUB Hướng Dẫn Viên', description: 'Bàn làm việc của HDV — checklist, SOP, sự cố, case study', category: 'HDV', path: '/tai-lieu/hdv', icon: '👨‍✈️' },
   { title: 'HUB Marketing', description: 'Tài liệu Marketing, chuẩn mực content, format bài đăng & Báo cáo hiệu suất team', category: 'Marketing', path: '/tai-lieu/marketing', icon: '📈' },
   { title: 'HUB Kinh Doanh (Sale)', description: 'Tài liệu dành cho phòng kinh doanh, quy trình bán hàng', category: 'Sale', path: '/tai-lieu/sale', icon: '💼' },
@@ -765,6 +767,7 @@ const DocumentsPage = () => {
   if (path === '/tai-lieu/marketing') return <MarketingHub />;
   if (path === '/tai-lieu/marketing/create') return <MarketingEditor />;
   if (path === '/tai-lieu/quy-che-luong-hdv') return <BlogLayout><InternalDocsTab /></BlogLayout>;
+  if (path === '/tai-lieu/brand-guideline') return <BrandGuidelinePage />;
   if (path === '/tai-lieu/bo-nguyen-tac-hanh-xu-nhan-vien') return (
     <MarkdownViewer 
       fileUrl="/docs/bo-nguyen-tac.md" 

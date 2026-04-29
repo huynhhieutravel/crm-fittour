@@ -292,11 +292,12 @@ exports.addOpTourBooking = async (req, res) => {
 
     // BUG-02 FIX: Check cả role_name (bảng roles) lẫn role (text cũ) để tương thích
     const userRoleName = req.user.role_name || req.user.role || '';
-    const isPrivileged = ['admin', 'manager', 'operator'].includes(userRoleName);
+    const userRoleNameLower = userRoleName.toLowerCase();
+    const isPrivileged = ['admin', 'manager', 'operations', 'operations_lead', 'operator', 'accountant'].includes(userRoleNameLower);
 
     // Determine Assignment properties
     let assignId = req.user ? req.user.id : null;
-    let assignName = req.user ? req.user.full_name : 'Sales';
+    let assignName = req.user ? (req.user.full_name || req.user.username || 'Sales') : 'Sales';
     
     if (isPrivileged && bookingData.created_by) {
         assignId = bookingData.created_by;
@@ -533,7 +534,8 @@ exports.updateOpTourBooking = async (req, res) => {
 
     // BUG-02 FIX: Use role_name (from roles table) instead of legacy role field
     const userRoleName = req.user.role_name || req.user.role || '';
-    const isPrivileged = ['admin', 'manager', 'operator'].includes(userRoleName);
+    const userRoleNameLower = userRoleName.toLowerCase();
+    const isPrivileged = ['admin', 'manager', 'operations', 'operations_lead', 'operator', 'accountant'].includes(userRoleNameLower);
     if (!isPrivileged && booking.created_by != req.user.id) {
         return res.status(403).json({ error: 'Lỗi phân quyền! Bạn không có quyền thao tác trên Booking của người khác.' });
     }

@@ -5,10 +5,12 @@ exports.getCEODeparturesOverview = async (req, res) => {
         const { startDate, endDate, prevStartDate, prevEndDate, bu_group } = req.query;
 
         let dateFilter = '1=1';
+        let bookingDateFilter = '1=1';
         let params = [];
         if (startDate && endDate) {
             params.push(startDate, endDate);
             dateFilter = `td.start_date >= $1 AND td.start_date <= $2`;
+            bookingDateFilter = `b.created_at >= $1 AND b.created_at <= $2`;
         }
 
         let buFilter = '';
@@ -44,8 +46,9 @@ exports.getCEODeparturesOverview = async (req, res) => {
             JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN users u ON b.created_by = u.id
             WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
+              AND b.paid > 0
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
-              AND ${dateFilter}
+              AND ${bookingDateFilter}
               ${buFilter}
             GROUP BY COALESCE(u.full_name, b.created_by_name, 'Chưa gán')
             ORDER BY revenue DESC;
@@ -150,8 +153,8 @@ exports.getCEODeparturesOverview = async (req, res) => {
             SELECT 
                 COALESCE(u.full_name, b.created_by_name, 'Chưa gán') as sale_name, 
                 COALESCE(tt.bu_group, 'Chưa phân loại') as bu_group,
-                EXTRACT(MONTH FROM td.start_date) as month,
-                EXTRACT(YEAR FROM td.start_date) as year,
+                EXTRACT(MONTH FROM b.created_at) as month,
+                EXTRACT(YEAR FROM b.created_at) as year,
                 COALESCE(SUM(b.total_price), 0) as revenue, 
                 COUNT(b.id) as booking_count,
                 COALESCE(SUM(b.pax_count), 0) as total_pax
@@ -160,8 +163,9 @@ exports.getCEODeparturesOverview = async (req, res) => {
             JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN users u ON b.created_by = u.id
             WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
+              AND b.paid > 0
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
-              AND ${dateFilter}
+              AND ${bookingDateFilter}
             GROUP BY sale_name, bu_group, month, year;
         `;
         const salesDetailsRes = await pool.query(salesDetailsQuery, dateParams);
@@ -191,7 +195,11 @@ exports.getDrilldownData = async (req, res) => {
         
         if (startDate && endDate) {
             params.push(startDate, endDate);
-            dateFilter = `td.start_date >= $2 AND td.start_date <= $3`;
+            if (type === 'sale') {
+                dateFilter = `b.created_at >= $2 AND b.created_at <= $3`;
+            } else {
+                dateFilter = `td.start_date >= $2 AND td.start_date <= $3`;
+            }
         }
 
         let buFilter = '';
@@ -201,12 +209,14 @@ exports.getDrilldownData = async (req, res) => {
         }
 
         let typeFilter = "1=1";
+        let extraSaleFilter = "";
         if (type === 'bu_group') {
             typeFilter = `COALESCE(tt.bu_group, 'Chưa phân loại') = $1`;
         } else if (type === 'market') {
             typeFilter = `TRIM(SPLIT_PART(COALESCE(tt.destination, 'Khác'), ',', 1)) = $1`;
         } else if (type === 'sale') {
              typeFilter = `COALESCE(u.full_name, b.created_by_name, 'Chưa gán') = $1`;
+             extraSaleFilter = `AND b.paid > 0`;
         } else if (type === 'tour') {
              typeFilter = `TRIM(tt.name) = $1`;
         }
@@ -225,6 +235,7 @@ exports.getDrilldownData = async (req, res) => {
             JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN users u ON b.created_by = u.id
             WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
+              ${extraSaleFilter}
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               AND ${dateFilter}
               AND ${typeFilter}

@@ -2,13 +2,13 @@ const { chromium } = require('playwright');
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.goto('https://crm.tournuocngoai.com/login');
+  await page.goto('https://erp.fittour.vn/login');
   await page.fill('input[type="text"]', 'admin');
   await page.fill('input[type="password"]', 'admin123');
   await page.click('button:has-text("Đăng nhập")');
   await page.waitForTimeout(2000);
   
-  await page.goto('https://crm.tournuocngoai.com/departures');
+  await page.goto('https://erp.fittour.vn/departures');
   await page.waitForTimeout(2000);
   
   // Click duplicate on first row

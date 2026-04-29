@@ -76,7 +76,7 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
     const handleUploadMedia = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (file.size > 10 * 1024 * 1024) { addToast?.('File quá lớn! Tối đa 10MB.', 'error'); return; }
+        if (file.size > 20 * 1024 * 1024) { addToast?.('File quá lớn! Tối đa 20MB.', 'error'); return; }
         if (mediaFiles.length + pendingUploads.length >= 10) { addToast?.('Đã đạt tối đa 10 file!', 'error'); return; }
         
         if (!restaurant?.id) {
@@ -443,7 +443,7 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
                                         <>
                                             <Upload size={32} color="#94a3b8" style={{ marginBottom: '8px' }} />
                                             <div style={{ fontSize: '0.95rem', color: '#475569', fontWeight: 600 }}>Kéo thả hoặc bấm để tải lên</div>
-                                            <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>Hỗ trợ: JPG, PNG, WebP, PDF — Tối đa 10MB / file</div>
+                                            <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>Hỗ trợ: JPG, PNG, WebP, PDF — Tối đa 20MB / file</div>
                                         </>
                                     )}
                                 </div>

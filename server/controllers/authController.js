@@ -30,7 +30,7 @@ exports.login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user.id, username: user.username, role: user.role_name },
+            { id: user.id, username: user.username, full_name: user.full_name, role: user.role_name },
             process.env.JWT_SECRET,
             { expiresIn: '14d' }
         );
