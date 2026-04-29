@@ -3,7 +3,10 @@ import axios from 'axios';
 import { MapPin, Info, Plus, Eye, EyeOff, Edit3, FolderPlus } from 'lucide-react';
 import { invalidateMarketsCache } from '../hooks/useMarkets';
 
-const MarketSettingsTab = () => {
+const MarketSettingsTab = ({ checkPerm }) => {
+  const canCreate = checkPerm ? checkPerm('markets', 'create') : false;
+  const canEdit = checkPerm ? checkPerm('markets', 'edit') : false;
+  
   const [marketTree, setMarketTree] = useState([]);
   const [editingMarketId, setEditingMarketId] = useState(null);
   const [editingMarketName, setEditingMarketName] = useState('');
@@ -126,7 +129,7 @@ const MarketSettingsTab = () => {
             <div style={{ fontSize: '0.75rem', color: '#15803d', fontWeight: 600 }}>ĐIỂM ĐẾN</div>
           </div>
           <div style={{ width: '1px', height: '40px', background: '#bbf7d0' }} />
-          {!showAddGroup && (
+          {!showAddGroup && canCreate && (
             <button
               onClick={() => setShowAddGroup(true)}
               style={{
@@ -219,27 +222,33 @@ const MarketSettingsTab = () => {
                 </span>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <button
-                  onClick={() => { setAddingChildTo(addingChildTo === group.id ? null : group.id); setNewChildName(''); }}
-                  title="Thêm điểm đến"
-                  style={{ background: '#eff6ff', color: '#3b82f6', border: '1px solid #dbeafe', borderRadius: '8px', padding: '5px 10px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <Plus size={14} /> Thêm
-                </button>
-                <button
-                  onClick={() => { setEditingMarketId(group.id); setEditingMarketName(group.name); setEditingMarketSort(group.sort_order || 0); }}
-                  title="Sửa tên nhóm"
-                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', padding: '5px' }}
-                >
-                  <Edit3 size={16} />
-                </button>
-                <button
-                  onClick={() => handleToggleGroup(group)}
-                  title={group.is_active ? 'Ẩn nhóm' : 'Hiện nhóm'}
-                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: group.is_active ? '#10b981' : '#dc2626', padding: '5px' }}
-                >
-                  {group.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
-                </button>
+                {canCreate && (
+                  <button
+                    onClick={() => { setAddingChildTo(addingChildTo === group.id ? null : group.id); setNewChildName(''); }}
+                    title="Thêm điểm đến"
+                    style={{ background: '#eff6ff', color: '#3b82f6', border: '1px solid #dbeafe', borderRadius: '8px', padding: '5px 10px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <Plus size={14} /> Thêm
+                  </button>
+                )}
+                {canEdit && (
+                  <>
+                    <button
+                      onClick={() => { setEditingMarketId(group.id); setEditingMarketName(group.name); setEditingMarketSort(group.sort_order || 0); }}
+                      title="Sửa tên nhóm"
+                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', padding: '5px' }}
+                    >
+                      <Edit3 size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleToggleGroup(group)}
+                      title={group.is_active ? 'Ẩn nhóm' : 'Hiện nhóm'}
+                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: group.is_active ? '#10b981' : '#dc2626', padding: '5px' }}
+                    >
+                      {group.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -283,18 +292,22 @@ const MarketSettingsTab = () => {
                     ) : (
                       <>
                         <span style={{ fontWeight: 500 }}>{child.name}</span>
-                        <button
-                          onClick={() => { setEditingMarketId(child.id); setEditingMarketName(child.name); setEditingMarketSort(child.sort_order || 0); }}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '0 2px' }}
-                        >
-                          <Edit3 size={12} />
-                        </button>
-                        <button
-                          onClick={() => handleToggleMarket(child.id, child.is_active)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: child.is_active ? '#10b981' : '#dc2626', padding: '0 2px' }}
-                        >
-                          {child.is_active ? <Eye size={12} /> : <EyeOff size={12} />}
-                        </button>
+                        {canEdit && (
+                          <>
+                            <button
+                              onClick={() => { setEditingMarketId(child.id); setEditingMarketName(child.name); setEditingMarketSort(child.sort_order || 0); }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '0 2px' }}
+                            >
+                              <Edit3 size={12} />
+                            </button>
+                            <button
+                              onClick={() => handleToggleMarket(child.id, child.is_active)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: child.is_active ? '#10b981' : '#dc2626', padding: '0 2px' }}
+                            >
+                              {child.is_active ? <Eye size={12} /> : <EyeOff size={12} />}
+                            </button>
+                          </>
+                        )}
                       </>
                     )}
                   </div>

@@ -3171,7 +3171,7 @@ function AppContent() {
         )}
         
         {activeTab === 'market-settings' && (
-          <MarketSettingsTab />
+          <MarketSettingsTab checkPerm={checkPerm} />
         )}
 
         {activeTab === 'media-settings' && (
