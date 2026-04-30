@@ -1772,7 +1772,9 @@ function AppContent() {
 
 
   // ── Route Guard: /tai-lieu/* phải render DocumentsPage riêng, KHÔNG dùng sidebar ──
-  // Moved to explicit route in App.jsx main Routes block
+  if (location.pathname.startsWith('/tai-lieu')) {
+    return <DocumentsPage />;
+  }
 
   return (
     <div className="app-container">
