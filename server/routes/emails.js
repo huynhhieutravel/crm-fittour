@@ -22,7 +22,7 @@ router.delete('/mailboxes/:id', emailController.deleteMailbox);
 router.get('/', emailController.listEmails);
 router.get('/unread-count', emailController.getUnreadCount);
 router.get('/search', emailController.searchEmails);
-router.get('/threads/:threadId', emailController.getThread);
+router.get('/threads', emailController.getThread);
 
 // Param-based paths (AFTER static paths)
 router.get('/:id', emailController.getEmail);

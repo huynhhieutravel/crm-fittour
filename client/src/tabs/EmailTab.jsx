@@ -146,7 +146,7 @@ function EmailTab({ currentUser, addToast }) {
       // Load thread
       if (email.thread_id) {
         const encodedThreadId = encodeURIComponent(email.thread_id);
-        const threadRes = await axios.get(`/api/emails/threads/${encodedThreadId}`, {
+        const threadRes = await axios.get(`/api/emails/threads?id=${encodedThreadId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setThreadEmails(threadRes.data.emails || []);

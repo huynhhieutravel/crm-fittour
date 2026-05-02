@@ -170,7 +170,8 @@ exports.getEmail = async (req, res) => {
 // ══════════════════════════════════════════════
 exports.getThread = async (req, res) => {
   try {
-    const { threadId } = req.params;
+    const threadId = req.query.id;
+    if (!threadId) return res.status(400).json({ error: 'Missing thread id' });
     const result = await db.query(`
       SELECT e.*, 
         (SELECT json_agg(ea.*) FROM email_attachments ea WHERE ea.email_id = e.id) as attachments
