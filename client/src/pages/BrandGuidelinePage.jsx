@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Copy, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CheckCircle, ArrowLeft } from 'lucide-react';
 import '../styles/brand-guideline.css';
 
-/* ═══ Data ═══ */
+/* ═══ Data Extracted from PDF ═══ */
 const COLORS = [
   { name: 'Sunrise Orange', hex: '#FF600B', text: 'white' },
   { name: 'Golden Yellow', hex: '#FDAF03', text: 'black' },
@@ -11,6 +11,8 @@ const COLORS = [
   { name: 'Forest Green', hex: '#43A047', text: 'white' },
   { name: 'Neutral Dark', hex: '#212121', text: 'white' },
   { name: 'Warm Grey', hex: '#F5F5F5', text: 'black' },
+  { name: 'Light Grey', hex: '#E0E0E0', text: 'black' },
+  { name: 'Medium Grey', hex: '#9E9E9E', text: 'white' },
 ];
 
 /* ═══ Reusable Components ═══ */
@@ -57,7 +59,6 @@ const Swatch = ({ name, hex, text }) => {
 
 /* ═══ Main Page Component ═══ */
 const BrandGuidelinePage = () => {
-  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -82,10 +83,11 @@ const BrandGuidelinePage = () => {
           <span>FIT Tour Bespoke</span>
         </Link>
         <nav className="bp-nav">
-          <a href="#vision" onClick={(e) => { e.preventDefault(); scrollTo('vision'); }} className="bp-nav-link">Tầm Nhìn</a>
+          <a href="#vision" onClick={(e) => { e.preventDefault(); scrollTo('vision'); }} className="bp-nav-link">Định Vị</a>
+          <a href="#logo" onClick={(e) => { e.preventDefault(); scrollTo('logo'); }} className="bp-nav-link">Logo</a>
           <a href="#colors" onClick={(e) => { e.preventDefault(); scrollTo('colors'); }} className="bp-nav-link">Màu Sắc</a>
           <a href="#typography" onClick={(e) => { e.preventDefault(); scrollTo('typography'); }} className="bp-nav-link">Phông Chữ</a>
-          <a href="#photography" onClick={(e) => { e.preventDefault(); scrollTo('photography'); }} className="bp-nav-link">Nhiếp Ảnh</a>
+          <a href="#social" onClick={(e) => { e.preventDefault(); scrollTo('social'); }} className="bp-nav-link">Facebook & AI</a>
         </nav>
       </header>
 
@@ -94,13 +96,13 @@ const BrandGuidelinePage = () => {
         <div className="bp-hero-bg-blur"></div>
         <RevealText>
           <h1 className="bp-massive-text">
-            Du Lịch <br />
-            <span style={{ color: 'var(--bp-orange)' }}>Có Guu.</span>
+            Luxury & <br />
+            <span style={{ color: 'var(--bp-orange)' }}>Bespoke.</span>
           </h1>
         </RevealText>
         <RevealText>
           <p className="bp-subtitle" style={{ marginTop: 32 }}>
-            Sổ tay thương hiệu nội bộ của FIT Tour. Sinh ra từ trải nghiệm thực địa và tinh thần làm nghề cẩn trọng. Không chỉ đi, mà sống trọn hành trình.
+            Sổ tay nhận diện thương hiệu nội bộ. FIT TOUR không phục vụ thị trường đại trà. Tập trung vào nhóm khách hàng có khả năng chi trả cao, đề cao trải nghiệm – cá nhân hóa – chất lượng dịch vụ.
           </p>
         </RevealText>
       </section>
@@ -108,38 +110,64 @@ const BrandGuidelinePage = () => {
       {/* ── Vision Section ── */}
       <section id="vision" className="bp-section dark">
         <RevealText>
-          <h2 className="bp-large-text">Trải nghiệm thực địa <br/>& Omotenashi.</h2>
+          <h2 className="bp-large-text">Sự kết hợp giữa <br/>cảm xúc & câu chuyện.</h2>
         </RevealText>
         <RevealText>
           <p className="bp-subtitle" style={{ marginTop: 40 }}>
-            FIT Tour định vị là chuyên gia thiết kế hành trình Bespoke (Vinh danh Thương Hiệu Thiết Kế Tour Xuất Sắc Nhất 2024). Khách hàng của chúng ta yêu thích sự khác biệt ở Tây Tạng, Tân Cương, Ai Cập, Ladakh... Mọi thiết kế, câu chữ phải phản ánh sự chân thực, cái "Guu" riêng và tinh thần phục vụ tận tâm.
+            FIT TOUR là đơn vị chuyên thiết kế tour và tổ chức sự kiện, tập trung vào những hành trình có chiều sâu và trải nghiệm khác biệt. Mỗi chuyến đi không chỉ là di chuyển, mà là sự kết hợp giữa cảm xúc, câu chuyện và giá trị cá nhân hóa. Từ tour khám phá, roadtrip, trekking đến các chương trình doanh nghiệp, FIT TOUR luôn đảm bảo tính đồng bộ, chuyên nghiệp và dấu ấn riêng biệt.
           </p>
         </RevealText>
         
         <RevealText>
           <div className="bp-rules-grid">
             <div className="bp-rule-card do">
-              <div className="bp-rule-icon">✅ NÊN</div>
-              <strong>Chân Thực & Tinh Tế</strong><br/>
-              Ưu tiên sự tối giản và chân thực. Hình ảnh thể hiện rõ không khí vùng đất và cảm xúc thật. Câu chữ ngắn gọn, sâu sắc, chia sẻ từ chính kinh nghiệm thực địa của HDV.
+              <div className="bp-rule-icon">✅ KHÁCH HÀNG MỤC TIÊU</div>
+              <strong>Người có thu nhập cao, ưa thích sự tinh tế</strong><br/>
+              Khách hàng lướt nhanh Facebook, bị thu hút bởi cảm xúc từ hình ảnh (Cinematic). Sẵn sàng chi trả cho sự chỉn chu.
             </div>
             <div className="bp-rule-card dont">
-              <div className="bp-rule-icon">❌ KHÔNG NÊN</div>
-              <strong>Phô Trương & Đại Trà</strong><br/>
-              Không dùng từ ngữ sáo rỗng, hô khẩu hiệu cường điệu ("siêu rẻ", "sốc"). Không nhồi nhét quá nhiều thông tin vào một ấn phẩm. Tránh ảnh stock giả tạo.
+              <div className="bp-rule-icon">❌ NGUYÊN TẮC THIẾT KẾ</div>
+              <strong>Không "rẻ tiền", không nhồi nhét</strong><br/>
+              Thông tin trên ảnh phải cực kỳ tinh gọn, đẳng cấp. KHÔNG ĐƯỢC đăng bài sai logo. Phải đồng bộ hoàn toàn về thương hiệu.
+            </div>
+          </div>
+        </RevealText>
+      </section>
+
+      {/* ── Logo Section ── */}
+      <section id="logo" className="bp-section">
+        <RevealText>
+          <h2 className="bp-large-text">Himalaya <br/>Mountain.</h2>
+        </RevealText>
+        <RevealText>
+          <p className="bp-subtitle" style={{ marginTop: 24 }}>
+            Logo lấy ý tưởng từ vùng núi Himalaya, tượng trưng cho sự khám phá, mạo hiểm không ngừng tiến lên phía trước.
+          </p>
+        </RevealText>
+        <RevealText>
+          <div className="bp-rules-grid" style={{ marginTop: 40 }}>
+             <div className="bp-rule-card" style={{ border: '1px solid var(--bp-border)' }}>
+              <div className="bp-rule-icon">📐 Vùng An Toàn</div>
+              <strong>Khoảng cách tối thiểu 120px</strong><br/>
+              Luôn giữ không gian trống 120px xung quanh Logo. Tỉ lệ in tối thiểu (Print) là 20mm.
+            </div>
+             <div className="bp-rule-card" style={{ border: '1px solid var(--bp-border)' }}>
+              <div className="bp-rule-icon">🏷️ Nametag & In ấn</div>
+              <strong>Nền trắng hoặc cam</strong><br/>
+              Logo luôn rõ ràng, không chìm nền. Tôn trọng thiết kế cũ được khách hàng đánh giá là mẫu Nametag đẹp.
             </div>
           </div>
         </RevealText>
       </section>
 
       {/* ── Colors Section ── */}
-      <section id="colors" className="bp-section">
+      <section id="colors" className="bp-section dark">
         <RevealText>
           <h2 className="bp-large-text">Sắc cam dẫn lối.</h2>
         </RevealText>
         <RevealText>
           <p className="bp-subtitle" style={{ marginTop: 24 }}>
-            Tông màu ấm (Cam – Vàng) đại diện cho hành trình, ánh sáng mặt trời và sự dẫn dắt. Kết hợp cùng nền trung tính giúp tổng thể luôn sạch và sang trọng.
+            Bảng màu được xây dựng xoay quanh năng lượng – trải nghiệm – sự cao cấp tinh gọn. Tông màu ấm (Cam – Vàng) đại diện cho hành trình, cảm xúc và sự dẫn dắt, kết hợp với nền trung tính giúp tổng thể luôn sạch, sang.
           </p>
         </RevealText>
         <RevealText>
@@ -156,22 +184,24 @@ const BrandGuidelinePage = () => {
         </RevealText>
         <RevealText>
           <p className="bp-subtitle" style={{ marginTop: 24 }}>
-            SVN Playfair Display mang lại nét sang trọng, điện ảnh cho các tiêu đề lớn. Inter cung cấp sự dễ đọc, hiện đại cho phần thân bài.
+            Font chữ lựa chọn sự tối giản, an toàn mà hiệu quả. Ưu tiên: Việt hóa, in ấn, ấn phẩm digital, Facebook.
           </p>
         </RevealText>
         
         <RevealText>
           <div className="bp-typo-showcase">
             <div className="bp-typo-block heading">
-              <div className="bp-typo-label">Headline Font — SVN Playfair Display</div>
-              <div className="bp-typo-alphabet">
+              <div className="bp-typo-label">Headline Font — Nhắm đến sự sang trọng, truyền cảm hứng</div>
+              <p style={{fontFamily: "var(--bp-font-heading)", fontSize: "2rem", margin: "0 0 16px"}}>SVN Playfair Display / Cinzel / Lora</p>
+              <div className="bp-typo-alphabet" style={{fontSize: "1.5rem", opacity: 0.7}}>
                 Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz<br/>
                 0 1 2 3 4 5 6 7 8 9
               </div>
             </div>
             <div className="bp-typo-block body">
-              <div className="bp-typo-label">Body Font — Inter</div>
-              <div className="bp-typo-alphabet">
+              <div className="bp-typo-label">Body Font — Dễ đọc, hiện đại, hiển thị tốt trên digital lẫn in ấn</div>
+              <p style={{fontFamily: "var(--bp-font-body)", fontSize: "2rem", margin: "0 0 16px"}}>Inter / Roboto / Noto Sans</p>
+              <div className="bp-typo-alphabet" style={{fontSize: "1.5rem", opacity: 0.7}}>
                 Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz<br/>
                 0 1 2 3 4 5 6 7 8 9
               </div>
@@ -180,41 +210,57 @@ const BrandGuidelinePage = () => {
         </RevealText>
       </section>
 
-      {/* ── Photography Section ── */}
-      <section id="photography" className="bp-section dark">
+      {/* ── Social & AI Section ── */}
+      <section id="social" className="bp-section dark">
         <RevealText>
-          <h2 className="bp-large-text">Góc nhìn<br/>chân thực.</h2>
+          <h2 className="bp-large-text">Ứng dụng <br/>Facebook & AI.</h2>
         </RevealText>
         <RevealText>
           <p className="bp-subtitle" style={{ marginTop: 24 }}>
-            Hình ảnh phải thể hiện được trải nghiệm thực tế, văn hóa bản địa (Tân Cương, Tây Tạng, Himalaya) và cảm xúc thật của khách hàng cùng đội ngũ FIT Tour. Tuyệt đối không dùng ảnh stock sáo rỗng.
+            Quy chuẩn hình ảnh và sử dụng trí tuệ nhân tạo (AI) trong sản xuất nội dung Digital.
           </p>
         </RevealText>
         
         <RevealText>
-          <div className="bp-imagery-grid">
-            <div className="bp-image-card">
-              <img src="https://images.unsplash.com/photo-1518599904199-0ca897819ddb?w=1200&auto=format&fit=crop" alt="Himalaya Landscape" />
-              <div className="bp-image-overlay">
-                <h3>Hành trình vĩ đại</h3>
-                <p>Tôn vinh thiên nhiên Tây Tạng, Tân Cương, Ladakh. Con người là điểm nhấn nhỏ bé để thấy sự hùng vĩ của đất trời.</p>
-              </div>
+          <div className="bp-rules-grid">
+            <div className="bp-rule-card do">
+              <div className="bp-rule-icon">📱 Facebook Post</div>
+              <strong>Ảnh chiếm 70–80% bố cục</strong><br/>
+              Ưu tiên hình ảnh lớn, chất lượng cao. Bố cục thoáng, tập trung vào cảm xúc. <br/><br/>
+              • Overlay nhẹ màu cam (opacity thấp)<br/>
+              • Text trắng / vàng để nổi bật<br/>
+              • CTA bắt buộc dùng Orange<br/>
+              • Logo luôn đặt góc trái hoặc phía trên
             </div>
-            <div className="bp-image-card">
-              <img src="https://images.unsplash.com/photo-1533630654593-b222d5d44449?w=1200&auto=format&fit=crop" alt="Local Culture" />
-              <div className="bp-image-overlay">
-                <h3>Văn hóa bản địa</h3>
-                <p>Bắt trọn nụ cười chân thật của người dân địa phương và khoảnh khắc tận tâm của hướng dẫn viên trên hành trình.</p>
-              </div>
+            <div className="bp-rule-card dont">
+              <div className="bp-rule-icon">🤖 Lưu ý Sử dụng AI</div>
+              <strong>AI là nguồn tài nguyên, không thay thế con người</strong><br/>
+              Kết hợp AI lên ý tưởng, nhưng phải hoàn thiện lại bằng con người (AI final file). <br/><br/>
+              • Tối đa đăng sản phẩm về AI / 1 tuần: 3 post.<br/>
+              • Khung giờ đăng: 10h - 16h - 19h.<br/>
+              • Không đăng bài trùng lặp khung thời gian để tránh flop.
             </div>
           </div>
+        </RevealText>
+        <RevealText>
+           <div className="bp-typo-block" style={{ marginTop: 40, paddingTop: 40, borderColor: 'rgba(255,255,255,0.1)' }}>
+              <div className="bp-typo-label">Kích thước Chuẩn Facebook</div>
+              <ul style={{ color: '#a1a1aa', fontSize: '1.1rem', lineHeight: '1.8' }}>
+                <li><strong>Post Vuông (Quảng cáo, social post):</strong> 900x900 px</li>
+                <li><strong>Post Ngang:</strong> 1200x630 px, 1800x900px (post cắt đôi)</li>
+                <li><strong>Post Dọc (Poster):</strong> 1080x1350 px</li>
+                <li><strong>Story:</strong> 1080x1920 px</li>
+                <li><strong>Post Sự Kiện:</strong> 1200x1200 px</li>
+                <li><strong>Banner Web/Mail:</strong> 250x60, 200x60, 160x60 px</li>
+              </ul>
+            </div>
         </RevealText>
       </section>
 
       {/* ── Footer ── */}
       <footer className="bp-footer">
         <div className="bp-footer-logo">FIT Tour</div>
-        <p>Bespoke Brand Identity Guideline. Tài liệu nội bộ lưu hành trong công ty.</p>
+        <p>Bespoke Brand Identity Guideline. Dành cho team Marketing, không chia sẻ với bất kì hình thức nào khác.</p>
       </footer>
     </div>
   );
