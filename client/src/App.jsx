@@ -78,6 +78,7 @@ import ViewDeparturePage from './pages/ViewDeparturePage';
 import AgencySharePage from './pages/AgencySharePage';
 import ServiceContractViewer from './pages/ServiceContractViewer';
 import DocumentsPage from './pages/DocumentsPage';
+import BrandGuidelinePage from './pages/BrandGuidelinePage';
 
 import { 
   Menu,
@@ -1778,6 +1779,9 @@ function AppContent() {
   // ── Route Guard: /tai-lieu/* phải render DocumentsPage riêng, KHÔNG dùng sidebar ──
   if (location.pathname.startsWith('/tai-lieu')) {
     return <DocumentsPage />;
+  }
+  if (location.pathname.startsWith('/cam-nang-thuong-hieu')) {
+    return <BrandGuidelinePage />;
   }
 
   return (
