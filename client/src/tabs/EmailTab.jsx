@@ -69,8 +69,8 @@ function EmailTab({ currentUser, addToast }) {
   }, []);
 
   // Fetch emails
-  const fetchEmails = useCallback(async () => {
-    setLoading(true);
+  const fetchEmails = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get('/api/emails', {
@@ -82,7 +82,7 @@ function EmailTab({ currentUser, addToast }) {
     } catch (err) {
       console.error('Fetch emails error:', err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [activeFolder, page]);
 
@@ -124,12 +124,15 @@ function EmailTab({ currentUser, addToast }) {
         : Math.min(30000 * Math.pow(2, retryCountRef.current), 30 * 60 * 1000);
       timeoutId = setTimeout(async () => {
         await fetchUnreadCounts();
+        if (page === 1 && !searchQuery) {
+          await fetchEmails(true);
+        }
         poll();
       }, delay);
     };
     poll();
     return () => clearTimeout(timeoutId);
-  }, [fetchUnreadCounts]);
+  }, [fetchUnreadCounts, fetchEmails, page, searchQuery]);
 
   const handleSelectEmail = async (email) => {
     setSelectedEmail(email);
@@ -142,7 +145,8 @@ function EmailTab({ currentUser, addToast }) {
       setSelectedEmail(res.data);
       // Load thread
       if (email.thread_id) {
-        const threadRes = await axios.get(`/api/emails/threads/${email.thread_id}`, {
+        const encodedThreadId = encodeURIComponent(email.thread_id);
+        const threadRes = await axios.get(`/api/emails/threads/${encodedThreadId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setThreadEmails(threadRes.data.emails || []);
