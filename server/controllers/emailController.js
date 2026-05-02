@@ -1,6 +1,7 @@
 const db = require('../db');
 const crypto = require('crypto');
 const axios = require('axios');
+const sanitizeHtml = require('sanitize-html');
 
 // ══════════════════════════════════════════════
 // HELPER: Call Cloudflare Worker
@@ -256,22 +257,31 @@ exports.sendEmail = async (req, res) => {
     await db.query(`INSERT INTO email_logs (email_id, direction, status) VALUES ($1,'outbound','queued')`,
       [result.rows[0].id]);
 
+    const sanitizedBody = body ? sanitizeHtml(body, {
+      allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2', 'span', 'div']),
+      allowedAttributes: false // Cho phép mọi thuộc tính (inline styles, class) do nội bộ dùng
+    }) : '';
+
     // Phase 2 — Call Cloudflare Worker outbound queue
     const payload = {
       from: mailbox_address,
       to: to,
       subject: subject,
-      body: body || body_text,
+      body: sanitizedBody || body_text,
     };
-    const cfRes = await sendViaCloudflare(payload);
+    
+    // Return ngay lập tức để không block giao diện
+    res.json({ status: 'queued', email: result.rows[0] });
 
-    if (cfRes.success) {
-      await db.query(`UPDATE email_logs SET status = 'sent' WHERE email_id = $1`, [result.rows[0].id]);
-      res.json({ status: 'sent', email: result.rows[0] });
-    } else {
-      await db.query(`UPDATE email_logs SET status = 'failed', error_message = $2 WHERE email_id = $1`, [result.rows[0].id, cfRes.error]);
-      res.json({ status: 'failed', error: cfRes.error, email: result.rows[0] });
-    }
+    // Chạy ngầm việc gửi email
+    sendViaCloudflare(payload).then(async (cfRes) => {
+      if (cfRes.success) {
+        await db.query(`UPDATE email_logs SET status = 'sent' WHERE email_id = $1`, [result.rows[0].id]);
+      } else {
+        await db.query(`UPDATE email_logs SET status = 'failed', error_message = $2 WHERE email_id = $1`, [result.rows[0].id, cfRes.error]);
+      }
+    }).catch(err => console.error('Background send error:', err));
+
   } catch (err) {
     console.error('Send email error:', err);
     res.status(500).json({ error: err.message });
@@ -313,24 +323,33 @@ exports.replyEmail = async (req, res) => {
     await db.query(`INSERT INTO email_logs (email_id, direction, status) VALUES ($1,'outbound','queued')`,
       [result.rows[0].id]);
 
+    const sanitizedBody = body ? sanitizeHtml(body, {
+      allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2', 'span', 'div']),
+      allowedAttributes: false
+    }) : '';
+
     // Call Cloudflare Worker
     const payload = {
       from: mailbox_address,
       to: original.sender,
       subject: reSubject,
-      body: body || body_text,
+      body: sanitizedBody || body_text,
       inReplyTo: original.message_id,
       references: refs.join(' ')
     };
-    const cfRes = await sendViaCloudflare(payload);
 
-    if (cfRes.success) {
-      await db.query(`UPDATE email_logs SET status = 'sent' WHERE email_id = $1`, [result.rows[0].id]);
-      res.json({ status: 'sent', email: result.rows[0] });
-    } else {
-      await db.query(`UPDATE email_logs SET status = 'failed', error_message = $2 WHERE email_id = $1`, [result.rows[0].id, cfRes.error]);
-      res.json({ status: 'failed', error: cfRes.error, email: result.rows[0] });
-    }
+    // Return ngay lập tức để không block giao diện
+    res.json({ status: 'queued', email: result.rows[0] });
+
+    // Chạy ngầm
+    sendViaCloudflare(payload).then(async (cfRes) => {
+      if (cfRes.success) {
+        await db.query(`UPDATE email_logs SET status = 'sent' WHERE email_id = $1`, [result.rows[0].id]);
+      } else {
+        await db.query(`UPDATE email_logs SET status = 'failed', error_message = $2 WHERE email_id = $1`, [result.rows[0].id, cfRes.error]);
+      }
+    }).catch(err => console.error('Background reply error:', err));
+
   } catch (err) {
     console.error('Reply error:', err);
     res.status(500).json({ error: err.message });
@@ -371,22 +390,31 @@ exports.forwardEmail = async (req, res) => {
     await db.query(`INSERT INTO email_logs (email_id, direction, status) VALUES ($1,'outbound','queued')`,
       [result.rows[0].id]);
 
+    const sanitizedBody = fwdBody ? sanitizeHtml(fwdBody, {
+      allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2', 'span', 'div']),
+      allowedAttributes: false
+    }) : '';
+
     // Call Cloudflare Worker
     const payload = {
       from: mailbox_address,
       to: to,
       subject: fwdSubject,
-      body: fwdBody,
+      body: sanitizedBody,
     };
-    const cfRes = await sendViaCloudflare(payload);
 
-    if (cfRes.success) {
-      await db.query(`UPDATE email_logs SET status = 'sent' WHERE email_id = $1`, [result.rows[0].id]);
-      res.json({ status: 'sent', email: result.rows[0] });
-    } else {
-      await db.query(`UPDATE email_logs SET status = 'failed', error_message = $2 WHERE email_id = $1`, [result.rows[0].id, cfRes.error]);
-      res.json({ status: 'failed', error: cfRes.error, email: result.rows[0] });
-    }
+    // Return ngay lập tức
+    res.json({ status: 'queued', email: result.rows[0] });
+
+    // Chạy ngầm
+    sendViaCloudflare(payload).then(async (cfRes) => {
+      if (cfRes.success) {
+        await db.query(`UPDATE email_logs SET status = 'sent' WHERE email_id = $1`, [result.rows[0].id]);
+      } else {
+        await db.query(`UPDATE email_logs SET status = 'failed', error_message = $2 WHERE email_id = $1`, [result.rows[0].id, cfRes.error]);
+      }
+    }).catch(err => console.error('Background forward error:', err));
+
   } catch (err) {
     console.error('Forward error:', err);
     res.status(500).json({ error: err.message });
