@@ -1,5 +1,33 @@
 const db = require('../db');
 const crypto = require('crypto');
+const axios = require('axios');
+
+// ══════════════════════════════════════════════
+// HELPER: Call Cloudflare Worker
+// ══════════════════════════════════════════════
+async function sendViaCloudflare(payload) {
+  const workerUrl = process.env.CF_EMAIL_WORKER_URL;
+  const secret = process.env.CRM_WEBHOOK_SECRET;
+  
+  if (!workerUrl) {
+    console.warn('CF_EMAIL_WORKER_URL is not defined in .env. Skipping actual send.');
+    return { success: false, error: 'CF_EMAIL_WORKER_URL not configured' };
+  }
+
+  try {
+    const res = await axios.post(workerUrl, payload, {
+      headers: {
+        'Authorization': `Bearer ${secret}`,
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    });
+    return res.data; // { success: true }
+  } catch (err) {
+    console.error('Cloudflare Worker request failed:', err.response?.data || err.message);
+    return { success: false, error: err.message };
+  }
+}
 
 // ══════════════════════════════════════════════
 // WEBHOOK: Nhận email từ Cloudflare Worker
@@ -228,10 +256,22 @@ exports.sendEmail = async (req, res) => {
     await db.query(`INSERT INTO email_logs (email_id, direction, status) VALUES ($1,'outbound','queued')`,
       [result.rows[0].id]);
 
-    // TODO: Phase 2 — Call Cloudflare Worker outbound queue
-    // For now, just save to DB
+    // Phase 2 — Call Cloudflare Worker outbound queue
+    const payload = {
+      from: mailbox_address,
+      to: to,
+      subject: subject,
+      body: body || body_text,
+    };
+    const cfRes = await sendViaCloudflare(payload);
 
-    res.json({ status: 'queued', email: result.rows[0] });
+    if (cfRes.success) {
+      await db.query(`UPDATE email_logs SET status = 'sent' WHERE email_id = $1`, [result.rows[0].id]);
+      res.json({ status: 'sent', email: result.rows[0] });
+    } else {
+      await db.query(`UPDATE email_logs SET status = 'failed', error_message = $2 WHERE email_id = $1`, [result.rows[0].id, cfRes.error]);
+      res.json({ status: 'failed', error: cfRes.error, email: result.rows[0] });
+    }
   } catch (err) {
     console.error('Send email error:', err);
     res.status(500).json({ error: err.message });
@@ -273,7 +313,24 @@ exports.replyEmail = async (req, res) => {
     await db.query(`INSERT INTO email_logs (email_id, direction, status) VALUES ($1,'outbound','queued')`,
       [result.rows[0].id]);
 
-    res.json({ status: 'queued', email: result.rows[0] });
+    // Call Cloudflare Worker
+    const payload = {
+      from: mailbox_address,
+      to: original.sender,
+      subject: reSubject,
+      body: body || body_text,
+      inReplyTo: original.message_id,
+      references: refs.join(' ')
+    };
+    const cfRes = await sendViaCloudflare(payload);
+
+    if (cfRes.success) {
+      await db.query(`UPDATE email_logs SET status = 'sent' WHERE email_id = $1`, [result.rows[0].id]);
+      res.json({ status: 'sent', email: result.rows[0] });
+    } else {
+      await db.query(`UPDATE email_logs SET status = 'failed', error_message = $2 WHERE email_id = $1`, [result.rows[0].id, cfRes.error]);
+      res.json({ status: 'failed', error: cfRes.error, email: result.rows[0] });
+    }
   } catch (err) {
     console.error('Reply error:', err);
     res.status(500).json({ error: err.message });
@@ -311,7 +368,25 @@ exports.forwardEmail = async (req, res) => {
     await db.query('INSERT INTO email_activity_logs (email_id, user_id, action, metadata) VALUES ($1,$2,$3,$4)',
       [result.rows[0].id, userId, 'forward', JSON.stringify({ original_email_id: id, forwarded_to: to })]);
 
-    res.json({ status: 'queued', email: result.rows[0] });
+    await db.query(`INSERT INTO email_logs (email_id, direction, status) VALUES ($1,'outbound','queued')`,
+      [result.rows[0].id]);
+
+    // Call Cloudflare Worker
+    const payload = {
+      from: mailbox_address,
+      to: to,
+      subject: fwdSubject,
+      body: fwdBody,
+    };
+    const cfRes = await sendViaCloudflare(payload);
+
+    if (cfRes.success) {
+      await db.query(`UPDATE email_logs SET status = 'sent' WHERE email_id = $1`, [result.rows[0].id]);
+      res.json({ status: 'sent', email: result.rows[0] });
+    } else {
+      await db.query(`UPDATE email_logs SET status = 'failed', error_message = $2 WHERE email_id = $1`, [result.rows[0].id, cfRes.error]);
+      res.json({ status: 'failed', error: cfRes.error, email: result.rows[0] });
+    }
   } catch (err) {
     console.error('Forward error:', err);
     res.status(500).json({ error: err.message });

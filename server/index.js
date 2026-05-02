@@ -6,6 +6,9 @@ const http = require('http');
 
 dotenv.config();
 
+// Initialize cron jobs
+require('./cron/emailRetry');
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
