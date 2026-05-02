@@ -102,7 +102,8 @@ exports.listEmails = async (req, res) => {
     let idx = 2;
 
     // Filter by user_id unless the user is Admin
-    if (req.user?.role !== 'Admin' && req.user?.role !== 'Administrator') {
+    const userRole = req.user?.role?.toLowerCase() || '';
+    if (userRole !== 'admin' && userRole !== 'administrator') {
       where += ` AND e.user_id = $${idx}`;
       params.push(userId);
       idx++;
@@ -436,7 +437,8 @@ exports.getUnreadCount = async (req, res) => {
     let query = 'SELECT folder, COUNT(*) as count FROM emails WHERE is_read = false';
     let params = [];
 
-    if (req.user?.role !== 'Admin' && req.user?.role !== 'Administrator') {
+    const userRole = req.user?.role?.toLowerCase() || '';
+    if (userRole !== 'admin' && userRole !== 'administrator') {
       query += ' AND user_id = $1';
       params.push(userId);
     }
