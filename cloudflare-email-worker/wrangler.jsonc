@@ -8,32 +8,9 @@
     "CRM_WEBHOOK_URL": "https://erp.fittour.vn/api/emails/incoming"
   },
   "send_email": [
-    { "name": "EMAIL", "remote": true }
+    { "name": "EMAIL" }
   ],
   "r2_buckets": [
     { "binding": "BUCKET", "bucket_name": "fittour-email-attachments" }
-  ],
-  "queues": {
-    "producers": [
-      { "binding": "INBOUND_QUEUE", "queue": "fittour-inbound-emails" },
-      { "binding": "OUTBOUND_QUEUE", "queue": "fittour-outbound-emails" }
-    ],
-    "consumers": [
-      {
-        "queue": "fittour-inbound-emails",
-        "max_retries": 3,
-        "dead_letter_queue": "fittour-email-dlq",
-        "max_batch_size": 1,
-        "max_batch_timeout": 5
-      },
-      {
-        "queue": "fittour-outbound-emails",
-        "max_retries": 3,
-        "dead_letter_queue": "fittour-email-dlq",
-        "max_batch_size": 1,
-        "max_batch_timeout": 1,
-        "max_concurrency": 3
-      }
-    ]
-  }
+  ]
 }

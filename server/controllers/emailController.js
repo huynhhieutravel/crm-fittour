@@ -461,7 +461,7 @@ exports.rateCheck = async (req, res) => {
 exports.listMailboxes = async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT m.*, u.name as user_name FROM email_mailboxes m 
+      SELECT m.*, u.full_name as user_name FROM email_mailboxes m 
       LEFT JOIN users u ON m.user_id = u.id ORDER BY m.created_at DESC
     `);
     res.json(result.rows);

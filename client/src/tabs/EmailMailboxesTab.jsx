@@ -233,7 +233,7 @@ function EmailMailboxesTab({ addToast, users }) {
                   >
                     <option value="">-- Dùng chung / Không gán --</option>
                     {users?.map(u => (
-                      <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                      <option key={u.id} value={u.id}>{u.full_name || u.username} ({u.email})</option>
                     ))}
                   </select>
                 </div>
