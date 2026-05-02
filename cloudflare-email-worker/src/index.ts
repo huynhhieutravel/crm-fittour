@@ -36,7 +36,7 @@ export default {
         attachments.push({
           filename: att.filename,
           mimetype: att.mimeType,
-          size: att.content.byteLength,
+          size: typeof att.content === 'string' ? att.content.length : att.content.byteLength,
           content_id: att.contentId || null,
           r2_key: key,
           disposition: 'attachment'
@@ -83,31 +83,48 @@ export default {
     }
 
     try {
-      const { createMimeMessage } = await import('mimetext');
       const data: OutboundMessage = await request.json();
       
-      const msg = createMimeMessage();
-      msg.setSender(data.from);
-      msg.setRecipient(data.to);
-      msg.setSubject(data.subject);
-      msg.addMessage({ contentType: 'text/html', data: data.body });
+      const mcPayload: any = {
+        personalizations: [
+          {
+            to: [{ email: data.to, name: data.to.split('@')[0] }],
+          }
+        ],
+        from: {
+          email: data.from,
+          name: data.from.split('@')[0]
+        },
+        subject: data.subject,
+        content: [
+          {
+            type: "text/html",
+            value: data.body
+          }
+        ]
+      };
 
-      if (data.inReplyTo) {
-        msg.setHeader('In-Reply-To', data.inReplyTo);
-      }
-      if (data.references) {
-        msg.setHeader('References', data.references);
+      if (data.inReplyTo || data.references) {
+        mcPayload.headers = {};
+        if (data.inReplyTo) mcPayload.headers['In-Reply-To'] = data.inReplyTo;
+        if (data.references) mcPayload.headers['References'] = data.references;
       }
 
-      const rawMime = msg.asRaw();
-      const emailMessage = new EmailMessage(
-        data.from,
-        data.to,
-        rawMime
-      );
-      
-      await env.EMAIL.send(emailMessage);
-      return new Response(JSON.stringify({ success: true }), { status: 200 });
+      const mcResponse = await fetch("https://api.mailchannels.net/tx/v1/send", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(mcPayload),
+      });
+
+      if (mcResponse.status >= 200 && mcResponse.status < 300) {
+        return new Response(JSON.stringify({ success: true }), { status: 200 });
+      } else {
+        const errText = await mcResponse.text();
+        console.error("MailChannels error:", mcResponse.status, errText);
+        return new Response(JSON.stringify({ success: false, error: errText }), { status: 500 });
+      }
     } catch (error: any) {
       console.error("Error processing outbound:", error);
       return new Response(JSON.stringify({ success: false, error: error.message }), { status: 500 });
