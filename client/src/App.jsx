@@ -20,6 +20,7 @@ import BookingsTab from './tabs/BookingsTab';
 import CostingsTab from './tabs/CostingsTab';
 import CustomersTab from './tabs/CustomersTab';
 import InboxTab from './tabs/InboxTab';
+import EmailTab from './tabs/EmailTab';
 import ToursTab from './tabs/ToursTab';
 import DeparturesTab from './tabs/DeparturesTab';
 import RemindersTab from './tabs/RemindersTab';
@@ -128,7 +129,8 @@ import {
   Activity,
   MapPin,
   ScanText,
-  Cpu
+  Cpu,
+  Mail
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -163,7 +165,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
-  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu'];
+  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'email', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -1862,6 +1864,11 @@ function AppContent() {
                 </div>
               )}
               {checkView('leads') && (
+                <div className={`nav-item ${activeTab === 'email' ? 'active' : ''}`} onClick={() => navigate('/email')}>
+                  <Mail /> Email
+                </div>
+              )}
+              {checkView('leads') && (
                 <div className={`nav-item ${activeTab === 'inbox' ? 'active' : ''}`} onClick={() => navigate('/inbox')}>
                   <MessageSquare /> Messenger
                 </div>
@@ -2983,6 +2990,9 @@ function AppContent() {
           />
         )}
 
+        {activeTab === 'email' && (
+          <EmailTab currentUser={user} addToast={addToast} />
+        )}
 
         {activeTab === 'tours' && (
           <ToursTab 

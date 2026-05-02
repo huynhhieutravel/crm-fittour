@@ -1,0 +1,39 @@
+{
+  "name": "fittour-email",
+  "main": "./src/index.ts",
+  "compatibility_date": "2024-05-12",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "DOMAINS": "fittour.vn",
+    "CRM_WEBHOOK_URL": "https://erp.fittour.vn/api/emails/incoming"
+  },
+  "send_email": [
+    { "name": "EMAIL", "remote": true }
+  ],
+  "r2_buckets": [
+    { "binding": "BUCKET", "bucket_name": "fittour-email-attachments" }
+  ],
+  "queues": {
+    "producers": [
+      { "binding": "INBOUND_QUEUE", "queue": "fittour-inbound-emails" },
+      { "binding": "OUTBOUND_QUEUE", "queue": "fittour-outbound-emails" }
+    ],
+    "consumers": [
+      {
+        "queue": "fittour-inbound-emails",
+        "max_retries": 3,
+        "dead_letter_queue": "fittour-email-dlq",
+        "max_batch_size": 1,
+        "max_batch_timeout": 5
+      },
+      {
+        "queue": "fittour-outbound-emails",
+        "max_retries": 3,
+        "dead_letter_queue": "fittour-email-dlq",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_concurrency": 3
+      }
+    ]
+  }
+}

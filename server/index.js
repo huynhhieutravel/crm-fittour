@@ -109,6 +109,10 @@ app.use('/api/travel-support', require('./routes/travelSupport'));
 const cskhRoutes = require('./routes/cskh');
 app.use('/api/cskh', cskhRoutes);
 
+// ═══ Email Module ═══
+const emailRoutes = require('./routes/emails');
+app.use('/api/emails', emailRoutes);
+
 // ═══ AI Copilot ═══
 const aiAssistantRoutes = require('./routes/aiAssistant');
 app.use('/api/ai', aiAssistantRoutes);

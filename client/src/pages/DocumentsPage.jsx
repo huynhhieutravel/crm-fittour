@@ -767,7 +767,7 @@ const DocumentsPage = () => {
   if (path === '/tai-lieu/marketing') return <MarketingHub />;
   if (path === '/tai-lieu/marketing/create') return <MarketingEditor />;
   if (path === '/tai-lieu/quy-che-luong-hdv') return <BlogLayout><InternalDocsTab /></BlogLayout>;
-  if (path === '/tai-lieu/brand-guideline') return <BrandGuidelinePage />;
+  if (path.startsWith('/tai-lieu/brand-guideline')) return <BrandGuidelinePage />;
   if (path === '/tai-lieu/bo-nguyen-tac-hanh-xu-nhan-vien') return (
     <MarkdownViewer 
       fileUrl="/docs/bo-nguyen-tac.md" 
