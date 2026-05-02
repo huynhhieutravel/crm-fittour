@@ -21,6 +21,7 @@ import CostingsTab from './tabs/CostingsTab';
 import CustomersTab from './tabs/CustomersTab';
 import InboxTab from './tabs/InboxTab';
 import EmailTab from './tabs/EmailTab';
+import EmailMailboxesTab from './tabs/EmailMailboxesTab';
 import ToursTab from './tabs/ToursTab';
 import DeparturesTab from './tabs/DeparturesTab';
 import RemindersTab from './tabs/RemindersTab';
@@ -165,7 +166,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
-  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'email', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu'];
+  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'email', 'email-mailboxes', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -1864,8 +1865,26 @@ function AppContent() {
                 </div>
               )}
               {checkView('leads') && (
-                <div className={`nav-item ${activeTab === 'email' ? 'active' : ''}`} onClick={() => navigate('/email')}>
-                  <Mail /> Email
+                <div 
+                  className={`nav-item ${activeTab === 'email' || activeTab === 'email-mailboxes' ? 'active-parent' : ''}`}
+                  onClick={() => navigate('/email')}
+                  style={{ justifyContent: 'space-between' }}
+                  onMouseEnter={(e) => {
+                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHoveredRect(rect);
+                    setHoveredMenu('email');
+                  }}
+                  onMouseLeave={() => {
+                    menuTimerRef.current = setTimeout(() => {
+                      setHoveredMenu(null);
+                    }, 150);
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Mail /> Email
+                  </div>
+                  <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
               {checkView('leads') && (
@@ -2275,6 +2294,44 @@ function AppContent() {
             onClick={() => { navigate('/staff-performance'); setHoveredMenu(null); }} 
           >
             Hiệu suất Nhân viên
+          </div>
+        </div>
+      )}
+
+      {hoveredMenu === 'email' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('email');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'email' ? 'active' : ''}`} 
+            onClick={() => { navigate('/email'); setHoveredMenu(null); }} 
+          >
+            Hộp thư (Inbox)
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'email-mailboxes' ? 'active' : ''}`} 
+            onClick={() => { navigate('/email/mailboxes'); setHoveredMenu(null); }} 
+          >
+            Cài đặt Hộp thư
           </div>
         </div>
       )}
@@ -2821,7 +2878,7 @@ function AppContent() {
                   style={{ 
                     position: 'absolute', 
                     right: 0, 
-                    top: '100%', 
+
                     display: 'flex', 
                     flexDirection: 'column',
                     opacity: 1, 
@@ -2992,6 +3049,10 @@ function AppContent() {
 
         {activeTab === 'email' && (
           <EmailTab currentUser={user} addToast={addToast} />
+        )}
+
+        {activeTab === 'email-mailboxes' && (
+          <EmailMailboxesTab users={users} addToast={addToast} />
         )}
 
         {activeTab === 'tours' && (
