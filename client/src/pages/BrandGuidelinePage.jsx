@@ -84,7 +84,7 @@ const BrandGuidelinePage = () => {
         </Link>
         <nav className="bp-nav">
           <a href="#vision" onClick={(e) => { e.preventDefault(); scrollTo('vision'); }} className="bp-nav-link">Định Vị</a>
-          <a href="#logo" onClick={(e) => { e.preventDefault(); scrollTo('logo'); }} className="bp-nav-link">Logo</a>
+          <Link to="/cam-nang-thuong-hieu/logo" className="bp-nav-link">Logo</Link>
           <a href="#colors" onClick={(e) => { e.preventDefault(); scrollTo('colors'); }} className="bp-nav-link">Màu Sắc</a>
           <a href="#typography" onClick={(e) => { e.preventDefault(); scrollTo('typography'); }} className="bp-nav-link">Phông Chữ</a>
           <a href="#social" onClick={(e) => { e.preventDefault(); scrollTo('social'); }} className="bp-nav-link">Facebook & AI</a>

@@ -79,6 +79,7 @@ import AgencySharePage from './pages/AgencySharePage';
 import ServiceContractViewer from './pages/ServiceContractViewer';
 import DocumentsPage from './pages/DocumentsPage';
 import BrandGuidelinePage from './pages/BrandGuidelinePage';
+import BrandLogoPage from './pages/BrandLogoPage';
 
 import { 
   Menu,
