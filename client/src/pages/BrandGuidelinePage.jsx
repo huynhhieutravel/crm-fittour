@@ -94,13 +94,13 @@ const BrandGuidelinePage = () => {
         <div className="bp-hero-bg-blur"></div>
         <RevealText>
           <h1 className="bp-massive-text">
-            Bespoke <br />
-            <span style={{ color: 'var(--bp-orange)' }}>With Taste.</span>
+            Du Lịch <br />
+            <span style={{ color: 'var(--bp-orange)' }}>Có Guu.</span>
           </h1>
         </RevealText>
         <RevealText>
           <p className="bp-subtitle" style={{ marginTop: 32 }}>
-            Sổ tay nhận diện thương hiệu nội bộ của FIT Tour. Một bản nguyên tắc hướng đến sự sang trọng, tinh tế và trải nghiệm đẳng cấp dành cho dòng khách hàng thu nhập cao.
+            Sổ tay thương hiệu nội bộ của FIT Tour. Sinh ra từ trải nghiệm thực địa và tinh thần làm nghề cẩn trọng. Không chỉ đi, mà sống trọn hành trình.
           </p>
         </RevealText>
       </section>
@@ -108,12 +108,11 @@ const BrandGuidelinePage = () => {
       {/* ── Vision Section ── */}
       <section id="vision" className="bp-section dark">
         <RevealText>
-          <h2 className="bp-large-text">Không chỉ là di chuyển.<br/>Đó là cảm xúc.</h2>
+          <h2 className="bp-large-text">Trải nghiệm thực địa <br/>& Omotenashi.</h2>
         </RevealText>
         <RevealText>
           <p className="bp-subtitle" style={{ marginTop: 40 }}>
-            FIT Tour định vị là chuyên gia thiết kế các hành trình có chiều sâu. Đối tượng khách hàng lướt nhanh, bị thu hút bởi cảm giác "Cinematic". 
-            Mọi hình ảnh, màu sắc và câu chữ phát ra từ thương hiệu không được phép "rẻ tiền", nhồi nhét, hay thiếu thẩm mỹ.
+            FIT Tour định vị là chuyên gia thiết kế hành trình Bespoke (Vinh danh Thương Hiệu Thiết Kế Tour Xuất Sắc Nhất 2024). Khách hàng của chúng ta yêu thích sự khác biệt ở Tây Tạng, Tân Cương, Ai Cập, Ladakh... Mọi thiết kế, câu chữ phải phản ánh sự chân thực, cái "Guu" riêng và tinh thần phục vụ tận tâm.
           </p>
         </RevealText>
         
@@ -121,13 +120,13 @@ const BrandGuidelinePage = () => {
           <div className="bp-rules-grid">
             <div className="bp-rule-card do">
               <div className="bp-rule-icon">✅ NÊN</div>
-              <strong>Tinh Gọn & Sang Trọng</strong><br/>
-              Ưu tiên sự tối giản. Hình ảnh chiếm 80% bố cục, copy cực ngắn gọn. Sử dụng khoảng trắng một cách có chủ đích để mắt người đọc được nghỉ ngơi.
+              <strong>Chân Thực & Tinh Tế</strong><br/>
+              Ưu tiên sự tối giản và chân thực. Hình ảnh thể hiện rõ không khí vùng đất và cảm xúc thật. Câu chữ ngắn gọn, sâu sắc, chia sẻ từ chính kinh nghiệm thực địa của HDV.
             </div>
             <div className="bp-rule-card dont">
               <div className="bp-rule-icon">❌ KHÔNG NÊN</div>
-              <strong>Nhồi Nhét & Rối Mắt</strong><br/>
-              Tránh viết đoạn văn dài trên ảnh. Tránh dùng màu gradient cầu vồng, hiệu ứng shadow/glow quê mùa. Đừng bao giờ làm méo logo.
+              <strong>Phô Trương & Đại Trà</strong><br/>
+              Không dùng từ ngữ sáo rỗng, hô khẩu hiệu cường điệu ("siêu rẻ", "sốc"). Không nhồi nhét quá nhiều thông tin vào một ấn phẩm. Tránh ảnh stock giả tạo.
             </div>
           </div>
         </RevealText>
@@ -184,28 +183,28 @@ const BrandGuidelinePage = () => {
       {/* ── Photography Section ── */}
       <section id="photography" className="bp-section dark">
         <RevealText>
-          <h2 className="bp-large-text">Ống kính<br/>điện ảnh.</h2>
+          <h2 className="bp-large-text">Góc nhìn<br/>chân thực.</h2>
         </RevealText>
         <RevealText>
           <p className="bp-subtitle" style={{ marginTop: 24 }}>
-            Khắt khe trong việc chọn ảnh. Không dùng ảnh stock giả tạo. Hình ảnh phải bắt được ánh sáng tự nhiên, bố cục thoáng, có chiều sâu và truyền tải được một câu chuyện.
+            Hình ảnh phải thể hiện được trải nghiệm thực tế, văn hóa bản địa (Tân Cương, Tây Tạng, Himalaya) và cảm xúc thật của khách hàng cùng đội ngũ FIT Tour. Tuyệt đối không dùng ảnh stock sáo rỗng.
           </p>
         </RevealText>
         
         <RevealText>
           <div className="bp-imagery-grid">
             <div className="bp-image-card">
-              <img src="https://images.unsplash.com/photo-1544365558-35aa4afcf11f?w=1200&auto=format&fit=crop" alt="Landscape" />
+              <img src="https://images.unsplash.com/photo-1518599904199-0ca897819ddb?w=1200&auto=format&fit=crop" alt="Himalaya Landscape" />
               <div className="bp-image-overlay">
-                <h3>Sự hùng vĩ</h3>
-                <p>Khung cảnh thiên nhiên bao la, con người là một điểm nhấn nhỏ bé để tôn lên sự vĩ đại của hành trình.</p>
+                <h3>Hành trình vĩ đại</h3>
+                <p>Tôn vinh thiên nhiên Tây Tạng, Tân Cương, Ladakh. Con người là điểm nhấn nhỏ bé để thấy sự hùng vĩ của đất trời.</p>
               </div>
             </div>
             <div className="bp-image-card">
-              <img src="https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?w=1200&auto=format&fit=crop" alt="Culture" />
+              <img src="https://images.unsplash.com/photo-1533630654593-b222d5d44449?w=1200&auto=format&fit=crop" alt="Local Culture" />
               <div className="bp-image-overlay">
-                <h3>Văn hóa chân thực</h3>
-                <p>Bắt trọn khoảnh khắc đời thường, nụ cười chân thật, tránh các bức ảnh tạo dáng cứng nhắc.</p>
+                <h3>Văn hóa bản địa</h3>
+                <p>Bắt trọn nụ cười chân thật của người dân địa phương và khoảnh khắc tận tâm của hướng dẫn viên trên hành trình.</p>
               </div>
             </div>
           </div>
