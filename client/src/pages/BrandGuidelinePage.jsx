@@ -76,21 +76,6 @@ const BrandGuidelinePage = () => {
 
   return (
     <div className="bp-container">
-      {/* ── Header ── */}
-      <header className={`bp-header ${scrolled ? 'scrolled' : ''}`}>
-        <Link to="/tai-lieu" className="bp-header-logo">
-          <ArrowLeft size={20} />
-          <span>FIT Tour Bespoke</span>
-        </Link>
-        <nav className="bp-nav">
-          <a href="#vision" onClick={(e) => { e.preventDefault(); scrollTo('vision'); }} className="bp-nav-link">Định Vị</a>
-          <Link to="/cam-nang-thuong-hieu/logo" className="bp-nav-link">Logo</Link>
-          <a href="#colors" onClick={(e) => { e.preventDefault(); scrollTo('colors'); }} className="bp-nav-link">Màu Sắc</a>
-          <a href="#typography" onClick={(e) => { e.preventDefault(); scrollTo('typography'); }} className="bp-nav-link">Phông Chữ</a>
-          <a href="#social" onClick={(e) => { e.preventDefault(); scrollTo('social'); }} className="bp-nav-link">Facebook & AI</a>
-        </nav>
-      </header>
-
       {/* ── Hero ── */}
       <section className="bp-hero">
         <div className="bp-hero-bg-blur"></div>

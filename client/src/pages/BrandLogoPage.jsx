@@ -34,17 +34,6 @@ const BrandLogoPage = () => {
 
   return (
     <div className="bp-container">
-      {/* ── Header ── */}
-      <header className={`bp-header ${scrolled ? 'scrolled' : ''}`}>
-        <Link to="/cam-nang-thuong-hieu" className="bp-header-logo">
-          <ArrowLeft size={20} />
-          <span>Brand Guidelines</span>
-        </Link>
-        <nav className="bp-nav">
-          <span className="bp-nav-link active" style={{ color: 'var(--bp-orange)', fontWeight: 'bold' }}>Logo</span>
-        </nav>
-      </header>
-
       {/* ── Hero ── */}
       <section className="bp-hero" style={{ minHeight: '60vh' }}>
         <div className="bp-hero-bg-blur"></div>

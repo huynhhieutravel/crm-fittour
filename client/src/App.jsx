@@ -80,6 +80,7 @@ import ServiceContractViewer from './pages/ServiceContractViewer';
 import DocumentsPage from './pages/DocumentsPage';
 import BrandGuidelinePage from './pages/BrandGuidelinePage';
 import BrandLogoPage from './pages/BrandLogoPage';
+import BrandLayout from './pages/BrandLayout';
 
 import { 
   Menu,
