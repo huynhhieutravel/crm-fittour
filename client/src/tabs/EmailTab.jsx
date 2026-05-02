@@ -72,8 +72,10 @@ function EmailTab({ currentUser, addToast }) {
   const fetchEmails = useCallback(async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem('token');
       const res = await axios.get('/api/emails', {
-        params: { folder: activeFolder, page, limit: 20 }
+        params: { folder: activeFolder, page, limit: 20 },
+        headers: { Authorization: `Bearer ${token}` }
       });
       setEmails(res.data.emails || []);
       setTotal(res.data.total || 0);
@@ -89,7 +91,10 @@ function EmailTab({ currentUser, addToast }) {
 
   const fetchUnreadCounts = useCallback(async () => {
     try {
-      const res = await axios.get('/api/emails/unread-count');
+      const token = localStorage.getItem('token');
+      const res = await axios.get('/api/emails/unread-count', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setUnreadCounts(res.data || {});
       // Server is back online — reset retry counter
       if (!serverOnlineRef.current) {
@@ -130,11 +135,16 @@ function EmailTab({ currentUser, addToast }) {
     setSelectedEmail(email);
     setMobileView('detail');
     try {
-      const res = await axios.get(`/api/emails/${email.id}`);
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`/api/emails/${email.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setSelectedEmail(res.data);
       // Load thread
       if (email.thread_id) {
-        const threadRes = await axios.get(`/api/emails/threads/${email.thread_id}`);
+        const threadRes = await axios.get(`/api/emails/threads/${email.thread_id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setThreadEmails(threadRes.data.emails || []);
       } else {
         setThreadEmails([res.data]);
@@ -153,7 +163,11 @@ function EmailTab({ currentUser, addToast }) {
     if (!searchQuery.trim()) { fetchEmails(); return; }
     setLoading(true);
     try {
-      const res = await axios.get('/api/emails/search', { params: { q: searchQuery, folder: activeFolder } });
+      const token = localStorage.getItem('token');
+      const res = await axios.get('/api/emails/search', { 
+        params: { q: searchQuery, folder: activeFolder },
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setEmails(res.data || []);
     } catch (err) {
       console.error('Search error:', err);
@@ -196,22 +210,23 @@ function EmailTab({ currentUser, addToast }) {
       return;
     }
     try {
+      const token = localStorage.getItem('token');
       const mailbox = currentUser?.email || 'info@fittour.vn';
       if (composeMode === 'reply' && selectedEmail) {
         await axios.post(`/api/emails/reply/${selectedEmail.id}`, {
           body: composeData.body, body_text: composeData.body,
           cc: composeData.cc, bcc: composeData.bcc, mailbox_address: mailbox
-        });
+        }, { headers: { Authorization: `Bearer ${token}` } });
       } else if (composeMode === 'forward' && selectedEmail) {
         await axios.post(`/api/emails/forward/${selectedEmail.id}`, {
           to: composeData.to, body_prefix: composeData.body, mailbox_address: mailbox
-        });
+        }, { headers: { Authorization: `Bearer ${token}` } });
       } else {
         await axios.post('/api/emails/send', {
           to: composeData.to, subject: composeData.subject,
           body: composeData.body, body_text: composeData.body,
           cc: composeData.cc, bcc: composeData.bcc, mailbox_address: mailbox
-        });
+        }, { headers: { Authorization: `Bearer ${token}` } });
       }
       addToast?.('Email đã được gửi!');
       setShowCompose(false);
@@ -224,7 +239,8 @@ function EmailTab({ currentUser, addToast }) {
 
   const handleUpdateStatus = async (emailId, status) => {
     try {
-      await axios.put(`/api/emails/${emailId}`, { status });
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/emails/${emailId}`, { status }, { headers: { Authorization: `Bearer ${token}` } });
       setSelectedEmail(prev => prev ? { ...prev, status } : prev);
       fetchEmails();
       addToast?.(`Đã cập nhật trạng thái: ${STATUS_BADGES[status]?.label}`);
@@ -235,14 +251,16 @@ function EmailTab({ currentUser, addToast }) {
 
   const handleToggleStar = async (emailId, current) => {
     try {
-      await axios.put(`/api/emails/${emailId}`, { is_starred: !current });
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/emails/${emailId}`, { is_starred: !current }, { headers: { Authorization: `Bearer ${token}` } });
       setEmails(prev => prev.map(e => e.id === emailId ? { ...e, is_starred: !current } : e));
     } catch (err) { console.error(err); }
   };
 
   const handleMoveToTrash = async (emailId) => {
     try {
-      await axios.put(`/api/emails/${emailId}/move`, { folder: 'trash' });
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/emails/${emailId}/move`, { folder: 'trash' }, { headers: { Authorization: `Bearer ${token}` } });
       setSelectedEmail(null);
       setMobileView('list');
       fetchEmails();
