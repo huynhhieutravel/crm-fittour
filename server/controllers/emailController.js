@@ -83,7 +83,8 @@ exports.incomingWebhook = async (req, res) => {
     res.json({ status: 'ok', email_id: emailId });
   } catch (err) {
     console.error('Webhook error:', err);
-    res.status(500).json({ error: err.message });
+    console.error('Webhook error detail:', JSON.stringify(err, null, 2));
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 };
 
@@ -96,16 +97,23 @@ exports.listEmails = async (req, res) => {
     const userId = req.user?.id;
     const offset = (page - 1) * limit;
 
-    let where = 'WHERE e.user_id = $1 AND e.folder = $2';
-    let params = [userId, folder];
-    let idx = 3;
+    let where = 'WHERE e.folder = $1';
+    let params = [folder];
+    let idx = 2;
+
+    // Filter by user_id unless the user is Admin
+    if (req.user?.role !== 'Admin' && req.user?.role !== 'Administrator') {
+      where += ` AND e.user_id = $${idx}`;
+      params.push(userId);
+      idx++;
+    }
 
     if (status) { where += ` AND e.status = $${idx}`; params.push(status); idx++; }
 
     // Group by thread, sort by latest message
     const result = await db.query(`
       SELECT e.*, 
-        (SELECT COUNT(*) FROM emails e2 WHERE e2.thread_id = e.thread_id AND e2.user_id = $1) as thread_count,
+        (SELECT COUNT(*) FROM emails e2 WHERE e2.thread_id = e.thread_id) as thread_count,
         (SELECT COUNT(*) FROM email_attachments ea WHERE ea.email_id = e.id) as attachment_count
       FROM emails e
       ${where}
@@ -425,10 +433,17 @@ exports.searchEmails = async (req, res) => {
 exports.getUnreadCount = async (req, res) => {
   try {
     const userId = req.user?.id;
-    const result = await db.query(`
-      SELECT folder, COUNT(*) as count FROM emails 
-      WHERE user_id = $1 AND is_read = false GROUP BY folder
-    `, [userId]);
+    let query = 'SELECT folder, COUNT(*) as count FROM emails WHERE is_read = false';
+    let params = [];
+
+    if (req.user?.role !== 'Admin' && req.user?.role !== 'Administrator') {
+      query += ' AND user_id = $1';
+      params.push(userId);
+    }
+    
+    query += ' GROUP BY folder';
+
+    const result = await db.query(query, params);
     const counts = {};
     result.rows.forEach(r => { counts[r.folder] = parseInt(r.count); });
     res.json(counts);
