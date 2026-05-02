@@ -140,12 +140,23 @@ const BrandGuidelinePage = () => {
           <h2 className="bp-large-text">Himalaya <br/>Mountain.</h2>
         </RevealText>
         <RevealText>
-          <p className="bp-subtitle" style={{ marginTop: 24 }}>
-            Logo lấy ý tưởng từ vùng núi Himalaya, tượng trưng cho sự khám phá, mạo hiểm không ngừng tiến lên phía trước.
+          <p className="bp-subtitle" style={{ marginTop: 24, maxWidth: '800px' }}>
+            Logo lấy ý tưởng từ vùng núi Himalaya, tượng trưng cho sự khám phá, mạo hiểm không ngừng tiến lên phía trước. Dưới đây là các tiêu chuẩn bắt buộc về Không Gian An Toàn, Tỉ lệ tối thiểu và Phiên bản Logo trên các nền màu khác nhau.
           </p>
         </RevealText>
+
         <RevealText>
-          <div className="bp-rules-grid" style={{ marginTop: 40 }}>
+          <div className="bp-logo-showcase" style={{ marginTop: 40, background: 'var(--bp-card-bg)', borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--bp-border)' }}>
+            <img 
+              src="/logo-guideline.png" 
+              alt="FIT Tour Logo Guidelines" 
+              style={{ width: '100%', height: 'auto', display: 'block', mixBlendMode: 'multiply' }} 
+            />
+          </div>
+        </RevealText>
+
+        <RevealText>
+          <div className="bp-rules-grid" style={{ marginTop: 24 }}>
              <div className="bp-rule-card" style={{ border: '1px solid var(--bp-border)' }}>
               <div className="bp-rule-icon">📐 Vùng An Toàn</div>
               <strong>Khoảng cách tối thiểu 120px</strong><br/>
