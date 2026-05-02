@@ -455,6 +455,7 @@ function AppContent() {
     }
     if (fullPath.startsWith('guides')) { setActiveTab('guides'); return; }
     if (fullPath.startsWith('manual')) { setActiveTab('manual'); return; }
+    if (fullPath === 'email/mailboxes') { setActiveTab('email-mailboxes'); return; }
     if (fullPath.startsWith('group/')) { 
       if (fullPath === 'group/companies') {
         setActiveTab('b2b-companies');
