@@ -22,8 +22,8 @@ async function sendViaCloudflare(payload) {
   }
 }
 
-// Chạy mỗi 5 phút
-cron.schedule('*/5 * * * *', async () => {
+// Chạy mỗi 1 phút
+cron.schedule('* * * * *', async () => {
   try {
     // Tìm các email đang queued hoặc failed nhưng chưa vượt quá max_retries
     const result = await db.query(`
@@ -58,7 +58,7 @@ cron.schedule('*/5 * * * *', async () => {
           WHERE id = $1
         `, [row.log_id]);
       } else {
-        const nextRetry = new Date(Date.now() + 5 * 60000 * Math.pow(2, row.retry_count)); // Exponential backoff
+        const nextRetry = new Date(Date.now() + 1 * 60000 * Math.pow(2, row.retry_count)); // Exponential backoff (1m, 2m, 4m...)
         await db.query(`
           UPDATE email_logs 
           SET status = 'failed', 

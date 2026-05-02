@@ -225,18 +225,7 @@ exports.sendEmail = async (req, res) => {
     const { to, subject, body, body_text, cc, bcc, mailbox_address } = req.body;
     const userId = req.user?.id;
 
-    // Check rate limit
-    const rateResult = await db.query(`
-      SELECT COUNT(*) FROM emails 
-      WHERE mailbox_address = $1 AND folder = 'sent' AND date > NOW() - INTERVAL '1 minute'
-    `, [mailbox_address]);
-    
-    const mbResult = await db.query('SELECT max_send_per_minute FROM email_mailboxes WHERE email_address = $1', [mailbox_address]);
-    const maxRate = mbResult.rows[0]?.max_send_per_minute || 10;
-    
-    if (parseInt(rateResult.rows[0].count) >= maxRate) {
-      return res.status(429).json({ error: 'Rate limit exceeded. Please wait.' });
-    }
+    // Removed rate limit as requested
 
     // Generate message ID
     const messageId = `<${crypto.randomUUID()}@fittour.vn>`;
