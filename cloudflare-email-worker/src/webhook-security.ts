@@ -20,10 +20,12 @@ export async function sendWebhook(url: string, payload: any, secret?: string) {
   };
 
   if (secret) {
-    const timestamp = Date.now().toString();
+    // Timestamp tính bằng GIÂY (khớp với backend)
+    const timestamp = Math.floor(Date.now() / 1000).toString();
     const signature = await generateHmacSignature(body, secret, timestamp);
-    headers['X-FITTOUR-SIGNATURE'] = signature;
-    headers['X-FITTOUR-TIMESTAMP'] = timestamp;
+    // Header name khớp với backend (Express tự lowercase)
+    headers['X-Webhook-Signature'] = signature;
+    headers['X-Webhook-Timestamp'] = timestamp;
   }
 
   const response = await fetch(url, {

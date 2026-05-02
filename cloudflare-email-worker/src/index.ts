@@ -18,7 +18,7 @@ export default {
       
       let thread_id = '';
       if (references) {
-        const firstRef = references.split(/\\s+/)[0];
+        const firstRef = references.split(/\s+/)[0];
         thread_id = await hashThreadId(firstRef);
       } else if (inReplyTo) {
         thread_id = await hashThreadId(inReplyTo);
@@ -26,6 +26,7 @@ export default {
         thread_id = await hashThreadId(parsed.messageId || message.headers.get('Message-ID') || Date.now().toString());
       }
 
+      // Upload attachments to R2
       const attachments = [];
       for (const att of parsed.attachments) {
         const key = `attachments/${Date.now()}-${Math.random().toString(36).substring(7)}-${att.filename}`;
@@ -34,26 +35,33 @@ export default {
         });
         attachments.push({
           filename: att.filename,
-          mimeType: att.mimeType,
+          mimetype: att.mimeType,
           size: att.content.byteLength,
-          contentId: att.contentId,
-          r2Key: key
+          content_id: att.contentId || null,
+          r2_key: key,
+          disposition: 'attachment'
         });
       }
 
+      // Payload KHỚP với backend emailController.incomingWebhook
+      const messageId = parsed.messageId || message.headers.get('Message-ID') || '';
       const payload = {
-        from: message.from,
-        to: message.to,
-        subject: parsed.subject,
-        normalized_subject,
-        bodyHtml: parsed.html || '',
-        bodyText: parsed.text || '',
-        messageId: parsed.messageId || message.headers.get('Message-ID'),
-        inReplyTo,
-        references,
+        mailbox_address: message.to,
+        subject: parsed.subject || '',
+        sender: message.from,
+        recipient: message.to,
+        cc: '',
+        bcc: '',
+        body: parsed.html || '',
+        body_text: parsed.text || '',
+        message_id: messageId,
+        in_reply_to: inReplyTo,
+        email_references: references ? references.split(/\s+/) : [],
         thread_id,
+        normalized_subject,
+        raw_headers: JSON.stringify(parsed.headers || []),
         attachments,
-        headers: parsed.headers
+        idempotency_key: messageId || `cf-${Date.now()}`
       };
 
       await sendWebhook(env.CRM_WEBHOOK_URL, payload, env.CRM_WEBHOOK_SECRET);
@@ -69,7 +77,6 @@ export default {
       return new Response('Method not allowed', { status: 405 });
     }
     
-    // Auth Check
     const authHeader = request.headers.get('Authorization');
     if (env.CRM_WEBHOOK_SECRET && authHeader !== `Bearer ${env.CRM_WEBHOOK_SECRET}`) {
       return new Response('Unauthorized', { status: 401 });
