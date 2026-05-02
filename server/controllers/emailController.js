@@ -225,6 +225,18 @@ exports.sendEmail = async (req, res) => {
     const { to, subject, body, body_text, cc, bcc, mailbox_address } = req.body;
     const userId = req.user?.id;
 
+    // Fix mailbox_address fallback
+    let actualMailbox = mailbox_address;
+    const mailboxes = await db.query('SELECT email_address FROM email_mailboxes LIMIT 1');
+    if (mailboxes.rows.length > 0) {
+      // If frontend sent login email instead of mailbox
+      if (!actualMailbox || !actualMailbox.endsWith('@fittour.vn')) {
+        actualMailbox = mailboxes.rows[0].email_address;
+      }
+    } else {
+      return res.status(400).json({ error: 'Chưa có hộp thư nào được cài đặt trong hệ thống.' });
+    }
+
     // Removed rate limit as requested
 
     // Generate message ID
@@ -237,7 +249,7 @@ exports.sendEmail = async (req, res) => {
         body, body_text, message_id, thread_id, normalized_subject, status, date)
       VALUES ($1,$2,'personal','sent',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'closed', NOW())
       RETURNING *
-    `, [userId, mailbox_address, subject, mailbox_address, to, cc, bcc, body, body_text, messageId, threadId,
+    `, [userId, actualMailbox, subject, actualMailbox, to, cc, bcc, body, body_text, messageId, threadId,
         (subject || '').replace(/^(Re|Fwd|Fw):\s*/gi, '').trim().toLowerCase()]);
 
     // Log activity
@@ -253,7 +265,7 @@ exports.sendEmail = async (req, res) => {
 
     // Phase 2 — Call Cloudflare Worker outbound queue
     const payload = {
-      from: mailbox_address,
+      from: actualMailbox,
       to: to,
       subject: subject,
       body: sanitizedBody || body_text,
@@ -286,6 +298,18 @@ exports.replyEmail = async (req, res) => {
     const { body, body_text, cc, bcc, mailbox_address } = req.body;
     const userId = req.user?.id;
 
+    // Validate and fix mailbox_address
+    let actualMailbox = mailbox_address;
+    const checkMailbox = await db.query('SELECT email_address FROM email_mailboxes WHERE email_address = $1', [actualMailbox]);
+    if (checkMailbox.rows.length === 0) {
+      const allMailboxes = await db.query('SELECT email_address FROM email_mailboxes LIMIT 1');
+      if (allMailboxes.rows.length > 0) {
+        actualMailbox = allMailboxes.rows[0].email_address;
+      } else {
+        return res.status(400).json({ error: 'Chưa có hộp thư nào được cài đặt trong hệ thống.' });
+      }
+    }
+
     // Get original email
     const orig = await db.query('SELECT * FROM emails WHERE id = $1', [id]);
     if (orig.rows.length === 0) return res.status(404).json({ error: 'Original email not found' });
@@ -304,7 +328,7 @@ exports.replyEmail = async (req, res) => {
         body, body_text, message_id, in_reply_to, email_references, thread_id, normalized_subject, status, date)
       VALUES ($1,$2,'personal','sent',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'closed', NOW())
       RETURNING *
-    `, [userId, mailbox_address, reSubject, mailbox_address, original.sender, cc, bcc, body, body_text,
+    `, [userId, actualMailbox, reSubject, actualMailbox, original.sender, cc, bcc, body, body_text,
         messageId, original.message_id, JSON.stringify(refs), original.thread_id, original.normalized_subject]);
 
     await db.query('INSERT INTO email_activity_logs (email_id, user_id, action, metadata) VALUES ($1,$2,$3,$4)',
@@ -319,7 +343,7 @@ exports.replyEmail = async (req, res) => {
 
     // Call Cloudflare Worker
     const payload = {
-      from: mailbox_address,
+      from: actualMailbox,
       to: original.sender,
       subject: reSubject,
       body: sanitizedBody || body_text,
@@ -354,6 +378,18 @@ exports.forwardEmail = async (req, res) => {
     const { to, body_prefix, mailbox_address } = req.body;
     const userId = req.user?.id;
 
+    // Validate and fix mailbox_address
+    let actualMailbox = mailbox_address;
+    const checkMailbox = await db.query('SELECT email_address FROM email_mailboxes WHERE email_address = $1', [actualMailbox]);
+    if (checkMailbox.rows.length === 0) {
+      const allMailboxes = await db.query('SELECT email_address FROM email_mailboxes LIMIT 1');
+      if (allMailboxes.rows.length > 0) {
+        actualMailbox = allMailboxes.rows[0].email_address;
+      } else {
+        return res.status(400).json({ error: 'Chưa có hộp thư nào được cài đặt trong hệ thống.' });
+      }
+    }
+
     const orig = await db.query('SELECT * FROM emails WHERE id = $1', [id]);
     if (orig.rows.length === 0) return res.status(404).json({ error: 'Email not found' });
     const original = orig.rows[0];
@@ -386,7 +422,7 @@ exports.forwardEmail = async (req, res) => {
 
     // Call Cloudflare Worker
     const payload = {
-      from: mailbox_address,
+      from: actualMailbox,
       to: to,
       subject: fwdSubject,
       body: sanitizedBody,
