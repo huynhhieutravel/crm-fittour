@@ -179,7 +179,7 @@ exports.getThread = async (req, res) => {
     `, [threadId]);
 
     // Internal notes for this thread
-    const notes = await db.query('SELECT n.*, u.name as user_name FROM email_internal_notes n LEFT JOIN users u ON n.user_id = u.id WHERE n.thread_id = $1 ORDER BY n.created_at ASC', [threadId]);
+    const notes = await db.query('SELECT n.*, u.full_name as user_name FROM email_internal_notes n LEFT JOIN users u ON n.user_id = u.id WHERE n.thread_id = $1 ORDER BY n.created_at ASC', [threadId]);
 
     res.json({ emails: result.rows, notes: notes.rows });
   } catch (err) {
