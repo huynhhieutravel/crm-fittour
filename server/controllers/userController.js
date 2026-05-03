@@ -210,7 +210,7 @@ exports.updateUser = async (req, res) => {
             }
         }
 
-        await client.query(
+        const updateRes = await client.query(
             `UPDATE users SET full_name = $1, email = $2, role_id = $3, phone = $4, is_active = $5,
              birth_date = $7, gender = $8, id_card = $9, passport_url = $10, id_expiry = $11, address = $12, facebook_url = $13,
              created_at = COALESCE($14, created_at), position = $15, avatar_url = COALESCE($16, avatar_url)
@@ -219,6 +219,11 @@ exports.updateUser = async (req, res) => {
              birth_date || null, gender || null, id_card || null, passport_url || null, id_expiry || null, address || null, facebook_url || null,
              created_at || null, position || null, avatar_url || null]
         );
+        
+        if (updateRes.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Tài khoản không tồn tại hoặc đã bị xóa.' });
+        }
         
         // Sync custom permissions if provided
         if (permissions && typeof permissions === 'object') {
