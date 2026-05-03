@@ -1782,8 +1782,19 @@ function AppContent() {
   if (location.pathname.startsWith('/tai-lieu')) {
     return <DocumentsPage />;
   }
+  if (location.pathname === '/cam-nang-thuong-hieu/logo') {
+    return (
+      <BrandLayout>
+        <BrandLogoPage />
+      </BrandLayout>
+    );
+  }
   if (location.pathname.startsWith('/cam-nang-thuong-hieu')) {
-    return <BrandGuidelinePage />;
+    return (
+      <BrandLayout>
+        <BrandGuidelinePage />
+      </BrandLayout>
+    );
   }
 
   return (
