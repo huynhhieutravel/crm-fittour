@@ -3575,6 +3575,9 @@ function AppContent() {
       <Route path="/tai-lieu" element={<DocumentsPage />} />
       <Route path="/tai-lieu/:subtab/:id/*" element={<DocumentsPage />} />
       <Route path="/tai-lieu/*" element={<DocumentsPage />} />
+      <Route path="/cam-nang-thuong-hieu/logo" element={<BrandLayout><BrandLogoPage /></BrandLayout>} />
+      <Route path="/cam-nang-thuong-hieu" element={<BrandLayout><BrandGuidelinePage /></BrandLayout>} />
+      <Route path="/cam-nang-thuong-hieu/*" element={<BrandLayout><BrandGuidelinePage /></BrandLayout>} />
       <Route path="/simple-list-share/lich_dai_ly" element={<AgencySharePage />} />
       <Route path="/service-confirm/:tourId/:bookingId" element={<ServiceContractViewer />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
