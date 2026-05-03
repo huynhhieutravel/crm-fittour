@@ -460,9 +460,9 @@ const DocumentsHome = () => {
             <img src="https://cdn-icons-png.flaticon.com/512/2830/2830305.png" alt="Điều hành" className="blog-icon-img" />
             <span>HUB Điều Hành (OP)</span>
           </Link>
-          <Link to="/tai-lieu/bieu-mau" className="blog-top-card">
-            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991108.png" alt="Biểu mẫu" className="blog-icon-img" />
-            <span>Biểu Mẫu Hành Chính</span>
+          <Link to="/cam-nang-thuong-hieu" className="blog-top-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/3067/3067261.png" alt="Thương hiệu" className="blog-icon-img" />
+            <span>Cẩm Nang Thương Hiệu</span>
           </Link>
           <Link to="/tai-lieu/ke-toan" className="blog-top-card">
             <img src="https://cdn-icons-png.flaticon.com/512/3135/3135690.png" alt="Kế toán" className="blog-icon-img" />
@@ -514,6 +514,27 @@ const DocumentsHome = () => {
               <li><Link to="/tai-lieu/bo-nguyen-tac-hanh-xu-nhan-vien"><span className="blog-list-icon">📓</span> Bộ quy tắc hành xử Nhân viên văn phòng</Link></li>
               <li><Link to="/tai-lieu/quy-che-luong-hdv"><span className="blog-list-icon">📓</span> Quy chế lương Hướng Dẫn Viên</Link></li>
             </ul>
+          </div>
+
+          {/* Col 4: Biểu mẫu hành chính tự động lấy từ DB */}
+          <div className="blog-column">
+            <h2 className="blog-col-title">Biểu mẫu hành chính</h2>
+            
+            <ul className="blog-list" style={{ marginTop: '1.5rem' }}>
+              {licenses.map(l => (
+                <li key={l.id}>
+                  <a href={l.link || '#'} target="_blank" rel="noreferrer">
+                    <span className="blog-list-icon">📋</span> {l.name}
+                  </a>
+                </li>
+              ))}
+              {licenses.length === 0 && (
+                <li style={{ color: '#94a3b8', fontSize: '0.9rem', fontStyle: 'italic' }}>Đang tải biểu mẫu...</li>
+              )}
+            </ul>
+            <div style={{ marginTop: '1.5rem', textAlign: 'left' }}>
+              <Link to="/tai-lieu/bieu-mau" style={{ fontSize: '0.85rem', color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>Quản lý biểu mẫu &rarr;</Link>
+            </div>
           </div>
         </div>
       </div>
