@@ -80,6 +80,9 @@ import ServiceContractViewer from './pages/ServiceContractViewer';
 import DocumentsPage from './pages/DocumentsPage';
 import BrandGuidelinePage from './pages/BrandGuidelinePage';
 import BrandLogoPage from './pages/BrandLogoPage';
+import BrandColorPage from './pages/BrandColorPage';
+import BrandTypographyPage from './pages/BrandTypographyPage';
+import BrandSocialPage from './pages/BrandSocialPage';
 import BrandLayout from './pages/BrandLayout';
 
 import { 
@@ -1782,20 +1785,7 @@ function AppContent() {
   if (location.pathname.startsWith('/tai-lieu')) {
     return <DocumentsPage />;
   }
-  if (location.pathname === '/cam-nang-thuong-hieu/logo') {
-    return (
-      <BrandLayout>
-        <BrandLogoPage />
-      </BrandLayout>
-    );
-  }
-  if (location.pathname.startsWith('/cam-nang-thuong-hieu')) {
-    return (
-      <BrandLayout>
-        <BrandGuidelinePage />
-      </BrandLayout>
-    );
-  }
+
 
   return (
     <div className="app-container">
@@ -3576,6 +3566,9 @@ function AppContent() {
       <Route path="/tai-lieu/:subtab/:id/*" element={<DocumentsPage />} />
       <Route path="/tai-lieu/*" element={<DocumentsPage />} />
       <Route path="/cam-nang-thuong-hieu/logo" element={<BrandLayout><BrandLogoPage /></BrandLayout>} />
+      <Route path="/cam-nang-thuong-hieu/mau-sac" element={<BrandLayout><BrandColorPage /></BrandLayout>} />
+      <Route path="/cam-nang-thuong-hieu/phong-chu" element={<BrandLayout><BrandTypographyPage /></BrandLayout>} />
+      <Route path="/cam-nang-thuong-hieu/facebook" element={<BrandLayout><BrandSocialPage /></BrandLayout>} />
       <Route path="/cam-nang-thuong-hieu" element={<BrandLayout><BrandGuidelinePage /></BrandLayout>} />
       <Route path="/cam-nang-thuong-hieu/*" element={<BrandLayout><BrandGuidelinePage /></BrandLayout>} />
       <Route path="/simple-list-share/lich_dai_ly" element={<AgencySharePage />} />

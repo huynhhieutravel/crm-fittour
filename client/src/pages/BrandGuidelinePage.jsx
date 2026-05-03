@@ -4,16 +4,6 @@ import { CheckCircle, ArrowLeft } from 'lucide-react';
 import '../styles/brand-guideline.css';
 
 /* ═══ Data Extracted from PDF ═══ */
-const COLORS = [
-  { name: 'Sunrise Orange', hex: '#FF600B', text: 'white' },
-  { name: 'Golden Yellow', hex: '#FDAF03', text: 'black' },
-  { name: 'Ocean Blue', hex: '#1E99E5', text: 'white' },
-  { name: 'Forest Green', hex: '#43A047', text: 'white' },
-  { name: 'Neutral Dark', hex: '#212121', text: 'white' },
-  { name: 'Warm Grey', hex: '#F5F5F5', text: 'black' },
-  { name: 'Light Grey', hex: '#E0E0E0', text: 'black' },
-  { name: 'Medium Grey', hex: '#9E9E9E', text: 'white' },
-];
 
 /* ═══ Reusable Components ═══ */
 const RevealText = ({ children, className = '' }) => {
@@ -34,28 +24,7 @@ const RevealText = ({ children, className = '' }) => {
   return <div ref={ref} className={`reveal-up ${className}`}>{children}</div>;
 };
 
-const Swatch = ({ name, hex, text }) => {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = () => {
-    navigator.clipboard.writeText(hex);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-  return (
-    <div className="bp-swatch" onClick={handleCopy}>
-      <div className="bp-swatch-color" style={{ backgroundColor: hex, color: text }}>
-        <div className={`bp-swatch-copied ${copied ? 'show' : ''}`}>
-          <CheckCircle size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: 4 }} /> 
-          Copied
-        </div>
-      </div>
-      <div className="bp-swatch-info">
-        <div className="bp-swatch-name">{name}</div>
-        <div className="bp-swatch-hex">{hex}</div>
-      </div>
-    </div>
-  );
-};
+
 
 /* ═══ Main Page Component ═══ */
 const BrandGuidelinePage = () => {
@@ -156,102 +125,7 @@ const BrandGuidelinePage = () => {
         </RevealText>
       </section>
 
-      {/* ── Colors Section ── */}
-      <section id="colors" className="bp-section dark">
-        <RevealText>
-          <h2 className="bp-large-text">Sắc cam dẫn lối.</h2>
-        </RevealText>
-        <RevealText>
-          <p className="bp-subtitle" style={{ marginTop: 24 }}>
-            Bảng màu được xây dựng xoay quanh năng lượng – trải nghiệm – sự cao cấp tinh gọn. Tông màu ấm (Cam – Vàng) đại diện cho hành trình, cảm xúc và sự dẫn dắt, kết hợp với nền trung tính giúp tổng thể luôn sạch, sang.
-          </p>
-        </RevealText>
-        <RevealText>
-          <div className="bp-color-grid">
-            {COLORS.map(c => <Swatch key={c.hex} {...c} />)}
-          </div>
-        </RevealText>
-      </section>
 
-      {/* ── Typography Section ── */}
-      <section id="typography" className="bp-section">
-        <RevealText>
-          <h2 className="bp-large-text">Tôn vinh <br/>từng con chữ.</h2>
-        </RevealText>
-        <RevealText>
-          <p className="bp-subtitle" style={{ marginTop: 24 }}>
-            Font chữ lựa chọn sự tối giản, an toàn mà hiệu quả. Ưu tiên: Việt hóa, in ấn, ấn phẩm digital, Facebook.
-          </p>
-        </RevealText>
-        
-        <RevealText>
-          <div className="bp-typo-showcase">
-            <div className="bp-typo-block heading">
-              <div className="bp-typo-label">Headline Font — Nhắm đến sự sang trọng, truyền cảm hứng</div>
-              <p style={{fontFamily: "var(--bp-font-heading)", fontSize: "2rem", margin: "0 0 16px"}}>SVN Playfair Display / Cinzel / Lora</p>
-              <div className="bp-typo-alphabet" style={{fontSize: "1.5rem", opacity: 0.7}}>
-                Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz<br/>
-                0 1 2 3 4 5 6 7 8 9
-              </div>
-            </div>
-            <div className="bp-typo-block body">
-              <div className="bp-typo-label">Body Font — Dễ đọc, hiện đại, hiển thị tốt trên digital lẫn in ấn</div>
-              <p style={{fontFamily: "var(--bp-font-body)", fontSize: "2rem", margin: "0 0 16px"}}>Inter / Roboto / Noto Sans</p>
-              <div className="bp-typo-alphabet" style={{fontSize: "1.5rem", opacity: 0.7}}>
-                Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz<br/>
-                0 1 2 3 4 5 6 7 8 9
-              </div>
-            </div>
-          </div>
-        </RevealText>
-      </section>
-
-      {/* ── Social & AI Section ── */}
-      <section id="social" className="bp-section dark">
-        <RevealText>
-          <h2 className="bp-large-text">Ứng dụng <br/>Facebook & AI.</h2>
-        </RevealText>
-        <RevealText>
-          <p className="bp-subtitle" style={{ marginTop: 24 }}>
-            Quy chuẩn hình ảnh và sử dụng trí tuệ nhân tạo (AI) trong sản xuất nội dung Digital.
-          </p>
-        </RevealText>
-        
-        <RevealText>
-          <div className="bp-rules-grid">
-            <div className="bp-rule-card do">
-              <div className="bp-rule-icon">📱 Facebook Post</div>
-              <strong>Ảnh chiếm 70–80% bố cục</strong><br/>
-              Ưu tiên hình ảnh lớn, chất lượng cao. Bố cục thoáng, tập trung vào cảm xúc. <br/><br/>
-              • Overlay nhẹ màu cam (opacity thấp)<br/>
-              • Text trắng / vàng để nổi bật<br/>
-              • CTA bắt buộc dùng Orange<br/>
-              • Logo luôn đặt góc trái hoặc phía trên
-            </div>
-            <div className="bp-rule-card dont">
-              <div className="bp-rule-icon">🤖 Lưu ý Sử dụng AI</div>
-              <strong>AI là nguồn tài nguyên, không thay thế con người</strong><br/>
-              Kết hợp AI lên ý tưởng, nhưng phải hoàn thiện lại bằng con người (AI final file). <br/><br/>
-              • Tối đa đăng sản phẩm về AI / 1 tuần: 3 post.<br/>
-              • Khung giờ đăng: 10h - 16h - 19h.<br/>
-              • Không đăng bài trùng lặp khung thời gian để tránh flop.
-            </div>
-          </div>
-        </RevealText>
-        <RevealText>
-           <div className="bp-typo-block" style={{ marginTop: 40, paddingTop: 40, borderColor: 'rgba(255,255,255,0.1)' }}>
-              <div className="bp-typo-label">Kích thước Chuẩn Facebook</div>
-              <ul style={{ color: '#a1a1aa', fontSize: '1.1rem', lineHeight: '1.8' }}>
-                <li><strong>Post Vuông (Quảng cáo, social post):</strong> 900x900 px</li>
-                <li><strong>Post Ngang:</strong> 1200x630 px, 1800x900px (post cắt đôi)</li>
-                <li><strong>Post Dọc (Poster):</strong> 1080x1350 px</li>
-                <li><strong>Story:</strong> 1080x1920 px</li>
-                <li><strong>Post Sự Kiện:</strong> 1200x1200 px</li>
-                <li><strong>Banner Web/Mail:</strong> 250x60, 200x60, 160x60 px</li>
-              </ul>
-            </div>
-        </RevealText>
-      </section>
 
       {/* ── Footer ── */}
       <footer className="bp-footer">
