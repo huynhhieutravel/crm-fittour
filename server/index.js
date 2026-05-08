@@ -6,8 +6,23 @@ const http = require('http');
 
 dotenv.config();
 
+// ═══ SAFETY CHECK: Cảnh báo nếu có seed/migrate scripts trong thư mục server ═══
+const fs = require('fs');
+const dangerousFiles = fs.readdirSync(__dirname).filter(f => 
+  /^(seed_|migrate_|backfill_).*\.js$/.test(f) && f !== 'index.js'
+);
+if (dangerousFiles.length > 0) {
+  console.warn('⚠️⚠️⚠️ CẢNH BÁO BẢO MẬT ⚠️⚠️⚠️');
+  console.warn('Phát hiện seed/migrate scripts trong thư mục server:');
+  dangerousFiles.forEach(f => console.warn(`  ❌ ${f}`));
+  console.warn('Các file này KHÔNG ĐƯỢC phép tồn tại trên production!');
+  console.warn('Hãy xóa ngay: rm ' + dangerousFiles.map(f => f).join(' '));
+  console.warn('═══════════════════════════════════════════');
+}
+
 // Initialize cron jobs
 require('./cron/emailRetry');
+
 
 const app = express();
 const server = http.createServer(app);
@@ -66,9 +81,11 @@ const b2bCompaniesRoutes = require('./routes/b2bCompanies');
 const groupLeadersRoutes = require('./routes/groupLeaders');
 const groupProjectsRoutes = require('./routes/groupProjects');
 const miceLeadsRoutes = require('./routes/mice_leads');
+const authController = require('./controllers/authController');
 
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/auth', authRoutes);
+app.get('/api/google/callback', authController.googleCallback);
 app.use('/api/tours', tourRoutes);
 app.use('/api/public/contracts', publicContractsRoutes);
 app.use('/api/vouchers', require('./routes/vouchers'));
@@ -149,6 +166,8 @@ app.use('/api/management-dashboard', managementDashboardRoutes);
 
 const ceoDashboardRoutes = require('./routes/ceoDashboard');
 app.use('/api/ceo-dashboard', ceoDashboardRoutes);
+app.use('/api/customer-reviews', require('./routes/customerReviews'));
+app.use('/api/search', require('./routes/search'));
 
 app.get('/', (req, res) => {
     res.send('FIT Tour CRM API is running...');

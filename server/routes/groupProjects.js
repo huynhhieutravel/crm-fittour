@@ -2,17 +2,12 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/groupProjectController');
 const authenticateToken = require('../middleware/auth');
-const roleCheck = require('../middleware/roleCheck');
+const { permCheck, permCheckAny, permCheckOrOwner } = require('../middleware/permCheck');
 
-// group_projects: admin, manager, group_manager, group_staff + operations, marketing (view only)
-const VIEW_ROLES = ['admin', 'manager', 'group_manager', 'group_staff', 'operations', 'marketing'];
-const EDIT_ROLES = ['admin', 'manager', 'group_manager', 'group_staff'];
-const DELETE_ROLES = ['admin', 'manager', 'group_manager'];
-
-router.get('/stats', authenticateToken, roleCheck(VIEW_ROLES), controller.getProjectStats);
-router.get('/', authenticateToken, roleCheck(VIEW_ROLES), controller.getAllProjects);
-router.post('/', authenticateToken, roleCheck(EDIT_ROLES), controller.createProject);
-router.put('/:id', authenticateToken, roleCheck(EDIT_ROLES), controller.updateProject);
-router.delete('/:id', authenticateToken, roleCheck(DELETE_ROLES), controller.deleteProject);
+router.get('/stats', authenticateToken, permCheckAny([['group_projects','view_all'], ['group_projects','view_own']]), controller.getProjectStats);
+router.get('/', authenticateToken, permCheckAny([['group_projects','view_all'], ['group_projects','view_own']]), controller.getAllProjects);
+router.post('/', authenticateToken, permCheck('group_projects', 'create'), controller.createProject);
+router.put('/:id', authenticateToken, permCheckOrOwner('group_projects', 'edit', 'group_projects', 'id', 'assigned_to'), controller.updateProject);
+router.delete('/:id', authenticateToken, permCheckOrOwner('group_projects', 'delete', 'group_projects', 'id', 'assigned_to'), controller.deleteProject);
 
 module.exports = router;

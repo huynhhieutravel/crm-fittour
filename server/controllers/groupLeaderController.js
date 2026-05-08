@@ -20,14 +20,13 @@ const maskContact = (str, type) => {
 
 exports.getAllGroupLeaders = async (req, res) => {
     try {
-        const isPrivileged = ['admin', 'manager', 'group_manager'].includes(req.user.role);
-        const isGroupStaff = req.user.role === 'group_staff';
+        const isPrivileged = ['admin', 'manager', 'group_manager', 'group_operations', 'group_operations_lead'].includes(req.user.role);
 
-        // Group Staff: only see leaders linked to companies they are assigned to
-        const whereClause = (!isPrivileged && isGroupStaff) 
-            ? 'WHERE c.assigned_to = $1' 
+        // Non-privileged users: only see leaders linked to companies they are assigned to, or leaders explicitly assigned to them
+        const whereClause = !isPrivileged 
+            ? 'WHERE c.assigned_to = $1 OR gl.assigned_to = $1' 
             : '';
-        const params = (!isPrivileged && isGroupStaff) 
+        const params = !isPrivileged 
             ? [req.user.id] 
             : [];
 
@@ -210,7 +209,8 @@ exports.createGroupLeader = async (req, res) => {
             action_type: 'CREATE',
             entity_type: 'GROUP_LEADER',
             entity_id: result.rows[0].id,
-            details: `Tạo Trưởng đoàn MICE: ${name}`
+            details: `Tạo Trưởng đoàn MICE: ${name}`,
+            new_data: result.rows[0]
         });
 
         res.status(201).json(result.rows[0]);
@@ -235,6 +235,10 @@ exports.updateGroupLeader = async (req, res) => {
             return res.status(403).json({ message: 'Bạn không có quyền sửa Trưởng đoàn của người khác.' });
         }
 
+        // Fetch old data for logging
+        const oldLeaderRes = await db.query('SELECT * FROM group_leaders WHERE id = $1', [id]);
+        const oldLeader = oldLeaderRes.rows[0];
+
         const result = await db.query(`
             UPDATE group_leaders 
             SET name=$1, company_name=$2, phone=$3, email=$4, preferences=$5, dob=$6, 
@@ -242,6 +246,18 @@ exports.updateGroupLeader = async (req, res) => {
                 contact_status=$11, updated_at=CURRENT_TIMESTAMP
             WHERE id=$12 RETURNING *
         `, [name, company_name, phone, email, preferences, dob || null, assigned_to || null, company_founded_date || null, company_id || null, position || 'Trưởng đoàn', contact_status || 'active', id]);
+
+        if (req.user) {
+            await logActivity({
+                user_id: req.user.id,
+                action_type: 'UPDATE',
+                entity_type: 'GROUP_LEADER',
+                entity_id: id,
+                details: `Cập nhật thông tin Trưởng đoàn MICE: ${name}`,
+                old_data: oldLeader,
+                new_data: result.rows[0]
+            });
+        }
 
         res.json(result.rows[0]);
     } catch (err) {
@@ -252,7 +268,25 @@ exports.updateGroupLeader = async (req, res) => {
 exports.deleteGroupLeader = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Fetch old data for logging
+        const oldLeaderRes = await db.query('SELECT * FROM group_leaders WHERE id = $1', [id]);
+        if (oldLeaderRes.rows.length === 0) return res.status(404).json({ message: 'Not found' });
+        const oldLeader = oldLeaderRes.rows[0];
+
         await db.query('DELETE FROM group_leaders WHERE id=$1', [id]);
+
+        if (req.user) {
+            await logActivity({
+                user_id: req.user.id,
+                action_type: 'DELETE',
+                entity_type: 'GROUP_LEADER',
+                entity_id: id,
+                details: `Xóa Trưởng đoàn MICE: ${oldLeader.name}`,
+                old_data: oldLeader
+            });
+        }
+
         res.json({ message: 'Deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });

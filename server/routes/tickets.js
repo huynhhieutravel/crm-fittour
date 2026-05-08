@@ -2,15 +2,15 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/ticketController');
 const authenticateToken = require('../middleware/auth');
-const { permCheck } = require('../middleware/permCheck');
+const { permCheck, permCheckOrOwner } = require('../middleware/permCheck');
 
 
 // Tickets
 router.get('/', authenticateToken, permCheck('tickets', 'view'), controller.getAll);
 router.post('/', authenticateToken, permCheck('tickets', 'create'), controller.create);
 router.get('/:id', authenticateToken, permCheck('tickets', 'view'), controller.getDetails);
-router.put('/:id', authenticateToken, permCheck('tickets', 'edit'), controller.update);
-router.delete('/:id', authenticateToken, permCheck('tickets', 'delete'), controller.delete);
+router.put('/:id', authenticateToken, permCheckOrOwner('tickets', 'edit', 'tickets', 'id'), controller.update);
+router.delete('/:id', authenticateToken, permCheckOrOwner('tickets', 'delete', 'tickets', 'id'), controller.delete);
 
 // Contacts
 router.post('/:ticket_id/contacts', authenticateToken, permCheck('tickets', 'edit'), controller.createContact);

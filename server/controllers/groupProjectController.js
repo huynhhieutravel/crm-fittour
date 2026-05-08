@@ -42,14 +42,14 @@ const checkGuideOverlapAll = async (guide_id, start_date, end_date, exclude_grou
 
 exports.getAllProjects = async (req, res) => {
     try {
-        const isPrivileged = ['admin', 'manager', 'group_manager'].includes(req.user.role);
-        const isGroupStaff = req.user.role === 'group_staff';
+        const isPrivileged = ['admin', 'manager', 'group_manager', 'group_operations', 'group_operations_lead'].includes(req.user.role);
 
-        // Group Staff: only see projects linked to companies they are assigned to
-        const whereClause = (!isPrivileged && isGroupStaff) 
-            ? 'WHERE c.assigned_to = $1' 
+        // Non-privileged users (like group_staff or regular sales) only see projects assigned to them
+        // or projects linked to companies assigned to them
+        const whereClause = !isPrivileged 
+            ? 'WHERE c.assigned_to = $1 OR gp.assigned_to = $1' 
             : '';
-        const params = (!isPrivileged && isGroupStaff) 
+        const params = !isPrivileged 
             ? [req.user.id] 
             : [];
 
@@ -246,13 +246,13 @@ exports.getProjectStats = async (req, res) => {
         
         const timeSeriesQuery = `
             SELECT 
-                TO_CHAR(COALESCE(gp.departure_date, gp.created_at::date), '${dateFormat}') as period,
+                TO_CHAR(COALESCE(gp.departure_date, gp.created_at::date) AT TIME ZONE 'Asia/Ho_Chi_Minh', '${dateFormat}') as period,
                 COUNT(*) as count,
                 SUM(CASE WHEN gp.status IN ('Thành công', 'Đã quyết toán') THEN gp.total_revenue ELSE 0 END) as revenue,
                 SUM(CASE WHEN gp.status IN ('Thành công', 'Đã quyết toán') THEN gp.profit ELSE 0 END) as profit
             FROM group_projects gp
             WHERE ${tsTimeCondition}
-            GROUP BY TO_CHAR(COALESCE(gp.departure_date, gp.created_at::date), '${dateFormat}')
+            GROUP BY TO_CHAR(COALESCE(gp.departure_date, gp.created_at::date) AT TIME ZONE 'Asia/Ho_Chi_Minh', '${dateFormat}')
             ORDER BY period ASC
         `;
         const timeSeriesRes = await db.query(timeSeriesQuery, tsParams);

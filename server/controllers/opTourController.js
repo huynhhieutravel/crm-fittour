@@ -1,4 +1,5 @@
 const db = require('../db');
+const { logActivity } = require('../utils/logger');
 
 // ===================================================
 // OpTours REFACTORED — reads from tour_departures + bookings
@@ -159,6 +160,17 @@ exports.createOpTour = async (req, res) => {
     
     // Return with mapped fields
     const row = result.rows[0];
+
+    // LOG ACTIVITY
+    await logActivity({
+        user_id: req.user ? req.user.id : null,
+        action_type: 'CREATE',
+        entity_type: 'OP_TOUR',
+        entity_id: row.id,
+        details: `Tạo mới Điều hành Tour: ${row.code}`,
+        new_data: row
+    });
+
     res.status(201).json({
       ...row,
       tour_code: row.code,
@@ -167,6 +179,9 @@ exports.createOpTour = async (req, res) => {
     });
   } catch (error) {
     console.error('Error in createOpTour:', error);
+    if (error.code === '23505') {
+      return res.status(400).json({ error: 'Mã tour này đã tồn tại trên hệ thống. Vui lòng đổi mã hoặc kiểm tra lại lịch khởi hành!' });
+    }
     res.status(500).json({ error: 'Lỗi khi tạo tour mới' });
   }
 };
@@ -176,6 +191,10 @@ exports.updateOpTour = async (req, res) => {
   const { tour_code, tour_name, tour_template_id, start_date, end_date, market, market_ids, status, total_revenue, actual_revenue, total_expense, profit, tour_info, revenues, expenses, guides, itinerary } = req.body;
   
   try {
+    const currentRes = await db.query('SELECT * FROM tour_departures WHERE id = $1', [id]);
+    if (currentRes.rows.length === 0) return res.status(404).json({ error: 'Không tìm thấy tour' });
+    const current = currentRes.rows[0];
+
     const sDate = start_date || null;
     const eDate = end_date || null;
     const tRev = total_revenue !== '' && total_revenue !== undefined ? total_revenue : 0;
@@ -210,6 +229,18 @@ exports.updateOpTour = async (req, res) => {
     if (result.rowCount === 0) return res.status(404).json({ error: 'Không tìm thấy tour' });
     
     const row = result.rows[0];
+
+    // LOG ACTIVITY
+    await logActivity({
+        user_id: req.user ? req.user.id : null,
+        action_type: 'UPDATE',
+        entity_type: 'OP_TOUR',
+        entity_id: id,
+        details: `Cập nhật Điều hành Tour: ${row.code}`,
+        old_data: current,
+        new_data: row
+    });
+
     res.json({
       ...row,
       tour_code: row.code,
@@ -218,6 +249,9 @@ exports.updateOpTour = async (req, res) => {
     });
   } catch (error) {
     console.error('Error in updateOpTour:', error);
+    if (error.code === '23505') {
+      return res.status(400).json({ error: 'Mã tour này đã tồn tại trên hệ thống. Vui lòng đổi mã hoặc kiểm tra lại lịch khởi hành!' });
+    }
     res.status(500).json({ error: 'Lỗi khi cập nhật tour' });
   }
 };
@@ -231,8 +265,23 @@ exports.deleteOpTour = async (req, res) => {
       return res.status(400).json({ error: `Không thể xóa: Tour này đang có ${bookingCheck.rows[0].cnt} booking. Hãy huỷ hoặc chuyển booking trước.` });
     }
     
+    const currentRes = await db.query('SELECT * FROM tour_departures WHERE id = $1', [id]);
+    if (currentRes.rows.length === 0) return res.status(404).json({ error: 'Không tìm thấy tour' });
+    const current = currentRes.rows[0];
+
     const result = await db.query('DELETE FROM tour_departures WHERE id = $1 RETURNING id', [id]);
     if (result.rowCount === 0) return res.status(404).json({ error: 'Không tìm thấy tour' });
+
+    // LOG ACTIVITY
+    await logActivity({
+        user_id: req.user ? req.user.id : null,
+        action_type: 'DELETE',
+        entity_type: 'OP_TOUR',
+        entity_id: id,
+        details: `Xóa Điều hành Tour: ${current.code}`,
+        old_data: current
+    });
+
     res.json({ message: 'Xóa tour thành công' });
   } catch (error) {
     console.error('Error in deleteOpTour:', error);
@@ -306,13 +355,15 @@ exports.addOpTourBooking = async (req, res) => {
 
     if (!isNewBooking) {
         // Permission check
-        const bCheck = await client.query('SELECT created_by FROM bookings WHERE id = $1', [bookingData.id]);
+        const bCheck = await client.query('SELECT * FROM bookings WHERE id = $1', [bookingData.id]);
         if (bCheck.rows.length > 0) {
              const existingBooking = bCheck.rows[0];
              if (!isPrivileged && existingBooking.created_by != req.user.id) {
                   await client.query('ROLLBACK');
                   return res.status(403).json({ error: 'Lỗi phân quyền! Bạn không có quyền chỉnh sửa Booking của người khác.' });
              }
+             // Lưu old_data để log
+             var oldBookingData = existingBooking;
         }
 
         // Update existing booking
@@ -334,11 +385,24 @@ exports.addOpTourBooking = async (req, res) => {
              updateParams.push(assignId, assignName);
         }
 
-        updateQuery += ` WHERE id = $${paramCounter++} AND tour_departure_id = $${paramCounter++} `;
+        updateQuery += ` WHERE id = $${paramCounter++} AND tour_departure_id = $${paramCounter++} RETURNING *`;
         updateParams.push(bookingData.id, id);
 
-        await client.query(updateQuery, updateParams);
+        const updatedRes = await client.query(updateQuery, updateParams);
         newBooking = bookingData;
+        
+        // LOG ACTIVITY cho UPDATE BOOKING
+        if (updatedRes.rows && updatedRes.rows.length > 0) {
+            await logActivity({
+                user_id: req.user ? req.user.id : null,
+                action_type: 'UPDATE',
+                entity_type: 'BOOKING',
+                entity_id: bookingData.id,
+                details: `Cập nhật Giữ chỗ: ${bookingData.booking_code || bookingData.id}`,
+                old_data: oldBookingData,
+                new_data: updatedRes.rows[0]
+            });
+        }
     } else {
         // Generate booking code
         const bookingCode = `BK-${Date.now().toString(36).toUpperCase()}`;
@@ -359,6 +423,16 @@ exports.addOpTourBooking = async (req, res) => {
             assignId, assignName
         ]);
         newBooking = { ...bookingData, id: insertRes.rows[0].id, booking_code: bookingCode };
+
+        // LOG ACTIVITY cho CREATE BOOKING
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'CREATE',
+            entity_type: 'BOOKING',
+            entity_id: newBooking.id,
+            details: `Tạo mới Giữ chỗ: ${newBooking.booking_code}`,
+            new_data: insertRes.rows[0]
+        });
     }
 
     // COMMIT the critical booking section
@@ -528,9 +602,10 @@ exports.updateOpTourBooking = async (req, res) => {
   const { id, bookingId } = req.params;
   const { status, note } = req.body;
   try {
-    const bCheck = await db.query('SELECT total_price, paid, booking_status, created_by FROM bookings WHERE id = $1 AND tour_departure_id = $2', [bookingId, id]);
+    const bCheck = await db.query('SELECT * FROM bookings WHERE id = $1 AND tour_departure_id = $2', [bookingId, id]);
     if (bCheck.rows.length === 0) return res.status(404).json({ error: 'Không tìm thấy Booking' });
-    const booking = bCheck.rows[0];
+    const oldBooking = bCheck.rows[0];
+    const booking = oldBooking;
 
     // BUG-02 FIX: Use role_name (from roles table) instead of legacy role field
     const userRoleName = req.user.role_name || req.user.role || '';
@@ -582,6 +657,21 @@ exports.updateOpTourBooking = async (req, res) => {
         await db.query('UPDATE bookings SET notes = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND tour_departure_id = $3', [note, bookingId, id]);
     }
     
+    // Fetch updated booking for new_data
+    const newBCheck = await db.query('SELECT * FROM bookings WHERE id = $1 AND tour_departure_id = $2', [bookingId, id]);
+    const updatedBooking = newBCheck.rows[0];
+
+    // LOG ACTIVITY
+    await logActivity({
+        user_id: req.user ? req.user.id : null,
+        action_type: 'UPDATE',
+        entity_type: 'BOOKING',
+        entity_id: bookingId,
+        details: `Cập nhật Trạng thái/Ghi chú Giữ chỗ: ${updatedBooking?.booking_code || bookingId}`,
+        old_data: oldBooking,
+        new_data: updatedBooking
+    });
+    
     res.json({ message: 'Cập nhật thành công' });
   } catch (error) {
     console.error('Error updating booking:', error);
@@ -593,7 +683,7 @@ exports.updateOpTourBooking = async (req, res) => {
 exports.deleteOpTourBooking = async (req, res) => {
   const { id, bookingId } = req.params;
   try {
-    const bCheck = await db.query('SELECT paid, created_by FROM bookings WHERE id = $1 AND tour_departure_id = $2', [bookingId, id]);
+    const bCheck = await db.query('SELECT * FROM bookings WHERE id = $1 AND tour_departure_id = $2', [bookingId, id]);
     if (bCheck.rows.length === 0) return res.status(404).json({ error: 'Không tìm thấy Booking' });
     const booking = bCheck.rows[0];
 
@@ -607,6 +697,17 @@ exports.deleteOpTourBooking = async (req, res) => {
     }
 
     await db.query('DELETE FROM bookings WHERE id = $1 AND tour_departure_id = $2', [bookingId, id]);
+    
+    // LOG ACTIVITY
+    await logActivity({
+        user_id: req.user ? req.user.id : null,
+        action_type: 'DELETE',
+        entity_type: 'BOOKING',
+        entity_id: bookingId,
+        details: `Xóa Giữ chỗ: ${booking.booking_code || bookingId}`,
+        old_data: booking
+    });
+    
     res.json({ message: 'Xóa vĩnh viễn thành công' });
   } catch (error) {
     console.error('Error deleting booking:', error);

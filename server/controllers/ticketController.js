@@ -1,4 +1,5 @@
 const db = require('../db');
+const { generateSupplierCode } = require('../utils/supplierHelper');
 const { logActivity } = require('../utils/logger');
 
 // === TICKETS ===
@@ -106,9 +107,14 @@ exports.create = async (req, res) => {
 
         await client.query('BEGIN');
 
+        let finalCode = code;
+        if (!finalCode || finalCode.trim() === '') {
+            finalCode = await generateSupplierCode(client, 'tickets', 'TICK-');
+        }
+
         const result = await client.query(
             `INSERT INTO tickets (code, name, tax_id, ticket_type, phone, email, country, province, address, notes, ticket_class, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *`,
-            [code, name, tax_id, ticket_type, phone, email, country, province, address, notes, ticket_class, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
+            [finalCode, name, tax_id, ticket_type, phone, email, country, province, address, notes, ticket_class, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
         );
         const newId = result.rows[0].id;
 
@@ -141,7 +147,8 @@ exports.create = async (req, res) => {
                 action_type: 'CREATE',
                 entity_type: 'TICKET',
                 entity_id: newId,
-                details: `Đã thêm mới Vé tham quan: ${name}`
+                details: `Đã thêm mới Vé tham quan: ${name}`,
+                new_data: result.rows[0]
             });
         }
 
@@ -169,6 +176,14 @@ exports.update = async (req, res) => {
         } = req.body;
 
         await client.query('BEGIN');
+
+        // Fetch old data for logging
+        const oldTicketRes = await client.query('SELECT * FROM tickets WHERE id = $1', [id]);
+        if (oldTicketRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Không tìm thấy Vé tham quan' });
+        }
+        const oldTicket = oldTicketRes.rows[0];
 
         const result = await client.query(
             `UPDATE tickets SET code=$1, name=$2, tax_id=$3, ticket_type=$4, phone=$5, email=$6, country=$7, province=$8, address=$9, notes=$10, ticket_class=$11, website=$12, bank_account_name=$13, bank_account_number=$14, bank_name=$15, market=$16, rating=$17, drive_link=$18, updated_at=CURRENT_TIMESTAMP WHERE id=$19 RETURNING *`,
@@ -224,7 +239,9 @@ exports.update = async (req, res) => {
                 action_type: 'UPDATE',
                 entity_type: 'TICKET',
                 entity_id: id,
-                details: `Cập nhật thông tin Vé tham quan: ${name}`
+                details: `Cập nhật thông tin Vé tham quan: ${name}`,
+                old_data: oldTicket,
+                new_data: result.rows[0]
             });
         }
 
@@ -241,6 +258,11 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Fetch old data for logging
+        const oldTicketRes = await db.query('SELECT * FROM tickets WHERE id = $1', [id]);
+        if (oldTicketRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy Vé tham quan' });
+        const oldTicket = oldTicketRes.rows[0];
 
         const checkDeps = await db.query(`
             SELECT 
@@ -266,7 +288,8 @@ exports.delete = async (req, res) => {
                 action_type: 'DELETE',
                 entity_type: 'TICKET',
                 entity_id: id,
-                details: `Xóa Vé tham quan ID ${id}`
+                details: `Xóa Vé tham quan: ${oldTicket.name}`,
+                old_data: oldTicket
             });
         }
         res.json({ message: 'Xóa thành công' });

@@ -1,0 +1,513 @@
+.qts-container {
+  max-width: 960px;
+  margin: 0 auto;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #1e293b;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+/* Header */
+.qts-header {
+  position: relative;
+  padding: 50px 40px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.qts-header-bg-shape {
+  position: absolute;
+  top: -20%;
+  right: 0;
+  width: 55%;
+  height: 140%;
+  background: linear-gradient(135deg, #ff8a50 0%, #ff5722 100%);
+  clip-path: ellipse(70% 60% at 100% 50%);
+  z-index: 0;
+}
+
+.qts-header-image-wrapper {
+  position: absolute;
+  top: 50%;
+  right: 40px;
+  transform: translateY(-50%);
+  width: 340px;
+  height: 340px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  box-shadow: 0 15px 35px rgba(255, 87, 34, 0.2);
+}
+
+.qts-header-image {
+  width: 85%;
+  height: auto;
+}
+
+.qts-header-content {
+  position: relative;
+  z-index: 2;
+  max-width: 500px;
+}
+
+.qts-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.qts-logo-area img {
+  height: 36px;
+}
+
+.qts-logo-text {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.qts-title {
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1.15;
+  color: #0f172a;
+  text-transform: uppercase;
+  margin-bottom: 15px;
+}
+
+.qts-title span {
+  color: #ff5722;
+  display: block;
+}
+
+.qts-badge {
+  display: inline-block;
+  background: #1e293b;
+  color: #fff;
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 20px;
+}
+
+.qts-subtitle {
+  font-size: 15px;
+  color: #475569;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.qts-subtitle strong {
+  color: #ff5722;
+}
+
+.qts-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.qts-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.qts-btn-primary {
+  background: #ff5722;
+  color: #fff;
+}
+
+.qts-btn-primary:hover {
+  background: #e64a19;
+}
+
+.qts-btn-secondary {
+  background: #fff;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+}
+
+.qts-btn-secondary:hover {
+  background: #f8fafc;
+}
+
+/* Sections */
+.qts-section {
+  padding: 20px 40px 30px;
+  position: relative;
+  background: #fff;
+}
+
+.qts-section.bg-gray {
+  background: #fcfcfc;
+  border-top: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.qts-section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.qts-section-num {
+  background: #0f172a;
+  color: #fff;
+  width: 44px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 900;
+  border-radius: 18px 0 0 18px;
+  z-index: 2;
+}
+
+.qts-section-title {
+  background: #ff5722;
+  color: #fff;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0 25px 0 15px;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, 93% 0, 100% 50%, 93% 100%, 0 100%);
+  margin-left: -5px;
+  z-index: 1;
+}
+
+/* Alternate Header Colors */
+.qts-section-header.color-orange .qts-section-num { background: #ff5722; }
+.qts-section-header.color-orange .qts-section-title { background: #0f172a; }
+
+.qts-section-header.color-red .qts-section-num { background: #0f172a; }
+.qts-section-header.color-red .qts-section-title { background: #e11d48; }
+
+/* 01. Quy Trình Bắt Buộc */
+.qts-grid-6 {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 25px 15px;
+  margin-bottom: 25px;
+}
+
+.qts-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.qts-card-icon {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+}
+
+.qts-card-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  height: 32px;
+}
+
+.qts-card-desc {
+  font-size: 11px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+/* Warning Box */
+.qts-warning-box {
+  border: 2px solid #ff5722;
+  border-radius: 8px;
+  padding: 15px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  position: relative;
+}
+
+.qts-warning-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.qts-warning-icon-large {
+  color: #ff5722;
+}
+
+.qts-warning-text-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ff5722;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.qts-warning-text-title span {
+  color: #0f172a;
+}
+
+.qts-warning-text-desc {
+  font-size: 13px;
+  color: #475569;
+}
+
+.qts-warning-right-icon {
+  background: #ff5722;
+  color: #fff;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 02. Các Lỗi Thường Gặp */
+.qts-grid-3 {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+}
+
+.qts-error-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.qts-error-icon-wrapper {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  background: #fff;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+}
+
+.qts-error-x {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: #ff5722;
+  color: #fff;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+
+.qts-error-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #0f172a;
+  text-transform: uppercase;
+}
+
+.qts-error-arrow {
+  color: #ff5722;
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 03 & 04. Role Grid */
+.qts-role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 10px;
+}
+
+.qts-role-col {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 25px;
+  background: #fcfcfc;
+}
+
+.qts-role-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.qts-role-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.qts-role-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ff5722;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.qts-role-item-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #334155;
+  font-weight: 500;
+}
+
+.qts-role-item-text strong {
+  color: #ff5722;
+}
+
+/* 05. Cảnh Báo */
+.qts-alert-box {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px 25px;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.qts-alert-icon-big {
+  color: #ff5722;
+}
+
+.qts-alert-content {
+  flex: 1;
+}
+
+.qts-alert-text {
+  font-size: 14px;
+  color: #0f172a;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.qts-alert-highlight {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ff5722;
+  text-transform: uppercase;
+}
+
+.qts-alert-right-img {
+  width: 80px;
+  opacity: 0.9;
+}
+
+/* Footer */
+.qts-footer {
+  background: #fff;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+}
+
+.qts-footer-icon {
+  color: #ff5722;
+  flex-shrink: 0;
+}
+
+.qts-footer-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #0f172a;
+  font-weight: 500;
+  max-width: 500px;
+  text-align: left;
+}
+
+.qts-footer-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  border-left: 1px solid #e2e8f0;
+  padding-left: 30px;
+}
+
+.qts-footer-logo img {
+  height: 24px;
+}
+
+.qts-footer-logo span {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+@media (max-width: 768px) {
+  .qts-header { padding: 30px 20px; }
+  .qts-header-image-wrapper { display: none; }
+  .qts-title { font-size: 28px; }
+  .qts-section { padding: 20px; }
+  .qts-grid-6 { flex-direction: column; }
+  .qts-card { flex-direction: row; text-align: left; gap: 15px; }
+  .qts-card-icon { margin-bottom: 0; }
+  .qts-card-title { height: auto; }
+  .qts-warning-box { flex-direction: column; text-align: center; }
+  .qts-warning-left { flex-direction: column; }
+  .qts-grid-3 { flex-direction: column; gap: 30px; }
+  .qts-role-grid { grid-template-columns: 1fr; }
+  .qts-alert-box { flex-direction: column; text-align: center; }
+  .qts-alert-right-img { display: none; }
+  .qts-footer { flex-direction: column; text-align: center; }
+  .qts-footer-text { text-align: center; }
+  .qts-footer-logo { border-left: none; padding-left: 0; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+}

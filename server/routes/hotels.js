@@ -2,15 +2,15 @@ const express = require('express');
 const router = express.Router();
 const hotelController = require('../controllers/hotelController');
 const authenticateToken = require('../middleware/auth');
-const { permCheck } = require('../middleware/permCheck');
+const { permCheck, permCheckOrOwner } = require('../middleware/permCheck');
 
 
 // Hotels
 router.get('/', authenticateToken, permCheck('hotels', 'view'), hotelController.getHotels);
 router.post('/', authenticateToken, permCheck('hotels', 'create'), hotelController.createHotel);
 router.get('/:id', authenticateToken, permCheck('hotels', 'view'), hotelController.getHotelDetails);
-router.put('/:id', authenticateToken, permCheck('hotels', 'edit'), hotelController.updateHotel);
-router.delete('/:id', authenticateToken, permCheck('hotels', 'delete'), hotelController.deleteHotel);
+router.put('/:id', authenticateToken, permCheckOrOwner('hotels', 'edit', 'hotels', 'id'), hotelController.updateHotel);
+router.delete('/:id', authenticateToken, permCheckOrOwner('hotels', 'delete', 'hotels', 'id'), hotelController.deleteHotel);
 
 // Contacts
 router.post('/:hotel_id/contacts', authenticateToken, permCheck('hotels', 'edit'), hotelController.createContact);

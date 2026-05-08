@@ -1,5 +1,6 @@
 const db = require('../db');
 const { invalidateCache } = require('../middleware/permCheck');
+const { logActivity } = require('../utils/logger');
 
 /**
  * GET /api/permissions/master
@@ -69,6 +70,16 @@ exports.updateRolePermissions = async (req, res) => {
         
         await client.query('COMMIT');
         invalidateCache();
+        
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'UPDATE',
+            entity_type: 'PERMISSION',
+            entity_id: roleId,
+            details: `Cập nhật phân quyền cho Role ID: ${roleId}`,
+            new_data: { permissions }
+        });
         
         res.json({ message: 'Cập nhật quyền role thành công.' });
     } catch (err) {
@@ -143,6 +154,16 @@ exports.updateUserPermissions = async (req, res) => {
         
         await client.query('COMMIT');
         invalidateCache();
+        
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'UPDATE',
+            entity_type: 'PERMISSION',
+            entity_id: userId,
+            details: `Cập nhật override quyền cho User ID: ${userId}`,
+            new_data: { overrides }
+        });
         
         res.json({ message: 'Cập nhật quyền cá nhân thành công.' });
     } catch (err) {

@@ -8,7 +8,7 @@ router.get('/', authenticateToken, permCheckAny([['vouchers','view_all'], ['vouc
 router.post('/', authenticateToken, permCheck('vouchers', 'create'), controller.createVoucher);
 router.get('/booking/:bookingId', authenticateToken, permCheckAny([['vouchers','view_all'], ['vouchers','view_own']]), controller.getVouchersByBooking);
 router.get('/visa/:visaId', authenticateToken, permCheckAny([['vouchers','view_all'], ['vouchers','view_own'], ['visas','view_all'], ['visas','view_own']]), controller.getVouchersByVisa);
-router.put('/:id/cancel', authenticateToken, permCheck('vouchers', 'cancel'), controller.cancelVoucher);
+router.put('/:id/cancel', authenticateToken, controller.cancelVoucher);
 router.delete('/:id', authenticateToken, permCheck('vouchers', 'delete'), controller.deleteVoucher);
 
 module.exports = router;

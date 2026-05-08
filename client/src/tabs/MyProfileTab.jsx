@@ -154,6 +154,25 @@ const MyProfileTab = ({ currentUser, addToast, onUpdateUser }) => {
               ))}
             </div>
           )}
+          <div style={{ marginTop: '12px' }}>
+            <a 
+              href={`${window.location.hostname === 'localhost' ? 'http://localhost:5001' : 'https://erp.fittour.vn'}/api/auth/google?sync_token=${localStorage.getItem('token')}`}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 12px',
+                background: profile.google_email ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.2)', 
+                borderRadius: '8px', 
+                color: profile.google_email ? '#a7f3d0' : 'white',
+                fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none',
+                border: `1px solid ${profile.google_email ? 'rgba(16, 185, 129, 0.5)' : 'rgba(255,255,255,0.3)'}`, 
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => e.currentTarget.style.background = profile.google_email ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.3)'}
+              onMouseOut={e => e.currentTarget.style.background = profile.google_email ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.2)'}
+            >
+              <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '14px', height: '14px' }} />
+              {profile.google_email ? 'Đã liên kết Gmail' : 'Đồng bộ Gmail'}
+            </a>
+          </div>
         </div>
         <div style={{ textAlign: 'right', fontSize: '0.75rem', opacity: 0.7 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>

@@ -122,6 +122,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Eye,
+  EyeOff,
   MoreHorizontal,
   User,
   Lock,
@@ -147,6 +148,7 @@ import CskhBoardTab from './tabs/CskhBoardTab';
 import CskhTodoTab from './tabs/CskhTodoTab';
 import CskhSearchTab from './tabs/CskhSearchTab';
 import CskhRulesTab from './tabs/CskhRulesTab';
+import CustomerReviewsTab from './tabs/CustomerReviewsTab';
 import WorkflowTab from './tabs/WorkflowTab';
 import PassportBulkScanner from './components/tools/PassportBulkScanner';
 
@@ -200,6 +202,14 @@ function AppContent() {
 
 
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const googleToken = urlParams.get('token');
+    const googleUserStr = urlParams.get('user');
+    if (googleToken && googleUserStr) {
+        localStorage.setItem('token', googleToken);
+        localStorage.setItem('user', decodeURIComponent(googleUserStr));
+        return true;
+    }
     return !!(localStorage.getItem('token') && localStorage.getItem('user'));
   });
   const [inboxPsid, setInboxPsid] = useState(null);
@@ -218,6 +228,7 @@ function AppContent() {
   };
 
   const [loginData, setLoginData] = useState({ username: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [leads, setLeads] = useState([]);
   const [tours, setTours] = useState([]);
@@ -378,6 +389,7 @@ function AppContent() {
     const p = window.location.pathname.substring(1);
     if (p === 'guides/timeline') return 'timeline';
     if (p === 'guides/dashboard') return 'dashboard';
+    if (p === 'guides/reviews') return 'reviews';
     return 'list';
   });
   const [guideTimelineData, setGuideTimelineData] = useState([]);
@@ -389,9 +401,30 @@ function AppContent() {
     endDate: new Date(new Date().setDate(new Date().getDate() + 30))
   });
   const [guideFilters, setGuideFilters] = useState({ search: '', status: '', language: '' });
-  const [customerActiveTab, setCustomerActiveTab] = useState('list');
-  const [groupLeaderActiveTab, setGroupLeaderActiveTab] = useState('list');
-  const [b2bActiveTab, setB2bActiveTab] = useState('list');
+  const [customerActiveTab, setCustomerActiveTab] = useState(() => {
+    return localStorage.getItem('customerActiveTab') || 'list';
+  });
+  
+  useEffect(() => {
+    localStorage.setItem('customerActiveTab', customerActiveTab);
+  }, [customerActiveTab]);
+
+  const [groupLeaderActiveTab, setGroupLeaderActiveTab] = useState(() => {
+    return localStorage.getItem('groupLeaderActiveTab') || 'list';
+  });
+  
+  useEffect(() => {
+    localStorage.setItem('groupLeaderActiveTab', groupLeaderActiveTab);
+  }, [groupLeaderActiveTab]);
+
+  const [b2bActiveTab, setB2bActiveTab] = useState(() => {
+    return localStorage.getItem('b2bActiveTab') || 'list';
+  });
+  
+  useEffect(() => {
+    localStorage.setItem('b2bActiveTab', b2bActiveTab);
+  }, [b2bActiveTab]);
+
   const [bus, setBus] = useState([]);
 
 
@@ -459,7 +492,23 @@ function AppContent() {
       setActiveTab(defaultTab);
       return;
     }
-    if (fullPath.startsWith('guides')) { setActiveTab('guides'); return; }
+    if (fullPath.startsWith('guides')) { 
+      setActiveTab('guides'); 
+      if (fullPath === 'guides/reviews') setGuideActiveTab('reviews');
+      else if (fullPath === 'guides/dashboard') setGuideActiveTab('dashboard');
+      else if (fullPath === 'guides/timeline') setGuideActiveTab('timeline');
+      else setGuideActiveTab('list');
+      return; 
+    }
+    if (fullPath.startsWith('customers')) {
+      setActiveTab('customers');
+      if (fullPath === 'customers/cskh-rules') setCustomerActiveTab('cskh-rules');
+      else if (fullPath === 'customers/cskh-board') setCustomerActiveTab('cskh-board');
+      else if (fullPath === 'customers/cskh-todo') setCustomerActiveTab('cskh-todo');
+      else if (fullPath === 'customers/cskh-search') setCustomerActiveTab('cskh-search');
+      else setCustomerActiveTab('list');
+      return;
+    }
     if (fullPath.startsWith('manual')) { setActiveTab('manual'); return; }
     if (fullPath === 'email/mailboxes') { setActiveTab('email-mailboxes'); return; }
     if (fullPath.startsWith('group/')) { 
@@ -548,16 +597,56 @@ function AppContent() {
     window.addEventListener('switchAndOpenCompany', handleSwitch);
     window.addEventListener('switchAndOpenProject', handleSwitchProject);
     window.addEventListener('jumpToDeparture', handleJumpToDeparture);
+
+    // Command Palette Quick Actions — navigate to module pages
+    const handleOpenAddLead = () => { navigate('/leads'); setActiveTab('leads'); };
+    const handleOpenAddCustomer = () => { navigate('/customers'); setActiveTab('customers'); };
+    const handleOpenAddBooking = () => { navigate('/bookings'); setActiveTab('bookings'); };
+
+    window.addEventListener('open-add-lead-modal', handleOpenAddLead);
+    window.addEventListener('open-add-customer-modal', handleOpenAddCustomer);
+    window.addEventListener('open-add-booking-modal', handleOpenAddBooking);
+
     return () => {
       window.removeEventListener('switchAndOpenCompany', handleSwitch);
       window.removeEventListener('switchAndOpenProject', handleSwitchProject);
       window.removeEventListener('jumpToDeparture', handleJumpToDeparture);
+      window.removeEventListener('open-add-lead-modal', handleOpenAddLead);
+      window.removeEventListener('open-add-customer-modal', handleOpenAddCustomer);
+      window.removeEventListener('open-add-booking-modal', handleOpenAddBooking);
     };
+
   }, [navigate]);
 
 
 
   useEffect(() => {
+    // Handle Google OAuth Redirect params
+    const urlParams = new URLSearchParams(window.location.search);
+    const googleToken = urlParams.get('token');
+    const googleUserStr = urlParams.get('user');
+    const googleError = urlParams.get('error');
+    const toastMsg = urlParams.get('toast');
+
+    if (toastMsg === 'google_sync_success') {
+        addToastGlobal('Đã đồng bộ tài khoản Google thành công!', setToasts, 'success');
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (toastMsg === 'google_sync_failed') {
+        addToastGlobal('Đồng bộ tài khoản Google thất bại.', setToasts, 'error');
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (googleError) {
+        let msg = 'Đăng nhập Google thất bại.';
+        if (googleError === 'account_not_found') msg = 'Email này chưa được đăng ký trong hệ thống CRM.';
+        if (googleError === 'account_disabled') msg = 'Tài khoản của bạn đã bị vô hiệu hóa.';
+        setError(msg);
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (googleToken && googleUserStr) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
     const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
     if (savedToken && savedUser) {
@@ -566,6 +655,15 @@ function AppContent() {
         if (u) {
           setUser(u);
           setIsLoggedIn(true);
+
+          // Silent token refresh — get latest role from DB without re-login
+          axios.get('/api/auth/refresh', { headers: { Authorization: `Bearer ${savedToken}` } })
+            .then(res => {
+              localStorage.setItem('token', res.data.token);
+              localStorage.setItem('user', JSON.stringify(res.data.user));
+              setUser(res.data.user);
+            })
+            .catch(() => {}); // Fail silently — old token still works
         }
       } catch (err) {
         console.error("Session restore failed", err);
@@ -1781,8 +1879,8 @@ function AppContent() {
 
 
 
-  // ── Route Guard: /tai-lieu/* phải render DocumentsPage riêng, KHÔNG dùng sidebar ──
-  if (location.pathname.startsWith('/tai-lieu')) {
+  // ── Route Guard: /tai-lieu/* và /hdv phải render DocumentsPage riêng, KHÔNG dùng sidebar ──
+  if (location.pathname.startsWith('/tai-lieu') || location.pathname.startsWith('/hdv')) {
     return <DocumentsPage />;
   }
 
@@ -2476,6 +2574,13 @@ function AppContent() {
           >
             Lịch phân công
           </div>
+          <div style={{ height: '1px', background: '#e2e8f0', margin: '4px 0' }} />
+          <div 
+            className={`submenu-item ${activeTab === 'guides' && guideActiveTab === 'reviews' ? 'active' : ''}`} 
+            onClick={() => { navigate('/guides/reviews'); setActiveTab('guides'); setGuideActiveTab('reviews'); setHoveredMenu(null); }}
+          >
+            ⭐ Đánh giá của KH
+          </div>
           <div 
             className={`submenu-item ${activeTab === 'guides' && guideActiveTab === 'dashboard' ? 'active' : ''}`} 
             onClick={() => { navigate('/guides/dashboard'); setActiveTab('guides'); setGuideActiveTab('dashboard'); setHoveredMenu(null); }}
@@ -2909,6 +3014,14 @@ function AppContent() {
                   >
                     📝 Edit info
                   </div>
+                  <a 
+                    href={`${window.location.hostname === 'localhost' ? 'http://localhost:5001' : 'https://erp.fittour.vn'}/api/auth/google?sync_token=${localStorage.getItem('token')}`}
+                    className="submenu-item" 
+                    style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: '#1e293b' }}
+                  >
+                    <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '14px', height: '14px' }} />
+                    Đồng bộ Gmail
+                  </a>
                   <div 
                     className="submenu-item" 
                     onClick={(e) => { 
@@ -3121,7 +3234,7 @@ function AppContent() {
           />
         )}
 
-            {activeTab === 'guides' && (
+            {activeTab === 'guides' && guideActiveTab !== 'reviews' && (
               <GuidesTab 
                 guides={guides}
                 guideFilters={guideFilters}
@@ -3166,7 +3279,7 @@ function AppContent() {
           <RemindersTab handleViewDeparture={handleViewDeparture} />
         )}
 
-        {activeTab === 'customers' && customerActiveTab !== 'cskh-board' && customerActiveTab !== 'cskh-todo' && customerActiveTab !== 'cskh-search' && customerActiveTab !== 'cskh-rules' && (
+        {activeTab === 'customers' && customerActiveTab !== 'cskh-board' && customerActiveTab !== 'cskh-todo' && customerActiveTab !== 'cskh-search' && customerActiveTab !== 'cskh-rules' && customerActiveTab !== 'customer-reviews' && (
           <CustomersTab 
             customers={customers}
             customerFilters={customerFilters}
@@ -3193,6 +3306,10 @@ function AppContent() {
 
         {activeTab === 'customers' && customerActiveTab === 'cskh-rules' && ['admin', 'manager'].includes(user?.role) && (
           <CskhRulesTab />
+        )}
+
+        {activeTab === 'guides' && guideActiveTab === 'reviews' && (
+          <CustomerReviewsTab />
         )}
 
         {activeTab === 'users' && (checkPerm('users', 'view') || user?.role === 'admin' || user?.role === 'manager') && (
@@ -3325,11 +3442,6 @@ function AppContent() {
           <PassportBulkScanner />
         )}
 
-        {activeTab === 'b2b-companies' && (
-          b2bActiveTab === 'calendar' ? 
-            <GroupLeadersTab currentUser={user} addToast={addToast} users={users} activeView="calendar" /> :
-            <B2BCompaniesTab currentUser={user} addToast={addToast} users={users} handleDeleteCompany={(id) => setB2bCompanyToDelete(id)} />
-        )}
       </>
     )}
   </main>
@@ -3565,6 +3677,8 @@ function AppContent() {
       <Route path="/tai-lieu" element={<DocumentsPage />} />
       <Route path="/tai-lieu/:subtab/:id/*" element={<DocumentsPage />} />
       <Route path="/tai-lieu/*" element={<DocumentsPage />} />
+      <Route path="/hdv" element={<DocumentsPage />} />
+      <Route path="/hdv/*" element={<DocumentsPage />} />
       <Route path="/cam-nang-thuong-hieu/logo" element={<BrandLayout><BrandLogoPage /></BrandLayout>} />
       <Route path="/cam-nang-thuong-hieu/mau-sac" element={<BrandLayout><BrandColorPage /></BrandLayout>} />
       <Route path="/cam-nang-thuong-hieu/phong-chu" element={<BrandLayout><BrandTypographyPage /></BrandLayout>} />
@@ -3612,16 +3726,37 @@ function AppContent() {
 
                 <div className="login-form-group">
                   <label>Mật khẩu</label>
-                  <div className="login-input-wrapper">
+                  <div className="login-input-wrapper" style={{ position: 'relative' }}>
                     <Lock size={18} />
                     <input 
-                      type="password" 
+                      type={showPassword ? "text" : "password"} 
                       className="login-input"
                       placeholder="••••••••"
                       required 
                       value={loginData.password} 
                       onChange={(e) => setLoginData({...loginData, password: e.target.value})} 
+                      style={{ paddingRight: '40px' }}
                     />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{ 
+                        position: 'absolute', 
+                        right: '10px', 
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'transparent', 
+                        border: 'none', 
+                        cursor: 'pointer', 
+                        color: '#64748b',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: 0
+                      }}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
                 </div>
 
@@ -3629,6 +3764,26 @@ function AppContent() {
                   Đăng nhập
                 </button>
               </form>
+
+              <div style={{ display: 'flex', alignItems: 'center', margin: '1.25rem 0' }}>
+                <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }}></div>
+                <span style={{ padding: '0 10px', color: '#6b7280', fontSize: '0.85rem' }}>Hoặc</span>
+                <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }}></div>
+              </div>
+              
+              <a 
+                href={window.location.hostname === 'localhost' ? 'http://localhost:5001/api/auth/google' : 'https://erp.fittour.vn/api/auth/google'}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                  width: '100%', padding: '0.75rem', background: 'white', border: '1px solid #d1d5db',
+                  borderRadius: '8px', color: '#374151', fontWeight: '600', textDecoration: 'none',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'all 0.2s',
+                  marginBottom: '1.5rem'
+                }}
+              >
+                <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '18px', height: '18px' }} />
+                Đăng nhập bằng Google
+              </a>
 
               <div className="login-footer-links">
                 <button type="button" onClick={() => navigate('/privacy')} className="login-footer-link">
@@ -3767,6 +3922,8 @@ function AppContent() {
                 if (landtourToDelete) confirmDeleteLandtour();
                 if (insuranceToDelete) confirmDeleteInsurance();
                 if (b2bCompanyToDelete) confirmDeleteB2bCompany();
+                if (groupLeaderToDelete) confirmDeleteGroupLeader();
+                if (groupProjectToDelete) confirmDeleteGroupProject();
                 }}
             >{loading ? 'ĐANG XÓA...' : 'XÓA THỰC SỰ'}</button>
           </div>

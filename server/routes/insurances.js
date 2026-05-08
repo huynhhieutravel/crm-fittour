@@ -2,15 +2,15 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/insuranceController');
 const authenticateToken = require('../middleware/auth');
-const { permCheck } = require('../middleware/permCheck');
+const { permCheck, permCheckOrOwner } = require('../middleware/permCheck');
 
 
 // Insurances
 router.get('/', authenticateToken, permCheck('insurances', 'view'), controller.getAll);
 router.post('/', authenticateToken, permCheck('insurances', 'create'), controller.create);
 router.get('/:id', authenticateToken, permCheck('insurances', 'view'), controller.getDetails);
-router.put('/:id', authenticateToken, permCheck('insurances', 'edit'), controller.update);
-router.delete('/:id', authenticateToken, permCheck('insurances', 'delete'), controller.delete);
+router.put('/:id', authenticateToken, permCheckOrOwner('insurances', 'edit', 'insurances', 'id'), controller.update);
+router.delete('/:id', authenticateToken, permCheckOrOwner('insurances', 'delete', 'insurances', 'id'), controller.delete);
 
 // Contacts
 router.post('/:insurance_id/contacts', authenticateToken, permCheck('insurances', 'edit'), controller.createContact);

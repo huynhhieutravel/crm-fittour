@@ -198,8 +198,8 @@ export default function InsuranceDetailDrawer({ insurance, onClose, refreshList,
                                </h3>
                                 <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem 2rem' }}>
                                     <div>
-                                        <label style={labelStyle}>Mã NCC Bảo Hiểm *</label>
-                                        <input type="text" style={{ ...drawerInputStyle, background: '#f1f5f9', color: '#64748b', fontWeight: 600 }} value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} disabled={isViewOnly} placeholder="INS-..." />
+                                        <label style={labelStyle}>Mã NCC Bảo Hiểm (Tự Động)</label>
+                                        <input type="text" style={{ ...drawerInputStyle, background: '#f1f5f9', color: '#64748b', fontWeight: 600 }} value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} disabled={isViewOnly} placeholder="Để trống tự động tạo INS-001" />
                                     </div>
                                     <div>
                                         <label style={labelStyle}>Tên Bảo Hiểm *</label>

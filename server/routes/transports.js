@@ -2,15 +2,15 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/transportController');
 const authenticateToken = require('../middleware/auth');
-const { permCheck } = require('../middleware/permCheck');
+const { permCheck, permCheckOrOwner } = require('../middleware/permCheck');
 
 
 // Transports
 router.get('/', authenticateToken, permCheck('transports', 'view'), controller.getAll);
 router.post('/', authenticateToken, permCheck('transports', 'create'), controller.create);
 router.get('/:id', authenticateToken, permCheck('transports', 'view'), controller.getDetails);
-router.put('/:id', authenticateToken, permCheck('transports', 'edit'), controller.update);
-router.delete('/:id', authenticateToken, permCheck('transports', 'delete'), controller.delete);
+router.put('/:id', authenticateToken, permCheckOrOwner('transports', 'edit', 'transports', 'id'), controller.update);
+router.delete('/:id', authenticateToken, permCheckOrOwner('transports', 'delete', 'transports', 'id'), controller.delete);
 
 // Contacts
 router.post('/:transport_id/contacts', authenticateToken, permCheck('transports', 'edit'), controller.createContact);

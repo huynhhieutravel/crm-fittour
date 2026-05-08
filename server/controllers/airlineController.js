@@ -1,4 +1,5 @@
 const db = require('../db');
+const { generateSupplierCode } = require('../utils/supplierHelper');
 const { logActivity } = require('../utils/logger');
 
 // === AIRLINES ===
@@ -102,9 +103,14 @@ exports.create = async (req, res) => {
 
         await client.query('BEGIN');
 
+        let finalCode = code;
+        if (!finalCode || finalCode.trim() === '') {
+            finalCode = await generateSupplierCode(client, 'airlines', 'AIR-');
+        }
+
         const result = await client.query(
             `INSERT INTO airlines (code, name, tax_id, airline_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link, logo_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *`,
-            [code, name, tax_id, airline_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null, logo_url || null]
+            [finalCode, name, tax_id, airline_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null, logo_url || null]
         );
         const newId = result.rows[0].id;
 
@@ -137,7 +143,8 @@ exports.create = async (req, res) => {
                 action_type: 'CREATE',
                 entity_type: 'AIRLINE',
                 entity_id: newId,
-                details: `Đã thêm mới Phòng vé/Hãng bay: ${name}`
+                details: `Đã thêm mới Phòng vé/Hãng bay: ${name}`,
+                new_data: result.rows[0]
             });
         }
 
@@ -169,6 +176,14 @@ exports.update = async (req, res) => {
         }
 
         await client.query('BEGIN');
+
+        // Fetch old data for logging
+        const oldAirlineRes = await client.query('SELECT * FROM airlines WHERE id = $1', [id]);
+        if (oldAirlineRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Không tìm thấy Phòng vé/Hãng bay' });
+        }
+        const oldAirline = oldAirlineRes.rows[0];
 
         const result = await client.query(
             `UPDATE airlines SET code=$1, name=$2, tax_id=$3, airline_class=$4, phone=$5, email=$6, country=$7, province=$8, address=$9, notes=$10, website=$11, bank_account_name=$12, bank_account_number=$13, bank_name=$14, market=$15, rating=$16, drive_link=$17, logo_url=$18, updated_at=CURRENT_TIMESTAMP WHERE id=$19 RETURNING *`,
@@ -224,7 +239,9 @@ exports.update = async (req, res) => {
                 action_type: 'UPDATE',
                 entity_type: 'AIRLINE',
                 entity_id: id,
-                details: `Cập nhật thông tin Phòng vé/Hãng bay: ${name}`
+                details: `Cập nhật thông tin Phòng vé/Hãng bay: ${name}`,
+                old_data: oldAirline,
+                new_data: result.rows[0]
             });
         }
 
@@ -241,6 +258,11 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Fetch old data for logging
+        const oldAirlineRes = await db.query('SELECT * FROM airlines WHERE id = $1', [id]);
+        if (oldAirlineRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy Phòng vé/Hãng bay' });
+        const oldAirline = oldAirlineRes.rows[0];
 
         const checkDeps = await db.query(`
             SELECT 
@@ -266,7 +288,8 @@ exports.delete = async (req, res) => {
                 action_type: 'DELETE',
                 entity_type: 'AIRLINE',
                 entity_id: id,
-                details: `Xóa Phòng vé/Hãng bay ID ${id}`
+                details: `Xóa Phòng vé/Hãng bay: ${oldAirline.name}`,
+                old_data: oldAirline
             });
         }
         res.json({ message: 'Xóa thành công' });

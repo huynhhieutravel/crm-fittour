@@ -2,15 +2,15 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/airlineController');
 const authenticateToken = require('../middleware/auth');
-const { permCheck } = require('../middleware/permCheck');
+const { permCheck, permCheckOrOwner } = require('../middleware/permCheck');
 
 
 // Airlines
 router.get('/', authenticateToken, permCheck('airlines', 'view'), controller.getAll);
 router.post('/', authenticateToken, permCheck('airlines', 'create'), controller.create);
 router.get('/:id', authenticateToken, permCheck('airlines', 'view'), controller.getDetails);
-router.put('/:id', authenticateToken, permCheck('airlines', 'edit'), controller.update);
-router.delete('/:id', authenticateToken, permCheck('airlines', 'delete'), controller.delete);
+router.put('/:id', authenticateToken, permCheckOrOwner('airlines', 'edit', 'airlines', 'id'), controller.update);
+router.delete('/:id', authenticateToken, permCheckOrOwner('airlines', 'delete', 'airlines', 'id'), controller.delete);
 
 // Contacts
 router.post('/:airline_id/contacts', authenticateToken, permCheck('airlines', 'edit'), controller.createContact);

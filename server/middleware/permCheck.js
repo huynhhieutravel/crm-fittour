@@ -244,8 +244,106 @@ async function getUserMergedPerms(userId, roleName) {
     return result;
 }
 
+/**
+ * permCheckOrOwner — Cho phép nếu user có quyền HOẶC là người tạo/sở hữu record
+ * 
+ * Dùng cho PUT/DELETE routes:
+ *   permCheckOrOwner('hotels', 'edit', 'hotels', 'id')
+ *
+ * @param {string} module  — tên module trong permissions_master
+ * @param {string} action  — tên action (edit, delete)  
+ * @param {string} table   — tên bảng DB để query
+ * @param {string} paramKey — tên param trong req.params chứa ID (mặc định 'id')
+ * @param {string} ownerColumn — cột dùng để xác định sở hữu (mặc định 'created_by')
+ */
+const permCheckOrOwner = (module, action, table, paramKey = 'id', ownerColumn = 'created_by') => {
+    return async (req, res, next) => {
+        try {
+            // 1. Admin bypass
+            if (req.user && req.user.role === 'admin') return next();
+
+            if (!req.user || !req.user.id) {
+                return res.status(401).json({ message: 'Chưa đăng nhập.' });
+            }
+
+            // 2. Check global permission first (same logic as permCheck)
+            let hasGlobalPerm = false;
+            try {
+                const master = await getPermMaster();
+                const perm = master.find(p => p.module === module && p.action === action);
+                
+                if (perm) {
+                    // Check user override
+                    const userOverride = await db.query(
+                        'SELECT granted FROM user_permissions_v2 WHERE user_id = $1 AND permission_id = $2',
+                        [req.user.id, perm.id]
+                    );
+                    if (userOverride.rows.length > 0) {
+                        hasGlobalPerm = userOverride.rows[0].granted;
+                    } else {
+                        // Check role default
+                        const userRoleRes = await db.query('SELECT role_id FROM users WHERE id = $1', [req.user.id]);
+                        if (userRoleRes.rows.length > 0) {
+                            const roleDefault = await db.query(
+                                'SELECT granted FROM role_permissions_v2 WHERE role_id = $1 AND permission_id = $2',
+                                [userRoleRes.rows[0].role_id, perm.id]
+                            );
+                            hasGlobalPerm = roleDefault.rows.length > 0 && roleDefault.rows[0].granted;
+                        }
+                    }
+                }
+            } catch (e) {
+                // If v2 fails, try v1 silently
+            }
+
+            if (hasGlobalPerm) return next();
+
+            // 3. No global perm → Check if user is the creator (ownership bypass)
+            const entityId = req.params[paramKey];
+            if (!entityId) {
+                return res.status(403).json({ message: `Bạn không có quyền: ${module}.${action}` });
+            }
+
+            // Sanitize table name to prevent SQL injection (whitelist)
+            const ALLOWED_TABLES = [
+                'tour_templates', 'tour_departures', 'hotels', 'restaurants', 
+                'transports', 'airlines', 'tickets', 'landtours', 'insurances', 
+                'visas', 'group_projects', 'group_leaders', 'b2b_companies',
+                'bookings', 'leads', 'guides', 'vouchers', 'payment_vouchers'
+            ];
+            if (!ALLOWED_TABLES.includes(table)) {
+                return res.status(403).json({ message: `Bạn không có quyền: ${module}.${action}` });
+            }
+            
+            // Validate ownerColumn to prevent SQL injection
+            const ALLOWED_OWNER_COLUMNS = ['created_by', 'assigned_to', 'sale_id', 'operator_id'];
+            if (!ALLOWED_OWNER_COLUMNS.includes(ownerColumn)) {
+                return res.status(400).json({ message: 'Invalid owner column configuration' });
+            }
+
+            const ownerRes = await db.query(
+                `SELECT ${ownerColumn} FROM ${table} WHERE id = $1`, [entityId]
+            );
+
+            if (ownerRes.rows.length > 0 && ownerRes.rows[0][ownerColumn] === req.user.id) {
+                return next(); // Creator can edit/delete own record
+            }
+
+            // 4. Not owner, not authorized
+            return res.status(403).json({
+                message: `Bạn không có quyền ${action === 'delete' ? 'xóa' : 'chỉnh sửa'} mục này. Chỉ người tạo hoặc quản lý mới có thể thao tác.`
+            });
+
+        } catch (err) {
+            console.error('[permCheckOrOwner] Error:', err.message);
+            return res.status(500).json({ message: 'Lỗi kiểm tra quyền.' });
+        }
+    };
+};
+
 module.exports = permCheck;
 module.exports.permCheck = permCheck;
 module.exports.permCheckAny = permCheckAny;
+module.exports.permCheckOrOwner = permCheckOrOwner;
 module.exports.invalidateCache = invalidateCache;
 module.exports.getUserMergedPerms = getUserMergedPerms;

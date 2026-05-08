@@ -1,4 +1,5 @@
 const db = require('../db');
+const { generateSupplierCode } = require('../utils/supplierHelper');
 const { logActivity } = require('../utils/logger');
 const multer = require('multer');
 const path = require('path');
@@ -150,13 +151,18 @@ exports.createHotel = async (req, res) => {
 
         await client.query('BEGIN');
 
+        let finalCode = code;
+        if (!finalCode || finalCode.trim() === '') {
+            finalCode = await generateSupplierCode(client, 'hotels', 'HOTEL-');
+        }
+
         const result = await client.query(
             `INSERT INTO hotels (
                 code, name, tax_id, build_year, phone, email, country, province, 
                 address, notes, star_rate, website, hotel_class, project_name, 
                 bank_account_name, bank_account_number, bank_name, market, rating, drive_link
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING *`,
-            [code, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
+            [finalCode, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
         );
         const newHotelId = result.rows[0].id;
 
@@ -241,7 +247,8 @@ exports.createHotel = async (req, res) => {
                 action_type: 'CREATE',
                 entity_type: 'HOTEL',
                 entity_id: newHotelId,
-                details: `Đã thêm mới Khách sạn: ${name}`
+                details: `Đã thêm mới Khách sạn: ${name}`,
+                new_data: result.rows[0]
             });
         }
 
@@ -272,6 +279,14 @@ exports.updateHotel = async (req, res) => {
         } = req.body;
 
         await client.query('BEGIN');
+
+        // Fetch old data for logging
+        const oldHotelRes = await client.query('SELECT * FROM hotels WHERE id = $1', [id]);
+        if (oldHotelRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Không tìm thấy khách sạn' });
+        }
+        const oldHotel = oldHotelRes.rows[0];
 
         const result = await client.query(
             `UPDATE hotels SET 
@@ -408,7 +423,9 @@ exports.updateHotel = async (req, res) => {
                 action_type: 'UPDATE',
                 entity_type: 'HOTEL',
                 entity_id: id,
-                details: `Cập nhật thông tin Khách sạn & Bảng giá: ${name}`
+                details: `Cập nhật thông tin Khách sạn & Bảng giá: ${name}`,
+                old_data: oldHotel,
+                new_data: result.rows[0]
             });
         }
 
@@ -425,6 +442,11 @@ exports.updateHotel = async (req, res) => {
 exports.deleteHotel = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Fetch old data for logging
+        const oldHotelRes = await db.query('SELECT * FROM hotels WHERE id = $1', [id]);
+        if (oldHotelRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy khách sạn' });
+        const oldHotel = oldHotelRes.rows[0];
 
         const checkDeps = await db.query(`
             SELECT 
@@ -450,7 +472,8 @@ exports.deleteHotel = async (req, res) => {
                 action_type: 'DELETE',
                 entity_type: 'HOTEL',
                 entity_id: id,
-                details: `Xóa Khách sạn ID ${id}`
+                details: `Xóa Khách sạn: ${oldHotel.name}`,
+                old_data: oldHotel
             });
         }
         res.json({ message: 'Xóa thành công' });

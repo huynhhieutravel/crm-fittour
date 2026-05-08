@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import CustomerReviewsTab from '../tabs/CustomerReviewsTab';
 import { 
   Bell, ChevronDown, Calendar, Users, Hash, CheckCircle2, Circle, Clock, 
   PhoneCall, AlertTriangle, Edit3, MapPin, Search, ArrowRight, Star,
@@ -9,19 +10,24 @@ import {
 import '../styles/hdv-hub.css';
 
 const HDVHub = () => {
+  const location = useLocation();
+  const isDashboard = location.pathname === '/hdv/dashboard';
+  const isReviews = location.pathname === '/hdv' || location.pathname === '/hdv/reviews';
+
   return (
     <div className="hdv-hub-wrapper">
       {/* 1. Header (Navbar) */}
       <header className="hdv-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '48px' }}>
-          <img src="/logo.png" alt="FIT Tour" style={{ height: '32px' }} />
+          <Link to="/hdv"><img src="/logo.png" alt="FIT Tour" style={{ height: '32px' }} /></Link>
           <nav className="hdv-nav">
-            <a href="#" className="hdv-nav-item active">Trang chủ</a>
-            <a href="#" className="hdv-nav-item">Checklist</a>
-            <a href="#" className="hdv-nav-item">Xử lý sự cố</a>
-            <a href="#" className="hdv-nav-item">Thư viện SOP</a>
-            <a href="#" className="hdv-nav-item">Case Study</a>
-            <a href="#" className="hdv-nav-item">Báo cáo</a>
+            <Link to="/hdv/dashboard" className={`hdv-nav-item ${isDashboard ? 'active' : ''}`}>Trang chủ</Link>
+            <Link to="/hdv" className={`hdv-nav-item ${isReviews ? 'active' : ''}`}>Đánh giá</Link>
+            <a href="#" className="hdv-nav-item">Checklist <span style={{fontSize: '10px', opacity: 0.6}}>(tạm thời chưa có)</span></a>
+            <a href="#" className="hdv-nav-item">Xử lý sự cố <span style={{fontSize: '10px', opacity: 0.6}}>(tạm thời chưa có)</span></a>
+            <a href="#" className="hdv-nav-item">Thư viện SOP <span style={{fontSize: '10px', opacity: 0.6}}>(tạm thời chưa có)</span></a>
+            <a href="#" className="hdv-nav-item">Case Study <span style={{fontSize: '10px', opacity: 0.6}}>(tạm thời chưa có)</span></a>
+            <a href="#" className="hdv-nav-item">Báo cáo <span style={{fontSize: '10px', opacity: 0.6}}>(tạm thời chưa có)</span></a>
           </nav>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -40,7 +46,13 @@ const HDVHub = () => {
         </div>
       </header>
 
-      {/* 2. Hero Section */}
+      {!isDashboard ? (
+        <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
+          <CustomerReviewsTab isHDVView={true} />
+        </div>
+      ) : (
+        <>
+          {/* 2. Hero Section */}
       <section className="hdv-hero">
         <h1>Bạn không chỉ dẫn tour,<br/>Bạn đang vận hành trải nghiệm <span className="highlight">FIT Tour</span></h1>
         <p>Bàn làm việc của Hướng Dẫn Viên chuyên nghiệp</p>
@@ -163,7 +175,7 @@ const HDVHub = () => {
                 <li><div className="icon"></div> Chuẩn bị câu chuyện & tài liệu</li>
               </ul>
               <div className="phase-action">
-                <a href="#" className="phase-link">Xem checklist đầy đủ <ArrowRight size={14} /></a>
+                <a href="#" className="phase-link">Xem checklist đầy đủ <span style={{fontSize: '10px', opacity: 0.6}}>(tạm thời chưa có)</span> <ArrowRight size={14} /></a>
                 <img src="https://cdn-icons-png.flaticon.com/512/854/854878.png" className="phase-img" alt="Illustration" />
               </div>
             </div>
@@ -266,7 +278,7 @@ const HDVHub = () => {
           <div className="section-card">
             <div className="section-header">
               <div className="section-title">XỬ LÝ SỰ CỐ THƯỜNG GẶP</div>
-              <a href="#" className="view-all">Xem tất cả <ArrowRight size={14} /></a>
+              <a href="#" className="view-all">Xem tất cả <span style={{fontSize: '10px', opacity: 0.6}}>(tạm thời chưa có)</span> <ArrowRight size={14} /></a>
             </div>
             <div className="incident-grid">
               <div className="incident-card">
@@ -300,7 +312,7 @@ const HDVHub = () => {
           <div className="section-card">
             <div className="section-header">
               <div className="section-title">CASE STUDY</div>
-              <a href="#" className="view-all">Xem tất cả <ArrowRight size={14} /></a>
+              <a href="#" className="view-all">Xem tất cả <span style={{fontSize: '10px', opacity: 0.6}}>(tạm thời chưa có)</span> <ArrowRight size={14} /></a>
             </div>
             <div className="case-study-content">
               <div className="case-study-info">
@@ -329,7 +341,7 @@ const HDVHub = () => {
           <div className="section-card">
             <div className="section-header">
               <div className="section-title">FEEDBACK KHÁCH HÀNG</div>
-              <a href="#" className="view-all">Xem tất cả <ArrowRight size={14} /></a>
+              <a href="#" className="view-all">Xem tất cả <span style={{fontSize: '10px', opacity: 0.6}}>(tạm thời chưa có)</span> <ArrowRight size={14} /></a>
             </div>
             <div className="feedback-summary">
               <div className="feedback-score">
@@ -363,7 +375,7 @@ const HDVHub = () => {
           <div className="section-card">
             <div className="section-header">
               <div className="section-title">THƯ VIỆN SOP</div>
-              <a href="#" className="view-all">Xem tất cả <ArrowRight size={14} /></a>
+              <a href="#" className="view-all">Xem tất cả <span style={{fontSize: '10px', opacity: 0.6}}>(tạm thời chưa có)</span> <ArrowRight size={14} /></a>
             </div>
             <div>
               <div className="sop-item">
@@ -407,11 +419,13 @@ const HDVHub = () => {
                 bạn tạo ra.
               </div>
             </div>
-            <a href="#" style={{ color: 'white', textDecoration: 'none', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>Đọc thêm câu chuyện truyền cảm hứng <ArrowRight size={14} /></a>
+            <a href="#" style={{ color: 'white', textDecoration: 'none', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>Đọc thêm câu chuyện truyền cảm hứng <span style={{fontSize: '10px', opacity: 0.8}}>(tạm thời chưa có)</span> <ArrowRight size={14} /></a>
           </div>
         </div>
 
       </div>
+        </>
+      )}
     </div>
   );
 };

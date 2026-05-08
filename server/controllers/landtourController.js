@@ -1,5 +1,6 @@
 const db = require('../db');
 const { logActivity } = require('../utils/logger');
+const { generateSupplierCode } = require('../utils/supplierHelper');
 
 // === LANDTOURS ===
 exports.getAll = async (req, res) => {
@@ -106,9 +107,14 @@ exports.create = async (req, res) => {
 
         await client.query('BEGIN');
 
+        let finalCode = code;
+        if (!finalCode || finalCode.trim() === '') {
+            finalCode = await generateSupplierCode(client, 'landtours', 'LAND-');
+        }
+
         const result = await client.query(
             `INSERT INTO landtours (code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
-            [code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
+            [finalCode, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
         );
         const newId = result.rows[0].id;
 
@@ -141,7 +147,8 @@ exports.create = async (req, res) => {
                 action_type: 'CREATE',
                 entity_type: 'LANDTOUR',
                 entity_id: newId,
-                details: `Đã thêm mới Land Tour: ${name}`
+                details: `Đã thêm mới Land Tour: ${name}`,
+                new_data: result.rows[0]
             });
         }
 
@@ -224,7 +231,9 @@ exports.update = async (req, res) => {
                 action_type: 'UPDATE',
                 entity_type: 'LANDTOUR',
                 entity_id: id,
-                details: `Cập nhật thông tin Land Tour: ${name}`
+                details: `Cập nhật thông tin Land Tour: ${name}`,
+                old_data: oldLandtour,
+                new_data: result.rows[0]
             });
         }
 
@@ -241,6 +250,11 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Fetch old data for logging
+        const oldLandtourRes = await db.query('SELECT * FROM landtours WHERE id = $1', [id]);
+        if (oldLandtourRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy Land Tour' });
+        const oldLandtour = oldLandtourRes.rows[0];
 
         const checkDeps = await db.query(`
             SELECT 
@@ -266,7 +280,8 @@ exports.delete = async (req, res) => {
                 action_type: 'DELETE',
                 entity_type: 'LANDTOUR',
                 entity_id: id,
-                details: `Xóa Land Tour ID ${id}`
+                details: `Xóa Land Tour: ${oldLandtour.name}`,
+                old_data: oldLandtour
             });
         }
         res.json({ message: 'Xóa thành công' });

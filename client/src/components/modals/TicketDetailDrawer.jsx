@@ -281,8 +281,8 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
                                </h3>
                                 <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem 2rem' }}>
                                     <div>
-                                        <label style={labelStyle}>Mã Nhà Cung Cấp *</label>
-                                        <input type="text" style={{ ...drawerInputStyle, background: '#f1f5f9', color: '#64748b', fontWeight: 600 }} value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} disabled={isViewOnly} placeholder="TICK-..." />
+                                        <label style={labelStyle}>Mã Nhà Cung Cấp (Tự Động)</label>
+                                        <input type="text" style={{ ...drawerInputStyle, background: '#f1f5f9', color: '#64748b', fontWeight: 600 }} value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} disabled={isViewOnly} placeholder="Để trống tự động tạo TICK-001" />
                                     </div>
                                     <div>
                                         <label style={labelStyle}>Tên Khu Du Lịch / Đại Lý *</label>

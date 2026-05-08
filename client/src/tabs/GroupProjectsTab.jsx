@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Search, Plus, MapPin, Edit2, Trash2, Calendar, Users, Briefcase, Eye, UserCheck, Rocket } from 'lucide-react';
 import Select from 'react-select';
 import GroupProjectDetailDrawer from '../components/modals/GroupProjectDetailDrawer';
+import { formatRoleDisplayName } from '../utils/roleUtils';
 
 const STATUS_OPTIONS = [
     { value: 'Báo giá', label: 'Báo giá' },
@@ -206,12 +207,11 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
         return new Date(b.departure_date) - new Date(a.departure_date);
     });
 
-    const userOptions = (users || []).filter(u => u.is_active !== false && (
-        (u.teams || []).some(t => String(t.name || '').toLowerCase().includes('đoàn') || String(t.name || '').toLowerCase().includes('mice')) ||
-        ['admin', 'manager', 'group_manager', 'group_staff', 'group_operations', 'group_operations_lead'].includes(u.role_name) ||
-        u.role === 'admin' || u.role === 'manager'
-    )).map(u => ({
-        value: u.id.toString(), label: u.full_name || u.username
+    const allowedRoles = ['group_staff', 'group_manager', 'group_operations', 'group_operations_lead', 'admin', 'manager'];
+    const userOptions = (users || []).filter(u => u.is_active !== false && allowedRoles.includes(u.role_name))
+    .map(u => ({
+        value: u.id.toString(), 
+        label: `${u.full_name || u.username} (${formatRoleDisplayName(u.role_name)})`
     }));
 
     const getStatusColor = (status) => {

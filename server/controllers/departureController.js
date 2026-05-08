@@ -1,4 +1,5 @@
 const db = require('../db');
+const { logActivity } = require('../utils/logger');
 
 // Helper to check for guide schedule overlaps (checks BOTH tour_departures AND group_projects)
 const checkGuideOverlap = async (guide_id, start_date, end_date, exclude_id = null) => {
@@ -97,6 +98,16 @@ exports.createDeparture = async (req, res) => {
                 notes
             ]
         );
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'CREATE',
+            entity_type: 'DEPARTURE',
+            entity_id: result.rows[0].id,
+            details: `Tạo mới Lịch khởi hành: ${generatedCode}`,
+            new_data: result.rows[0]
+        });
+
         res.status(201).json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -153,8 +164,8 @@ exports.updateDeparture = async (req, res) => {
     }
 
     try {
-        // Fetch current record to get missing fields for overlap check
-        const currentRes = await db.query('SELECT guide_id, start_date, end_date FROM tour_departures WHERE id = $1', [id]);
+        // Fetch current record to get full old data
+        const currentRes = await db.query('SELECT * FROM tour_departures WHERE id = $1', [id]);
         if (currentRes.rows.length === 0) {
             return res.status(404).json({ message: 'Không tìm thấy lịch khởi hành' });
         }
@@ -245,6 +256,17 @@ exports.updateDeparture = async (req, res) => {
         } catch(e) { console.error('Alert Error Departure:', e); }
         // ------------------------------------
 
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'UPDATE',
+            entity_type: 'DEPARTURE',
+            entity_id: id,
+            details: `Cập nhật Lịch khởi hành: ${current.code || id}`,
+            old_data: current,
+            new_data: result.rows[0]
+        });
+
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -257,6 +279,14 @@ exports.deleteDeparture = async (req, res) => {
         await client.query('BEGIN');
 
         const depId = req.params.id;
+
+        // Fetch old data for logging
+        const depCheck = await client.query('SELECT * FROM tour_departures WHERE id = $1', [depId]);
+        if (depCheck.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Không tìm thấy lịch khởi hành' });
+        }
+        const oldDep = depCheck.rows[0];
 
         // === BUG-06 FIX: Chặn xóa nếu có booking đã thu tiền ===
         const paidCheck = await client.query(
@@ -307,6 +337,16 @@ exports.deleteDeparture = async (req, res) => {
             await client.query('ROLLBACK');
             return res.status(404).json({ message: 'Không tìm thấy lịch khởi hành' });
         }
+
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'DELETE',
+            entity_type: 'DEPARTURE',
+            entity_id: depId,
+            details: `Xóa Lịch khởi hành: ${oldDep.code}`,
+            old_data: oldDep
+        });
 
         await client.query('COMMIT');
         res.json({ message: 'Đã xoá lịch khởi hành thành công' });
@@ -369,6 +409,16 @@ exports.duplicateDeparture = async (req, res) => {
             WHERE td.id = $1
         `, [result.rows[0].id]);
         
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'CREATE',
+            entity_type: 'DEPARTURE',
+            entity_id: result.rows[0].id,
+            details: `Nhân bản Lịch khởi hành thành: ${generatedCode}`,
+            new_data: result.rows[0]
+        });
+
         res.status(201).json(populated.rows[0]);
     } catch (err) {
         res.status(500).json({ message: err.message });

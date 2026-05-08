@@ -2,15 +2,15 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/landtourController');
 const authenticateToken = require('../middleware/auth');
-const { permCheck } = require('../middleware/permCheck');
+const { permCheck, permCheckOrOwner } = require('../middleware/permCheck');
 
 
 // Landtours
 router.get('/', authenticateToken, permCheck('landtours', 'view'), controller.getAll);
 router.post('/', authenticateToken, permCheck('landtours', 'create'), controller.create);
 router.get('/:id', authenticateToken, permCheck('landtours', 'view'), controller.getDetails);
-router.put('/:id', authenticateToken, permCheck('landtours', 'edit'), controller.update);
-router.delete('/:id', authenticateToken, permCheck('landtours', 'delete'), controller.delete);
+router.put('/:id', authenticateToken, permCheckOrOwner('landtours', 'edit', 'landtours', 'id'), controller.update);
+router.delete('/:id', authenticateToken, permCheckOrOwner('landtours', 'delete', 'landtours', 'id'), controller.delete);
 
 // Contacts
 router.post('/:landtour_id/contacts', authenticateToken, permCheck('landtours', 'edit'), controller.createContact);

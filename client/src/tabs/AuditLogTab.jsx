@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import AuditLogDashboard from '../components/AuditLogDashboard';
-import { Ticket, PlaneTakeoff, Users, Briefcase, Settings } from 'lucide-react';
+import { Ticket, PlaneTakeoff, Users, Briefcase, Settings, Store } from 'lucide-react';
 
 export default function AuditLogTab() {
   const [activeSubmenu, setActiveSubmenu] = useState('bookings');
 
   // Map submenus to module types defined in backend
   const submenus = [
-    { id: 'bookings', label: 'Lịch sử Giữ chỗ', icon: <Ticket size={18} />, moduleType: 'BOOKING' }, // Or whatever mapping your db uses
+    { id: 'bookings', label: 'Lịch sử Giữ chỗ', icon: <Ticket size={18} />, moduleType: 'BOOKING' },
     { id: 'tours', label: 'Tour & Khởi hành', icon: <PlaneTakeoff size={18} />, moduleType: 'OP_TOUR' },
     { id: 'customers', label: 'Khách hàng', icon: <Users size={18} />, moduleType: 'CUSTOMER' },
+    { id: 'reviews', label: 'Đánh giá KH', icon: <Users size={18} />, moduleType: 'CUSTOMER_REVIEW' },
     { id: 'leads', label: 'Cơ hội (Leads)', icon: <Briefcase size={18} />, moduleType: 'LEAD' },
-    { id: 'system', label: 'Hệ thống', icon: <Settings size={18} />, moduleType: 'USER' }, // Includes users, settings
+    { id: 'suppliers', label: 'Nhà cung cấp', icon: <Store size={18} />, moduleType: 'HOTEL,RESTAURANT,TRANSPORT,AIRLINE,VISA,TICKET,INSURANCE,B2B_COMPANY,GROUP_LEADER,LANDTOUR,TRAVEL_SUPPORT' },
+    { id: 'guides', label: 'Hướng dẫn viên', icon: <Users size={18} />, moduleType: 'GUIDE' },
+    { id: 'system', label: 'Hệ thống', icon: <Settings size={18} />, moduleType: 'USER,LEAVE_REQUEST,ORG_CHART,BU,AGENT,MARKET,VOUCHER,PERMISSION,SYSTEM_ALERT' },
   ];
 
   const currentMenu = submenus.find(m => m.id === activeSubmenu);

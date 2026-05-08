@@ -9,8 +9,17 @@ exports.getAuditLogs = async (req, res) => {
         let conditions = [];
 
         if (module) {
-            values.push(module);
-            conditions.push(`l.entity_type = $${values.length}`);
+            if (module.includes(',')) {
+                const modules = module.split(',');
+                const placeholders = modules.map(m => {
+                    values.push(m);
+                    return `$${values.length}`;
+                }).join(',');
+                conditions.push(`l.entity_type IN (${placeholders})`);
+            } else {
+                values.push(module);
+                conditions.push(`l.entity_type = $${values.length}`);
+            }
         }
         if (action_type) {
             values.push(action_type);

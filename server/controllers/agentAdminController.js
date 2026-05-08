@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const db = require('../db');
+const { logActivity } = require('../utils/logger');
 
 const BRAIN_DIR = path.join(__dirname, '..', 'ai', 'brain');
 
@@ -101,6 +102,15 @@ exports.updateBrainFile = async (req, res) => {
 
     fs.writeFileSync(filePath, content, 'utf-8');
 
+    // LOG ACTIVITY
+    await logActivity({
+        user_id: req.user ? req.user.id : null,
+        action_type: 'UPDATE',
+        entity_type: 'SYSTEM',
+        entity_id: 0,
+        details: `Cập nhật AI Brain File: ${category}/${filename}`
+    });
+
     res.json({ success: true, message: `File ${filename} đã được cập nhật. Cần reload để áp dụng.`, tokens_est: Math.round(content.length / 3.5) });
   } catch (err) {
     console.error('[Agent Admin] updateBrainFile error:', err);
@@ -119,6 +129,15 @@ exports.reloadBrain = async (req, res) => {
     // Re-require sẽ trigger load lại
     const { SYSTEM_INSTRUCTION } = require('../ai/brainLoader');
     const { functionDeclarations } = require('../ai/skillRegistry');
+
+    // LOG ACTIVITY
+    await logActivity({
+        user_id: req.user ? req.user.id : null,
+        action_type: 'UPDATE',
+        entity_type: 'SYSTEM',
+        entity_id: 0,
+        details: `Reload AI Brain: ${functionDeclarations.length} skills loaded`
+    });
 
     res.json({
       success: true,

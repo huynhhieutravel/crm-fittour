@@ -1,4 +1,6 @@
 const db = require('../db');
+const { getUserMergedPerms } = require('../middleware/permCheck');
+const { logActivity } = require('../utils/logger');
 
 exports.getAllTours = async (req, res) => {
     try {
@@ -27,8 +29,8 @@ exports.createTour = async (req, res) => {
                 name, destination, duration, price, max_pax, start_date, 
                 description, tour_type, tags, highlights, inclusions, 
                 exclusions, base_price, internal_cost, expected_margin, 
-                schedule_link, code, bu_group, image_url, website_link, is_active
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, COALESCE($21, true)) 
+                schedule_link, code, bu_group, image_url, website_link, is_active, created_by
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, COALESCE($21, true), $22) 
             RETURNING *`,
             [
                 name, destination, duration, price || 0, max_pax || 0, start_date || null, 
@@ -38,7 +40,7 @@ exports.createTour = async (req, res) => {
                 typeof inclusions === 'object' ? JSON.stringify(inclusions) : inclusions, 
                 typeof exclusions === 'object' ? JSON.stringify(exclusions) : exclusions, 
                 base_price || 0, internal_cost || 0, expected_margin || 0, 
-                schedule_link, code, bu_group, image_url, website_link, is_active
+                schedule_link, code, bu_group, image_url, website_link, is_active, req.user.id
             ]
         );
         
@@ -46,6 +48,15 @@ exports.createTour = async (req, res) => {
 
         // Background Meta Sync đã được gỡ bỏ theo yêu cầu của user. 
         // Sync sẽ chỉ diễn ra thủ công thông qua nút Đồng bộ Toàn bộ ở Cài đặt.
+
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'CREATE',
+            entity_type: 'TOUR',
+            entity_id: newTour.id,
+            details: `Tạo mới Sản phẩm Tour: ${newTour.name}`,
+            new_data: newTour
+        });
 
         res.status(201).json(newTour);
     } catch (err) {
@@ -71,6 +82,20 @@ exports.updateTour = async (req, res) => {
         image_url, website_link, is_active
     } = req.body;
     try {
+        // Ownership Check + Fetch old data
+        const tourCheck = await db.query('SELECT * FROM tour_templates WHERE id = $1', [req.params.id]);
+        if (tourCheck.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy tour' });
+        const oldTour = tourCheck.rows[0];
+
+        const perms = await getUserMergedPerms(req.user.id, req.user.role);
+        const hasGlobalEdit = perms['tours'] && perms['tours']['edit'];
+        
+        if (!hasGlobalEdit) {
+            if (oldTour.created_by !== req.user.id) {
+                return res.status(403).json({ message: 'Bạn không có quyền sửa Sản phẩm Tour của người khác.' });
+            }
+        }
+
         const result = await db.query(
             `UPDATE tour_templates SET 
                 name=$1, destination=$2, duration=$3, price=$4, max_pax=$5, 
@@ -95,6 +120,16 @@ exports.updateTour = async (req, res) => {
 
         // Background Meta Sync đã được gỡ bỏ theo yêu cầu.
 
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'UPDATE',
+            entity_type: 'TOUR',
+            entity_id: req.params.id,
+            details: `Cập nhật thông tin Sản phẩm Tour: ${updatedTour.name}`,
+            old_data: oldTour,
+            new_data: updatedTour
+        });
+
         res.json(updatedTour);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -104,6 +139,20 @@ exports.updateTour = async (req, res) => {
 exports.deleteTour = async (req, res) => {
     try {
         const tourId = req.params.id;
+
+        // Ownership Check + Fetch old data
+        const tourCheck = await db.query('SELECT * FROM tour_templates WHERE id = $1', [tourId]);
+        if (tourCheck.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy tour' });
+        const oldTour = tourCheck.rows[0];
+
+        const perms = await getUserMergedPerms(req.user.id, req.user.role);
+        const hasGlobalDelete = perms['tours'] && perms['tours']['delete'];
+        
+        if (!hasGlobalDelete) {
+            if (oldTour.created_by !== req.user.id) {
+                return res.status(403).json({ message: 'Bạn không có quyền xóa Sản phẩm Tour của người khác.' });
+            }
+        }
 
         // FK Guard: Check tour_departures
         const depsCount = await db.query('SELECT COUNT(*)::int as c FROM tour_departures WHERE tour_template_id = $1', [tourId]);
@@ -125,6 +174,16 @@ exports.deleteTour = async (req, res) => {
 
         const result = await db.query('DELETE FROM tour_templates WHERE id = $1 RETURNING *', [tourId]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy tour' });
+        
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'DELETE',
+            entity_type: 'TOUR',
+            entity_id: tourId,
+            details: `Xóa Sản phẩm Tour: ${oldTour.name}`,
+            old_data: oldTour
+        });
+
         res.json({ message: 'Đã xoá tour thành công' });
     } catch (err) {
         res.status(500).json({ message: err.message });

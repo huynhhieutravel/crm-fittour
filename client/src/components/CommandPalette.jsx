@@ -1,25 +1,101 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, FileText, LayoutTemplate, Briefcase, Users, Navigation, X, ExternalLink } from 'lucide-react';
+import { 
+    Search, FileText, LayoutTemplate, Briefcase, Users, Navigation, ExternalLink, 
+    MessageSquare, MapPin, UserCheck, CheckCircle, Building, Calendar, Clock, 
+    UserPlus, DollarSign, Activity, BookOpen, Settings, Shield, Star, Mail, Phone
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+// ═══════════════════════════════════════════════════════
+// DANH SÁCH TOÀN BỘ MODULE — Path khớp chính xác với VALID_TABS / sidebar navigate
+// ═══════════════════════════════════════════════════════
 const globalSearchData = [
-    { id: 'dashboard', title: 'Dashboard Tổng quan', type: 'module', path: '/dashboard', icon: LayoutTemplate },
-    { id: 'leads', title: 'Quản lý Nguồn cơ hội (Leads)', type: 'module', path: '/leads', icon: Users },
-    { id: 'tours', title: 'Mẫu Chương trình (Tour Templates)', type: 'module', path: '/tours', icon: Briefcase },
-    { id: 'departures', title: 'Bán Ngày Khởi Hành (Departures)', type: 'module', path: '/departures', icon: Navigation },
-    { id: 'bookings', title: 'Đơn hàng Bán chạy (Bookings)', type: 'module', path: '/bookings', icon: Briefcase },
-    { id: 'customers', title: 'Quản trị Khách hàng', type: 'module', path: '/customers', icon: Users },
-    { id: 'internal-docs', title: 'Tài liệu: Quy chế lương HDV', type: 'doc', path: '/internal-docs', icon: FileText },
-    { id: 'licenses', title: 'Tài liệu: Biểu mẫu Văn phòng', type: 'doc', path: '/licenses', icon: FileText },
-    { id: 'leaves', title: 'Nhân sự: Quản lý Nghỉ phép', type: 'module', path: '/leaves', icon: Users },
-    { id: 'staff-calendar', title: 'Nhân sự: Lịch làm việc', type: 'module', path: '/staff-calendar', icon: Users },
-    { id: 'passport-ocr', title: 'Quét tự động Passport OCR', type: 'module', path: '/passport-ocr', icon: FileText },
-    { id: 'costings', title: 'Bảng tính giá (Costings)', type: 'module', path: '/costings', icon: FileText },
-    { id: 'op-tours', title: 'Điều hành Tour (OP)', type: 'module', path: '/op-tours', icon: Navigation },
-    { id: 'vouchers', title: 'Ủy nhiệm chi (Vouchers)', type: 'module', path: '/vouchers', icon: FileText },
-    { id: 'marketing-ads', title: 'Chi phí Marketing Ads', type: 'module', path: '/marketing-ads', icon: LayoutTemplate },
-    { id: 'team-directory', title: 'Danh bạ FIT Tour', type: 'module', path: '/team-directory', icon: Users },
+    // Core
+    { id: 'dashboard', title: 'Dashboard Tổng quan', path: '/dashboard', icon: LayoutTemplate },
+    { id: 'workspace', title: 'Workspace: Khu vực làm việc', path: '/workspace', icon: LayoutTemplate },
+    { id: 'leads', title: 'Quản lý Lead (Nguồn cơ hội)', path: '/leads', icon: Users },
+    { id: 'leads-dashboard', title: 'Dashboard Lead & Hiệu suất', path: '/leads-dashboard', icon: LayoutTemplate },
+    { id: 'staff-performance', title: 'Hiệu suất Nhân viên', path: '/staff-performance', icon: Activity },
+    { id: 'customers', title: 'Danh sách Khách hàng', path: '/customers', icon: Users },
+    { id: 'bookings', title: 'Quản lý Đơn hàng (Bookings)', path: '/bookings', icon: Briefcase },
+
+    // Tours & Operations
+    { id: 'tours', title: 'Mẫu Chương trình Tour (Templates)', path: '/tours', icon: MapPin },
+    { id: 'departures', title: 'Ngày Khởi hành (Departures)', path: '/departures', icon: Navigation },
+    { id: 'bus', title: 'Quản lý Xe Bus', path: '/bus', icon: Navigation },
+    { id: 'guides', title: 'Danh sách Hướng dẫn viên', path: '/guides', icon: UserCheck },
+    { id: 'op-tours', title: 'Điều hành Tour (OP)', path: '/op-tours', icon: Navigation },
+    { id: 'costings', title: 'Bảng tính giá Tour (Costings)', path: '/costings', icon: DollarSign },
+    { id: 'reminders', title: 'Nhắc nhở công việc (Reminders)', path: '/reminders', icon: Clock },
+
+    // CSKH
+    { id: 'cskh-board', title: 'Chăm sóc Khách hàng (CSKH Board)', path: '/cskh-board', icon: MessageSquare },
+    { id: 'cskh-todo', title: 'Công việc CSKH (To-do)', path: '/cskh-todo', icon: CheckCircle },
+    { id: 'cskh-search', title: 'Tra cứu CSKH', path: '/cskh-search', icon: Search },
+    { id: 'customer-reviews', title: 'Đánh giá của Khách hàng', path: '/guides/reviews', icon: Star },
+
+    // Tour Đoàn (Group) — paths dạng /group/xxx
+    { id: 'group-dashboard', title: 'Dashboard MICE (Tour Đoàn)', path: '/group/dashboard', icon: LayoutTemplate },
+    { id: 'b2b-companies', title: 'Công ty Đối tác (B2B)', path: '/group/companies', icon: Building },
+    { id: 'group-leaders', title: 'Trưởng đoàn (Group Leaders)', path: '/group/leaders', icon: Users },
+    { id: 'group-projects', title: 'Dự án Tour Đoàn (Projects)', path: '/group/projects', icon: Briefcase },
+    { id: 'group-mice-leads', title: 'MICE Leads (Tour Đoàn)', path: '/group/mice-leads', icon: Users },
+
+    // Suppliers (NCC)
+    { id: 'hotels', title: 'NCC: Khách sạn (Hotels)', path: '/hotels', icon: Building },
+    { id: 'restaurants', title: 'NCC: Nhà hàng', path: '/restaurants', icon: Building },
+    { id: 'transports', title: 'NCC: Vận chuyển', path: '/transports', icon: Navigation },
+    { id: 'airlines', title: 'NCC: Vé máy bay (Airlines)', path: '/airlines', icon: Navigation },
+    { id: 'tickets', title: 'NCC: Vé tham quan (Tickets)', path: '/tickets', icon: FileText },
+    { id: 'landtours', title: 'NCC: Land Tour', path: '/landtours', icon: MapPin },
+    { id: 'insurances', title: 'NCC: Bảo hiểm', path: '/insurances', icon: Shield },
+    { id: 'visas', title: 'Dịch vụ Visa', path: '/visas', icon: FileText },
+
+    // Communication
+    { id: 'email', title: 'Hộp thư Email', path: '/email', icon: Mail },
+    { id: 'inbox', title: 'Messenger / Facebook Chat', path: '/inbox', icon: MessageSquare },
+    { id: 'travel-support', title: 'Hỗ trợ Khách (Travel Support)', path: '/travel-support', icon: Phone },
+
+    // Marketing
+    { id: 'marketing-ads', title: 'Chi phí Marketing Ads', path: '/marketing-ads', icon: DollarSign },
+    { id: 'management-dashboard', title: 'Dashboard Quản lý (CEO)', path: '/management-dashboard', icon: LayoutTemplate },
+
+    // HR & Admin
+    { id: 'staff-calendar', title: 'Lịch làm việc nhân viên', path: '/staff-calendar', icon: Calendar },
+    { id: 'leaves', title: 'Quản lý Nghỉ phép', path: '/leaves', icon: Clock },
+    { id: 'team-directory', title: 'Danh bạ nhân viên FIT Tour', path: '/team-directory', icon: Phone },
+    { id: 'org-chart', title: 'Sơ đồ tổ chức (Org Chart)', path: '/org-chart', icon: LayoutTemplate },
+    { id: 'users', title: 'Quản trị Người dùng (Users)', path: '/users', icon: UserPlus },
+    { id: 'my-profile', title: 'Hồ sơ cá nhân', path: '/my-profile', icon: Users },
+
+    // Finance
+    { id: 'vouchers', title: 'Ủy nhiệm chi (Vouchers)', path: '/vouchers', icon: FileText },
+    { id: 'payment-vouchers', title: 'Phiếu chi / Thanh toán', path: '/payment-vouchers', icon: FileText },
+    { id: 'passport-ocr', title: 'Quét Passport (OCR)', path: '/passport-ocr', icon: FileText },
+
+    // Docs & System
+    { id: 'tai-lieu', title: 'Tài liệu nội bộ', path: '/tai-lieu', icon: BookOpen },
+    { id: 'licenses', title: 'Biểu mẫu Văn phòng', path: '/licenses', icon: FileText },
+    { id: 'manual', title: 'Sổ tay hướng dẫn (Manual)', path: '/manual/overview', icon: BookOpen },
+    { id: 'workflow', title: 'Quy trình làm việc (Workflow)', path: '/workflow', icon: Activity },
+    { id: 'bu-rules', title: 'Quy tắc Business Unit (BU)', path: '/bu-rules', icon: Shield },
+    { id: 'brand', title: 'Cẩm nang Thương hiệu FIT Tour', path: '/cam-nang-thuong-hieu', icon: Star },
+    { id: 'settings', title: 'Cấu hình Hệ thống', path: '/settings', icon: Settings },
+    { id: 'market-settings', title: 'Cấu hình Thị trường (Markets)', path: '/market-settings', icon: Settings },
+    { id: 'media-settings', title: 'Quản lý Media & Giao diện', path: '/media-settings', icon: Settings },
+    { id: 'teams', title: 'Quản lý Nhóm (Teams)', path: '/teams', icon: Users },
+    { id: 'audit-logs', title: 'Nhật ký hệ thống (Audit Logs)', path: '/audit-logs', icon: Activity },
+    { id: 'agent-manager', title: 'Quản lý AI Agent', path: '/agent-manager', icon: Settings },
+    { id: 'ceo-departures-dashboard', title: 'Dashboard Điều hành (CEO)', path: '/ceo-departures-dashboard', icon: LayoutTemplate },
+    { id: 'email-mailboxes', title: 'Cấu hình Hộp thư', path: '/email/mailboxes', icon: Settings },
+    { id: 'cskh-rules', title: 'Cấu hình Rules CSKH', path: '/customers/cskh-rules', icon: Settings },
+];
+
+const quickActions = [
+    { id: 'go-leads', title: 'Đi tới Leads', type: 'action', action: 'open-add-lead-modal', icon: Users, subtitle: 'Mở trang Quản lý Lead' },
+    { id: 'go-customers', title: 'Đi tới Khách hàng', type: 'action', action: 'open-add-customer-modal', icon: Users, subtitle: 'Mở trang Khách hàng' },
+    { id: 'go-bookings', title: 'Đi tới Đơn hàng', type: 'action', action: 'open-add-booking-modal', icon: Briefcase, subtitle: 'Mở trang Đơn hàng' },
 ];
 
 const removeVietnameseTones = (str) => {
@@ -31,10 +107,16 @@ const CommandPalette = ({ onNavigate }) => {
     const [query, setQuery] = useState('');
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [dynamicDocs, setDynamicDocs] = useState([]);
+    const [recentSearches, setRecentSearches] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('cmdPaletteRecent') || '[]');
+        } catch { return []; }
+    });
+    
     const inputRef = useRef(null);
     const navigate = useNavigate();
 
-    // Fetch dynamic licenses directly into the search pool
+    // Fetch dynamic licenses (biểu mẫu)
     useEffect(() => {
         const fetchRemoteDocs = async () => {
             try {
@@ -50,7 +132,7 @@ const CommandPalette = ({ onNavigate }) => {
                 }));
                 setDynamicDocs(docs);
             } catch (err) {
-                console.error('Failed to pre-fetch licenses for Command Palette', err);
+                console.error('Failed to pre-fetch licenses', err);
             }
         };
         fetchRemoteDocs();
@@ -86,14 +168,17 @@ const CommandPalette = ({ onNavigate }) => {
         }
     }, [isOpen]);
 
-    const combinedData = [...globalSearchData, ...dynamicDocs];
-    const filteredData = combinedData.filter(item => {
-        const searchRaw = removeVietnameseTones(query);
-        const itemRaw = removeVietnameseTones(item.title);
-        return itemRaw.includes(searchRaw) || item.id.includes(searchRaw);
-    }).slice(0, 8); // Giới hạn 8 kết quả
+    // Filter modules + quick actions + dynamic docs (pure frontend, instant)
+    const allItems = [...globalSearchData, ...quickActions, ...dynamicDocs];
+    const filteredData = query.length === 0 
+        ? allItems.slice(0, 12)
+        : allItems.filter(item => {
+            const qNorm = removeVietnameseTones(query);
+            const tNorm = removeVietnameseTones(item.title);
+            return tNorm.includes(qNorm) || item.id.includes(qNorm);
+        }).slice(0, 12);
 
-    // Handle Keyboard navigation
+    // Keyboard navigation
     useEffect(() => {
         const handleNavigation = (e) => {
             if (!isOpen) return;
@@ -106,7 +191,7 @@ const CommandPalette = ({ onNavigate }) => {
             } else if (e.key === 'Enter') {
                 e.preventDefault();
                 if (filteredData[selectedIndex]) {
-                    handleSelect(filteredData[selectedIndex]);
+                    handleSelect(filteredData[selectedIndex], e.metaKey || e.ctrlKey);
                 }
             }
         };
@@ -114,24 +199,55 @@ const CommandPalette = ({ onNavigate }) => {
         return () => window.removeEventListener('keydown', handleNavigation);
     }, [isOpen, filteredData, selectedIndex]);
 
-    const handleSelect = (item) => {
+    const handleSelect = (item, isNewTab = false) => {
         setIsOpen(false);
         setQuery('');
-        
-        if (item.type === 'doc-dynamic') {
-            if (item.path !== '#') {
-                window.open(item.path, '_blank');
-            } else {
-                navigate('/licenses');
-                if (onNavigate) onNavigate('licenses');
-            }
+
+        // Save to Recent
+        const safeItem = { id: item.id, title: item.title, type: item.type, path: item.path };
+        const newRecent = [safeItem, ...recentSearches.filter(r => r.id !== item.id)].slice(0, 5);
+        setRecentSearches(newRecent);
+        try { localStorage.setItem('cmdPaletteRecent', JSON.stringify(newRecent)); } catch {}
+
+        if (item.type === 'action') {
+            window.dispatchEvent(new CustomEvent(item.action));
             return;
         }
 
-        navigate(item.path);
-        if (onNavigate) {
-            onNavigate(item.id);
+        if (item.type === 'doc-dynamic' && item.path !== '#') {
+            window.open(item.path, '_blank');
+            return;
         }
+
+        if (isNewTab) {
+            window.open(item.path, '_blank');
+        } else {
+            navigate(item.path);
+            if (onNavigate) onNavigate(item.id);
+        }
+    };
+
+    const highlightMatch = (text, highlight) => {
+        if (!highlight) return text;
+        const nText = removeVietnameseTones(text);
+        const nHighlight = removeVietnameseTones(highlight);
+        const index = nText.indexOf(nHighlight);
+        if (index === -1) return text;
+        
+        return (
+            <>
+                {text.substring(0, index)}
+                <span style={{ fontWeight: '800', color: '#1d4ed8' }}>{text.substring(index, index + highlight.length)}</span>
+                {text.substring(index + highlight.length)}
+            </>
+        );
+    };
+
+    // Resolve icon from recent (which doesn't store icon component)
+    const getIcon = (item) => {
+        if (item.icon) return item.icon;
+        const found = allItems.find(i => i.id === item.id);
+        return found?.icon || Search;
     };
 
     if (!isOpen) return null;
@@ -153,9 +269,10 @@ const CommandPalette = ({ onNavigate }) => {
                     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
                     overflow: 'hidden',
                     display: 'flex', flexDirection: 'column',
-                    animation: 'fadeIn 0.15s ease-out'
+                    animation: 'fadeIn 0.15s ease-out',
+                    maxHeight: '70vh'
                 }}
-                onClick={(e) => e.stopPropagation()} // Chống đóng khi click vào trong modal
+                onClick={(e) => e.stopPropagation()}
             >
                 {/* Search Header */}
                 <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
@@ -163,7 +280,7 @@ const CommandPalette = ({ onNavigate }) => {
                     <input
                         ref={inputRef}
                         type="text"
-                        placeholder="Tìm kiếm tài liệu, mô-đun hoặc chức năng..."
+                        placeholder="Tìm mô-đun, tài liệu hoặc phím tắt..."
                         value={query}
                         onChange={(e) => {
                             setQuery(e.target.value);
@@ -176,58 +293,86 @@ const CommandPalette = ({ onNavigate }) => {
                         }}
                     />
                     <div style={{ 
-                        fontSize: '12px', color: '#94a3b8', backgroundColor: '#f1f5f9', 
-                        padding: '4px 8px', borderRadius: '6px', fontWeight: '500' 
-                    }}>ESC</div>
+                        fontSize: '11px', color: '#94a3b8', backgroundColor: '#f1f5f9', 
+                        padding: '2px 6px', borderRadius: '4px', fontWeight: '600'
+                    }}>
+                        ESC
+                    </div>
                 </div>
 
-                {/* Results Area */}
-                <div style={{ padding: '8px', maxHeight: '400px', overflowY: 'auto' }}>
+                {/* Recent */}
+                {query.length === 0 && recentSearches.length > 0 && (
+                    <div style={{ padding: '8px 16px', borderBottom: '1px solid #f1f5f9' }}>
+                        <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase' }}>Truy cập gần đây</span>
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+                            {recentSearches.map(r => (
+                                <div key={r.id} onClick={() => handleSelect(r)} style={{ fontSize: '12px', padding: '4px 10px', backgroundColor: '#f8fafc', borderRadius: '20px', cursor: 'pointer', color: '#475569', border: '1px solid #e2e8f0' }}>
+                                    {r.title}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Results */}
+                <div style={{ padding: '8px', maxHeight: '450px', overflowY: 'auto' }}>
                     {filteredData.length === 0 ? (
-                        <div style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
-                            Không tìm thấy kết quả nào cho "{query}"
+                        <div style={{ padding: '32px', textAlign: 'center', color: '#64748b' }}>
+                            <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>Không tìm thấy mô-đun nào</div>
+                            <div style={{ fontSize: '13px' }}>Thử gõ tên khác: "khách sạn", "đánh giá", "visa"...</div>
                         </div>
                     ) : (
                         filteredData.map((item, index) => {
                             const isSelected = index === selectedIndex;
-                            const IconComponent = item.icon;
+                            const IconComponent = getIcon(item);
                             
                             return (
                                 <div 
                                     key={item.id}
                                     onMouseEnter={() => setSelectedIndex(index)}
-                                    onClick={() => handleSelect(item)}
+                                    onClick={(e) => handleSelect(item, e.metaKey || e.ctrlKey)}
                                     style={{
-                                        display: 'flex', alignItems: 'center', padding: '12px 16px',
-                                        backgroundColor: isSelected ? '#eff6ff' : 'transparent',
+                                        display: 'flex', alignItems: 'center', padding: '10px 16px',
+                                        backgroundColor: isSelected ? '#f1f5f9' : 'transparent',
                                         borderRadius: '8px', cursor: 'pointer',
-                                        transition: 'background-color 0.1s'
+                                        transition: 'all 0.1s ease'
                                     }}
                                 >
                                     <div style={{ 
-                                        backgroundColor: isSelected ? '#dbeafe' : '#f1f5f9',
-                                        padding: '8px', borderRadius: '8px', marginRight: '16px'
+                                        backgroundColor: isSelected ? '#ffffff' : '#f8fafc',
+                                        padding: '8px', borderRadius: '8px', marginRight: '16px',
+                                        boxShadow: isSelected ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
                                     }}>
-                                        <IconComponent size={18} color={isSelected ? '#3b82f6' : '#64748b'} />
+                                        <IconComponent size={18} color={isSelected ? '#3b82f6' : '#94a3b8'} />
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <h4 style={{ margin: 0, fontSize: '15px', color: isSelected ? '#1e3a8a' : '#334155', fontWeight: '500' }}>
-                                            {item.title}
+                                        <h4 style={{ margin: 0, fontSize: '14px', color: isSelected ? '#0f172a' : '#334155', fontWeight: '600' }}>
+                                            {highlightMatch(item.title, query)}
                                         </h4>
-                                        <span style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase' }}>
-                                            {item.type === 'doc' ? 'Tài liệu nội bộ' : 
-                                             item.type === 'doc-dynamic' ? 'Tài liệu Động (Drive/URL)' : 'Mô-đun chức năng'}
+                                        <span style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', color: isSelected ? '#60a5fa' : '#cbd5e1' }}>
+                                            {item.type === 'action' ? 'Hành động nhanh' : item.type === 'doc-dynamic' ? 'Biểu mẫu' : 'Mô-đun'}
                                         </span>
                                     </div>
                                     {isSelected && (
-                                        <div style={{ fontSize: '12px', color: '#2563eb', fontWeight: '500' }}>
-                                            Nhấn Enter
-                                        </div>
+                                        <div style={{ fontSize: '10px', color: '#94a3b8', backgroundColor: '#ffffff', padding: '2px 4px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>↵ Enter</div>
                                     )}
                                 </div>
                             )
                         })
                     )}
+                </div>
+                
+                {/* Footer */}
+                <div style={{ padding: '10px 20px', backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '20px', fontSize: '11px', color: '#94a3b8' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ backgroundColor: '#ffffff', padding: '1px 4px', borderRadius: '3px', border: '1px solid #e2e8f0', color: '#64748b' }}>↑↓</span> Điều hướng
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ backgroundColor: '#ffffff', padding: '1px 4px', borderRadius: '3px', border: '1px solid #e2e8f0', color: '#64748b' }}>↵</span> Chọn
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ backgroundColor: '#ffffff', padding: '1px 4px', borderRadius: '3px', border: '1px solid #e2e8f0', color: '#64748b' }}>⌘ ↵</span> Tab mới
+                    </div>
                 </div>
             </div>
             <style>{`

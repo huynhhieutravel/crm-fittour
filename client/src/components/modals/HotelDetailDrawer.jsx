@@ -353,8 +353,8 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                </h3>
                                 <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1.25rem 2rem' }}>
                                     <div className="form-group">
-                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Mã Nhà Cung Cấp *</label>
-                                        <input type="text" style={{ ...drawerInputStyle, background: '#f1f5f9', color: '#64748b', fontWeight: 600 }} value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} disabled={isViewOnly} placeholder="HOTEL-..." />
+                                        <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Mã Nhà Cung Cấp (Tự Động)</label>
+                                        <input type="text" style={{ ...drawerInputStyle, background: '#f1f5f9', color: '#64748b', fontWeight: 600 }} value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} disabled={isViewOnly} placeholder="Để trống tự động tạo HOTEL-001" />
                                     </div>
                                     <div className="form-group">
                                         <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Tên Khách Sạn *</label>

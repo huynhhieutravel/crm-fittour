@@ -109,14 +109,91 @@ exports.getMyBalance = async (req, res) => {
 
 // Tạo đơn xin nghỉ
 exports.createLeave = async (req, res) => {
+    let client;
     try {
-        const { target_user_id, leave_type, start_date, end_date, total_days, reason, contact_phone, handover_user_id, handover_note, approved_by } = req.body;
+        const { target_user_id, leave_type, leave_dates, reason, contact_phone, handover_user_id, handover_note, approved_by } = req.body;
         
-        if (!leave_type || !start_date || !end_date || !total_days) {
-            return res.status(400).json({ error: 'Vui lòng điền đủ thông tin ngày và loại nghỉ' });
+        if (!Array.isArray(leave_dates) || leave_dates.length === 0) {
+            return res.status(400).json({ error: 'Vui lòng chọn ít nhất một ngày nghỉ' });
+        }
+        if (leave_dates.length > 30) {
+            return res.status(400).json({ error: 'Không thể xin nghỉ quá 30 ngày trong một đơn' });
         }
 
         const applyForId = target_user_id || req.user.id;
+        
+        let actual_start_date = null;
+        let actual_end_date = null;
+        let calculated_total_units = 0;
+        
+        const datesSet = new Set();
+        const dateValuesForQuery = [];
+        
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const maxFutureDate = new Date();
+        maxFutureDate.setDate(today.getDate() + 180);
+        const minPastDate = new Date();
+        minPastDate.setDate(today.getDate() - 14);
+
+        for (const d of leave_dates) {
+            if (datesSet.has(d.date)) {
+                return res.status(400).json({ error: `Ngày ${d.date} bị trùng lặp trong đơn` });
+            }
+            datesSet.add(d.date);
+            const dateObj = new Date(d.date);
+            
+            if (req.user.role !== 'admin' && req.user.role !== 'hr') {
+                if (dateObj > maxFutureDate) {
+                    return res.status(400).json({ error: `Không thể xin phép vượt quá 180 ngày trong tương lai (${d.date})` });
+                }
+                if (dateObj < minPastDate) {
+                    return res.status(400).json({ error: `Không thể xin phép cho ngày cách đây quá 14 ngày (${d.date})` });
+                }
+            }
+
+            const dayOfWeek = dateObj.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                return res.status(400).json({ error: `Không thể chọn Thứ 7 hoặc Chủ Nhật (${d.date})` });
+            }
+            
+            let units = 2;
+            if (d.session === 'morning' || d.session === 'afternoon') units = 1;
+            calculated_total_units += units;
+            
+            dateValuesForQuery.push(d.date);
+        }
+
+        const sortedDates = [...leave_dates].map(d => d.date).sort();
+        actual_start_date = sortedDates[0];
+        actual_end_date = sortedDates[sortedDates.length - 1];
+
+        const calculated_total_days = calculated_total_units / 2;
+
+        if (!leave_type || !actual_start_date || !actual_end_date || calculated_total_days <= 0) {
+            return res.status(400).json({ error: 'Vui lòng điền đủ thông tin ngày và loại nghỉ' });
+        }
+
+        client = await db.pool.connect();
+        
+        // Chống overlap
+        const overlapCheckQuery = `
+            SELECT lrd.leave_date 
+            FROM leave_request_dates lrd
+            JOIN leave_requests lr ON lr.id = lrd.leave_request_id
+            WHERE lr.user_id = $1 
+            AND lrd.leave_date = ANY($2::date[]) 
+            AND lr.status IN ('pending', 'approved')
+            LIMIT 1
+        `;
+        const overlapResult = await client.query(overlapCheckQuery, [applyForId, dateValuesForQuery]);
+        if (overlapResult.rows.length > 0) {
+            const overlappedDate = new Date(overlapResult.rows[0].leave_date).toLocaleDateString('vi-VN');
+            client.release();
+            return res.status(400).json({ error: `Ngày ${overlappedDate} đã tồn tại trong một đơn xin nghỉ phép khác đang chờ duyệt hoặc đã duyệt.` });
+        }
+
+        await client.query('BEGIN');
 
         const q = `
             INSERT INTO leave_requests (
@@ -125,31 +202,52 @@ exports.createLeave = async (req, res) => {
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'approved', $10, NOW()) RETURNING *;
         `;
         const params = [
-            applyForId, leave_type, start_date, end_date, total_days, reason, 
+            applyForId, leave_type, actual_start_date, actual_end_date, calculated_total_days, reason, 
             contact_phone, handover_user_id || null, handover_note, approved_by || null
         ];
         
-        const result = await db.query(q, params);
+        const result = await client.query(q, params);
+        const newLeave = result.rows[0];
+
+        // Insert leave dates
+        const dateValues = [];
+        const dateParams = [];
+        let paramCount = 1;
+        for (const d of leave_dates) {
+            dateValues.push(`($${paramCount++}, $${paramCount++}, $${paramCount++}, $${paramCount++})`);
+            dateParams.push(newLeave.id, d.date, d.duration || 1, d.session || 'full');
+        }
+        
+        const qDates = `
+            INSERT INTO leave_request_dates (leave_request_id, leave_date, duration, session_type)
+            VALUES ${dateValues.join(', ')}
+        `;
+        await client.query(qDates, dateParams);
+
+        await client.query('COMMIT');
 
         try {
             if (req.user.id !== parseInt(applyForId)) {
                 await db.query(`
                     INSERT INTO activity_logs (user_id, action_type, entity_type, entity_id, details)
                     VALUES ($1, 'CREATE', 'LEAVE_REQUEST', $2, $3)
-                `, [req.user.id, result.rows[0].id, `Tạo dùm đơn xin nghỉ cho nhân viên (ID: ${applyForId})`]);
+                `, [req.user.id, newLeave.id, `Tạo dùm đơn xin nghỉ cho nhân viên (ID: ${applyForId})`]);
             } else {
                  await db.query(`
                     INSERT INTO activity_logs (user_id, action_type, entity_type, entity_id, details)
                     VALUES ($1, 'CREATE', 'LEAVE_REQUEST', $2, $3)
-                `, [req.user.id, result.rows[0].id, `Tự tạo đơn xin nghỉ`]);
+                `, [req.user.id, newLeave.id, `Tự tạo đơn xin nghỉ`]);
             }
         } catch (logErr) {
             console.error("Failed to log activity", logErr);
         }
 
-        res.status(201).json(result.rows[0]);
+        res.status(201).json(newLeave);
     } catch (err) {
+        if (client) await client.query('ROLLBACK');
         res.status(500).json({ error: err.message });
+    } finally {
+        if (client) client.release();
     }
 };
 
@@ -215,16 +313,16 @@ exports.deleteLeave = async (req, res) => {
         const startDate = new Date(leave.start_date);
         
         if (leave.status !== 'pending' && startDate < today && req.user.role !== 'admin') {
-            return res.status(400).json({ error: 'Không thể xóa đơn đã qua hạn hoặc đã bắt đầu nghỉ' });
+            return res.status(400).json({ error: 'Không thể hủy đơn đã qua hạn hoặc đã bắt đầu nghỉ' });
         }
         
-        await db.query(`DELETE FROM leave_requests WHERE id = $1`, [id]);
+        await db.query(`UPDATE leave_requests SET status = 'cancelled', updated_at = NOW() WHERE id = $1`, [id]);
         
         try {
             await db.query(`
                 INSERT INTO activity_logs (user_id, action_type, entity_type, entity_id, details)
-                VALUES ($1, 'DELETE', 'LEAVE_REQUEST', $2, $3)
-            `, [req.user.id, id, `Đã xóa đơn xin nghỉ phép từ ngày ${new Date(leave.start_date).toLocaleDateString('vi-VN')} của ID: ${leave.user_id}`]);
+                VALUES ($1, 'UPDATE', 'LEAVE_REQUEST', $2, $3)
+            `, [req.user.id, id, `Đã hủy đơn xin nghỉ phép từ ngày ${new Date(leave.start_date).toLocaleDateString('vi-VN')} của ID: ${leave.user_id}`]);
         } catch (logErr) {
             console.error("Failed to log activity", logErr);
         }
@@ -309,14 +407,20 @@ exports.updateBalance = async (req, res) => {
 exports.getTodayLeaves = async (req, res) => {
     try {
         const q = `
-            SELECT lr.*, u.full_name, u.avatar_url, t.name as team_name, h.full_name as handover_name
+            SELECT DISTINCT ON (lr.id) lr.*, u.full_name, u.avatar_url, t.name as team_name, h.full_name as handover_name,
+                   lrd.duration, lrd.session_type
             FROM leave_requests lr
             JOIN users u ON lr.user_id = u.id
             LEFT JOIN teams t ON u.team_id = t.id
             LEFT JOIN users h ON lr.handover_user_id = h.id
+            LEFT JOIN leave_request_dates lrd ON lrd.leave_request_id = lr.id
             WHERE lr.status = 'approved'
-            AND CURRENT_DATE >= lr.start_date AND CURRENT_DATE <= lr.end_date
-            ORDER BY u.full_name
+            AND (
+                lrd.leave_date = CURRENT_DATE 
+                OR 
+                (lrd.id IS NULL AND CURRENT_DATE >= lr.start_date AND CURRENT_DATE <= lr.end_date)
+            )
+            ORDER BY lr.id, u.full_name
         `;
         const result = await db.query(q);
         res.json(result.rows);

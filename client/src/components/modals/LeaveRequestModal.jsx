@@ -8,8 +8,7 @@ export default function LeaveRequestModal({ currentUser, users = [], onClose, on
   const [form, setForm] = useState({
     target_user_id: currentUser?.id || '',
     leave_type: 'annual',
-    start_date: '',
-    end_date: '',
+    leave_dates: [], // { date: string, duration: number, session: string }
     total_days: 0,
     reason: '',
     contact_phone: currentUser?.phone || '',
@@ -19,7 +18,6 @@ export default function LeaveRequestModal({ currentUser, users = [], onClose, on
   });
 
   const [leaveBalance, setLeaveBalance] = useState(null);
-  const [isHalfDay, setIsHalfDay] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -38,22 +36,53 @@ export default function LeaveRequestModal({ currentUser, users = [], onClose, on
   }, [form.target_user_id]);
 
   useEffect(() => {
-    // Auto calculate days when dates change
-    if (form.start_date && form.end_date) {
-      const start = new Date(form.start_date);
-      const end = new Date(form.end_date);
-      if (end >= start) {
-        const diffTime = Math.abs(end - start);
-        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        if (isHalfDay) {
-            diffDays -= 0.5;
-        }
-        setForm(prev => ({ ...prev, total_days: diffDays > 0 ? diffDays : 0 }));
-      } else {
-        setForm(prev => ({ ...prev, total_days: 0 }));
-      }
+    if (form.leave_dates) {
+        const totalUnits = form.leave_dates.reduce((sum, d) => {
+            if (d.session === 'full') return sum + 2;
+            return sum + 1; // morning or afternoon
+        }, 0);
+        setForm(prev => ({ ...prev, total_days: totalUnits / 2 }));
     }
-  }, [form.start_date, form.end_date, isHalfDay]);
+  }, [form.leave_dates]);
+
+  const handleAddDate = (e) => {
+      const dateStr = e.target.value;
+      if (!dateStr) return;
+      
+      const currentDates = form.leave_dates || [];
+      const [y, m, d_val] = dateStr.split('-');
+      const d = new Date(y, m - 1, d_val);
+      if (d.getDay() === 0 || d.getDay() === 6) {
+          Swal.fire('Cảnh báo', 'Vui lòng không chọn ngày Thứ 7 hoặc Chủ Nhật', 'warning');
+          e.target.value = '';
+          return;
+      }
+      
+      if (!currentDates.find(item => item.date === dateStr)) {
+          const newDates = [...currentDates, { date: dateStr, duration: 1, session: 'full' }].sort((a,b) => a.date.localeCompare(b.date));
+          setForm({ ...form, leave_dates: newDates });
+      } else {
+          Swal.fire('Cảnh báo', 'Ngày này đã được chọn', 'warning');
+      }
+      e.target.value = '';
+  };
+
+  const handleUpdateSession = (dateStr, sessionVal) => {
+      let duration = 1;
+      if (sessionVal === 'morning' || sessionVal === 'afternoon') duration = 0.5;
+      
+      const newDates = form.leave_dates.map(item => {
+          if (item.date === dateStr) {
+              return { ...item, session: sessionVal, duration: duration };
+          }
+          return item;
+      });
+      setForm({ ...form, leave_dates: newDates });
+  };
+
+  const handleRemoveDate = (dateToRemove) => {
+      setForm({ ...form, leave_dates: (form.leave_dates || []).filter(item => item.date !== dateToRemove) });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -231,13 +260,14 @@ export default function LeaveRequestModal({ currentUser, users = [], onClose, on
             <div>
                 <div style={inputStyles.sectionTitle}><Calendar size={18} /> Thời gian nghỉ</div>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', alignItems: 'start', marginBottom: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start', marginBottom: '16px' }}>
                     <div>
-                        <label style={inputStyles.label}>Từ ngày <span style={{color: '#ef4444'}}>*</span></label>
+                        <label style={inputStyles.label}>Chọn ngày nghỉ <span style={{color: '#ef4444'}}>*</span></label>
                         <div style={inputStyles.container}>
                             <Calendar size={16} style={inputStyles.icon} />
-                            <input required type="date" value={form.start_date} onChange={e => setForm({...form, start_date: e.target.value})} style={inputStyles.input} />
+                            <input type="date" onChange={handleAddDate} style={inputStyles.input} />
                         </div>
+                        <div style={{ marginTop: '6px', fontSize: '11px', color: '#64748b' }}>Chọn từng ngày bạn muốn nghỉ. Hệ thống sẽ tự khóa T7, CN.</div>
                         {leaveBalance && (
                             <div style={{ marginTop: '8px' }}>
                                 <strong style={{ color: '#059669', fontSize: '11px', background: '#d1fae5', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
@@ -245,13 +275,6 @@ export default function LeaveRequestModal({ currentUser, users = [], onClose, on
                                 </strong>
                             </div>
                         )}
-                    </div>
-                    <div>
-                        <label style={inputStyles.label}>Đến ngày <span style={{color: '#ef4444'}}>*</span></label>
-                        <div style={inputStyles.container}>
-                            <Calendar size={16} style={inputStyles.icon} />
-                            <input required type="date" value={form.end_date} onChange={e => setForm({...form, end_date: e.target.value})} style={inputStyles.input} />
-                        </div>
                     </div>
                     <div>
                         <label style={inputStyles.label}>Tổng số ngày <span style={{color: '#ef4444'}}>*</span></label>
@@ -265,19 +288,44 @@ export default function LeaveRequestModal({ currentUser, users = [], onClose, on
                                 style={{ ...inputStyles.input, background: '#f8fafc', color: '#334155', cursor: 'not-allowed', fontWeight: 'bold' }} 
                             />
                         </div>
-                        <button 
-                            type="button" 
-                            onClick={() => setIsHalfDay(!isHalfDay)}
-                            style={{ 
-                                marginTop: '8px', fontSize: '11px', background: isHalfDay ? '#fee2e2' : '#f1f5f9', border: `1px solid ${isHalfDay ? '#ef4444' : '#cbd5e1'}`, 
-                                color: isHalfDay ? '#ef4444' : '#475569', cursor: 'pointer', padding: '4px 8px', borderRadius: '6px',
-                                display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: isHalfDay ? 'bold' : 'normal', transition: 'all 0.2s'
-                            }}
-                        >
-                            {isHalfDay ? "✓ Đã trừ 0.5 ngày" : "+ Trừ 0.5 ngày (Nửa buổi)"}
-                        </button>
                     </div>
                 </div>
+
+                {form.leave_dates && form.leave_dates.length > 0 && (
+                    <div style={{ marginBottom: '16px', background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
+                        <div style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '8px' }}>Các ngày đã chọn ({form.leave_dates.length}):</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {form.leave_dates.map(item => {
+                                const [y, m, d_val] = item.date.split('-');
+                                const d = new Date(y, m - 1, d_val);
+                                const dayStr = d.toLocaleDateString('vi-VN');
+                                const dayOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][d.getDay()];
+                                return (
+                                    <div key={item.date} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #e2e8f0', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', color: '#1e293b', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', justifyContent: 'space-between' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ color: '#3b82f6', fontWeight: 'bold', minWidth: '30px' }}>{dayOfWeek}</span>
+                                            <span>{dayStr}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <select 
+                                                value={item.session} 
+                                                onChange={(e) => handleUpdateSession(item.date, e.target.value)}
+                                                style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', outline: 'none' }}
+                                            >
+                                                <option value="full">Cả ngày (1.0)</option>
+                                                <option value="morning">Buổi sáng (0.5)</option>
+                                                <option value="afternoon">Buổi chiều (0.5)</option>
+                                            </select>
+                                            <button type="button" onClick={() => handleRemoveDate(item.date)} style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center' }}>
+                                                <XCircle size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )}
 
                 <div>
                     <label style={inputStyles.sectionTitle}><MessageCircle size={18} /> Lý do nghỉ <span style={{color: '#ef4444'}}>*</span></label>

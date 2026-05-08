@@ -1,5 +1,6 @@
 const db = require('../db');
 const { logActivity } = require('../utils/logger');
+const { generateSupplierCode } = require('../utils/supplierHelper');
 
 // === INSURANCES ===
 exports.getAll = async (req, res) => {
@@ -106,9 +107,14 @@ exports.create = async (req, res) => {
 
         await client.query('BEGIN');
 
+        let finalCode = code;
+        if (!finalCode || finalCode.trim() === '') {
+            finalCode = await generateSupplierCode(client, 'insurances', 'INS-');
+        }
+
         const result = await client.query(
             `INSERT INTO insurances (code, name, tax_id, insurance_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
-            [code, name, tax_id, insurance_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
+            [finalCode, name, tax_id, insurance_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
         );
         const newId = result.rows[0].id;
 
@@ -141,7 +147,8 @@ exports.create = async (req, res) => {
                 action_type: 'CREATE',
                 entity_type: 'INSURANCE',
                 entity_id: newId,
-                details: `Đã thêm mới Bảo Hiểm: ${name}`
+                details: `Đã thêm mới Bảo Hiểm: ${name}`,
+                new_data: result.rows[0]
             });
         }
 
@@ -169,6 +176,14 @@ exports.update = async (req, res) => {
         } = req.body;
 
         await client.query('BEGIN');
+
+        // Fetch old data for logging
+        const oldInsuranceRes = await client.query('SELECT * FROM insurances WHERE id = $1', [id]);
+        if (oldInsuranceRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Không tìm thấy Bảo Hiểm' });
+        }
+        const oldInsurance = oldInsuranceRes.rows[0];
 
         const result = await client.query(
             `UPDATE insurances SET code=$1, name=$2, tax_id=$3, insurance_class=$4, phone=$5, email=$6, country=$7, province=$8, address=$9, notes=$10, website=$11, bank_account_name=$12, bank_account_number=$13, bank_name=$14, market=$15, rating=$16, drive_link=$17, updated_at=CURRENT_TIMESTAMP WHERE id=$18 RETURNING *`,
@@ -224,7 +239,9 @@ exports.update = async (req, res) => {
                 action_type: 'UPDATE',
                 entity_type: 'INSURANCE',
                 entity_id: id,
-                details: `Cập nhật thông tin Bảo Hiểm: ${name}`
+                details: `Cập nhật thông tin Bảo Hiểm: ${name}`,
+                old_data: oldInsurance,
+                new_data: result.rows[0]
             });
         }
 
@@ -241,6 +258,11 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Fetch old data for logging
+        const oldInsuranceRes = await db.query('SELECT * FROM insurances WHERE id = $1', [id]);
+        if (oldInsuranceRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy Bảo Hiểm' });
+        const oldInsurance = oldInsuranceRes.rows[0];
 
         const checkDeps = await db.query(`
             SELECT 
@@ -266,7 +288,8 @@ exports.delete = async (req, res) => {
                 action_type: 'DELETE',
                 entity_type: 'INSURANCE',
                 entity_id: id,
-                details: `Xóa Bảo Hiểm ID ${id}`
+                details: `Xóa Bảo Hiểm: ${oldInsurance.name}`,
+                old_data: oldInsurance
             });
         }
         res.json({ message: 'Xóa thành công' });

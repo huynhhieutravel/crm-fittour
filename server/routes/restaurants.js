@@ -2,15 +2,15 @@ const express = require('express');
 const router = express.Router();
 const restaurantController = require('../controllers/restaurantController');
 const authenticateToken = require('../middleware/auth');
-const { permCheck } = require('../middleware/permCheck');
+const { permCheck, permCheckOrOwner } = require('../middleware/permCheck');
 
 
 // Restaurants
 router.get('/', authenticateToken, permCheck('restaurants', 'view'), restaurantController.getRestaurants);
 router.post('/', authenticateToken, permCheck('restaurants', 'create'), restaurantController.createRestaurant);
 router.get('/:id', authenticateToken, permCheck('restaurants', 'view'), restaurantController.getRestaurantDetails);
-router.put('/:id', authenticateToken, permCheck('restaurants', 'edit'), restaurantController.updateRestaurant);
-router.delete('/:id', authenticateToken, permCheck('restaurants', 'delete'), restaurantController.deleteRestaurant);
+router.put('/:id', authenticateToken, permCheckOrOwner('restaurants', 'edit', 'restaurants', 'id'), restaurantController.updateRestaurant);
+router.delete('/:id', authenticateToken, permCheckOrOwner('restaurants', 'delete', 'restaurants', 'id'), restaurantController.deleteRestaurant);
 
 // Contacts
 router.post('/:restaurant_id/contacts', authenticateToken, permCheck('restaurants', 'edit'), restaurantController.createContact);

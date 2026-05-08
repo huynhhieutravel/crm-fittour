@@ -1,4 +1,5 @@
 const db = require('../db');
+const { logActivity } = require('../utils/logger');
 
 exports.createVoucher = async (req, res) => {
     try {
@@ -109,6 +110,16 @@ exports.createVoucher = async (req, res) => {
             await db.query(`UPDATE visas SET total_collected = total_collected + $1 WHERE id = $2`, [amount, visa_id]);
         }
 
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: created_by,
+            action_type: 'CREATE',
+            entity_type: 'VOUCHER',
+            entity_id: r.rows[0].id,
+            details: `Tạo mới Phiếu thu: ${voucher_code} (${Number(amount).toLocaleString('vi-VN')}đ)`,
+            new_data: r.rows[0]
+        });
+
         res.status(201).json(r.rows[0]);
     } catch (err) {
         console.error(err);
@@ -203,7 +214,18 @@ exports.cancelVoucher = async (req, res) => {
         }
 
         // Set status to Cancelled
-        await db.query(`UPDATE payment_vouchers SET status = 'Đã hủy' WHERE id = $1`, [id]);
+        const updatedVoucherResult = await db.query(`UPDATE payment_vouchers SET status = 'Đã hủy' WHERE id = $1 RETURNING *`, [id]);
+        
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user.id,
+            action_type: 'UPDATE',
+            entity_type: 'VOUCHER',
+            entity_id: id,
+            details: `Hủy Phiếu thu: ${voucher.voucher_code || id}`,
+            old_data: voucher,
+            new_data: updatedVoucherResult.rows[0]
+        });
         
         // --- INJECT SYSTEM ALERT ---
         try {
@@ -264,6 +286,17 @@ exports.deleteVoucher = async (req, res) => {
         }
 
         await db.query('DELETE FROM payment_vouchers WHERE id = $1', [id]);
+        
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user.id,
+            action_type: 'DELETE',
+            entity_type: 'VOUCHER',
+            entity_id: id,
+            details: `Xóa vĩnh viễn Phiếu thu: ${voucher.voucher_code || id}`,
+            old_data: voucher
+        });
+
         res.json({ message: 'Xóa vĩnh viễn phiếu thu thành công.' });
     } catch (err) {
         console.error(err);

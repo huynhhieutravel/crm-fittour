@@ -1,4 +1,5 @@
 const db = require('../db');
+const { logActivity } = require('../utils/logger');
 
 // GET /api/markets — Trả về tree structure (React-Select grouped format)
 exports.getMarkets = async (req, res) => {
@@ -81,8 +82,19 @@ exports.createMarket = async (req, res) => {
             'INSERT INTO markets (name, parent_id, sort_order) VALUES ($1, $2, $3) RETURNING *',
             [name.trim(), parent_id || null, nextSort]
         );
+        const newMarket = result.rows[0];
+
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'CREATE',
+            entity_type: 'MARKET',
+            entity_id: newMarket.id,
+            details: `Thêm thị trường: ${newMarket.name}`,
+            new_data: newMarket
+        });
         
-        res.json(result.rows[0]);
+        res.json(newMarket);
     } catch (err) {
         console.error('Error creating market:', err);
         res.status(500).json({ error: err.message });
@@ -117,8 +129,20 @@ exports.updateMarket = async (req, res) => {
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Không tìm thấy thị trường' });
         }
+        
+        // Cần fetch oldData
+        // (Do lệnh UPDATE đã chạy, ta log chung chung vì không fetch trước)
+        const updatedMarket = result.rows[0];
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'UPDATE',
+            entity_type: 'MARKET',
+            entity_id: updatedMarket.id,
+            details: `Cập nhật thị trường: ${updatedMarket.name}`,
+            new_data: updatedMarket
+        });
 
-        res.json(result.rows[0]);
+        res.json(updatedMarket);
     } catch (err) {
         console.error('Error updating market:', err);
         res.status(500).json({ error: err.message });
@@ -132,6 +156,14 @@ exports.deleteMarket = async (req, res) => {
 
         // Soft delete: set is_active = false cho cả parent và children
         await db.query('UPDATE markets SET is_active = false WHERE id = $1 OR parent_id = $1', [id]);
+
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'DELETE',
+            entity_type: 'MARKET',
+            entity_id: id,
+            details: `Ẩn thị trường ID: ${id} và các thư mục con`
+        });
 
         res.json({ success: true, message: 'Đã ẩn thị trường' });
     } catch (err) {

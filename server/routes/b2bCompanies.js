@@ -2,21 +2,16 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/b2bCompanyController');
 const authenticateToken = require('../middleware/auth');
-const roleCheck = require('../middleware/roleCheck');
+const { permCheck, permCheckAny, permCheckOrOwner } = require('../middleware/permCheck');
 
-// b2b_companies: admin, manager, group_manager, group_staff
-const VIEW_ROLES = ['admin', 'manager', 'group_manager', 'group_staff'];
-const EDIT_ROLES = ['admin', 'manager', 'group_manager', 'group_staff'];
-const DELETE_ROLES = ['admin', 'manager', 'group_manager'];
+router.get('/', authenticateToken, permCheckAny([['b2b_companies','view_all'], ['b2b_companies','view_own']]), controller.getAllCompanies);
+router.get('/:id', authenticateToken, permCheckAny([['b2b_companies','view_all'], ['b2b_companies','view_own']]), controller.getCompanyById);
+router.post('/', authenticateToken, permCheck('b2b_companies', 'create'), controller.createCompany);
+router.put('/:id', authenticateToken, permCheckOrOwner('b2b_companies', 'edit', 'b2b_companies', 'id', 'assigned_to'), controller.updateCompany);
+router.delete('/:id', authenticateToken, permCheckOrOwner('b2b_companies', 'delete', 'b2b_companies', 'id', 'assigned_to'), controller.deleteCompany);
 
-router.get('/', authenticateToken, roleCheck(VIEW_ROLES), controller.getAllCompanies);
-router.get('/:id', authenticateToken, roleCheck(VIEW_ROLES), controller.getCompanyById);
-router.post('/', authenticateToken, roleCheck(EDIT_ROLES), controller.createCompany);
-router.put('/:id', authenticateToken, roleCheck(EDIT_ROLES), controller.updateCompany);
-router.delete('/:id', authenticateToken, roleCheck(DELETE_ROLES), controller.deleteCompany);
-
-router.post('/:id/notes', authenticateToken, roleCheck(EDIT_ROLES), controller.addCompanyNote);
-router.post('/:id/events', authenticateToken, roleCheck(EDIT_ROLES), controller.addCompanyEvent);
-router.put('/events/:eventId/status', authenticateToken, roleCheck(EDIT_ROLES), controller.updateEventStatus);
+router.post('/:id/notes', authenticateToken, permCheck('b2b_companies', 'edit'), controller.addCompanyNote);
+router.post('/:id/events', authenticateToken, permCheck('b2b_companies', 'edit'), controller.addCompanyEvent);
+router.put('/events/:eventId/status', authenticateToken, permCheck('b2b_companies', 'edit'), controller.updateEventStatus);
 
 module.exports = router;

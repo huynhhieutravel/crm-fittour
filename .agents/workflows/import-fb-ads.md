@@ -4,7 +4,7 @@
 Workflow này dùng để tự động hoá việc Upload và phân luồng BU cho Báo cáo Facebook Ads hằng tuần vào hệ thống Live CRM (Production VPS).
 
 ## Context Server
-- VPS: `64.176.85.168`
+- VPS: `45.76.144.188`
 - Backend Path trên VPS: `/var/www/fittour-crm/server`
 - Data Path trên VPS: `/var/www/fittour-crm/data_import/bao-cao-facebook-ads`
 
@@ -38,14 +38,14 @@ Code mẫu Bash:
 # Sửa lại thành tên đúng
 FILE_NAME="tuanX-thangY-namZ.xlsx"
 
-rsync -avz "data_import/bao-cao-facebook-ads/$FILE_NAME" root@64.176.85.168:/var/www/fittour-crm/data_import/bao-cao-facebook-ads/
-rsync -avz "server/vps_import_ads.js" root@64.176.85.168:/var/www/fittour-crm/server/
+rsync -avz "data_import/bao-cao-facebook-ads/$FILE_NAME" root@45.76.144.188:/var/www/fittour-crm/data_import/bao-cao-facebook-ads/
+rsync -avz "server/vps_import_ads.js" root@45.76.144.188:/var/www/fittour-crm/server/
 ```
 
 ### BƯỚC 4: Execute trên Production
 Kích hoạt ssh và thực thi node bên trong VPS:
 ```bash
-ssh root@64.176.85.168 "cd /var/www/fittour-crm/server && node vps_import_ads.js"
+ssh root@45.76.144.188 "cd /var/www/fittour-crm/server && node vps_import_ads.js"
 ```
 
 ### Bước 5: Verify & Report

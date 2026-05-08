@@ -7,12 +7,13 @@ import ProjectExecutionDrawer from './ProjectExecutionDrawer';
 import ProjectApprovalDrawer from './ProjectApprovalDrawer';
 import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
+import { formatRoleDisplayName } from '../../utils/roleUtils';
 
 export default function GroupProjectDetailDrawer({ project, onClose, refreshList, currentUser, addToast, users, canViewProfit = true, initialOpenExecution = false, initialOpenApproval = false }) {
     const marketOptions = useMarkets();
     const [formData, setFormData] = useState({
         name: '', group_leader_id: '', source: '', status: 'Báo giá', destination: '',
-        expected_pax: 0, price_per_pax: 0, departure_date: '', return_date: '', expected_month: '', total_revenue: 0, profit: 0, assigned_to: '', guide_ids: [],
+        expected_pax: 0, price_per_pax: 0, departure_date: '', return_date: '', expected_month: '', total_revenue: 0, profit: 0, assigned_to: currentUser?.id || '', guide_ids: [],
         metadata: { sales_process: {} }
     });
     
@@ -184,9 +185,13 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
     const guideOptions = allGuides.filter(g => g.status === 'Active').map(g => ({
         value: g.id, label: `${g.name}${g.languages ? ' (' + g.languages + ')' : ''}`
     }));
-    const userOptions = (users || []).filter(u => u.status === 'Active' || u.status === 'Hoạt động').map(u => ({
-        value: u.id, label: u.full_name
-    }));
+    const allowedRoles = ['group_staff', 'group_manager', 'group_operations', 'group_operations_lead', 'admin', 'manager'];
+    const userOptions = (users || [])
+        .filter(u => u.is_active !== false && allowedRoles.includes(u.role_name))
+        .map(u => ({
+            value: u.id, 
+            label: `${u.full_name || u.username || `User ${u.id}`} (${formatRoleDisplayName(u.role_name)})`
+        }));
 
     const handleRevenueChange = (e) => {
         const rawValue = e.target.value.replace(/[^0-9]/g, '');

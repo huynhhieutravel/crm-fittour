@@ -117,7 +117,8 @@ exports.create = async (req, res) => {
                 action_type: 'CREATE',
                 entity_type: 'VISA',
                 entity_id: newId,
-                details: `Đã thêm hồ sơ Visa: ${name}`
+                details: `Đã thêm hồ sơ Visa: ${name}`,
+                new_data: result.rows[0]
             });
         }
 
@@ -138,6 +139,14 @@ exports.update = async (req, res) => {
         const { code, name, customer_id, customer_name, customer_phone, customer_type, status, market, visa_type, receipt_date, result_date, fingerprint_date, stamp_date, return_date, quantity, service_package, is_urgent, is_evisa, exchange_rate, booking_code, branch, notes, handled_by, members, deleted_member_ids, finance_data } = req.body;
 
         await client.query('BEGIN');
+
+        // Fetch old data for logging
+        const oldVisaRes = await client.query('SELECT * FROM visas WHERE id = $1', [id]);
+        if (oldVisaRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Không tìm thấy hồ sơ Visa' });
+        }
+        const oldVisa = oldVisaRes.rows[0];
 
         const result = await client.query(
             `UPDATE visas SET code=$1, name=$2, customer_id=$3, customer_name=$4, customer_phone=$5, customer_type=$6, status=$7, market=$8, visa_type=$9, receipt_date=$10, result_date=$11, fingerprint_date=$12, stamp_date=$13, return_date=$14, quantity=$15, service_package=$16, is_urgent=$17, is_evisa=$18, exchange_rate=$19, booking_code=$20, branch=$21, notes=$22, handled_by=$23, finance_data=$24, updated_at=CURRENT_TIMESTAMP WHERE id=$25 RETURNING *`,
@@ -175,7 +184,9 @@ exports.update = async (req, res) => {
                 action_type: 'UPDATE',
                 entity_type: 'VISA',
                 entity_id: id,
-                details: `Cập nhật hồ sơ Visa: ${name}`
+                details: `Cập nhật hồ sơ Visa: ${name}`,
+                old_data: oldVisa,
+                new_data: result.rows[0]
             });
         }
 
@@ -199,6 +210,11 @@ exports.delete = async (req, res) => {
             return res.status(400).json({ message: 'Không thể xoá hồ sơ Visa khi đã có Phiếu thu. Vui lòng hủy các Phiếu thu liên quan trước!' });
         }
 
+        // Fetch old data for logging
+        const oldVisaRes = await db.query('SELECT * FROM visas WHERE id = $1', [id]);
+        if (oldVisaRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy hồ sơ Visa' });
+        const oldVisa = oldVisaRes.rows[0];
+
         await db.query('DELETE FROM visas WHERE id = $1', [id]);
         if (req.user) {
             await logActivity({
@@ -206,7 +222,8 @@ exports.delete = async (req, res) => {
                 action_type: 'DELETE',
                 entity_type: 'VISA',
                 entity_id: id,
-                details: `Xóa hồ sơ Visa ID ${id}`
+                details: `Xóa hồ sơ Visa: ${oldVisa.name}`,
+                old_data: oldVisa
             });
         }
         res.json({ message: 'Xóa thành công' });
@@ -223,6 +240,11 @@ exports.patchStatus = async (req, res) => {
         const { status } = req.body;
         if (!status) return res.status(400).json({ message: 'Thiếu trạng thái' });
 
+        // Fetch old data for logging
+        const oldVisaRes = await db.query('SELECT * FROM visas WHERE id = $1', [id]);
+        if (oldVisaRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy hồ sơ' });
+        const oldVisa = oldVisaRes.rows[0];
+
         const result = await db.query(
             'UPDATE visas SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id, status',
             [status, id]
@@ -235,7 +257,9 @@ exports.patchStatus = async (req, res) => {
                 action_type: 'UPDATE',
                 entity_type: 'VISA',
                 entity_id: id,
-                details: `Cập nhật trạng thái Visa #${id} → ${status}`
+                details: `Cập nhật trạng thái Visa #${id} → ${status}`,
+                old_data: oldVisa,
+                new_data: result.rows[0]
             });
         }
         res.json(result.rows[0]);

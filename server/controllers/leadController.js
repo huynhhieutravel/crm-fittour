@@ -410,11 +410,11 @@ exports.getLeadStats = async (req, res) => {
                 tsJoinWhere += ` AND l.bu_group = $${tsParams.length}`;
             }
 
-            let periodSQL = "TO_CHAR(DATE(l.created_at), 'YYYY-MM-DD')";
+            let periodSQL = "TO_CHAR(l.created_at AT TIME ZONE 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD')";
             if (groupBy === 'week') {
-                periodSQL = "TO_CHAR(DATE_TRUNC('week', l.created_at), 'YYYY-MM-DD')";
+                periodSQL = "TO_CHAR(DATE_TRUNC('week', l.created_at AT TIME ZONE 'Asia/Ho_Chi_Minh'), 'YYYY-MM-DD')";
             } else if (groupBy === 'month') {
-                periodSQL = "TO_CHAR(DATE_TRUNC('month', l.created_at), 'YYYY-MM')";
+                periodSQL = "TO_CHAR(DATE_TRUNC('month', l.created_at AT TIME ZONE 'Asia/Ho_Chi_Minh'), 'YYYY-MM')";
             }
             
             const tsQuery = `

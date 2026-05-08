@@ -225,21 +225,8 @@ exports.updateUser = async (req, res) => {
             return res.status(404).json({ message: 'Tài khoản không tồn tại hoặc đã bị xóa.' });
         }
         
-        // Sync custom permissions if provided
-        if (permissions && typeof permissions === 'object') {
-            // First, delete existing overrides for this user
-            await client.query('DELETE FROM user_permissions WHERE user_id = $1', [id]);
-            
-            // Insert new overrides
-            for (const [moduleName, perms] of Object.entries(permissions)) {
-                // Determine if this is actually an override or just matching the default role
-                // To keep it simple, we save it directly if it was passed from frontend as an override
-                await client.query(`
-                    INSERT INTO user_permissions (user_id, module_name, can_view, can_create, can_edit, can_delete)
-                    VALUES ($1, $2, $3, $4, $5, $6)
-                `, [id, moduleName, perms.can_view, perms.can_create, perms.can_edit, perms.can_delete]);
-            }
-        }
+        // Removed legacy permissions sync logic because it wipes new dynamic RBAC overrides
+        // Custom permissions are now handled exclusively by permissionController.js
 
         await client.query('COMMIT');
 
@@ -493,7 +480,7 @@ exports.getMyProfile = async (req, res) => {
         const result = await db.query(`
             SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active, u.created_at,
                    u.birth_date, u.gender, u.id_card, u.passport_url, u.id_expiry, u.address, u.facebook_url,
-                   u.position, u.avatar_url,
+                   u.position, u.avatar_url, u.google_email,
                    r.name as role_name, r.id as role_id,
                    COALESCE(
                        (SELECT json_agg(json_build_object('id', t.id, 'name', t.name, 'code', t.code) ORDER BY t.name)

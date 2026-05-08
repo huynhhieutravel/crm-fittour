@@ -35,8 +35,20 @@ backfill_passport_customers.js
 fix_links.js
 fix_sidebar.js
 
+# ═══ SEED / MIGRATE SCRIPTS — CẤM TUYỆT ĐỐI lên production ═══
+# Nguyên nhân: AI tạo seed_users.js → git commit → git pull lên VPS → chạy tạo user rác
+**/seed_*.js
+**/seed_*.cjs
+**/seed_*.mjs
+**/migrate_*.js
+**/migrate_*.cjs
+**/backfill_*.js
+server/seed*.js
+server/migrate_*.js
+
 # ═══ Trained data (large binary) ═══
 *.traineddata
 
 # ═══ Agent scratch files ═══
 .agents/tmp_scrape/
+_backups/

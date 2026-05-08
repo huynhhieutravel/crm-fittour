@@ -1,4 +1,5 @@
 const db = require('../db');
+const { logActivity } = require('../utils/logger');
 
 exports.getAllBUs = async (req, res) => {
     try {
@@ -25,6 +26,17 @@ exports.updateBU = async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Không tìm thấy BU' });
         }
+        
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'UPDATE',
+            entity_type: 'BU',
+            entity_id: id,
+            details: `Cập nhật Business Unit: ${label}`,
+            new_data: result.rows[0]
+        });
+
         res.json(result.rows[0]);
     } catch (err) {
         console.error(err);
@@ -69,7 +81,19 @@ exports.createBU = async (req, res) => {
             'INSERT INTO business_units (id, label, countries, description, keywords, is_active, sort_order, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, TRUE, $6, NOW(), NOW()) RETURNING *',
             [id, label, countries, description, keywords || [], nextOrder]
         );
-        res.status(201).json(result.rows[0]);
+        const newBU = result.rows[0];
+
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'CREATE',
+            entity_type: 'BU',
+            entity_id: newBU.id,
+            details: `Tạo mới Business Unit: ${newBU.label}`,
+            new_data: newBU
+        });
+
+        res.status(201).json(newBU);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Lỗi khi tạo BU mới' });

@@ -3,11 +3,12 @@ const { logActivity } = require('../utils/logger');
 
 exports.getAllCompanies = async (req, res) => {
     try {
-        const isPrivileged = ['admin', 'manager', 'group_manager'].includes(req.user.role);
-        const whereClause = (!isPrivileged && req.user.role === 'group_staff') 
+        const isPrivileged = ['admin', 'manager', 'group_manager', 'group_operations', 'group_operations_lead'].includes(req.user.role);
+        // Non-privileged users only see companies assigned to them
+        const whereClause = !isPrivileged 
             ? 'WHERE c.assigned_to = $1' 
             : '';
-        const params = (!isPrivileged && req.user.role === 'group_staff') 
+        const params = !isPrivileged 
             ? [req.user.id] 
             : [];
 
@@ -120,13 +121,16 @@ exports.createCompany = async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *
         `, [name, tax_id, industry, phone, email, address, founded_date || null, website, assigned_to || req.user.id, notes, JSON.stringify(travel_styles || []), JSON.stringify(experiences || []), internal_notes, special_requests, first_deal_date || null]);
         
-        await logActivity({
-            user_id: req.user.id,
-            action: 'CREATE',
-            target_type: 'b2b_company',
-            target_id: result.rows[0].id,
-            details: `Tạo DN B2B: ${name}`
-        });
+        if (req.user) {
+            await logActivity({
+                user_id: req.user.id,
+                action_type: 'CREATE',
+                entity_type: 'B2B_COMPANY',
+                entity_id: result.rows[0].id,
+                details: `Tạo DN B2B: ${name}`,
+                new_data: result.rows[0]
+            });
+        }
         
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -139,6 +143,11 @@ exports.updateCompany = async (req, res) => {
         const { id } = req.params;
         const { name, tax_id, industry, phone, email, address, founded_date, website, assigned_to, notes, travel_styles, experiences, internal_notes, special_requests, first_deal_date } = req.body;
         
+        // Fetch old data for logging
+        const oldCompanyRes = await db.query('SELECT * FROM b2b_companies WHERE id = $1', [id]);
+        if (oldCompanyRes.rows.length === 0) return res.status(404).json({ message: 'Not found' });
+        const oldCompany = oldCompanyRes.rows[0];
+
         const result = await db.query(`
             UPDATE b2b_companies 
             SET name=$1, tax_id=$2, industry=$3, phone=$4, email=$5, address=$6, 
@@ -149,6 +158,19 @@ exports.updateCompany = async (req, res) => {
         `, [name, tax_id, industry, phone, email, address, founded_date || null, website, assigned_to || null, notes, JSON.stringify(travel_styles || []), JSON.stringify(experiences || []), internal_notes, special_requests, first_deal_date || null, id]);
         
         if (result.rows.length === 0) return res.status(404).json({ message: 'Not found' });
+
+        if (req.user) {
+            await logActivity({
+                user_id: req.user.id,
+                action_type: 'UPDATE',
+                entity_type: 'B2B_COMPANY',
+                entity_id: id,
+                details: `Cập nhật DN B2B: ${name}`,
+                old_data: oldCompany,
+                new_data: result.rows[0]
+            });
+        }
+
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -158,8 +180,26 @@ exports.updateCompany = async (req, res) => {
 exports.deleteCompany = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Fetch old data for logging
+        const oldCompanyRes = await db.query('SELECT * FROM b2b_companies WHERE id = $1', [id]);
+        if (oldCompanyRes.rows.length === 0) return res.status(404).json({ message: 'Not found' });
+        const oldCompany = oldCompanyRes.rows[0];
+
         // Unlink leaders and projects first (SET NULL via FK)
         await db.query('DELETE FROM b2b_companies WHERE id = $1', [id]);
+
+        if (req.user) {
+            await logActivity({
+                user_id: req.user.id,
+                action_type: 'DELETE',
+                entity_type: 'B2B_COMPANY',
+                entity_id: id,
+                details: `Xóa DN B2B: ${oldCompany.name}`,
+                old_data: oldCompany
+            });
+        }
+
         res.json({ message: 'Deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });

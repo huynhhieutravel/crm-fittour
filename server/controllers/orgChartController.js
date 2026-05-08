@@ -1,4 +1,5 @@
 const db = require('../db');
+const { logActivity } = require('../utils/logger');
 
 exports.getOrgChart = async (req, res) => {
     try {
@@ -26,10 +27,14 @@ exports.saveOrgChart = async (req, res) => {
         
         // Log activity
         try {
-            await db.query(`
-                INSERT INTO activity_logs (user_id, action_type, entity_type, entity_id, details)
-                VALUES ($1, $2, $3, $4, $5)
-            `, [req.user.id, 'UPDATE', 'SYSTEM', 0, 'Admin cập nhật Sơ đồ tổ chức']);
+            await logActivity({
+                user_id: req.user.id,
+                action_type: 'UPDATE',
+                entity_type: 'ORG_CHART',
+                entity_id: 0,
+                details: 'Admin cập nhật Sơ đồ tổ chức',
+                new_data: data
+            });
         } catch (logErr) {
             console.error('Failed to log activity:', logErr);
         }

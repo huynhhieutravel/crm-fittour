@@ -1,4 +1,5 @@
 const db = require('../db');
+const { logActivity } = require('../utils/logger');
 
 exports.getMyAlerts = async (req, res) => {
     try {
@@ -32,6 +33,16 @@ exports.resolveAlert = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy cảnh báo hoặc không có quyền' });
         }
         
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user.id,
+            action_type: 'UPDATE',
+            entity_type: 'SYSTEM_ALERT',
+            entity_id: id,
+            details: `Đã đọc thông báo hệ thống: ${result.rows[0].title}`,
+            new_data: result.rows[0]
+        });
+        
         res.json(result.rows[0]);
     } catch (err) {
         console.error('Lỗi resolveAlert:', err);
@@ -48,6 +59,15 @@ exports.resolveAll = async (req, res) => {
             SET is_resolved = TRUE, resolved_at = CURRENT_TIMESTAMP
             WHERE user_id = $1 AND is_resolved = FALSE
         `, [userId]);
+        
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user.id,
+            action_type: 'UPDATE',
+            entity_type: 'SYSTEM_ALERT',
+            entity_id: 0,
+            details: `Đã đọc tất cả thông báo hệ thống`
+        });
         
         res.json({ success: true });
     } catch (err) {

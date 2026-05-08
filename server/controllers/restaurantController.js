@@ -1,4 +1,5 @@
 const db = require('../db');
+const { generateSupplierCode } = require('../utils/supplierHelper');
 const { logActivity } = require('../utils/logger');
 
 // === RESTAURANTS ===
@@ -120,13 +121,18 @@ exports.createRestaurant = async (req, res) => {
 
         await client.query('BEGIN');
 
+        let finalCode = code;
+        if (!finalCode || finalCode.trim() === '') {
+            finalCode = await generateSupplierCode(client, 'restaurants', 'REST-');
+        }
+
         const result = await client.query(
             `INSERT INTO restaurants (
                 code, name, tax_id, phone, email, country, province, 
                 address, notes, restaurant_class, website, cuisine_type, 
                 bank_account_name, bank_account_number, bank_name, market, rating, drive_link
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *`,
-            [code, name, tax_id, phone, email, country, province, address, notes, restaurant_class, website, cuisine_type, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
+            [finalCode, name, tax_id, phone, email, country, province, address, notes, restaurant_class, website, cuisine_type, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
         );
         const newRestaurantId = result.rows[0].id;
 
@@ -161,7 +167,8 @@ exports.createRestaurant = async (req, res) => {
                 action_type: 'CREATE',
                 entity_type: 'RESTAURANT',
                 entity_id: newRestaurantId,
-                details: `Đã thêm mới Nhà hàng: ${name}`
+                details: `Đã thêm mới Nhà hàng: ${name}`,
+                new_data: result.rows[0]
             });
         }
 
@@ -191,6 +198,14 @@ exports.updateRestaurant = async (req, res) => {
         } = req.body;
 
         await client.query('BEGIN');
+
+        // Fetch old data for logging
+        const oldRestRes = await client.query('SELECT * FROM restaurants WHERE id = $1', [id]);
+        if (oldRestRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Không tìm thấy nhà hàng' });
+        }
+        const oldRest = oldRestRes.rows[0];
 
         const result = await client.query(
             `UPDATE restaurants SET 
@@ -254,7 +269,9 @@ exports.updateRestaurant = async (req, res) => {
                 action_type: 'UPDATE',
                 entity_type: 'RESTAURANT',
                 entity_id: id,
-                details: `Cập nhật thông tin Nhà hàng: ${name}`
+                details: `Cập nhật thông tin Nhà hàng: ${name}`,
+                old_data: oldRest,
+                new_data: result.rows[0]
             });
         }
 
@@ -271,6 +288,11 @@ exports.updateRestaurant = async (req, res) => {
 exports.deleteRestaurant = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Fetch old data for logging
+        const oldRestRes = await db.query('SELECT * FROM restaurants WHERE id = $1', [id]);
+        if (oldRestRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy nhà hàng' });
+        const oldRest = oldRestRes.rows[0];
 
         const checkDeps = await db.query(`
             SELECT 
@@ -296,7 +318,8 @@ exports.deleteRestaurant = async (req, res) => {
                 action_type: 'DELETE',
                 entity_type: 'RESTAURANT',
                 entity_id: id,
-                details: `Xóa Nhà hàng ID ${id}`
+                details: `Xóa Nhà hàng: ${oldRest.name}`,
+                old_data: oldRest
             });
         }
         res.json({ message: 'Xóa thành công' });

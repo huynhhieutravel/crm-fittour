@@ -1,4 +1,5 @@
 const db = require('../db');
+const { logActivity } = require('../utils/logger');
 
 exports.getAllGuides = async (req, res) => {
     try {
@@ -66,7 +67,19 @@ exports.createGuide = async (req, res) => {
                 guide_card_url
             ]
         );
-        res.status(201).json(result.rows[0]);
+        const newGuide = result.rows[0];
+
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'CREATE',
+            entity_type: 'GUIDE',
+            entity_id: newGuide.id,
+            details: `Tạo mới Hướng dẫn viên: ${newGuide.name}`,
+            new_data: newGuide
+        });
+
+        res.status(201).json(newGuide);
     } catch (err) {
         console.error('Create Guide Error:', err);
         res.status(500).json({ message: err.message });
@@ -91,6 +104,10 @@ exports.updateGuide = async (req, res) => {
         guide_card_number, guide_card_expiry, passport_url, guide_card_url 
     } = req.body;
     try {
+        const oldResult = await db.query('SELECT * FROM guides WHERE id = $1', [req.params.id]);
+        if (oldResult.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy hướng dẫn viên' });
+        const oldGuide = oldResult.rows[0];
+
         const result = await db.query(
             `UPDATE guides SET 
                 name=$1, phone=$2, email=$3, languages=$4, rating=$5, status=$6, experience=$7, bio=$8, specialties=$9, 
@@ -120,7 +137,20 @@ exports.updateGuide = async (req, res) => {
             ]
         );
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy hướng dẫn viên' });
-        res.json(result.rows[0]);
+        const updatedGuide = result.rows[0];
+
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'UPDATE',
+            entity_type: 'GUIDE',
+            entity_id: updatedGuide.id,
+            details: `Cập nhật thông tin Hướng dẫn viên: ${updatedGuide.name}`,
+            old_data: oldGuide,
+            new_data: updatedGuide
+        });
+
+        res.json(updatedGuide);
     } catch (err) {
         console.error('Update Guide Error:', err);
         res.status(500).json({ message: err.message });
@@ -218,6 +248,17 @@ exports.deleteGuide = async (req, res) => {
         
         const result = await db.query('DELETE FROM guides WHERE id = $1 RETURNING *', [req.params.id]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy hướng dẫn viên' });
+
+        // LOG ACTIVITY
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'DELETE',
+            entity_type: 'GUIDE',
+            entity_id: result.rows[0].id,
+            details: `Xóa Hướng dẫn viên: ${result.rows[0].name}`,
+            old_data: result.rows[0]
+        });
+
         res.json({ message: 'Đã xoá hướng dẫn viên thành công' });
     } catch (err) {
         res.status(500).json({ message: err.message });

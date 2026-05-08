@@ -1,6 +1,7 @@
 const roleCheck = (allowedRoles) => {
     return (req, res, next) => {
-        if (req.user && allowedRoles.includes(req.user.role)) {
+        const userRole = (req.user?.role || '').toLowerCase();
+        if (req.user && allowedRoles.map(r => r.toLowerCase()).includes(userRole)) {
             next();
         } else {
             res.status(403).json({ 

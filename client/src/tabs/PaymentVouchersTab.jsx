@@ -201,20 +201,18 @@ export default function PaymentVouchersTab() {
           <thead>
             <tr style={{ background: '#fff', borderBottom: '2px solid #e2e8f0' }}>
               <th style={{ padding: '12px', width: '40px' }}><input type="checkbox" /></th>
-              <th style={{ padding: '12px', color: '#334155' }}>STT</th>
-              <th style={{ padding: '12px', color: '#334155' }}>Số chứng từ</th>
-              <th style={{ padding: '12px', color: '#334155' }}>Tên phiếu thu</th>
-              <th style={{ padding: '12px', color: '#334155' }}>Mã tour</th>
-              <th style={{ padding: '12px', color: '#334155' }}>Ngày chuyển</th>
-              <th style={{ padding: '12px', color: '#334155' }}>Ngày chứng từ</th>
-              <th style={{ padding: '12px', color: '#334155' }}>Ngày thanh toán</th>
-              <th style={{ padding: '12px', color: '#334155' }}>Số tiền thu</th>
-              <th style={{ padding: '12px', color: '#334155' }}>Người đóng</th>
-              <th style={{ padding: '12px', color: '#334155' }}>Số điện thoại</th>
-              <th style={{ padding: '12px', color: '#334155', maxWidth: '80px' }}>NV phụ trách</th>
-              <th style={{ padding: '12px', color: '#334155', maxWidth: '80px' }}>PT Thanh toán</th>
-              <th style={{ padding: '12px', color: '#334155' }}>Trạng thái</th>
-              <th style={{ padding: '12px', color: '#334155' }}>Trạng thái duyệt</th>
+              <th style={{ padding: '12px', color: '#334155', whiteSpace: 'nowrap' }}>STT</th>
+              <th style={{ padding: '12px', color: '#334155', whiteSpace: 'nowrap' }}>Số chứng từ</th>
+              <th style={{ padding: '12px', color: '#334155', whiteSpace: 'nowrap' }}>Mã tour / Tên phiếu thu</th>
+              <th style={{ padding: '12px', color: '#334155', whiteSpace: 'nowrap' }}>Ngày chuyển</th>
+              <th style={{ padding: '12px', color: '#334155', whiteSpace: 'nowrap' }}>Ngày CT / T.Toán</th>
+              <th style={{ padding: '12px', color: '#334155', whiteSpace: 'nowrap' }}>Số tiền thu</th>
+              <th style={{ padding: '12px', color: '#334155', whiteSpace: 'nowrap' }}>Người đóng</th>
+              <th style={{ padding: '12px', color: '#334155', whiteSpace: 'nowrap' }}>Số điện thoại</th>
+              <th style={{ padding: '12px', color: '#334155', whiteSpace: 'nowrap' }}>NV phụ trách</th>
+              <th style={{ padding: '12px', color: '#334155', whiteSpace: 'nowrap' }}>PT Thanh toán</th>
+              <th style={{ padding: '12px', color: '#334155', whiteSpace: 'nowrap' }}>Trạng thái</th>
+              <th style={{ padding: '12px', color: '#334155', whiteSpace: 'nowrap' }}>Trạng thái duyệt</th>
             </tr>
           </thead>
           <tbody>
@@ -231,58 +229,56 @@ export default function PaymentVouchersTab() {
                   <td style={{ padding: '15px 12px' }}><input type="checkbox" /></td>
                   <td style={{ padding: '15px 12px', color: '#475569' }}>{i + 1}</td>
                   
-                  <td style={{ padding: '15px 12px', textAlign: 'left' }}>
+                  <td style={{ padding: '15px 12px', textAlign: 'left', whiteSpace: 'nowrap' }}>
                      <div style={{ color: '#2563eb', fontWeight: 'bold' }}>{v.voucher_code}</div>
-                     <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#1e293b', marginTop: '4px' }}>{v.title}</div>
                   </td>
                   
                   <td style={{ padding: '15px 12px', textAlign: 'left' }}>
-                     <div style={{ fontWeight: '500', color: '#334155', whiteSpace: 'nowrap' }}>{v.tour_name || 'Khách lẻ'}</div>
+                     {v.tour_code && <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '12px' }}>{v.tour_code}</div>}
+                     <div style={{ fontWeight: '600', color: '#1e293b', marginTop: v.tour_code ? '4px' : '0' }}>{v.title}</div>
                   </td>
 
-                  <td style={{ padding: '15px 12px', textAlign: 'left' }}>
-                     <div style={{ color: '#2563eb', fontWeight: 'bold' }}>{v.tour_code}</div>
-                  </td>
-
-                  <td style={{ padding: '15px 12px', color: '#475569' }}>
+                  <td style={{ padding: '15px 12px', color: '#475569', whiteSpace: 'nowrap' }}>
                      {dateStr}<br/>
                      <span style={{ fontSize: '11px' }}>{timeStr}</span>
                   </td>
                   
-                  <td style={{ padding: '15px 12px', color: '#475569' }}>{dateStr}</td>
-                  <td style={{ padding: '15px 12px', color: '#475569' }}>{dateStr}</td>
+                  <td style={{ padding: '15px 12px', whiteSpace: 'nowrap', textAlign: 'left' }}>
+                     <div style={{ color: '#475569', fontSize: '12px' }}>CT: <span style={{fontWeight: 600}}>{dateStr}</span></div>
+                     <div style={{ color: '#059669', fontSize: '12px', marginTop: '4px' }}>TT: <span style={{fontWeight: 600}}>{dateStr}</span></div>
+                  </td>
 
-                  <td style={{ padding: '15px 12px', color: '#16a34a', fontWeight: 'bold', fontSize: '14px', textAlign: 'right' }}>
+                  <td style={{ padding: '15px 12px', color: '#16a34a', fontWeight: 'bold', fontSize: '14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                      {Number(v.amount).toLocaleString('vi-VN')}
                   </td>
 
-                  <td style={{ padding: '15px 12px', color: '#334155', fontWeight: '500', textTransform: 'uppercase' }}>
+                  <td style={{ padding: '15px 12px', color: '#334155', fontWeight: '500', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                      {v.payer_name || 'Khách lẻ'}
                   </td>
 
-                  <td style={{ padding: '15px 12px', color: '#2563eb' }}>
+                  <td style={{ padding: '15px 12px', color: '#2563eb', whiteSpace: 'nowrap' }}>
                      {v.payer_phone || '---'}
                   </td>
 
-                  <td style={{ padding: '15px 12px', color: '#334155' }}>
-                     <div style={{ wordBreak: 'break-word', maxWidth: '80px' }}>{v.created_by_name}</div>
+                  <td style={{ padding: '15px 12px', color: '#334155', whiteSpace: 'nowrap' }}>
+                     <div style={{ fontWeight: 600 }}>{v.created_by_name}</div>
                   </td>
 
-                  <td style={{ padding: '15px 12px', color: '#334155' }}>
-                     <div style={{ wordBreak: 'break-word', maxWidth: '80px' }}>{v.payment_method}</div>
+                  <td style={{ padding: '15px 12px', color: '#334155', whiteSpace: 'nowrap' }}>
+                     <div style={{ fontWeight: 500 }}>{v.payment_method}</div>
                   </td>
 
-                  <td style={{ padding: '15px 12px' }}>
+                  <td style={{ padding: '15px 12px', whiteSpace: 'nowrap' }}>
                      {v.booking_status === 'Hoàn thành' ? (
-                       <span style={{ background: '#0ea5e9', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>HOÀN THÀNH</span>
+                       <span style={{ background: '#0ea5e9', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>HOÀN THÀNH</span>
                      ) : (
-                       <span style={{ background: '#f59e0b', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>{v.booking_status || 'ĐẶT CỌC'}</span>
+                       <span style={{ background: '#f59e0b', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>{v.booking_status || 'ĐẶT CỌC'}</span>
                      )}
                   </td>
 
-                  <td style={{ padding: '15px 12px' }}>
+                  <td style={{ padding: '15px 12px', whiteSpace: 'nowrap' }}>
                      <div style={{ fontSize: '12px', fontWeight: 'bold', color: v.status === 'Đã hủy' ? '#ef4444' : '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                         {v.status === 'Đã hủy' ? <><X size={14} color="#ef4444" /> ĐÃ HỦY</> : <>admin - <CheckCircle size={14} color="#16a34a" /></>}
+                         {v.status === 'Đã hủy' ? <><X size={14} color="#ef4444" /> ĐÃ HỦY</> : <>{v.created_by_name} - <CheckCircle size={14} color="#16a34a" /></>}
                      </div>
                      {v.status !== 'Đã hủy' && (
                        <button onClick={() => handleCancelVoucher(v.id, v.voucher_code, v.amount)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', border: '1px solid #f87171', background: '#fff', color: '#ef4444', fontWeight: 'bold', padding: '3px 8px', borderRadius: '15px', marginTop: '6px', fontSize: '11px', cursor: 'pointer', margin: '6px auto 0' }}>

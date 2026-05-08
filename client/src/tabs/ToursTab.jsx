@@ -235,9 +235,9 @@ const ToursTab = ({
                 </td>
                 <td>
                   <button 
-                    disabled={!canEdit}
+                    disabled={!canEdit && template.created_by !== currentUser?.id}
                     onClick={() => {
-                        if (!canEdit) return;
+                        if (!canEdit && template.created_by !== currentUser?.id) return;
                         setConfirmModal({
                            isOpen: true,
                            type: 'toggle_active',
@@ -273,7 +273,7 @@ const ToursTab = ({
                     >
                       <Eye size={14} />
                     </button>
-                    {canEdit && (
+                    {(canEdit || template.created_by === currentUser?.id) && (
                       <button 
                         className="icon-btn-square" 
                         title="Sửa sản phẩm" 
@@ -282,7 +282,7 @@ const ToursTab = ({
                         <Edit3 size={14} />
                       </button>
                     )}
-                    {canDelete && (
+                    {(canDelete || template.created_by === currentUser?.id) && (
                       <button 
                         className="icon-btn-square danger" 
                         title="Xoá sản phẩm" 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 import { 
   Search, 
@@ -12,7 +13,8 @@ import {
   Activity,
   Calendar,
   MapPin,
-  CheckCircle
+  CheckCircle,
+  Star
 } from 'lucide-react';
 
 const GuidesTab = ({ 
@@ -37,6 +39,7 @@ const GuidesTab = ({
 }) => {
   const [dashFilter, setDashFilter] = React.useState({ timeRange: 'this_month', startDate: '', endDate: '' });
   const [localStats, setLocalStats] = React.useState(null);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (guideActiveTab === 'dashboard') {
@@ -267,6 +270,17 @@ const GuidesTab = ({
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                        <button 
+                          className="icon-btn-small" 
+                          style={{ color: '#f59e0b', background: '#fef3c7' }} 
+                          onClick={() => {
+                            setGuideActiveTab('reviews');
+                            navigate('/guides/reviews', { state: { guideName: guide.name } });
+                          }} 
+                          title="Xem đánh giá"
+                        >
+                          <Star size={14} />
+                        </button>
                         <button className="icon-btn-small btn-edit" onClick={() => handleEditGuide(guide)} title="Xem & Sửa thông tin">
                           <Edit2 size={14} />
                         </button>
