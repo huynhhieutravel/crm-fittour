@@ -6,7 +6,7 @@ import Select, { components } from 'react-select';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-export default function LeaveRequestModal({ currentUser, users = [], onClose, onSuccess }) {
+export default function LeaveRequestModal({ currentUser, users = [], editData, onClose, onSuccess }) {
   const [form, setForm] = useState({
     target_user_id: currentUser?.id || '',
     leave_type: 'annual',
