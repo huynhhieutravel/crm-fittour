@@ -494,7 +494,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                     </td>
                                     )}
                                     <td style={{ padding: '10px 16px', fontSize: '0.85rem' }}>
-                                        <div style={{ fontWeight: 600, color: '#0f172a' }}>{p.company_name || 'Khách Lẻ'}</div>
+                                        <div style={{ fontWeight: 600, color: p.company_name ? '#0f172a' : '#94a3b8' }}>{p.company_name || '— Chưa chọn DN —'}</div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748b', marginTop: '4px', fontSize: '0.75rem' }}>
                                             <Users size={12} /> {p.leader_name || '-'}
                                         </div>
@@ -523,12 +523,16 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                             <button className="icon-btn" title="Xem" onClick={() => handleOpenProject(p)} style={{ color: '#0284c7', background: '#e0f2fe' }}>
                                                 <Eye size={16} />
                                             </button>
-                                            <button className="icon-btn edit" title="Sửa" onClick={() => handleOpenProject(p)}>
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button className="icon-btn delete" onClick={() => handleDelete(p.id)} title="Xóa">
-                                                <Trash2 size={16} />
-                                            </button>
+                                            {(canEdit(currentUser?.role, 'group') || p.assigned_to === currentUser?.id) && (
+                                                <button className="icon-btn edit" title="Sửa" onClick={() => handleOpenProject(p)}>
+                                                    <Edit2 size={16} />
+                                                </button>
+                                            )}
+                                            {canDelete(currentUser?.role, 'group') && (
+                                                <button className="icon-btn delete" onClick={() => handleDelete(p.id)} title="Xóa">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

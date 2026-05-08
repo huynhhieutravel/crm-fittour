@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Search, Building, Plus, Eye, Trash2, Phone, Mail, Calendar, MapPin, Globe, ChevronDown, ChevronUp, Users, FolderOpen, X, Edit3, UserCheck } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
 import B2BCompanyModal, { INDUSTRY_OPTIONS } from '../components/modals/B2BCompanyModal';
+import { canEdit, canDelete, canCreate } from '../utils/permissions';
 
 const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list', companies: externalCompanies, onCompaniesChange, handleDeleteCompany }) => {
   const [companies, setCompanies] = useState([]);
@@ -142,9 +143,11 @@ const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list
         <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Building size={22} color="#6366f1" /> DOANH NGHIỆP B2B
         </h2>
-        <button className="btn-pro-save" style={{ background: '#6366f1' }} onClick={handleCreateNew}>
-          <Plus size={16} /> THÊM DOANH NGHIỆP
-        </button>
+        {canCreate(currentUser?.role, 'group') && (
+          <button className="btn-pro-save" style={{ background: '#6366f1' }} onClick={handleCreateNew}>
+            <Plus size={16} /> THÊM DOANH NGHIỆP
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -241,8 +244,12 @@ const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list
                 <td style={{ padding: '14px 16px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
                   <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
                     <button className="icon-btn" title="Chi tiết" onClick={() => openDetail(c)}><Eye size={16} color="#6366f1" /></button>
-                    <button className="icon-btn" title="Sửa" onClick={() => openEdit(c)}><Edit3 size={16} color="#3b82f6" /></button>
-                    <button className="icon-btn" title="Xóa" onClick={() => handleDelete(c.id)}><Trash2 size={16} color="#ef4444" /></button>
+                    {(canEdit(currentUser?.role, 'group') || c.assigned_to === currentUser?.id) && (
+                      <button className="icon-btn" title="Sửa" onClick={() => openEdit(c)}><Edit3 size={16} color="#3b82f6" /></button>
+                    )}
+                    {canDelete(currentUser?.role, 'group') && (
+                      <button className="icon-btn" title="Xóa" onClick={() => handleDelete(c.id)}><Trash2 size={16} color="#ef4444" /></button>
+                    )}
                   </div>
                 </td>
               </tr>

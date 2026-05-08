@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Calendar, XCircle, User, Phone, MessageCircle, Users, Send, Calculator } from 'lucide-react';
 import Swal from 'sweetalert2';
 import Select, { components } from 'react-select';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 export default function LeaveRequestModal({ currentUser, users = [], onClose, onSuccess }) {
   const [form, setForm] = useState({
@@ -16,6 +18,34 @@ export default function LeaveRequestModal({ currentUser, users = [], onClose, on
     handover_note: '',
     approved_by: ''
   });
+
+  useEffect(() => {
+    if (editData) {
+      const formattedDates = (editData.dates || []).map(d => {
+          const dateObj = new Date(d.date);
+          const y = dateObj.getFullYear();
+          const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+          const d_val = String(dateObj.getDate()).padStart(2, '0');
+          return {
+              date: `${y}-${m}-${d_val}`,
+              duration: d.session === 'full' ? 1 : 0.5,
+              session: d.session
+          };
+      });
+
+      setForm({
+        target_user_id: editData.user_id || currentUser?.id,
+        leave_type: editData.leave_type || 'annual',
+        leave_dates: formattedDates,
+        total_days: editData.total_days || 0,
+        reason: editData.reason || '',
+        contact_phone: editData.contact_phone || '',
+        handover_user_id: editData.handover_user_id || '',
+        handover_note: editData.handover_note || '',
+        approved_by: editData.approved_by || ''
+      });
+    }
+  }, [editData, currentUser]);
 
   const [leaveBalance, setLeaveBalance] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -45,26 +75,30 @@ export default function LeaveRequestModal({ currentUser, users = [], onClose, on
     }
   }, [form.leave_dates]);
 
-  const handleAddDate = (e) => {
-      const dateStr = e.target.value;
-      if (!dateStr) return;
-      
-      const currentDates = form.leave_dates || [];
-      const [y, m, d_val] = dateStr.split('-');
-      const d = new Date(y, m - 1, d_val);
-      if (d.getDay() === 0 || d.getDay() === 6) {
+  const handleToggleDate = (date) => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d_val = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d_val}`;
+
+      if (date.getDay() === 0 || date.getDay() === 6) {
           Swal.fire('Cảnh báo', 'Vui lòng không chọn ngày Thứ 7 hoặc Chủ Nhật', 'warning');
-          e.target.value = '';
           return;
       }
+
+      const currentDates = form.leave_dates || [];
+      const existingIdx = currentDates.findIndex(item => item.date === dateStr);
       
-      if (!currentDates.find(item => item.date === dateStr)) {
-          const newDates = [...currentDates, { date: dateStr, duration: 1, session: 'full' }].sort((a,b) => a.date.localeCompare(b.date));
+      if (existingIdx >= 0) {
+          // Bỏ chọn nếu đã có
+          const newDates = [...currentDates];
+          newDates.splice(existingIdx, 1);
           setForm({ ...form, leave_dates: newDates });
       } else {
-          Swal.fire('Cảnh báo', 'Ngày này đã được chọn', 'warning');
+          // Thêm mới
+          const newDates = [...currentDates, { date: dateStr, duration: 1, session: 'full' }].sort((a,b) => a.date.localeCompare(b.date));
+          setForm({ ...form, leave_dates: newDates });
       }
-      e.target.value = '';
   };
 
   const handleUpdateSession = (dateStr, sessionVal) => {
@@ -93,12 +127,18 @@ export default function LeaveRequestModal({ currentUser, users = [], onClose, on
     setSaving(true);
     try {
        const token = localStorage.getItem('token');
-       await axios.post('/api/leaves', form, {
-           headers: { Authorization: `Bearer ${token}` }
-       });
+       if (editData) {
+           await axios.put(`/api/leaves/${editData.id}`, form, {
+               headers: { Authorization: `Bearer ${token}` }
+           });
+       } else {
+           await axios.post('/api/leaves', form, {
+               headers: { Authorization: `Bearer ${token}` }
+           });
+       }
        Swal.fire({
            toast: true, position: 'top-end', icon: 'success',
-           title: 'Đã gửi đơn xin nghỉ phép', showConfirmButton: false, timer: 3000
+           title: editData ? 'Đã cập nhật đơn xin nghỉ' : 'Đã gửi đơn xin nghỉ phép', showConfirmButton: false, timer: 3000
        });
        if (onSuccess) onSuccess();
        onClose();
@@ -128,8 +168,8 @@ export default function LeaveRequestModal({ currentUser, users = [], onClose, on
                     <Calendar size={28} />
                 </div>
                 <div>
-                    <h3 style={{ margin: '0 0 4px 0', fontSize: '20px', color: '#0f172a' }}>Tạo Đơn Xin Nghỉ Phép</h3>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>Vui lòng điền đầy đủ thông tin để gửi đơn xin nghỉ phép.</p>
+                    <h3 style={{ margin: '0 0 4px 0', fontSize: '20px', color: '#0f172a' }}>{editData ? 'Sửa Đơn Xin Nghỉ Phép' : 'Tạo Đơn Xin Nghỉ Phép'}</h3>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>Vui lòng điền đầy đủ thông tin để {editData ? 'cập nhật' : 'gửi'} đơn xin nghỉ phép.</p>
                 </div>
             </div>
             <button onClick={onClose} style={{ background: '#f1f5f9', border: 'none', cursor: 'pointer', color: '#64748b', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -263,14 +303,48 @@ export default function LeaveRequestModal({ currentUser, users = [], onClose, on
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start', marginBottom: '16px' }}>
                     <div>
                         <label style={inputStyles.label}>Chọn ngày nghỉ <span style={{color: '#ef4444'}}>*</span></label>
-                        <div style={inputStyles.container}>
-                            <Calendar size={16} style={inputStyles.icon} />
-                            <input type="date" onChange={handleAddDate} style={inputStyles.input} />
+                        <div style={{ background: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', padding: '12px', display: 'flex', justifyContent: 'center' }}>
+                            <style>{`
+                                .custom-datepicker .react-datepicker__day--selected {
+                                    background-color: #3b82f6 !important;
+                                    color: white !important;
+                                    border-radius: 50%;
+                                }
+                                .custom-datepicker .react-datepicker__day:hover {
+                                    border-radius: 50%;
+                                }
+                                .custom-datepicker .react-datepicker {
+                                    border: none;
+                                    font-family: inherit;
+                                }
+                                .custom-datepicker .react-datepicker__header {
+                                    background: white;
+                                    border-bottom: none;
+                                }
+                            `}</style>
+                            <DatePicker
+                                inline
+                                wrapperClassName="custom-datepicker"
+                                onChange={handleToggleDate}
+                                dayClassName={(date) => {
+                                    const y = date.getFullYear();
+                                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                                    const d_val = String(date.getDate()).padStart(2, '0');
+                                    const dateStr = `${y}-${m}-${d_val}`;
+                                    
+                                    if (form.leave_dates?.find(item => item.date === dateStr)) {
+                                        return "react-datepicker__day--selected";
+                                    }
+                                    return null;
+                                }}
+                            />
                         </div>
-                        <div style={{ marginTop: '6px', fontSize: '11px', color: '#64748b' }}>Chọn từng ngày bạn muốn nghỉ. Hệ thống sẽ tự khóa T7, CN.</div>
+                        <div style={{ marginTop: '8px', fontSize: '11px', color: '#64748b', textAlign: 'center' }}>
+                            Bấm vào ngày để <b>chọn</b> hoặc <b>bỏ chọn</b>. Hệ thống tự khóa T7, CN.
+                        </div>
                         {leaveBalance && (
-                            <div style={{ marginTop: '8px' }}>
-                                <strong style={{ color: '#059669', fontSize: '11px', background: '#d1fae5', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
+                            <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                                <strong style={{ color: '#059669', fontSize: '12px', background: '#d1fae5', padding: '6px 12px', borderRadius: '6px', display: 'inline-block' }}>
                                     Phép dư: {leaveBalance.available} ngày
                                 </strong>
                             </div>

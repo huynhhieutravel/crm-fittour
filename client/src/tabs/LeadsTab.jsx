@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
 import axios from 'axios';
+import { canEdit, canDelete } from '../utils/permissions';
+
 const LeadsTab = ({ 
   currentUser,
   leads, 
@@ -629,25 +631,29 @@ const LeadsTab = ({
                     >
                       <UserPlus size={14} />
                     </button>
-                    <button 
-                      type="button" 
-                      className="icon-btn-square" 
-                      title={lead.is_locked ? "Xem (Đã bị khóa)" : "Chỉnh sửa"} 
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingLead(lead); }}
-                      style={{ background: lead.is_locked ? '#f8fafc' : undefined, color: lead.is_locked ? '#64748b' : undefined }}
-                    >
-                      {lead.is_locked ? <Eye size={14} /> : <Edit3 size={14} />}
-                    </button>
-                    <button 
-                      type="button" 
-                      className="icon-btn-square danger" 
-                      title="Xóa" 
-                      disabled={lead.is_locked}
-                      style={{ opacity: lead.is_locked ? 0.3 : 1, cursor: lead.is_locked ? 'not-allowed' : 'pointer' }}
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); if(!lead.is_locked) handleDeleteLead(lead.id); }}
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    {canEdit(currentUser?.role, 'core') && (
+                      <button 
+                        type="button" 
+                        className="icon-btn-square" 
+                        title={lead.is_locked ? "Xem (Đã bị khóa)" : "Chỉnh sửa"} 
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingLead(lead); }}
+                        style={{ background: lead.is_locked ? '#f8fafc' : undefined, color: lead.is_locked ? '#64748b' : undefined }}
+                      >
+                        {lead.is_locked ? <Eye size={14} /> : <Edit3 size={14} />}
+                      </button>
+                    )}
+                    {canDelete(currentUser?.role, 'core') && (
+                      <button 
+                        type="button" 
+                        className="icon-btn-square danger" 
+                        title="Xóa" 
+                        disabled={lead.is_locked}
+                        style={{ opacity: lead.is_locked ? 0.3 : 1, cursor: lead.is_locked ? 'not-allowed' : 'pointer' }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); if(!lead.is_locked) handleDeleteLead(lead.id); }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

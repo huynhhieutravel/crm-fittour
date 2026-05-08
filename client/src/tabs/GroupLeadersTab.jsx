@@ -5,6 +5,7 @@ import GroupLeaderProfileSlider from '../components/GroupLeaderProfileSlider';
 import GroupLeaderCalendarView from '../components/GroupLeaderCalendarView';
 import GroupLeaderAddModal from '../components/GroupLeaderAddModal';
 import { Users, Plus } from 'lucide-react';
+import { canEdit, canDelete, canCreate } from '../utils/permissions';
 
 export default function GroupLeadersTab({ currentUser, addToast, users = [], activeView = 'list', handleDeleteLeader }) {
     const [leaders, setLeaders] = useState([]);
@@ -137,9 +138,11 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [], act
                         <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                             <Users size={22} color="#6366f1" /> DANH SÁCH TRƯỞNG ĐOÀN
                         </h2>
-                        <button className="btn-pro-save" style={{ background: '#6366f1', padding: '8px 16px', borderRadius: '8px', color: 'white', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }} onClick={() => setShowCreateModal(true)}>
-                            <Plus size={16} /> THÊM TRƯỞNG ĐOÀN
-                        </button>
+                        {canCreate(currentUser?.role, 'group') && (
+                            <button className="btn-pro-save" style={{ background: '#6366f1', padding: '8px 16px', borderRadius: '8px', color: 'white', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }} onClick={() => setShowCreateModal(true)}>
+                                <Plus size={16} /> THÊM TRƯỞNG ĐOÀN
+                            </button>
+                        )}
                     </div>
                 )}
 
@@ -276,12 +279,16 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [], act
                                                 <button className="icon-btn" title="Xem hồ sơ" onClick={() => handleViewProfile(leader.id)}>
                                                     <Eye size={16} className="text-blue-500" />
                                                 </button>
-                                                <button className="icon-btn" title="Sửa" onClick={() => handleViewProfile(leader.id, true)}>
-                                                    <Edit3 size={16} color="#3b82f6" />
-                                                </button>
-                                                <button className="icon-btn danger" style={{ color: '#ef4444' }} title="Xóa" onClick={() => handleDelete(leader.id)}>
-                                                    <Trash2 size={16} />
-                                                </button>
+                                                {canEdit(currentUser?.role, 'group') && (
+                                                    <button className="icon-btn" title="Sửa" onClick={() => handleViewProfile(leader.id, true)}>
+                                                        <Edit3 size={16} color="#3b82f6" />
+                                                    </button>
+                                                )}
+                                                {canDelete(currentUser?.role, 'group') && (
+                                                    <button className="icon-btn danger" style={{ color: '#ef4444' }} title="Xóa" onClick={() => handleDelete(leader.id)}>
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>

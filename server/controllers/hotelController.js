@@ -272,7 +272,7 @@ exports.updateHotel = async (req, res) => {
         const { 
             code, name, tax_id, build_year, phone, email, country, province, 
             address, notes, star_rate, website, hotel_class, project_name, 
-            bank_account_name, bank_account_number, bank_name, market, rating,
+            bank_account_name, bank_account_number, bank_name, market, rating, drive_link,
             contacts, services, allotments,
             deleted_contact_ids, deleted_service_ids, deleted_allotment_ids,
             contract_id // Optional active contract ID to apply services to

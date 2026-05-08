@@ -3281,6 +3281,7 @@ function AppContent() {
 
         {activeTab === 'customers' && customerActiveTab !== 'cskh-board' && customerActiveTab !== 'cskh-todo' && customerActiveTab !== 'cskh-search' && customerActiveTab !== 'cskh-rules' && customerActiveTab !== 'customer-reviews' && (
           <CustomersTab 
+            currentUser={user}
             customers={customers}
             customerFilters={customerFilters}
             setCustomerFilters={setCustomerFilters}

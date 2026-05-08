@@ -5,8 +5,10 @@ import CustomerProfileSlider from '../components/CustomerProfileSlider';
 import CustomerCalendarView from '../components/CustomerCalendarView';
 import CustomerDuplicateManager from '../components/CustomerDuplicateManager';
 import { Calendar as CalendarIcon, List as ListIcon, Network } from 'lucide-react';
+import { canEdit, canDelete } from '../utils/permissions';
 
 const CustomersTab = ({ 
+  currentUser,
   customers, 
   customerFilters, 
   setCustomerFilters, 
@@ -313,12 +315,16 @@ const CustomersTab = ({
                     <button className="icon-btn" title="Xem hồ sơ" onClick={() => handleViewProfile(customer.id)}>
                       <Eye size={16} className="text-blue-500" />
                     </button>
-                    <button className="icon-btn" title="Sửa" onClick={() => setEditingCustomer(customer.id)}>
-                      <Edit3 size={16} />
-                    </button>
-                    <button className="icon-btn danger" style={{ color: '#ef4444' }} title="Xóa" onClick={() => handleDeleteCustomer(customer.id)}>
-                      <Trash2 size={16} />
-                    </button>
+                    {canEdit(currentUser?.role, 'core') && (
+                      <button className="icon-btn" title="Sửa" onClick={() => setEditingCustomer(customer.id)}>
+                        <Edit3 size={16} />
+                      </button>
+                    )}
+                    {canDelete(currentUser?.role, 'core') && (
+                      <button className="icon-btn danger" style={{ color: '#ef4444' }} title="Xóa" onClick={() => handleDeleteCustomer(customer.id)}>
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

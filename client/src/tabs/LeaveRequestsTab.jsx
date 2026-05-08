@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  Calendar, CheckCircle, XCircle, Clock, Trash2, User, AlertCircle, Plus, Eye, Settings
+  Calendar, CheckCircle, XCircle, Clock, Trash2, User, AlertCircle, Plus, Eye, Settings, Edit, Undo2
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import Select from 'react-select';
@@ -23,6 +23,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
   const [todayLeaves, setTodayLeaves] = useState([]);
 
   const [showModal, setShowModal] = useState(false);
+  const [editingLeave, setEditingLeave] = useState(null);
   const [viewMode, setViewMode] = useState('list'); // 'list' | 'config'
   const [allBalances, setAllBalances] = useState([]);
   const [globalDefault, setGlobalDefault] = useState(12);
@@ -48,18 +49,23 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
     handover_note: ''
   });
 
-  const handleOpenModal = () => {
-    setForm({
-      target_user_id: currentUser?.id || '',
-      leave_type: 'annual',
-      start_date: '',
-      end_date: '',
-      total_days: 1,
-      reason: '',
-      contact_phone: currentUser?.phone || '',
-      handover_user_id: '',
-      handover_note: ''
-    });
+  const handleOpenModal = (editData = null) => {
+    if (editData) {
+      setEditingLeave(editData);
+    } else {
+      setEditingLeave(null);
+      setForm({
+        target_user_id: currentUser?.id || '',
+        leave_type: 'annual',
+        start_date: '',
+        end_date: '',
+        total_days: 1,
+        reason: '',
+        contact_phone: currentUser?.phone || '',
+        handover_user_id: '',
+        handover_note: ''
+      });
+    }
     setShowModal(true);
   };
 
@@ -189,6 +195,14 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
               title: 'Duyệt đơn?',
               text: 'Xác nhận duyệt đơn nghỉ phép này?',
               icon: 'question',
+              showCancelButton: true
+          });
+          if (!result.isConfirmed) return;
+      } else if (action === 'pending') {
+          const result = await Swal.fire({
+              title: 'Hủy duyệt đơn?',
+              text: 'Bạn có chắc muốn chuyển đơn này về trạng thái chờ duyệt?',
+              icon: 'warning',
               showCancelButton: true
           });
           if (!result.isConfirmed) return;
@@ -383,10 +397,18 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                     <div style={{ fontSize: '11px', color: '#3b82f6' }}>{leaveTypes[item.leave_type]}</div>
                                 </td>
                                 <td>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}>
-                                        <Calendar size={13} color="#64748b"/>
-                                        {new Date(item.start_date).toLocaleDateString('vi-VN')} 
-                                        {item.start_date !== item.end_date && ` - ${new Date(item.end_date).toLocaleDateString('vi-VN')}`}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '13px' }}>
+                                        {item.dates?.map((d, i) => (
+                                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                <Calendar size={13} color="#64748b"/>
+                                                {new Date(d.date).toLocaleDateString('vi-VN')}
+                                                {d.session !== 'full' && (
+                                                    <span style={{ fontSize: '11px', color: '#f59e0b', background: '#fef3c7', padding: '1px 4px', borderRadius: '4px' }}>
+                                                        {d.session === 'morning' ? 'Sáng' : 'Chiều'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
                                     <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
                                         Gửi lúc: {new Date(item.created_at).toLocaleString('vi-VN')}
@@ -437,17 +459,33 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                                 </button>
                                             </>
                                         )}
+                                        {item.status !== 'pending' && isManager && (
+                                            <button onClick={() => handleAction(item.id, 'pending')} style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Hủy duyệt (Chuyển về Chờ duyệt)">
+                                                <Undo2 size={16} />
+                                            </button>
+                                        )}
                                         {(() => {
                                             const today = new Date();
                                             today.setHours(0,0,0,0);
-                                            const startDate = new Date(item.start_date);
+                                            const startDate = new Date(item.first_leave_date);
+                                            const canEdit = (item.user_id === currentUser?.id && item.status === 'pending') || currentUser?.role === 'admin';
                                             const canDelete = (item.user_id === currentUser?.id || currentUser?.role === 'admin') && 
                                                               (startDate >= today || currentUser?.role === 'admin');
-                                            return canDelete ? (
-                                                <button onClick={() => handleAction(item.id, 'delete')} style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Xóa">
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            ) : null;
+                                            
+                                            return (
+                                                <>
+                                                    {canEdit && (
+                                                        <button onClick={() => handleOpenModal(item)} style={{ background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Sửa đơn">
+                                                            <Edit size={16} />
+                                                        </button>
+                                                    )}
+                                                    {canDelete && (
+                                                        <button onClick={() => handleAction(item.id, 'delete')} style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Xóa">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    )}
+                                                </>
+                                            );
                                         })()}
                                     </div>
                                 </td>
@@ -585,11 +623,12 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
           </div>
       )}
 
-      {/* CREATE MODAL */}
+      {/* CREATE / EDIT MODAL */}
       {showModal && (
         <LeaveRequestModal 
             currentUser={currentUser} 
             users={users} 
+            editData={editingLeave}
             onClose={() => setShowModal(false)} 
             onSuccess={() => { fetchData(); fetchBalance(); }} 
         />
