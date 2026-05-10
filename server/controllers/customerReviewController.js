@@ -276,7 +276,7 @@ exports.getStats = async (req, res) => {
     }
 
     const buStats = await db.query(`
-      SELECT COALESCE(b.label, 'Chưa xếp hạng') as bu_name, COUNT(r.*) as total_reviews, ROUND(AVG(r.rating), 1) as avg_rating
+      SELECT COALESCE(b.label, 'Chưa xếp hạng') as bu_name, COUNT(r.id) as total_reviews, ROUND(AVG(r.rating), 1) as avg_rating
       FROM customer_reviews r
       LEFT JOIN business_units b ON r.bu_id = b.id
       ${buWhere}

@@ -321,7 +321,7 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
           <div className="cr-card" style={{ maxWidth: '400px' }}>
             <h3 className="cr-card-title">Top BU theo Rating</h3>
             <div style={{ maxWidth: '400px' }}>
-              {stats.buStats.slice(0, 3).map((b, i) => (
+              {stats.buStats.slice(0, 5).map((b, i) => (
                 <div key={i} className="cr-stat-item">
                   <span className="cr-stat-name">{b.bu_name}</span>
                   <span className="cr-stat-score">{b.avg_rating} <Star style={{ width: 16, height: 16, marginLeft: 4, fill: '#ca8a04' }} /> ({b.total_reviews})</span>
