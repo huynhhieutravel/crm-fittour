@@ -508,11 +508,11 @@ const upload = multer({
     storage: storage,
     limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Chỉ chấp nhận file ảnh (JPG, PNG, WEBP) hoặc PDF'));
+            cb(new Error('Chỉ chấp nhận file ảnh, PDF hoặc Word (DOC, DOCX)'));
         }
     }
 }).array('files', 10);
@@ -537,7 +537,7 @@ exports.uploadTicketMedia = (req, res) => {
             const results = [];
             for (const file of req.files) {
                 const file_url = '/uploads/tickets/' + file.filename;
-                const file_type = file.mimetype === 'application/pdf' ? 'pdf' : 'image';
+                const file_type = file.mimetype === 'application/pdf' ? 'pdf' : (file.mimetype.includes('word') || file.mimetype.includes('document') ? 'doc' : 'image');
                 
                 const insertRes = await client.query(
                     'INSERT INTO ticket_media (ticket_id, file_url, file_name, file_type, file_size) VALUES ($1, $2, $3, $4, $5) RETURNING *',

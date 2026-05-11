@@ -436,14 +436,14 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
                                         cursor: uploading ? 'wait' : 'pointer', background: '#f8fafc', transition: 'all 0.2s', marginBottom: '1.5rem'
                                     }}
                                 >
-                                    <input ref={fileInputRef} type="file" accept="image/*,.pdf" onChange={handleUploadMedia} style={{ display: 'none' }} />
+                                    <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={handleUploadMedia} style={{ display: 'none' }} />
                                     {uploading ? (
                                         <div style={{ color: '#3b82f6', fontWeight: 600 }}>⏳ Đang tải lên...</div>
                                     ) : (
                                         <>
                                             <Upload size={32} color="#94a3b8" style={{ marginBottom: '8px' }} />
                                             <div style={{ fontSize: '0.95rem', color: '#475569', fontWeight: 600 }}>Kéo thả hoặc bấm để tải lên</div>
-                                            <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>Hỗ trợ: JPG, PNG, WebP, PDF — Tối đa 20MB / file</div>
+                                            <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>Hỗ trợ: JPG, PNG, WebP, PDF, DOC, DOCX — Tối đa 20MB / file</div>
                                         </>
                                     )}
                                 </div>
@@ -474,7 +474,7 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
                                                     onClick={() => window.open(m.file_url, '_blank')}
                                                 >
                                                     <File size={40} color="#ef4444" />
-                                                    <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 700, marginTop: '6px' }}>PDF</span>
+                                                    <span style={{ fontSize: '0.75rem', color: '#ef4444', fontWeight: 700, marginTop: '6px' }}>{m.file_type === 'pdf' ? 'PDF' : 'TÀI LIỆU'}</span>
                                                 </div>
                                             )}
                                             {/* Info + Actions */}
@@ -485,7 +485,7 @@ export default function RestaurantDetailDrawer({ restaurant, onClose, refreshLis
                                                     {m.file_type === 'image' ? (
                                                         <button onClick={() => setLightboxUrl(m.file_url)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '5px', background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer' }}><Eye size={12} /> Xem</button>
                                                     ) : (
-                                                        <a href={m.file_url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '5px', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}><Download size={12} /> Mở PDF</a>
+                                                        <a href={m.file_url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '5px', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}><Download size={12} /> Mở File</a>
                                                     )}
                                                     {!isViewOnly && (
                                                         <button onClick={() => handleDeleteMedia(m.id, m.file_name, m.isPending)} style={{ padding: '5px 8px', background: '#fff1f2', color: '#ef4444', border: '1px solid #fecaca', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Trash2 size={12} /></button>

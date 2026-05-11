@@ -427,10 +427,10 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
                                     onClick={() => fileInputRef.current?.click()}
                                     style={{ border: `2px dashed ${isDragging ? '#3b82f6' : '#cbd5e1'}`, borderRadius: '12px', padding: '2.5rem', textAlign: 'center', background: isDragging ? '#eff6ff' : '#f8fafc', cursor: 'pointer', transition: 'all 0.2s', marginBottom: '1.5rem' }}
                                 >
-                                    <input type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" style={{ display: 'none' }} ref={fileInputRef} onChange={e => handleFileUpload(e.target.files)} />
+                                    <input type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style={{ display: 'none' }} ref={fileInputRef} onChange={e => handleFileUpload(e.target.files)} />
                                     <Upload size={32} color={isDragging ? '#3b82f6' : '#94a3b8'} style={{ margin: '0 auto 12px' }} />
                                     <p style={{ margin: '0 0 8px', color: '#334155', fontWeight: 600 }}>Kéo thả file vào đây hoặc click để chọn</p>
-                                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Hỗ trợ: JPG, PNG, WebP, PDF (Tối đa 20MB/file)</p>
+                                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Hỗ trợ: JPG, PNG, WebP, PDF, DOC, DOCX (Tối đa 20MB/file)</p>
                                     {uploadProgress > 0 && <div style={{ marginTop: '1rem', background: '#e2e8f0', borderRadius: '8px', overflow: 'hidden' }}><div style={{ width: `${uploadProgress}%`, background: '#3b82f6', height: '4px', transition: 'width 0.2s' }} /></div>}
                                 </div>
                             )}
@@ -441,7 +441,7 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem' }}>
                                     {[...pendingUploads, ...mediaFiles].map((m, idx) => {
                                         const isPending = m.isPending;
-                                        const isPdf = isPending ? m.file.type === 'application/pdf' : m.file_type === 'pdf';
+                                        const isDocument = isPending ? !m.file.type.startsWith('image/') : (m.file_type === 'pdf' || m.file_type === 'doc');
                                         const fileUrl = isPending ? m.url : m.file_url;
                                         const fileName = isPending ? m.file.name : m.file_name;
                                         
@@ -451,8 +451,8 @@ export default function TicketDetailDrawer({ ticket, onClose, refreshList, curre
                                                 {!isViewOnly && (
                                                     <button onClick={(e) => { e.stopPropagation(); isPending ? removePendingUpload(idx) : handleDeleteMedia(m); }} style={{ position: 'absolute', top: '8px', right: '8px', background: '#ef4444', color: 'white', padding: '4px', borderRadius: '50%', border: 'none', cursor: 'pointer', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} title="Xóa file"><Trash2 size={14} /></button>
                                                 )}
-                                                <div onClick={() => { if (isPdf) { window.open(fileUrl, '_blank'); } else { setLightboxMedia(m); } }} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isPdf ? '#eff6ff' : '#fff', position: 'relative', overflow: 'hidden', cursor: 'pointer' }} title="Nhấn để xem nội dung">
-                                                    {isPdf ? <File size={40} color="#3b82f6" /> : <img src={fileUrl} alt={fileName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                                                <div onClick={() => { if (isDocument) { window.open(fileUrl, '_blank'); } else { setLightboxMedia(m); } }} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDocument ? '#eff6ff' : '#fff', position: 'relative', overflow: 'hidden', cursor: 'pointer' }} title="Nhấn để xem nội dung">
+                                                    {isDocument ? <File size={40} color="#3b82f6" /> : <img src={fileUrl} alt={fileName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                                                 </div>
                                                 <div style={{ padding: '8px', fontSize: '0.75rem', color: '#475569', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', borderTop: '1px solid #e2e8f0', background: 'white' }} title={fileName}>{fileName}</div>
                                             </div>

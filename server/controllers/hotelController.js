@@ -20,11 +20,11 @@ const mediaUpload = multer({
     }),
     limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
     fileFilter: (req, file, cb) => {
-        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
         if (allowed.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Chỉ cho phép file ảnh (JPG, PNG, WebP) hoặc PDF'));
+            cb(new Error('Chỉ cho phép file ảnh, PDF hoặc Word (DOC, DOCX)'));
         }
     }
 }).single('file');
@@ -755,7 +755,7 @@ exports.uploadHotelMedia = async (req, res) => {
 
         try {
             const fileUrl = `/uploads/hotels/${req.file.filename}`;
-            const fileType = req.file.mimetype === 'application/pdf' ? 'pdf' : 'image';
+            const fileType = req.file.mimetype === 'application/pdf' ? 'pdf' : (req.file.mimetype.includes('word') || req.file.mimetype.includes('document') ? 'doc' : 'image');
             const result = await db.query(
                 'INSERT INTO hotel_media (hotel_id, file_url, file_name, file_type, file_size) VALUES ($1, $2, $3, $4, $5) RETURNING *',
                 [hotel_id, fileUrl, req.file.originalname, fileType, req.file.size]
