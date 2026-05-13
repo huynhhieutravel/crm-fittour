@@ -39,6 +39,7 @@ import InsurancesTab from './tabs/InsurancesTab';
 import OpToursTab from './tabs/OpToursTab';
 import TravelSupportTab from './tabs/TravelSupportTab';
 import LeaveRequestsTab from './tabs/LeaveRequestsTab';
+import RoomBookingTab from './tabs/RoomBookingTab';
 import PaymentVouchersTab from './tabs/PaymentVouchersTab';
 // ═══ Tour Đoàn Tab Imports ═══
 import GroupProjectsTab from './tabs/GroupProjectsTab';
@@ -174,7 +175,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
-  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'email', 'email-mailboxes', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu'];
+  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'email', 'email-mailboxes', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -2759,6 +2760,12 @@ function AppContent() {
             🌴 Quản lý Nghỉ Phép
           </div>
           <div 
+            className={`submenu-item ${activeTab === 'meeting-rooms' ? 'active' : ''}`} 
+            onClick={() => { navigate('/meeting-rooms'); setActiveTab('meeting-rooms'); setHoveredMenu(null); }}
+          >
+            🗓️ Đặt Phòng Họp
+          </div>
+          <div 
             className={`submenu-item ${activeTab === 'org-chart' ? 'active' : ''}`} 
             onClick={() => { navigate('/org-chart'); setActiveTab('org-chart'); setHoveredMenu(null); }}
           >
@@ -3026,6 +3033,18 @@ function AppContent() {
                     className="submenu-item" 
                     onClick={(e) => { 
                       e.stopPropagation(); 
+                      navigate('/meeting-rooms');
+                      setActiveTab('meeting-rooms');
+                      setHoveredMenu(null); 
+                    }}
+                    style={{ padding: '12px 16px', borderTop: '1px solid #f1f5f9', color: '#0071e3', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    🏢 Xem Phòng Họp
+                  </div>
+                  <div 
+                    className="submenu-item" 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
                       setShowLeaveModal(true); 
                       setHoveredMenu(null); 
                     }}
@@ -3211,6 +3230,9 @@ function AppContent() {
 
         {activeTab === 'leaves' && (
           <LeaveRequestsTab users={users} currentUser={user} checkPerm={checkPerm} />
+        )}
+        {activeTab === 'meeting-rooms' && (
+          <RoomBookingTab currentUser={user} />
         )}
 
         {activeTab === 'departures' && pathParts[1] === 'view' && pathParts[2] && (

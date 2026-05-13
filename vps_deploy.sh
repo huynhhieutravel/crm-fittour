@@ -81,6 +81,12 @@ chmod -R 755 server/
 echo "   ✅ client/dist/ → ${WEB_USER}:${WEB_GROUP} (755)"
 echo "   ✅ server/      → ${WEB_USER}:${WEB_GROUP} (755)"
 
+# Tạo Symlink cho thư mục uploads để Nginx có thể đọc được ảnh Avatar / Receipts
+echo "   🔗 Tạo symlink cho thư mục uploads..."
+ln -sfn /var/www/fittour-crm/server/public/uploads /var/www/fittour-crm/client/dist/uploads
+chown -h ${WEB_USER}:${WEB_GROUP} /var/www/fittour-crm/client/dist/uploads
+echo "   ✅ Symlink uploads đã được tạo."
+
 # Verify permissions are correct
 DIST_OWNER=$(stat -c '%U' client/dist/index.html 2>/dev/null || stat -f '%Su' client/dist/index.html 2>/dev/null)
 if [ "$DIST_OWNER" != "$WEB_USER" ]; then

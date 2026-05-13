@@ -167,6 +167,7 @@ app.use('/api/management-dashboard', managementDashboardRoutes);
 const ceoDashboardRoutes = require('./routes/ceoDashboard');
 app.use('/api/ceo-dashboard', ceoDashboardRoutes);
 app.use('/api/customer-reviews', require('./routes/customerReviews'));
+app.use('/api/meeting-rooms', require('./routes/meetingRooms'));
 app.use('/api/search', require('./routes/search'));
 
 app.get('/', (req, res) => {

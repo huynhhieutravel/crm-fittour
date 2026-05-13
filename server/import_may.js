@@ -7,7 +7,7 @@ const pool = new Pool({
 });
 
 const files = [
-  { week: 1, name: 'tuan1-thang5-nam2026.xlsx' }
+  { week: 2, name: 'tuan2-thang5-nam2026.xlsx' }
 ];
 
 const processFiles = async () => {
