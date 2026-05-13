@@ -52,3 +52,4 @@ server/migrate_*.js
 # ═══ Agent scratch files ═══
 .agents/tmp_scrape/
 _backups/
+server/public/uploads/
