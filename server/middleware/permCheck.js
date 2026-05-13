@@ -309,7 +309,8 @@ const permCheckOrOwner = (module, action, table, paramKey = 'id', ownerColumn = 
                 'tour_templates', 'tour_departures', 'hotels', 'restaurants', 
                 'transports', 'airlines', 'tickets', 'landtours', 'insurances', 
                 'visas', 'group_projects', 'group_leaders', 'b2b_companies',
-                'bookings', 'leads', 'guides', 'vouchers', 'payment_vouchers'
+                'bookings', 'leads', 'guides', 'vouchers', 'payment_vouchers',
+                'customers'
             ];
             if (!ALLOWED_TABLES.includes(table)) {
                 return res.status(403).json({ message: `Bạn không có quyền: ${module}.${action}` });

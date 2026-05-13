@@ -315,7 +315,7 @@ const CustomersTab = ({
                     <button className="icon-btn" title="Xem hồ sơ" onClick={() => handleViewProfile(customer.id)}>
                       <Eye size={16} className="text-blue-500" />
                     </button>
-                    {canEdit(currentUser?.role, 'core') && (
+                    {(canEdit(currentUser?.role, 'core') || (currentUser?.id && customer.assigned_to === currentUser.id)) && (
                       <button className="icon-btn" title="Sửa" onClick={() => setEditingCustomer(customer.id)}>
                         <Edit3 size={16} />
                       </button>

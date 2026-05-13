@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const customerController = require('../controllers/customerController');
 const authenticateToken = require('../middleware/auth');
-const { permCheck, permCheckAny } = require('../middleware/permCheck');
+const { permCheck, permCheckAny, permCheckOrOwner } = require('../middleware/permCheck');
 const customerEventController = require('../controllers/customerEventController');
 
 router.get('/birthdays/upcoming', authenticateToken, permCheckAny([['customers','view_all'], ['customers','view_own']]), customerController.getUpcomingBirthdays);
@@ -23,7 +23,7 @@ router.delete('/events/:id', authenticateToken, permCheck('customers', 'delete')
 
 router.get('/:id', authenticateToken, permCheckAny([['customers','view_all'], ['customers','view_own']]), customerController.getCustomerById);
 router.post('/:id/notes', authenticateToken, permCheck('customers', 'edit'), customerController.addNote);
-router.put('/:id', authenticateToken, permCheck('customers', 'edit'), customerController.updateCustomer);
+router.put('/:id', authenticateToken, permCheckOrOwner('customers', 'edit', 'customers', 'id', 'assigned_to'), customerController.updateCustomer);
 router.delete('/:id', authenticateToken, permCheck('customers', 'delete'), customerController.deleteCustomer);
 router.post('/convert', authenticateToken, permCheck('customers', 'create'), customerController.convertLeadToCustomer);
 
