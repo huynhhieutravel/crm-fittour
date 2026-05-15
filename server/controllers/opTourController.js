@@ -56,6 +56,7 @@ exports.getPublicOpTours = async (req, res) => {
         td.id, td.code as tour_code, COALESCE(tt.name, td.tour_info->>'tour_name') as tour_name, 
         td.start_date, td.end_date, td.market, td.market_ids, td.status,
         td.tour_info, td.max_participants,
+        tt.code as template_code,
         (
           SELECT COALESCE(SUM(b.pax_count), 0)
           FROM bookings b
@@ -79,6 +80,8 @@ exports.getPublicOpTours = async (req, res) => {
         return {
             id: row.id,
             tour_code: row.tour_code,
+            template_code: row.template_code,
+
             tour_name: row.tour_name,
             start_date: row.start_date,
             end_date: row.end_date,
@@ -825,3 +828,34 @@ exports.transferOpTourBooking = async (req, res) => {
     client.release();
   }
 };
+
+// ===================================================
+// B2C Public Endpoint — Normalized & Whitelisted
+// Dùng bởi Astro frontend proxy (fittour.vn)
+// KHÔNG chứa: discount, cost, internal_notes, close_time
+// ===================================================
+const { fetchActiveTours, transformB2CTour } = require('../services/opTourService');
+
+exports.getB2COpTours = async (req, res) => {
+  try {
+    const rows = await fetchActiveTours();
+    const b2cTours = rows.map(transformB2CTour);
+
+    res.set('Cache-Control', 'public, max-age=300');
+    res.json({
+      success: true,
+      data: b2cTours,
+      meta: {
+        total: b2cTours.length,
+        generatedAt: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Error in getB2COpTours:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Lịch khởi hành đang được cập nhật. Vui lòng thử lại sau.'
+    });
+  }
+};
+
