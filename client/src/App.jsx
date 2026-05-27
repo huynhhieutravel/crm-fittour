@@ -534,6 +534,15 @@ function AppContent() {
     } else if (VALID_TABS.includes(basePath)) {
        setActiveTab(basePath);
     }
+
+    // Pre-fill search filter when opening /departures?search=XXX (e.g. from Tours tab new-tab link)
+    if (basePath === 'departures' && location.search) {
+      const params = new URLSearchParams(location.search);
+      const searchParam = params.get('search');
+      if (searchParam) {
+        setTourFilters(prev => ({ ...prev, search: searchParam }));
+      }
+    }
   }, [location.pathname, location.search, user]);
 
   useEffect(() => {

@@ -283,13 +283,16 @@ const ToursTab = ({
                 </td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', paddingRight: '1rem' }}>
-                    <button 
+                    <a 
                       className="icon-btn-square primary" 
-                      title="Xem biểu đồ và Lịch khởi hành" 
-                      onClick={() => setEditingTemplate({...template, _openTab: 'departures'})}
+                      title="Xem Lịch khởi hành (mở tab mới)" 
+                      href={`/departures?search=${encodeURIComponent(template.code || template.name || '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
                     >
                       <Eye size={14} />
-                    </button>
+                    </a>
                     {(canEdit || template.created_by === currentUser?.id) && (
                       <button 
                         className="icon-btn-square" 
