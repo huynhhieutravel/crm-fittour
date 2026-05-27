@@ -314,17 +314,15 @@ export const EditTemplateModal = ({
                           </span>
                        </td>
                        <td style={{ padding: '12px', textAlign: 'center' }}>
-                         <button 
-                           type="button"
-                           onClick={() => {
-                              window.dispatchEvent(new CustomEvent('jumpToDeparture', { detail: dep.id }));
-                              onClose();
-                           }}
-                           style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', outline: 'none' }}
-                           title="Đi tới Cửa sổ Lịch Khởi Hành này"
+                         <a 
+                           href={`/op-tours?search=${encodeURIComponent(dep.code || dep.tour_code || '')}`}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           style={{ color: '#3b82f6', cursor: 'pointer', textDecoration: 'none', fontSize: '1.1rem' }}
+                           title="Mở Lịch Khởi Hành này trong tab mới"
                          >
                            👁️
-                         </button>
+                         </a>
                        </td>
                      </tr>
                    ))}
