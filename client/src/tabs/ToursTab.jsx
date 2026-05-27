@@ -286,7 +286,7 @@ const ToursTab = ({
                     <a 
                       className="icon-btn-square primary" 
                       title="Xem Lịch khởi hành (mở tab mới)" 
-                      href={`/departures?search=${encodeURIComponent(template.code || template.name || '')}`}
+                      href={`/op-tours?search=${encodeURIComponent(template.code || template.name || '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}

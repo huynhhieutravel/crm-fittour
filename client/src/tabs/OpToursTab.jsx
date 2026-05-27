@@ -111,7 +111,10 @@ export default function OpToursTab({ currentUser }) {
   const [airlinesList, setAirlinesList] = useState([]);
   const [activeMarket, setActiveMarket] = useState('Tất cả');
   const [activeStatus, setActiveStatus] = useState('Tất cả');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('search') || '';
+  });
   
   // Date filter states (Executive UI)
   const [dateFilter, setDateFilter] = useState('all');
