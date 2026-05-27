@@ -21,8 +21,7 @@ if (dangerousFiles.length > 0) {
 }
 
 // Initialize cron jobs
-require('./cron/emailRetry');
-
+// require('./cron/emailRetry'); // Bị thay thế bởi pg-boss queueService
 
 const app = express();
 const server = http.createServer(app);
@@ -32,6 +31,8 @@ const io = new Server(server, {
         methods: ["GET", "POST"]
     }
 });
+app.set('io', io);
+global.io = io; // Expose globally for background services
 
 app.use(cors());
 app.use(express.json());
@@ -129,9 +130,11 @@ app.use('/api/travel-support', require('./routes/travelSupport'));
 const cskhRoutes = require('./routes/cskh');
 app.use('/api/cskh', cskhRoutes);
 
-// ═══ Email Module ═══
-const emailRoutes = require('./routes/emails');
-app.use('/api/emails', emailRoutes);
+// ═══ Email Module & Notification ═══
+const notificationRoutes = require('./routes/notification');
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/email-groups', require('./routes/emailGroupRoutes'));
+app.use('/api/email-rules', require('./routes/emailRuleRoutes'));
 
 // ═══ AI Copilot ═══
 const aiAssistantRoutes = require('./routes/aiAssistant');
@@ -221,6 +224,16 @@ server.listen(PORT, () => {
         // Start CSKH Auto-Sync Cron Engine (every 15 min)
         const { startCskhCron } = require('./cron/cskhEngine');
         startCskhCron();
+
+        // Start Email Listeners for Event-Driven Architecture
+        const { registerEmailListeners } = require('./listeners/emailListener');
+        registerEmailListeners();
+
+        // Start Background Job Queue Engine (pg-boss)
+        const queueService = require('./services/queueService');
+        queueService.startQueue().catch(err => {
+            console.error('Failed to start Queue Service:', err);
+        });
     }
 });
  

@@ -2,6 +2,8 @@ const db = require('../db');
 const { logActivity } = require('../utils/logger');
 const { getDataScope } = require('../middleware/teamScope');
 const { getUserMergedPerms } = require('../middleware/permCheck');
+const { emitEvent } = require('../utils/eventBus');
+const SystemEvents = require('../constants/SystemEvents');
 
 exports.getAllBookings = async (req, res) => {
     try {
@@ -183,6 +185,14 @@ exports.createBooking = async (req, res) => {
             new_data: newBooking
         });
 
+        // EMAIL EVENT
+        emitEvent(SystemEvents.find(e => e.code === 'BOOKING_CREATED').code, {
+            booking_code: newBooking.booking_code,
+            customer_id: newBooking.customer_id,
+            total_price: newBooking.total_price,
+            created_at: new Date().toISOString()
+        });
+
         res.status(201).json(newBooking);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -273,7 +283,7 @@ exports.updateBooking = async (req, res) => {
             const result = await client.query(updateQuery, queryValues);
             const updatedBooking = result.rows[0];
 
-            // 3. LOG ACTIVITY
+            // LOG ACTIVITY
             await logActivity({
                 user_id: req.user ? req.user.id : null,
                 action_type: 'UPDATE',
@@ -282,6 +292,27 @@ exports.updateBooking = async (req, res) => {
                 details: `Cập nhật Booking: ${updatedBooking.booking_code}`,
                 old_data: oldBooking,
                 new_data: updatedBooking
+            });
+
+            // EMAIL EVENTS
+            if (updates.booking_status && updates.booking_status !== oldBooking.booking_status) {
+                if (updates.booking_status === 'Xác nhận') {
+                    emitEvent(SystemEvents.find(e => e.code === 'BOOKING_CONFIRMED').code, {
+                        booking_code: updatedBooking.booking_code,
+                        status: updatedBooking.booking_status,
+                        updated_at: new Date().toISOString()
+                    });
+                } else if (updates.booking_status === 'Huỷ') {
+                    emitEvent(SystemEvents.find(e => e.code === 'BOOKING_CANCELLED').code, {
+                        booking_code: updatedBooking.booking_code,
+                        status: updatedBooking.booking_status,
+                        updated_at: new Date().toISOString()
+                    });
+                }
+            }
+            emitEvent(SystemEvents.find(e => e.code === 'BOOKING_UPDATED').code, {
+                booking_code: updatedBooking.booking_code,
+                updated_at: new Date().toISOString()
             });
 
             await client.query('COMMIT');

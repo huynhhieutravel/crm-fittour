@@ -370,11 +370,13 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
         let detectedBu = null;
         if (campaign.includes('BU1')) detectedBu = 'BU1';
         else if (campaign.includes('BU2')) detectedBu = 'BU2';
+        else if (campaign.includes('BU3')) detectedBu = 'BU3';
         else if (campaign.includes('BU4')) detectedBu = 'BU4';
 
         if (!detectedBu) {
           if (adSet.includes('BU1')) detectedBu = 'BU1';
           else if (adSet.includes('BU2')) detectedBu = 'BU2';
+          else if (adSet.includes('BU3')) detectedBu = 'BU3';
           else if (adSet.includes('BU4')) detectedBu = 'BU4';
         }
 
@@ -382,6 +384,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
           const allText = `${campaign} ${adSet} ${ad}`;
           if (allText.includes('TRUNG QUỐC') || allText.includes('BẮC KINH') || allText.includes('THƯỢNG HẢI') || allText.includes('Á ĐINH') || allText.includes('GIANG NAM') || allText.includes('LỆ GIANG') || allText.includes('GIANG TÂY')) detectedBu = 'BU1';
           else if (allText.includes('ALASKA') || allText.includes('NAM MỸ') || allText.includes('CHÂU ÂU') || allText.includes('SILKROAD') || allText.includes('AI CẬP')) detectedBu = 'BU2';
+          else if (allText.includes('HÀN QUỐC') || allText.includes('NHẬT BẢN') || allText.includes('ĐÀI LOAN')) detectedBu = 'BU3';
           else if (allText.includes('BALI') || allText.includes('BHUTAN') || allText.includes('LADAKH') || allText.includes('BROMO')) detectedBu = 'BU4';
         }
 
@@ -495,26 +498,22 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                 Tất cả
               </button>
               {bus?.map(b => {
-                const isBU3 = b.id === 'BU3';
                 return (
                   <button
                     key={b.id}
-                    disabled={isBU3}
-                    onClick={() => !isBU3 && setFilters({...filters, bu_name: b.id})}
+                    onClick={() => setFilters({...filters, bu_name: b.id})}
                     style={{
                       padding: '5px 14px',
                       borderRadius: '20px',
-                      border: isBU3 ? '1px solid #fca5a5' : (filters.bu_name === b.id ? '2px solid #3b82f6' : '1px solid #cbd5e1'),
-                      background: isBU3 ? '#fef2f2' : (filters.bu_name === b.id ? '#3b82f6' : 'transparent'),
-                      color: isBU3 ? '#ef4444' : (filters.bu_name === b.id ? '#fff' : '#475569'),
-                      textDecoration: isBU3 ? 'line-through' : 'none',
+                      border: filters.bu_name === b.id ? '2px solid #3b82f6' : '1px solid #cbd5e1',
+                      background: filters.bu_name === b.id ? '#3b82f6' : 'transparent',
+                      color: filters.bu_name === b.id ? '#fff' : '#475569',
                       fontWeight: 600,
                       fontSize: '0.82rem',
-                      cursor: isBU3 ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.15s ease',
-                      opacity: isBU3 ? 0.8 : 1,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
                     }}
-                    title={isBU3 ? "BU3 (Tour Đoàn) chưa khởi chạy quảng cáo" : ""}
+                    title=""
                   >
                     {b.label || b.id}
                   </button>
@@ -974,7 +973,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
           </div>
 
           {(() => {
-            const activeBUs = bus?.filter(b => b.id !== 'BU3') || [];
+            const activeBUs = bus || [];
             const targetMonth = filters.month ? parseInt(filters.month) : 0;
             const isMonthlyZoom = !!filters.month;
             
@@ -1507,7 +1506,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                         setKpiModal({ ...kpiModal, bu_name: newBu, budget: match.budget || '', target_routes: match.target_routes || '', target_groups: match.target_groups || '', target_customers: match.target_customers || '', target_cpa: match.target_cpa || '', target_leads: match.target_leads || '', target_cpl: match.target_cpl || '' });
                       }}
                     >
-                      {bus?.filter(b => b.id !== 'BU3').map(b => <option key={b.id} value={b.id}>{b.label || b.id}</option>)}
+                      {bus?.map(b => <option key={b.id} value={b.id}>{b.label || b.id}</option>)}
                     </select>
                   </div>
                 )}

@@ -24,7 +24,12 @@ scp $VPS:/tmp/latest_dump.sql $DB_FILE
 
 echo "✅ Đã tải xong Database: $DB_FILE"
 
-echo "2/3 Đang nén toàn bộ Source Code & Database..."
+echo "2/4 Đang tải toàn bộ thư mục Ảnh (Uploads) từ VPS về máy..."
+mkdir -p server/public/uploads
+rsync -avz -e "ssh -o StrictHostKeyChecking=no" $VPS:/var/www/fittour-crm/server/public/uploads/ ./server/public/uploads/
+echo "✅ Đã tải xong thư mục Uploads."
+
+echo "3/4 Đang nén toàn bộ Source Code, Database & Ảnh..."
 # Nén toàn bộ thư mục, loại bỏ các file tạm hoặc node_modules để tránh quá nặng
 tar -czvf $ARCHIVE_NAME \
     --exclude="node_modules" \
@@ -37,7 +42,7 @@ tar -czvf $ARCHIVE_NAME \
     --exclude="${BACKUP_DIR}/*.tar.gz" \
     .
 
-echo "3/3 Dọn dẹp file tạm..."
+echo "4/4 Dọn dẹp file tạm..."
 ssh $VPS "rm /tmp/latest_dump.sql"
 
 echo "=========================================================="

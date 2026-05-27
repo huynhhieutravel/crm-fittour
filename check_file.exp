@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout 20
+spawn ssh -o StrictHostKeyChecking=no root@45.76.144.188 "find /var/www -name 'receipt-1778209281353-928675149.jpg'"
+expect "password:"
+send "A\[a5{M!B\[zDCD#ss\r"
+expect eof

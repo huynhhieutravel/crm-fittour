@@ -4,6 +4,8 @@ const { convertLeadToCustomer } = require('../services/conversionService');
 const metaCapi = require('../services/metaCapiService');
 const { getDataScope } = require("../middleware/teamScope");
 const { getUserMergedPerms } = require("../middleware/permCheck");
+const { emitEvent } = require('../utils/eventBus');
+const SystemEvents = require('../constants/SystemEvents');
 
 
 exports.getAllLeads = async (req, res) => {
@@ -107,6 +109,16 @@ exports.createLead = async (req, res) => {
             entity_id: newLead.id,
             details: `Tạo mới Lead: ${newLead.name}`,
             new_data: newLead
+        });
+
+        // EMAIL EVENT
+        emitEvent(SystemEvents.find(e => e.code === 'LEAD_CREATED').code, {
+            lead_name: newLead.name,
+            phone: newLead.phone,
+            email: newLead.email,
+            source: newLead.source,
+            status: newLead.status,
+            created_at: new Date().toISOString()
         });
 
         res.status(201).json(newLead);
@@ -223,8 +235,26 @@ exports.updateLead = async (req, res) => {
 
             await client.query('COMMIT');
 
+            // EMAIL EVENT for Assignment
+            if (updates.assigned_to !== undefined && updates.assigned_to !== oldLead.assigned_to && updates.assigned_to !== null) {
+                emitEvent(SystemEvents.find(e => e.code === 'LEAD_ASSIGNED').code, {
+                    lead_name: updatedLead.name,
+                    assigned_to: updatedLead.assigned_to,
+                    status: updatedLead.status,
+                    updated_at: new Date().toISOString()
+                });
+            }
+
             // CAPI: Fire event when status changes (async, non-blocking)
             if (updates.status && updates.status !== oldLead.status) {
+              // EMAIL EVENT
+              emitEvent(SystemEvents.find(e => e.code === 'LEAD_STATUS_CHANGED').code, {
+                  lead_name: updatedLead.name,
+                  old_status: oldLead.status,
+                  status: updatedLead.status,
+                  updated_at: new Date().toISOString()
+              });
+              
               (async () => {
                 let tourName = null;
                 let tourPrice = 0;

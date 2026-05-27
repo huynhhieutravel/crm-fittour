@@ -2,9 +2,9 @@ const nodemailer = require('nodemailer');
 
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'email-smtp.ap-southeast-1.amazonaws.com',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
+    host: process.env.SMTP_HOST || 'smtp.zoho.com',
+    port: parseInt(process.env.SMTP_PORT || '465', 10),
+    secure: process.env.SMTP_PORT === '465' || !process.env.SMTP_PORT, // true for 465 (Zoho standard), false for other ports
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
@@ -13,7 +13,7 @@ const createTransporter = () => {
 };
 
 /**
- * Gửi email qua SMTP (Amazon SES)
+ * Gửi email qua SMTP (Zoho Mail)
  * @param {Object} options Options gửi mail
  * @param {string} options.from Địa chỉ người gửi (VD: sale1@fittour.vn)
  * @param {string} options.to Địa chỉ người nhận

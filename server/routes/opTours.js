@@ -6,6 +6,7 @@ const { permCheck, permCheckAny } = require('../middleware/permCheck');
 
 // Public
 router.get('/public', controller.getPublicOpTours);
+router.get('/b2c', controller.getB2COpTours);
 
 // List & View: cần view_all hoặc view_own
 router.get('/', authenticateToken, permCheckAny([['op_tours','view_all'], ['op_tours','view_own']]), controller.getAllOpTours);

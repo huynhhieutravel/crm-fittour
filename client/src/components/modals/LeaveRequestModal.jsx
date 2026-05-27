@@ -172,9 +172,14 @@ export default function LeaveRequestModal({ currentUser, users = [], editData, o
                     <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>Vui lòng điền đầy đủ thông tin để {editData ? 'cập nhật' : 'gửi'} đơn xin nghỉ phép.</p>
                 </div>
             </div>
-            <button onClick={onClose} style={{ background: '#f1f5f9', border: 'none', cursor: 'pointer', color: '#64748b', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <XCircle size={20} />
-            </button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <a href="/leaves" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', background: '#eff6ff', color: '#3b82f6', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: '600' }}>
+                    Quản lý nghỉ phép
+                </a>
+                <button onClick={onClose} style={{ background: '#f1f5f9', border: 'none', cursor: 'pointer', color: '#64748b', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <XCircle size={20} />
+                </button>
+            </div>
         </div>
         
         <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -277,11 +282,11 @@ export default function LeaveRequestModal({ currentUser, users = [], editData, o
                             <div style={inputStyles.container}>
                                 <Calendar size={16} style={inputStyles.icon} />
                                 <select required value={form.leave_type} onChange={e => setForm({...form, leave_type: e.target.value})} style={inputStyles.input}>
-                                    <option value="annual">Nghỉ phép năm (trừ vào quĩ phép)</option>
-                                    <option value="sick">Nghỉ ốm</option>
-                                    <option value="personal">Việc cá nhân</option>
-                                    <option value="maternity">Nghỉ thai sản</option>
-                                    <option value="other">Loại khác</option>
+                                    <option value="annual">Nghỉ phép năm (trừ vào quỹ phép)</option>
+                                    <option value="sick">Nghỉ ốm (trừ vào quỹ phép)</option>
+                                    <option value="personal">Việc cá nhân (trừ vào quỹ phép)</option>
+                                    <option value="business_trip">Đi công tác (không trừ vào quỹ phép)</option>
+                                    <option value="other">Loại khác (trừ vào quỹ phép)</option>
                                 </select>
                             </div>
                         </div>

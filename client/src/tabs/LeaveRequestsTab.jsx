@@ -50,7 +50,8 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
   });
 
   const handleOpenModal = (editData = null) => {
-    if (editData) {
+    // Fix: Ensure editData is not a React Synthetic Event object
+    if (editData && !editData.nativeEvent && !editData.preventDefault) {
       setEditingLeave(editData);
     } else {
       setEditingLeave(null);
@@ -73,7 +74,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const params = { page, limit: 15, status: filterStatus, month: filterMonth, year: filterYear };
+      const params = { page, limit: 30, status: filterStatus, month: filterMonth, year: filterYear };
       if (filterUserId) params.user_id = filterUserId;
 
       const res = await axios.get('/api/leaves', {
@@ -288,12 +289,15 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
       return <span style={{ padding: '4px 8px', borderRadius: '4px', background: '#fef3c7', color: '#92400e', fontSize: '12px', fontWeight: 'bold' }}>Chờ duyệt</span>;
   };
 
-  const leaveTypes = {
-      'annual': 'Nghỉ phép năm',
-      'sick': 'Nghỉ ốm',
-      'personal': 'Việc cá nhân',
-      'maternity': 'Thai sản',
-      'other': 'Khác'
+  const renderLeaveType = (type) => {
+      switch (type) {
+          case 'annual': return <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: '#dbeafe', color: '#1e40af', fontSize: '11px', fontWeight: '600', marginTop: '4px' }}>Nghỉ phép năm</span>;
+          case 'sick': return <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: '#fee2e2', color: '#991b1b', fontSize: '11px', fontWeight: '600', marginTop: '4px' }}>Nghỉ ốm</span>;
+          case 'personal': return <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: '#fef3c7', color: '#92400e', fontSize: '11px', fontWeight: '600', marginTop: '4px' }}>Việc cá nhân</span>;
+          case 'business_trip': return <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: '#f3e8ff', color: '#6b21a8', fontSize: '11px', fontWeight: '600', marginTop: '4px' }}>Đi công tác</span>;
+          case 'other': return <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: '#f1f5f9', color: '#475569', fontSize: '11px', fontWeight: '600', marginTop: '4px' }}>Loại khác</span>;
+          default: return <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: '#f1f5f9', color: '#475569', fontSize: '11px', fontWeight: '600', marginTop: '4px' }}>Không xác định</span>;
+      }
   };
 
   return (
@@ -315,7 +319,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                   </button>
               )}
               <button 
-                  onClick={handleOpenModal}
+                  onClick={() => handleOpenModal()}
                   style={{ padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)' }}
               >
                   <Plus size={18} /> Tạo đơn xin nghỉ
@@ -394,7 +398,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                 <td>
                                     <div style={{ fontWeight: 'bold', color: '#0f172a' }}>{item.user_name}</div>
                                     <div style={{ fontSize: '12px', color: '#64748b' }}>{item.team_name || 'NV'}</div>
-                                    <div style={{ fontSize: '11px', color: '#3b82f6' }}>{leaveTypes[item.leave_type]}</div>
+                                    {renderLeaveType(item.leave_type)}
                                 </td>
                                 <td>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '13px' }}>
@@ -502,11 +506,25 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
             </div>
 
             {/* Pagination */}
-            <div className="pagination" style={{ marginTop: '20px' }}>
-              <button disabled={page === 1} onClick={() => setPage(page - 1)}>Truớc</button>
-              <span>Trang {page} / {totalPages || 1}</span>
-              <button disabled={page === totalPages || totalPages === 0} onClick={() => setPage(page + 1)}>Sau</button>
-            </div>
+            {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', marginTop: '25px', padding: '15px 0', borderTop: '1px solid #e2e8f0' }}>
+                    <button 
+                        disabled={page === 1} 
+                        onClick={() => setPage(page - 1)}
+                        style={{ padding: '8px 16px', background: page === 1 ? '#f1f5f9' : '#fff', color: page === 1 ? '#94a3b8' : '#3b82f6', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: page === 1 ? 'not-allowed' : 'pointer', fontWeight: '600', transition: 'all 0.2s' }}
+                    >
+                        Trước
+                    </button>
+                    <span style={{ fontSize: '14px', color: '#475569', fontWeight: '500' }}>Trang <strong style={{color: '#0f172a'}}>{page}</strong> / {totalPages}</span>
+                    <button 
+                        disabled={page === totalPages || totalPages === 0} 
+                        onClick={() => setPage(page + 1)}
+                        style={{ padding: '8px 16px', background: page === totalPages ? '#f1f5f9' : '#fff', color: page === totalPages ? '#94a3b8' : '#3b82f6', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: page === totalPages ? 'not-allowed' : 'pointer', fontWeight: '600', transition: 'all 0.2s' }}
+                    >
+                        Sau
+                    </button>
+                </div>
+            )}
           </>
       ) : (
           /* CONFIG MODE */

@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 const { permCheck } = require('../middleware/permCheck');
 
 // GET /api/users — Tất cả user đã đăng nhập đều có thể lấy danh sách
+router.get('/search', auth, userController.searchUsers);
 router.get('/', auth, userController.getAllUsers);
 router.get('/roles', auth, permCheck('users', 'view'), userController.getRoles);
 router.get('/teams', auth, userController.getTeams);

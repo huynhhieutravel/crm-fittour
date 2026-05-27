@@ -187,9 +187,8 @@ export default function OpToursTab({ currentUser }) {
   const [refreshBookingsTrigger, setRefreshBookingsTrigger] = useState(0);
   const [viewingAllMembers, setViewingAllMembers] = useState(null); // { tour, allMembers }
   const [selectedTours, setSelectedTours] = useState([]);
-
-  // Advanced Filters State
   const [selectedBU, setSelectedBU] = useState('Tất cả');
+  const [showSopModal, setShowSopModal] = useState(false);
 
   // CEO Dashboards Modals State
   const [activeCeoModal, setActiveCeoModal] = useState(null); // 'sales' | 'health' | null
@@ -891,14 +890,72 @@ export default function OpToursTab({ currentUser }) {
 
       const matchTemplate = !filterTemplate || (t.tour_template_id && Number(t.tour_template_id) === Number(filterTemplate));
       if (!matchTemplate) return false;
+
+      if (activeStatus !== 'Tất cả') {
+          if (activeStatus === 'Còn chỗ') {
+              if (t.status === 'Hoàn thành' || t.status === 'Hủy' || t.status === 'Huỷ') return false;
+              const total = Number(t.tour_info?.total_seats || t.max_participants || 0);
+              if (total === 0) return false;
+              const sold = Number(t.total_sold || 0);
+              const reserved = Number(t.total_reserved || 0);
+              if ((total - sold - reserved) <= 0) return false;
+          } else if (activeStatus === 'Hết chỗ') {
+              if (t.status === 'Hoàn thành' || t.status === 'Hủy' || t.status === 'Huỷ') return false;
+              const total = Number(t.tour_info?.total_seats || t.max_participants || 0);
+              if (total === 0) return false;
+              const sold = Number(t.total_sold || 0);
+              const reserved = Number(t.total_reserved || 0);
+              if ((sold + reserved) < total) return false;
+          } else if (activeStatus === 'Huỷ' || activeStatus === 'Hủy') {
+              if (t.status !== 'Huỷ' && t.status !== 'Hủy') return false;
+          } else if (activeStatus === 'Mở bán') {
+              if (t.status && t.status !== 'Mở bán') return false;
+          } else {
+              if (t.status !== activeStatus) return false;
+          }
+      }
       
       return true;
     }).sort((a, b) => {
-      const timeA = a.start_date ? new Date(a.start_date).getTime() : 8640000000000000;
-      const timeB = b.start_date ? new Date(b.start_date).getTime() : 8640000000000000;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const isPastOrCompleted = (tour) => {
+          if (tour.status === 'Hoàn thành' || tour.status === 'Hủy' || tour.status === 'Huỷ') return true;
+          // Use end_date if available, else start_date
+          if (tour.end_date) {
+             const ed = new Date(tour.end_date);
+             ed.setHours(0, 0, 0, 0);
+             return ed < today;
+          } else if (tour.start_date) {
+             const sd = new Date(tour.start_date);
+             sd.setHours(0, 0, 0, 0);
+             return sd < today;
+          }
+          return false;
+      };
+
+      const aPast = isPastOrCompleted(a);
+      const bPast = isPastOrCompleted(b);
+
+      // Past/Completed tours go to the bottom
+      if (aPast && !bPast) return 1;
+      if (!aPast && bPast) return -1;
+
+      const timeA = a.start_date ? new Date(a.start_date).getTime() : Infinity;
+      const timeB = b.start_date ? new Date(b.start_date).getTime() : Infinity;
+      
+      // If both are past tours, sort descending (most recent past tours at the top of the past section)
+      if (aPast && bPast) {
+         if (timeA === Infinity && timeB !== Infinity) return 1;
+         if (timeB === Infinity && timeA !== Infinity) return -1;
+         return timeB - timeA;
+      }
+      
+      // If both are upcoming tours, sort ascending (closest departure to today at the top)
       return timeA - timeB;
     });
-  }, [tours, searchTerm, activeMarket, selectedBU, filterOperator, filterTemplate, dateFilter, selectedMonth, selectedQuarter, selectedYear, customRange, marketOptions]);
+  }, [tours, searchTerm, activeMarket, selectedBU, filterOperator, filterTemplate, dateFilter, selectedMonth, selectedQuarter, selectedYear, customRange, marketOptions, activeStatus]);
 
   const uniqueTemplates = Array.from(
     new Map(
@@ -1176,6 +1233,23 @@ export default function OpToursTab({ currentUser }) {
                XÓA {selectedTours.length} TOUR
              </button>
            )}
+           <button 
+             onClick={() => setShowSopModal(true)}
+             style={{
+               background: '#3b82f6',
+               color: 'white',
+               border: 'none',
+               padding: '10px 20px',
+               borderRadius: '6px',
+               display: 'flex',
+               alignItems: 'center',
+               gap: '8px',
+               cursor: 'pointer',
+               fontWeight: '600'
+             }}
+           >
+             <FileText size={18} /> QUY TẮC ĐẶT TÊN
+           </button>
            <button 
              onClick={() => handleOpenDrawer(null)}
              style={{
@@ -1945,6 +2019,21 @@ export default function OpToursTab({ currentUser }) {
           color: #1e293b;
         }
       `}</style>
+
+      {/* SOP Modal */}
+      {showSopModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+          <div style={{ position: 'relative', maxWidth: '1000px', width: '100%', maxHeight: '95vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <button 
+              onClick={() => setShowSopModal(false)}
+              style={{ position: 'absolute', top: '-40px', right: 0, background: 'rgba(0,0,0,0.5)', border: 'none', color: 'white', cursor: 'pointer', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}
+            >
+              <X size={20} />
+            </button>
+            <img src="/docs/images/sop-dat-ten-tour-v3.webp" alt="SOP Đặt Tên Tour" style={{ maxWidth: '100%', maxHeight: 'calc(95vh - 40px)', objectFit: 'contain', borderRadius: '12px', backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

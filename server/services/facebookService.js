@@ -483,13 +483,13 @@ exports.handleLeadAd = async (leadgen_id, page_id) => {
 
 // --- ALTERNATIVE POLLING SYSTEM (MESSENGER SYNC) ---
 // Bypasses Meta Webhooks blockages when Business AI holds the thread
-exports.syncRecentConversations = async () => {
+exports.syncRecentConversations = async (limitCount = 5) => {
     try {
         const { token, pageId } = await getPageToken();
         if (!token || !pageId) return;
 
-        // Kéo 5 cuộc trò chuyện gần nhất để tìm khách hàng mới kèm 5 tin nhắn cực gần đễ trích xuất ghi chú, SĐT và Link, kèm shares để lấy Ads Title
-        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=link,participants{id,name},messages.limit(5){message,from,shares}&limit=5&access_token=${token}`;
+        // Kéo các cuộc trò chuyện gần nhất theo limitCount
+        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=link,participants{id,name},messages.limit(10){message,from,shares}&limit=${limitCount}&access_token=${token}`;
         const res = await axios.get(endpoint);
         
         if (!res.data || !res.data.data) return;

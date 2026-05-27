@@ -1,6 +1,8 @@
 const db = require('../db');
 const { getUserMergedPerms } = require('../middleware/permCheck');
 const { logActivity } = require('../utils/logger');
+const { emitEvent } = require('../utils/eventBus');
+const SystemEvents = require('../constants/SystemEvents');
 
 exports.getAllTours = async (req, res) => {
     try {
@@ -56,6 +58,14 @@ exports.createTour = async (req, res) => {
             entity_id: newTour.id,
             details: `Tạo mới Sản phẩm Tour: ${newTour.name}`,
             new_data: newTour
+        });
+
+        // EMAIL EVENT
+        emitEvent(SystemEvents.find(e => e.code === 'TOUR_CREATED').code, {
+            tour_name: newTour.name,
+            destination: newTour.destination,
+            price: newTour.price,
+            created_at: new Date().toISOString()
         });
 
         res.status(201).json(newTour);
@@ -129,6 +139,21 @@ exports.updateTour = async (req, res) => {
             old_data: oldTour,
             new_data: updatedTour
         });
+
+        // EMAIL EVENTS
+        if (status !== undefined && status !== oldTour.status) {
+            emitEvent(SystemEvents.find(e => e.code === 'TOUR_STATUS_CHANGED').code, {
+                tour_name: updatedTour.name,
+                old_status: oldTour.status,
+                status: updatedTour.status,
+                updated_at: new Date().toISOString()
+            });
+        } else {
+            emitEvent(SystemEvents.find(e => e.code === 'TOUR_UPDATED').code, {
+                tour_name: updatedTour.name,
+                updated_at: new Date().toISOString()
+            });
+        }
 
         res.json(updatedTour);
     } catch (err) {

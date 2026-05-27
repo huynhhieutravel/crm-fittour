@@ -13,8 +13,8 @@ async function sendViaNodemailer(row) {
       <div style="font-family: 'Inter', Helvetica, Arial, sans-serif; font-size: 13px; color: #475569; line-height: 1.6; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
         <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px;">
           <tr>
-            <td style="width: 110px; vertical-align: top; padding-right: 15px;">
-              <img src="https://media.fittour.vn/dulichcoguu/logo-fit-tour.png" alt="FIT Tour" style="width: 100px; height: auto; display: block;" onerror="this.src='https://fittour.vn/wp-content/uploads/2023/11/logo-fit-tour-1.png'" />
+            <td style="width: 120px; vertical-align: top; padding-right: 15px;">
+              <img src="https://erp.fittour.vn/logo.png" alt="FIT Tour" style="width: 120px; height: auto; display: block;" />
             </td>
             <td style="vertical-align: top;">
               <strong style="color: #0f172a; font-size: 14px; text-transform: uppercase;">Công ty Cổ phần Lữ hành Quốc tế FIT Tour</strong><br>
@@ -103,16 +103,37 @@ cron.schedule('* * * * *', async () => {
           WHERE id = $1
         `, [row.log_id]);
       } else {
-        const nextRetry = new Date(Date.now() + 1 * 60000 * Math.pow(2, row.retry_count)); // Exponential backoff (1m, 2m, 4m...)
-        await db.query(`
-          UPDATE email_logs 
-          SET status = 'failed', 
-              error_message = $2, 
-              retry_count = retry_count + 1,
-              next_retry_at = $3,
-              updated_at = NOW() 
-          WHERE id = $1
-        `, [row.log_id, mailRes.error, nextRetry]);
+        const errorMsg = mailRes.error ? mailRes.error.toLowerCase() : '';
+        // Kiểm tra Hard Fail (Email không tồn tại, sai định dạng, bị reject)
+        const isHardFail = errorMsg.includes('550') || 
+                           errorMsg.includes('invalid') || 
+                           errorMsg.includes('reject') || 
+                           errorMsg.includes('not found') || 
+                           errorMsg.includes('553');
+
+        if (isHardFail) {
+          console.log(`[Email Retry] Hard Fail detected for log_id ${row.log_id}. Halting retries.`);
+          await db.query(`
+            UPDATE email_logs 
+            SET status = 'hard_failed', 
+                error_message = $2, 
+                retry_count = max_retries, -- Max out retries to stop queue
+                updated_at = NOW() 
+            WHERE id = $1
+          `, [row.log_id, mailRes.error]);
+        } else {
+          console.log(`[Email Retry] Soft Fail detected for log_id ${row.log_id}. Will retry.`);
+          const nextRetry = new Date(Date.now() + 1 * 60000 * Math.pow(2, row.retry_count)); // Exponential backoff (1m, 2m, 4m...)
+          await db.query(`
+            UPDATE email_logs 
+            SET status = 'failed', 
+                error_message = $2, 
+                retry_count = retry_count + 1,
+                next_retry_at = $3,
+                updated_at = NOW() 
+            WHERE id = $1
+          `, [row.log_id, mailRes.error, nextRetry]);
+        }
       }
     }
   } catch (err) {

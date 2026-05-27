@@ -30,7 +30,10 @@ const ToursTab = ({
                         (t.bu_group || '').toLowerCase().includes(tourFilters.search.toLowerCase());
     const matchesType = !tourFilters.tour_type || t.tour_type === tourFilters.tour_type;
     const matchesDest = !tourFilters.destination || t.destination === tourFilters.destination;
-    return matchesSearch && matchesType && matchesDest;
+    const matchesDeparture = !tourFilters.has_departure ||
+      (tourFilters.has_departure === 'yes' && Number(t.departures_count) > 0) ||
+      (tourFilters.has_departure === 'no' && Number(t.departures_count) === 0);
+    return matchesSearch && matchesType && matchesDest && matchesDeparture;
   });
 
   const [selectedTours, setSelectedTours] = useState([]);
@@ -130,6 +133,20 @@ const ToursTab = ({
               groupHeading: (base) => ({ ...base, fontWeight: 700, color: '#1e293b', textTransform: 'uppercase' })
             }}
           />
+        </div>
+
+        <div className="filter-group" style={{ flex: '0 0 180px', margin: 0 }}>
+          <label style={{ marginBottom: '8px', display: 'block' }}>LỊCH KHỞI HÀNH</label>
+          <select
+            className="filter-input"
+            style={{ width: '100%', height: '44px' }}
+            value={tourFilters.has_departure || ''}
+            onChange={e => setTourFilters({...tourFilters, has_departure: e.target.value})}
+          >
+            <option value="">-- Tất cả --</option>
+            <option value="yes">✅ Có LKH</option>
+            <option value="no">❌ Chưa có LKH</option>
+          </select>
         </div>
 
         <div style={{ marginLeft: 'auto', paddingTop: '24px', display: 'flex', gap: '1rem' }}>

@@ -97,6 +97,7 @@ export const EditUserModal = ({
   });
   const [activeTab, setActiveTab] = useState('personal');
   const [uploadingPassport, setUploadingPassport] = useState(false);
+  const [allowedRoles, setAllowedRoles] = useState([]);
 
   const MODULES_MAP = [
     { key: 'leads', label: 'Lead Marketing', group: 'Tour Lẻ (FIT)' },
@@ -117,6 +118,10 @@ export const EditUserModal = ({
 
   useEffect(() => {
     if (user) {
+      axios.get('/api/users/allowed-roles')
+        .then(res => setAllowedRoles(res.data))
+        .catch(err => console.error("Error fetching allowed roles:", err));
+
       setFormData({
         full_name: user.full_name || '', email: user.email || '', phone: user.phone || '',
         role_id: user.role_id || '', is_active: user.is_active !== false, permissions: user.permissions || {},
@@ -299,7 +304,12 @@ export const EditUserModal = ({
                 <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
                   <label>PHÂN QUYỀN GỐC (ROLE HỆ THỐNG) *</label>
                   <select className="modal-select" required value={formData.role_id} onChange={e => setFormData({...formData, role_id: e.target.value})}>
-                    {roles.map(r => <option key={r.id} value={r.id}>{r.name.toUpperCase()}</option>)}
+                    {allowedRoles.map(r => <option key={r.id} value={r.id}>{r.name.toUpperCase()}</option>)}
+                    {!allowedRoles.some(r => r.id === formData.role_id) && formData.role_id && (
+                        <option value={formData.role_id} disabled>
+                            {roles.find(r => r.id === formData.role_id)?.name.toUpperCase() || 'UNKNOWN'} (Không thể sửa)
+                        </option>
+                    )}
                   </select>
                 </div>
                 <div className="modal-form-group">

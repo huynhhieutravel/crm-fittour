@@ -1,4 +1,6 @@
 const db = require('../db');
+const { emitEvent } = require('../utils/eventBus');
+const SystemEvents = require('../constants/SystemEvents');
 
 /**
  * Hàm ghi nhật ký hệ thống (Audit Log) dùng chung transaction (nếu có)
@@ -79,6 +81,23 @@ exports.createBooking = async (data, requestUser) => {
         });
 
         await client.query('COMMIT');
+
+        // Gửi Notification Event (Email)
+        try {
+            emitEvent('MEETING_ROOM_BOOKED', {
+                organizer_name: requestUser ? requestUser.full_name || requestUser.name : 'Nhân sự',
+                title: title,
+                description: description || 'Không có',
+                meeting_date: start.toLocaleDateString('vi-VN'),
+                start_time: start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+                end_time: end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+                bu: bu || 'Không có',
+                created_at: new Date().toISOString()
+            });
+        } catch (eventErr) {
+            console.error('[MeetingRoomService] Error emitting event', eventErr);
+        }
+
         return newBooking;
     } catch (err) {
         if (client) await client.query('ROLLBACK');

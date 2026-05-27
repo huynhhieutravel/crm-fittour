@@ -96,24 +96,46 @@ const StaffCalendarView = ({ users = [] }) => {
 
     // Merge leaves
     leaves.forEach(l => {
-        const start = new Date(l.start_date);
-        const end = new Date(l.end_date);
-        
-        let cur = new Date(start);
-        while(cur <= end) {
-            if (cur.getMonth() === currentMonth && cur.getFullYear() === currentYear) {
-                evList.push({
-                    user_id: l.user_id,
-                    type: 'leave',
-                    day: cur.getDate(),
-                    label: `🏖️ ${l.user_name || l.full_name}`,
-                    sub: l.reason || 'Nghỉ phép',
-                    phone: '',
-                    role: l.leave_type === 'annual' ? 'Nghỉ năm' : (l.leave_type === 'sick' ? 'Nghỉ ốm' : 'Nghỉ thai sản/khác'),
-                    leave_details: l
-                });
+        if (l.dates && Array.isArray(l.dates)) {
+            l.dates.forEach(d => {
+                const cur = new Date(d.date);
+                if (cur.getMonth() === currentMonth && cur.getFullYear() === currentYear) {
+                    let sessionLabel = '';
+                    if (d.session === 'morning') sessionLabel = ' (Sáng)';
+                    if (d.session === 'afternoon') sessionLabel = ' (Chiều)';
+                    
+                    evList.push({
+                        user_id: l.user_id,
+                        type: 'leave',
+                        day: cur.getDate(),
+                        label: `🏖️ ${l.user_name || l.full_name}${sessionLabel}`,
+                        sub: l.reason || 'Nghỉ phép',
+                        phone: '',
+                        role: l.leave_type === 'annual' ? 'Nghỉ năm' : (l.leave_type === 'sick' ? 'Nghỉ ốm' : 'Nghỉ thai sản/khác'),
+                        leave_details: l
+                    });
+                }
+            });
+        } else if (l.start_date && l.end_date) {
+            // Fallback for old data if any
+            const start = new Date(l.start_date);
+            const end = new Date(l.end_date);
+            let cur = new Date(start);
+            while(cur <= end) {
+                if (cur.getMonth() === currentMonth && cur.getFullYear() === currentYear) {
+                    evList.push({
+                        user_id: l.user_id,
+                        type: 'leave',
+                        day: cur.getDate(),
+                        label: `🏖️ ${l.user_name || l.full_name}`,
+                        sub: l.reason || 'Nghỉ phép',
+                        phone: '',
+                        role: l.leave_type === 'annual' ? 'Nghỉ năm' : (l.leave_type === 'sick' ? 'Nghỉ ốm' : 'Nghỉ thai sản/khác'),
+                        leave_details: l
+                    });
+                }
+                cur.setDate(cur.getDate() + 1);
             }
-            cur.setDate(cur.getDate() + 1);
         }
     });
 
@@ -145,12 +167,15 @@ const StaffCalendarView = ({ users = [] }) => {
     const handleClick = () => {
         if (ev.type === 'leave') {
             const l = ev.leave_details;
+            const startDate = l.dates && l.dates.length > 0 ? new Date(l.dates[0].date).toLocaleDateString('vi-VN') : (l.start_date ? new Date(l.start_date).toLocaleDateString('vi-VN') : 'N/A');
+            const endDate = l.dates && l.dates.length > 0 ? new Date(l.dates[l.dates.length - 1].date).toLocaleDateString('vi-VN') : (l.end_date ? new Date(l.end_date).toLocaleDateString('vi-VN') : 'N/A');
+            
             Swal.fire({
-                title: `🏖️ Đơn nghỉ phép của ${ev.label.replace('🏖️ ', '')}`,
+                title: `🏖️ Đơn nghỉ phép của ${ev.label.replace('🏖️ ', '').replace(' (Sáng)', '').replace(' (Chiều)', '')}`,
                 html: `
                     <div style="text-align: left; font-size: 14px; line-height: 1.6;">
                         <p><b>⏱️ Loại nghỉ:</b> ${ev.role}</p>
-                        <p><b>📅 Thời gian gốc:</b> ${new Date(l.start_date).toLocaleDateString('vi-VN')} đến ${new Date(l.end_date).toLocaleDateString('vi-VN')} (${l.total_days} ngày)</p>
+                        <p><b>📅 Thời gian gốc:</b> ${startDate} đến ${endDate} (${l.total_days} ngày)</p>
                         <p><b>📝 Lý do:</b> ${l.reason || 'Không có'}</p>
                         <p><b>🤝 Người bàn giao:</b> ${l.handover_name || 'Không có'}</p>
                     </div>

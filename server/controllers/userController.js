@@ -2,6 +2,26 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const { logActivity } = require('../utils/logger');
 const { isInManagedTeam, getAllowedRolesForManager } = require('../middleware/teamScope');
+const { emitEvent } = require('../utils/eventBus');
+const SystemEvents = require('../constants/SystemEvents');
+
+exports.searchUsers = async (req, res) => {
+    try {
+        const q = req.query.q || '';
+        const searchQuery = `%${q}%`;
+        const result = await db.query(`
+            SELECT id, username, full_name, email 
+            FROM users 
+            WHERE is_active = true 
+            AND (full_name ILIKE $1 OR email ILIKE $1 OR username ILIKE $1)
+            ORDER BY full_name ASC 
+            LIMIT 20
+        `, [searchQuery]);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
 
 exports.getAllUsers = async (req, res) => {
     try {
@@ -136,6 +156,11 @@ exports.getRoles = async (req, res) => {
 exports.createUser = async (req, res) => {
     const { username, password, full_name, email, role_id, phone, is_active, team_id } = req.body;
     try {
+        // Validate email format
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ message: 'Định dạng email không hợp lệ.' });
+        }
+
         // Password policy: tối thiểu 6 ký tự
         if (!password || password.length < 6) {
             return res.status(400).json({ message: 'Mật khẩu phải có ít nhất 6 ký tự.' });
@@ -170,6 +195,16 @@ exports.createUser = async (req, res) => {
             'INSERT INTO users (username, password, full_name, email, role_id, phone, is_active, team_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
             [username, hashedPassword, full_name, email, role_id, phone || null, is_active !== false, finalTeamId]
         );
+
+        // EMAIL EVENT
+        emitEvent(SystemEvents.find(e => e.code === 'USER_CREATED').code, {
+            username: username,
+            full_name: full_name,
+            email: email,
+            phone: phone,
+            created_at: new Date().toISOString()
+        });
+
         res.status(201).json({ id: result.rows[0].id, message: 'Thêm nhân viên thành công.' });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -184,6 +219,10 @@ exports.updateUser = async (req, res) => {
     
     const client = await db.pool.connect();
     try {
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ message: 'Định dạng email không hợp lệ.' });
+        }
+
         await client.query('BEGIN');
         
         // Safeguard: Managers cannot edit Admins
@@ -192,6 +231,21 @@ exports.updateUser = async (req, res) => {
             if (targetUser.rows.length > 0 && targetUser.rows[0].role_name === 'admin') {
                 await client.query('ROLLBACK');
                 return res.status(403).json({ message: 'Quản lý không có quyền chỉnh sửa tài khoản Quản trị viên.' });
+            }
+        }
+
+        // Security check: restrict what roles the editor can assign
+        if (req.user && req.user.role !== 'admin' && role_id) {
+            const currentUser = await client.query('SELECT role_id FROM users WHERE id = $1', [id]);
+            const currentRoleId = currentUser.rows[0]?.role_id;
+            
+            if (parseInt(role_id) !== currentRoleId) {
+                const allowedRoles = await getAllowedRolesForManager(req.user.id);
+                const isAllowedRole = allowedRoles.some(r => r.id === parseInt(role_id));
+                if (!isAllowedRole) {
+                    await client.query('ROLLBACK');
+                    return res.status(403).json({ message: 'Bạn không có quyền gán Phân quyền (Role) này.' });
+                }
             }
         }
 
@@ -215,7 +269,7 @@ exports.updateUser = async (req, res) => {
              birth_date = $7, gender = $8, id_card = $9, passport_url = $10, id_expiry = $11, address = $12, facebook_url = $13,
              created_at = COALESCE($14, created_at), position = $15, avatar_url = COALESCE($16, avatar_url)
              WHERE id = $6`,
-            [full_name, email, role_id, phone || null, is_active !== false, id,
+            [full_name, email || null, role_id, phone || null, is_active !== false, id,
              birth_date || null, gender || null, id_card || null, passport_url || null, id_expiry || null, address || null, facebook_url || null,
              created_at || null, position || null, avatar_url || null]
         );
@@ -507,6 +561,10 @@ exports.updateMyProfile = async (req, res) => {
     try {
         const { full_name, email, phone, birth_date, gender, id_card, passport_url, id_expiry, address, facebook_url, created_at, position, avatar_url } = req.body;
         
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ message: 'Định dạng email không hợp lệ.' });
+        }
+
         // Handle old avatar deletion
         if (avatar_url) {
             const oldUserRes = await db.query('SELECT avatar_url FROM users WHERE id = $1', [req.user.id]);

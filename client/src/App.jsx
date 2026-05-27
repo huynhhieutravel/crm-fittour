@@ -14,14 +14,14 @@ import { Toaster } from 'react-hot-toast';
 
 import SettingsTab from './tabs/SettingsTab';
 import MarketSettingsTab from './tabs/MarketSettingsTab';
+import NotificationDashboardTab from './tabs/NotificationDashboardTab';
+import EmailRulesTab from './tabs/EmailRulesTab';
 import MediaSettingsTab from './tabs/MediaSettingsTab';
 import AuditLogTab from './tabs/AuditLogTab';
 import BookingsTab from './tabs/BookingsTab';
 import CostingsTab from './tabs/CostingsTab';
 import CustomersTab from './tabs/CustomersTab';
 import InboxTab from './tabs/InboxTab';
-import EmailTab from './tabs/EmailTab';
-import EmailMailboxesTab from './tabs/EmailMailboxesTab';
 import ToursTab from './tabs/ToursTab';
 import DeparturesTab from './tabs/DeparturesTab';
 import RemindersTab from './tabs/RemindersTab';
@@ -64,7 +64,9 @@ import MyProfileTab from './tabs/MyProfileTab';
 import TeamDirectoryTab from './tabs/TeamDirectoryTab';
 import AddLeadModal from './components/modals/AddLeadModal';
 import EditLeadModal from './components/modals/EditLeadModal';
+import NotificationBell from './components/common/NotificationBell';
 import CommandPalette from './components/CommandPalette';
+import EmailGroupsTab from './tabs/EmailGroupsTab';
 import AIChatDrawer from './components/AICopilot/AIChatDrawer';
 import AgentManagerTab from './tabs/AgentManagerTab';
 import LeaveRequestModal from './components/modals/LeaveRequestModal';
@@ -175,7 +177,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
-  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'email', 'email-mailboxes', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu'];
+  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -260,7 +262,7 @@ function AppContent() {
     meta_page_id: ''
   });
   const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'today', startDate: '', endDate: '', tours: [], hasPhone: '' });
-  const [tourFilters, setTourFilters] = useState({ search: '', tour_type: '', destination: '', status: '', guide_id: '', timeRange: 'all', startDate: '', endDate: '' });
+  const [tourFilters, setTourFilters] = useState({ search: '', tour_type: '', destination: '', has_departure: '', status: '', guide_id: '', timeRange: 'all', startDate: '', endDate: '' });
   const [bookingFilters, setBookingFilters] = useState({ search: '', status: '', bookingStatus: '', paymentStatus: '' });
   const [bookingCurrentPage, setBookingCurrentPage] = useState(1);
   const [bookingTotalPages, setBookingTotalPages] = useState(1);
@@ -1971,29 +1973,7 @@ function AppContent() {
                   <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
-              {checkView('leads') && (
-                <div 
-                  className={`nav-item ${activeTab === 'email' || activeTab === 'email-mailboxes' ? 'active-parent' : ''}`}
-                  onClick={() => navigate('/email')}
-                  style={{ justifyContent: 'space-between' }}
-                  onMouseEnter={(e) => {
-                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    setHoveredRect(rect);
-                    setHoveredMenu('email');
-                  }}
-                  onMouseLeave={() => {
-                    menuTimerRef.current = setTimeout(() => {
-                      setHoveredMenu(null);
-                    }, 150);
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Mail /> Email
-                  </div>
-                  <ChevronRight size={14} opacity={0.5} />
-                </div>
-              )}
+
               {checkView('leads') && (
                 <div className={`nav-item ${activeTab === 'inbox' ? 'active' : ''}`} onClick={() => navigate('/inbox')}>
                   <MessageSquare /> Messenger
@@ -2245,6 +2225,30 @@ function AppContent() {
             <ChevronRight size={14} opacity={0.5} />
           </div>
 
+          {user && (user.role === 'admin' || user.role === 'manager') && (
+            <div 
+              className={`nav-item ${['email-rules', 'email-groups', 'notification-dashboard'].includes(activeTab) ? 'active' : ''}`} 
+              onClick={() => { navigate('/email-rules'); setActiveTab('email-rules'); }}
+              style={{ justifyContent: 'space-between' }}
+              onMouseEnter={(e) => {
+                if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                const rect = e.currentTarget.getBoundingClientRect();
+                setHoveredRect(rect);
+                setHoveredMenu('email-menu');
+              }}
+              onMouseLeave={() => {
+                menuTimerRef.current = setTimeout(() => {
+                  setHoveredMenu(null);
+                }, 150);
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Mail /> Cấu hình Email
+              </div>
+              <ChevronRight size={14} opacity={0.5} />
+            </div>
+          )}
+
           {checkView('markets') && (
                 <div className={`nav-item ${activeTab === 'market-settings' ? 'active' : ''}`} onClick={() => navigate('/market-settings')}>
                   <MapPin /> Quản lý Thị trường
@@ -2405,43 +2409,6 @@ function AppContent() {
         </div>
       )}
 
-      {hoveredMenu === 'email' && hoveredRect && (
-        <div 
-          className="submenu-flyout"
-          style={{ 
-            position: 'fixed', 
-            left: `${hoveredRect.right + 5}px`, 
-            top: `${hoveredRect.top}px`, 
-            display: 'flex', 
-            opacity: 1, 
-            transform: 'none',
-            pointerEvents: 'auto',
-            zIndex: 9999
-          }}
-          onMouseEnter={() => {
-            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
-            setHoveredMenu('email');
-          }}
-          onMouseLeave={() => {
-            menuTimerRef.current = setTimeout(() => {
-              setHoveredMenu(null);
-            }, 150);
-          }}
-        >
-          <div 
-            className={`submenu-item ${activeTab === 'email' ? 'active' : ''}`} 
-            onClick={() => { navigate('/email'); setHoveredMenu(null); }} 
-          >
-            Hộp thư (Inbox)
-          </div>
-          <div 
-            className={`submenu-item ${activeTab === 'email-mailboxes' ? 'active' : ''}`} 
-            onClick={() => { navigate('/email/mailboxes'); setHoveredMenu(null); }} 
-          >
-            Cài đặt Hộp thư
-          </div>
-        </div>
-      )}
 
       {hoveredMenu === 'marketing-ads' && hoveredRect && (
         <div 
@@ -2844,6 +2811,50 @@ function AppContent() {
         </div>
       )}
 
+      {hoveredMenu === 'email-menu' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('email-menu');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'email-rules' ? 'active' : ''}`} 
+            onClick={() => { navigate('/email-rules'); setActiveTab('email-rules'); setHoveredMenu(null); }}
+          >
+            ⚙️ Cấu hình Gửi (Triggers)
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'email-groups' ? 'active' : ''}`} 
+            onClick={() => { navigate('/email-groups'); setActiveTab('email-groups'); setHoveredMenu(null); }}
+          >
+            👥 Nhóm Email (Groups)
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'notification-dashboard' ? 'active' : ''}`} 
+            onClick={() => { navigate('/notification-dashboard'); setActiveTab('notification-dashboard'); setHoveredMenu(null); }}
+          >
+            📊 Logs Gửi Email
+          </div>
+        </div>
+      )}
+
       
       {hoveredMenu === 'manual' && hoveredRect && (
         <div 
@@ -2962,6 +2973,7 @@ function AppContent() {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <NotificationBell currentUser={user} />
             <div 
               className="user-profile" 
               style={{ cursor: 'pointer', position: 'relative' }} 
@@ -3187,13 +3199,7 @@ function AppContent() {
           />
         )}
 
-        {activeTab === 'email' && (
-          <EmailTab currentUser={user} addToast={addToast} />
-        )}
 
-        {activeTab === 'email-mailboxes' && (
-          <EmailMailboxesTab users={users} addToast={addToast} />
-        )}
 
         {activeTab === 'tours' && (
           <ToursTab 
@@ -3405,6 +3411,18 @@ function AppContent() {
 
         {activeTab === 'agent-manager' && (
           <AgentManagerTab />
+        )}
+
+        {activeTab === 'notification-dashboard' && (
+          <NotificationDashboardTab user={user} addToast={addToast} />
+        )}
+
+        {activeTab === 'email-groups' && (
+          <EmailGroupsTab user={user} addToast={addToast} />
+        )}
+
+        {activeTab === 'email-rules' && (
+          <EmailRulesTab user={user} addToast={addToast} />
         )}
 
         {activeTab === 'bus' && (

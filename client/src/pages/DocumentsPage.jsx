@@ -30,6 +30,7 @@ const STATIC_DOCS = [
   { title: 'Giấy Phép Kinh Doanh FIT Tour', description: 'GPKD công ty FIT Tour', category: 'Giấy phép', path: '#', icon: '📜' },
   { title: 'Giấy Phép Lữ Hành Quốc Tế', description: 'GPLH quốc tế FIT Tour', category: 'Giấy phép', path: '#', icon: '📜' },
   { title: 'Checklist Thiết Kế Tour', description: 'Bảng checklist thiết kế sản phẩm tour mới', category: 'Điều hành', path: 'https://docs.google.com/spreadsheets/d/1GcDo5omS19co79Gv3vQ-Naf9v2TudWf9LmMr_w8LFvQ/edit?gid=0#gid=0', icon: '✅', external: true },
+  { title: 'SOP Chuẩn Hóa Tên Tour', description: 'Quy chuẩn đặt tên tour trên ERP, Website và Social', category: 'Điều hành', path: '/tai-lieu/dat-ten-tour', icon: '📝' },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -506,6 +507,11 @@ const DocumentsHome = () => {
             <ul className="blog-list">
               <li><a href="https://docs.google.com/spreadsheets/d/1GcDo5omS19co79Gv3vQ-Naf9v2TudWf9LmMr_w8LFvQ/edit?gid=0#gid=0" target="_blank" rel="noreferrer"><span className="blog-list-icon">📓</span> Checklist Thiết kế tour</a></li>
             </ul>
+
+            <h3 className="blog-section-title" style={{ marginTop: '2rem' }}>Quy chuẩn & SOP</h3>
+            <ul className="blog-list">
+              <li><Link to="/tai-lieu/dat-ten-tour"><span className="blog-list-icon">📓</span> SOP – Chuẩn hóa tên Tour</Link></li>
+            </ul>
           </div>
 
           {/* Col 3 */}
@@ -800,6 +806,14 @@ const DocumentsPage = () => {
       author="Ban Giám Đốc FIT Tour"
       updatedDate="23/04/2026"
       breadcrumbs={[{ label: 'Quy tắc hành xử' }]}
+    />
+  );
+  if (path === '/tai-lieu/dat-ten-tour') return (
+    <MarkdownViewer 
+      fileUrl="/docs/dat-ten-tour.md?v=2" 
+      title="SOP – Chuẩn hóa tên Tour"
+      author="Ban Giám Đốc FIT Tour"
+      breadcrumbs={[{ label: 'Checklist Điều Hành' }]}
     />
   );
   if (path === '/tai-lieu' || path === '/tai-lieu/') return <DocumentsHome />;

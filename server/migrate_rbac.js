@@ -9,13 +9,8 @@ async function migrateRBAC() {
     await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE');
     await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20)');
     
-    // 2. Fix invalid role_ids based on username conventions
-    console.log('2. Fixing user role_ids to match correct roles table...');
-    // sales = 2, marketing = 3, operations = 4, manager = 5, admin = 1
-    await client.query("UPDATE users SET role_id = 1 WHERE username LIKE '%admin' OR username = 'admin'");
-    await client.query("UPDATE users SET role_id = 5 WHERE username LIKE '%manager'");
-    await client.query("UPDATE users SET role_id = 3 WHERE username LIKE '%staff'");
-    await client.query("UPDATE users SET role_id = 2 WHERE username LIKE '%sale'");
+    // 2. [DELETED] Fix invalid role_ids based on username conventions
+    // (Bỏ các lệnh UPDATE role hàng loạt ở đây vì nó gây lỗi đè phân quyền khi chạy sync_database.js)
     
     // 3. Create role_permissions table
     console.log('3. Creating role_permissions table...');
