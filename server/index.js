@@ -3,6 +3,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const { Server } = require('socket.io');
 const http = require('http');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 dotenv.config();
 
@@ -33,6 +35,36 @@ const io = new Server(server, {
 });
 app.set('io', io);
 global.io = io; // Expose globally for background services
+
+// ═══ SECURITY ENHANCEMENTS ═══
+// 1. Trust Proxy: Cần thiết để Rate Limiter nhận diện đúng IP thật từ Cloudflare/Nginx
+app.set('trust proxy', 1);
+
+// 2. Helmet: Bảo vệ HTTP Headers (chống XSS, Clickjacking, MIME sniffing...)
+app.use(helmet({
+  crossOriginResourcePolicy: false, // Để /uploads ảnh hoạt động cross-origin nếu cần
+}));
+
+// 3. API Rate Limiter Chung (Ngăn chặn càn quét/DDoS nhẹ)
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 phút
+  max: 2000, // Tối đa 2000 requests mỗi IP (nới lỏng vì dùng chung mạng cty)
+  standardHeaders: true, // Trả về `RateLimit-*` headers
+  legacyHeaders: false,
+  message: { error: 'Quá nhiều request từ mạng của bạn. Vui lòng thử lại sau 15 phút.' }
+});
+
+// 4. API Rate Limiter cho Đăng nhập (Chống Brute Force mật khẩu)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 phút
+  max: 50, // Chỉ cho phép 50 lần thử sai mật khẩu từ 1 IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Vượt quá số lần thử đăng nhập. Hệ thống tạm khóa IP này trong 15 phút để bảo vệ tài khoản.' }
+});
+
+// Áp dụng Rate Limiter chung cho tất cả /api
+app.use('/api/', apiLimiter);
 
 app.use(cors());
 app.use(express.json());
@@ -85,6 +117,8 @@ const miceLeadsRoutes = require('./routes/mice_leads');
 const authController = require('./controllers/authController');
 
 app.use('/api/webhook', webhookRoutes);
+// Áp dụng Login Limiter cụ thể cho endpoint đăng nhập
+app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRoutes);
 app.get('/api/google/callback', authController.googleCallback);
 app.use('/api/tours', tourRoutes);

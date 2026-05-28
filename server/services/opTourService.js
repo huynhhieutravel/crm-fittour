@@ -18,7 +18,8 @@ const SAFE_B2C_TOUR_INFO_FIELDS = [
   'total_seats', 'price_adult', 'price_child', 'price_infant',
   'dep_airline', 'departure_flight', 'dep_time',
   'ret_airline', 'return_flight', 'ret_time',
-  'pickup_point', 'dropoff_point'
+  'pickup_point', 'dropoff_point',
+  'tour_itinerary_web_link'
 ];
 
 /**
@@ -30,7 +31,7 @@ async function fetchActiveTours() {
     SELECT 
       td.id, td.code as tour_code, 
       COALESCE(tt.name, td.tour_info->>'tour_name') as tour_name,
-      td.tour_info->>'website_link' as website_link,
+      td.tour_info->>'tour_itinerary_web_link' as website_link,
       td.start_date, td.end_date, td.market, td.status,
       td.tour_info, td.max_participants,
       (
@@ -86,10 +87,12 @@ function transformB2CTour(row) {
   if (safeTourInfo.dep_airline || safeTourInfo.departure_flight) {
     airline.departure = [safeTourInfo.dep_airline, safeTourInfo.departure_flight]
       .filter(Boolean).join(' ').trim() || null;
+    airline.departureName = safeTourInfo.dep_airline || null;
   }
   if (safeTourInfo.ret_airline || safeTourInfo.return_flight) {
     airline.return = [safeTourInfo.ret_airline, safeTourInfo.return_flight]
       .filter(Boolean).join(' ').trim() || null;
+    airline.returnName = safeTourInfo.ret_airline || null;
   }
 
   // Slugify tour code for URL
