@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const db = require('../db');
+const sharp = require('sharp');
 
 // Ensure upload directory exists
 const uploadDir = path.join(__dirname, '../public/uploads/receipts');
@@ -12,15 +13,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Multer Config
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'receipt-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
     storage: storage,
@@ -35,13 +28,37 @@ const upload = multer({
 });
 
 // Route: Upload 1 file
-router.post('/upload', upload.single('file'), (req, res) => {
+router.post('/upload', upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'Không có file nào được tải lên.' });
         }
+        
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const originalExt = path.extname(req.file.originalname).toLowerCase();
+        
+        // We force output to .webp
+        const finalFilename = 'receipt-' + uniqueSuffix + '.webp';
+        const finalPath = path.join(uploadDir, finalFilename);
+        
+        // Setup options based on original type
+        const isPng = originalExt === '.png';
+        const webpOptions = isPng ? {
+            lossless: true,
+            effort: 6
+        } : {
+            quality: 85,
+            effort: 6,
+            smartSubsample: true
+        };
+
+        // Convert and save
+        await sharp(req.file.buffer)
+            .webp(webpOptions)
+            .toFile(finalPath);
+
         // Return public URL path
-        const fileUrl = `/uploads/receipts/${req.file.filename}`;
+        const fileUrl = `/uploads/receipts/${finalFilename}`;
         res.status(200).json({ url: fileUrl });
     } catch (err) {
         console.error('Upload error:', err);

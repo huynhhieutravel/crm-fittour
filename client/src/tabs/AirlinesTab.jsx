@@ -183,7 +183,7 @@ export default function AirlinesTab({ currentUser, checkPerm, addToast, handleDe
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#3b82f6' }}>{h.code}</td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
                                         <div style={{ gap: '8px', color: '#0f172a' }}>
-                                            {h.logo_url ? <img src={h.logo_url.startsWith('http') ? h.logo_url : `/airlines/${h.logo_url}`} alt={h.name} style={{ width: '28px', height: '28px', objectFit: 'contain', borderRadius: '4px' }} /> : <Plane size={16} color="#ea580c" />}
+                                            {h.logo_url ? <img src={h.logo_url.startsWith('http') ? h.logo_url : `/airline-logos/${h.logo_url}`} alt={h.name} style={{ width: '28px', height: '28px', objectFit: 'contain', borderRadius: '4px' }} /> : <Plane size={16} color="#ea580c" />}
                                             {h.name}
                                         </div>
                                     </td>
