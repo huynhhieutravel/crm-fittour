@@ -1,0 +1,20 @@
+{
+  "module_name": "visa_provider",
+  "module_name_vi": "Nhà Cung Cấp Visa",
+  "table_prefix": "visa_providers",
+  "icon": "Stamp",
+  "entity_fields": [
+    { "name": "country", "type": "VARCHAR(255)", "label": "Quốc gia" },
+    { "name": "processing_time", "type": "VARCHAR(255)", "label": "Thời gian xử lý" }
+  ],
+  "service_fields": [
+    { "name": "visa_type", "type": "VARCHAR(255)", "label": "Loại Visa" }
+  ],
+  "contact_fields": [
+    { "name": "name", "type": "VARCHAR(255)", "label": "Họ và tên" },
+    { "name": "position", "type": "VARCHAR(255)", "label": "Chức vụ" },
+    { "name": "phone", "type": "VARCHAR(255)", "label": "SĐT" },
+    { "name": "email", "type": "VARCHAR(255)", "label": "Email" },
+    { "name": "dob", "type": "DATE", "label": "Ngày sinh" }
+  ]
+}
