@@ -36,6 +36,7 @@ import InternalDocsTab from './tabs/InternalDocsTab';
 import LicensesTab from './tabs/LicensesTab';
 import BURulesTab from './tabs/BURulesTab';
 import InsurancesTab from './tabs/InsurancesTab';
+import VisaProvidersTab from './tabs/VisaProvidersTab';
 import OpToursTab from './tabs/OpToursTab';
 import TravelSupportTab from './tabs/TravelSupportTab';
 import LeaveRequestsTab from './tabs/LeaveRequestsTab';
@@ -67,8 +68,6 @@ import EditLeadModal from './components/modals/EditLeadModal';
 import NotificationBell from './components/common/NotificationBell';
 import CommandPalette from './components/CommandPalette';
 import EmailGroupsTab from './tabs/EmailGroupsTab';
-import AIChatDrawer from './components/AICopilot/AIChatDrawer';
-import AgentManagerTab from './tabs/AgentManagerTab';
 import LeaveRequestModal from './components/modals/LeaveRequestModal';
 import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
 import { AddBookingModal } from './components/modals/BookingModals';
@@ -2688,6 +2687,12 @@ function AppContent() {
           >
             Quản lý Bảo Hiểm
           </div>
+          <div 
+            className={`submenu-item ${activeTab === 'visa-providers' ? 'active' : ''}`} 
+            onClick={() => { navigate('/visa-providers'); setActiveTab('visa-providers'); setHoveredMenu(null); }}
+          >
+            Quản lý Visa
+          </div>
         </div>
       )}
 
@@ -3459,6 +3464,9 @@ function AppContent() {
         )}
         {activeTab === 'insurances' && (
           <InsurancesTab currentUser={user} checkPerm={checkPerm} addToast={addToast} handleDeleteInsurance={(id) => setInsuranceToDelete(id)} />
+        )}
+        {activeTab === 'visa-providers' && (
+          <VisaProvidersTab currentUser={user} checkPerm={checkPerm} addToast={addToast} setVisaProviderToDelete={(id) => setVisaProviderToDelete(id)} />
         )}
 
         {/* ═══ Tour Đoàn Tab Rendering ═══ */}
