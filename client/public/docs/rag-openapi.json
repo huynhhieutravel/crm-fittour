@@ -1,0 +1,92 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FIT Tour RAG API",
+    "description": "API truy xuất tài liệu nội bộ, sổ tay vận hành và biểu mẫu của FIT Tour dành cho ChatGPT.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://erp.fittour.vn/api/rag"
+    }
+  ],
+  "paths": {
+    "/docs": {
+      "get": {
+        "summary": "Lấy danh sách tất cả tài liệu hiện có",
+        "operationId": "getDocumentsList",
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "title": { "type": "string" },
+                      "description": { "type": "string" },
+                      "category": { "type": "string" },
+                      "url": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/docs/content": {
+      "get": {
+        "summary": "Đọc nội dung chi tiết của một tài liệu",
+        "description": "Truyền vào id hoặc path lấy từ danh sách tài liệu để đọc nội dung. GPT PHẢI trích dẫn link url trả về cho người dùng khi trích xuất thông tin.",
+        "operationId": "getDocumentContent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID hoặc đường dẫn (path) của tài liệu"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "title": { "type": "string" },
+                    "content": { "type": "string" },
+                    "url": { "type": "string", "description": "Link URL để nhân viên bấm vào xem trực tiếp trên trình duyệt." }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}

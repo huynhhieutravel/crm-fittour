@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const authenticateToken = require('../middleware/auth');
+const gptAuth = require('../middleware/gptAuth');
 
-// Apply auth to ALL routes in this file
-router.use(authenticateToken);
+// Apply gptAuth to ALL routes — hỗ trợ cả JWT (user) và GPT_API_KEY (ChatGPT Bot read-only)
+router.use(gptAuth);
 
 // Lấy dữ liệu KPI và Tổng hợp theo tháng/BU
 router.get('/kpis', async (req, res) => {

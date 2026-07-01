@@ -417,17 +417,29 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                 return (
                                 <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                     <td style={{ padding: '10px 16px', textAlign: 'center', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
-                                        <div style={{ color: '#1e293b', fontWeight: 600 }}>
-                                            {p.departure_date ? new Date(p.departure_date).toLocaleDateString('vi-VN') : '---'}
-                                        </div>
-                                        {p.return_date && new Date(p.return_date).toLocaleDateString('en-CA') !== new Date(p.departure_date).toLocaleDateString('en-CA') && (
-                                            <div style={{ color: '#64748b', fontSize: '0.75rem' }}>
-                                                → {new Date(p.return_date).toLocaleDateString('vi-VN')}
+                                        <div 
+                                            onClick={() => handleOpenProject(p)}
+                                            style={{ cursor: 'pointer' }}
+                                            onMouseOver={e => e.currentTarget.style.opacity = '0.7'} 
+                                            onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                                        >
+                                            <div style={{ color: '#1e293b', fontWeight: 600 }}>
+                                                {p.departure_date ? new Date(p.departure_date).toLocaleDateString('vi-VN') : '---'}
                                             </div>
-                                        )}
+                                            {p.return_date && new Date(p.return_date).toLocaleDateString('en-CA') !== new Date(p.departure_date).toLocaleDateString('en-CA') && (
+                                                <div style={{ color: '#64748b', fontSize: '0.75rem' }}>
+                                                    → {new Date(p.return_date).toLocaleDateString('vi-VN')}
+                                                </div>
+                                            )}
+                                        </div>
                                     </td>
                                     <td style={{ padding: '10px 16px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a', fontWeight: 600, fontSize: '0.85rem' }}>
+                                        <div 
+                                            onClick={() => handleOpenProject(p)}
+                                            style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+                                            onMouseOver={e => e.currentTarget.style.color = '#2563eb'} 
+                                            onMouseOut={e => e.currentTarget.style.color = '#0f172a'}
+                                        >
                                             <Briefcase size={16} color="#3b82f6" />
                                             {p.name}
                                         </div>

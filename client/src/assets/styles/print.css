@@ -1,17 +1,134 @@
 /* =========================================
-   FIT Tour CRM — Print Styles
+   FIT Tour ERP — Print Styles
    CSS cho chế độ in ấn
    ========================================= */
 
 @media print {
-  body * { visibility: hidden; }
-  .modal-content, .modal-content * { visibility: visible; }
-  .modal-content { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; background: white !important; }
-  .modal-overlay { position: static; background: white !important; }
-  .icon-btn, .btn-secondary, button { display: none !important; }
-  
-  .voucher-print-wrapper, .voucher-print-wrapper * { visibility: visible !important; }
-  .voucher-print-wrapper { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; background: white !important; }
-  
-  @page { size: auto; margin: 10mm; }
+  /* 1. Ẩn tất cả nội dung bằng visibility (giữ layout flow nhưng không hiện) */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* 2. Hiện voucher print wrapper và TẤT CẢ con bên trong */
+  .voucher-print-wrapper,
+  .voucher-print-wrapper * {
+    visibility: visible !important;
+  }
+
+  /* 3. Đặt voucher print wrapper lên toàn màn hình */
+  .voucher-print-wrapper {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    background: white !important;
+    z-index: 999999 !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* 4. Voucher content vừa 1 trang */
+  .voucher-print-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 5mm 10mm !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 5. Ẩn các nút không cần in */
+  .no-print,
+  .icon-btn,
+  .btn-secondary {
+    display: none !important;
+  }
+
+  /* 6. Page settings - xóa header/footer browser */
+  @page {
+    size: A4 portrait;
+    margin: 5mm 10mm;
+  }
+
+  /* 7. Modal chung (BookingProfileSlider — In Phiếu Booking) */
+  .modal-content,
+  .modal-content * {
+    visibility: visible !important;
+  }
+  .modal-content {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    background: white !important;
+  }
+  .modal-overlay {
+    position: static !important;
+    background: white !important;
+  }
+
+  /* 8. Service Contract (Hợp Đồng Dịch Vụ) — /service-confirm */
+  .contract-page,
+  .contract-page * {
+    visibility: visible !important;
+  }
+  .contract-page {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    display: block !important;
+    background: white !important;
+    min-height: auto !important;
+    z-index: 999999 !important;
+  }
+  .contract-page .no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  .contract-page .print-area {
+    padding: 0 !important;
+    overflow: visible !important;
+    width: 100% !important;
+  }
+  .contract-page #contract-content {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* 9. ProjectApprovalDrawer — In Hồ Sơ Yêu Cầu & Triển Khai Dự Án */
+  .a4-print-container,
+  .a4-print-container * {
+    visibility: visible !important;
+  }
+  .a4-print-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    background: white !important;
+    z-index: 999999 !important;
+    padding: 15mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    min-height: auto !important;
+  }
+  .drawer-overlay {
+    background: white !important;
+    position: static !important;
+    padding: 0 !important;
+    display: block !important;
+  }
 }
+

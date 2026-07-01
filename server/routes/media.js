@@ -4,25 +4,34 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const db = require('../db');
-const sharp = require('sharp');
 
-// Ensure upload directory exists
-const uploadDir = path.join(__dirname, '../public/uploads/receipts');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+// Ensure upload directories exist
+const baseUploadDir = path.join(__dirname, '../public/uploads');
+const receiptUploadDir = path.join(baseUploadDir, 'receipts');
+if (!fs.existsSync(receiptUploadDir)) {
+    fs.mkdirSync(receiptUploadDir, { recursive: true });
 }
 
 // Multer Config
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, receiptUploadDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const originalExt = path.extname(file.originalname).toLowerCase();
+        cb(null, 'receipt-' + uniqueSuffix + originalExt);
+    }
+});
 
 const upload = multer({ 
     storage: storage,
     limits: { fileSize: 20 * 1024 * 1024 }, // 20MB limit
     fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
+        if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
             cb(null, true);
         } else {
-            cb(new Error('Chỉ cho phép tải lên file hình ảnh (JPG, PNG, ...)'));
+            cb(new Error('Chỉ cho phép tải lên file hình ảnh hoặc PDF'));
         }
     }
 });
@@ -34,31 +43,8 @@ router.post('/upload', upload.single('file'), async (req, res) => {
             return res.status(400).json({ error: 'Không có file nào được tải lên.' });
         }
         
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const originalExt = path.extname(req.file.originalname).toLowerCase();
-        
-        // We force output to .webp
-        const finalFilename = 'receipt-' + uniqueSuffix + '.webp';
-        const finalPath = path.join(uploadDir, finalFilename);
-        
-        // Setup options based on original type
-        const isPng = originalExt === '.png';
-        const webpOptions = isPng ? {
-            lossless: true,
-            effort: 6
-        } : {
-            quality: 85,
-            effort: 6,
-            smartSubsample: true
-        };
-
-        // Convert and save
-        await sharp(req.file.buffer)
-            .webp(webpOptions)
-            .toFile(finalPath);
-
         // Return public URL path
-        const fileUrl = `/uploads/receipts/${finalFilename}`;
+        const fileUrl = `/uploads/receipts/${req.file.filename}`;
         res.status(200).json({ url: fileUrl });
     } catch (err) {
         console.error('Upload error:', err);
@@ -79,9 +65,18 @@ router.post('/bulk-delete', (req, res) => {
         let notFoundCount = 0;
         
         for (const filename of filenames) {
-            const filePath = path.join(uploadDir, filename);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
+            if (filename.includes('..')) {
+                continue; // Prevent directory traversal
+            }
+            
+            // Allow files to be stored in subdirectories (like receipts/file.jpg or transports/file.jpg)
+            const filePath = path.join(baseUploadDir, filename);
+            
+            // For backward compatibility: if filename doesn't contain '/', assume it's in receipts
+            const actualFilePath = filename.includes('/') ? filePath : path.join(receiptUploadDir, filename);
+
+            if (fs.existsSync(actualFilePath)) {
+                fs.unlinkSync(actualFilePath);
                 deletedCount++;
             } else {
                 notFoundCount++;
@@ -99,7 +94,7 @@ router.post('/bulk-delete', (req, res) => {
 router.delete('/:filename', (req, res) => {
     try {
         const filename = req.params.filename;
-        const filePath = path.join(uploadDir, filename);
+        const filePath = path.join(receiptUploadDir, filename);
         
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
@@ -115,7 +110,7 @@ router.delete('/:filename', (req, res) => {
 // Route: Get all media for Admin config
 router.get('/', async (req, res) => {
     try {
-        if (!fs.existsSync(uploadDir)) {
+        if (!fs.existsSync(baseUploadDir)) {
             return res.json([]);
         }
         
@@ -128,12 +123,14 @@ router.get('/', async (req, res) => {
             console.error('Error fetching vouchers mapping for media:', dbErr);
         }
 
-        // Setup mapping for Passports attached (Customers + Bookings)
+        // Setup mapping for Passports attached (Customers + Bookings + Users + Guides)
         let passportsData = [];
         try {
-            const [custRes, bookRes] = await Promise.all([
+            const [custRes, bookRes, userRes, guideRes] = await Promise.all([
                 db.query('SELECT id, name, phone, passport_url FROM customers WHERE passport_url IS NOT NULL'),
-                db.query(`SELECT DISTINCT jsonb_array_elements(raw_details->'members')->>'passportUrl' as url, id as booking_id FROM bookings WHERE jsonb_typeof(raw_details->'members') = 'array'`)
+                db.query(`SELECT DISTINCT jsonb_array_elements(raw_details->'members')->>'passportUrl' as url, id as booking_id FROM bookings WHERE jsonb_typeof(raw_details->'members') = 'array'`),
+                db.query('SELECT id, full_name as name, passport_url FROM users WHERE passport_url IS NOT NULL'),
+                db.query('SELECT id, name, passport_url FROM guides WHERE passport_url IS NOT NULL')
             ]);
             
             // Map customers
@@ -147,41 +144,88 @@ router.get('/', async (req, res) => {
                     passportsData.push({ url: r.url, label: `Khách phụ (Booking #${r.booking_id})` });
                 }
             });
+
+            // Map users (staff)
+            userRes.rows.forEach(r => {
+                if (r.passport_url && !passportsData.find(p => p.url === r.passport_url)) {
+                    passportsData.push({ url: r.passport_url, label: `Nhân sự: ${r.name || ''}` });
+                }
+            });
+
+            // Map guides
+            guideRes.rows.forEach(r => {
+                if (r.passport_url && !passportsData.find(p => p.url === r.passport_url)) {
+                    passportsData.push({ url: r.passport_url, label: `HDV: ${r.name || ''}` });
+                }
+            });
         } catch(dbErr) {
             console.error('Error fetching passports mapping for media:', dbErr);
         }
 
-        const files = fs.readdirSync(uploadDir).filter(f => !f.startsWith('._') && !f.startsWith('.DS_Store'));
-        const mediaList = files.map(file => {
-            const stats = fs.statSync(path.join(uploadDir, file));
-            const publicUrl = `/uploads/receipts/${file}`;
+        let mediaList = [];
+        const dirsToScan = ['receipts', 'transports', 'hotels', 'restaurants', 'tickets', 'airlines', 'insurances', 'landtours', 'b2b_companies'];
+        
+        for (const dir of dirsToScan) {
+            const currentDir = path.join(baseUploadDir, dir);
+            if (!fs.existsSync(currentDir)) continue;
             
-            // Check if attached to any voucher
-            const linkedVoucher = vouchersData.find(v => v.attachment_url === publicUrl);
-            const linkedPassport = passportsData.find(p => p.url === publicUrl);
+            const files = fs.readdirSync(currentDir).filter(f => !f.startsWith('._') && !f.startsWith('.DS_Store'));
+            
+            for (const file of files) {
+                try {
+                    const stats = fs.statSync(path.join(currentDir, file));
+                    const publicUrl = `/uploads/${dir}/${file}`;
+                    const relativeFilename = `${dir}/${file}`;
+                    
+                    let type = 'trash';
+                    let ref = null;
+                    let voucherCode = null;
 
-            let type = 'trash';
-            let ref = null;
+                    if (dir === 'receipts') {
+                        // Check if attached to any voucher
+                        const linkedVoucher = vouchersData.find(v => v.attachment_url === publicUrl);
+                        const linkedPassport = passportsData.find(p => p.url === publicUrl);
 
-            if (linkedVoucher) {
-                type = 'voucher';
-                ref = linkedVoucher.voucher_code;
-            } else if (linkedPassport) {
-                type = 'passport';
-                ref = linkedPassport.label;
+                        if (linkedVoucher) {
+                            type = 'voucher';
+                            ref = linkedVoucher.voucher_code;
+                            voucherCode = linkedVoucher.voucher_code;
+                        } else if (linkedPassport) {
+                            type = 'passport';
+                            ref = linkedPassport.label;
+                        }
+                    } else {
+                        // Supplier dirs
+                        type = 'supplier';
+                        
+                        // Human readable ref based on dir
+                        const mapRef = {
+                            'transports': 'Nhà Xe',
+                            'hotels': 'Khách Sạn',
+                            'restaurants': 'Nhà Hàng',
+                            'tickets': 'Vé Dịch Vụ',
+                            'airlines': 'Hãng Bay',
+                            'insurances': 'Bảo Hiểm',
+                            'landtours': 'Landtour',
+                            'b2b_companies': 'Đối Tác B2B'
+                        };
+                        ref = mapRef[dir] || dir;
+                    }
+
+                    mediaList.push({
+                        filename: relativeFilename,
+                        url: publicUrl,
+                        size: stats.size,
+                        createdAt: stats.birthtime,
+                        type: type,
+                        ref: ref,
+                        voucherCode: voucherCode
+                    });
+                } catch(fileErr) {
+                    console.error('Error reading file:', fileErr);
+                }
             }
-
-            return {
-                filename: file,
-                url: publicUrl,
-                size: stats.size,
-                createdAt: stats.birthtime,
-                type: type,
-                ref: ref,
-                // keep backward compat if any component uses voucherCode
-                voucherCode: linkedVoucher ? linkedVoucher.voucher_code : null
-            };
-        });
+        }
 
         // Sort by newest
         mediaList.sort((a, b) => b.createdAt - a.createdAt);

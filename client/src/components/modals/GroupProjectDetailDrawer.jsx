@@ -364,6 +364,18 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
                                     />
                                 )}
                             </div>
+
+                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginBottom: '8px', display: 'block' }}>NGUỒN THÔNG TIN</label>
+                                <select style={drawerInputStyle} value={formData.source || ''} onChange={e => setFormData({...formData, source: e.target.value})} disabled={isViewOnly}>
+                                    <option value="">-- Chọn nguồn thông tin --</option>
+                                    <option value="Website">Website</option>
+                                    <option value="Fanpage">Fanpage</option>
+                                    <option value="Ban Giám Đốc">Ban Giám Đốc</option>
+                                    <option value="Cá Nhân">Cá Nhân</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 

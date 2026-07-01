@@ -113,8 +113,8 @@ exports.create = async (req, res) => {
         }
 
         const result = await client.query(
-            `INSERT INTO landtours (code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
-            [finalCode, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
+            `INSERT INTO landtours (code, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *`,
+            [finalCode, name, tax_id, landtour_class, phone, email, country, province, address, notes, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null, req.user ? req.user.id : null]
         );
         const newId = result.rows[0].id;
 

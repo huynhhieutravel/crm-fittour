@@ -91,7 +91,7 @@ exports.getReviews = async (req, res) => {
 
 exports.createReview = async (req, res) => {
   try {
-    const { reviewer_name, rating, comment, review_date, source, guide_name, bu_id } = req.body;
+    const { reviewer_name, rating, comment, review_date, source, guide_name, bu_id, photo_count } = req.body;
     const created_by = req.user.id;
     
     // Check duplicates (soft warning, but we still insert)
@@ -108,10 +108,10 @@ exports.createReview = async (req, res) => {
 
     const result = await db.query(`
       INSERT INTO customer_reviews 
-      (reviewer_name, rating, comment, review_date, source, guide_name, bu_id, proof_url, created_by, approval_status, approved_by, approved_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'approved', $9, NOW())
+      (reviewer_name, rating, comment, review_date, source, guide_name, bu_id, proof_url, photo_count, created_by, approval_status, approved_by, approved_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'approved', $10, NOW())
       RETURNING *
-    `, [reviewer_name, rating, comment, review_date, source || 'other', guide_name, bu_id || null, proof_url, created_by]);
+    `, [reviewer_name, rating, comment, review_date, source || 'other', guide_name, bu_id || null, proof_url, photo_count || 0, created_by]);
 
     // Audit log
     await logActivity({
@@ -298,7 +298,7 @@ exports.getStats = async (req, res) => {
 exports.updateReview = async (req, res) => {
   try {
     const { id } = req.params;
-    const { reviewer_name, rating, comment, review_date, source, guide_name, bu_id } = req.body;
+    const { reviewer_name, rating, comment, review_date, source, guide_name, bu_id, photo_count } = req.body;
     
     let proof_url = req.body.proof_url;
     if (req.file) {
@@ -321,10 +321,11 @@ exports.updateReview = async (req, res) => {
           source = COALESCE($5, source),
           guide_name = COALESCE($6, guide_name),
           bu_id = COALESCE($7, bu_id),
-          proof_url = COALESCE($8, proof_url)
-      WHERE id = $9
+          proof_url = COALESCE($8, proof_url),
+          photo_count = COALESCE($9, photo_count)
+      WHERE id = $10
       RETURNING *
-    `, [reviewer_name, rating, comment, review_date, source, guide_name, bu_id, proof_url, id]);
+    `, [reviewer_name, rating, comment, review_date, source, guide_name, bu_id, proof_url, photo_count != null ? photo_count : null, id]);
 
     // Audit log
     await logActivity({

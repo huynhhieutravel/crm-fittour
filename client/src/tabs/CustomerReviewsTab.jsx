@@ -500,7 +500,7 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
               <th>KHÁCH HÀNG & NỘI DUNG</th>
               <th>NGUỒN</th>
               <th>BU & HDV</th>
-              <th>BẰNG CHỨNG</th>
+              <th>SL ẢNH</th>
               <th>TRẠNG THÁI</th>
               {!isHDVView && <th style={{ textAlign: 'right' }}>THAO TÁC</th>}
             </tr>
@@ -538,14 +538,11 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
                   )}
                   <div style={{ fontSize: 13, color: '#64748b' }}>HDV: {review.guide_name || 'N/A'}</div>
                 </td>
-                <td style={{ whiteSpace: 'nowrap', verticalAlign: 'top', paddingTop: '16px' }}>
-                  {review.proof_url ? (
-                    <a href={review.proof_url} target="_blank" rel="noreferrer" className="cr-link" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                      <Image style={{ width: 16, height: 16, marginRight: 4 }} />
-                      Xem ảnh
-                    </a>
+                <td style={{ whiteSpace: 'nowrap', verticalAlign: 'top', paddingTop: '16px', textAlign: 'center' }}>
+                  {review.photo_count != null && review.photo_count > 0 ? (
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#3b82f6' }}>{review.photo_count}</span>
                   ) : (
-                    <span style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>Không có</span>
+                    <span style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>0</span>
                   )}
                 </td>
                 <td style={{ whiteSpace: 'nowrap', verticalAlign: 'top', paddingTop: '16px' }}>

@@ -13,6 +13,8 @@ import {
   MessageCircle,
   Filter,
   X,
+  Send,
+  Loader2,
 } from "lucide-react";
 
 const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, initialPsid, clearInitialPsid, onGoBack }) => {
@@ -21,6 +23,8 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
   const [selectedConv, setSelectedConv] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [newMessage, setNewMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
   // Pagination & Search States
   const [page, setPage] = useState(1);
@@ -114,6 +118,33 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
       setMessages(res.data);
     } catch (err) {
       console.error("Fetch Messages Error:", err);
+    }
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !selectedConv) return;
+    
+    setSending(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(`/api/messages/send`, {
+        conversationId: selectedConv.id,
+        content: newMessage
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMessages(prev => [...prev, res.data]);
+      setNewMessage("");
+      // Update last message in the left sidebar list
+      setConversations(prev => prev.map(c => 
+        c.id === selectedConv.id ? { ...c, last_message: newMessage, updated_at: new Date().toISOString() } : c
+      ));
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi gửi tin nhắn: " + (err.response?.data?.error || err.message));
+    } finally {
+      setSending(false);
     }
   };
 
@@ -545,6 +576,23 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
                   })}
                   <div ref={messagesEndRef} />
                 </div>
+                
+                {/* Chat Input */}
+                <div className="chat-input-area">
+                  <form onSubmit={handleSendMessage} className="chat-input-form">
+                    <input
+                      type="text"
+                      className="chat-input-field"
+                      placeholder="Nhập tin nhắn trả lời..."
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      disabled={sending}
+                    />
+                    <button type="submit" className="chat-send-btn" disabled={!newMessage.trim() || sending}>
+                      {sending ? <Loader2 size={18} className="spin-icon" /> : <Send size={18} />}
+                    </button>
+                  </form>
+                </div>
               </div>
             </>
           ) : (
@@ -602,6 +650,65 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
           align-items: center;
           justify-content: space-between;
           margin-bottom: 12px;
+        }
+
+        .chat-input-area {
+          padding: 15px 20px;
+          border-top: 1px solid #e2e8f0;
+          background-color: white;
+        }
+        
+        .chat-input-form {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+        }
+        
+        .chat-input-field {
+          flex: 1;
+          padding: 12px 15px;
+          border: 1px solid #e2e8f0;
+          border-radius: 20px;
+          outline: none;
+          font-size: 0.95rem;
+          transition: all 0.2s;
+        }
+        
+        .chat-input-field:focus {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .chat-send-btn {
+          background-color: #3b82f6;
+          color: white;
+          border: none;
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .chat-send-btn:hover:not(:disabled) {
+          background-color: #2563eb;
+          transform: scale(1.05);
+        }
+        
+        .chat-send-btn:disabled {
+          background-color: #94a3b8;
+          cursor: not-allowed;
+        }
+        
+        .spin-icon {
+          animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+          100% { transform: rotate(360deg); }
         }
 
         .inbox-header .badge {

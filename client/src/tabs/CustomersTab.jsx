@@ -35,6 +35,10 @@ const CustomersTab = ({
     if (viewId) {
       handleViewProfile(viewId);
     }
+    const editId = new URLSearchParams(window.location.search).get('edit');
+    if (editId) {
+      setEditingCustomer(Number(editId));
+    }
   }, []);
 
   const handleViewProfile = async (id) => {

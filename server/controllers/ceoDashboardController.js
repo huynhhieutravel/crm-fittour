@@ -5,12 +5,10 @@ exports.getCEODeparturesOverview = async (req, res) => {
         const { startDate, endDate, prevStartDate, prevEndDate, bu_group } = req.query;
 
         let dateFilter = '1=1';
-        let bookingDateFilter = '1=1';
         let params = [];
         if (startDate && endDate) {
             params.push(startDate, endDate);
             dateFilter = `td.start_date >= $1 AND td.start_date <= $2`;
-            bookingDateFilter = `b.created_at >= $1 AND b.created_at <= $2`;
         }
 
         let buFilter = '';
@@ -48,15 +46,14 @@ exports.getCEODeparturesOverview = async (req, res) => {
             WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
               AND b.paid > 0
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
-              AND ${bookingDateFilter}
+              AND ${dateFilter}
               ${buFilter}
             GROUP BY COALESCE(u.full_name, b.created_by_name, 'Chưa gán')
             ORDER BY revenue DESC;
         `;
         const saleRes = await pool.query(saleQuery, params);
 
-        // 2. Revenue by BU
-        const dateParams = (startDate && endDate) ? params.slice(0, 2) : [];
+        // 2. Revenue by BU (now respects BU filter)
         const buQuery = `
             SELECT 
                 COALESCE(tt.bu_group, 'Chưa phân loại') as bu_group, 
@@ -68,10 +65,11 @@ exports.getCEODeparturesOverview = async (req, res) => {
             WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               AND ${dateFilter}
+              ${buFilter}
             GROUP BY tt.bu_group
             ORDER BY revenue DESC;
         `;
-        const buRes = await pool.query(buQuery, dateParams);
+        const buRes = await pool.query(buQuery, params);
 
         // 3. Revenue by Market (Aggregate by main country, e.g. "Trung Quốc, Lệ Giang" -> "Trung Quốc")
         const marketQuery = `
@@ -90,12 +88,18 @@ exports.getCEODeparturesOverview = async (req, res) => {
         `;
         const marketRes = await pool.query(marketQuery, params);
 
-        // 4. Upcoming Departures Health
+        // 4. Upcoming Departures Health (respects date filter)
         let upcomingParams = [];
+        let upcomingDateFilter = `td.start_date >= CURRENT_DATE AND td.start_date <= CURRENT_DATE + interval '12 months'`;
         let upcomingBuFilter = '';
+        
+        if (startDate && endDate) {
+            upcomingParams.push(startDate, endDate);
+            upcomingDateFilter = `td.start_date >= $1 AND td.start_date <= $2`;
+        }
         if (bu_group && bu_group !== 'Tất cả') {
             upcomingParams.push(bu_group);
-            upcomingBuFilter = `AND COALESCE(tt.bu_group, 'Chưa phân loại') = $1`;
+            upcomingBuFilter = `AND COALESCE(tt.bu_group, 'Chưa phân loại') = $${upcomingParams.length}`;
         }
 
         const upcomingQuery = `
@@ -106,8 +110,7 @@ exports.getCEODeparturesOverview = async (req, res) => {
                 COALESCE((SELECT SUM(total_price) FROM bookings WHERE tour_departure_id = td.id AND booking_status != 'Huỷ' AND booking_status != 'Mới'), 0) as total_revenue
             FROM tour_departures td
             JOIN tour_templates tt ON td.tour_template_id = tt.id
-            WHERE td.start_date >= CURRENT_DATE
-              AND td.start_date <= CURRENT_DATE + interval '12 months'
+            WHERE ${upcomingDateFilter}
               AND td.status != 'Huỷ'
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               ${upcomingBuFilter}
@@ -115,17 +118,17 @@ exports.getCEODeparturesOverview = async (req, res) => {
         `;
         const upcomingRes = await pool.query(upcomingQuery, upcomingParams);
 
-        // 5. Total Stats for the selected period
+        // 5. Total Stats — LEFT JOIN to count ALL departures (including ones without bookings)
         const totalQuery = `
             SELECT 
-                COALESCE(SUM(b.total_price), 0) as total_revenue,
-                COALESCE(SUM(b.paid), 0) as total_cashflow,
+                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Mới') THEN b.total_price END), 0) as total_revenue,
+                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Mới') THEN b.paid END), 0) as total_cashflow,
                 COUNT(DISTINCT td.id) as total_departures,
-                COALESCE(SUM(b.pax_count), 0) as total_pax
-            FROM bookings b
-            JOIN tour_departures td ON b.tour_departure_id = td.id
+                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Mới') THEN b.pax_count END), 0) as total_pax
+            FROM tour_departures td
             JOIN tour_templates tt ON td.tour_template_id = tt.id
-            WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
+            LEFT JOIN bookings b ON b.tour_departure_id = td.id
+            WHERE td.status != 'Huỷ'
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               AND ${dateFilter}
               ${buFilter};
@@ -134,27 +137,27 @@ exports.getCEODeparturesOverview = async (req, res) => {
 
         const prevTotalQuery = `
             SELECT 
-                COALESCE(SUM(b.total_price), 0) as total_revenue,
-                COALESCE(SUM(b.paid), 0) as total_cashflow,
+                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Mới') THEN b.total_price END), 0) as total_revenue,
+                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Mới') THEN b.paid END), 0) as total_cashflow,
                 COUNT(DISTINCT td.id) as total_departures,
-                COALESCE(SUM(b.pax_count), 0) as total_pax
-            FROM bookings b
-            JOIN tour_departures td ON b.tour_departure_id = td.id
+                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Mới') THEN b.pax_count END), 0) as total_pax
+            FROM tour_departures td
             JOIN tour_templates tt ON td.tour_template_id = tt.id
-            WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
+            LEFT JOIN bookings b ON b.tour_departure_id = td.id
+            WHERE td.status != 'Huỷ'
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               AND ${prevDateFilter}
               ${prevBuFilter};
         `;
         const prevTotalRes = await pool.query(prevTotalQuery, prevParams);
 
-        // 6. Sales Details for Modal Filtering
+        // 6. Sales Details for Modal Filtering (unified to td.start_date)
         const salesDetailsQuery = `
             SELECT 
                 COALESCE(u.full_name, b.created_by_name, 'Chưa gán') as sale_name, 
                 COALESCE(tt.bu_group, 'Chưa phân loại') as bu_group,
-                EXTRACT(MONTH FROM b.created_at) as month,
-                EXTRACT(YEAR FROM b.created_at) as year,
+                EXTRACT(MONTH FROM td.start_date) as month,
+                EXTRACT(YEAR FROM td.start_date) as year,
                 COALESCE(SUM(b.total_price), 0) as revenue, 
                 COUNT(b.id) as booking_count,
                 COALESCE(SUM(b.pax_count), 0) as total_pax
@@ -165,10 +168,11 @@ exports.getCEODeparturesOverview = async (req, res) => {
             WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
               AND b.paid > 0
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
-              AND ${bookingDateFilter}
+              AND ${dateFilter}
+              ${buFilter}
             GROUP BY sale_name, bu_group, month, year;
         `;
-        const salesDetailsRes = await pool.query(salesDetailsQuery, dateParams);
+        const salesDetailsRes = await pool.query(salesDetailsQuery, params);
 
         res.json({
             sales: saleRes.rows,
@@ -195,11 +199,7 @@ exports.getDrilldownData = async (req, res) => {
         
         if (startDate && endDate) {
             params.push(startDate, endDate);
-            if (type === 'sale') {
-                dateFilter = `b.created_at >= $2 AND b.created_at <= $3`;
-            } else {
-                dateFilter = `td.start_date >= $2 AND td.start_date <= $3`;
-            }
+            dateFilter = `td.start_date >= $2 AND td.start_date <= $3`;
         }
 
         let buFilter = '';

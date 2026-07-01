@@ -21,6 +21,7 @@ const EditLeadModal = ({
   loading
 }) => {
   const [existingCustomer, setExistingCustomer] = useState(null);
+  const [activeTab, setActiveTab] = useState(editingLead?.openTab || 'info');
 
   useEffect(() => {
     if (!editingLead?.phone || editingLead.phone.trim().length < 8) {
@@ -136,7 +137,45 @@ const EditLeadModal = ({
         </div>
       </div>
       
-      <form onSubmit={handleUpdateLead} className="modal-grid-3">
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0' }}>
+        <button 
+          onClick={() => setActiveTab('info')}
+          style={{ 
+            padding: '10px 16px', 
+            background: 'none', 
+            border: 'none', 
+            borderBottom: activeTab === 'info' ? '2px solid #6366f1' : '2px solid transparent',
+            color: activeTab === 'info' ? '#6366f1' : '#64748b',
+            fontWeight: activeTab === 'info' ? 800 : 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <UserPlus size={16} /> Thông tin Lead
+        </button>
+        <button 
+          onClick={() => setActiveTab('history')}
+          style={{ 
+            padding: '10px 16px', 
+            background: 'none', 
+            border: 'none', 
+            borderBottom: activeTab === 'history' ? '2px solid #6366f1' : '2px solid transparent',
+            color: activeTab === 'history' ? '#6366f1' : '#64748b',
+            fontWeight: activeTab === 'history' ? 800 : 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <FileText size={16} /> Lịch sử tư vấn & Chăm sóc
+        </button>
+      </div>
+      
+      <form onSubmit={handleUpdateLead}>
+        <div className="modal-grid-3" style={{ display: activeTab === 'info' ? 'grid' : 'none' }}>
         {/* SECTION 1: TIẾN ĐỘ XỬ LÝ (PROCESS) */}
         <div style={{ gridColumn: 'span 3', padding: '10px 0', borderBottom: '1px solid #f1f5f9', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <TrendingUp size={18} color="#6366f1" />
@@ -252,7 +291,9 @@ const EditLeadModal = ({
           <label>GHI CHÚ CHI TIẾT</label>
           <textarea disabled={editingLead.is_locked} className="modal-textarea" style={{ height: '80px' }} value={editingLead.consultation_note || ''} onChange={e => setEditingLead({...editingLead, consultation_note: e.target.value})} />
         </div>
+      </div>
 
+      <div style={{ display: activeTab === 'history' ? 'block' : 'none' }}>
         <div className="consultation-section animate-fade-in" style={{ gridColumn: 'span 3' }}>
           <h2 className="consultation-title">Lịch sử tư vấn & Chăm sóc</h2>
           <p className="consultation-subtitle">Theo dõi các lần trao đổi và ghi chú tiến trình với khách hàng.</p>
@@ -299,6 +340,7 @@ const EditLeadModal = ({
             )}
           </div>
         </div>
+      </div>
 
         <div className="modal-header-actions-group" style={{ gridColumn: '1 / -1', marginTop: '1.5rem', paddingTop: '2rem', borderTop: '1px solid #f1f5f9' }}>
           {!editingLead.is_locked && (

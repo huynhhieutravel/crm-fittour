@@ -73,9 +73,36 @@ app.use(express.json());
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
-// Request Logging Middleware
+// Request Logging Middleware & Fallback Data Recovery
+const logsDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+}
+
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    
+    // Đăng ký lưu log body vào cuối chu trình để bắt được req.user
+    res.on('finish', () => {
+        if (['POST', 'PUT', 'PATCH'].includes(req.method) && !req.url.includes('/auth/')) {
+            const logEntry = {
+                timestamp: new Date().toISOString(),
+                method: req.method,
+                url: req.originalUrl,
+                status: res.statusCode,
+                user_id: req.user ? req.user.id : null,
+                body: req.body
+            };
+            
+            // Log file tự động tạo theo ngày
+            const dateStr = new Date().toISOString().split('T')[0];
+            const currentLogPath = path.join(logsDir, `recovery_${dateStr}.jsonl`);
+            fs.appendFile(currentLogPath, JSON.stringify(logEntry) + '\n', (err) => {
+                if (err) console.error('[RecoveryLog] Failed to write recovery log', err);
+            });
+        }
+    });
+    
     next();
 });
 
@@ -99,6 +126,7 @@ const buRoutes = require('./routes/buRoutes');
 const catalogRoutes = require('./routes/catalog');
 const costingRoutes = require('./routes/costings');
 const publicContractsRoutes = require('./routes/publicContracts');
+const publicDeparturesRoutes = require('./routes/publicDepartures');
 const reminderRoutes = require('./routes/reminderRoutes');
 const hotelRoutes = require('./routes/hotels');
 const restaurantRoutes = require('./routes/restaurants');
@@ -123,6 +151,7 @@ app.use('/api/auth', authRoutes);
 app.get('/api/google/callback', authController.googleCallback);
 app.use('/api/tours', tourRoutes);
 app.use('/api/public/contracts', publicContractsRoutes);
+app.use('/api/public/departures', publicDeparturesRoutes);
 app.use('/api/vouchers', require('./routes/vouchers'));
 app.use('/api/leaves', require('./routes/leaves'));
 app.use('/api/departures', departureRoutes);
@@ -147,6 +176,7 @@ app.use('/api/landtours', landtourRoutes);
 app.use('/api/insurances', insuranceRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/visas', visaRoutes);
+app.use('/api/visa-providers', require('./routes/visaProviders'));
 
 // ═══ Tour Đoàn (Group) NCC API ═══
 const opToursRoutes = require('./routes/opTours');
@@ -170,18 +200,13 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/email-groups', require('./routes/emailGroupRoutes'));
 app.use('/api/email-rules', require('./routes/emailRuleRoutes'));
 
-// ═══ AI Copilot ═══
-const aiAssistantRoutes = require('./routes/aiAssistant');
-app.use('/api/ai', aiAssistantRoutes);
-const agentAdminRoutes = require('./routes/agentAdmin');
-app.use('/api/ai/admin', agentAdminRoutes);
-
 const dashboardRoutes = require('./routes/dashboard');
 
 app.use('/api/dashboard', dashboardRoutes);
 
 const licenseRoutes = require('./routes/licenses');
 app.use('/api/licenses', licenseRoutes);
+app.use('/api/rag', require('./routes/rag'));
 
 const permissionRoutes = require('./routes/permissions');
 app.use('/api/permissions', permissionRoutes);
@@ -248,8 +273,8 @@ server.listen(PORT, () => {
         startCronJobs();
 
         // Start Auto-delete Media Cron Engine (60 days)
-        const { startMediaCleanupCron } = require('./cron/mediaCleanup');
-        startMediaCleanupCron();
+        // const { startMediaCleanupCron } = require('./cron/mediaCleanup');
+        // startMediaCleanupCron();
 
         // Start Auto-delete Audit Logs Cron Engine (30 days)
         const { startAuditLogCleanupCron } = require('./cron/auditLogCleanup');

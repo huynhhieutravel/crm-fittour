@@ -7,7 +7,7 @@ export default function MediaSettingsTab({ addToast }) {
     const [mediaList, setMediaList] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    // Sub-Tabs: all | passport | voucher | trash
+    // Sub-Tabs: all | passport | voucher | supplier | trash
     const [activeSubTab, setActiveSubTab] = useState('all');
 
     // Filters
@@ -43,7 +43,8 @@ export default function MediaSettingsTab({ addToast }) {
         
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`/api/media/${filename}`, {
+            // Dùng bulk-delete để hỗ trợ xoá theo relative path an toàn (VD: transports/file.jpg)
+            await axios.post('/api/media/bulk-delete', { filenames: [filename] }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if(addToast) addToast('Xóa ảnh thành công', 'success');
@@ -160,6 +161,9 @@ export default function MediaSettingsTab({ addToast }) {
                 <button style={tabButtonStyle(activeSubTab === 'voucher')} onClick={() => setActiveSubTab('voucher')}>
                     <CheckSquare size={18} /> Chứng từ Thu/Chi
                 </button>
+                <button style={tabButtonStyle(activeSubTab === 'supplier')} onClick={() => setActiveSubTab('supplier')}>
+                    <ImageIcon size={18} /> Nhà cung cấp
+                </button>
                 <button style={tabButtonStyle(activeSubTab === 'trash')} onClick={() => setActiveSubTab('trash')}>
                     <AlertCircle size={18} /> Thùng rác (Vô chủ)
                 </button>
@@ -168,8 +172,7 @@ export default function MediaSettingsTab({ addToast }) {
             <div style={{ background: '#fffbeb', border: '1px solid #fef3c7', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', gap: '12px', alignItems: 'flex-start', color: '#92400e' }}>
                 <Info size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>
-                    Trung tâm lưu trữ hình ảnh tải lên toàn hệ thống.
-                    Hệ thống sẽ <strong> tự động quét các file Vô chủ (Thùng rác) bị bỏ hoang trên 60 ngày vào 2h sáng hàng ngày</strong> để xoá, tránh đầy máy chủ. Các file đang thuộc Hộ chiếu khách hàng hoặc Phiếu Thu sẽ được giữ lại vĩnh viễn.
+                    Trung tâm lưu trữ hình ảnh và tệp tải lên toàn hệ thống. Mọi tệp tin được lưu trữ tại đây đều được giữ lại vĩnh viễn. Không có tệp nào bị hệ thống tự động xóa.
                 </p>
             </div>
             
@@ -234,6 +237,11 @@ export default function MediaSettingsTab({ addToast }) {
                                             {m.type === 'voucher' && (
                                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#dcfce7', color: '#166534', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px' }}>
                                                     <CheckSquare size={16} /> Phiếu Thu/Chi: {m.ref || m.voucherCode}
+                                                </span>
+                                            )}
+                                            {m.type === 'supplier' && (
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#fef3c7', color: '#92400e', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px' }}>
+                                                    <ImageIcon size={16} /> Nhà cung cấp: {m.ref}
                                                 </span>
                                             )}
                                             {m.type === 'trash' && (

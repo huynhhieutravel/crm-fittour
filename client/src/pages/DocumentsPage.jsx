@@ -10,6 +10,8 @@ import MarketingHub from './MarketingHub';
 import MarketingEditor from '../components/Marketing/MarketingEditor';
 import BrandGuidelinePage from './BrandGuidelinePage';
 import QuyTrinhSaleDieuHanhPage from './QuyTrinhSaleDieuHanhPage';
+import ChinhSachDanhGiaPage from './ChinhSachDanhGiaPage';
+import CoCheKpiPage from './CoCheKpiPage';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Static Document Index — TẤT CẢ tài liệu nội bộ đã biết
@@ -31,6 +33,9 @@ const STATIC_DOCS = [
   { title: 'Giấy Phép Lữ Hành Quốc Tế', description: 'GPLH quốc tế FIT Tour', category: 'Giấy phép', path: '#', icon: '📜' },
   { title: 'Checklist Thiết Kế Tour', description: 'Bảng checklist thiết kế sản phẩm tour mới', category: 'Điều hành', path: 'https://docs.google.com/spreadsheets/d/1GcDo5omS19co79Gv3vQ-Naf9v2TudWf9LmMr_w8LFvQ/edit?gid=0#gid=0', icon: '✅', external: true },
   { title: 'SOP Chuẩn Hóa Tên Tour', description: 'Quy chuẩn đặt tên tour trên ERP, Website và Social', category: 'Điều hành', path: '/tai-lieu/dat-ten-tour', icon: '📝' },
+  { title: 'Hướng Dẫn Kết Nối Zoho Mail', description: 'Hướng dẫn cài đặt Zoho Mail với Outlook, Apple Mail, Spark (IMAP)', category: 'Hành chính', path: '/tai-lieu/zoho-email', icon: '📧' },
+  { title: 'SOP Chính Sách Đánh Giá (Review)', description: 'Điều chỉnh và hướng dẫn chính sách đánh giá trên Google Review', category: 'Marketing', path: '/tai-lieu/chinh-sach-danh-gia', icon: '⭐' },
+  { title: 'Cơ Chế KPI', description: 'Quyết định ban hành cơ chế lương – KPI – thưởng và phúc lợi nhân sự', category: 'Hành chính', path: '/tai-lieu/co-che-kpi', icon: '💼' },
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -426,6 +431,7 @@ const BieuMauPage = () => {
    ═══════════════════════════════════════════════════════════════════════════ */
 const DocumentsHome = () => {
   const [licenses, setLicenses] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -436,6 +442,23 @@ const DocumentsHome = () => {
     }
   }, []);
 
+  // Popup: hiện 1 lần / user, hết hạn sau ngày 06/06/2026
+  useEffect(() => {
+    const POPUP_KEY = 'popup_chinh_sach_review_hdv_seen';
+    const EXPIRE_DATE = new Date('2026-06-07T00:00:00+07:00'); // hết hạn đầu ngày 7/6
+    const now = new Date();
+    if (now < EXPIRE_DATE && !localStorage.getItem(POPUP_KEY)) {
+      // Delay nhẹ cho trang load xong mới hiện popup
+      const timer = setTimeout(() => setShowPopup(true), 600);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleClosePopup = () => {
+    localStorage.setItem('popup_chinh_sach_review_hdv_seen', '1');
+    setShowPopup(false);
+  };
+
   // Tìm link theo tên từ danh sách biểu mẫu
   const findLink = (keyword) => {
     const item = licenses.find(l => l.name.toLowerCase().includes(keyword.toLowerCase()));
@@ -445,12 +468,111 @@ const DocumentsHome = () => {
   return (
     <BlogLayout>
       <div className="doc-wp-home">
+
+      {/* ═══ Popup thông báo Chính sách Review HDV ═══ */}
+      {showPopup && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(15, 23, 42, 0.55)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          animation: 'sopPopupFadeIn 0.3s ease-out'
+        }} onClick={handleClosePopup}>
+          <style>{`
+            @keyframes sopPopupFadeIn {
+              from { opacity: 0; }
+              to   { opacity: 1; }
+            }
+            @keyframes sopPopupSlideUp {
+              from { opacity: 0; transform: translateY(30px) scale(0.97); }
+              to   { opacity: 1; transform: translateY(0) scale(1); }
+            }
+          `}</style>
+
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#fff', borderRadius: '20px', width: '92%', maxWidth: '460px',
+            boxShadow: '0 25px 60px -12px rgba(0,0,0,0.25)',
+            overflow: 'hidden',
+            animation: 'sopPopupSlideUp 0.35s ease-out'
+          }}>
+            {/* Header gradient */}
+            <div style={{
+              background: 'linear-gradient(135deg, #e55e20 0%, #f97316 100%)',
+              padding: '28px 28px 22px', color: 'white', position: 'relative'
+            }}>
+              <button onClick={handleClosePopup} style={{
+                position: 'absolute', top: '12px', right: '12px',
+                background: 'rgba(255,255,255,0.2)', border: 'none',
+                borderRadius: '50%', width: '30px', height: '30px',
+                color: 'white', cursor: 'pointer', fontSize: '18px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'background 0.2s'
+              }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.35)'}
+                 onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}>
+                ✕
+              </button>
+              <div style={{ fontSize: '2rem', marginBottom: '6px' }}>📢</div>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, lineHeight: 1.3 }}>
+                Thông báo Chính sách mới
+              </h3>
+              <p style={{ margin: '6px 0 0', fontSize: '0.85rem', opacity: 0.9, fontWeight: 500 }}>
+                Có hiệu lực từ 01/05/2026
+              </p>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '24px 28px 28px' }}>
+              <h4 style={{ margin: '0 0 12px', fontSize: '1.05rem', fontWeight: 700, color: '#1e293b' }}>
+                🎯 Quy chế Thưởng Đánh giá Review (HDV)
+              </h4>
+              <p style={{ margin: '0 0 8px', fontSize: '0.92rem', color: '#475569', lineHeight: 1.65 }}>
+                Công ty điều chỉnh cơ chế hạch toán chi phí thưởng đối với các đánh giá <strong style={{ color: '#e55e20' }}>5 sao trên Google Review</strong> — áp dụng cho Tour Leader và Hướng Dẫn Viên.
+              </p>
+              <div style={{
+                background: '#fff7ed', borderRadius: '10px', padding: '12px 14px',
+                marginBottom: '20px', fontSize: '0.85rem', color: '#92400e', lineHeight: 1.55
+              }}>
+                <div style={{ marginBottom: '4px' }}>⭐ Review 5* + 05 hình → <strong>100.000đ / review</strong></div>
+                <div>⭐ Review 5* + 10 hình → <strong>150.000đ / review</strong></div>
+              </div>
+
+              <Link to="/tai-lieu/chinh-sach-danh-gia" onClick={handleClosePopup}
+                style={{
+                  display: 'block', textAlign: 'center', textDecoration: 'none',
+                  background: 'linear-gradient(135deg, #e55e20, #f97316)',
+                  color: 'white', padding: '13px 24px', borderRadius: '12px',
+                  fontWeight: 700, fontSize: '0.95rem',
+                  boxShadow: '0 4px 14px rgba(229, 94, 32, 0.35)',
+                  transition: 'transform 0.15s, box-shadow 0.15s'
+                }}
+                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(229,94,32,0.45)'; }}
+                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(229,94,32,0.35)'; }}
+              >
+                Xem chi tiết chính sách →
+              </Link>
+              <p style={{ margin: '14px 0 0', textAlign: 'center', fontSize: '0.78rem', color: '#94a3b8' }}>
+                Thông báo này chỉ hiện một lần
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
         {/* 5 Hubs */}
         <div className="blog-top-cards">
-          <Link to="/hdv" className="blog-top-card" style={{ background: 'linear-gradient(to right, #f8fafc, #f1f5f9)' }}>
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="HDV" className="blog-icon-img" />
-            <span style={{ fontWeight: 600, color: '#1e293b' }}>HUB Hướng Dẫn Viên</span>
-          </Link>
+          <div className="blog-top-card" style={{ background: 'linear-gradient(to right, #f8fafc, #f1f5f9)', display: 'block', padding: '1.25rem' }}>
+            <Link to="/hdv" style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: '#1e293b' }}>
+              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="HDV" className="blog-icon-img" />
+              <span style={{ fontWeight: 600 }}>HUB Hướng Dẫn Viên</span>
+            </Link>
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '0.75rem 0' }} />
+            <ul className="blog-list">
+              <li style={{ marginBottom: '0.5rem' }}>
+                <Link to="/tai-lieu/quy-che-luong-hdv" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>💰</span> Quy chế lương Hướng Dẫn Viên</Link>
+              </li>
+              <li style={{ marginBottom: 0 }}>
+                <Link to="/tai-lieu/chinh-sach-danh-gia" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>⭐</span> Chính sách Review HDV</Link>
+              </li>
+            </ul>
+          </div>
           <Link to="/tai-lieu/marketing" className="blog-top-card">
             <img src="https://cdn-icons-png.flaticon.com/512/1998/1998087.png" alt="Marketing" className="blog-icon-img" />
             <span>HUB Marketing</span>
@@ -520,8 +642,12 @@ const DocumentsHome = () => {
             
             <ul className="blog-list" style={{ marginTop: '1.5rem' }}>
               <li><Link to="/tai-lieu/bo-nguyen-tac-hanh-xu-nhan-vien"><span className="blog-list-icon">📓</span> Bộ quy tắc hành xử Nhân viên văn phòng</Link></li>
-              <li><Link to="/tai-lieu/quy-che-luong-hdv"><span className="blog-list-icon">📓</span> Quy chế lương Hướng Dẫn Viên</Link></li>
               <li><Link to="/tai-lieu/quy-trinh-sale-dieu-hanh"><span className="blog-list-icon">📓</span> Nhắc nhở quy trình làm việc Sale & Điều Hành</Link></li>
+            </ul>
+
+            <h3 className="blog-section-title" style={{ marginTop: '2rem' }}>Hướng dẫn Công cụ</h3>
+            <ul className="blog-list">
+              <li><Link to="/tai-lieu/zoho-email"><span className="blog-list-icon">📧</span> Hướng Dẫn Kết Nối Zoho Mail</Link></li>
             </ul>
           </div>
 
@@ -814,6 +940,25 @@ const DocumentsPage = () => {
       title="SOP – Chuẩn hóa tên Tour"
       author="Ban Giám Đốc FIT Tour"
       breadcrumbs={[{ label: 'Checklist Điều Hành' }]}
+    />
+  );
+  if (path === '/tai-lieu/zoho-email') return (
+    <MarkdownViewer 
+      fileUrl="/docs/zoho-email.md" 
+      title="Hướng Dẫn Kết Nối Zoho Mail"
+      author="FIT Tour IT Support"
+      breadcrumbs={[{ label: 'Hướng dẫn Công cụ' }]}
+    />
+  );
+  if (path === '/tai-lieu/chinh-sach-danh-gia') return <ChinhSachDanhGiaPage />;
+  if (path === '/tai-lieu/co-che-kpi') return <CoCheKpiPage />;
+  if (path === '/tai-lieu/van-ban-co-che-kpi') return (
+    <MarkdownViewer 
+      fileUrl="/docs/van-ban-co-che-kpi.md" 
+      title="Quyết định ban hành cơ chế lương – KPI" 
+      author="Ban Giám Đốc" 
+      updatedDate="01/01/2026"
+      breadcrumbs={[{ label: 'Tài liệu', path: '/tai-lieu' }, { label: 'Biểu mẫu hành chính', path: '/tai-lieu/bieu-mau' }]}
     />
   );
   if (path === '/tai-lieu' || path === '/tai-lieu/') return <DocumentsHome />;

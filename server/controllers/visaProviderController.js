@@ -94,13 +94,13 @@ exports.getDetails = async (req, res) => {
 exports.create = async (req, res) => {
     const client = await db.pool.connect();
     try {
-        const { country, processing_time, contacts, services } = req.body;
+        const { code, name, phone, email, address, notes, country, processing_time, market, contacts, services } = req.body;
 
         await client.query('BEGIN');
 
         const result = await client.query(
-            `INSERT INTO visa_providers (country, processing_time) VALUES ($1, $2) RETURNING *`,
-            [country, processing_time]
+            `INSERT INTO visa_providers (code, name, phone, email, address, notes, country, processing_time, market) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+            [code, name, phone, email, address, notes, country, processing_time, market]
         );
         const newId = result.rows[0].id;
 
@@ -119,8 +119,8 @@ exports.create = async (req, res) => {
             for (const s of services) {
                 if (!s.name) continue;
                 await client.query(
-                    'INSERT INTO visa_provider_services (visa_provider_id, visa_type) VALUES ($1, $2)',
-                    [newId, s.visa_type || null]
+                    'INSERT INTO visa_provider_services (visa_provider_id, visa_type, sku, name, cost_price, sale_price, description, notes, quantity, kt_price, rate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+                    [newId, s.visa_type || null, s.sku || null, s.name, s.cost_price || null, s.sale_price || null, s.description || null, s.notes || null, s.quantity || 1.00, s.kt_price || 0, s.rate || 0]
                 );
             }
         }
@@ -155,7 +155,7 @@ exports.update = async (req, res) => {
     try {
         const { id } = req.params;
         const { 
-            country, processing_time,
+            code, name, phone, email, address, notes, country, processing_time, market,
             contacts, services,
             deleted_contact_ids, deleted_service_ids
         } = req.body;
@@ -163,8 +163,8 @@ exports.update = async (req, res) => {
         await client.query('BEGIN');
 
         const result = await client.query(
-            `UPDATE visa_providers SET country=$1, processing_time=$2, updated_at=CURRENT_TIMESTAMP WHERE id=$3 RETURNING *`,
-            [country, processing_time, id]
+            `UPDATE visa_providers SET code=$1, name=$2, phone=$3, email=$4, address=$5, notes=$6, country=$7, processing_time=$8, market=$9, updated_at=CURRENT_TIMESTAMP WHERE id=$10 RETURNING *`,
+            [code, name, phone, email, address, notes, country, processing_time, market, id]
         );
 
         if (deleted_contact_ids && deleted_contact_ids.length > 0) {
@@ -196,13 +196,13 @@ exports.update = async (req, res) => {
                 if (!s.name) continue;
                 if (typeof s.id === 'string' || Number(s.id) > 1000000000000) {
                     await client.query(
-                        'INSERT INTO visa_provider_services (visa_provider_id, visa_type) VALUES ($1, $2)',
-                        [id, s.visa_type || null]
+                        'INSERT INTO visa_provider_services (visa_provider_id, visa_type, sku, name, cost_price, sale_price, description, notes, quantity, kt_price, rate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+                        [id, s.visa_type || null, s.sku || null, s.name, s.cost_price || null, s.sale_price || null, s.description || null, s.notes || null, s.quantity || 1.00, s.kt_price || 0, s.rate || 0]
                     );
                 } else {
                     await client.query(
-                        'UPDATE visa_provider_services SET visa_type=$1 WHERE id=$2',
-                        [s.visa_type || null, s.id]
+                        'UPDATE visa_provider_services SET visa_type=$1, sku=$2, name=$3, cost_price=$4, sale_price=$5, description=$6, notes=$7, quantity=$8, kt_price=$9, rate=$10 WHERE id=$11',
+                        [s.visa_type || null, s.sku || null, s.name, s.cost_price || null, s.sale_price || null, s.description || null, s.notes || null, s.quantity || 1.00, s.kt_price || 0, s.rate || 0, s.id]
                     );
                 }
             }

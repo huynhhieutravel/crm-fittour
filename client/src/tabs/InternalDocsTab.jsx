@@ -196,20 +196,6 @@ const InternalDocsTab = () => {
                     </ul>
                 </div>
 
-                {/* Seeding Section */}
-                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', marginTop: '24px' }}>
-                    2. Chiến Dịch Hỗ Trợ Seeding Trên 2 Nền Tảng: Facebook Và Google
-                </h3>
-                <p style={{ marginBottom: '12px' }}>
-                    Khách hàng đi Tour của FIT review 5* / đề xuất thẳng trên Google/Fanpage của FIT Tour - Du lịch có GUU
-                </p>
-                <div style={{ backgroundColor: '#fffbeb', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #f59e0b' }}>
-                    <p style={{ fontWeight: '600', marginBottom: '8px' }}>Chế độ khích lệ (tối đa 1,500,000 VND tiền thưởng/chuyến)</p>
-                    <ul style={{ paddingLeft: '20px', margin: 0, lineHeight: '1.6' }}>
-                        <li>1 review 5* + 05 hình chuyến đi: <strong>100,000đ / REVIEW</strong> hiển thị</li>
-                        <li>1 review 5* + 10 hình chuyến đi: <strong>150,000đ / REVIEW</strong> hiển thị</li>
-                    </ul>
-                </div>
             </div>
 
             {/* Section II */}

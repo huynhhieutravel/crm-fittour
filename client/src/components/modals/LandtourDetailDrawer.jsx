@@ -6,7 +6,7 @@ import Select from 'react-select';
 import { useMarkets } from '../../hooks/useMarkets';
 import { isViewOnly as checkViewOnly } from '../../utils/permissions';
 
-export default function LandtourDetailDrawer({ landtour, onClose, refreshList, currentUser, checkPerm, addToast }) {
+export default function LandtourDetailDrawer({ landtour, onClose, refreshList, currentUser, checkPerm, addToast, forceViewMode = false }) {
     const [activeTab, setActiveTab] = useState('general');
     
     // States - match actual DB columns
@@ -28,6 +28,18 @@ export default function LandtourDetailDrawer({ landtour, onClose, refreshList, c
 
     const [landtourNotes, setLandtourNotes] = useState([]);
     const [newNote, setNewNote] = useState('');
+
+    const formatCurrency = (val) => {
+        if (val === null || val === undefined || val === '') return '';
+        const num = Number(val);
+        if (isNaN(num)) return val;
+        return num.toLocaleString('vi-VN');
+    };
+
+    const parseCurrency = (val) => {
+        if (!val) return '';
+        return val.toString().replace(/\./g, '').replace(/,/g, '');
+    };
 
     const fetchLandtourNotes = async () => {
         if (!landtour?.id) return;
@@ -112,7 +124,7 @@ export default function LandtourDetailDrawer({ landtour, onClose, refreshList, c
         }
     };
 
-    const isViewOnly = checkPerm ? (landtour ? !checkPerm('landtours', 'edit') : !checkPerm('landtours', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
+    const isViewOnly = forceViewMode || (checkPerm ? (landtour ? !checkPerm('landtours', 'edit') : !checkPerm('landtours', 'create')) : checkViewOnly(currentUser?.role, 'suppliers'));
 
     const handleContactChange = (index, field, value) => {
         const newContacts = [...contacts];
@@ -149,7 +161,108 @@ export default function LandtourDetailDrawer({ landtour, onClose, refreshList, c
         input: (base) => ({ ...base, margin: 0, padding: 0 })
     };
 
-    return (
+    
+    if (isViewOnly) {
+        return (
+            <div className="drawer-overlay" style={{ position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', zIndex: 10000, display: 'flex', justifyContent: 'flex-end' }} onClick={onClose}>
+                <div className="drawer-content" style={{ width: '900px', maxWidth: '100%', background: '#f1f5f9', height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '-10px 0 30px rgba(0,0,0,0.15)', animation: 'slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} onClick={e => e.stopPropagation()}>
+                    {/* VIEW HEADER */}
+                    <div style={{ padding: '2rem 2.5rem', background: 'linear-gradient(to right, #9a3412, #c2410c)', color: 'white', position: 'relative', flexShrink: 0 }}>
+                        <button onClick={onClose} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', padding: '6px', border: 'none', cursor: 'pointer', color: 'white' }}>
+                            <X size={20} />
+                        </button>
+                        <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Map size={28} color="#fdba74"/> {formData.name || landtour?.name}
+                        </h2>
+                        <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.9rem', color: '#fed7aa' }}>
+                            <span><strong>Mã:</strong> {formData.code || 'N/A'}</span>
+                            <span><strong>Loại hình:</strong> {formData.landtour_class || 'N/A'}</span>
+                        </div>
+                    </div>
+
+                    {/* VIEW BODY (No Tabs, Everything Scrollable) */}
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        
+                        {/* 1. THÔNG TIN CHUNG */}
+                        <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                            <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '2px solid #f1f5f9', paddingBottom: '0.75rem' }}>
+                                <Users size={18} color="#ea580c" /> THÔNG TIN LIÊN LẠC & ĐỊA CHỈ
+                            </h3>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                                <div><div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, marginBottom: '4px' }}>SỐ ĐIỆN THOẠI</div><div style={{ fontWeight: 500 }}>{formData.phone || '-'}</div></div>
+                                <div><div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, marginBottom: '4px' }}>EMAIL</div><div style={{ fontWeight: 500 }}>{formData.email || '-'}</div></div>
+                                <div><div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, marginBottom: '4px' }}>THỊ TRƯỜNG</div><div style={{ fontWeight: 500 }}>{formData.market || '-'}</div></div>
+                                <div><div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, marginBottom: '4px' }}>MÃ SỐ THUẾ</div><div style={{ fontWeight: 500 }}>{formData.tax_code || '-'}</div></div>
+                                <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, marginBottom: '4px' }}>ĐỊA CHỈ</div><div style={{ fontWeight: 500 }}>{formData.address || '-'}</div></div>
+                            </div>
+                        </div>
+
+                        {/* 2. NGƯỜI LIÊN HỆ */}
+                        <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                            <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '2px solid #f1f5f9', paddingBottom: '0.75rem' }}>
+                                <Users size={18} color="#ea580c" /> NGƯỜI LIÊN HỆ VẬN HÀNH
+                            </h3>
+                            {contacts.length === 0 ? <p style={{ color: '#94a3b8', fontStyle: 'italic', margin: 0 }}>Chưa có người liên hệ.</p> : (
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                                    <thead>
+                                        <tr style={{ background: '#f8fafc', color: '#64748b', textAlign: 'left' }}>
+                                            <th style={{ padding: '10px 16px', borderRadius: '6px 0 0 6px' }}>Họ Tên</th>
+                                            <th style={{ padding: '10px 16px' }}>Chức Vụ</th>
+                                            <th style={{ padding: '10px 16px' }}>Điện Thoại</th>
+                                            <th style={{ padding: '10px 16px', borderRadius: '0 6px 6px 0' }}>Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {contacts.map((c, i) => (
+                                            <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                <td style={{ padding: '12px 16px', fontWeight: 500 }}>{c.name || '-'}</td>
+                                                <td style={{ padding: '12px 16px', color: '#64748b' }}>{c.position || '-'}</td>
+                                                <td style={{ padding: '12px 16px' }}>{c.phone || '-'}</td>
+                                                <td style={{ padding: '12px 16px' }}>{c.email || '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+
+                        {/* 3. DỊCH VỤ CUNG CẤP */}
+                        <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                            <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '2px solid #f1f5f9', paddingBottom: '0.75rem' }}>
+                                <ShoppingBag size={18} color="#ea580c" /> DỊCH VỤ LAND TOUR
+                            </h3>
+                            {services.length === 0 ? <p style={{ color: '#94a3b8', fontStyle: 'italic', margin: 0 }}>Chưa có dịch vụ nào.</p> : (
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                                    <thead>
+                                        <tr style={{ background: '#f8fafc', color: '#64748b', textAlign: 'left' }}>
+                                            <th style={{ padding: '10px 16px', borderRadius: '6px 0 0 6px' }}>Mã SKU</th>
+                                            <th style={{ padding: '10px 16px' }}>Tên Dịch Vụ</th>
+                                            <th style={{ padding: '10px 16px' }}>Mô Tả</th>
+                                            <th style={{ padding: '10px 16px', textAlign: 'right' }}>Giá Gốc</th>
+                                            <th style={{ padding: '10px 16px', textAlign: 'right', borderRadius: '0 6px 6px 0' }}>Giá Bán</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {services.map((s, i) => (
+                                            <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                <td style={{ padding: '12px 16px', color: '#ea580c', fontWeight: 600 }}>{s.sku || '-'}</td>
+                                                <td style={{ padding: '12px 16px', fontWeight: 600 }}>{s.name || '-'}</td>
+                                                <td style={{ padding: '12px 16px', color: '#64748b', fontSize: '0.85rem' }}>{s.description || '-'}</td>
+                                                <td style={{ padding: '12px 16px', textAlign: 'right' }}>{s.net_price ? Number(s.net_price).toLocaleString() : '-'}</td>
+                                                <td style={{ padding: '12px 16px', textAlign: 'right', color: '#16a34a', fontWeight: 'bold' }}>{s.sale_price ? Number(s.sale_price).toLocaleString() : '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+return (
         <div className="drawer-overlay" style={{
             position: 'fixed', top: 0, right: 0, bottom: 0, left: 0,
             background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', zIndex: 10000, display: 'flex', justifyContent: 'flex-end'
@@ -236,14 +349,7 @@ export default function LandtourDetailDrawer({ landtour, onClose, refreshList, c
                                             noOptionsMessage={() => "Không tìm thấy thị trường"}
                                         />
                                     </div>
-                                    <div>
-                                        <label style={labelStyle}>Mã Số Thuế</label>
-                                        <input type="text" style={drawerInputStyle} value={formData.tax_id} onChange={e => setFormData({...formData, tax_id: e.target.value})} disabled={isViewOnly} placeholder="Mã số thuế..." />
-                                    </div>
-                                    <div>
-                                        <label style={labelStyle}>Website</label>
-                                        <input type="text" style={drawerInputStyle} value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} disabled={isViewOnly} placeholder="https://..." />
-                                    </div>
+
                                     <div style={{ gridColumn: 'span 2' }}>
                                         <label style={labelStyle}>Địa chỉ chi tiết</label>
                                         <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: '1rem' }}>
@@ -286,7 +392,7 @@ export default function LandtourDetailDrawer({ landtour, onClose, refreshList, c
                                 <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
                                     <Users size={18} color="#cbd5e1" /> Liên Hệ Vận Hành
                                 </h3>
-                                <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto' }}>
+                                <div className="service-table-wrapper" style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                                     <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                                         <thead style={{ background: '#f1f5f9' }}>
                                             <tr style={{ textAlign: 'left', color: '#475569', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
@@ -330,7 +436,24 @@ export default function LandtourDetailDrawer({ landtour, onClose, refreshList, c
                             <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1rem', textTransform: 'uppercase', color: '#475569', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.5px' }}>
                                 <ShoppingBag size={18} color="#cbd5e1" /> DANH MỤC DỊCH VỤ LAND TOUR
                             </h3>
-                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto' }}>
+                            <style>{`
+                                .service-table-wrapper::-webkit-scrollbar {
+                                    height: 12px;
+                                }
+                                .service-table-wrapper::-webkit-scrollbar-track {
+                                    background: #f8fafc;
+                                    border-radius: 0 0 8px 8px;
+                                }
+                                .service-table-wrapper::-webkit-scrollbar-thumb {
+                                    background: #cbd5e1;
+                                    border-radius: 8px;
+                                    border: 2px solid #f8fafc;
+                                }
+                                .service-table-wrapper::-webkit-scrollbar-thumb:hover {
+                                    background: #94a3b8;
+                                }
+                            `}</style>
+                            <div className="service-table-wrapper" style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                                 <table style={{ width: '100%', minWidth: '1300px', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                                     <thead style={{ background: '#f1f5f9' }}>
                                         <tr style={{ textAlign: 'left', color: '#475569', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
@@ -352,12 +475,12 @@ export default function LandtourDetailDrawer({ landtour, onClose, refreshList, c
                                                 <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><input style={inlineInput} value={s.sku || ''} onChange={e => handleServiceChange(i, 'sku', e.target.value)} disabled={isViewOnly} placeholder="SKU" /></td>
                                                 <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><input style={inlineInput} value={s.service_type || ''} onChange={e => handleServiceChange(i, 'service_type', e.target.value)} disabled={isViewOnly} placeholder="Loại" /></td>
                                                 <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><input style={{...inlineInput, fontWeight: 600}} value={s.name || ''} onChange={e => handleServiceChange(i, 'name', e.target.value)} disabled={isViewOnly} placeholder="Tên dịch vụ..." /></td>
-                                                <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><input style={inlineInput} value={s.description || ''} onChange={e => handleServiceChange(i, 'description', e.target.value)} disabled={isViewOnly} placeholder="Chi tiết..." /></td>
-                                                <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><input style={inlineInput} value={s.notes || ''} onChange={e => handleServiceChange(i, 'notes', e.target.value)} disabled={isViewOnly} placeholder="Ghi chú..." /></td>
+                                                <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><textarea style={{...inlineInput, resize: 'vertical', minHeight: '60px', padding: '8px', lineHeight: '1.4'}} value={s.description || ''} onChange={e => handleServiceChange(i, 'description', e.target.value)} disabled={isViewOnly} placeholder="Chi tiết..." /></td>
+                                                <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><textarea style={{...inlineInput, resize: 'vertical', minHeight: '60px', padding: '8px', lineHeight: '1.4'}} value={s.notes || ''} onChange={e => handleServiceChange(i, 'notes', e.target.value)} disabled={isViewOnly} placeholder="Ghi chú..." /></td>
                                                 <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><input type="number" style={{...inlineInput, textAlign: 'center', background: '#eef2ff', fontWeight: 600, color: '#4f46e5', borderColor: '#c7d2fe'}} value={s.capacity || ''} onChange={e => handleServiceChange(i, 'capacity', e.target.value)} disabled={isViewOnly} placeholder="1" /></td>
-                                                <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><input type="number" style={inlineInput} value={s.cost_price || ''} onChange={e => handleServiceChange(i, 'cost_price', e.target.value)} disabled={isViewOnly} placeholder="Giá KT" /></td>
-                                                <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><input type="number" style={inlineInput} value={s.net_price || ''} onChange={e => handleServiceChange(i, 'net_price', e.target.value)} disabled={isViewOnly} placeholder="Giá gốc" /></td>
-                                                <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><input type="number" style={{...inlineInput, color: '#16a34a', fontWeight: 'bold'}} value={s.sale_price || ''} onChange={e => handleServiceChange(i, 'sale_price', e.target.value)} disabled={isViewOnly} placeholder="Giá bán" /></td>
+                                                <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><input type="text" style={inlineInput} value={formatCurrency(s.cost_price)} onChange={e => handleServiceChange(i, 'cost_price', parseCurrency(e.target.value))} disabled={isViewOnly} placeholder="Giá KT" /></td>
+                                                <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><input type="text" style={inlineInput} value={formatCurrency(s.net_price)} onChange={e => handleServiceChange(i, 'net_price', parseCurrency(e.target.value))} disabled={isViewOnly} placeholder="Giá gốc" /></td>
+                                                <td style={{...inputCell, borderBottom: '1px solid #e2e8f0'}}><input type="text" style={{...inlineInput, color: '#16a34a', fontWeight: 'bold'}} value={formatCurrency(s.sale_price)} onChange={e => handleServiceChange(i, 'sale_price', parseCurrency(e.target.value))} disabled={isViewOnly} placeholder="Giá bán" /></td>
                                                 <td style={{...inputCell, textAlign: 'center', borderBottom: '1px solid #e2e8f0'}}>
                                                     {!isViewOnly && (
                                                         <button style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', padding: '4px' }} onClick={() => handleDeleteService(i, s)}><Trash2 size={16} /></button>

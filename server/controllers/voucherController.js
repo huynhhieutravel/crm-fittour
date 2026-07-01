@@ -14,7 +14,8 @@ exports.createVoucher = async (req, res) => {
             payer_name,
             payer_phone,
             notes,
-            attachment_url
+            attachment_url,
+            voucher_date
         } = req.body;
 
         const created_by = req.user.id;
@@ -52,7 +53,8 @@ exports.createVoucher = async (req, res) => {
         }
 
         // Auto-generate code e.g., PT-B8734-080426-A3
-        const d = new Date();
+        const d = voucher_date ? new Date(voucher_date) : new Date();
+        if (isNaN(d.getTime())) throw new Error('Ngày phiếu thu không hợp lệ');
         const ddmmyy = `${String(d.getDate()).padStart(2, '0')}${String(d.getMonth()+1).padStart(2, '0')}${String(d.getFullYear()).slice(2)}`;
         
         let prefix = booking_code ? booking_code : ((booking_id ? String(booking_id).substring(0, 6) : (visa_id ? `HS${visa_id}` : 'UNK')));
@@ -68,15 +70,16 @@ exports.createVoucher = async (req, res) => {
             INSERT INTO payment_vouchers (
                 voucher_code, tour_id, booking_id, visa_id, title, amount,
                 payment_method, payer_name, payer_phone, notes,
-                created_by, created_by_name, status, attachment_url
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'Đã duyệt', $13)
+                created_by, created_by_name, status, attachment_url, created_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'Đã duyệt', $13, $14)
             RETURNING *
         `;
 
         const values = [
             voucher_code, tour_id, booking_id, visa_id || null, title, amount,
             payment_method, payer_name, payer_phone, notes,
-            created_by, created_by_name, attachment_url || null
+            created_by, created_by_name, attachment_url || null,
+            voucher_date ? new Date(voucher_date) : new Date()
         ];
 
         const r = await db.query(insertQuery, values);

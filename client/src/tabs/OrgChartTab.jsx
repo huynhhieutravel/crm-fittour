@@ -13,6 +13,7 @@ import 'reactflow/dist/style.css';
 import axios from 'axios';
 import { Save, Plus, Trash2, Edit3, X, User, Target } from 'lucide-react';
 import { formatRoleDisplayName } from '../utils/roleUtils';
+import Select from 'react-select';
 
 // --- CUSTOM NODE COMPONENT ---
 const CustomNode = ({ data, selected }) => {
@@ -333,7 +334,6 @@ const OrgChartTab = ({ currentUser, addToast }) => {
 
         const bu2Staff = [
             { name: 'Bùi Ngọc Hiếu', pos: 'Phó phòng sales', user: 'gu2.sale' },
-            { name: 'Văn Tâm', pos: 'Visa', user: 'gu3.sale' },
             { name: 'Dương Quỳnh Như', pos: 'sales', user: 'gu4.sale' },
             { name: 'Nguyễn Thị Hằng', pos: 'Điều hành', user: 'hang.dh' },
             { name: 'Lê Thanh Hà', pos: 'Điều hành', user: 'ha.dh' },
@@ -358,6 +358,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
         addEdge(bu3Id, bu3Head, greenEdge);
 
         const bu3Staff = [
+            { name: 'Văn Tâm', pos: 'Visa', user: 'gu3.sale' },
             { name: 'Hoàng Thị Hoa', pos: 'Lead team sale', user: 'sv4.sale' },
             { name: 'Trần Đức Mẫn', pos: 'Lead Điều hành', user: 'sv2.sale' },
             { name: 'Hậu Quang Hưng', pos: 'sales', user: 'sv3.sale' },
@@ -551,16 +552,19 @@ const OrgChartTab = ({ currentUser, addToast }) => {
                         <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <div>
                                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginBottom: '4px' }}>LIÊN KẾT NHANH TÀI KHOẢN (Tự điền ảnh/tên)</label>
-                                <select 
-                                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none' }}
-                                    value={selectedNode.data.userId || ''}
-                                    onChange={(e) => handleLinkUser(e.target.value)}
-                                >
-                                    <option value="">-- Chọn user hệ thống --</option>
-                                    {usersList.map(u => (
-                                        <option key={u.id} value={u.id}>{u.full_name} (@{u.username})</option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={usersList.map(u => ({ value: u.id, label: `${u.full_name} (@${u.username})` }))}
+                                    value={selectedNode.data.userId ? { 
+                                        value: selectedNode.data.userId, 
+                                        label: `${usersList.find(u => u.id === selectedNode.data.userId)?.full_name || ''} (@${usersList.find(u => u.id === selectedNode.data.userId)?.username || ''})` 
+                                    } : null}
+                                    onChange={(selectedOption) => handleLinkUser(selectedOption ? selectedOption.value : '')}
+                                    placeholder="-- Tìm kiếm tên nhân viên --"
+                                    isClearable
+                                    isSearchable
+                                    menuPortalTarget={document.body}
+                                    styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                />
                             </div>
 
                             <div>

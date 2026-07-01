@@ -1,6 +1,0 @@
-#!/usr/bin/expect -f
-set timeout 20
-spawn ssh -o StrictHostKeyChecking=no root@207.148.120.90 "find /var/www/ -name 'uploads' -type d"
-expect "password:"
-send "A\[a5{M!B\[zDCD#ss\r"
-expect eof

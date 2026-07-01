@@ -28,7 +28,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
     const [usersList, setUsersList] = useState([]);
     const [vouchersList, setVouchersList] = useState([]);
     const [showVoucherForm, setShowVoucherForm] = useState(false);
-    const [voucherForm, setVoucherForm] = useState({ title: 'Thu tiền Visa', amount: '', payment_method: 'Chuyển khoản', payer_name: '', payer_phone: '', notes: '' });
+    const [voucherForm, setVoucherForm] = useState({ title: 'Thu tiền Visa', amount: '', payment_method: 'Chuyển khoản', payer_name: '', payer_phone: '', notes: '', voucher_date: new Date().toISOString().slice(0, 16) });
 
     useEffect(() => {
         // Load users list for commission dropdown
@@ -77,7 +77,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
             
             if(addToast) addToast('Tạo phiếu thu thành công', 'success');
             setShowVoucherForm(false);
-            setVoucherForm({ title: 'Thu tiền Visa', amount: '', payment_method: 'Chuyển khoản', payer_name: '', payer_phone: '', notes: '' });
+            setVoucherForm({ title: 'Thu tiền Visa', amount: '', payment_method: 'Chuyển khoản', payer_name: '', payer_phone: '', notes: '', voucher_date: new Date().toISOString().slice(0, 16) });
             fetchVouchers();
             fetchDetail(); // Refresh total collected
             refreshList(); // Refresh list to update total

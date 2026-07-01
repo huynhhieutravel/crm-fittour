@@ -9,6 +9,18 @@ const THANG_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
 const TUAN_OPTIONS = [1, 2, 3, 4, 5];
 const NAM_OPTIONS = [2024, 2025, 2026, 2027];
 
+const QUARTER_OPTIONS = [
+  { value: 1, label: 'Q1 (T1-T3)', months: [1, 2, 3] },
+  { value: 2, label: 'Q2 (T4-T6)', months: [4, 5, 6] },
+  { value: 3, label: 'Q3 (T7-T9)', months: [7, 8, 9] },
+  { value: 4, label: 'Q4 (T10-T12)', months: [10, 11, 12] },
+];
+
+const getQuarterMonths = (q) => {
+  const opt = QUARTER_OPTIONS.find(o => o.value === parseInt(q));
+  return opt ? opt.months : [];
+};
+
 const getWeekRanges = (year, month) => {
   if (!year || !month) return {};
   const y = parseInt(year);
@@ -72,6 +84,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
     year: new Date().getFullYear(),
     month: new Date().getMonth() + 1,
     week_number: '',
+    quarter: '',
   });
   
   const [selectedIds, setSelectedIds] = useState([]);
@@ -472,6 +485,24 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
         >
           CHI TIẾT CHIẾN DỊCH (DATA)
         </button>
+        <a 
+          href="https://chatgpt.com/g/g-6a41cd26ce208191ae870f3f28bb3a2b-fit-tour-marketing-analyst"
+          target="_blank" rel="noopener noreferrer"
+          style={{
+            marginLeft: 'auto',
+            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            padding: '8px 18px', borderRadius: '8px',
+            background: 'linear-gradient(135deg, #10a37f 0%, #1a7f64 100%)',
+            color: 'white', fontWeight: 700, fontSize: '0.82rem',
+            textDecoration: 'none', cursor: 'pointer', border: 'none',
+            boxShadow: '0 2px 8px rgba(16, 163, 127, 0.25)',
+            transition: 'all 0.2s',
+          }}
+          title="Phân tích dữ liệu Marketing cùng ChatGPT"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.998 5.998 0 0 0-3.998 2.9 6.042 6.042 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/></svg>
+          Hỏi ChatGPT
+        </a>
       </div>
 
       {activeSubTab !== 'monthly' && (
@@ -594,6 +625,22 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                 >
                   <Trash2 size={15} /> XÓA
                 </button>
+                <a 
+                  href="https://chatgpt.com/g/g-6a41cd26ce208191ae870f3f28bb3a2b-fit-tour-marketing-analyst"
+                  target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    padding: '6px 14px', borderRadius: '6px',
+                    background: 'linear-gradient(135deg, #10a37f 0%, #1a7f64 100%)',
+                    color: 'white', fontWeight: 600, fontSize: '0.8rem',
+                    textDecoration: 'none', cursor: 'pointer', border: 'none',
+                    boxShadow: '0 2px 6px rgba(16, 163, 127, 0.2)',
+                  }}
+                  title="Phân tích dữ liệu Marketing cùng ChatGPT"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.998 5.998 0 0 0-3.998 2.9 6.042 6.042 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/></svg>
+                  Hỏi ChatGPT
+                </a>
               </div>
             )}
           </div>
@@ -925,13 +972,28 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
       {activeSubTab === 'monthly' && (
         <div className="monthly-dashboard animate-fade-in">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <select className="filter-input" value={filters.year} onChange={e => setFilters({...filters, year: e.target.value})} style={{ minWidth: '100px' }}>
                 {NAM_OPTIONS.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
-              <select className="filter-input" value={filters.month} onChange={e => setFilters({...filters, month: e.target.value})} style={{ minWidth: '150px' }}>
+              <select className="filter-input" value={filters.month} onChange={e => {
+                const newMonth = e.target.value;
+                setFilters({...filters, month: newMonth, quarter: newMonth ? '' : filters.quarter});
+              }} style={{ minWidth: '150px' }}>
                 <option value="">Xem Tổng Cả Năm (12 Tháng)</option>
                 {THANG_OPTIONS.map(m => <option key={m} value={m}>Tháng {m} (Xem 5 Tuần)</option>)}
+              </select>
+              <select 
+                className="filter-input" 
+                value={filters.quarter} 
+                onChange={e => {
+                  const q = e.target.value;
+                  setFilters({...filters, quarter: q, month: q ? '' : filters.month});
+                }} 
+                style={{ minWidth: '130px', fontWeight: filters.quarter ? 700 : 400, color: filters.quarter ? '#7c3aed' : undefined, borderColor: filters.quarter ? '#a78bfa' : undefined }}
+              >
+                <option value="">Quý: Không chọn</option>
+                {QUARTER_OPTIONS.map(q => <option key={q.value} value={q.value}>{q.label}</option>)}
               </select>
               <div style={{ color: '#64748b', fontSize: '14px', fontWeight: '500' }}>
                 Xem tổng quan KPI và tiến độ báo cáo
@@ -967,21 +1029,42 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                   });
                 }}
               >
-                <Edit2 size={16} /> Cập nhật Target {filters.month ? `Tháng ${filters.month}` : 'Năm'}
+                <Edit2 size={16} /> Cập nhật Target {filters.quarter ? `Q${filters.quarter}` : filters.month ? `Tháng ${filters.month}` : 'Năm'}
               </button>
             </div>
           </div>
 
           {(() => {
             const activeBUs = bus || [];
+            const isQuarterMode = !!filters.quarter;
+            const quarterMonths = isQuarterMode ? getQuarterMonths(filters.quarter) : [];
             const targetMonth = filters.month ? parseInt(filters.month) : 0;
             const isMonthlyZoom = !!filters.month;
             
             const buData = activeBUs.map(bu => {
-              const kpi = kpiData.kpis.find(k => k.bu_name === bu.id && k.month === targetMonth) 
-                        || {};
-              const actualRecords = kpiData.aggregates
-                .filter(a => a.bu_name === bu.id && (isMonthlyZoom ? parseInt(a.month) === targetMonth : true));
+              let kpi, actualRecords;
+              
+              if (isQuarterMode) {
+                // Quý: gộp KPI 3 tháng
+                const kpiList = quarterMonths.map(m => 
+                  kpiData.kpis.find(k => k.bu_name === bu.id && k.month === m) || {}
+                );
+                kpi = {
+                  budget: kpiList.reduce((s, k) => s + parseFloat(k.budget || 0), 0),
+                  target_leads: kpiList.reduce((s, k) => s + parseInt(k.target_leads || 0), 0),
+                  target_cpl: kpiList.reduce((s, k) => s + parseFloat(k.target_cpl || 0), 0) / (kpiList.filter(k => k.target_cpl).length || 1),
+                  target_routes: kpiList.reduce((s, k) => s + parseInt(k.target_routes || 0), 0),
+                  target_groups: kpiList.reduce((s, k) => s + parseInt(k.target_groups || 0), 0),
+                  target_customers: kpiList.reduce((s, k) => s + parseInt(k.target_customers || 0), 0),
+                  target_cpa: kpiList.reduce((s, k) => s + parseFloat(k.target_cpa || 0), 0) / (kpiList.filter(k => k.target_cpa).length || 1),
+                };
+                actualRecords = kpiData.aggregates
+                  .filter(a => a.bu_name === bu.id && quarterMonths.includes(parseInt(a.month)));
+              } else {
+                kpi = kpiData.kpis.find(k => k.bu_name === bu.id && k.month === targetMonth) || {};
+                actualRecords = kpiData.aggregates
+                  .filter(a => a.bu_name === bu.id && (isMonthlyZoom ? parseInt(a.month) === targetMonth : true));
+              }
                 
               const uniqueWeeks = new Set(actualRecords.map(a => `${a.year}-${a.month}-${a.week_number}`)).size;
 
@@ -998,9 +1081,14 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
               const targetCPA = parseFloat(kpi.target_cpa || 0);
               
               const currentYear = parseInt(filters.year) || new Date().getFullYear();
-              const daysInPeriod = isMonthlyZoom 
-                ? new Date(currentYear, targetMonth, 0).getDate() // Số ngày của tháng được chọn
-                : (new Date(currentYear, 1, 29).getMonth() === 1 ? 366 : 365); // Xem cả năm
+              let daysInPeriod;
+              if (isQuarterMode) {
+                daysInPeriod = quarterMonths.reduce((s, m) => s + new Date(currentYear, m, 0).getDate(), 0);
+              } else if (isMonthlyZoom) {
+                daysInPeriod = new Date(currentYear, targetMonth, 0).getDate();
+              } else {
+                daysInPeriod = new Date(currentYear, 1, 29).getMonth() === 1 ? 366 : 365;
+              }
                 
               const targetLeadsPerDay = totalTargetLeads / daysInPeriod;
               const targetLeadsPerWeek = targetLeadsPerDay * 7;
@@ -1053,7 +1141,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                 <table className="data-table" style={{ fontSize: '0.85rem', width: '100%', minWidth: '1000px' }}>
                   <thead style={{ background: '#f8fafc' }}>
                     <tr>
-                      <th style={{ width: '250px', position: 'sticky', left: 0, background: '#f8fafc', zIndex: 2, borderRight: '2px solid #e2e8f0' }}>CHỈ SỐ KPI ({isMonthlyZoom ? `THÁNG ${filters.month}` : 'CẢ NĂM'})</th>
+                      <th style={{ width: '250px', position: 'sticky', left: 0, background: '#f8fafc', zIndex: 2, borderRight: '2px solid #e2e8f0' }}>CHỈ SỐ KPI ({isQuarterMode ? `QUÝ ${filters.quarter} (${QUARTER_OPTIONS.find(q => q.value === parseInt(filters.quarter))?.label || ''})` : isMonthlyZoom ? `THÁNG ${filters.month}` : 'CẢ NĂM'})</th>
                       {activeBUs.map(bu => <th key={bu.id} style={{ textAlign: 'center', width: '180px' }}>{bu.id}</th>)}
                       <th style={{ textAlign: 'center', background: '#eff6ff', color: '#1d4ed8', width: '180px' }}>TỔNG CỘNG</th>
                     </tr>

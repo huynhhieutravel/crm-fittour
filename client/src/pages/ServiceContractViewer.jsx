@@ -22,7 +22,46 @@ export default function ServiceContractViewer() {
     }, [tourId, bookingId]);
 
     const handleDownloadWord = () => {
-        window.location.href = `/api/public/contracts/${tourId}/${bookingId}/export-docx`;
+        const contentEl = document.getElementById('contract-content');
+        if (!contentEl) return;
+
+        // Lấy nội dung hiện tại từ DOM (bao gồm mọi chỉnh sửa của user)
+        let content = contentEl.innerHTML;
+        // Bỏ contentEditable attributes, chuyển URL ảnh sang tuyệt đối
+        content = content
+            .replace(/\s*contenteditable="[^"]*"/gi, '')
+            .replace(/\s*contenteditable(?=[\s>])/gi, '')
+            .replace(/src="\//g, 'src="https://erp.fittour.vn/');
+
+        const htmlDoc = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Hop Dong Dich Vu</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
+<style>
+@page { size: A4; margin: 2cm; }
+body { font-family: 'Times New Roman', serif; font-size: 13pt; line-height: 1.8; color: #000; }
+table { border-collapse: collapse; width: 100%; page-break-inside: avoid; }
+th, td { padding: 6pt 8pt; vertical-align: top; }
+h2 { font-size: 15pt; } h3 { font-size: 14pt; } h4 { font-size: 13pt; }
+ul { padding-left: 20pt; }
+li { margin-bottom: 4pt; text-align: justify; }
+img { max-width: 150px; }
+</style>
+</head>
+<body>${content}</body>
+</html>`;
+
+        const blob = new Blob(['\ufeff', htmlDoc], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const safeName = (data?.booking?.name || 'FIT').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").replace(/\s+/g, '_');
+        a.download = `HopDongDichVu_${safeName}.doc`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     };
 
     if (loading) return <div style={{ padding: '50px', textAlign: 'center' }}>Đang tải hợp đồng...</div>;
@@ -36,7 +75,7 @@ export default function ServiceContractViewer() {
     const restAmount = totalAmount - paidAmount;
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f1f5f9', fontFamily: 'Arial, sans-serif' }}>
+        <div className="contract-page" style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f1f5f9', fontFamily: 'Arial, sans-serif' }}>
             
             {/* The A4 Page Area */}
             <div style={{ flex: 1, padding: '40px', overflowY: 'auto' }} className="print-area">
@@ -44,17 +83,38 @@ export default function ServiceContractViewer() {
                 {/* Print Styles injected in a style tag */}
                 <style>{`
                     @media print {
-                        body * { visibility: hidden; }
-                        .print-area, .print-area * { visibility: visible; }
-                        .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0 !important; background: white; }
-                        .no-print { display: none !important; }
-                        @page { margin: 15mm; }
+                        .contract-page {
+                            display: block !important;
+                            background: white !important;
+                            min-height: auto !important;
+                        }
+                        .no-print {
+                            display: none !important;
+                        }
+                        .print-area {
+                            padding: 0 !important;
+                            overflow: visible !important;
+                        }
+                        #contract-content {
+                            max-width: none !important;
+                            width: 100% !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            box-shadow: none !important;
+                            border-radius: 0 !important;
+                        }
+                        [contenteditable] {
+                            background: transparent !important;
+                        }
+                        table { page-break-inside: avoid; }
+                        @page { margin: 20mm; size: A4; }
                     }
                     [contenteditable="true"] { outline: none; transition: background 0.2s; }
                     [contenteditable="true"]:hover { background: #fef08a; cursor: text; }
                 `}</style>
                 
                 <div 
+                    id="contract-content"
                     contentEditable 
                     suppressContentEditableWarning
                     style={{ 

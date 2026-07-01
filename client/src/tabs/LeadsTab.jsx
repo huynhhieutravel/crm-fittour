@@ -412,7 +412,48 @@ const LeadsTab = ({
                 </td>
                 <td data-label="Ngày Tạo" style={{ color: '#64748b', fontSize: '0.85rem' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <span style={{ fontWeight: 600, color: '#334155' }}>{new Date(lead.created_at).toLocaleDateString('vi-VN')}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span 
+                        style={{ fontWeight: 600, color: '#2563eb', cursor: 'pointer', textDecoration: 'underline' }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingLead(lead); }}
+                      >
+                        {new Date(lead.created_at).toLocaleDateString('vi-VN')}
+                      </span>
+                      {Number(lead.notes_count) > 0 && (
+                        <div 
+                          className="note-icon-wrapper"
+                          style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            position: 'relative',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            background: '#f1f5f9',
+                            borderRadius: '6px',
+                            transition: 'all 0.2s'
+                          }}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingLead({...lead, openTab: 'history'}); }}
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setHoveredNote({ 
+                              id: lead.id, 
+                              content: lead.latest_note, 
+                              count: lead.notes_count,
+                              date: lead.latest_note_at,
+                              x: rect.left, 
+                              y: rect.top 
+                            });
+                          }} 
+                          onMouseLeave={() => setHoveredNote({ id: null, content: '', x: 0, y: 0 })}
+                        >
+                          <FileText size={16} color="#2563eb" strokeWidth={2.5} />
+                          <div className="note-badge" style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#e11d48', color: 'white', fontSize: '10px', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', border: '2px solid white', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                            {lead.notes_count}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(lead.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
                     {lead.facebook_psid && (
                       <button
@@ -499,39 +540,6 @@ const LeadsTab = ({
                       {(lead.facebook_psid || lead.meta_lead_id) && (
                         <div title="Đơn từ luồng tự động Meta" style={{ background: '#e0f2fe', color: '#0284c7', fontSize: '0.55rem', padding: '1px 4px', borderRadius: '4px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '3px' }}>
                            META
-                        </div>
-                      )}
-                      {Number(lead.notes_count) > 0 && (
-                        <div 
-                          className="note-icon-wrapper"
-                          style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            position: 'relative',
-                            cursor: 'pointer',
-                            padding: '4px',
-                            background: '#f1f5f9',
-                            borderRadius: '6px',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            setHoveredNote({ 
-                              id: lead.id, 
-                              content: lead.latest_note, 
-                              count: lead.notes_count,
-                              date: lead.latest_note_at,
-                              x: rect.left, 
-                              y: rect.top 
-                            });
-                          }} 
-                          onMouseLeave={() => setHoveredNote({ id: null, content: '', x: 0, y: 0 })}
-                        >
-                          <FileText size={16} color="#2563eb" strokeWidth={2.5} />
-                          <div className="note-badge" style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#e11d48', color: 'white', fontSize: '10px', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', border: '2px solid white', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                            {lead.notes_count}
-                          </div>
                         </div>
                       )}
                     </div>

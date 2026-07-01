@@ -970,7 +970,19 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                 )}
              </div>
              <div>
-                <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px' }}>Tên Booker*: <span style={{color:'red'}}>(*)</span></label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                   <label style={{ fontSize: '12px' }}>Tên Booker*: <span style={{color:'red'}}>(*)</span></label>
+                   {bookingInfo.customerId && (
+                      <button
+                         type="button"
+                         onClick={() => window.open(`/customers?edit=${bookingInfo.customerId}`, '_blank')}
+                         style={{ fontSize: '11px', color: '#2563eb', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                         title="Mở trang chỉnh sửa thông tin khách hàng (SĐT, tên, ...) trong tab mới"
+                      >
+                         ✏️ Sửa hồ sơ KH
+                      </button>
+                   )}
+                </div>
                 <input type="text" value={bookingInfo.name} onChange={e => setBookingInfo({...bookingInfo, name: e.target.value})} style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
              </div>
              <div>
@@ -1075,6 +1087,14 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                            <button type="button" onClick={handleViewProfile} style={{ fontSize: '11px', color: '#2563eb', border: 'none', background: '#dbeafe', padding: '4px 10px', borderRadius: '6px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: '10px', cursor: 'pointer', outline: 'none' }}>
                                👁️ Trích xuất Hồ sơ Khách hàng
                            </button>
+                           <button
+                               type="button"
+                               onClick={() => window.open(`/customers?edit=${bookingInfo.customerId}`, '_blank')}
+                               style={{ fontSize: '11px', color: '#fff', border: 'none', background: '#f59e0b', padding: '4px 10px', borderRadius: '6px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: '6px', cursor: 'pointer', outline: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
+                               title="Mở trang chỉnh sửa thông tin khách hàng (SĐT, tên, ...) trong tab mới"
+                            >
+                                ✏️ Sửa SĐT / Thông tin KH
+                            </button>
                        </div>
                    </div>
                    <div style={{ color: bookingInfo.crmNote ? '#92400e' : '#94a3b8', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>

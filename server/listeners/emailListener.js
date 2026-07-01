@@ -73,16 +73,34 @@ async function processEmailEvent(eventMeta, payload) {
     }
   }
 
-  // 6. Enqueue Email Job
-  console.log(`[EmailListener] Enqueueing email for event ${code} (TO: ${toRecipients.length}, CC: ${ccRecipients.length}, BCC: ${bccRecipients.length})`);
-  
-  // If there's no TO recipient, fall back to sending to CC or BCC
+  // 6. Define Recipients
   const finalTo = toRecipients.length > 0 ? toRecipients.join(',') : (ccRecipients.length > 0 ? ccRecipients.join(',') : bccRecipients.join(','));
   const finalCc = toRecipients.length > 0 ? ccRecipients.join(',') : ''; // If we fell back CC to TO, don't CC them again
   const finalBcc = bccRecipients.join(',');
 
+  if (!finalTo) {
+    console.log(`[EmailListener] No final recipients for event ${code}.`);
+    return;
+  }
+
+  // 7. Tạo log trong notification_logs để hiển thị trên UI (System Outbox)
+  let notificationLogId = null;
+  try {
+    const notifRes = await db.query(`
+      INSERT INTO notification_logs 
+      (event_name, channel, recipient_email, subject, status, metadata)
+      VALUES ($1, 'email', $2, $3, 'pending', $4)
+      RETURNING id
+    `, [code, finalTo, subject, JSON.stringify(payload)]);
+    notificationLogId = notifRes.rows[0].id;
+  } catch (logErr) {
+    console.error(`[EmailListener] Lỗi khi tạo notification_log cho event ${code}:`, logErr);
+  }
+
+  console.log(`[EmailListener] Enqueueing email for event ${code} (LogID: ${notificationLogId}, TO: ${toRecipients.length}, CC: ${ccRecipients.length}, BCC: ${bccRecipients.length})`);
+  
   await queueService.enqueue('send-email', {
-    notificationLogId: null, // Depending on if you want to log it
+    notificationLogId: notificationLogId, 
     recipient: finalTo,
     cc: finalCc,
     bcc: finalBcc,

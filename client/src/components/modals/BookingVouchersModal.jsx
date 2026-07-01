@@ -38,7 +38,8 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
     payment_method: 'Chuyển khoản',
     payer_name: booking?.name || '',
     payer_phone: booking?.phone || '',
-    notes: ''
+    notes: '',
+    voucher_date: new Date().toISOString().slice(0, 16) // yyyy-MM-ddTHH:mm for datetime-local
   });
 
   useEffect(() => {
@@ -268,6 +269,18 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
                         }}
                       />
                       <p style={{ fontSize: '12px', color: '#64748b', marginTop: '6px' }}>Còn lại phải thu: {Number((booking?.total || 0) - (booking?.paid || 0)).toLocaleString('vi-VN')} vnđ</p>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>Ngày phiếu thu (*)</label>
+                      <input 
+                        type="datetime-local" 
+                        required
+                        style={{ width: '100%', padding: '10px 14px', border: '1px solid #cbd5e1', borderRadius: '8px', outline: 'none' }} 
+                        value={newVoucher.voucher_date}
+                        onChange={(e) => setNewVoucher({...newVoucher, voucher_date: e.target.value})}
+                      />
+                      <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px' }}>Mặc định: thời gian hiện tại. Có thể chỉnh sửa nếu cần.</p>
                     </div>
 
                     <div>

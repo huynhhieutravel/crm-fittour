@@ -73,16 +73,16 @@ exports.createLeave = async (data, requestUser) => {
             throw new Error(`Ngày ${new Date(overlapResult.rows[0].leave_date).toLocaleDateString('vi-VN')} đã tồn tại trong một đơn xin nghỉ khác.`);
         }
 
-        // Nếu tự tạo đơn, mặc định là pending. Nếu admin tạo dùm, tự động approved.
+        // Tự động duyệt mọi đơn xin nghỉ theo yêu cầu
         const isSelf = requestUser.id === parseInt(applyForId);
-        const initialStatus = isSelf ? 'pending' : 'approved';
+        const initialStatus = 'approved';
         const initialApprovedBy = isSelf ? null : requestUser.id;
 
         const q = `
             INSERT INTO leave_requests (
                 user_id, leave_type, total_days, reason, 
                 contact_phone, handover_user_id, handover_note, status, approved_by, approved_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, ${isSelf ? 'NULL' : 'NOW()'}) RETURNING *;
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) RETURNING *;
         `;
         const result = await client.query(q, [
             applyForId, leave_type, calculated_total_days, reason, 
@@ -108,26 +108,29 @@ exports.createLeave = async (data, requestUser) => {
             await syncLeaveBalance(client, applyForId, year);
         }
 
-        // --- GỬI THÔNG BÁO ---
-        if (isSelf) {
-            try {
-                const applicantRes = await client.query('SELECT name FROM users WHERE id = $1', [applyForId]);
-                const applicantName = applicantRes.rows.length > 0 ? applicantRes.rows[0].name : 'Nhân sự';
-                
-                let handoverName = 'Không có';
-                if (handover_user_id) {
-                    const handoverRes = await client.query('SELECT name FROM users WHERE id = $1', [handover_user_id]);
-                    if (handoverRes.rows.length > 0) handoverName = handoverRes.rows[0].name;
-                }
-                
-                const formattedDates = leave_dates.map(d => {
-                    const dateStr = new Date(d.date).toLocaleDateString('vi-VN');
-                    const sessionStr = d.session === 'morning' ? ' (Sáng)' : (d.session === 'afternoon' ? ' (Chiều)' : ' (Cả ngày)');
-                    return dateStr + sessionStr;
-                }).join(', ');
-                
-                // EMAIL EVENT (Thay thế logic hardcode cũ)
-                emitEvent(SystemEvents.find(e => e.code === 'LEAVE_REQUEST_CREATED').code, {
+        await client.query('COMMIT');
+
+        // --- GỬI THÔNG BÁO (Sau khi Commit thành công để tránh Rollback ẩn) ---
+        try {
+            const applicantRes = await db.query('SELECT full_name FROM users WHERE id = $1', [applyForId]);
+            const applicantName = applicantRes.rows.length > 0 ? applicantRes.rows[0].full_name : 'Nhân sự';
+            
+            let handoverName = 'Không có';
+            if (handover_user_id) {
+                const handoverRes = await db.query('SELECT full_name FROM users WHERE id = $1', [handover_user_id]);
+                if (handoverRes.rows.length > 0) handoverName = handoverRes.rows[0].full_name;
+            }
+            
+            const formattedDates = leave_dates.map(d => {
+                const dateStr = new Date(d.date).toLocaleDateString('vi-VN');
+                const sessionStr = d.session === 'morning' ? ' (Sáng)' : (d.session === 'afternoon' ? ' (Chiều)' : ' (Cả ngày)');
+                return dateStr + sessionStr;
+            }).join(', ');
+            
+            // EMAIL EVENT
+            const eventObj = SystemEvents.find(e => e.code === 'LEAVE_REQUEST_CREATED');
+            if (eventObj) {
+                emitEvent(eventObj.code, {
                     employee_name: applicantName,
                     leave_type: leave_type,
                     reason: reason,
@@ -138,12 +141,27 @@ exports.createLeave = async (data, requestUser) => {
                     contact_phone: contact_phone || 'Không có',
                     created_at: new Date().toISOString()
                 });
-            } catch (notifErr) {
-                console.error('[LeaveService] Error sending event for new leave:', notifErr);
             }
+
+            // Nếu admin tạo dùm (tự động duyệt), thì phát thêm event Đã Duyệt để báo cho nhân sự
+            if (initialStatus === 'approved') {
+                const approvedEventObj = SystemEvents.find(e => e.code === 'LEAVE_REQUEST_APPROVED');
+                if (approvedEventObj) {
+                    emitEvent(approvedEventObj.code, {
+                        employee_name: applicantName,
+                        leave_type: leave_type,
+                        leave_dates: formattedDates,
+                        status: 'APPROVED',
+                        processed_by: isSelf ? 'Hệ thống (Tự động duyệt)' : (requestUser.full_name || requestUser.name || 'Admin'),
+                        reject_reason: '',
+                        updated_at: new Date().toISOString()
+                    });
+                }
+            }
+        } catch (notifErr) {
+            console.error('[LeaveService] Error sending event for new leave:', notifErr);
         }
 
-        await client.query('COMMIT');
         return newLeave;
     } catch (err) {
         if (client) await client.query('ROLLBACK');
@@ -226,7 +244,7 @@ exports.changeStatus = async (id, status, requestUser, rejectReason = null) => {
         const leave = lr.rows[0];
 
         if (status === 'approved' && leave.status !== 'pending') throw new Error('Đơn này không ở trạng thái chờ duyệt (có thể ai đó đã xử lý).');
-        if (status === 'rejected' && leave.status !== 'pending') throw new Error('Đơn này không ở trạng thái chờ duyệt.');
+        if (status === 'rejected' && !['pending', 'approved'].includes(leave.status)) throw new Error('Chỉ có thể từ chối đơn đang chờ duyệt hoặc đã duyệt.');
         if (status === 'pending' && leave.status === 'pending') throw new Error('Đơn đang ở trạng thái chờ duyệt rồi.');
 
         let qUpdate = `UPDATE leave_requests SET status = $1, updated_at = NOW() `;
@@ -260,14 +278,14 @@ exports.changeStatus = async (id, status, requestUser, rejectReason = null) => {
         // Gửi Notification (Sau khi Commit thành công)
         if (status === 'approved' || status === 'rejected') {
             try {
-                const userRes = await db.query('SELECT name, email FROM users WHERE id = $1', [updatedLeave.user_id]);
+                const userRes = await db.query('SELECT full_name, email FROM users WHERE id = $1', [updatedLeave.user_id]);
                 const u = userRes.rows[0];
                 if (u && u.email) {
                     const eventName = status === 'approved' ? 'leave.approved' : 'leave.rejected';
                     const subject = status === 'approved' ? '✅ Đơn xin nghỉ phép đã được duyệt' : '❌ Đơn xin nghỉ phép bị từ chối';
                     const html_body = status === 'approved' 
-                        ? `<p>Xin chào <b>${u.name}</b>,</p><p>Đơn xin nghỉ phép (Loại: ${leave.leave_type}) của bạn đã được <b>Duyệt</b>.</p><p>Hệ thống CRM FIT Tour.</p>`
-                        : `<p>Xin chào <b>${u.name}</b>,</p><p>Đơn xin nghỉ phép của bạn đã bị <b>Từ chối</b>.</p><p>Lý do: ${rejectReason || 'Không có'}</p><p>Hệ thống CRM FIT Tour.</p>`;
+                        ? `<p>Xin chào <b>${u.full_name}</b>,</p><p>Đơn xin nghỉ phép (Loại: ${leave.leave_type}) của bạn đã được <b>Duyệt</b>.</p><p>Hệ thống CRM FIT Tour.</p>`
+                        : `<p>Xin chào <b>${u.full_name}</b>,</p><p>Đơn xin nghỉ phép của bạn đã bị <b>Từ chối</b>.</p><p>Lý do: ${rejectReason || 'Không có'}</p><p>Hệ thống CRM FIT Tour.</p>`;
                     
                     notificationService.emit(eventName, {
                         recipient_user_id: updatedLeave.user_id,
@@ -278,8 +296,8 @@ exports.changeStatus = async (id, status, requestUser, rejectReason = null) => {
                     }, `leave-${id}-${status}`); // Idempotency key
                 }
 
-                // EMAIL EVENTS
-                const allDatesRes = await client.query('SELECT leave_date, session_type FROM leave_request_dates WHERE leave_request_id = $1 ORDER BY leave_date ASC', [id]);
+                // EMAIL EVENTS (dùng db.query vì đã COMMIT rồi, client sắp release)
+                const allDatesRes = await db.query('SELECT leave_date, session_type FROM leave_request_dates WHERE leave_request_id = $1 ORDER BY leave_date ASC', [id]);
                 const formattedDates = allDatesRes.rows.map(d => {
                     const dateStr = new Date(d.leave_date).toLocaleDateString('vi-VN');
                     const sessionStr = d.session_type === 'morning' ? ' (Sáng)' : (d.session_type === 'afternoon' ? ' (Chiều)' : ' (Cả ngày)');
@@ -287,15 +305,18 @@ exports.changeStatus = async (id, status, requestUser, rejectReason = null) => {
                 }).join(', ');
 
                 const eventCode = status === 'approved' ? 'LEAVE_REQUEST_APPROVED' : 'LEAVE_REQUEST_REJECTED';
-                emitEvent(SystemEvents.find(e => e.code === eventCode).code, {
-                    employee_name: u.name,
-                    leave_type: leave.leave_type,
-                    leave_dates: formattedDates,
-                    status: status.toUpperCase(),
-                    processed_by: requestUser.full_name || requestUser.name || 'Admin',
-                    reject_reason: rejectReason || '',
-                    updated_at: new Date().toISOString()
-                });
+                const eventObj = SystemEvents.find(e => e.code === eventCode);
+                if (eventObj) {
+                    emitEvent(eventObj.code, {
+                        employee_name: u.full_name,
+                        leave_type: leave.leave_type,
+                        leave_dates: formattedDates,
+                        status: status.toUpperCase(),
+                        processed_by: requestUser.full_name || requestUser.name || 'Admin',
+                        reject_reason: rejectReason || '',
+                        updated_at: new Date().toISOString()
+                    });
+                }
 
             } catch (notifyErr) {
                 console.error('Error sending leave notification:', notifyErr);

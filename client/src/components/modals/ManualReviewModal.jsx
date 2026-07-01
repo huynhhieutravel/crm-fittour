@@ -9,6 +9,7 @@ export default function ManualReviewModal({ isOpen, onClose, onSuccess, initialD
     reviewer_name: '',
     rating: 5,
     comment: '',
+    photo_count: '',
     review_date: new Date().toISOString().split('T')[0],
     source: 'other',
     guide_name: '',
@@ -26,6 +27,7 @@ export default function ManualReviewModal({ isOpen, onClose, onSuccess, initialD
           reviewer_name: initialData.reviewer_name || '',
           rating: initialData.rating || 5,
           comment: initialData.comment || '',
+          photo_count: initialData.photo_count != null ? String(initialData.photo_count) : '',
           review_date: initialData.review_date_str || (initialData.review_date ? initialData.review_date.split('T')[0] : ''),
           source: initialData.source || 'other',
           guide_name: initialData.guide_name || '',
@@ -36,6 +38,7 @@ export default function ManualReviewModal({ isOpen, onClose, onSuccess, initialD
           reviewer_name: '',
           rating: 5,
           comment: '',
+          photo_count: '',
           review_date: new Date().toISOString().split('T')[0],
           source: 'google',
           guide_name: '',
@@ -153,6 +156,11 @@ export default function ManualReviewModal({ isOpen, onClose, onSuccess, initialD
             <div className="cr-filter-item cr-col-span-2">
               <label className="cr-filter-label">Nội dung đánh giá *</label>
               <textarea name="comment" value={formData.comment} onChange={handleChange} required rows="3" className="cr-input" placeholder="Khách nói gì về tour..." />
+            </div>
+
+            <div className="cr-filter-item cr-col-span-2">
+              <label className="cr-filter-label">Số lượng ảnh</label>
+              <input type="number" name="photo_count" value={formData.photo_count} onChange={handleChange} min="0" className="cr-input" placeholder="Ví dụ: 5" />
             </div>
 
             <div className="cr-filter-item">

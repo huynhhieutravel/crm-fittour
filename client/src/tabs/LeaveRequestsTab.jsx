@@ -454,17 +454,17 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                 <td align="right">
                                     <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end' }}>
                                         {item.status === 'pending' && isManager && (
-                                            <>
-                                                <button onClick={() => handleAction(item.id, 'approve')} style={{ background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Duyệt">
-                                                    <CheckCircle size={16} />
-                                                </button>
-                                                <button onClick={() => handleAction(item.id, 'reject')} style={{ background: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Từ chối">
-                                                    <XCircle size={16} />
-                                                </button>
-                                            </>
+                                            <button onClick={() => handleAction(item.id, 'approve')} style={{ background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Duyệt">
+                                                <CheckCircle size={16} />
+                                            </button>
                                         )}
-                                        {item.status !== 'pending' && isManager && (
-                                            <button onClick={() => handleAction(item.id, 'pending')} style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Hủy duyệt (Chuyển về Chờ duyệt)">
+                                        {(item.status === 'pending' || item.status === 'approved') && isManager && (
+                                            <button onClick={() => handleAction(item.id, 'reject')} style={{ background: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Từ chối">
+                                                <XCircle size={16} />
+                                            </button>
+                                        )}
+                                        {item.status === 'rejected' && isManager && (
+                                            <button onClick={() => handleAction(item.id, 'pending')} style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Hủy từ chối (Chuyển về Chờ duyệt)">
                                                 <Undo2 size={16} />
                                             </button>
                                         )}
@@ -472,7 +472,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                             const today = new Date();
                                             today.setHours(0,0,0,0);
                                             const startDate = new Date(item.first_leave_date);
-                                            const canEdit = (item.user_id === currentUser?.id && item.status === 'pending') || currentUser?.role === 'admin';
+                                            const canEdit = (item.user_id === currentUser?.id && (item.status === 'pending' || item.status === 'approved') && startDate >= today) || currentUser?.role === 'admin';
                                             const canDelete = (item.user_id === currentUser?.id || currentUser?.role === 'admin') && 
                                                               (startDate >= today || currentUser?.role === 'admin');
                                             

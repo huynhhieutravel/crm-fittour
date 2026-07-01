@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Plus, Stamp, ChevronLeft, ChevronRight, Edit3, Trash2 } from 'lucide-react';
+import { Search, Plus, Stamp, ChevronLeft, ChevronRight, Edit3, Trash2, Eye } from 'lucide-react';
 import VisaProviderDetailDrawer from '../components/modals/VisaProviderDetailDrawer';
 
 const VisaProvidersTab = ({ checkPerm, checkView, currentUser, setVisaProviderToDelete, addToast }) => {
@@ -12,6 +12,7 @@ const VisaProvidersTab = ({ checkPerm, checkView, currentUser, setVisaProviderTo
     const [totalItems, setTotalItems] = useState(0);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [editingProvider, setEditingProvider] = useState(null);
+    const [drawerMode, setDrawerMode] = useState('edit');
 
     const LIMIT = 30;
 
@@ -49,8 +50,9 @@ const VisaProvidersTab = ({ checkPerm, checkView, currentUser, setVisaProviderTo
         setPage(1);
     };
 
-    const handleOpenDrawer = (provider = null) => {
+    const handleOpenDrawer = (provider = null, mode = 'edit') => {
         setEditingProvider(provider);
+        setDrawerMode(mode);
         setDrawerOpen(true);
     };
 
@@ -105,8 +107,14 @@ const VisaProvidersTab = ({ checkPerm, checkView, currentUser, setVisaProviderTo
                         </thead>
                         <tbody>
                             {providers.map((p, idx) => (
-                                <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#f8fafc' }}>
-                                    <td style={{ padding: '16px', fontWeight: 600, color: '#3b82f6' }}>{p.code}</td>
+                                <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#f8fafc', transition: 'background 0.2s', ':hover': { background: '#f1f5f9' } }}>
+                                    <td 
+                                        style={{ padding: '16px', fontWeight: 600, color: '#3b82f6', cursor: 'pointer' }}
+                                        onClick={() => handleOpenDrawer(p, 'view')}
+                                        title="Click để xem chi tiết"
+                                    >
+                                        <span style={{ borderBottom: '1px dashed #3b82f6' }}>{p.code}</span>
+                                    </td>
                                     <td style={{ padding: '16px' }}>
                                         <div style={{ fontWeight: 600, color: '#0f172a' }}>{p.name}</div>
                                         <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>TGXL: {p.processing_time || 'Chưa cập nhật'}</div>
@@ -118,8 +126,11 @@ const VisaProvidersTab = ({ checkPerm, checkView, currentUser, setVisaProviderTo
                                     <td style={{ padding: '16px', color: '#475569', fontSize: '0.9rem' }}>{p.country || 'Chưa phân loại'}</td>
                                     <td style={{ padding: '16px', textAlign: 'center' }}>
                                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                            <button onClick={() => handleOpenDrawer(p, 'view')} style={{ background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', padding: '4px' }} title="Xem chi tiết">
+                                                <Eye size={16} />
+                                            </button>
                                             {checkPerm('suppliers', 'edit') && (
-                                                <button onClick={() => handleOpenDrawer(p)} style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: '4px' }} title="Sửa">
+                                                <button onClick={() => handleOpenDrawer(p, 'edit')} style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: '4px' }} title="Sửa">
                                                     <Edit3 size={16} />
                                                 </button>
                                             )}
@@ -156,9 +167,14 @@ const VisaProvidersTab = ({ checkPerm, checkView, currentUser, setVisaProviderTo
             {drawerOpen && (
                 <VisaProviderDetailDrawer 
                     provider={editingProvider} 
+                    mode={drawerMode}
                     onClose={() => setDrawerOpen(false)} 
                     onSuccess={() => { setDrawerOpen(false); fetchProviders(); }} 
+                    onEdit={() => handleOpenDrawer(editingProvider, 'edit')}
+                    onDelete={() => { setDrawerOpen(false); setVisaProviderToDelete(editingProvider.id); }}
                     addToast={addToast}
+                    currentUser={currentUser}
+                    checkPerm={checkPerm}
                 />
             )}
         </div>

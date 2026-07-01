@@ -44,6 +44,7 @@ export default function LandtoursTab({ currentUser, checkPerm, addToast, handleD
     const [search, setSearch] = useState('');
     const [selectedLandtour, setSelectedLandtour] = useState(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isViewOnlyMode, setIsViewOnlyMode] = useState(false);
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -99,7 +100,7 @@ export default function LandtoursTab({ currentUser, checkPerm, addToast, handleD
         }
     };
 
-    const handleOpenLandtour = async (landtourId) => {
+    const handleOpenLandtour = async (landtourId, mode = 'edit') => {
         try {
             setActionLoading(true);
             const token = localStorage.getItem('token');
@@ -107,6 +108,7 @@ export default function LandtoursTab({ currentUser, checkPerm, addToast, handleD
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSelectedLandtour(res.data);
+            setIsViewOnlyMode(mode === 'view');
             setIsDrawerOpen(true);
         } catch (err) {
             console.error('Lỗi khi lấy chi tiết land tour', err);
@@ -119,6 +121,7 @@ export default function LandtoursTab({ currentUser, checkPerm, addToast, handleD
 
     const handleAddLandtour = () => {
         setSelectedLandtour(null); // Tự động tạo mới
+        setIsViewOnlyMode(false);
         setIsDrawerOpen(true);
     };
 
@@ -182,7 +185,7 @@ export default function LandtoursTab({ currentUser, checkPerm, addToast, handleD
                         ) : (
                             landtours.map(h => (
                                 <tr key={h.id} className="table-row-hover" style={{ transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#f8fafc'} onMouseOut={e=>e.currentTarget.style.background='white'}>
-                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#3b82f6' }}>{h.code}</td>
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#3b82f6', cursor: 'pointer' }} onClick={() => handleOpenLandtour(h.id, 'view')}>{h.code}</td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
                                         <div style={{ gap: '8px', color: '#0f172a' }}>
                                             <Map size={16} color="#ea580c" />
@@ -228,7 +231,10 @@ export default function LandtoursTab({ currentUser, checkPerm, addToast, handleD
                                     </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
                                         <div style={{ gap: '8px', justifyContent: 'center' }}>
-                                            <button className="btn-icon" title="Xem / Sửa" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6', padding: '4px' }} onClick={() => handleOpenLandtour(h.id)}>
+                                            <button className="btn-icon" title="Xem" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#10b981', padding: '4px' }} onClick={() => handleOpenLandtour(h.id, 'view')}>
+                                                <Eye size={16} />
+                                            </button>
+                                            <button className="btn-icon" title="Sửa" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6', padding: '4px' }} onClick={() => handleOpenLandtour(h.id, 'edit')}>
                                                 <Edit2 size={16} />
                                             </button>
                                             {(checkPerm ? checkPerm('landtours', 'delete') : canDelete(currentUser?.role, 'suppliers')) && (
@@ -279,6 +285,7 @@ export default function LandtoursTab({ currentUser, checkPerm, addToast, handleD
                     currentUser={currentUser}
                     checkPerm={checkPerm}
                     addToast={addToast}
+                    forceViewMode={isViewOnlyMode}
                 />
             )}
         </div>

@@ -207,7 +207,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
                 } else {
                     // LUỒNG VẪN ĐANG ACTIVE → Chỉ cập nhật ngày tháng
                     leadId = currentLeadId;
-                    await db.query('UPDATE leads SET created_at = NOW(), last_contacted_at = NOW() WHERE id = $1', [leadId]);
+                    await db.query('UPDATE leads SET last_contacted_at = NOW() WHERE id = $1', [leadId]);
                     await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [received_message.text, conversationId]);
 
                     // [BU-AUTO] Nếu lead chưa có BU → classify từ TẤT CẢ tin nhắn (lọc greeting template)
@@ -483,13 +483,26 @@ exports.handleLeadAd = async (leadgen_id, page_id) => {
 
 // --- ALTERNATIVE POLLING SYSTEM (MESSENGER SYNC) ---
 // Bypasses Meta Webhooks blockages when Business AI holds the thread
-exports.syncRecentConversations = async (limitCount = 5) => {
+exports.syncRecentConversations = async (limitCount = 25) => {
     try {
-        const { token, pageId } = await getPageToken();
-        if (!token || !pageId) return;
+        const { token, pageId: resolvedPageId } = await getPageToken();
+        if (!token) return;
+
+        // Nếu không có pageId, thử resolve từ /me
+        let pageId = resolvedPageId;
+        if (!pageId) {
+            try {
+                const meRes = await axios.get(`https://graph.facebook.com/v25.0/me?fields=id&access_token=${token}`);
+                pageId = meRes.data?.id;
+            } catch (e) {
+                console.error('[FB POLLER] Không thể resolve Page ID từ /me:', e.message);
+                return;
+            }
+        }
+        if (!pageId) return;
 
         // Kéo các cuộc trò chuyện gần nhất theo limitCount
-        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=link,participants{id,name},messages.limit(10){message,from,shares}&limit=${limitCount}&access_token=${token}`;
+        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=link,participants{id,name},messages.limit(100){message,from,created_time,shares}&limit=${limitCount}&access_token=${token}`;
         const res = await axios.get(endpoint);
         
         if (!res.data || !res.data.data) return;
@@ -523,7 +536,7 @@ exports.syncRecentConversations = async (limitCount = 5) => {
                     console.log(`[FB POLLER] Phát hiện khách mới chat với Fanpage: ${userName}. Đang tạo Lead...`);
                     // Tạo Lead mới tinh (Kèm kiểm tra PSID dò Khách Quen)
                     const leadResult = await db.query(
-                        'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id, phone, fb_conversation_link) VALUES ($1, $2, $3, $4, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $6 OR phone = $7::varchar LIMIT 1), $7::varchar, $8) RETURNING *',
+                        'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id, phone, fb_conversation_link) VALUES ($1, $2, $3, $4::text, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $6::text OR phone = $7::text LIMIT 1), $7::text, $8) RETURNING *',
                         [userName, 'Messenger', 'Mới', psid, firstMessageNote, psid, extractedPhone, fbLink]
                     );
 
@@ -557,9 +570,10 @@ exports.syncRecentConversations = async (limitCount = 5) => {
                     for (const msg of messagesList) {
                         if (!msg.message || msg.message.trim() === '') continue;
                         const senderType = (msg.from && msg.from.id === psid) ? 'customer' : 'page';
+                        const createdAt = msg.created_time ? new Date(msg.created_time) : new Date();
                         await db.query(
-                            'INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)',
-                            [conversationId, senderType, msg.message]
+                            'INSERT INTO messages (conversation_id, sender_type, content, created_at) VALUES ($1, $2, $3, $4)',
+                            [conversationId, senderType, msg.message, createdAt]
                         );
                     }
 
@@ -577,16 +591,16 @@ exports.syncRecentConversations = async (limitCount = 5) => {
                         const checkPhone = await db.query('SELECT phone FROM leads WHERE id = $1', [currentLeadId]);
                         if (checkPhone.rows.length > 0 && !checkPhone.rows[0].phone) {
                             console.log(`[FB POLLER] Trích xuất SĐT ${extractedPhone} cho Lead ID ${currentLeadId}`);
-                            await db.query('UPDATE leads SET phone = $1, customer_id = COALESCE(customer_id, (SELECT id FROM customers WHERE phone = $1 LIMIT 1)) WHERE id = $2', [extractedPhone, currentLeadId]);
+                            await db.query('UPDATE leads SET phone = $1::text, customer_id = COALESCE(customer_id, (SELECT id FROM customers WHERE phone = $1::text LIMIT 1)) WHERE id = $2', [extractedPhone, currentLeadId]);
                         }
                     }
 
                     // Lưu/Cập nhật fb_conversation_link liên tục để sửa lỗi cũ
                     if (fbLink) {
-                        await db.query('UPDATE leads SET fb_conversation_link = $1 WHERE id = $2 AND (fb_conversation_link IS NULL OR fb_conversation_link != $1)', [fbLink, currentLeadId]);
+                        await db.query('UPDATE leads SET fb_conversation_link = $1::text WHERE id = $2 AND (fb_conversation_link IS NULL OR fb_conversation_link != $1::text)', [fbLink, currentLeadId]);
                     }
                     
-                    const existingMsgsRes = await db.query('SELECT content, sender_type FROM messages WHERE conversation_id = $1 ORDER BY id DESC LIMIT 15', [oldConv.id]);
+                    const existingMsgsRes = await db.query('SELECT content, sender_type FROM messages WHERE conversation_id = $1 ORDER BY id DESC LIMIT 150', [oldConv.id]);
                     const existingMsgSet = new Set(existingMsgsRes.rows.map(m => `${m.sender_type}|${m.content}`));
                     
                     let hasAnyNewMsg = false;
@@ -611,9 +625,10 @@ exports.syncRecentConversations = async (limitCount = 5) => {
                         const matchKey = `${senderType}|${msg.message}`;
                         
                         if (!existingMsgSet.has(matchKey)) {
+                            const createdAt = msg.created_time ? new Date(msg.created_time) : new Date();
                             await db.query(
-                                'INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)',
-                                [oldConv.id, senderType, msg.message]
+                                'INSERT INTO messages (conversation_id, sender_type, content, created_at) VALUES ($1, $2, $3, $4)',
+                                [oldConv.id, senderType, msg.message, createdAt]
                             );
                             hasAnyNewMsg = true;
                             lastIteratedMessage = msg.message;
@@ -627,14 +642,14 @@ exports.syncRecentConversations = async (limitCount = 5) => {
                                     if (['Chốt đơn', 'Thất bại'].includes(oldLead.status)) {
                                         console.log(`[FB POLLER] Khách Cũ (Đã Đóng) nhắn Fanpage: ${userName}. Tạo Lead mới...`);
                                         const newLeadResult = await db.query(
-                                            'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email, fb_conversation_link) VALUES ($1, $2, $3, $4::varchar, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4::varchar LIMIT 1), $5, $6, $7) RETURNING *',
+                                            'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email, fb_conversation_link) VALUES ($1, $2, $3, $4::text, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4::text LIMIT 1), $5, $6, $7) RETURNING *',
                                             [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email, fbLink]
                                         );
                                         currentLeadId = newLeadResult.rows[0].id;
                                         await db.query('UPDATE conversations SET lead_id = $1 WHERE id = $2', [currentLeadId, oldConv.id]);
                                         metaCapi.sendLeadEvent(newLeadResult.rows[0]).catch(err => console.error(err));
                                     } else {
-                                        await db.query('UPDATE leads SET created_at = NOW(), last_contacted_at = NOW() WHERE id = $1', [currentLeadId]);
+                                        await db.query('UPDATE leads SET last_contacted_at = NOW() WHERE id = $1', [currentLeadId]);
                                     }
                                 }
                             }

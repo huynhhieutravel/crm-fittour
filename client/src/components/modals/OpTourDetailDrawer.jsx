@@ -5,7 +5,7 @@ import Select from 'react-select';
 import { CKEditor } from 'ckeditor4-react';
 import { useMarkets } from '../../hooks/useMarkets';
 
-export default function OpTourDetailDrawer({ onClose, tour }) {
+export default function OpTourDetailDrawer({ onClose, tour, onDelete }) {
   const [formData, setFormData] = useState({
     tour_code: '',
     tour_name: '',
@@ -220,6 +220,15 @@ export default function OpTourDetailDrawer({ onClose, tour }) {
              {errorMsg && <div style={{ color: '#ef4444', fontWeight: 600, fontSize: '14px', marginTop: '5px' }}>⚠️ {errorMsg}</div>}
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
+            {tour?.id && onDelete && (
+              <button
+                onClick={() => onDelete(tour.id, tour)}
+                disabled={loading}
+                style={{ background: '#ef4444', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+              >
+                <Trash2 size={16} /> Xóa Lịch khởi hành
+              </button>
+            )}
             <button 
               onClick={handleSave} 
               disabled={loading}

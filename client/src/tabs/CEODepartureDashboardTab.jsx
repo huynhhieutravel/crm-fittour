@@ -38,9 +38,11 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 const GrowthIndicator = ({ current, previous }) => {
-  if (!previous || previous === 0) return null;
-  const growth = ((current - previous) / previous) * 100;
-  if (Math.abs(growth) < 0.1) return null;
+  const prev = Number(previous);
+  const curr = Number(current);
+  if (!prev || prev === 0) return null;
+  const growth = ((curr - prev) / prev) * 100;
+  if (!isFinite(growth) || Math.abs(growth) < 0.1) return null;
   
   const isPositive = growth >= 0;
   return (
@@ -385,7 +387,7 @@ const CEODepartureDashboardTab = ({ currentUser }) => {
                 }}></div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                 <span style={{ color: '#64748b' }}>Tỷ lệ thu hồi vốn:</span>
+                 <span style={{ color: '#64748b' }}>Tỷ lệ Thu Tiền:</span>
                  <span style={{ fontWeight: 700, color: '#10b981' }}>{totals.total_revenue > 0 ? Math.round((totals.total_cashflow / totals.total_revenue) * 100) : 0}%</span>
               </div>
             </div>

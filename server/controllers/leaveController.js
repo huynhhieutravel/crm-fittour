@@ -139,8 +139,18 @@ exports.updateLeave = async (req, res) => {
         if (leave.user_id !== req.user.id && req.user.role !== 'admin') {
             return res.status(403).json({ error: 'Không có quyền sửa đơn này' });
         }
-        if (leave.status !== 'pending' && req.user.role !== 'admin') {
-            return res.status(400).json({ error: 'Chỉ có thể sửa đơn khi đang chờ duyệt' });
+        
+        const datesRes = await db.query('SELECT MIN(leave_date) as first_date FROM leave_request_dates WHERE leave_request_id = $1', [id]);
+        const firstDate = datesRes.rows.length > 0 ? new Date(datesRes.rows[0].first_date) : null;
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        if (leave.status === 'rejected' && req.user.role !== 'admin') {
+            return res.status(400).json({ error: 'Không thể sửa đơn đã bị từ chối' });
+        }
+
+        if (firstDate && firstDate < today && req.user.role !== 'admin') {
+             return res.status(400).json({ error: 'Chỉ có thể sửa đơn trước khi ngày nghỉ bắt đầu' });
         }
 
         const updatedLeave = await leaveService.updateLeave(id, req.body, req.user);
@@ -169,7 +179,7 @@ exports.rejectLeave = async (req, res) => {
         const leave = await leaveService.changeStatus(req.params.id, 'rejected', req.user, req.body.reject_reason);
         res.json(leave);
     } catch (err) {
-        if (err.message.includes('trạng thái chờ duyệt')) return res.status(409).json({ error: err.message });
+        if (err.message.includes('từ chối') || err.message.includes('trạng thái')) return res.status(409).json({ error: err.message });
         res.status(500).json({ error: err.message });
     }
 };
