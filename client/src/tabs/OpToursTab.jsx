@@ -1,4 +1,5 @@
 import { swalConfirm } from '../utils/swalHelpers';
+import Swal from 'sweetalert2';
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useMarkets, getChildMarkets, getChildMarketIds } from '../hooks/useMarkets';
@@ -756,16 +757,34 @@ export default function OpToursTab({ currentUser }) {
   };
 
 
-  const handleDeleteTour = async (id) => {
-    if (await swalConfirm('Bạn có chắc muốn xóa tour này?')) {
+  const handleDeleteTour = async (id, tourItem) => {
+    if (await swalConfirm('Bạn có chắc muốn chuyển Lịch khởi hành này vào Thùng rác? (Có thể khôi phục lại trong Nhật ký hệ thống)')) {
       try {
-        await axios.delete(`/api/op-tours/${id}`, {
+        const res = await axios.delete(`/api/op-tours/${id}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
+        Swal.fire('Thành công', res.data.message || 'Đã chuyển vào Thùng rác', 'success');
         fetchTours();
+        if (selectedTour?.id === id) setIsDrawerOpen(false);
       } catch (error) {
         console.error('Lỗi khi xóa', error);
-        alert('Có lỗi xảy ra khi xóa!');
+        if (error.response?.data?.hasBookings) {
+             Swal.fire({
+                 title: 'Không thể xóa Lịch khởi hành!',
+                 text: 'Lịch khởi hành này đang có khách đặt và phiếu thu. Bạn cần chuyển khách đi trước khi đưa tour này vào thùng rác để bảo toàn dữ liệu tài chính.',
+                 icon: 'warning',
+                 showCancelButton: true,
+                 confirmButtonText: 'Chuyển khách đi',
+                 cancelButtonText: 'Đóng',
+                 confirmButtonColor: '#3b82f6'
+             }).then(async (result) => {
+                 if (result.isConfirmed) {
+                     handleOpenBookingList(tourItem || tours.find(t => t.id === id));
+                 }
+             });
+        } else {
+             alert(error.response?.data?.error || 'Có lỗi xảy ra khi đưa vào Thùng rác!');
+        }
       }
     }
   }
@@ -853,16 +872,14 @@ export default function OpToursTab({ currentUser }) {
     const { startDate, endDate } = getBounds();
     const lowerFilterOp = filterOperator && filterOperator !== 'Chọn' ? filterOperator.toLowerCase() : null;
 
-    let activeMarketId = null;
+    let activeMarketIds = [];
     for (const group of marketOptions) {
         if (group.label === activeMarket) {
-            activeMarketId = group.id;
-            break;
+            activeMarketIds.push(group.id);
         }
-        const child = group.options?.find(o => o.value === activeMarket);
-        if (child) {
-            activeMarketId = child.id;
-            break;
+        if (group.options) {
+            const children = group.options.filter(o => o.value === activeMarket);
+            children.forEach(c => activeMarketIds.push(c.id));
         }
     }
 
@@ -878,7 +895,7 @@ export default function OpToursTab({ currentUser }) {
       
       const matchMarket = activeMarket === 'Tất cả' || 
                           (t.market_ids && t.market_ids.length > 0
-                             ? (activeMarketId && t.market_ids.includes(activeMarketId)) || t.market_ids.some(id => childMarketIds.includes(id))
+                             ? (activeMarketIds.length > 0 && t.market_ids.some(id => activeMarketIds.includes(id))) || t.market_ids.some(id => childMarketIds.includes(id))
                              : (tourMarkets.includes(activeMarket) || tourMarkets.some(m => childMarkets.includes(m))));
       if (!matchMarket) return false;
 
@@ -1270,6 +1287,22 @@ export default function OpToursTab({ currentUser }) {
            >
              <Plus size={18} /> TẠO TOUR MỚI
            </button>
+           <a 
+              href="https://chatgpt.com/g/g-6a41d4bb452481919a67d1dc7fc922b7-fit-tour-tu-van-lich-tour"
+              target="_blank" rel="noopener noreferrer"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '10px 20px', borderRadius: '6px',
+                background: 'linear-gradient(135deg, #10a37f 0%, #1a7f64 100%)',
+                color: 'white', fontWeight: 600, fontSize: '0.9rem',
+                textDecoration: 'none', cursor: 'pointer', border: 'none',
+                boxShadow: '0 3px 8px rgba(16, 163, 127, 0.25)',
+              }}
+              title="Tìm thông tin lịch tour cùng ChatGPT"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.998 5.998 0 0 0-3.998 2.9 6.042 6.042 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/></svg>
+              Hỏi ChatGPT
+            </a>
          </div>
       </MarketFilterBar>
       <hr style={{ borderTop: '1px solid #e2e8f0', margin: '0 0 15px 0' }} />
@@ -1457,7 +1490,7 @@ export default function OpToursTab({ currentUser }) {
                       <Users size={12} /> DS Khách
                     </button>
                     {currentUser?.role_name === 'admin' && (
-                      <button onClick={() => handleDeleteTour(tour.id)} style={{ width: '85px', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '11px' }}>Xóa tour</button>
+                      <button onClick={() => handleDeleteTour(tour.id, tour)} style={{ width: '85px', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '11px' }}>Xóa Lịch khởi hành</button>
                     )}
                   </div>
                 </td>
@@ -1527,6 +1560,7 @@ export default function OpToursTab({ currentUser }) {
         <OpTourDetailDrawer 
           onClose={handleCloseDrawer} 
           tour={selectedTour} 
+          onDelete={handleDeleteTour}
         />
       )}
 

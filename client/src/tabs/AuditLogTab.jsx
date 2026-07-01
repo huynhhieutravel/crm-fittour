@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import AuditLogDashboard from '../components/AuditLogDashboard';
-import { Ticket, PlaneTakeoff, Users, Briefcase, Settings, Store } from 'lucide-react';
+import TrashDashboard from '../components/TrashDashboard';
+import { Ticket, PlaneTakeoff, Users, Briefcase, Settings, Store, Trash2 } from 'lucide-react';
 
 export default function AuditLogTab() {
   const [activeSubmenu, setActiveSubmenu] = useState('bookings');
+  
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : {};
+  const roleName = (user.role_name || user.role || '').toLowerCase();
+  const canSeeTrash = roleName === 'admin' || roleName === 'lead' || roleName === 'manager' || user.is_admin;
 
   // Map submenus to module types defined in backend
   const submenus = [
@@ -17,6 +23,11 @@ export default function AuditLogTab() {
     { id: 'system', label: 'Hệ thống', icon: <Settings size={18} />, moduleType: 'USER,LEAVE_REQUEST,ORG_CHART,BU,AGENT,MARKET,VOUCHER,PERMISSION,SYSTEM_ALERT' },
   ];
 
+  if (canSeeTrash) {
+    submenus.push({ id: 'trash_tours', label: 'Thùng rác (Tour)', icon: <Trash2 size={18} />, moduleType: 'OP_TOUR', isTrash: true });
+    submenus.push({ id: 'trash_bookings', label: 'Thùng rác (Khách hàng)', icon: <Trash2 size={18} />, moduleType: 'BOOKING', isTrash: true });
+  }
+
   const currentMenu = submenus.find(m => m.id === activeSubmenu);
 
   return (
@@ -27,7 +38,7 @@ export default function AuditLogTab() {
       </div>
 
       {/* Submenu Navigation */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #e2e8f0' }}>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
         {submenus.map(menu => (
           <button
             key={menu.id}
@@ -37,9 +48,9 @@ export default function AuditLogTab() {
               border: 'none',
               background: 'none',
               cursor: 'pointer',
-              color: activeSubmenu === menu.id ? '#0ea5e9' : '#64748b',
+              color: activeSubmenu === menu.id ? (menu.isTrash ? '#ef4444' : '#0ea5e9') : '#64748b',
               fontWeight: activeSubmenu === menu.id ? 600 : 400,
-              borderBottom: activeSubmenu === menu.id ? '2px solid #0ea5e9' : '2px solid transparent',
+              borderBottom: activeSubmenu === menu.id ? `2px solid ${menu.isTrash ? '#ef4444' : '#0ea5e9'}` : '2px solid transparent',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
@@ -54,8 +65,11 @@ export default function AuditLogTab() {
       </div>
 
       {/* Render the core table filtered by selected module */}
-      {currentMenu && (
+      {currentMenu && !currentMenu.isTrash && (
          <AuditLogDashboard key={activeSubmenu} moduleType={currentMenu.moduleType} />
+      )}
+      {currentMenu && currentMenu.isTrash && (
+         <TrashDashboard key={activeSubmenu} type={currentMenu.moduleType} />
       )}
     </div>
   );

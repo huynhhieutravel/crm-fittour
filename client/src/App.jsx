@@ -176,7 +176,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
-  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules'];
+  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -470,6 +470,7 @@ function AppContent() {
   const [b2bCompanyToDelete, setB2bCompanyToDelete] = useState(null);
   const [groupLeaderToDelete, setGroupLeaderToDelete] = useState(null);
   const [groupProjectToDelete, setGroupProjectToDelete] = useState(null);
+  const [visaProviderToDelete, setVisaProviderToDelete] = useState(null);
   const [bookingToEdit, setBookingToEdit] = useState(null);
 
   const LEAD_SOURCES = ['Messenger', 'Zalo', 'Khách giới thiệu', 'Hotline', 'Khác'];
@@ -957,18 +958,18 @@ function AppContent() {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchBookings();
-      addToast('Đã xoá đơn hàng.');
+      addToast('Đã đưa đơn hàng vào Thùng rác (Nhật ký hệ thống).');
       setBookingToDelete(null);
     } catch (err) {
       if (err.response && err.response.status === 409 && err.response.data.has_transactions) {
-        if (await swalConfirm(`⚠️ ${err.response.data.message}\n\nBạn vẫn muốn xóa?`, { title: 'Cảnh báo', icon: 'warning' })) {
+        if (await swalConfirm(`⚠️ ${err.response.data.message}\n\nBạn vẫn muốn tiếp tục đưa vào thùng rác chứ? (Khuyên dùng: Hủy phiếu thu trước)`, { title: 'Cảnh báo', icon: 'warning' })) {
           try {
             const token = localStorage.getItem('token');
             await axios.delete(`/api/bookings/${bookingToDelete}?force=true`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             fetchBookings();
-            addToast('Đã xoá đơn hàng.');
+            addToast('Đã đưa đơn hàng vào Thùng rác.');
           } catch (err2) { addToast('Lỗi khi xoá: ' + (err2.response?.data?.message || err2.message)); }
         }
         setBookingToDelete(null);
@@ -1117,6 +1118,25 @@ function AppContent() {
   };
 
 
+
+  const confirmDeleteVisaProvider = async () => {
+    if (!visaProviderToDelete) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/visa-providers/${visaProviderToDelete}?force=true`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Đã xóa Nhà Cung Cấp Visa thành công.');
+      setVisaProviderToDelete(null);
+      window.dispatchEvent(new CustomEvent('reloadVisaProviders'));
+    } catch (err) {
+      addToast('Lỗi khi xóa: ' + (err.response?.data?.message || err.message), 'error');
+      setVisaProviderToDelete(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const confirmDeleteB2bCompany = async () => {
     if (!b2bCompanyToDelete) return;
@@ -1705,7 +1725,13 @@ function AppContent() {
       localStorage.setItem('user', JSON.stringify(u));
       setUser(u);
       setIsLoggedIn(true);
-      if (u.role === 'sales' || u.role === 'sale' || u.role_name === 'sales' || u.role_name === 'sale') {
+      
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectPath = searchParams.get('redirect');
+      
+      if (redirectPath) {
+        navigate(redirectPath);
+      } else if (u.role === 'sales' || u.role === 'sale' || u.role_name === 'sales' || u.role_name === 'sale') {
         navigate('/workspace');
       } else {
         navigate('/');
@@ -1878,6 +1904,7 @@ function AppContent() {
       if (hasPerms[mod]) return hasPerms[mod].can_view === true;
       return false;
     };
+
 
 
 
@@ -3094,7 +3121,6 @@ function AppContent() {
         }} />
 
         {/* AI Copilot Widget */}
-        <AIChatDrawer />
 
         {(activeTab === 'dashboard' || activeTab === 'leads' || activeTab === 'inbox') && editingLead ? (
           <EditLeadModal 
@@ -3414,9 +3440,7 @@ function AppContent() {
           <AuditLogTab />
         )}
 
-        {activeTab === 'agent-manager' && (
-          <AgentManagerTab />
-        )}
+
 
         {activeTab === 'notification-dashboard' && (
           <NotificationDashboardTab user={user} addToast={addToast} />
@@ -3466,7 +3490,7 @@ function AppContent() {
           <InsurancesTab currentUser={user} checkPerm={checkPerm} addToast={addToast} handleDeleteInsurance={(id) => setInsuranceToDelete(id)} />
         )}
         {activeTab === 'visa-providers' && (
-          <VisaProvidersTab currentUser={user} checkPerm={checkPerm} addToast={addToast} setVisaProviderToDelete={(id) => setVisaProviderToDelete(id)} />
+          <VisaProvidersTab currentUser={user} checkPerm={checkPerm} checkView={checkView} addToast={addToast} setVisaProviderToDelete={(id) => setVisaProviderToDelete(id)} />
         )}
 
         {/* ═══ Tour Đoàn Tab Rendering ═══ */}
@@ -3724,8 +3748,8 @@ function AppContent() {
     <>
       <Routes>
       <Route path="/tai-lieu" element={<DocumentsPage />} />
-      <Route path="/tai-lieu/:subtab/:id/*" element={<DocumentsPage />} />
-      <Route path="/tai-lieu/*" element={<DocumentsPage />} />
+      <Route path="/tai-lieu/:subtab/:id/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} />} />
+      <Route path="/tai-lieu/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} />} />
       <Route path="/hdv" element={<DocumentsPage />} />
       <Route path="/hdv/*" element={<DocumentsPage />} />
       <Route path="/cam-nang-thuong-hieu/logo" element={<BrandLayout><BrandLogoPage /></BrandLayout>} />
@@ -3737,6 +3761,7 @@ function AppContent() {
       <Route path="/simple-list-share/lich_dai_ly" element={<AgencySharePage />} />
       <Route path="/service-confirm/:tourId/:bookingId" element={<ServiceContractViewer />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/chinh-sach-bao-mat" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/deletion" element={<DataDeletion />} />
       <Route 
@@ -3904,7 +3929,7 @@ function AppContent() {
     )}
 
     {/* MODAL XÁC NHẬN XÓA (CUSTOM) */}
-    {(leadToDelete || customerToDelete || tourToDelete || departureToDelete || bookingToDelete || hotelToDelete || restaurantToDelete || transportToDelete || ticketToDelete || airlineToDelete || landtourToDelete || insuranceToDelete || b2bCompanyToDelete || groupLeaderToDelete || groupProjectToDelete) && (
+    {(leadToDelete || customerToDelete || tourToDelete || departureToDelete || bookingToDelete || hotelToDelete || restaurantToDelete || transportToDelete || ticketToDelete || airlineToDelete || landtourToDelete || insuranceToDelete || b2bCompanyToDelete || groupLeaderToDelete || groupProjectToDelete || visaProviderToDelete) && (
       <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={() => {
         setLeadToDelete(null);
         setCustomerToDelete(null);
@@ -3921,6 +3946,7 @@ function AppContent() {
         setB2bCompanyToDelete(null);
         setGroupLeaderToDelete(null);
         setGroupProjectToDelete(null);
+        setVisaProviderToDelete(null);
       }}>
         <div className="modal-content animate-slide-up" style={{ maxWidth: '400px', textAlign: 'center', padding: '2.5rem' }} onClick={e => e.stopPropagation()}>
           <div style={{ width: '60px', height: '60px', background: '#fee2e2', color: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
@@ -3951,6 +3977,7 @@ function AppContent() {
                 setB2bCompanyToDelete(null);
                 setGroupLeaderToDelete(null);
                 setGroupProjectToDelete(null);
+                setVisaProviderToDelete(null);
               }}
             >HỦY BỎ</button>
             <button 
@@ -3973,6 +4000,7 @@ function AppContent() {
                 if (b2bCompanyToDelete) confirmDeleteB2bCompany();
                 if (groupLeaderToDelete) confirmDeleteGroupLeader();
                 if (groupProjectToDelete) confirmDeleteGroupProject();
+                if (visaProviderToDelete) confirmDeleteVisaProvider();
                 }}
             >{loading ? 'ĐANG XÓA...' : 'XÓA THỰC SỰ'}</button>
           </div>

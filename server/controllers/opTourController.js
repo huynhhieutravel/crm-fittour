@@ -37,6 +37,7 @@ exports.getAllOpTours = async (req, res) => {
         FROM bookings
         GROUP BY tour_departure_id
       ) ba ON ba.tour_departure_id = td.id
+      WHERE COALESCE(td.is_deleted, false) = false
       ORDER BY 
          CASE WHEN td.start_date < CURRENT_DATE THEN 1 ELSE 0 END ASC,
          CASE WHEN td.start_date >= CURRENT_DATE THEN td.start_date END ASC,
@@ -69,7 +70,7 @@ exports.getPublicOpTours = async (req, res) => {
         ) AS total_reserved
       FROM tour_departures td
       LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
-      WHERE COALESCE(tt.is_active, true) = true
+      WHERE COALESCE(tt.is_active, true) = true AND COALESCE(td.is_deleted, false) = false
       ORDER BY 
          CASE WHEN td.start_date < CURRENT_DATE THEN 1 ELSE 0 END ASC,
          CASE WHEN td.start_date >= CURRENT_DATE THEN td.start_date END ASC,
@@ -113,7 +114,7 @@ exports.getOpTourById = async (req, res) => {
       FROM tour_departures td
       LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
       LEFT JOIN guides g ON td.guide_id = g.id
-      WHERE td.id = $1
+      WHERE td.id = $1 AND COALESCE(td.is_deleted, false) = false
     `, [id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Không tìm thấy tour' });
@@ -183,7 +184,7 @@ exports.createOpTour = async (req, res) => {
   } catch (error) {
     console.error('Error in createOpTour:', error);
     if (error.code === '23505') {
-      return res.status(400).json({ error: 'Mã tour này đã tồn tại trên hệ thống. Vui lòng đổi mã hoặc kiểm tra lại lịch khởi hành!' });
+      return res.status(400).json({ error: 'Mã tour này đã tồn tại trên hệ thống (hoặc đang nằm trong Thùng rác). Vui lòng đổi mã hoặc kiểm tra lại lịch khởi hành!' });
     }
     res.status(500).json({ error: 'Lỗi khi tạo tour mới' });
   }
@@ -253,7 +254,7 @@ exports.updateOpTour = async (req, res) => {
   } catch (error) {
     console.error('Error in updateOpTour:', error);
     if (error.code === '23505') {
-      return res.status(400).json({ error: 'Mã tour này đã tồn tại trên hệ thống. Vui lòng đổi mã hoặc kiểm tra lại lịch khởi hành!' });
+      return res.status(400).json({ error: 'Mã tour này đã tồn tại trên hệ thống (hoặc đang nằm trong Thùng rác). Vui lòng đổi mã hoặc kiểm tra lại lịch khởi hành!' });
     }
     res.status(500).json({ error: 'Lỗi khi cập nhật tour' });
   }
@@ -265,15 +266,15 @@ exports.deleteOpTour = async (req, res) => {
     // Check if there are bookings tied to this departure
     const bookingCheck = await db.query('SELECT COUNT(*) as cnt FROM bookings WHERE tour_departure_id = $1', [id]);
     if (Number(bookingCheck.rows[0].cnt) > 0) {
-      return res.status(400).json({ error: `Không thể xóa: Tour này đang có ${bookingCheck.rows[0].cnt} booking. Hãy huỷ hoặc chuyển booking trước.` });
+      return res.status(409).json({ hasBookings: true, error: `Không thể xóa: Lịch khởi hành này đang có ${bookingCheck.rows[0].cnt} khách hàng/phiếu thu. Hãy chuyển khách sang tour khác trước khi đưa vào thùng rác.` });
     }
     
     const currentRes = await db.query('SELECT * FROM tour_departures WHERE id = $1', [id]);
     if (currentRes.rows.length === 0) return res.status(404).json({ error: 'Không tìm thấy tour' });
     const current = currentRes.rows[0];
 
-    const result = await db.query('DELETE FROM tour_departures WHERE id = $1 RETURNING id', [id]);
-    if (result.rowCount === 0) return res.status(404).json({ error: 'Không tìm thấy tour' });
+    // SOFT DELETE: Mark the tour as deleted
+    await db.query('UPDATE tour_departures_raw SET is_deleted = true WHERE id = $1', [id]);
 
     // LOG ACTIVITY
     await logActivity({
@@ -281,14 +282,14 @@ exports.deleteOpTour = async (req, res) => {
         action_type: 'DELETE',
         entity_type: 'OP_TOUR',
         entity_id: id,
-        details: `Xóa Điều hành Tour: ${current.code}`,
+        details: `Đưa Lịch khởi hành vào Thùng rác: ${current.code}`,
         old_data: current
     });
 
-    res.json({ message: 'Xóa tour thành công' });
+    res.json({ message: 'Đã chuyển vào Thùng rác thành công' });
   } catch (error) {
     console.error('Error in deleteOpTour:', error);
-    res.status(500).json({ error: 'Lỗi khi xóa tour' });
+    res.status(500).json({ error: 'Lỗi khi đưa vào Thùng rác' });
   }
 };
 

@@ -4,8 +4,8 @@ const auditLogController = require('../controllers/auditLogController');
 const auth = require('../middleware/auth');
 const permCheck = require('../middleware/permCheck');
 
-// Require admin or manage_team level to view global audit logs (or a specific new permission if needed)
-// For now, let's map it to users/view or settings/view, but Settings is safest for global logs.
 router.get('/', auth, permCheck('settings', 'view'), auditLogController.getAuditLogs);
+router.get('/trash', auth, permCheck('settings', 'view'), auditLogController.getTrash);
+router.post('/restore', auth, permCheck('settings', 'view'), auditLogController.restoreTrash);
 
 module.exports = router;

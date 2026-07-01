@@ -195,6 +195,9 @@ exports.createBooking = async (req, res) => {
 
         res.status(201).json(newBooking);
     } catch (err) {
+        if (err.code === '23505') {
+            return res.status(400).json({ message: 'Mã Booking này đã tồn tại trên hệ thống (hoặc đang nằm trong Thùng rác). Vui lòng dùng mã khác!' });
+        }
         res.status(500).json({ message: err.message });
     }
 };
@@ -294,7 +297,9 @@ exports.updateBooking = async (req, res) => {
                 new_data: updatedBooking
             });
 
-            // EMAIL EVENTS
+            await client.query('COMMIT');
+
+            // EMAIL EVENTS (Sau khi Commit thành công)
             if (updates.booking_status && updates.booking_status !== oldBooking.booking_status) {
                 if (updates.booking_status === 'Xác nhận') {
                     emitEvent(SystemEvents.find(e => e.code === 'BOOKING_CONFIRMED').code, {
@@ -315,7 +320,6 @@ exports.updateBooking = async (req, res) => {
                 updated_at: new Date().toISOString()
             });
 
-            await client.query('COMMIT');
             res.json(updatedBooking);
         } else {
             await client.query('COMMIT');
@@ -332,20 +336,23 @@ exports.updateBooking = async (req, res) => {
 exports.deleteBooking = async (req, res) => {
     try {
         const bookingId = req.params.id;
-        const resBook = await db.query('SELECT booking_code FROM bookings WHERE id = $1', [bookingId]);
+        const resBook = await db.query('SELECT booking_code, * FROM bookings WHERE id = $1', [bookingId]);
         if (resBook.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy booking' });
 
-        // Kiểm tra giao dịch thanh toán trước khi xóa
+        const bData = resBook.rows[0];
+
+        // Kiểm tra giao dịch thanh toán (Phiếu thu) trước khi xóa
         const txCount = await db.query('SELECT COUNT(*)::int as c FROM booking_transactions WHERE booking_id = $1', [bookingId]);
         if (txCount.rows[0].c > 0 && req.query.force !== 'true') {
             return res.status(409).json({
-                message: `Đơn hàng ${resBook.rows[0].booking_code} có ${txCount.rows[0].c} giao dịch thanh toán. Xóa sẽ mất toàn bộ lịch sử thu tiền.`,
+                message: `Đơn hàng ${bData.booking_code} đang có ${txCount.rows[0].c} phiếu thu. Bạn phải Hủy các phiếu thu này trước khi đưa khách hàng vào thùng rác để đảm bảo đối soát kế toán.`,
                 has_transactions: true,
                 tx_count: txCount.rows[0].c
             });
         }
 
-        await db.query('DELETE FROM bookings WHERE id = $1', [bookingId]);
+        // SOFT DELETE: Đánh dấu is_deleted = true thay vì DELETE (giữ nguyên phiếu thu)
+        await db.query('UPDATE bookings_raw SET is_deleted = true WHERE id = $1', [bookingId]);
 
         // LOG ACTIVITY
         await logActivity({
@@ -353,10 +360,11 @@ exports.deleteBooking = async (req, res) => {
             action_type: 'DELETE',
             entity_type: 'BOOKING',
             entity_id: bookingId,
-            details: `Đã xóa Booking: ${resBook.rows[0].booking_code}`
+            details: `Đưa Khách hàng vào Thùng rác: ${bData.booking_code}`,
+            old_data: bData
         });
 
-        res.json({ message: 'Đã xoá booking thành công' });
+        res.json({ message: 'Đã đưa khách hàng vào Thùng rác thành công' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
