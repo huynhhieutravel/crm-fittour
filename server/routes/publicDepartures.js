@@ -47,6 +47,7 @@ router.get('/', async (req, res) => {
         td.max_participants,
         td.status,
         td.deadline_booking,
+        td.departure_card_data,
         (SELECT COALESCE(SUM(pax_count), 0) 
          FROM bookings 
          WHERE tour_departure_id = td.id 
@@ -86,6 +87,8 @@ router.get('/', async (req, res) => {
     // Transform data — chỉ trả trường an toàn, tính số chỗ còn
     const departures = result.rows.map(row => {
       const remaining = Math.max(0, (row.max_participants || 0) - (parseInt(row.sold_pax) || 0));
+      const cardData = row.departure_card_data;
+      const hasData = cardData && typeof cardData === 'object' && Object.keys(cardData).length > 0;
       return {
         tour_name: row.tour_name,
         destination: row.destination,
@@ -110,6 +113,7 @@ router.get('/', async (req, res) => {
         image_url: row.image_url,
         website_link: row.website_link,
         highlights: row.highlights,
+        has_card_data: !!hasData,
       };
     });
 
@@ -126,6 +130,48 @@ router.get('/', async (req, res) => {
 
   } catch (error) {
     console.error('Lỗi Public Departures API:', error);
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+
+// GET /api/public/departures/:code
+// Dành cho trang Thẻ Khởi Hành (Astro)
+router.get('/:code', async (req, res) => {
+  try {
+    const { code } = req.params;
+    const query = `
+      SELECT 
+        td.code as departure_code,
+        tt.name as tour_name,
+        tt.destination,
+        tt.duration,
+        tt.website_link,
+        td.start_date,
+        td.end_date,
+        td.departure_card_data
+      FROM tour_departures td
+      JOIN tour_templates tt ON td.tour_template_id = tt.id
+      WHERE td.code = $1
+    `;
+    const result = await db.query(query, [code]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy lịch khởi hành' });
+    }
+
+    const row = result.rows[0];
+    res.json({
+      tour_name: row.tour_name,
+      destination: row.destination,
+      duration: row.duration,
+      website_link: row.website_link,
+      departure_code: row.departure_code,
+      start_date: row.start_date,
+      end_date: row.end_date,
+      departure_card_data: row.departure_card_data || {}
+    });
+  } catch (error) {
+    console.error('Lỗi Public Departure Card API:', error);
     res.status(500).json({ error: 'Lỗi server' });
   }
 });
