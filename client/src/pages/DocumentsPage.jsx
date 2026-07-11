@@ -12,6 +12,13 @@ import BrandGuidelinePage from './BrandGuidelinePage';
 import QuyTrinhSaleDieuHanhPage from './QuyTrinhSaleDieuHanhPage';
 import ChinhSachDanhGiaPage from './ChinhSachDanhGiaPage';
 import CoCheKpiPage from './CoCheKpiPage';
+import { SOP_META_ADS_MARKDOWN } from '../data/sopMetaAds';
+import { BLUEPRINT_META_ADS_MARKDOWN } from '../data/blueprintMetaAds';
+import { RULE_META_ADS_MARKDOWN } from '../data/ruleMetaAds';
+import { SOP_ASTRO_TOUR_MARKDOWN } from '../data/sopAstroTour';
+import SopMetaAdsInfographic from './SopMetaAdsInfographic';
+import RagDocViewer from '../components/Knowledge/RagDocViewer';
+import LadakhConsultingPage from './LadakhConsultingPage';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Static Document Index — TẤT CẢ tài liệu nội bộ đã biết
@@ -20,6 +27,9 @@ const STATIC_DOCS = [
   { title: 'Brand Identity Guideline', description: 'Tài liệu hướng dẫn nhận diện thương hiệu FIT Tour, bao gồm logo, màu sắc, font chữ...', category: 'Marketing', path: '/tai-lieu/brand-guideline', icon: '🎨' },
   { title: 'HUB Hướng Dẫn Viên', description: 'Bàn làm việc của HDV — checklist, SOP, sự cố, case study', category: 'HDV', path: '/hdv', icon: '👨‍✈️' },
   { title: 'HUB Marketing', description: 'Tài liệu Marketing, chuẩn mực content, format bài đăng & Báo cáo hiệu suất team', category: 'Marketing', path: '/tai-lieu/marketing', icon: '📈' },
+  { title: 'SOP Dev: Elementor to Astro', description: 'Quy chuẩn sử dụng Native Astro Components khi migrate (chuyển đổi) các trang Tour cũ từ Elementor sang.', category: 'Dev', path: '/tai-lieu/sop-astro-tour', icon: '💻' },
+  { title: 'Rule Meta Ads', description: 'Các quy tắc bắt buộc và khuyến nghị khi thiết lập chiến dịch Meta Ads.', category: 'Marketing', path: '/tai-lieu/rule-meta-ads', icon: '📜' },
+  { title: 'Blueprint Meta Ads', description: 'Hướng dẫn chạy quảng cáo Meta (Facebook/IG) chuẩn FIT Tour - Quy tắc đặt tên, target, content và tối ưu.', category: 'Marketing', path: '/tai-lieu/blueprint-meta-ads', icon: '🎯' },
   { title: 'HUB Kinh Doanh (Sale)', description: 'Tài liệu dành cho phòng kinh doanh, quy trình bán hàng', category: 'Sale', path: '/tai-lieu/sale', icon: '💼' },
   { title: 'HUB Điều Hành (OP)', description: 'Quy trình điều hành tour, vận hành dịch vụ', category: 'Điều hành', path: '/tai-lieu/dieu-hanh', icon: '🔧' },
   { title: 'HUB Kế Toán', description: 'Nghiệp vụ kế toán, quy trình tài chính nội bộ', category: 'Kế toán', path: '/tai-lieu/ke-toan', icon: '📊' },
@@ -49,10 +59,11 @@ const BlogLayout = ({ children }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [bieuMauItems, setBieuMauItems] = useState([]);
+  const [ragDocs, setRagDocs] = useState([]);
   const searchRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Fetch biểu mẫu items once for search
+  // Fetch biểu mẫu items & rag docs once for search
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -60,6 +71,12 @@ const BlogLayout = ({ children }) => {
         .then(res => setBieuMauItems(res.data))
         .catch(() => {});
     }
+    
+    // Always fetch RAG docs (backend allows public read for localhost view)
+    const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+    axios.get('/api/rag-docs', config)
+      .then(res => setRagDocs(res.data))
+      .catch(() => {});
   }, []);
 
   // Debounced search
@@ -81,6 +98,15 @@ const BlogLayout = ({ children }) => {
           path: item.link || '/tai-lieu/bieu-mau',
           icon: '📋',
           external: item.link ? !item.link.startsWith('/') : false,
+        })),
+        ...ragDocs.filter(d => d.status === 'active').map(doc => ({
+          title: doc.title,
+          description: doc.content_text ? doc.content_text.substring(0, 50) + '...' : 'Tài liệu nội bộ',
+          category: doc.category || 'Khác',
+          path: (doc.content_type === 'link_drive' || doc.content_type === 'link_image') ? doc.attachment_url : `/tai-lieu/${doc.id}`,
+          icon: doc.content_type === 'text' ? '📝' : '🔗',
+          external: (doc.content_type === 'link_drive' || doc.content_type === 'link_image'),
+          target_bus: doc.target_bus
         }))
       ];
 
@@ -193,6 +219,9 @@ const BlogLayout = ({ children }) => {
                       <div className="blog-search-result-title">
                         {doc.title}
                         {doc.external && <ExternalLink size={12} style={{ marginLeft: 4, opacity: 0.5 }} />}
+                        {doc.target_bus && doc.target_bus.length > 0 && (
+                            <span style={{ marginLeft: 8, fontSize: '0.65rem', background: '#8b5cf6', color: 'white', padding: '2px 6px', borderRadius: '6px', fontWeight: 600 }}>{doc.target_bus.join(', ')}</span>
+                        )}
                       </div>
                       <div className="blog-search-result-desc">{doc.description}</div>
                     </div>
@@ -204,7 +233,10 @@ const BlogLayout = ({ children }) => {
 
 
           </div>
-          <div>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <Link to="/tai-lieu/manager" className="blog-back-btn" style={{ background: '#3b82f6', color: 'white', border: 'none' }}>
+              <Edit2 size={16} /> Quản lý bài viết
+            </Link>
             <Link to="/" className="blog-back-btn">
               <ArrowLeft size={16} /> Về lại CRM
             </Link>
@@ -699,14 +731,20 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { ChevronUp, User, Calendar, Clock, ChevronRight } from 'lucide-react';
 
-const MarkdownViewer = ({ fileUrl, title, author, updatedDate, breadcrumbs }) => {
-  const [content, setContent] = useState('');
-  const [loading, setLoading] = useState(true);
+const MarkdownViewer = ({ fileUrl, markdownContent, title, author, updatedDate, breadcrumbs, quickLinks }) => {
+  const location = useLocation();
+  const [content, setContent] = useState(markdownContent || '');
+  const [loading, setLoading] = useState(!markdownContent);
   const [activeHeadingId, setActiveHeadingId] = useState('');
   const [showBackToTop, setShowBackToTop] = useState(false);
   const headingIdsRef = useRef([]);
 
   useEffect(() => {
+    if (markdownContent) {
+      setContent(markdownContent);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     fetch(fileUrl)
       .then(res => res.text())
@@ -718,10 +756,12 @@ const MarkdownViewer = ({ fileUrl, title, author, updatedDate, breadcrumbs }) =>
         setContent('# Lỗi\nKhông thể tải tài liệu này.');
         setLoading(false);
       });
-  }, [fileUrl]);
+  }, [fileUrl, markdownContent]);
 
-  // Lấy danh sách các Chương (Heading 1) để làm Mục lục
-  const headings = content.split('\n').filter(line => line.startsWith('# ')).map(line => line.replace('# ', '').trim());
+  // Lấy danh sách các Chương (Heading 1 và 2) để làm Mục lục
+  const headings = content.split('\n')
+    .filter(line => line.match(/^#{1,2}\s/))
+    .map(line => line.replace(/^#{1,2}\s/, '').trim());
 
   // Hàm tạo ID từ text để scroll tới
   const generateId = useCallback((text) => {
@@ -794,7 +834,26 @@ const MarkdownViewer = ({ fileUrl, title, author, updatedDate, breadcrumbs }) =>
         
         {/* Sidebar: Mục Lục với Scrollspy */}
         <div className="blog-toc">
-          <h3 className="blog-toc-title">Mục Lục</h3>
+          {quickLinks && quickLinks.length > 0 && (
+            <div className="blog-quick-links" style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #e2e8f0' }}>
+              <h3 className="blog-toc-title" style={{ color: '#0ea5e9' }}>Tài Liệu Liên Quan</h3>
+              <ul className="blog-toc-list">
+                {quickLinks.map((link, index) => {
+                  const isActive = location.pathname === link.path;
+                  return (
+                    <li key={index} className={`blog-toc-item ${isActive ? 'active' : ''}`}>
+                      <Link to={link.path} className={`blog-toc-btn ${isActive ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', textAlign: 'left', width: '100%' }}>
+                        {link.icon && <span>{link.icon}</span>}
+                        <span style={{ fontWeight: isActive ? '600' : 'normal', lineHeight: '1.4' }}>{link.title}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          <h3 className="blog-toc-title">Nội Dung Bài Viết</h3>
           <ul className="blog-toc-list">
             <li className={`blog-toc-item ${!activeHeadingId ? 'active' : ''}`}>
               <button className={`blog-toc-btn ${!activeHeadingId ? 'active' : ''}`} onClick={scrollToTop}>
@@ -914,6 +973,8 @@ const MarkdownViewer = ({ fileUrl, title, author, updatedDate, breadcrumbs }) =>
 /* ═══════════════════════════════════════════════════════════════════════════
    Router
    ═══════════════════════════════════════════════════════════════════════════ */
+// Removing SaleDocsPage component as it is replaced by a static page
+
 const DocumentsPage = () => {
   const location = useLocation();
   const path = location.pathname;
@@ -961,7 +1022,58 @@ const DocumentsPage = () => {
       breadcrumbs={[{ label: 'Tài liệu', path: '/tai-lieu' }, { label: 'Biểu mẫu hành chính', path: '/tai-lieu/bieu-mau' }]}
     />
   );
+  if (path === '/tai-lieu/quy-tac-dat-ten-quang-cao-meta') return <BlogLayout><SopMetaAdsInfographic /></BlogLayout>;
+  const marketingQuickLinks = [
+    { title: 'Rule Meta Ads', path: '/tai-lieu/rule-meta-ads', icon: '📜' },
+    { title: 'Blueprint Meta Ads', path: '/tai-lieu/blueprint-meta-ads', icon: '🎯' },
+    { title: 'SOP Đặt Tên Ads', path: '/tai-lieu/sop-meta-ads', icon: '📝' },
+    { title: 'Brand Identity', path: '/tai-lieu/brand-guideline', icon: '🎨' },
+    { title: 'Chính Sách Đánh Giá', path: '/tai-lieu/chinh-sach-danh-gia', icon: '⭐' }
+  ];
+
+  if (path === '/tai-lieu/sop-meta-ads') return (
+    <MarkdownViewer 
+      markdownContent={SOP_META_ADS_MARKDOWN}
+      title="SOP – Quy Ước Đặt Tên Meta Ads"
+      author="FIT Tour Marketing"
+      breadcrumbs={[{ label: 'Marketing', path: '/tai-lieu/marketing' }]}
+      quickLinks={marketingQuickLinks}
+    />
+  );
+  if (path === '/tai-lieu/blueprint-meta-ads') return (
+    <MarkdownViewer 
+      markdownContent={BLUEPRINT_META_ADS_MARKDOWN}
+      title="Blueprint Meta Ads"
+      author="FIT Tour Marketing"
+      breadcrumbs={[{ label: 'Marketing', path: '/tai-lieu/marketing' }]}
+      quickLinks={marketingQuickLinks}
+    />
+  );
+  if (path === '/tai-lieu/rule-meta-ads') return (
+    <MarkdownViewer 
+      markdownContent={RULE_META_ADS_MARKDOWN}
+      title="Rule Meta Ads FIT Tour"
+      author="FIT Tour Marketing"
+      breadcrumbs={[{ label: 'Marketing', path: '/tai-lieu/marketing' }]}
+      quickLinks={marketingQuickLinks}
+    />
+  );
+  if (path === '/tai-lieu/sop-astro-tour') return (
+    <MarkdownViewer 
+      markdownContent={SOP_ASTRO_TOUR_MARKDOWN}
+      title="SOP Chuyển Đổi Trang Tour: Elementor Sang Astro Native"
+      author="FIT Tour Developer"
+      breadcrumbs={[{ label: 'Tài liệu', path: '/tai-lieu' }]}
+    />
+  );
   if (path === '/tai-lieu' || path === '/tai-lieu/') return <DocumentsHome />;
+  
+  if (path === '/tai-lieu/tu-van-ladakh-bu4') {
+    return <BlogLayout><LadakhConsultingPage /></BlogLayout>;
+  }
+
+  // RAG Dynamic Documents
+  if (path.match(/^\/tai-lieu\/\d+$/)) return <BlogLayout><RagDocViewer /></BlogLayout>;
 
   return <PlaceholderPage />;
 };
