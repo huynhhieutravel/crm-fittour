@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Search, UserPlus, Shield, Edit3, Key, Trash2, Mail, Clock, UserCog, Users, Phone } from 'lucide-react';
+import { Search, UserPlus, Shield, Edit3, Key, Trash2, Mail, Clock, UserCog, Users, Phone, Briefcase } from 'lucide-react';
+import axios from 'axios';
 import { formatRoleDisplayName } from '../utils/roleUtils';
 
 const UsersTab = ({ 
@@ -19,7 +20,15 @@ const UsersTab = ({
   const [selectedRole, setSelectedRole] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   const [selectedTeam, setSelectedTeam] = useState('ALL');
+  const [selectedBU, setSelectedBU] = useState('ALL');
   const [deleteConfirmUser, setDeleteConfirmUser] = useState(null);
+  const [buOptions, setBuOptions] = useState([]);
+
+  useEffect(() => {
+    axios.get('/api/business-units')
+      .then(res => setBuOptions(res.data))
+      .catch(err => console.error("Error fetching BUs:", err));
+  }, []);
 
   // Extract unique teams from users (now users have `teams` array)
   const allTeamNames = [...new Set(users.flatMap(u => (u.teams || []).map(t => t.name)).filter(Boolean))];
@@ -31,12 +40,13 @@ const UsersTab = ({
     
     const matchRole = selectedRole === 'ALL' ? true : u.role_name === selectedRole;
     const matchTeam = selectedTeam === 'ALL' ? true : (u.teams || []).some(t => t.name === selectedTeam);
+    const matchBU = selectedBU === 'ALL' ? true : (u.bus || []).includes(selectedBU);
     
     let matchStatus = true;
     if (selectedStatus === 'ACTIVE') matchStatus = u.is_active !== false;
     if (selectedStatus === 'INACTIVE') matchStatus = u.is_active === false;
 
-    return matchSearch && matchRole && matchTeam && matchStatus;
+    return matchSearch && matchRole && matchTeam && matchBU && matchStatus;
   });
 
   const getRoleColor = (roleName) => {
@@ -78,6 +88,20 @@ const UsersTab = ({
               <option value="ALL">-- Tất cả --</option>
               {allTeamNames.map(tn => (
                 <option key={tn} value={tn}>{tn}</option>
+              ))}
+            </select>
+          </div>
+          <div className="filter-group" style={{ flex: 1, minWidth: '130px' }}>
+            <label>BUSINESS UNIT</label>
+            <select 
+              className="filter-input"
+              value={selectedBU}
+              onChange={e => setSelectedBU(e.target.value)}
+              style={{ width: '100%' }}
+            >
+              <option value="ALL">-- Tất cả BU --</option>
+              {buOptions.map(bu => (
+                <option key={bu.id} value={bu.id}>{bu.label || bu.id}</option>
               ))}
             </select>
           </div>
@@ -129,7 +153,8 @@ const UsersTab = ({
             <tr>
               <th style={{ padding: '1rem 1.5rem' }}>THÔNG TIN THÀNH VIÊN</th>
               <th>SỐ ĐIỆN THOẠI</th>
-              <th>TEAM</th>
+              <th>BUSINESS UNIT</th>
+              <th>TEAM (ĐỘI NHÓM)</th>
               <th>PHÂN QUYỀN</th>
               <th>NGÀY GIA NHẬP</th>
               <th style={{ textAlign: 'right', paddingRight: '2.5rem' }}>THAO TÁC</th>
@@ -180,23 +205,49 @@ const UsersTab = ({
                     ) : '-'}
                   </td>
                   <td>
-                    {(u.teams || []).length > 0 ? (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                        {(u.teams || []).map(t => (
-                          <div key={t.id} style={{ 
-                            display: 'inline-flex', alignItems: 'center', gap: '4px',
-                            padding: '3px 8px', borderRadius: '6px',
-                            background: '#f0fdf4', color: '#15803d',
-                            fontSize: '0.7rem', fontWeight: 600
-                          }}>
-                            <Users size={10} />
-                            {t.name}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>—</span>
-                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {(u.bus || []).length > 0 ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {u.bus.map(b => {
+                            const foundBu = buOptions.find(opt => opt.id === b);
+                            return (
+                              <div key={b} style={{ 
+                                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                padding: '3px 8px', borderRadius: '6px',
+                                background: '#eff6ff', color: '#1d4ed8',
+                                fontSize: '0.7rem', fontWeight: 600
+                              }}>
+                                <Briefcase size={10} />
+                                {foundBu ? foundBu.label || foundBu.id : b}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>—</span>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {(u.teams || []).length > 0 ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {(u.teams || []).map(t => (
+                            <div key={t.id} style={{ 
+                              display: 'inline-flex', alignItems: 'center', gap: '4px',
+                              padding: '3px 8px', borderRadius: '6px',
+                              background: '#f0fdf4', color: '#15803d',
+                              fontSize: '0.7rem', fontWeight: 600
+                            }}>
+                              <Users size={10} />
+                              {t.name}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>—</span>
+                      )}
+                    </div>
                   </td>
                   <td>
                     <div style={{ 

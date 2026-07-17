@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, UserPlus, Save, LogOut, Shield, Mail, User, Lock, Trash2 } from 'lucide-react';
 import axios from 'axios';
+import Select from 'react-select';
 import { formatRoleDisplayName } from '../../utils/roleUtils';
 
 export const AddUserModal = ({ 
@@ -15,15 +16,20 @@ export const AddUserModal = ({
     full_name: '',
     email: '',
     phone: '',
-    role_id: ''
+    role_id: '',
+    bus: []
   });
   const [allowedRoles, setAllowedRoles] = useState([]);
+  const [buOptions, setBuOptions] = useState([]);
 
   useEffect(() => {
     if (show) {
       axios.get('/api/users/allowed-roles')
         .then(res => setAllowedRoles(res.data))
         .catch(err => console.error("Error fetching allowed roles:", err));
+      axios.get('/api/business-units')
+        .then(res => setBuOptions(res.data.map(b => ({ value: b.id, label: b.label || b.id }))))
+        .catch(err => console.error("Error fetching BUs:", err));
     }
   }, [show]);
 
@@ -32,7 +38,7 @@ export const AddUserModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(formData);
-    setFormData({ username: '', password: '', full_name: '', email: '', phone: '', role_id: '' });
+    setFormData({ username: '', password: '', full_name: '', email: '', phone: '', role_id: '', bus: [] });
   };
 
   return (
@@ -74,6 +80,19 @@ export const AddUserModal = ({
               {allowedRoles.map(r => <option key={r.id} value={r.id}>{r.name.toUpperCase()}</option>)}
             </select>
           </div>
+          <div className="modal-form-group">
+            <label>BUSINESS UNITS (BU)</label>
+            <Select
+              isMulti
+              options={buOptions}
+              value={formData.bus.map(val => buOptions.find(opt => opt.value === val) || { value: val, label: val })}
+              onChange={selected => setFormData({...formData, bus: selected ? selected.map(s => s.value) : []})}
+              placeholder="Chọn BU..."
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+              styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+            />
+          </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
             <button type="submit" className="btn-pro-save" style={{ flex: 1 }}><Save size={18} /> LƯU NHÂN VIÊN</button>
@@ -92,12 +111,13 @@ export const EditUserModal = ({
   roles 
 }) => {
   const [formData, setFormData] = useState({
-    full_name: '', email: '', phone: '', role_id: '', is_active: true, permissions: {},
+    full_name: '', email: '', phone: '', role_id: '', is_active: true, permissions: {}, bus: [],
     birth_date: '', gender: '', id_card: '', passport_url: '', id_expiry: '', address: '', facebook_url: '', created_at: '', position: '', avatar_url: ''
   });
   const [activeTab, setActiveTab] = useState('personal');
   const [uploadingPassport, setUploadingPassport] = useState(false);
   const [allowedRoles, setAllowedRoles] = useState([]);
+  const [buOptions, setBuOptions] = useState([]);
 
   const MODULES_MAP = [
     { key: 'leads', label: 'Lead Marketing', group: 'Tour Lẻ (FIT)' },
@@ -121,10 +141,14 @@ export const EditUserModal = ({
       axios.get('/api/users/allowed-roles')
         .then(res => setAllowedRoles(res.data))
         .catch(err => console.error("Error fetching allowed roles:", err));
+      axios.get('/api/business-units')
+        .then(res => setBuOptions(res.data.map(b => ({ value: b.id, label: b.label || b.id }))))
+        .catch(err => console.error("Error fetching BUs:", err));
 
       setFormData({
         full_name: user.full_name || '', email: user.email || '', phone: user.phone || '',
         role_id: user.role_id || '', is_active: user.is_active !== false, permissions: user.permissions || {},
+        bus: user.bus || [],
         birth_date: user.birth_date ? new Date(user.birth_date).toLocaleDateString('en-CA') : '',
         gender: user.gender || '', id_card: user.id_card || '',
         passport_url: user.passport_url || '',
@@ -320,6 +344,19 @@ export const EditUserModal = ({
                     </div>
                     <span style={{ fontWeight: 600, color: formData.is_active ? '#22c55e' : '#64748b' }}>{formData.is_active ? 'Đang hoạt động' : 'Tạm dừng'}</span>
                   </div>
+                </div>
+                <div className="modal-form-group" style={{ gridColumn: 'span 3' }}>
+                  <label>BUSINESS UNITS (BU)</label>
+                  <Select
+                    isMulti
+                    options={buOptions}
+                    value={formData.bus.map(val => buOptions.find(opt => opt.value === val) || { value: val, label: val })}
+                    onChange={selected => setFormData({...formData, bus: selected ? selected.map(s => s.value) : []})}
+                    placeholder="Chọn BU..."
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                    styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                  />
                 </div>
               </div>
             </div>

@@ -40,7 +40,7 @@ const ChinhSachDanhGiaPage = () => {
       </nav>
       {/* Removed Image block as requested */}
 
-      <div style={{ maxWidth: '1000px', margin: '0 auto', background: '#fff', padding: '40px', fontFamily: '"Inter", system-ui, sans-serif', color: '#1e293b', lineHeight: 1.6 }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', background: '#fff', padding: '40px', fontFamily: '"Inter", system-ui, sans-serif', color: '#1e293b', lineHeight: 1.6 }}>
         
         {/* Header */}
         <div className="sop-header-flex">

@@ -50,9 +50,41 @@ async function processEmailEvent(eventMeta, payload) {
     return [...new Set([...userEmails, ...external])].filter(e => e);
   };
 
-  const toRecipients = await resolveGroups(rule.email_groups, rule.external_emails);
-  const ccRecipients = await resolveGroups(rule.cc_groups, rule.cc_external_emails);
-  const bccRecipients = await resolveGroups(rule.bcc_groups, rule.bcc_external_emails);
+  let toRecipients = await resolveGroups(rule.email_groups, rule.external_emails);
+  let ccRecipients = await resolveGroups(rule.cc_groups, rule.cc_external_emails);
+  let bccRecipients = await resolveGroups(rule.bcc_groups, rule.bcc_external_emails);
+
+  // --- DYNAMIC OVERRIDE CHO ĐƠN XIN NGHỈ PHÉP ---
+  if (code === 'LEAVE_REQUEST_CREATED' && payload.send_to_all === false && payload.applicant_id) {
+    try {
+      const applicantRes = await db.query('SELECT bus FROM users WHERE id = $1', [payload.applicant_id]);
+      const applicantBUs = applicantRes.rows.length > 0 ? applicantRes.rows[0].bus : [];
+      
+      const q = `
+         SELECT email FROM users 
+         WHERE is_active = true 
+         AND email IS NOT NULL 
+         AND (
+            bus && $1::text[] 
+            OR role IN ('admin', 'manager', 'group_manager', 'operations_lead')
+            OR role ILIKE '%manager%'
+            OR role ILIKE '%lead%'
+            OR position ILIKE '%giám đốc%'
+            OR position ILIKE '%trưởng phòng%'
+            OR position ILIKE '%quản lý%'
+            OR position ILIKE '%pgđ%'
+         )
+      `;
+      const buBodRes = await db.query(q, [applicantBUs || []]);
+      const dynamicEmails = buBodRes.rows.map(r => r.email);
+      toRecipients = [...new Set(dynamicEmails)].filter(e => e);
+      ccRecipients = [];  // Xóa sạch CC để đảm bảo không bị rò rỉ nếu Admin lỡ cấu hình ALL_STAFF vào CC
+      bccRecipients = []; // Xóa sạch BCC
+    } catch (overrideErr) {
+      console.error('[EmailListener] Error overriding recipients for LEAVE_REQUEST_CREATED:', overrideErr);
+    }
+  }
+  // ---------------------------------------------
 
   if (toRecipients.length === 0 && ccRecipients.length === 0 && bccRecipients.length === 0) {
     console.log(`[EmailListener] No recipients resolved for event ${code}.`);
@@ -74,9 +106,13 @@ async function processEmailEvent(eventMeta, payload) {
   }
 
   // 6. Define Recipients
-  const finalTo = toRecipients.length > 0 ? toRecipients.join(',') : (ccRecipients.length > 0 ? ccRecipients.join(',') : bccRecipients.join(','));
-  const finalCc = toRecipients.length > 0 ? ccRecipients.join(',') : ''; // If we fell back CC to TO, don't CC them again
-  const finalBcc = bccRecipients.join(',');
+  let safeTo = toRecipients;
+  let safeCc = ccRecipients.filter(email => !safeTo.includes(email));
+  let safeBcc = bccRecipients.filter(email => !safeTo.includes(email) && !safeCc.includes(email));
+
+  const finalTo = safeTo.length > 0 ? safeTo.join(',') : (safeCc.length > 0 ? safeCc.join(',') : safeBcc.join(','));
+  const finalCc = safeTo.length > 0 ? safeCc.join(',') : ''; // If we fell back CC to TO, don't CC them again
+  const finalBcc = safeBcc.join(',');
 
   if (!finalTo) {
     console.log(`[EmailListener] No final recipients for event ${code}.`);

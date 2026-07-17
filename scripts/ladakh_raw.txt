@@ -1,0 +1,1190 @@
+Created At: 2026-07-17T14:08:05Z
+Completed At: 2026-07-17T14:08:05Z
+File Path: `file:///Users/huynhtronghieu/Documents/WORK%20Hi%E1%BA%BFu/crm-fittour/client/src/pages/LadakhConsultingPage.jsx`
+Total Lines: 915
+Total Bytes: 82502
+Showing lines 1 to 800
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import React, { useState, useEffect } from 'react';
+2: import { Briefcase, HeartPulse, CloudSun, BookKey as Passport, Search, Copy, CheckCircle2, ChevronDown, Hash, PhoneCall, Sparkles, MessageSquare, Info, Zap, ChevronRight, ExternalLink, Star, Music, Heart, BookOpen, Navigation, Library, Award, Users, List, Map, Mountain, Image as ImageIcon, Video } from 'lucide-react';
+3: import { Link } from 'react-router-dom';
+4: 
+5: const groupedFaqs = [
+6:   {
+7:     category: "Chung & Dịch Vụ",
+8:     icon: "Briefcase",
+9:     color: "#f97316",
+10:     items: [
+11:       { 
+12:         id: "q1", 
+13:         q: "1. Tại sao tour bên em giá cao hơn các bên khác?", 
+14:         variants: [
+15:             { type: "Giải quyết so sánh (Logic)", text: "Dạ thoạt nhìn giá có vẻ nhỉnh hơn, nhưng tính kỹ lại tiết kiệm hơn vì bên em bao trọn 3 bữa ăn (nhiều bên cắt bữa) và đi xe riêng chuẩn cao để anh/chị giữ sức khỏe suốt tuyến.\n\nĐặc biệt, FIT Tour vừa kỷ niệm cột mốc 80 chuyến đi thành công đưa khách Việt đến Ladakh. Về uy tín và kinh nghiệm tổ chức thì cực kỳ an tâm. Anh/chị xem thêm thông tin ở đây nhé: https://fittour.vn/cot-moc-80-chuyen-di-ladakh\nHoặc VNexpress cũng nói về FIT: https://vnexpress.net/fit-tour-hai-nam-lien-tiep-thang-giai-tour-thiet-ke-rieng-5039596.html" },
+16:             { type: "Cam kết chất lượng (Kèm Review VIP)", text: "Dạ tour bên em là trọn gói (vé máy bay, KS, 3 bữa ăn/ngày) không phát sinh chi phí ẩn. Đoàn nhỏ 9-11 khách để HDV chăm sóc sức khỏe từng người tốt nhất.\n\nAnh/chị biết ca sĩ Phương Thanh không? Chị Chanh đã 3 lần đến Ladakh và lần 3 vẫn chọn cùng FIT Tour vì sự đặc biệt. Anh/chị thử xem thêm hành trình đặc biệt của chị thêm nha: https://fittour.vn/phuong-thanh-lan-3-den-ladakh" }
+17:         ],
+18:         a: ["Dạ, nếu mình so sánh tổng chi phí thì tour bên em gần như đã bao gồm toàn bộ dịch vụ, nên anh/chị sẽ không phải phát sinh nhiều trong quá trình đi.", "Tour đã bao gồm vé máy bay, khách sạn, các bữa ăn đầy đủ 3 bữa/ngày (trong khi nhiều đơn vị chỉ bao gồm bữa sáng hoặc không bao gồm bữa trưa, tối), hướng dẫn viên người Việt có kinh nghiệm dẫn đoàn tại Himalaya, xe riêng và các chi phí theo chương trình.", "Điểm mà FIT TOUR luôn đầu tư nhiều nhất là trải nghiệm và sức khỏe của khách. Những cung như Ladakh, Kashmir hay Himalaya có địa hình và độ cao khá đặc biệt, nên việc ăn uống, nghỉ ngơi và theo dõi sức khỏe mỗi ngày rất quan trọng. Bọn em chuẩn bị bữa ăn rất kỹ để anh/chị vừa được trải nghiệm ẩm thực địa phương nhưng vẫn hợp khẩu vị người Việt, thậm chí có những ngày hướng dẫn viên còn trực tiếp nấu những món quen thuộc để mọi người dễ ăn và giữ sức.", "Ngoài ra, mỗi đoàn bên em chỉ giới hạn khoảng 9–11 khách, để hướng dẫn viên có thể chăm sóc sát sao từng người, hỗ trợ khi cần và đảm bảo mọi người đều có trải nghiệm trọn vẹn nhất. Vì vậy chi phí có thể cao hơn một chút, nhưng đổi lại anh/chị sẽ có một chuyến đi an tâm, thoải mái và được chăm sóc rất kỹ từ đầu đến cuối."] 
+19:       },
+20:       { 
+21:         id: "q7", 
+22:         q: "7. Điều gì khiến Ladakh trở thành một điểm đến đáng để trải nghiệm?", 
+23:         variants: [
+24:             { type: "Truyền cảm hứng (Cảm xúc)", text: "Dạ Ladakh không chỉ đẹp hùng vĩ mà còn mang lại cảm giác bình yên hiếm có. Nơi đây giữ nguyên vẹn văn hóa Himalaya nguyên bản, tu viện cổ và những người dân vô cùng mộc mạc.\n\nKhách nhà em như Travel Blogger Đặng Thuỳ Dương đi về cũng khen nức nở. Anh/chị lướt qua thử review và hình ảnh thực tế của bạn ấy đi cùng FIT Tour ở đây nhé, cảnh ngoài đời còn choáng ngợp hơn nhiều: https://fittour.vn/emagazine-dang-thuy-duong-o-zanskar" },
+25:             { type: "Đánh vào sự khác biệt (Độc lạ)", text: "Dạ Ladakh khác hoàn toàn những nơi anh/chị từng đi. Đó là sự đối lập hoàn hảo: sông băng giữa sa mạc cát, hồ nước xanh ngắt đổi màu và không gian yên tĩnh đến mức nghe được tiếng gió thở.\n\nTrăm nghe không bằng một thấy, anh/chị lướt qua thử đoạn video cực đẹp này do chính nhiếp ảnh gia Kop Dinh quay lại trong chuyến đi cùng FIT Tour nhé. Cảnh bên ngoài nhìn còn choáng ngợp hơn video nhiều: https://www.facebook.com/reel/1754974222353394" }
+26:         ],
+27:         a: ["Dạ, em nghĩ điều khiến Ladakh xứng đáng để đi không chỉ là vì cảnh đẹp, mà vì mỗi khung cảnh ở đây đều gắn với một câu chuyện.", "Ladakh từng nằm trên Con đường Tơ lụa cổ, là nơi giao thoa giữa Tây Tạng, Trung Á, Kashmir và Ấn Độ. Trải qua hàng trăm năm, vùng đất này vẫn giữ được những tu viện Phật giáo cổ, những ngôi làng nhỏ nép mình dưới chân núi và một lối sống rất mộc mạc của người dân Himalaya.", "Đến Ladakh, anh/chị sẽ thấy những dãy núi cao hùng vĩ nối tiếp nhau, những cung đường uốn lượn giữa thung lũng, hồ Pangong xanh ngắt đổi màu theo ánh nắng, dòng sông Indus lặng lẽ chảy qua vùng đất cằn cỗi, hay những cánh đồng lúa mạch và vườn mơ nhỏ xuất hiện giữa sa mạc trên núi cao. Chính sự đối lập đó tạo nên một vẻ đẹp rất đặc biệt mà hiếm nơi nào có được.", "Nhưng điều làm nhiều người nhớ nhất không chỉ là cảnh, mà là cảm giác khi đứng giữa thiên nhiên ấy. Khi lên đến Ladakh, mình sẽ buộc phải đi chậm hơn, hít thở sâu hơn và dành thời gian để cảm nhận nhiều hơn. Không còn tiếng còi xe, không còn nhịp sống vội vã, chỉ còn bầu trời xanh rất gần, những đỉnh núi phủ tuyết và một không gian yên tĩnh đến mức mình có thể nghe thấy tiếng gió.", "Con người Ladakh cũng khiến nhiều người yêu mến. Sống trong điều kiện tự nhiên khắc nghiệt, họ chọn cách hòa hợp với thiên nhiên, luôn nhẹ nhàng, bình thản và trân trọng những điều rất giản dị.", "Đối với em, Ladakh không phải là nơi để đi thật nhiều điểm hay check-in thật nhiều địa danh. Đó là nơi mình được ngắm một trong những cảnh quan hùng vĩ nhất thế giới, được chạm vào một nền văn hóa Himalaya còn nguyên bản và có một hành trình khiến mình nhớ rất lâu sau khi trở về."] 
+28:       },
+29:       { 
+30:         id: "q15", 
+31:         q: "15. Cách đăng ký tour như thế nào em?", 
+32:         variants: [
+33:             { type: "Nhanh gọn (Tiện lợi)", text: "Dạ anh/chị chỉ cần gửi em ảnh chụp mặt hộ chiếu còn hạn và cọc giữ chỗ là hoàn tất. Mọi thủ tục còn lại (E-visa, họp đoàn) bên em lo A-Z.\n\n[gửi khách ảnh lịch trình Tour]" },
+34:             { type: "Tạo khan hiếm (FOMO)", text: "Dạ vì đoàn bên em giới hạn chỉ 9-11 khách/chuyến để đảm bảo chất lượng, nếu anh/chị đã chốt được lịch thì mình tranh thủ gửi hộ chiếu và cọc sớm để bên em giữ chỗ đẹp cho mình nhé.\n\n[gửi khách ảnh lịch trình Tour]" }
+35:         ],
+36:         a: ["Dạ anh/chị chỉ cần gửi em ảnh chụp mặt hộ chiếu còn hạn và cọc giữ chỗ là hoàn tất đăng ký.", "Sau đó bên em sẽ hỗ trợ từ A-Z, từ E-visa, họp đoàn đến chuẩn bị hành lý. Vì mỗi đoàn chỉ nhận 9–11 khách nên nếu anh/chị đã chốt được thời gian thì mình đăng ký sớm để giữ chỗ nhé. 😊"] 
+37:       }
+38:     ]
+39:   },
+40:   {
+41:     category: "Sức Khỏe & Độ Cao",
+42:     icon: "HeartPulse",
+43:     color: "#ef4444",
+44:     items: [
+45:       { 
+46:         id: "q2", 
+47:         q: "2. Đi Ladakh có nguy hiểm vì sốc độ cao không em?", 
+48:         variants: [
+49:             { type: "An tâm (Vỗ về)", text: "Dạ cơ thể cần thời gian thích nghi nên tour bên em thiết kế nhịp độ rất chậm, nghỉ ngơi trọn vẹn 2 ngày đầu tại Leh. Đoàn có HDV nhiều kinh nghiệm đi kèm nên mình yên tâm nhé.\n\nFIT Tour là đơn vị dẫn hơn 80 đoàn đến Ladakh rồi, tụi em luôn tiêu chuẩn Take care và liên hệ riêng đặc biệt hậu cần, y tế ở Ladakh, đó là khác biệt đáng giá nhất đó anh/chị.\n\nTeam em từng có cô Mây U70 đi cùng nữa: https://fittour.vn/co-may" },
+50:             { type: "Logic (Khoa học)", text: "Dạ việc hơi đau đầu 1-2 ngày đầu là phản ứng bình thường khi lên cao. Quan trọng là đừng vận động mạnh quá sớm. Lịch trình bên em đã thiết kế khoa học để cơ thể anh/chị thích nghi từng bước một cách an toàn nhất.\n\nFIT Tour là đơn vị dẫn hơn 80 đoàn đến Ladakh rồi, tụi em luôn tiêu chuẩn Take care và liên hệ riêng đặc biệt hậu cần, y tế ở Ladakh, đó là khác biệt đáng giá nhất đó anh/chị.\n\nTeam em từng có cô Mây U70 đi cùng nữa: https://fittour.vn/co-may" }
+51:         ],
+52:         a: ["Dạ đây là điều rất nhiều anh/chị lo lắng trước khi đi.", "Thực tế, việc lên độ cao hơn 3.500 m có thể khiến cơ thể cần thời gian để thích nghi. Một số người có thể hơi đau đầu hoặc mệt nhẹ trong 1–2 ngày đầu, nhưng đó là phản ứng khá bình thường.", "Điều quan trọng là đừng lên cao quá nhanh. Chính vì vậy lịch trình bên em được thiết kế theo nguyên tắc thích nghi từng bước, mình sẽ có 2 ngày đầu tiên ở Leh, trong đó ngày đầu đến với Ladakh là mình dùng để nghỉ ngơi hoàn toàn, để cơ thể có thể thích nghi.", "Ngoài ra, trước chuyến đi bên em sẽ hướng dẫn rất kỹ cách chuẩn bị sức khỏe, chế độ ăn uống và vận động. Trong đoàn luôn có hướng dẫn viên giàu kinh nghiệm xử lý các tình huống ở vùng cao nên anh/chị có thể yên tâm hơn rất nhiều."] 
+53:       },
+54:       { 
+55:         id: "q3", 
+56:         q: "3. Mình chưa từng đi vùng cao, liệu mình có đi được Ladakh không?", 
+57:         variants: [
+58:             { type: "Khuyến khích (Tự tin)", text: "Dạ hoàn toàn được. Phần lớn khách FIT TOUR đều lần đầu đi vùng cao. Chỉ cần chuẩn bị sức khỏe tốt và tuân thủ lịch trình thiết kế khoa học của bên em là sẽ thích nghi rất tốt.\n\nFIT Tour có biên soạn sẵn Cẩm nang du lịch Ladakh cực kỳ chi tiết về cách chuẩn bị sức khỏe và hành lý. Anh/chị lưu lại đọc tham khảo trước chuyến đi nhé: https://fittour.vn/du-lich-ladakh" },
+59:             { type: "Phá bỏ định kiến (Logic)", text: "Dạ kinh nghiệm đi vùng cao không quan trọng bằng việc chuẩn bị đúng cách đâu. Rất nhiều khách trẻ từng leo núi chủ quan vẫn mệt, trong khi các cô chú lần đầu đi nhưng nghe theo HDV thì lại cực kỳ khỏe mạnh." }
+60:         ],
+61:         a: ["Dạ hoàn toàn có thể anh/chị nhé. Thực tế, phần lớn khách của FIT TOUR đều là lần đầu tiên đến Ladakh và chưa từng trải nghiệm vùng cao trước đó.", "Thật ra, việc đã từng đi vùng cao không đồng nghĩa với việc sẽ thích nghi tốt hơn. Bên em từng gặp những anh/chị đã có kinh nghiệm trekking hoặc đi nhiều nơi trên Himalaya, nhưng chỉ vì chủ quan, ngủ không đủ giấc, uống ít nước hoặc cố gắng vận động quá sức trong những ngày đầu mà vẫn gặp triệu chứng say độ cao.", "Ngược lại, rất nhiều anh/chị lần đầu đến Ladakh nhưng chuẩn bị sức khỏe tốt, tuân thủ hướng dẫn của đoàn thì lại thích nghi rất nhẹ nhàng và có một chuyến đi trọn vẹn.", "Điều quan trọng nhất không phải là kinh nghiệm, mà là một lịch trình được thiết kế khoa học để cơ thể có thời gian thích nghi với độ cao. Vì vậy, ngày đầu tiên ở Leh, bên em luôn bố trí để anh/chị nghỉ ngơi, hạn chế vận động mạnh và làm quen với không khí loãng trước khi tiếp tục hành trình.", "Trong suốt chuyến đi, hướng dẫn viên sẽ luôn theo dõi sức khỏe của từng thành viên, nhắc mọi người uống nước, nghỉ ngơi đúng lúc và hỗ trợ ngay nếu có bất kỳ dấu hiệu không thoải mái nào.", "Vì vậy, anh/chị không cần quá lo lắng nếu đây là lần đầu tiên đi vùng cao. Chỉ cần mình chuẩn bị sức khỏe tốt trước chuyến đi và đồng hành cùng hướng dẫn viên, thì đa số khách đều thích nghi rất tốt và có những trải nghiệm tuyệt vời tại Ladakh."] 
+62:       },
+63:       { 
+64:         id: "q4", 
+65:         q: "4. Mình có cần chuẩn bị gì để lên vùng cao không em?", 
+66:         variants: [
+67:             { type: "Ngắn gọn (Thực tế)", text: "Dạ trước chuyến đi 2 tuần mình cần ngủ đủ giấc, uống 2-2.5 lít nước/ngày và tập hít thở sâu. Mọi chuẩn bị khác bên em sẽ có buổi họp đoàn hướng dẫn rất chi tiết.\n\nAnh/chị cứ yên tâm, trong group chat, HDV và CSKH bên em luôn nhắc nhở các checklist và hướng dẫn liên tục cho mình điều lưu ý trước và trong chuyến đi." },
+68:             { type: "Chu đáo (Care khách)", text: "Dạ anh/chị cứ yên tâm, bên em có sẵn quy trình chuẩn bị rồi. Từ việc uống thuốc chống say độ cao (nếu cần), chuẩn bị đồ đạc ra sao đều được thông báo kỹ trong nhóm Zalo họp đoàn trước ngày đi.\n\nAnh/chị cứ yên tâm, trong group chat, HDV và CSKH bên em luôn nhắc nhở các checklist và hướng dẫn liên tục cho mình điều lưu ý trước và trong chuyến đi." }
+69:         ],
+70:         a: ["Dạ có anh/chị nhé. Trước ngày khởi hành, bên em sẽ tạo một nhóm Zalo để họp đoàn và hướng dẫn rất chi tiết về hành trình, cách chuẩn bị hành lý cũng như những lưu ý về sức khỏe khi đi vùng cao.", "Để cơ thể thích nghi tốt hơn với độ cao, khoảng 2 tuần trước chuyến đi, anh/chị chỉ cần duy trì một số thói quen đơn giản như:", "- Ngủ đủ giấc.", "- Uống khoảng 2–2,5 lít nước mỗi ngày.", "- Tập hít thở sâu hoặc vận động nhẹ để tăng sức bền.", "Ngoài ra, khoảng 1–2 ngày trước khi lên vùng cao, nhiều khách sẽ được bác sĩ tư vấn sử dụng Acetazolamide 250 mg để hỗ trợ phòng ngừa các triệu chứng liên quan đến việc thay đổi độ cao. Tuy nhiên, thuốc cần được sử dụng đúng đối tượng và đúng cách, nên bên em sẽ hướng dẫn kỹ trong buổi họp đoàn và tư vấn cụ thể cho từng anh/chị.", "Anh/chị cũng yên tâm là trong suốt hành trình, hướng dẫn viên sẽ luôn theo dõi tình trạng sức khỏe của đoàn, nhắc mọi người uống nước, nghỉ ngơi hợp lý và hỗ trợ ngay nếu có bất kỳ dấu hiệu không thoải mái nào."] 
+71:       },
+72:       { 
+73:         id: "q8", 
+74:         q: "8. Tour Ladakh có phù hợp với người lớn tuổi không?", 
+75:         variants: [
+76:             { type: "Đồng cảm (An tâm)", text: "Dạ phù hợp, quan trọng là sức khỏe ổn định chứ không phải tuổi tác. Vị khách lớn tuổi nhất của bên em là 74 tuổi, các cô chú tuân thủ kỷ luật tốt nên đôi khi đi còn khỏe hơn cả các bạn trẻ.\n\nVừa rồi bên em có đoàn khách với cô Mây (U70) vẫn chinh phục Ladakh rất khỏe mạnh và nhiều năng lượng. Anh/chị xem câu chuyện truyền cảm hứng của cô ở đây để yên tâm nhé: https://fittour.vn/co-may" },
+77:             { type: "Logic (Giải thích)", text: "Dạ tour chủ yếu di chuyển bằng xe, chỉ đi bộ ngắm cảnh nhẹ nhàng ở tu viện và hồ, hoàn toàn không phải leo núi hay trekking nên sức khỏe bình thường đều đi được.\n\nVừa rồi bên em có đoàn khách với cô Mây (U70) vẫn chinh phục Ladakh rất khỏe mạnh và nhiều năng lượng. Anh/chị xem câu chuyện truyền cảm hứng của cô ở đây để yên tâm nhé: https://fittour.vn/co-may" }
+78:         ],
+79:         a: ["Dạ có anh/chị nhé, điều quan trọng nhất là sức khỏe ổn định, chứ không phải tuổi tác.", "Bên em đã từng đồng hành cùng rất nhiều cô chú từ 60–70 tuổi, và vị khách lớn tuổi nhất của FIT TOUR là 74 tuổi. Điều thú vị là nhiều khi các cô chú còn đi rất tốt hơn cả các bạn trẻ. Theo kinh nghiệm của em, những cô chú vẫn giữ niềm đam mê khám phá ở độ tuổi này thường cũng rất ý thức trong việc rèn luyện sức khỏe và chuẩn bị thể lực trước chuyến đi, nên khả năng thích nghi thường rất tốt.", "Ngoài ra, Ladakh không phải là hành trình leo núi hay trekking liên tục. Phần lớn thời gian mình sẽ di chuyển bằng xe, chỉ đi bộ nhẹ tại các tu viện, hồ hoặc điểm tham quan. Vì vậy, nếu có sức khỏe tốt và tuân thủ lịch trình thì đa số cô chú đều có thể tham gia.", "Tuy nhiên, nếu anh/chị hoặc người thân có tiền sử tim mạch, bệnh phổi, huyết áp chưa ổn định hoặc các bệnh lý cần theo dõi, bên em sẽ trao đổi kỹ hơn về tình trạng sức khỏe và khuyến khích mình tham khảo ý kiến bác sĩ trước chuyến đi để đảm bảo an toàn nhất.", "Điều bên em luôn ưu tiên không phải là đưa thật nhiều khách lên Ladakh, mà là đảm bảo mỗi anh/chị đều có một hành trình an toàn và tận hưởng trọn vẹn vẻ đẹp của vùng Himalaya."] 
+80:       },
+81:       { 
+82:         id: "q9", 
+83:         q: "9. Tour Ladakh có phù hợp với trẻ nhỏ không?", 
+84:         variants: [
+85:             { type: "Logic (Thực tế)", text: "Dạ tour phù hợp với các bé từ 8 tuổi trở lên, vì lúc này bé đã tự chủ sinh hoạt cá nhân và tự đi bộ được mà không cần ba mẹ phải cõng/bế nhiều, tránh làm ba mẹ kiệt sức ở vùng cao.\n\nRiêng em thấy khi bé nhà mình, khi đến dãy núi cao nhất thế giới Himalaya, sẽ là trải nghiệm mới, và dấu ấn xứng đáng cho chặn đường phát triển." },
+86:             { type: "Cảm xúc (Khuyến khích)", text: "Dạ bé từ 8 tuổi đi tốt chị nhé. Các bạn nhỏ thường thích nghi độ cao rất nhanh và cực kỳ hào hứng khi được ngắm tuyết, cưỡi lạc đà hay xem đàn marmot ngoài tự nhiên.\n\nRiêng em thấy khi bé nhà mình, khi đến dãy núi cao nhất thế giới Himalaya, sẽ là trải nghiệm mới, và dấu ấn xứng đáng cho chặn đường phát triển." }
+87:         ],
+88:         a: ["Dạ có anh/chị nhé. Tuy nhiên, theo kinh nghiệm tổ chức của bên em, độ tuổi phù hợp nhất là từ khoảng 8 tuổi trở lên.", "Lý do không phải vì các bé không thích nghi được với độ cao, mà ngược lại, trẻ em thường thích nghi khá nhanh nếu sức khỏe tốt. Điều quan trọng hơn là bé đã đủ lớn để tự chủ trong các sinh hoạt cá nhân, biết lắng nghe hướng dẫn và có thể tự đi bộ ở các điểm tham quan mà không cần ba mẹ bế hay chăm sóc liên tục.", "Vì Ladakh là hành trình di chuyển khá nhiều và ở độ cao lớn, nếu bé còn quá nhỏ hoặc vẫn bám ba mẹ thì người vất vả nhất thường là phụ huynh. Khi ba mẹ phải vừa chăm bé, vừa thích nghi với độ cao thì trải nghiệm của cả gia đình sẽ bị ảnh hưởng.", "Bên em cũng đã từng đồng hành cùng nhiều bạn nhỏ từ 8 tuổi trở lên. Các bé đều rất hào hứng với hành trình, nhiều bạn còn tràn đầy năng lượng và chinh phục trọn vẹn chuyến đi. Điều các bé thích nhất thường là được ngắm tuyết, cưỡi lạc đà hai bướu ở thung lũng Nubra, nhìn thấy đàn marmot ngoài tự nhiên và khám phá những tu viện cổ giữa dãy Himalaya.", "Nếu gia đình mình có bé trong độ tuổi này và sức khỏe tốt, em sẽ tư vấn thêm về lịch trình cũng như những lưu ý để cả nhà có một chuyến đi thật an toàn và nhiều kỷ niệm đẹp."] 
+89:       }
+90:     ]
+91:   },
+92:   {
+93:     category: "Thời Tiết & Hành Lý",
+94:     icon: "CloudSun",
+95:     color: "#eab308",
+96:     items: [
+97:       { 
+98:         id: "q5", 
+99:         q: "5. Thời tiết mùa nào đẹp em ha?", 
+100:         variants: [
+101:             { type: "Cảm quan cá nhân (Đẹp nhất)", text: "Dạ đẹp nhất và dễ chịu nhất là tháng 5 đến tháng 7. Cảnh sắc trong xanh, nhiều lễ hội và là lúc trải nghiệm trọn vẹn nhất." },
+102:             { type: "Mùa đặc biệt (Cảnh sắc)", text: "Dạ tùy sở thích. Tháng 4 thì có hoa mơ nở mộng mơ, tháng 5-7 nắng ấm dễ chịu, còn tháng 9-10 thì Ladakh phủ vàng lá mùa thu và có tuyết rơi siêu đẹp." }
+103:         ],
+104:         a: ["Dạ thật ra Ladakh đẹp từ tháng 4 đến tháng 10, và mỗi mùa sẽ mang một vẻ đẹp rất riêng. Tùy anh/chị thích khung cảnh nào thì em sẽ tư vấn thời điểm phù hợp nhất.", "Tháng 4 – Mùa hoa mơ nở: Đây là thời điểm những vườn hoa mơ bắt đầu bung nở, khung cảnh rất thơ mộng và yên bình. Thời tiết vẫn còn khá lạnh, đặc biệt trên các cung đèo cao vẫn có thể có tuyết rơi, rất phù hợp với anh/chị thích cảm giác mùa xuân vùng Himalaya.", "Tháng 5 – 7: Mùa hè đẹp nhất trong năm. Đây là mùa được nhiều người yêu thích nhất để khám phá Ladakh. Trời nắng đẹp, không khí trong lành, cây cối xanh tươi và diễn ra nhiều lễ hội truyền thống của người Ladakhi.", "Tháng 8 – 9: Mùa trái cây và những gam màu chuyển mùa. Đây là mùa thu hoạch mơ vàng – đặc sản nổi tiếng của Ladakh – cùng với táo và nhiều loại trái cây địa phương.", "Tháng 10 – Mùa thu Ladakh: Ladakh khoác lên mình sắc vàng đặc trưng của mùa thu, không khí trong trẻo và hanh khô, rất đẹp để ngắm cảnh và chụp ảnh. Tuy nhiên, đây cũng là lúc thời tiết bắt đầu khắc nghiệt hơn: nhiệt độ giảm nhanh, trời tối sớm, khu vực hồ và các đèo cao lạnh hơn nhiều, tuyết xuất hiện thường xuyên hơn.", "Nếu anh/chị hỏi em mùa nào đẹp nhất, thì em thường gợi ý tháng 5 đến tháng 7. Đây là thời điểm thời tiết dễ chịu nhất, cảnh sắc rất đẹp, nhiều lễ hội, đường sá thuận lợi và cũng là khoảng thời gian hầu hết khách đi Ladakh đều có trải nghiệm trọn vẹn nhất."] 
+105:       },
+106:       { 
+107:         id: "q6", 
+108:         q: "6. Mình muốn đi tour tháng 12 đến tháng 2 vì lúc đó được nghỉ nhiều.", 
+109:         variants: [
+110:             { type: "Thực tế (Cảnh báo)", text: "Dạ tháng 1-2 Ladakh rất lạnh (-20 độ), tuyết rơi dày đóng băng đường sá nên rất nguy hiểm, bên em không tổ chức tour thời gian này để đảm bảo an toàn tuyệt đối cho khách." },
+111:             { type: "Up-sale (Chuyển hướng)", text: "Dạ mùa đông Ladakh khắc nghiệt quá bên em không nhận khách. Nếu anh/chị nghỉ tầm này thì em khuyên mình chuyển hướng đi Bhutan, thời tiết cực kỳ dễ chịu mà văn hóa Himalaya cũng đặc sắc y hệt." }
+112:         ],
+113:         a: ["Dạ em hiểu mà ạ 😊. Tháng 1–2 cũng là thời điểm nhiều anh/chị có thời gian nghỉ nên rất muốn tranh thủ đi du lịch.", "Tuy nhiên, riêng Ladakh thì đây lại là thời điểm khắc nghiệt nhất trong năm. Nhiệt độ có thể xuống -20 đến -30°C, tuyết rơi dày, nhiều cung đường bị đóng và các chuyến bay đến Leh cũng dễ bị ảnh hưởng bởi thời tiết. Vì vậy bên em không tổ chức tour vào thời gian này để đảm bảo an toàn và trải nghiệm tốt nhất cho khách.", "Nếu anh/chị muốn đi một vùng núi thuộc dãy Himalaya vào tháng 1–2, em rất gợi ý Bhutan. Bhutan cũng có khung cảnh núi non hùng vĩ, tu viện trên núi và văn hóa Phật giáo rất đặc sắc, nhưng độ cao thấp hơn Ladakh nên thời tiết dễ chịu hơn nhiều.", "Còn nếu anh/chị vẫn yêu thích Ladakh thì em khuyên mình nên sắp xếp vào khoảng tháng 4 đến tháng 10. Đây là thời điểm Ladakh đẹp nhất, thời tiết ổn định và anh/chị sẽ cảm nhận được trọn vẹn vẻ đẹp của vùng đất này."] 
+114:       },
+115:       { 
+116:         id: "q10", 
+117:         q: "10. Đi Ladakh có cần mang nhiều đồ lạnh không em?", 
+118:         variants: [
+119:             { type: "An tâm (Thực tế)", text: "Dạ ban ngày đi tháng 5-9 nắng ấm, mặc đồ nhiều lớp (layer) là được. Mình chỉ cần mang đúng 1 cái áo khoác cản gió giữ ấm tốt để mặc sáng sớm hoặc tối ở hồ Pangong thôi." },
+120:             { type: "Hỗ trợ (Tận tâm)", text: "Dạ không cần mang vác quá nhiều đồ cồng kềnh đâu. Trước ngày khởi hành bên em sẽ gửi 1 checklist hành lý chi tiết (từ áo quần, giày dép, thuốc men), mình cứ soạn đúng y chang list đó là đủ." }
+121:         ],
+122:         a: ["Nếu mình đi từ tháng 5 đến tháng 9 thì ban ngày thời tiết khá dễ chịu, trời ban ngày nắng ấm, chỉ cần mặc theo kiểu nhiều lớp (layer) là rất thoải mái. Thông thường chỉ cần áo thun, áo giữ nhiệt mỏng hoặc áo khoác nhẹ là đủ khi di chuyển.", "Tuy nhiên, vào buổi sáng sớm, buổi tối và đặc biệt ở những khu vực như hồ Pangong, Tso Moriri hoặc các cung đèo cao, nhiệt độ sẽ giảm khá nhanh và gió rất lạnh. Vì vậy, em luôn khuyên anh/chị nên mang theo một chiếc áo phao mỏng hoặc áo khoác giữ ấm tốt để mặc khi cần. Mặc dù không dùng cả ngày, nhưng sẽ rất hữu ích ở những thời điểm này.", "Điều mà nhiều anh/chị bất ngờ là không phải lúc nào Ladakh cũng lạnh như mình tưởng. Ban ngày có nắng, cảm giác khá dễ chịu, thậm chí nhiều lúc chỉ cần mặc áo dài tay hoặc áo khoác mỏng là đủ. Vì vậy anh/chị cũng không cần chuẩn bị quá nhiều quần áo dày cồng kềnh.", "Trước ngày khởi hành, bên em sẽ gửi checklist hành lý rất chi tiết, từ quần áo, giày dép, thuốc cá nhân đến các vật dụng cần thiết cho vùng cao. Anh/chị chỉ cần chuẩn bị theo danh sách đó là gần như đầy đủ, không cần phải mua quá nhiều đồ chuyên dụng hay lo lắng mang thiếu."] 
+123:       }
+124:     ]
+125:   },
+126:   {
+127:     category: "Thủ Tục & Khác",
+128:     icon: "Passport",
+129:     color: "#3b82f6",
+130:     items: [
+131:       { 
+132:         id: "q11", 
+133:         q: "11. Có cần xin visa Ấn Độ không? Thủ tục có khó không?", 
+134:         variants: [
+135:             { type: "An tâm (Nhanh gọn)", text: "Dạ thủ tục cực kỳ đơn giản, bên em lo E-visa online từ A-Z. Mình chỉ cần chụp mặt hộ chiếu, 1 ảnh thẻ nền trắng và điền cái form bé xíu là xong." }
+136:         ],
+137:         a: ["Dạ không khó đâu anh/chị nhé.", "Hiện tại, bên em sẽ hỗ trợ anh/chị làm visa Ấn Độ online. Anh/chị chỉ cần chuẩn bị:", "- Ảnh chụp hộ chiếu còn hạn.", "- 01 ảnh thẻ nền trắng theo đúng quy định.", "- Điền form thông tin khai visa.", "Các bước còn lại bên em sẽ hỗ trợ hướng dẫn và xử lý, nên thủ tục khá đơn giản. Thông thường anh/chị chỉ cần chuẩn bị đúng hồ sơ, còn việc khai hồ sơ và theo dõi kết quả bên em sẽ đồng hành cùng mình."] 
+138:       },
+139:       { 
+140:         id: "q12", 
+141:         q: "12. Ở Ladakh có sóng điện thoại và Internet không?", 
+142:         variants: [
+143:             { type: "Logic (Thực tế)", text: "Dạ sim mua ở VN sẽ không dùng được. Tới Leh, HDV bên em sẽ hỗ trợ hướng dẫn đăng ký sim 4G nội địa bằng hộ chiếu cho cả đoàn.\n\nSóng ở trung tâm khá mạnh, nhưng sẽ có vài đoạn hơi yếu lúc qua đèo." }
+144:         ],
+145:         a: ["Dạ có anh/chị nhé, tuy nhiên Ladakh là khu vực biên giới và có nhiều vùng quân sự, nên sẽ có một số quy định riêng về viễn thông.", "Nếu anh/chị muốn sử dụng 4G trong suốt hành trình thì không nên mua SIM ở Delhi hoặc tại Việt Nam, vì những SIM này thường sẽ không sử dụng được tại Ladakh.", "Bên em sẽ hỗ trợ anh/chị mua và đăng ký SIM ngay tại Leh bằng hộ chiếu. Sau khi kích hoạt, mình có thể sử dụng Internet ở hầu hết các điểm đến trong hành trình.", "Tuy nhiên, tại một số cung đường đèo hoặc khu vực hồ xa trung tâm thì tín hiệu có thể chập chờn hoặc mất sóng trong một khoảng thời gian ngắn, đây là điều khá bình thường ở vùng Himalaya."] 
+146:       },
+147:       { 
+148:         id: "q13", 
+149:         q: "13. Chị đi một mình thì sao?", 
+150:         variants: [
+151:             { type: "Đồng cảm (Xóa rào cản)", text: "Dạ đa số khách FIT TOUR đều đi 1 mình nên chị không lo lạc lõng đâu. Khách đi núi thường cực kỳ cởi mở, sau 1-2 ngày vượt đèo cùng nhau là cả đoàn thân thiết như người nhà luôn." },
+152:             { type: "Kinh tế (Giải quyết chi phí)", text: "Dạ đi 1 mình bên em sẽ chủ động ghép phòng với một khách cùng giới tính trong đoàn để chị đỡ tốn phụ phí phòng đơn. Chị cứ yên tâm nhé." }
+153:         ],
+154:         a: ["Dạ anh/chị cứ yên tâm nhé. Thực tế, đa số khách của bên em đều đăng ký đi một mình, nên anh/chị sẽ không bị lạc lõng đâu.", "Nếu anh/chị đi một mình, bên em sẽ sắp xếp ghép phòng với một khách nữ hoặc nam cùng đoàn (tùy theo giới tính) để mình tiết kiệm chi phí. Nếu anh/chị muốn ở phòng riêng thì bên em cũng có thể hỗ trợ với phụ phí theo nhu cầu.", "Điều em rất thích ở các đoàn Ladakh là mọi người thường rất dễ kết nối với nhau. Sau vài ngày cùng vượt đèo, ngắm cảnh và trải nghiệm, cả đoàn thường trở nên rất thân thiết. Nhiều anh/chị ban đầu đi một mình nhưng khi kết thúc chuyến đi lại có thêm những người bạn đồng hành mới."] 
+155:       },
+156:       { 
+157:         id: "q14", 
+158:         q: "14. Nếu thời tiết xấu hoặc chuyến bay bị hủy thì công ty xử lý như thế nào?", 
+159:         variants: [
+160:             { type: "An tâm (Trách nhiệm)", text: "Dạ bên em ưu tiên an toàn lên hàng đầu. Nếu hoãn/hủy chuyến, FIT TOUR sẽ làm việc trực tiếp với hãng bay đổi chuyến sớm nhất, HDV sẽ đi theo đoàn 24/24. Cả đoàn cũng được mua bảo hiểm du lịch 100% rồi." }
+161:         ],
+162:         a: ["Dạ đây là tình huống thỉnh thoảng vẫn có thể xảy ra khi đi các vùng núi cao như Ladakh, vì thời tiết sẽ ảnh hưởng trực tiếp đến hoạt động của các chuyến bay.", "Trong trường hợp chuyến bay bị hoãn hoặc hủy, bên em sẽ làm việc trực tiếp với hãng hàng không để ưu tiên đổi sang chuyến bay sớm nhất có thể và cập nhật thông tin liên tục cho đoàn. Hướng dẫn viên cũng sẽ đồng hành cùng anh/chị trong suốt quá trình xử lý, nên mình không phải tự làm việc với hãng bay.", "Ngoài ra, tất cả khách tham gia tour đều được bên em mua bảo hiểm du lịch, để tăng thêm sự an tâm trong những tình huống phát sinh theo phạm vi quyền lợi của bảo hiểm.", "Với kinh nghiệm tổ chức các cung đường Himalaya nhiều năm, điều bên em ưu tiên nhất không phải là đi đúng lịch bằng mọi giá, mà là đảm bảo hành trình được xử lý linh hoạt, an toàn và mang lại trải nghiệm tốt nhất cho khách."] 
+163:       }
+164:     ]
+165:   }
+166: ];
+167: 
+168: const referenceLinks = [
+169:     { 
+170:         title: "Video Điện Ảnh (Kop Dinh)", 
+171:         desc: "Thước phim siêu đẹp quay bởi nhiếp ảnh gia Kop Dinh", 
+172:         url: "https://www.facebook.com/reel/1754974222353394", 
+173:         icon: "Video", 
+174:         color: "#e11d48",
+175:         type: "marketing",
+176:         copyText: "Dạ cảnh sắc Ladakh thực sự ngoạn mục lắm. Trăm nghe không bằng một thấy, anh/chị lướt qua thử đoạn video cực đẹp này do chính nhiếp ảnh gia Kop Dinh quay lại trong chuyến đi cùng FIT Tour nhé. Cảnh bên ngoài nhìn còn choáng ngợp hơn video nhiều: https://www.facebook.com/reel/1754974222353394"
+177:     },
+178:     { 
+179:         title: "KOL Đặng Thuỳ Dương ở Zanskar", 
+180:         desc: "Câu chuyện chân thực của KOL nổi tiếng từng đi cùng FIT", 
+181:         url: "https://fittour.vn/emagazine-dang-thuy-duong-o-zanskar", 
+182:         icon: "Star", 
+183:         color: "#ec4899",
+184:         type: "marketing",
+185:         copyText: "Dạ anh/chị tham khảo bài viết về hành trình Zanskar Ladakh của Travel Blogger Đặng Thuỳ Dương đồng hành cùng FIT Tour nhé. Cảnh sắc thực sự choáng ngợp và chân thực lắm: https://fittour.vn/emagazine-dang-thuy-duong-o-zanskar"
+186:     },
+187:     { 
+188:         title: "Phương Thanh 3 Lần Đến Ladakh", 
+189:         desc: "Ca sĩ Phương Thanh cạo đầu tại tu viện Hemis", 
+190:         url: "https://fittour.vn/phuong-thanh-lan-3-den-ladakh", 
+191:         icon: "Music", 
+192:         color: "#d946ef",
+193:         type: "marketing",
+194:         copyText: "Dạ anh/chị biết ca sĩ Phương Thanh không? Chị Chanh đã 3 lần đến Ladakh và đều chọn đồng hành cùng FIT Tour đó. Anh/chị xem thêm hành trình đặc biệt của chị ở đây nhé: https://fittour.vn/phuong-thanh-lan-3-den-ladakh"
+195:     },
+196:     { 
+197:         title: "Cô Mây U70 Du Lịch Ladakh", 
+198:         desc: "Sức khỏe tốt là đủ chinh phục mọi giới hạn", 
+199:         url: "https://fittour.vn/co-may", 
+200:         icon: "Heart", 
+201:         color: "#f43f5e",
+202:         type: "marketing",
+203:         copyText: "Dạ anh/chị đừng quá lo lắng về sức khỏe nhé. Vừa rồi bên em có đoàn khách với cô Mây (U70) vẫn chinh phục Ladakh rất khỏe mạnh và nhiều năng lượng. Anh/chị xem câu chuyện truyền cảm hứng của cô ở đây: https://fittour.vn/co-may"
+204:     },
+205:     { 
+206:         title: "Nhật Ký Khám Phá Ladakh", 
+207:         desc: "Tổng hợp trải nghiệm từ các đoàn khách đi trước", 
+208:         url: "https://fittour.vn/nhat-ky-kham-pha-ladakh", 
+209:         icon: "BookOpen", 
+210:         color: "#10b981",
+211:         type: "marketing",
+212:         copyText: "Dạ để dễ hình dung nhất về chuyến đi, anh/chị xem qua Nhật ký hành trình thực tế được ghi lại từ các đoàn khách nhà FIT Tour vừa rồi nhé: https://fittour.vn/nhat-ky-kham-pha-ladakh"
+213:     },
+214:     { 
+215:         title: "Nhật Ký Motor Tour", 
+216:         desc: "Hành trình rong ruổi Ladakh đầy máu lửa trên xe máy", 
+217:         url: "https://fittour.vn/nhat-ky-hanh-trinh-ladakh-bang-xe-may", 
+218:         icon: "Navigation", 
+219:         color: "#059669",
+220:         type: "marketing",
+221:         copyText: "Dạ nếu anh/chị đam mê trải nghiệm mạnh thì bên em có những chuyến Motor Tour cực kỳ máu lửa. Anh/chị xem thử nhật ký rong ruổi Ladakh bằng xe máy này nhé: https://fittour.vn/nhat-ky-hanh-trinh-ladakh-bang-xe-may"
+222:     },
+223:     { 
+224:         title: "Cẩm Nang Du Lịch Ladakh", 
+225:         desc: "Cẩm nang soạn riêng của FIT Tour về thời tiết, văn hóa", 
+226:         url: "https://fittour.vn/du-lich-ladakh", 
+227:         icon: "Library", 
+228:         color: "#3b82f6",
+229:         type: "marketing",
+230:         copyText: "Dạ đây là Cẩm nang du lịch Ladakh do chính đội ngũ FIT Tour biên soạn cực kỳ chi tiết về thời tiết, văn hóa và cách chuẩn bị sức khỏe. Anh/chị lưu lại đọc tham khảo thêm nhé: https://fittour.vn/du-lich-ladakh"
+231:     },
+232:     { 
+233:         title: "Cột Mốc 80 Chuyến Đi", 
+234:         desc: "Đơn vị khẳng định uy tín và năng lực tổ chức tour", 
+235:         url: "https://fittour.vn/cot-moc-80-chuyen-di-ladakh", 
+236:         icon: "Award", 
+237:         color: "#f59e0b",
+238:         type: "marketing",
+239:         copyText: "Dạ về kinh nghiệm tổ chức thì anh/chị hoàn toàn yên tâm. FIT Tour vừa kỷ niệm cột mốc 80 chuyến đi thành công đưa khách Việt đến Ladakh. Anh/chị xem thêm thông tin ở đây nhé: https://fittour.vn/cot-moc-80-chuyen-di-ladakh"
+240:     },
+241:     { 
+242:         title: "Đội Ngũ Thực Chiến", 
+243:         desc: "Team dẫn tour Himalaya giàu kinh nghiệm thực tế", 
+244:         url: "https://fittour.vn/our-team/", 
+245:         icon: "Users", 
+246:         color: "#6366f1",
+247:         type: "marketing",
+248:         copyText: "Dạ đằng sau những chuyến đi thành công là cả một đội ngũ hướng dẫn viên thực chiến dày dặn kinh nghiệm về Himalaya của FIT Tour. Anh/chị xem qua profile của team em để yên tâm hơn nhé: https://fittour.vn/our-team/"
+249:     },
+250:     { 
+251:         title: "Danh Sách Tour Ladakh", 
+252:         desc: "Xem nhanh các lịch trình và ngày khởi hành", 
+253:         url: "https://fittour.vn/country/ladakh/", 
+254:         icon: "List", 
+255:         color: "#8b5cf6",
+256:         type: "tour",
+257:         copyText: "Dạ đây là tổng hợp tất cả các lịch trình và ngày khởi hành tour Ladakh bên em. Anh/chị xem qua thử mình ưng ý lịch trình nào nhất nhé: https://fittour.vn/country/ladakh/"
+258:     },
+259:     { 
+260:         title: "Tour Road Trip", 
+261:         desc: "Hành trình truyền thống khám phá Leh, Nubra", 
+262:         url: "https://fittour.vn/tour/tour-ladakh-roadtrip", 
+263:         icon: "Map", 
+264:         color: "#14b8a6",
+265:         type: "tour",
+266:         copyText: "Dạ đây là hành trình Road Trip, đưa mình đi qua những điểm đến biểu tượng nhất của Ladakh như Leh, thung lũng Nubra và hồ Pangong. Anh/chị xem chi tiết lịch trình ở đây nhé: https://fittour.vn/tour/tour-ladakh-roadtrip"
+267:     },
+268:     { 
+269:         title: "Tour Kashmir - Zanskar", 
+270:         desc: "Cung đường nâng cao dành cho người đam mê", 
+271:         url: "https://fittour.vn/tour/tour-kashmir-zanskar", 
+272:         icon: "Mountain", 
+273:         color: "#0f766e",
+274:         type: "tour",
+275:         copyText: "Dạ nếu anh/chị thích những cung đường độc lạ, ít người đặt chân tới và phong cảnh hoang sơ ngoạn mục thì hành trình Kashmir - Zanskar này là dành cho mình: https://fittour.vn/tour/tour-kashmir-zanskar"
+276:     },
+277:     { 
+278:         title: "Thư Viện Hình Ảnh", 
+279:         desc: "Sưu tầm lại hình ảnh của FIT Tour tại Ladakh", 
+280:         url: "https://fittour.vn/gallery-ladakh", 
+281:         icon: "Image", 
+282:         color: "#84cc16",
+283:         type: "marketing",
+284:         copyText: "Dạ trăm nghe không bằng một thấy, anh/chị lướt qua thư viện hình ảnh thực tế mà FIT Tour đã ghi lại trong các chuyến đi Ladakh vừa qua nhé, cảnh sắc bên ngoài còn đẹp hơn hình rất nhiều: https://fittour.vn/gallery-ladakh"
+285:     }
+286: ];
+287: 
+288: const LadakhConsultingPage = () => {
+289:     const highlightPronouns = (text) => {
+290:         if (typeof text !== 'string') return text;
+291:         const parts = text.split(/(anh\/chị|anh chị|\[.*?\])/gi);
+292:         return parts.map((part, i) => {
+293:             const lower = part.toLowerCase();
+294:             if (lower === 'anh/chị' || lower === 'anh chị' || (part.startsWith('[') && part.endsWith(']'))) {
+295:                 return <strong key={i} style={{ color: '#ef4444' }}>{part}</strong>;
+296:             }
+297:             return part;
+298:         });
+299:     };
+300: 
+301:     const [openIds, setOpenIds] = useState([]);
+302:     const [searchQuery, setSearchQuery] = useState('');
+303:     const [copiedId, setCopiedId] = useState('');
+304:     const [showDetailsIds, setShowDetailsIds] = useState([]); // Array to store IDs of expanded detailed sections
+305:     const [copiedLink, setCopiedLink] = useState('');
+306: 
+307:     const toggleAccordion = (id) => {
+308:         setOpenIds(prev => 
+309:             prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+310:         );
+311:     };
+312: 
+313:     const toggleDetails = (id) => {
+314:         setShowDetailsIds(prev => 
+315:             prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+316:         );
+317:     };
+318: 
+319:     const handleCopy = (e, id, text, type) => {
+320:         e.stopPropagation();
+321:         navigator.clipboard.writeText(text).then(() => {
+322:             setCopiedId(id + type);
+323:             setTimeout(() => setCopiedId(''), 2000);
+324:         });
+325:     };
+326: 
+327:     const handleCopyLink = (e, link) => {
+328:         e.preventDefault();
+329:         e.stopPropagation();
+330:         navigator.clipboard.writeText(link.copyText).then(() => {
+331:             setCopiedLink(link.url);
+332:             setTimeout(() => setCopiedLink(''), 2000);
+333:         });
+334:     };
+335: 
+336:     const scrollTo = (catId) => {
+337:         const element = document.getElementById(catId);
+338:         if (element) {
+339:             const y = element.getBoundingClientRect().top + window.scrollY - 80;
+340:             window.scrollTo({ top: y, behavior: 'smooth' });
+341:         }
+342:     };
+343: 
+344:     const normalizedSearch = searchQuery.toLowerCase();
+345:     
+346:     const filteredFaqs = groupedFaqs.map(group => {
+347:         const filteredItems = group.items.filter(item => {
+348:             const matchQ = item.q.toLowerCase().includes(normalizedSearch);
+349:             const matchVariants = item.variants.some(v => v.text.toLowerCase().includes(normalizedSearch) || v.type.toLowerCase().includes(normalizedSearch));
+350:             const matchA = item.a.some(p => p.toLowerCase().includes(normalizedSearch));
+351:             return matchQ || matchVariants || matchA;
+352:         });
+353:         return { ...group, items: filteredItems };
+354:     }).filter(group => group.items.length > 0);
+355: 
+356:     const filteredMarketingLinks = referenceLinks.filter(link => 
+357:         link.type === 'marketing' && (link.title.toLowerCase().includes(normalizedSearch) || 
+358:         link.desc.toLowerCase().includes(normalizedSearch))
+359:     );
+360: 
+361:     const filteredTourLinks = referenceLinks.filter(link => 
+362:         link.type === 'tour' && (link.title.toLowerCase().includes(normalizedSearch) || 
+363:         link.desc.toLowerCase().includes(normalizedSearch))
+364:     );
+365: 
+366:     const getIcon = (iconName) => {
+367:         switch(iconName) {
+368:             case "Briefcase": return <Briefcase size={20} />;
+369:             case "HeartPulse": return <HeartPulse size={20} />;
+370:             case "CloudSun": return <CloudSun size={20} />;
+371:             case "Passport": return <Passport size={20} />;
+372:             case "Star": return <Star size={20} />;
+373:             case "Music": return <Music size={20} />;
+374:             case "Heart": return <Heart size={20} />;
+375:             case "BookOpen": return <BookOpen size={20} />;
+376:             case "Navigation": return <Navigation size={20} />;
+377:             case "Library": return <Library size={20} />;
+378:             case "Award": return <Award size={20} />;
+379:             case "Users": return <Users size={20} />;
+380:             case "List": return <List size={20} />;
+381:             case "Map": return <Map size={20} />;
+382:             case "Mountain": return <Mountain size={20} />;
+383:             case "Image": return <ImageIcon size={20} />;
+384:             case "Video": return <Video size={20} />;
+385:             default: return <Hash size={20} />;
+386:         }
+387:     };
+388: 
+389:     return (
+390:         <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: '"Inter", "Segoe UI", sans-serif', color: '#0f172a' }}>
+391:             
+392:             {/* ====== LEFT SIDEBAR (TOC) ====== */}
+393:             <div style={{ 
+394:                 width: '240px', 
+395:                 minWidth: '240px',
+396:                 height: '100vh', 
+397:                 position: 'sticky', 
+398:                 top: 0, 
+399:                 background: '#ffffff', 
+400:                 borderRight: '1px solid #e2e8f0',
+401:                 padding: '24px 0',
+402:                 display: 'flex',
+403:                 flexDirection: 'column',
+404:                 overflowY: 'auto',
+405:                 boxShadow: '4px 0 24px rgba(0,0,0,0.02)',
+406:                 zIndex: 10
+407:             }}>
+408:                 <div style={{ padding: '0 24px', marginBottom: '24px' }}>
+409:                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+410:                         <div style={{ width: '40px', height: '40px', background: '#f97316', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 4px 12px rgba(249, 1
+<truncated 28505 bytes>
+
+NOTE: The output was truncated because it was too long. Use a more targeted query or a smaller range to get the information you need.
+Created At: 2026-07-17T14:40:49Z
+Completed At: 2026-07-17T14:40:49Z
+File Path: `file:///Users/huynhtronghieu/Documents/WORK%20Hi%E1%BA%BFu/crm-fittour/client/src/pages/LadakhConsultingPage.jsx`
+Total Lines: 915
+Total Bytes: 82502
+Showing lines 800 to 910
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+800:                                     {/* Accordion Content */}
+801:                                     <div style={{ 
+802:                                         maxHeight: isOpen ? '3000px' : '0', 
+803:                                         opacity: isOpen ? 1 : 0, 
+804:                                         transition: 'all 0.4s ease-in-out',
+805:                                         background: '#ffffff'
+806:                                     }}>
+807:                                         <div style={{ padding: '0 24px 24px 24px', borderTop: '1px solid #f1f5f9' }}>
+808:                                             
+809:                                             {/* Tùy chọn kịch bản chốt Sale */}
+810:                                             <div style={{ marginTop: '24px' }}>
+811:                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#166534', fontWeight: '700', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '16px' }}>
+812:                                                     <Zap size={16} /> Kịch bản Chat & Chốt Sale
+813:                                                 </div>
+814:                                                 
+815:                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+816:                                                     {item.variants.map((variant, vIdx) => (
+817:                                                         <div key={vIdx} style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '16px' }}>
+818:                                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+819:                                                                 <div>
+820:                                                                     <span style={{ display: 'inline-block', background: '#dcfce7', color: '#166534', fontSize: '0.75rem', fontWeight: '700', padding: '4px 8px', borderRadius: '4px', marginBottom: '8px' }}>
+821:                                                                         {variant.type}
+822:                                                                     </span>
+823:                                                                     <p style={{ margin: 0, color: '#14532d', fontSize: '1rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{highlightPronouns(variant.text)}</p>
+824:                                                                 </div>
+825:                                                                 <button 
+826:                                                                     onClick={(e) => handleCopy(e, item.id, variant.text, vIdx)}
+827:                                                                     style={{
+828:                                                                         flexShrink: 0,
+829:                                                                         display: 'flex', alignItems: 'center', gap: '6px',
+830:                                                                         padding: '6px 12px', borderRadius: '6px',
+831:                                                                         background: copiedId === item.id + vIdx ? '#166534' : '#ffffff',
+832:                                                                         color: copiedId === item.id + vIdx ? '#ffffff' : '#166534',
+833:                                                                         border: '1px solid #bbf7d0',
+834:                                                                         fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer',
+835:                                                                         transition: 'all 0.2s'
+836:                                                                     }}
+837:                                                                 >
+838:                                                                     {copiedId === item.id + vIdx ? <CheckCircle2 size={14} /> : <Copy size={14} />}
+839:                                                                     {copiedId === item.id + vIdx ? 'Đã copy' : 'Copy'}
+840:                                                                 </button>
+841:                                                             </div>
+842:                                                         </div>
+843:                                                     ))}
+844:                                                 </div>
+845:                                             </div>
+846: 
+847:                                             {/* Giải thích kỹ (Inner Accordion) */}
+848:                                             <div style={{ marginTop: '24px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+849:                                                 {/* Inner Header - Clickable */}
+850:                                                 <div 
+851:                                                     onClick={() => toggleDetails(item.id)}
+852:                                                     style={{ 
+853:                                                         display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+854:                                                         padding: '16px 20px', cursor: 'pointer', background: isDetailsOpen ? '#f1f5f9' : 'transparent',
+855:                                                         transition: 'background 0.2s'
+856:                                                     }}
+857:                                                 >
+858:                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#475569', fontWeight: '700', fontSize: '0.9rem', textTransform: 'uppercase' }}>
+859:                                                         <Info size={16} /> Kiến thức đào tạo (Để Sale hiểu sâu)
+860:                                                     </div>
+861:                                                     <div style={{ 
+862:                                                         transform: isDetailsOpen ? 'rotate(90deg)' : 'rotate(0deg)', 
+863:                                                         transition: 'transform 0.3s ease',
+864:                                                         color: '#94a3b8'
+865:                                                     }}>
+866:                                                         <ChevronRight size={20} />
+867:                                                     </div>
+868:                                                 </div>
+869:                                                 
+870:                                                 {/* Inner Content */}
+871:                                                 <div style={{ 
+872:                                                     maxHeight: isDetailsOpen ? '2000px' : '0', 
+873:                                                     opacity: isDetailsOpen ? 1 : 0, 
+874:                                                     transition: 'all 0.3s ease-in-out',
+875:                                                     borderTop: isDetailsOpen ? '1px solid #e2e8f0' : 'none'
+876:                                                 }}>
+877:                                                     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', color: '#334155', lineHeight: '1.7', fontSize: '1rem' }}>
+878:                                                         {item.a.map((p, pIdx) => (
+879:                                                             <p key={pIdx} style={{ 
+880:                                                                 margin: 0, 
+881:                                                                 paddingLeft: p.startsWith('-') ? '20px' : '0',
+882:                                                                 position: 'relative'
+883:                                                             }}>
+884:                                                                 {p.startsWith('-') && (
+885:                                                                     <span style={{ position: 'absolute', left: '4px', top: '8px', width: '6px', height: '6px', background: '#64748b', borderRadius: '50%' }}></span>
+886:                                                                 )}
+887:                                                                 {highlightPronouns(p.startsWith('-') ? p.substring(1).trim() : p)}
+888:                                                             </p>
+889:                                                         ))}
+890:                                                     </div>
+891:                                                 </div>
+892:                                             </div>
+893: 
+894:                                         </div>
+895:                                     </div>
+896:                                 </div>
+897:                                 );
+898:                             })}
+899:                         </div>
+900:                     ))}
+901:                     
+902:                     {filteredFaqs.length === 0 && (
+903:                         <div style={{ textAlign: 'center', padding: '80px 0', color: '#94a3b8' }}>
+904:                             <Search size={48} style={{ opacity: 0.2, marginBottom: '16px' }} />
+905:                             <p style={{ fontSize: '1.1rem', margin: 0 }}>Không tìm thấy kết quả nào cho "{searchQuery}"</p>
+906:                         </div>
+907:                     )}
+908:                 </div>
+909:             </div>
+910:         </div>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+Created At: 2026-07-17T14:40:54Z
+Completed At: 2026-07-17T14:40:54Z
+File Path: `file:///Users/huynhtronghieu/Documents/WORK%20Hi%E1%BA%BFu/crm-fittour/client/src/pages/LadakhConsultingPage.jsx`
+Total Lines: 915
+Total Bytes: 82502
+Showing lines 910 to 915
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+910:         </div>
+911:     );
+912: };
+913: 
+914: export default LadakhConsultingPage;
+915: 
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+Created At: 2026-07-17T14:41:15Z
+Completed At: 2026-07-17T14:41:15Z
+File Path: `file:///Users/huynhtronghieu/Documents/WORK%20Hi%E1%BA%BFu/crm-fittour/client/src/pages/LadakhConsultingPage.jsx`
+Total Lines: 915
+Total Bytes: 82502
+Showing lines 500 to 600
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+500:                                             if (!openIds.includes(item.id)) {
+501:                                                 setOpenIds(prev => [...prev, item.id]);
+502:                                             }
+503:                                         }}
+504:                                         style={{
+505:                                             padding: '8px 12px',
+506:                                             borderRadius: '8px',
+507:                                             border: 'none',
+508:                                             background: 'transparent',
+509:                                             color: '#475569',
+510:                                             fontWeight: '500',
+511:                                             fontSize: '0.8rem',
+512:                                             textAlign: 'left',
+513:                                             cursor: 'pointer',
+514:                                             display: 'flex',
+515:                                             alignItems: 'flex-start',
+516:                                             gap: '10px',
+517:                                             transition: 'all 0.2s',
+518:                                             lineHeight: '1.4'
+519:                                         }}
+520:                                         onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9' }}
+521:                                         onMouseOut={(e) => { e.currentTarget.style.background = 'transparent' }}
+522:                                     >
+523:                                         <div style={{ marginTop: '2px', opacity: 0.4 }}>
+524:                                             <Hash size={14} />
+525:                                         </div>
+526:                                         <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+527:                                             {item.q.replace(/^[0-9]+[.,]\s*/, '')}
+528:                                         </span>
+529:                                     </button>
+530:                                 ))}
+531:                             </div>
+532:                         </div>
+533:                     ))}
+534:                 </div>
+535:             </div>
+536: 
+537:             {/* ====== RIGHT CONTENT ====== */}
+538:             <div style={{ flex: 1, padding: '24px 24px', width: '100%', overflowX: 'hidden' }}>
+539:                 
+540:                 <div style={{ marginBottom: '48px', borderBottom: '1px solid #e2e8f0', paddingBottom: '32px' }}>
+541:                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#64748b', marginBottom: '24px' }}>
+542:                         <Link to="/tai-lieu" style={{ color: '#3b82f6', textDecoration: 'none', fontWeight: 500 }}>Tài Liệu Chung</Link>
+543:                         <ChevronRight size={14} />
+544:                         <span style={{ color: '#0f172a', fontWeight: 600 }}>Cẩm nang chốt sale Ladakh</span>
+545:                     </div>
+546:                     
+547:                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#ffedd5', color: '#ea580c', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700', marginBottom: '16px' }}>
+548:                         <Sparkles size={16} /> 
+549:                         Cẩm Nang Chốt Sale BU4
+550:                     </div>
+551:                     <h1 style={{ fontSize: '2.5rem', fontWeight: '800', margin: '0 0 16px 0', letterSpacing: '-0.02em' }}>
+552:                         Thư Viện Kịch Bản Ladakh
+553:                     </h1>
+554:                     <p style={{ fontSize: '1rem', color: '#64748b', margin: 0, lineHeight: '1.5' }}>
+555:                         Bấm vào câu hỏi để copy kịch bản chốt sale, hoặc xem giải thích (Đào tạo nội bộ).
+556:                     </p>
+557:                 </div>
+558: 
+559:                 <div style={{ display: 'flex', flexDirection: 'column', gap: '60px' }}>
+560:                     
+561:                     {/* ====== Reference Links Section ====== */}
+562:                     {filteredMarketingLinks.length > 0 && (
+563:                         <div id="references-section" style={{ display: 'flex', flexDirection: 'column', gap: '24px', scrollMarginTop: '40px' }}>
+564:                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '8px' }}>
+565:                                 <div style={{ color: '#0284c7' }}>
+566:                                     <Library size={24} />
+567:                                 </div>
+568:                                 <h2 style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0, color: '#0f172a' }}>
+569:                                     Tài Liệu Đào Tạo & Marketing
+570:                                 </h2>
+571:                             </div>
+572:                             
+573:                             <div style={{ 
+574:                                 display: 'grid', 
+575:                                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', 
+576:                                 gap: '16px' 
+577:                             }}>
+578:                                 {filteredMarketingLinks.map((link, idx) => (
+579:                                     <a 
+580:                                         key={idx} 
+581:                                         href={link.url} 
+582:                                         target="_blank" 
+583:                                         rel="noreferrer"
+584:                                         style={{
+585:                                             display: 'flex',
+586:                                             flexDirection: 'column',
+587:                                             gap: '10px',
+588:                                             background: '#ffffff',
+589:                                             padding: '14px',
+590:                                             borderRadius: '12px',
+591:                                             border: '1px solid #e2e8f0',
+592:                                             textDecoration: 'none',
+593:                                             boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+594:                                             transition: 'all 0.2s',
+595:                                             position: 'relative'
+596:                                         }}
+597:                                         onMouseOver={(e) => { 
+598:                                             e.currentTarget.style.transform = 'translateY(-2px)';
+599:                                             e.currentTarget.style.boxShadow = '0 8px 12px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025)';
+600:                                             e.currentTarget.style.borderColor = link.color;
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+Created At: 2026-07-17T14:41:30Z
+Completed At: 2026-07-17T14:41:30Z
+File Path: `file:///Users/huynhtronghieu/Documents/WORK%20Hi%E1%BA%BFu/crm-fittour/client/src/pages/LadakhConsultingPage.jsx`
+Total Lines: 915
+Total Bytes: 82502
+Showing lines 560 to 660
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+560:                     
+561:                     {/* ====== Reference Links Section ====== */}
+562:                     {filteredMarketingLinks.length > 0 && (
+563:                         <div id="references-section" style={{ display: 'flex', flexDirection: 'column', gap: '24px', scrollMarginTop: '40px' }}>
+564:                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '8px' }}>
+565:                                 <div style={{ color: '#0284c7' }}>
+566:                                     <Library size={24} />
+567:                                 </div>
+568:                                 <h2 style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0, color: '#0f172a' }}>
+569:                                     Tài Liệu Đào Tạo & Marketing
+570:                                 </h2>
+571:                             </div>
+572:                             
+573:                             <div style={{ 
+574:                                 display: 'grid', 
+575:                                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', 
+576:                                 gap: '16px' 
+577:                             }}>
+578:                                 {filteredMarketingLinks.map((link, idx) => (
+579:                                     <a 
+580:                                         key={idx} 
+581:                                         href={link.url} 
+582:                                         target="_blank" 
+583:                                         rel="noreferrer"
+584:                                         style={{
+585:                                             display: 'flex',
+586:                                             flexDirection: 'column',
+587:                                             gap: '10px',
+588:                                             background: '#ffffff',
+589:                                             padding: '14px',
+590:                                             borderRadius: '12px',
+591:                                             border: '1px solid #e2e8f0',
+592:                                             textDecoration: 'none',
+593:                                             boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+594:                                             transition: 'all 0.2s',
+595:                                             position: 'relative'
+596:                                         }}
+597:                                         onMouseOver={(e) => { 
+598:                                             e.currentTarget.style.transform = 'translateY(-2px)';
+599:                                             e.currentTarget.style.boxShadow = '0 8px 12px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025)';
+600:                                             e.currentTarget.style.borderColor = link.color;
+601:                                         }}
+602:                                         onMouseOut={(e) => { 
+603:                                             e.currentTarget.style.transform = 'translateY(0)';
+604:                                             e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.03)';
+605:                                             e.currentTarget.style.borderColor = '#e2e8f0';
+606:                                         }}
+607:                                     >
+608:                                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+609:                                             <div style={{ 
+610:                                                 width: '32px', height: '32px', borderRadius: '8px', 
+611:                                                 background: `${link.color}15`, color: link.color,
+612:                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
+613:                                                 flexShrink: 0
+614:                                             }}>
+615:                                                 <div style={{ transform: 'scale(0.85)' }}>
+616:                                                     {getIcon(link.icon)}
+617:                                                 </div>
+618:                                             </div>
+619:                                             <h3 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#1e293b', margin: 0, flex: 1, lineHeight: '1.4' }}>
+620:                                                 {link.title}
+621:                                             </h3>
+622:                                         </div>
+623:                                         <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: '1.5' }}>
+624:                                             {link.desc}
+625:                                         </p>
+626:                                         
+627:                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '10px' }}>
+628:                                             <span style={{ fontSize: '0.75rem', color: '#0ea5e9', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+629:                                                 Mở xem <ExternalLink size={10} />
+630:                                             </span>
+631:                                             <button 
+632:                                                 onClick={(e) => handleCopyLink(e, link)}
+633:                                                 style={{
+634:                                                     background: copiedLink === link.url ? '#10b981' : '#f8fafc',
+635:                                                     color: copiedLink === link.url ? '#fff' : '#475569',
+636:                                                     border: copiedLink === link.url ? '1px solid #10b981' : '1px solid #e2e8f0',
+637:                                                     padding: '4px 10px', borderRadius: '6px',
+638:                                                     fontSize: '0.75rem', fontWeight: '600', cursor: 'pointer',
+639:                                                     display: 'flex', alignItems: 'center', gap: '4px',
+640:                                                     transition: 'all 0.2s'
+641:                                                 }}
+642:                                             >
+643:                                                 {copiedLink === link.url ? <CheckCircle2 size={12} /> : <Copy size={12} />}
+644:                                                 {copiedLink === link.url ? 'Đã copy' : 'Copy gửi khách'}
+645:                                             </button>
+646:                                         </div>
+647:                                     </a>
+648:                                 ))}
+649:                             </div>
+650:                         </div>
+651:                     )}
+652: 
+653:                     {/* ====== Tour Links Section ====== */}
+654:                     {filteredTourLinks.length > 0 && (
+655:                         <div id="tours-section" style={{ display: 'flex', flexDirection: 'column', gap: '24px', scrollMarginTop: '40px' }}>
+656:                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '8px' }}>
+657:                                 <div style={{ color: '#059669' }}>
+658:                                     <Map size={24} />
+659:                                 </div>
+660:                                 <h2 style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0, color: '#0f172a' }}>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+Created At: 2026-07-17T14:41:34Z
+Completed At: 2026-07-17T14:41:34Z
+File Path: `file:///Users/huynhtronghieu/Documents/WORK%20Hi%E1%BA%BFu/crm-fittour/client/src/pages/LadakhConsultingPage.jsx`
+Total Lines: 915
+Total Bytes: 82502
+Showing lines 650 to 750
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+650:                         </div>
+651:                     )}
+652: 
+653:                     {/* ====== Tour Links Section ====== */}
+654:                     {filteredTourLinks.length > 0 && (
+655:                         <div id="tours-section" style={{ display: 'flex', flexDirection: 'column', gap: '24px', scrollMarginTop: '40px' }}>
+656:                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '8px' }}>
+657:                                 <div style={{ color: '#059669' }}>
+658:                                     <Map size={24} />
+659:                                 </div>
+660:                                 <h2 style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0, color: '#0f172a' }}>
+661:                                     Sản Phẩm & Lịch Trình Tour
+662:                                 </h2>
+663:                             </div>
+664:                             
+665:                             <div style={{ 
+666:                                 display: 'grid', 
+667:                                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', 
+668:                                 gap: '16px' 
+669:                             }}>
+670:                                 {filteredTourLinks.map((link, idx) => (
+671:                                     <a 
+672:                                         key={idx} 
+673:                                         href={link.url} 
+674:                                         target="_blank" 
+675:                                         rel="noreferrer"
+676:                                         style={{
+677:                                             display: 'flex',
+678:                                             flexDirection: 'column',
+679:                                             gap: '10px',
+680:                                             background: '#ffffff',
+681:                                             padding: '14px',
+682:                                             borderRadius: '12px',
+683:                                             border: '1px solid #e2e8f0',
+684:                                             textDecoration: 'none',
+685:                                             boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+686:                                             transition: 'all 0.2s',
+687:                                             position: 'relative'
+688:                                         }}
+689:                                         onMouseOver={(e) => { 
+690:                                             e.currentTarget.style.transform = 'translateY(-2px)';
+691:                                             e.currentTarget.style.boxShadow = '0 8px 12px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025)';
+692:                                             e.currentTarget.style.borderColor = link.color;
+693:                                         }}
+694:                                         onMouseOut={(e) => { 
+695:                                             e.currentTarget.style.transform = 'translateY(0)';
+696:                                             e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.03)';
+697:                                             e.currentTarget.style.borderColor = '#e2e8f0';
+698:                                         }}
+699:                                     >
+700:                                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+701:                                             <div style={{ 
+702:                                                 width: '32px', height: '32px', borderRadius: '8px', 
+703:                                                 background: `${link.color}15`, color: link.color,
+704:                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
+705:                                                 flexShrink: 0
+706:                                             }}>
+707:                                                 <div style={{ transform: 'scale(0.85)' }}>
+708:                                                     {getIcon(link.icon)}
+709:                                                 </div>
+710:                                             </div>
+711:                                             <h3 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#1e293b', margin: 0, flex: 1, lineHeight: '1.4' }}>
+712:                                                 {link.title}
+713:                                             </h3>
+714:                                         </div>
+715:                                         <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: '1.5' }}>
+716:                                             {link.desc}
+717:                                         </p>
+718:                                         
+719:                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '10px' }}>
+720:                                             <span style={{ fontSize: '0.75rem', color: '#0ea5e9', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+721:                                                 Mở xem <ExternalLink size={10} />
+722:                                             </span>
+723:                                             <button 
+724:                                                 onClick={(e) => handleCopyLink(e, link)}
+725:                                                 style={{
+726:                                                     background: copiedLink === link.url ? '#10b981' : '#f8fafc',
+727:                                                     color: copiedLink === link.url ? '#fff' : '#475569',
+728:                                                     border: copiedLink === link.url ? '1px solid #10b981' : '1px solid #e2e8f0',
+729:                                                     padding: '4px 10px', borderRadius: '6px',
+730:                                                     fontSize: '0.75rem', fontWeight: '600', cursor: 'pointer',
+731:                                                     display: 'flex', alignItems: 'center', gap: '4px',
+732:                                                     transition: 'all 0.2s'
+733:                                                 }}
+734:                                             >
+735:                                                 {copiedLink === link.url ? <CheckCircle2 size={12} /> : <Copy size={12} />}
+736:                                                 {copiedLink === link.url ? 'Đã copy' : 'Copy gửi khách'}
+737:                                             </button>
+738:                                         </div>
+739:                                     </a>
+740:                                 ))}
+741:                             </div>
+742:                         </div>
+743:                     )}
+744: 
+745:                     {/* ====== FAQs Section ====== */}
+746:                     {filteredFaqs.map((group, gIdx) => (
+747:                         <div key={gIdx} id={'cat-' + gIdx} style={{ display: 'flex', flexDirection: 'column', gap: '24px', scrollMarginTop: '40px' }}>
+748:                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '8px' }}>
+749:                                 <div style={{ color: group.color }}>
+750:                                     {getIcon(group.icon)}
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+Created At: 2026-07-17T14:46:34Z
+Completed At: 2026-07-17T14:46:34Z
+File Path: `file:///Users/huynhtronghieu/Documents/WORK%20Hi%E1%BA%BFu/crm-fittour/client/src/pages/LadakhConsultingPage.jsx`
+Total Lines: 915
+Total Bytes: 82502
+Showing lines 620 to 635
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+620:                                                 {link.title}
+621:                                             </h3>
+622:                                         </div>
+623:                                         <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: '1.5' }}>
+624:                                             {link.desc}
+625:                                         </p>
+626:                                         
+627:                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '10px' }}>
+628:                                             <span style={{ fontSize: '0.75rem', color: '#0ea5e9', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+629:                                                 Mở xem <ExternalLink size={10} />
+630:                                             </span>
+631:                                             <button 
+632:                                                 onClick={(e) => handleCopyLink(e, link)}
+633:                                                 style={{
+634:                                                     background: copiedLink === link.url ? '#10b981' : '#f8fafc',
+635:                                                     color: copiedLink === link.url ? '#fff' : '#475569',
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+Created At: 2026-07-17T14:52:05Z
+Completed At: 2026-07-17T14:52:05Z
+File Path: `file:///Users/huynhtronghieu/Documents/WORK%20Hi%E1%BA%BFu/crm-fittour/client/src/pages/LadakhConsultingPage.jsx`
+Total Lines: 519
+Total Bytes: 53108
+Showing lines 519 to 519
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+519: 
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+Created At: 2026-07-17T14:52:10Z
+Completed At: 2026-07-17T14:52:10Z
+File Path: `file:///Users/huynhtronghieu/Documents/WORK%20Hi%E1%BA%BFu/crm-fittour/client/src/pages/LadakhConsultingPage.jsx`
+Total Lines: 519
+Total Bytes: 53108
+Showing lines 380 to 450
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+380:                                             display: 'flex',
+381:                                             alignItems: 'flex-start',
+382:                                             justifyContent: 'space-between',
+383:                                             cursor: 'pointer',
+384:                                             textAlign: 'left'
+385:                                         }}
+386:                                     >
+387:                                         <h3 style={{ fontSize: '1.05rem', fontWeight: '600', color: '#0f172a', margin: '0 24px 0 0', lineHeight: '1.5' }}>
+388:                                             {item.q}
+389:                                         </h3>
+390:                                         <div style={{ 
+391:                                             padding: '4px', 
+392:                                             borderRadius: '50%', 
+393:                                             background: isOpen ? '#e2e8f0' : 'transparent',
+394:                                             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+395:                                             transition: 'all 0.3s',
+396:                                             flexShrink: 0
+397:                                         }}>
+398:                                             <ChevronDown size={20} color="#64748b" />
+399:                                         </div>
+400:                                     </button>
+401: 
+402:                                     {/* Accordion Content */}
+403:                                     <div style={{ 
+404:                                         maxHeight: isOpen ? '3000px' : '0', 
+405:                                         opacity: isOpen ? 1 : 0, 
+406:                                         transition: 'all 0.4s ease-in-out',
+407:                                         background: '#ffffff'
+408:                                     }}>
+409:                                         <div style={{ padding: '0 24px 24px 24px', borderTop: '1px solid #f1f5f9' }}>
+410:                                             
+411:                                             {/* Tùy chọn kịch bản chốt Sale */}
+412:                                             <div style={{ marginTop: '24px' }}>
+413:                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#166534', fontWeight: '700', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '16px' }}>
+414:                                                     <Zap size={16} /> Kịch bản Chat & Chốt Sale
+415:                                                 </div>
+416:                                                 
+417:                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+418:                                                     {item.variants.map((variant, vIdx) => (
+419:                                                         <div key={vIdx} style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '16px' }}>
+420:                                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+421:                                                                 <div>
+422:                                                                     <span style={{ display: 'inline-block', background: '#dcfce7', color: '#166534', fontSize: '0.75rem', fontWeight: '700', padding: '4px 8px', borderRadius: '4px', marginBottom: '8px' }}>
+423:                                                                         {variant.type}
+424:                                                                     </span>
+425:                                                                     <p style={{ margin: 0, color: '#14532d', fontSize: '1rem', lineHeight: '1.6' }}>
+426:                                                                         {variant.text}
+427:                                                                     </p>
+428:                                                                 </div>
+429:                                                                 <button 
+430:                                                                     onClick={(e) => handleCopy(e, item.id, variant.text, vIdx)}
+431:                                                                     style={{
+432:                                                                         flexShrink: 0,
+433:                                                                         display: 'flex', alignItems: 'center', gap: '6px',
+434:                                                                         padding: '6px 12px', borderRadius: '6px', border: 'none',
+435:                                                                         background: copiedId === item.id + vIdx ? '#166534' : '#ffffff',
+436:                                                                         color: copiedId === item.id + vIdx ? '#ffffff' : '#166534',
+437:                                                                         border: '1px solid #bbf7d0',
+438:                                                                         fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer',
+439:                                                                         transition: 'all 0.2s'
+440:                                                                     }}
+441:                                                                 >
+442:                                                                     {copiedId === item.id + vIdx ? <CheckCircle2 size={14} /> : <Copy size={14} />}
+443:                                                                     {copiedId === item.id + vIdx ? 'Đã copy' : 'Copy'}
+444:                                                                 </button>
+445:                                                             </div>
+446:                                                         </div>
+447:                                                     ))}
+448:                                                 </div>
+449:                                             </div>
+450: 
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+Created At: 2026-07-17T14:52:17Z
+Completed At: 2026-07-17T14:52:17Z
+File Path: `file:///Users/huynhtronghieu/Documents/WORK%20Hi%E1%BA%BFu/crm-fittour/client/src/pages/LadakhConsultingPage.jsx`
+Total Lines: 519
+Total Bytes: 53108
+Showing lines 300 to 370
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+300:                                             borderRadius: '8px',
+301:                                             border: 'none',
+302:                                             background: 'transparent',
+303:                                             color: '#475569',
+304:                                             fontWeight: '500',
+305:                                             fontSize: '0.9rem',
+306:                                             textAlign: 'left',
+307:                                             cursor: 'pointer',
+308:                                             display: 'flex',
+309:                                             alignItems: 'flex-start',
+310:                                             gap: '10px',
+311:                                             transition: 'all 0.2s',
+312:                                             lineHeight: '1.4'
+313:                                         }}
+314:                                         onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9' }}
+315:                                         onMouseOut={(e) => { e.currentTarget.style.background = 'transparent' }}
+316:                                     >
+317:                                         <div style={{ marginTop: '2px', opacity: 0.4 }}>
+318:                                             <Hash size={14} />
+319:                                         </div>
+320:                                         <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+321:                                             {item.q.replace(/^[0-9]+[.,]\s*/, '')}
+322:                                         </span>
+323:                                     </button>
+324:                                 ))}
+325:                             </div>
+326:                         </div>
+327:                     ))}
+328:                 </div>
+329:             </div>
+330: 
+331:             {/* ====== RIGHT CONTENT ====== */}
+332:             <div style={{ flex: 1, padding: '40px 60px', maxWidth: '1000px', margin: '0 auto' }}>
+333:                 
+334:                 <div style={{ marginBottom: '48px', borderBottom: '1px solid #e2e8f0', paddingBottom: '32px' }}>
+335:                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#ffedd5', color: '#ea580c', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700', marginBottom: '16px' }}>
+336:                         <Sparkles size={16} /> 
+337:                         Cẩm Nang Chốt Sale BU4
+338:                     </div>
+339:                     <h1 style={{ fontSize: '2.5rem', fontWeight: '800', margin: '0 0 16px 0', letterSpacing: '-0.02em' }}>
+340:                         Thư Viện Kịch Bản Ladakh
+341:                     </h1>
+342:                     <p style={{ fontSize: '1rem', color: '#64748b', margin: 0, lineHeight: '1.5' }}>
+343:                         Bấm vào câu hỏi để copy kịch bản chốt sale, hoặc xem giải thích (Đào tạo nội bộ).
+344:                     </p>
+345:                 </div>
+346: 
+347:                 <div style={{ display: 'flex', flexDirection: 'column', gap: '60px' }}>
+348:                     {filteredFaqs.map((group, gIdx) => (
+349:                         <div key={gIdx} id={'cat-' + gIdx} style={{ display: 'flex', flexDirection: 'column', gap: '24px', scrollMarginTop: '40px' }}>
+350:                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '8px' }}>
+351:                                 <div style={{ color: group.color }}>
+352:                                     {getIcon(group.icon)}
+353:                                 </div>
+354:                                 <h2 style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0, color: '#0f172a' }}>
+355:                                     {group.category}
+356:                                 </h2>
+357:                             </div>
+358: 
+359:                             {group.items.map((item) => {
+360:                                 const isOpen = openIds.includes(item.id);
+361:                                 const isDetailsOpen = showDetailsIds.includes(item.id);
+362:                                 
+363:                                 return (
+364:                                 <div key={item.id} style={{ 
+365:                                     background: '#ffffff',
+366:                                     borderRadius: '16px',
+367:                                     boxShadow: isOpen ? '0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025)' : '0 1px 3px rgba(0,0,0,0.05)',
+368:                                     border: isOpen ? `1px solid ${group.color}40` : '1px solid #e2e8f0',
+369:                                     overflow: 'hidden',
+370:                                     transition: 'all 0.3s'
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+
+Created At: 2026-07-17T15:34:51Z
+Completed At: 2026-07-17T15:34:52Z
+File Path: `file:///Users/huynhtronghieu/Documents/WORK%20Hi%E1%BA%BFu/crm-fittour/client/src/pages/LadakhConsultingPage.jsx`
+Total Lines: 519
+Total Bytes: 53108
+Showing lines 150 to 250
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+150:             { type: "Đồng cảm (Xóa rào cản)", text: "Dạ đa số khách FIT TOUR đều đi 1 mình nên chị không lo lạc lõng đâu ạ. Khách đi núi thường cực kỳ cởi mở, sau 1-2 ngày vượt đèo cùng nhau là cả đoàn thân thiết như người nhà luôn ạ." },
+151:             { type: "Kinh tế (Giải quyết chi phí)", text: "Dạ đi 1 mình bên em sẽ chủ động ghép phòng với một khách cùng giới tính trong đoàn để chị đỡ tốn phụ phí phòng đơn. Chị cứ yên tâm nhé." }
+152:         ],
+153:         a: ["Dạ anh/chị cứ yên tâm nhé. Thực tế, đa số khách của bên em đều đăng ký đi một mình, nên anh/chị sẽ không bị lạc lõng đâu ạ.", "Nếu anh/chị đi một mình, bên em sẽ sắp xếp ghép phòng với một khách nữ hoặc nam cùng đoàn (tùy theo giới tính) để mình tiết kiệm chi phí. Nếu anh/chị muốn ở phòng riêng thì bên em cũng có thể hỗ trợ với phụ phí theo nhu cầu.", "Điều em rất thích ở các đoàn Ladakh là mọi người thường rất dễ kết nối với nhau. Sau vài ngày cùng vượt đèo, ngắm cảnh và trải nghiệm, cả đoàn thường trở nên rất thân thiết. Nhiều anh/chị ban đầu đi một mình nhưng khi kết thúc chuyến đi lại có thêm những người bạn đồng hành mới."] 
+154:       },
+155:       { 
+156:         id: "q14", 
+157:         q: "14. Nếu thời tiết xấu hoặc chuyến bay bị hủy thì công ty xử lý như thế nào?", 
+158:         variants: [
+159:             { type: "An tâm (Trách nhiệm)", text: "Dạ bên em ưu tiên an toàn lên hàng đầu. Nếu hoãn/hủy chuyến, FIT TOUR sẽ làm việc trực tiếp với hãng bay đổi chuyến sớm nhất, HDV sẽ đi theo đoàn 24/24. Cả đoàn cũng được mua bảo hiểm du lịch 100% rồi ạ." }
+160:         ],
+161:         a: ["Dạ đây là tình huống thỉnh thoảng vẫn có thể xảy ra khi đi các vùng núi cao như Ladakh, vì thời tiết sẽ ảnh hưởng trực tiếp đến hoạt động của các chuyến bay.", "Trong trường hợp chuyến bay bị hoãn hoặc hủy, bên em sẽ làm việc trực tiếp với hãng hàng không để ưu tiên đổi sang chuyến bay sớm nhất có thể và cập nhật thông tin liên tục cho đoàn. Hướng dẫn viên cũng sẽ đồng hành cùng anh/chị trong suốt quá trình xử lý, nên mình không phải tự làm việc với hãng bay.", "Ngoài ra, tất cả khách tham gia tour đều được bên em mua bảo hiểm du lịch, để tăng thêm sự an tâm trong những tình huống phát sinh theo phạm vi quyền lợi của bảo hiểm.", "Với kinh nghiệm tổ chức các cung đường Himalaya nhiều năm, điều bên em ưu tiên nhất không phải là đi đúng lịch bằng mọi giá, mà là đảm bảo hành trình được xử lý linh hoạt, an toàn và mang lại trải nghiệm tốt nhất cho khách."] 
+162:       }
+163:     ]
+164:   }
+165: ];
+166: 
+167: const LadakhConsultingPage = () => {
+168:     const [openIds, setOpenIds] = useState([]);
+169:     const [searchQuery, setSearchQuery] = useState('');
+170:     const [copiedId, setCopiedId] = useState('');
+171:     const [showDetailsIds, setShowDetailsIds] = useState([]); // Array to store IDs of expanded detailed sections
+172: 
+173:     const toggleAccordion = (id) => {
+174:         setOpenIds(prev => 
+175:             prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+176:         );
+177:     };
+178: 
+179:     const toggleDetails = (id) => {
+180:         setShowDetailsIds(prev => 
+181:             prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+182:         );
+183:     };
+184: 
+185:     const handleCopy = (e, id, text, type) => {
+186:         e.stopPropagation();
+187:         navigator.clipboard.writeText(text).then(() => {
+188:             setCopiedId(id + type);
+189:             setTimeout(() => setCopiedId(''), 2000);
+190:         });
+191:     };
+192: 
+193:     const scrollTo = (catId) => {
+194:         const element = document.getElementById(catId);
+195:         if (element) {
+196:             const y = element.getBoundingClientRect().top + window.scrollY - 80;
+197:             window.scrollTo({ top: y, behavior: 'smooth' });
+198:         }
+199:     };
+200: 
+201:     const normalizedSearch = searchQuery.toLowerCase();
+202:     const filteredFaqs = groupedFaqs.map(group => {
+203:         const filteredItems = group.items.filter(item => {
+204:             const matchQ = item.q.toLowerCase().includes(normalizedSearch);
+205:             const matchVariants = item.variants.some(v => v.text.toLowerCase().includes(normalizedSearch) || v.type.toLowerCase().includes(normalizedSearch));
+206:             const matchA = item.a.some(p => p.toLowerCase().includes(normalizedSearch));
+207:             return matchQ || matchVariants || matchA;
+208:         });
+209:         return { ...group, items: filteredItems };
+210:     }).filter(group => group.items.length > 0);
+211: 
+212:     const getIcon = (iconName) => {
+213:         switch(iconName) {
+214:             case "Briefcase": return <Briefcase size={20} />;
+215:             case "HeartPulse": return <HeartPulse size={20} />;
+216:             case "CloudSun": return <CloudSun size={20} />;
+217:             case "Passport": return <Passport size={20} />;
+218:             default: return <Hash size={20} />;
+219:         }
+220:     };
+221: 
+222:     return (
+223:         <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: '"Inter", "Segoe UI", sans-serif', color: '#0f172a' }}>
+224:             
+225:             {/* ====== LEFT SIDEBAR (TOC) ====== */}
+226:             <div style={{ 
+227:                 width: '320px', 
+228:                 minWidth: '320px',
+229:                 height: '100vh', 
+230:                 position: 'sticky', 
+231:                 top: 0, 
+232:                 background: '#ffffff', 
+233:                 borderRight: '1px solid #e2e8f0',
+234:                 padding: '24px 0',
+235:                 display: 'flex',
+236:                 flexDirection: 'column',
+237:                 overflowY: 'auto',
+238:                 boxShadow: '4px 0 24px rgba(0,0,0,0.02)',
+239:                 zIndex: 10
+240:             }}>
+241:                 <div style={{ padding: '0 24px', marginBottom: '24px' }}>
+242:                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+243:                         <div style={{ width: '40px', height: '40px', background: '#f97316', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)' }}>
+244:                             <PhoneCall size={20} />
+245:                         </div>
+246:                         <div>
+247:                             <h2 style={{ fontSize: '1.1rem', fontWeight: '800', margin: 0, color: '#0f172a' }}>Kịch Bản Sale</h2>
+248:                             <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>Hành Trình Ladakh</p>
+249:                         </div>
+250:                     </div>
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
+

@@ -139,7 +139,9 @@ exports.createLeave = async (data, requestUser) => {
                     handover_to: handoverName,
                     handover_note: handover_note || 'Không có',
                     contact_phone: contact_phone || 'Không có',
-                    created_at: new Date().toISOString()
+                    created_at: new Date().toISOString(),
+                    applicant_id: applyForId,
+                    send_to_all: data.send_to_all !== undefined ? data.send_to_all : true
                 });
             }
 

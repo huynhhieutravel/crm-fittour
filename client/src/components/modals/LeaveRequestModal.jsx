@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Calendar, XCircle, User, Phone, MessageCircle, Users, Send, Calculator } from 'lucide-react';
+import { Calendar, XCircle, User, Phone, MessageCircle, Users, Send, Calculator, Mail } from 'lucide-react';
 import Swal from 'sweetalert2';
 import Select, { components } from 'react-select';
 import DatePicker from 'react-datepicker';
@@ -16,7 +16,8 @@ export default function LeaveRequestModal({ currentUser, users = [], editData, o
     contact_phone: currentUser?.phone || '',
     handover_user_id: '',
     handover_note: '',
-    approved_by: ''
+    approved_by: '',
+    send_to_all: true
   });
 
   useEffect(() => {
@@ -42,7 +43,8 @@ export default function LeaveRequestModal({ currentUser, users = [], editData, o
         contact_phone: editData.contact_phone || '',
         handover_user_id: editData.handover_user_id || '',
         handover_note: editData.handover_note || '',
-        approved_by: editData.approved_by || ''
+        approved_by: editData.approved_by || '',
+        send_to_all: true
       });
     }
   }, [editData, currentUser]);
@@ -454,6 +456,37 @@ export default function LeaveRequestModal({ currentUser, users = [], editData, o
                             <textarea value={form.handover_note} onChange={e => setForm({...form, handover_note: e.target.value})} style={inputStyles.textarea} placeholder="Đã bàn giao các task..." maxLength={500}/>
                             <span style={{ position: 'absolute', bottom: '12px', right: '12px', fontSize: '12px', color: '#94a3b8' }}>{form.handover_note.length}/500</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* TÙY CHỌN GỬI THÔNG BÁO */}
+            <div>
+                <div style={inputStyles.sectionTitle}><Mail size={18} /> Đối tượng nhận thông báo (Email)</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', cursor: 'not-allowed' }}>
+                        <input type="checkbox" checked disabled style={{ width: '16px', height: '16px' }} />
+                        <span>Gửi Ban Giám Đốc (Bắt buộc)</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', cursor: 'not-allowed' }}>
+                        <input type="checkbox" checked disabled style={{ width: '16px', height: '16px' }} />
+                        <span>Gửi thành viên cùng phòng ban (BU) (Bắt buộc)</span>
+                    </label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a', cursor: 'pointer', fontWeight: '500' }}>
+                            <input 
+                                type="checkbox" 
+                                checked={form.send_to_all} 
+                                onChange={(e) => setForm({...form, send_to_all: e.target.checked})}
+                                style={{ width: '16px', height: '16px', cursor: 'pointer' }} 
+                            />
+                            <span>Gửi Toàn bộ nhân viên công ty</span>
+                        </label>
+                        {!form.send_to_all && (
+                            <span style={{ fontSize: '12px', color: '#3b82f6', marginLeft: '24px', fontStyle: 'italic' }}>
+                                * Khi bỏ chọn, hệ thống sẽ chỉ gửi thông báo cho thành viên thuộc BU của bạn và Ban Giám Đốc.
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>

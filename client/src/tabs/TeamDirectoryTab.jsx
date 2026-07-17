@@ -1,36 +1,79 @@
-import React, { useState, useMemo } from 'react';
-import { Users, Phone, Mail, ExternalLink, Search } from 'lucide-react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Users, Phone, Mail, ExternalLink, Search, Copy, ChevronDown } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const TeamDirectoryTab = ({ users }) => {
-  const [selectedTeam, setSelectedTeam] = useState('ALL');
+  const [selectedBU, setSelectedBU] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [showCopyMenu, setShowCopyMenu] = useState(false);
+  const copyMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (copyMenuRef.current && !copyMenuRef.current.contains(event.target)) {
+        setShowCopyMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Only show active users
   const activeUsers = useMemo(() => (users || []).filter(u => u.is_active !== false), [users]);
 
-  // Extract unique teams
-  const allTeams = useMemo(() => {
-    const teamMap = new Map();
+  // Extract unique BUs (for top filter and copy menu)
+  const allBUs = useMemo(() => {
+    const buMap = new Map();
     activeUsers.forEach(u => {
-      (u.teams || []).forEach(t => {
-        if (!teamMap.has(t.name)) teamMap.set(t.name, { ...t, count: 0 });
-        teamMap.get(t.name).count++;
+      (u.bus || []).forEach(b => {
+        if (!buMap.has(b)) buMap.set(b, { name: b, count: 0 });
+        buMap.get(b).count++;
       });
     });
-    return [...teamMap.values()].sort((a, b) => a.name.localeCompare(b.name));
+    return [...buMap.values()]
+      .filter(b => b.name && b.name.toUpperCase() !== 'KHÁC' && b.name.toUpperCase() !== 'KHAC')
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [activeUsers]);
 
   // Filter
   const filteredUsers = useMemo(() => {
     return activeUsers.filter(u => {
-      const matchTeam = selectedTeam === 'ALL' || (u.teams || []).some(t => t.name === selectedTeam);
+      const matchBU = selectedBU === 'ALL' || (u.bus || []).includes(selectedBU);
       const matchSearch = !searchTerm || 
         u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.phone?.includes(searchTerm);
-      return matchTeam && matchSearch;
+      return matchBU && matchSearch;
     });
-  }, [activeUsers, selectedTeam, searchTerm]);
+  }, [activeUsers, selectedBU, searchTerm]);
+
+  const isCopyableUser = (u) => {
+    const bus = u.bus || [];
+    return bus.length > 0 && bus.some(b => b && b.toUpperCase() !== 'KHÁC' && b.toUpperCase() !== 'KHAC');
+  };
+
+  const copyableUsers = useMemo(() => activeUsers.filter(isCopyableUser), [activeUsers]);
+  const copyableFilteredUsers = useMemo(() => filteredUsers.filter(isCopyableUser), [filteredUsers]);
+
+  const handleCopyEmails = (buName) => {
+    let targetUsers = copyableUsers;
+    if (buName === 'CURRENT_VIEW') {
+      targetUsers = copyableFilteredUsers;
+    } else if (buName !== 'ALL') {
+      targetUsers = copyableUsers.filter(u => (u.bus || []).includes(buName));
+    }
+    const emails = targetUsers.map(u => u.email).filter(Boolean).join(', ');
+    if (emails) {
+      navigator.clipboard.writeText(emails);
+      setCopied(buName);
+      setTimeout(() => setCopied(false), 2000);
+      toast.success(`Đã copy ${emails.split(',').length} email thành công!`, { position: 'bottom-center' });
+    } else {
+      toast.error(`Không tìm thấy email nào cho nhóm ${buName === 'CURRENT_VIEW' ? 'hiện tại' : buName}`, { position: 'bottom-center' });
+    }
+    setShowCopyMenu(false);
+  };
 
   const getRoleLabel = (roleName) => {
     switch (roleName) {
@@ -61,12 +104,93 @@ const TeamDirectoryTab = ({ users }) => {
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ position: 'relative' }} ref={copyMenuRef}>
+            <button
+              onClick={() => setShowCopyMenu(!showCopyMenu)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                padding: '0.6rem 1rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.2)',
+                cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s',
+                background: copied ? '#22c55e' : (showCopyMenu ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)'),
+                color: '#fff', backdropFilter: 'blur(10px)'
+              }}
+              onMouseEnter={e => { if(!copied && !showCopyMenu) e.currentTarget.style.background = 'rgba(255,255,255,0.2)' }}
+              onMouseLeave={e => { if(!copied && !showCopyMenu) e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+            >
+              <Copy size={16} />
+              {copied ? 'Đã Copy!' : 'Copy Emails'}
+              <ChevronDown size={14} style={{ transition: '0.2s', transform: showCopyMenu ? 'rotate(180deg)' : 'rotate(0)' }} />
+            </button>
+            
+            {showCopyMenu && (
+              <div style={{
+                position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+                background: '#fff', borderRadius: '12px', padding: '8px',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.2)', zIndex: 100,
+                minWidth: '240px', border: '1px solid #e2e8f0',
+                display: 'flex', flexDirection: 'column', gap: '4px'
+              }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', padding: '4px 12px', textTransform: 'uppercase' }}>
+                  Tùy chọn Copy
+                </div>
+                <button
+                  onClick={() => handleCopyEmails('ALL')}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+                    padding: '8px 12px', borderRadius: '8px', border: 'none', background: 'transparent',
+                    cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', textAlign: 'left'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  Tất cả nhân sự <span style={{ background: '#e2e8f0', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem' }}>{copyableUsers.length}</span>
+                </button>
+                <button
+                  onClick={() => handleCopyEmails('CURRENT_VIEW')}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+                    padding: '8px 12px', borderRadius: '8px', border: 'none', background: 'transparent',
+                    cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, color: '#3b82f6', textAlign: 'left'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#eff6ff'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  Theo bộ lọc hiện tại <span style={{ background: '#dbeafe', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem' }}>{copyableFilteredUsers.length}</span>
+                </button>
+                
+                <div style={{ height: '1px', background: '#e2e8f0', margin: '4px 0' }}></div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', padding: '4px 12px', textTransform: 'uppercase' }}>
+                  Theo Business Unit
+                </div>
+                <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+                  {allBUs.map(bu => (
+                    <button
+                      key={bu.name}
+                      onClick={() => handleCopyEmails(bu.name)}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+                        padding: '8px 12px', borderRadius: '8px', border: 'none', background: 'transparent',
+                        cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500, color: '#475569', textAlign: 'left'
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#0f172a'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#475569'; }}
+                    >
+                      {bu.name} <span style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', color: '#64748b' }}>{bu.count}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           <div style={{ position: 'relative' }}>
             <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.5)' }} />
             <input
               placeholder="Tìm tên, email, SĐT..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
+              autoComplete="new-password"
+              spellCheck="false"
+              className="directory-search-input"
               style={{
                 background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
                 color: '#fff', padding: '0.6rem 0.75rem 0.6rem 2.2rem', borderRadius: '10px',
@@ -78,37 +202,37 @@ const TeamDirectoryTab = ({ users }) => {
         </div>
       </div>
 
-      {/* Team Filter Buttons */}
+      {/* BU Filter Buttons */}
       <div style={{
         display: 'flex', gap: '8px', marginBottom: '1.5rem', flexWrap: 'wrap',
         padding: '0.75rem', background: '#fff', borderRadius: '12px',
         border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.03)'
       }}>
         <button
-          onClick={() => setSelectedTeam('ALL')}
+          onClick={() => setSelectedBU('ALL')}
           style={{
             padding: '0.55rem 1.2rem', borderRadius: '8px', border: 'none', cursor: 'pointer',
             fontWeight: 700, fontSize: '0.8rem', transition: '0.2s',
-            background: selectedTeam === 'ALL' ? '#2563eb' : '#f1f5f9',
-            color: selectedTeam === 'ALL' ? '#fff' : '#475569',
-            boxShadow: selectedTeam === 'ALL' ? '0 4px 12px rgba(37, 99, 235, 0.3)' : 'none'
+            background: selectedBU === 'ALL' ? '#2563eb' : '#f1f5f9',
+            color: selectedBU === 'ALL' ? '#fff' : '#475569',
+            boxShadow: selectedBU === 'ALL' ? '0 4px 12px rgba(37, 99, 235, 0.3)' : 'none'
           }}
         >
           Tất cả ({activeUsers.length})
         </button>
-        {allTeams.map(team => (
+        {allBUs.map(bu => (
           <button
-            key={team.name}
-            onClick={() => setSelectedTeam(team.name)}
+            key={bu.name}
+            onClick={() => setSelectedBU(bu.name)}
             style={{
               padding: '0.55rem 1.2rem', borderRadius: '8px', border: 'none', cursor: 'pointer',
               fontWeight: 700, fontSize: '0.8rem', transition: '0.2s',
-              background: selectedTeam === team.name ? '#2563eb' : '#f1f5f9',
-              color: selectedTeam === team.name ? '#fff' : '#475569',
-              boxShadow: selectedTeam === team.name ? '0 4px 12px rgba(37, 99, 235, 0.3)' : 'none'
+              background: selectedBU === bu.name ? '#2563eb' : '#f1f5f9',
+              color: selectedBU === bu.name ? '#fff' : '#475569',
+              boxShadow: selectedBU === bu.name ? '0 4px 12px rgba(37, 99, 235, 0.3)' : 'none'
             }}
           >
-            {team.name} ({team.count})
+            {bu.name} ({bu.count})
           </button>
         ))}
       </div>
@@ -121,7 +245,7 @@ const TeamDirectoryTab = ({ users }) => {
               <th style={{ padding: '1.25rem 1rem', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>THÀNH VIÊN</th>
               <th style={{ padding: '1.25rem 1rem', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>SỐ ĐIỆN THOẠI</th>
               <th style={{ padding: '1.25rem 1rem', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>EMAIL / LIÊN HỆ</th>
-              <th style={{ padding: '1.25rem 1rem', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>PHÒNG BAN / TEAM</th>
+              <th style={{ padding: '1.25rem 1rem', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>BUSINESS UNIT</th>
               <th style={{ padding: '1.25rem 1rem', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>GIA NHẬP</th>
             </tr>
           </thead>
@@ -173,20 +297,20 @@ const TeamDirectoryTab = ({ users }) => {
                     </div>
                   </td>
 
-                  {/* Team */}
+                  {/* Business Unit */}
                   <td style={{ padding: '1rem' }}>
                     <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', maxWidth: '200px' }}>
-                      {(u.teams || []).map(t => (
-                        <span key={t.id} style={{
+                      {(u.bus || []).map((b, idx) => (
+                        <span key={idx} style={{
                           display: 'inline-flex', alignItems: 'center', gap: '3px',
                           padding: '3px 8px', borderRadius: '6px',
                           background: '#f0fdf4', color: '#15803d',
                           fontSize: '0.7rem', fontWeight: 700
                         }}>
-                          <Users size={10} /> {t.name}
+                          <Users size={10} /> {b}
                         </span>
                       ))}
-                      {(!u.teams || u.teams.length === 0) && <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>-</span>}
+                      {(!u.bus || u.bus.length === 0) && <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>-</span>}
                     </div>
                   </td>
 

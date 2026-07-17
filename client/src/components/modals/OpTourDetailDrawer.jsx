@@ -116,6 +116,23 @@ export default function OpTourDetailDrawer({ onClose, tour, onDelete }) {
            newData.tour_code = `${tCode}-${dateStr}`;
         }
       }
+      
+      // Auto-fill booking_deadline and close_time to 10 days before start_date
+      if (field === 'start_date' && value) {
+        const startDateObj = new Date(value);
+        if (!isNaN(startDateObj.getTime())) {
+           const tenDaysBefore = new Date(startDateObj);
+           tenDaysBefore.setDate(tenDaysBefore.getDate() - 10);
+           const dateStr = tenDaysBefore.toLocaleDateString('en-CA');
+           
+           newData.tour_info = {
+              ...newData.tour_info,
+              booking_deadline: dateStr,
+              close_time: dateStr
+           };
+        }
+      }
+      
       return newData;
     });
   };

@@ -136,6 +136,7 @@ const airlineRoutes = require('./routes/airlines');
 const landtourRoutes = require('./routes/landtours');
 const insuranceRoutes = require('./routes/insurances');
 const mediaRoutes = require('./routes/media');
+const ragDocsAdminRoutes = require('./routes/ragDocs');
 
 // ═══ Tour Đoàn (Group) Routes ═══
 const b2bCompaniesRoutes = require('./routes/b2bCompanies');
@@ -155,6 +156,7 @@ app.use('/api/public/departures', publicDeparturesRoutes);
 app.use('/api/vouchers', require('./routes/vouchers'));
 app.use('/api/leaves', require('./routes/leaves'));
 app.use('/api/departures', departureRoutes);
+app.use('/api/departure-card-guides', require('./routes/departureCardGuides'));
 app.use('/api/guides', guideRoutes);
 app.use('/api/leads', leadRoutes);
 app.use('/api/bookings', bookingRoutes);
@@ -175,6 +177,7 @@ app.use('/api/airlines', airlineRoutes);
 app.use('/api/landtours', landtourRoutes);
 app.use('/api/insurances', insuranceRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/rag-docs', ragDocsAdminRoutes);
 app.use('/api/visas', visaRoutes);
 app.use('/api/visa-providers', require('./routes/visaProviders'));
 

@@ -774,6 +774,19 @@ select.form-control {
   gap: 4px;
 }
 
+.directory-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.directory-search-input:-webkit-autofill,
+.directory-search-input:-webkit-autofill:hover, 
+.directory-search-input:-webkit-autofill:focus, 
+.directory-search-input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px #3b82f6 inset !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
 /* Action Buttons - Premium Refined */
 .btn-action {
   width: 34px;

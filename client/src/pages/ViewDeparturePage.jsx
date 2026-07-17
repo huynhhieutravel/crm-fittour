@@ -3,7 +3,6 @@ import axios from 'axios';
 import { ChevronLeft, Edit2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { swalConfirm } from '../utils/swalHelpers';
-
 const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEditDeparture }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -228,6 +227,19 @@ const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEdit
               <span style={{ color: '#64748b', fontWeight: 600, marginLeft: '8px' }}>{currentDep.code ? `(${currentDep.code})` : ''}</span>
             </div>
           </div>
+          <button 
+            onClick={() => navigate('/admin-trip')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', 
+              background: '#e0f2fe', color: '#0369a1', fontWeight: 600, fontSize: '0.9rem',
+              border: '1px solid #bae6fd', borderRadius: '6px', padding: '8px 16px',
+              cursor: 'pointer', transition: 'all 0.2s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#bae6fd'}
+            onMouseLeave={e => e.currentTarget.style.background = '#e0f2fe'}
+          >
+            Quản lý Thẻ HDV ↗
+          </button>
         </div>
 
         {/* --- TABS NAVIGATION (TOP LEVEL) --- */}

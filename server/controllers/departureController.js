@@ -196,14 +196,14 @@ exports.updateDeparture = async (req, res) => {
                 'guide_id', 'operator_id', 
                 'supplier_info', 'min_participants', 'break_even_pax',
                 'deadline_booking', 'deadline_visa', 'deadline_payment',
-                'price_rules', 'additional_services', 'notes'
+                'price_rules', 'additional_services', 'notes', 'departure_card_data'
             ];
             // Format empty string to null for specific fields
             let finalValue = value;
             if (value === '' && ['guide_id', 'operator_id', 'break_even_pax', 'max_participants'].includes(key)) {
                 finalValue = null;
             }
-            if (['price_rules', 'additional_services', 'supplier_info'].includes(key)) {
+            if (['price_rules', 'additional_services', 'supplier_info', 'departure_card_data'].includes(key)) {
                 finalValue = typeof value === 'string' ? value : JSON.stringify(value);
             }
 

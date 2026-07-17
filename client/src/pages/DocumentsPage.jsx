@@ -19,6 +19,7 @@ import { SOP_ASTRO_TOUR_MARKDOWN } from '../data/sopAstroTour';
 import SopMetaAdsInfographic from './SopMetaAdsInfographic';
 import RagDocViewer from '../components/Knowledge/RagDocViewer';
 import LadakhConsultingPage from './LadakhConsultingPage';
+import BhutanConsultingPage from './BhutanConsultingPage';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Static Document Index — TẤT CẢ tài liệu nội bộ đã biết
@@ -52,7 +53,7 @@ const STATIC_DOCS = [
    Blog Layout Shell — Dùng chung cho TẤT CẢ trang tài liệu nội bộ
    CSS: blog-wrapper, blog-header, blog-main
    ═══════════════════════════════════════════════════════════════════════════ */
-const BlogLayout = ({ children }) => {
+const BlogLayout = ({ children, fullWidth = false, backPath = "/", backText = "Về lại CRM" }) => {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -237,14 +238,14 @@ const BlogLayout = ({ children }) => {
             <Link to="/tai-lieu/manager" className="blog-back-btn" style={{ background: '#3b82f6', color: 'white', border: 'none' }}>
               <Edit2 size={16} /> Quản lý bài viết
             </Link>
-            <Link to="/" className="blog-back-btn">
-              <ArrowLeft size={16} /> Về lại CRM
+            <Link to={backPath} className="blog-back-btn">
+              <ArrowLeft size={16} /> {backText}
             </Link>
           </div>
         </div>
       </header>
       
-      <main className="blog-main">
+      <main className="blog-main" style={fullWidth ? { padding: 0, margin: 0, maxWidth: '100%' } : {}}>
         {children}
       </main>
     </div>
@@ -609,10 +610,21 @@ const DocumentsHome = () => {
             <img src="https://cdn-icons-png.flaticon.com/512/1998/1998087.png" alt="Marketing" className="blog-icon-img" />
             <span>HUB Marketing</span>
           </Link>
-          <Link to="/tai-lieu/sale" className="blog-top-card">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135673.png" alt="Sale" className="blog-icon-img" />
-            <span>HUB Kinh Doanh (Sale)</span>
-          </Link>
+          <div className="blog-top-card" style={{ background: 'linear-gradient(to right, #f8fafc, #f1f5f9)', display: 'block', padding: '1.25rem' }}>
+            <Link to="/tai-lieu/sale" style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: '#1e293b' }}>
+              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135673.png" alt="Sale" className="blog-icon-img" />
+              <span style={{ fontWeight: 600 }}>HUB Kinh Doanh (Sale)</span>
+            </Link>
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '0.75rem 0' }} />
+            <ul className="blog-list">
+              <li style={{ marginBottom: '0.5rem' }}>
+                <Link to="/tai-lieu/tu-van-ladakh-bu4" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>🏔️</span> Cẩm nang chốt sale Ladakh (BU4)</Link>
+              </li>
+              <li style={{ marginBottom: 0 }}>
+                <Link to="/tai-lieu/tu-van-bhutan-5n4d" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>⛩️</span> Cẩm nang chốt sale Bhutan (5N4Đ)</Link>
+              </li>
+            </ul>
+          </div>
           <Link to="/tai-lieu/dieu-hanh" className="blog-top-card">
             <img src="https://cdn-icons-png.flaticon.com/512/2830/2830305.png" alt="Điều hành" className="blog-icon-img" />
             <span>HUB Điều Hành (OP)</span>
@@ -975,6 +987,8 @@ const MarkdownViewer = ({ fileUrl, markdownContent, title, author, updatedDate, 
    ═══════════════════════════════════════════════════════════════════════════ */
 // Removing SaleDocsPage component as it is replaced by a static page
 
+
+
 const DocumentsPage = () => {
   const location = useLocation();
   const path = location.pathname;
@@ -1069,7 +1083,11 @@ const DocumentsPage = () => {
   if (path === '/tai-lieu' || path === '/tai-lieu/') return <DocumentsHome />;
   
   if (path === '/tai-lieu/tu-van-ladakh-bu4') {
-    return <BlogLayout><LadakhConsultingPage /></BlogLayout>;
+    return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><LadakhConsultingPage /></BlogLayout>;
+  }
+  
+  if (path === '/tai-lieu/tu-van-bhutan-5n4d') {
+    return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><BhutanConsultingPage /></BlogLayout>;
   }
 
   // RAG Dynamic Documents

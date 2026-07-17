@@ -10,6 +10,16 @@ const MarketingHub = () => {
   const [activeMenu, setActiveMenu] = useState('Tài liệu Marketing');
   const navigate = useNavigate();
 
+  // Lấy thông tin user thật từ localStorage
+  const currentUser = (() => {
+    try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; }
+  })();
+  const userName = currentUser?.full_name || currentUser?.username || 'Người dùng';
+  const userRole = currentUser?.role ? currentUser.role.toUpperCase() : 'NHÂN VIÊN';
+  
+  // Lấy chữ cái đầu của tên
+  const initial = userName.charAt(0).toUpperCase();
+
   // Dữ liệu mẫu (Mock Data)
   const menuItems = [
     { section: 'TỔNG QUAN', items: [{ name: 'Tổng quan', icon: <Home size={18} /> }] },
@@ -24,7 +34,7 @@ const MarketingHub = () => {
       section: 'DANH MỤC TÀI LIỆU', 
       items: [
         { name: 'Guideline', icon: <FileText size={18} /> },
-        { name: 'Template', icon: <LayoutTemplate size={18} /> },
+        { name: 'Logo', icon: <ImageIcon size={18} /> },
         { name: 'Best Content', icon: <Star size={18} /> },
         { name: 'Asset', icon: <ImageIcon size={18} /> }
       ] 
@@ -33,18 +43,18 @@ const MarketingHub = () => {
 
   const recentUpdates = [
     { title: 'Cách viết caption Facebook hiệu quả', category: 'Guideline', author: 'Nguyễn Anh', time: '2 giờ trước', color: '#3b82f6', bg: '#eff6ff', icon: <FileText size={16} color="#3b82f6"/> },
-    { title: 'Template bài bán tour Trung Quốc', category: 'Template', author: 'Phạm Hà', time: '5 giờ trước', color: '#16a34a', bg: '#f0fdf4', icon: <LayoutTemplate size={16} color="#16a34a"/> },
+    { title: 'Logo FIT Tour (Cập nhật 2026)', category: 'Logo', author: 'Phạm Hà', time: '5 giờ trước', color: '#16a34a', bg: '#f0fdf4', icon: <ImageIcon size={16} color="#16a34a"/> },
     { title: 'Video Review Tứ Xuyên đạt 1M views', category: 'Best Content', author: 'Trần Minh', time: '1 ngày trước', color: '#f59e0b', bg: '#fef3c7', icon: <Star size={16} color="#f59e0b"/> },
     { title: 'Bộ ảnh mùa thu Nhật Bản 2024', category: 'Asset', author: 'Lê Phương', time: '2 ngày trước', color: '#9333ea', bg: '#faf5ff', icon: <ImageIcon size={16} color="#9333ea"/> },
     { title: 'Quy chuẩn hình ảnh thương hiệu FIT Tour', category: 'Guideline', author: 'Nguyễn Anh', time: '3 ngày trước', color: '#3b82f6', bg: '#eff6ff', icon: <FileText size={16} color="#3b82f6"/> },
   ];
 
   const quickLinks = [
-    { name: 'Brand Guidelines', icon: <BookOpen size={16} /> },
-    { name: 'Giọng văn & Tone of voice', icon: <MessageSquare size={16} /> },
-    { name: 'Quy chuẩn hình ảnh', icon: <ImageIcon size={16} /> },
-    { name: 'Mẫu hashtag theo chủ đề', icon: <FileText size={16} /> },
-    { name: 'Template video TikTok', icon: <LayoutTemplate size={16} /> },
+    { name: 'Brand Guidelines', url: '/cam-nang-thuong-hieu', icon: <BookOpen size={16} /> },
+    { name: 'Giọng văn & Tone of voice (chưa có)', icon: <MessageSquare size={16} /> },
+    { name: 'Quy chuẩn hình ảnh (chưa có)', icon: <ImageIcon size={16} /> },
+    { name: 'Mẫu hashtag theo chủ đề (chưa có)', icon: <FileText size={16} /> },
+    { name: 'Template video TikTok (chưa có)', icon: <LayoutTemplate size={16} /> },
   ];
 
   const bestContents = [
@@ -62,7 +72,7 @@ const MarketingHub = () => {
       <div style={{ width: '260px', backgroundColor: '#ffffff', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
         {/* Logo */}
         <div style={{ padding: '24px 24px 16px', borderBottom: '1px solid #f1f5f9' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => window.location.href='/tai-lieu'}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => navigate('/tai-lieu')}>
             <div style={{ width: 32, height: 32, backgroundColor: '#2563eb', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <TrendingUp size={20} color="white" /> {/* Tạm thay logo FIT TOUR */}
             </div>
@@ -123,28 +133,26 @@ const MarketingHub = () => {
         
         {/* Header Bar */}
         <header style={{ height: 72, backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: 8, padding: '8px 16px', width: 400 }}>
-            <Search size={18} color="#94a3b8" />
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm tài liệu..." 
-              style={{ border: 'none', backgroundColor: 'transparent', outline: 'none', paddingLeft: 12, fontSize: '14px', width: '100%', color: '#334155' }}
-            />
-            <div style={{ fontSize: '11px', color: '#94a3b8', backgroundColor: '#ffffff', padding: '2px 6px', borderRadius: 4, border: '1px solid #e2e8f0' }}>Ctrl + K</div>
+          
+          {/* Nút Back về tài liệu chung (thay cho Search fake) */}
+          <div 
+            onClick={() => navigate('/tai-lieu')}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, backgroundColor: '#f1f5f9', borderRadius: 8, padding: '10px 16px', cursor: 'pointer', color: '#475569', fontWeight: 600, fontSize: '14px', transition: 'all 0.2s' }}
+            className="hover:bg-slate-200"
+          >
+            <ArrowLeft size={18} /> Về lại kho Tài Liệu chung
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-            <div style={{ position: 'relative', cursor: 'pointer' }}>
-              <Bell size={20} color="#64748b" />
-              <span style={{ position: 'absolute', top: -2, right: -2, backgroundColor: '#ef4444', color: '#fff', fontSize: '10px', fontWeight: 800, borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff' }}>8</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', borderLeft: '1px solid #e2e8f0', paddingLeft: 24 }}>
-              <img src="https://ui-avatars.com/api/?name=Nguyen+Anh&background=2563eb&color=fff" alt="Avatar" style={{ width: 36, height: 36, borderRadius: '50%' }} />
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: '#1e293b' }}>Nguyễn Anh</div>
-                <div style={{ fontSize: '12px', color: '#64748b' }}>Marketing Manager</div>
+            {/* User Pill */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 4px 4px 16px', borderRadius: 50, border: '1px solid #e2e8f0', backgroundColor: '#ffffff', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>{userName}</div>
+                <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', fontWeight: 600, marginTop: 2 }}>{userRole}</div>
               </div>
-              <ChevronDown size={16} color="#94a3b8" />
+              <div style={{ width: 38, height: 38, borderRadius: '50%', backgroundColor: '#4f46e5', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 700 }}>
+                {initial}
+              </div>
             </div>
           </div>
         </header>
@@ -159,29 +167,79 @@ const MarketingHub = () => {
                 <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#0f172a', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Tài liệu Marketing</h1>
                 <p style={{ margin: 0, fontSize: '15px', color: '#64748b' }}>Kho tài liệu, guideline và template giúp team Marketing làm việc hiệu quả và thống nhất.</p>
               </div>
-              <button onClick={() => navigate('/tai-lieu/marketing/create')} style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(37,99,235,0.2)' }}>
-                <Plus size={18} /> Viết bài mới
-              </button>
             </div>
 
             {/* 4 Category Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, marginBottom: 32 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 24, marginBottom: 32 }}>
               {[
-                { title: 'Guideline', count: '12 bài viết', desc: 'Quy chuẩn thương hiệu, giọng văn, định dạng nội dung...', icon: <FileText size={24} color="#3b82f6" />, bg: '#eff6ff' },
-                { title: 'Template', count: '18 bài viết', desc: 'Mẫu caption, format bài viết, kịch bản video...', icon: <LayoutTemplate size={24} color="#16a34a" />, bg: '#f0fdf4' },
-                { title: 'Best Content', count: '27 bài viết', desc: 'Tuyển chọn nội dung hiệu quả nhất (reach, lead, booking...)', icon: <Star size={24} color="#f59e0b" />, bg: '#fef3c7' },
-                { title: 'Asset', count: '96 file', desc: 'Hình ảnh, video, template thiết kế, tài nguyên...', icon: <ImageIcon size={24} color="#9333ea" />, bg: '#faf5ff' },
+                { 
+                  title: 'Guideline', 
+                  desc: 'Quy chuẩn thương hiệu, định dạng nội dung...', 
+                  icon: <FileText size={24} color="#3b82f6" />, 
+                  bg: '#eff6ff', 
+                  links: [
+                    { label: 'Đọc Guideline', url: '/cam-nang-thuong-hieu', internal: true }
+                  ] 
+                },
+                { 
+                  title: 'Logo', 
+                  desc: 'Logo gốc FIT Tour & Elite BU3 (PNG, Vector, AI, SVG...)', 
+                  icon: <ImageIcon size={24} color="#16a34a" />, 
+                  bg: '#f0fdf4', 
+                  links: [
+                    { label: 'Mở Google Drive', url: 'https://drive.google.com/drive/folders/1KcLWiW6mMnLjxw-xXbiOwmR6Qn9tSs6g?usp=sharing', internal: false, blank: true }
+                  ] 
+                },
+                { 
+                  title: 'Blueprint & SOP Ads', 
+                  desc: 'Quy tắc target, lên content, đặt tên chiến dịch Meta Ads...', 
+                  icon: <Star size={24} color="#f59e0b" />, 
+                  bg: '#fef3c7', 
+                  links: [
+                    { label: 'Xem Blueprint', url: '/tai-lieu/blueprint-meta-ads', internal: true },
+                    { label: 'SOP Đặt Tên', url: '/tai-lieu/quy-tac-dat-ten-quang-cao-meta', internal: true },
+                    { label: 'Quản lý Ads', url: 'https://docs.google.com/spreadsheets/d/15O9hrCdZvVoLwC8fRQCYm5nxs0WGL9s8RQ3XScj0jQo/edit?usp=sharing', internal: false, blank: true }
+                  ] 
+                },
+                { 
+                  title: 'Asset', 
+                  desc: 'Hình ảnh, video, template thiết kế, tài nguyên...', 
+                  icon: <ImageIcon size={24} color="#9333ea" />, 
+                  bg: '#faf5ff', 
+                  links: [
+                    { label: 'Xem tất cả (chưa có)', url: '#', internal: false, preventDefault: true }
+                  ] 
+                },
+                { 
+                  title: 'Báo Cáo Ads', 
+                  desc: 'Báo cáo phân tích hiệu suất Ads Q2/2026', 
+                  icon: <Star size={24} color="#ec4899" />, 
+                  bg: '#fdf2f8', 
+                  links: [
+                    { label: 'Xem Báo Cáo', url: '/q2-report/index.html', internal: false, blank: true }
+                  ] 
+                },
               ].map((card, idx) => (
                 <div key={idx} style={{ backgroundColor: '#ffffff', borderRadius: 16, padding: '24px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ backgroundColor: card.bg, width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <div style={{ backgroundColor: card.bg, width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 0 16px' }}>
                     {card.icon}
                   </div>
-                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b', margin: '0 0 4px' }}>{card.title}</h3>
-                  <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 500, marginBottom: 12 }}>{card.count}</div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b', margin: '0 0 12px' }}>{card.title}</h3>
                   <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5, margin: '0 0 20px', flex: 1 }}>{card.desc}</p>
-                  <a href="#" style={{ fontSize: '14px', fontWeight: 600, color: '#2563eb', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    Xem tất cả <ArrowRight size={16} />
-                  </a>
+                  
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+                    {card.links.map((linkItem, lIdx) => (
+                      linkItem.internal ? (
+                        <Link key={lIdx} to={linkItem.url} style={{ fontSize: '14px', fontWeight: 600, color: '#2563eb', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          {linkItem.label} <ArrowRight size={16} />
+                        </Link>
+                      ) : (
+                        <a key={lIdx} href={linkItem.url} onClick={linkItem.preventDefault ? (e) => e.preventDefault() : undefined} target={linkItem.blank ? "_blank" : "_self"} rel="noreferrer" style={{ fontSize: '14px', fontWeight: 600, color: '#2563eb', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          {linkItem.label} <ArrowRight size={16} />
+                        </a>
+                      )
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -214,7 +272,7 @@ const MarketingHub = () => {
                 </div>
                 
                 <div style={{ textAlign: 'center', marginTop: 20 }}>
-                  <a href="#" style={{ fontSize: '14px', fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>Xem tất cả bài viết →</a>
+                  <a href="#!" onClick={(e) => e.preventDefault()} style={{ fontSize: '14px', fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>Xem tất cả bài viết (chưa có) →</a>
                 </div>
               </div>
 
@@ -225,11 +283,20 @@ const MarketingHub = () => {
                 <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: '24px' }}>
                   <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', margin: '0 0 16px' }}>Truy cập nhanh</h2>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {quickLinks.map((link, idx) => (
-                      <a href="#" key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, color: '#475569', textDecoration: 'none', fontSize: '14px', fontWeight: 500, padding: '8px', borderRadius: 8 }} className="hover:bg-slate-50 hover:text-blue-600">
-                        <span style={{ color: '#94a3b8' }}>{link.icon}</span> {link.name}
-                      </a>
-                    ))}
+                    {quickLinks.map((link, idx) => {
+                      if (link.url) {
+                        return (
+                          <Link to={link.url} key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, color: '#475569', textDecoration: 'none', fontSize: '14px', fontWeight: 500, padding: '8px', borderRadius: 8 }} className="hover:bg-slate-50 hover:text-blue-600">
+                            <span style={{ color: '#94a3b8' }}>{link.icon}</span> {link.name}
+                          </Link>
+                        );
+                      }
+                      return (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, color: '#94a3b8', fontSize: '14px', fontWeight: 500, padding: '8px', borderRadius: 8, cursor: 'not-allowed' }}>
+                          <span style={{ color: '#cbd5e1' }}>{link.icon}</span> {link.name}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -248,7 +315,7 @@ const MarketingHub = () => {
                     ))}
                   </div>
                   <div style={{ textAlign: 'center', marginTop: 16, paddingTop: 16, borderTop: '1px solid #f1f5f9' }}>
-                    <a href="#" style={{ fontSize: '14px', fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>Xem tất cả →</a>
+                    <a href="#!" onClick={(e) => e.preventDefault()} style={{ fontSize: '14px', fontWeight: 600, color: '#2563eb', textDecoration: 'none' }}>Xem tất cả (chưa có) →</a>
                   </div>
                 </div>
 

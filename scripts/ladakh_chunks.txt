@@ -1,0 +1,9 @@
+[
+  {
+    "AllowMultiple": true,
+    "EndLine": 725,
+    "ReplacementContent": "                                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: '1.5' }}>\n                                            {link.desc}\n                                        </p>\n                                        {link.url.match(/\\.(jpeg|jpg|gif|png|webp)$/i) && (\n                                            <div style={{ marginTop: '10px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0', flexShrink: 0 }}>\n                                                <img src={link.url} alt={link.title} style={{ width: '100%', height: '140px', display: 'block', objectFit: 'cover' }} />\n                                            </div>\n                                        )}",
+    "StartLine": 620,
+    "TargetContent": "                                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: '1.5' }}>\n                                            {link.desc}\n                                        </p>"
+  }
+]

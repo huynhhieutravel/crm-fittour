@@ -80,12 +80,14 @@ import ViewDeparturePage from './pages/ViewDeparturePage';
 import AgencySharePage from './pages/AgencySharePage';
 import ServiceContractViewer from './pages/ServiceContractViewer';
 import DocumentsPage from './pages/DocumentsPage';
+import RagDocsManager from './components/Knowledge/RagDocsManager';
 import BrandGuidelinePage from './pages/BrandGuidelinePage';
 import BrandLogoPage from './pages/BrandLogoPage';
 import BrandColorPage from './pages/BrandColorPage';
 import BrandTypographyPage from './pages/BrandTypographyPage';
 import BrandSocialPage from './pages/BrandSocialPage';
 import BrandLayout from './pages/BrandLayout';
+import AdminTripDashboard from './pages/AdminTripDashboard';
 
 import { 
   Menu,
@@ -2315,6 +2317,15 @@ function AppContent() {
             <FileText /> Quy tắc chọn BU
           </div>
 
+          {checkView('departures') && (
+            <>
+              <div className="nav-section-title">Khách hàng Công Khai</div>
+              <div className={`nav-item ${activeTab === 'admin-trip' ? 'active' : ''}`} onClick={() => { navigate('/admin-trip'); setActiveTab('admin-trip'); }} style={{ color: '#0ea5e9' }}>
+                <BookOpen size={18} /> Quản lý Thẻ HDV
+              </div>
+            </>
+          )}
+
           <div className="nav-section-title">Trợ giúp & Hướng dẫn</div>
           <div 
             className={`nav-item ${activeTab === 'manual' ? 'active-parent' : ''}`} 
@@ -3059,7 +3070,7 @@ function AppContent() {
                   }}
                 >
                   <div 
-                    className="submenu-item" 
+                    className="header-dropdown-item" 
                     onClick={(e) => { e.stopPropagation(); navigate('/my-profile'); setHoveredMenu(null); }}
                     style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }}
                   >
@@ -3067,14 +3078,14 @@ function AppContent() {
                   </div>
                   <a 
                     href={`${window.location.hostname === 'localhost' ? 'http://localhost:5001' : 'https://erp.fittour.vn'}/api/auth/google?sync_token=${localStorage.getItem('token')}`}
-                    className="submenu-item" 
+                    className="header-dropdown-item" 
                     style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: '#1e293b' }}
                   >
                     <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '14px', height: '14px' }} />
                     Đồng bộ Gmail
                   </a>
                   <div 
-                    className="submenu-item" 
+                    className="header-dropdown-item" 
                     onClick={(e) => { 
                       e.stopPropagation(); 
                       navigate('/meeting-rooms');
@@ -3086,7 +3097,7 @@ function AppContent() {
                     🏢 Xem Phòng Họp
                   </div>
                   <div 
-                    className="submenu-item" 
+                    className="header-dropdown-item" 
                     onClick={(e) => { 
                       e.stopPropagation(); 
                       setShowLeaveModal(true); 
@@ -3097,7 +3108,7 @@ function AppContent() {
                     🌴 Xin nghỉ phép
                   </div>
                   <div 
-                    className="submenu-item" 
+                    className="header-dropdown-item" 
                     onClick={(e) => { 
                       e.stopPropagation(); 
                       navigate('/staff-calendar');
@@ -3747,17 +3758,21 @@ function AppContent() {
   return (
     <>
       <Routes>
-      <Route path="/tai-lieu" element={<DocumentsPage />} />
-      <Route path="/tai-lieu/:subtab/:id/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} />} />
-      <Route path="/tai-lieu/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} />} />
-      <Route path="/hdv" element={<DocumentsPage />} />
-      <Route path="/hdv/*" element={<DocumentsPage />} />
-      <Route path="/cam-nang-thuong-hieu/logo" element={<BrandLayout><BrandLogoPage /></BrandLayout>} />
-      <Route path="/cam-nang-thuong-hieu/mau-sac" element={<BrandLayout><BrandColorPage /></BrandLayout>} />
-      <Route path="/cam-nang-thuong-hieu/phong-chu" element={<BrandLayout><BrandTypographyPage /></BrandLayout>} />
-      <Route path="/cam-nang-thuong-hieu/facebook" element={<BrandLayout><BrandSocialPage /></BrandLayout>} />
-      <Route path="/cam-nang-thuong-hieu" element={<BrandLayout><BrandGuidelinePage /></BrandLayout>} />
-      <Route path="/cam-nang-thuong-hieu/*" element={<BrandLayout><BrandGuidelinePage /></BrandLayout>} />
+      <Route path="/tai-lieu/manager" element={isLoggedIn ? <RagDocsManager /> : <Navigate to="/login" />} />
+      <Route path="/tai-lieu" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
+      <Route path="/tai-lieu/sop-astro-tour" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
+      <Route path="/tai-lieu/rule-meta-ads" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
+      <Route path="/tai-lieu/blueprint-meta-ads" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
+      <Route path="/tai-lieu/:subtab/:id/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
+      <Route path="/tai-lieu/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
+      <Route path="/hdv" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
+      <Route path="/hdv/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
+      <Route path="/cam-nang-thuong-hieu/logo" element={isLoggedIn ? <BrandLayout><BrandLogoPage /></BrandLayout> : <Navigate to="/login" />} />
+      <Route path="/cam-nang-thuong-hieu/mau-sac" element={isLoggedIn ? <BrandLayout><BrandColorPage /></BrandLayout> : <Navigate to="/login" />} />
+      <Route path="/cam-nang-thuong-hieu/phong-chu" element={isLoggedIn ? <BrandLayout><BrandTypographyPage /></BrandLayout> : <Navigate to="/login" />} />
+      <Route path="/cam-nang-thuong-hieu/facebook" element={isLoggedIn ? <BrandLayout><BrandSocialPage /></BrandLayout> : <Navigate to="/login" />} />
+      <Route path="/cam-nang-thuong-hieu" element={isLoggedIn ? <BrandLayout><BrandGuidelinePage /></BrandLayout> : <Navigate to="/login" />} />
+      <Route path="/cam-nang-thuong-hieu/*" element={isLoggedIn ? <BrandLayout><BrandGuidelinePage /></BrandLayout> : <Navigate to="/login" />} />
       <Route path="/simple-list-share/lich_dai_ly" element={<AgencySharePage />} />
       <Route path="/service-confirm/:tourId/:bookingId" element={<ServiceContractViewer />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -3876,6 +3891,9 @@ function AppContent() {
           </div>
         )} 
       />
+      <Route path="/admin-trip" element={<AdminTripDashboard />} />
+      <Route path="/admin-trip/*" element={<AdminTripDashboard />} />
+      
       <Route 
         path="/:tab" 
         element={isLoggedIn ? renderDashboard() : <Navigate to="/login" />} 

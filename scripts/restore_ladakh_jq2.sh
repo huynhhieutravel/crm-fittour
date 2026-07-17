@@ -1,0 +1,2 @@
+# Extract all replace_file_content and multi_replace_file_content arguments
+cat /Users/huynhtronghieu/.gemini/antigravity-ide/brain/5a863c3a-dd6c-4f8f-96f6-35ede55802e5/.system_generated/logs/transcript_full.jsonl | jq -r 'select(.type=="PLANNER_RESPONSE") | .tool_calls[]? | select(.name=="multi_replace_file_content" and (.args.TargetFile | contains("LadakhConsultingPage.jsx"))) | .args.ReplacementChunks' > scripts/ladakh_chunks.txt

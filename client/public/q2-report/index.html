@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q2/2026 Ads Performance Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .tab-content { display: none; }
+        .tab-content.block { display: block; }
+        .tab-btn.active { border-bottom-color: #3b82f6; color: #2563eb; }
+        .top-nav-btn.active { border-bottom-color: #2563eb; color: #2563eb; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans p-3 md:p-6">
+
+<div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- TOP LEVEL NAVIGATION -->
+    <nav class="flex space-x-2 border-b border-gray-200 mb-6 sticky top-0 bg-gray-50 z-20 pt-2 pb-0 overflow-x-auto whitespace-nowrap scrollbar-hide shadow-sm -mx-3 px-3 md:mx-0 md:px-0" id="top-nav">
+        <button class="top-nav-btn active px-6 py-4 text-sm text-gray-500 border-b-2 border-transparent focus:outline-none transition-colors" data-page="page-overview">
+            📊 Tổng Quan Báo Cáo
+        </button>
+        <button class="top-nav-btn px-6 py-4 text-sm text-gray-500 border-b-2 border-transparent hover:text-gray-900 focus:outline-none transition-colors" data-page="page-bu1-detail">
+            🇨🇳 Chi tiết BU1 (Trung Quốc)
+        </button>
+        <button class="top-nav-btn px-6 py-4 text-sm text-gray-500 border-b-2 border-transparent hover:text-gray-900 focus:outline-none transition-colors" data-page="page-bu2-detail">
+            🌍 Chi tiết BU2 (Âu, Mỹ, Úc)
+        </button>
+        <button class="top-nav-btn px-6 py-4 text-sm text-gray-500 border-b-2 border-transparent hover:text-gray-900 focus:outline-none transition-colors" data-page="page-bu4-detail">
+            🏝️ Chi tiết BU4 (Thị trường Ngách)
+        </button>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- PAGE: OVERVIEW (THE OLD DASHBOARD KEPT 100%) -->
+    <!-- ========================================== -->
+    <div id="page-overview" class="page-content block">
+        
+        <!-- Header & KPIs -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold text-gray-900">Báo Cáo Phân Tích Ads Q2/2026</h1>
+                <p class="text-sm text-gray-500 mt-1">Dữ liệu thuần | Không bao gồm BU3</p>
+            </div>
+            <div class="flex space-x-4 w-full md:w-auto">
+                <!-- Top KPI 1 -->
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col justify-center min-w-[140px] flex-1 md:flex-none">
+                    <span class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Tổng Chi Tiêu</span>
+                    <span id="kpi-total-spend" class="text-xl font-bold text-orange-600 mt-1">...</span>
+                    <span id="kpi-spend-percent" class="text-xs text-green-600 mt-1">...</span>
+                </div>
+                <!-- Top KPI 2 -->
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col justify-center min-w-[140px] flex-1 md:flex-none">
+                    <span class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Lead Thu Thập</span>
+                    <span id="kpi-total-leads" class="text-xl font-bold text-blue-600 mt-1">...</span>
+                    <span id="kpi-leads-percent" class="text-xs text-green-600 mt-1">...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- RAW DATA TABLE (Moved Up) -->
+        <section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                <h2 class="text-sm font-bold text-gray-700 uppercase">Bảng Dữ Liệu Phễu (Raw Data)</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-600">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-100/50">
+                        <tr>
+                            <th class="px-6 py-3 font-semibold">Chỉ số</th>
+                            <th class="px-6 py-3 font-semibold">BU1</th>
+                            <th class="px-6 py-3 font-semibold">BU2</th>
+                            <th class="px-6 py-3 font-semibold">BU4</th>
+                            <th class="px-6 py-3 font-semibold text-blue-700 bg-blue-50/50">Tổng Cộng</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900">Ngân sách dự kiến (đ)</td>
+                            <td class="px-6 py-4">120,000,000</td>
+                            <td class="px-6 py-4">150,000,000</td>
+                            <td class="px-6 py-4">60,000,000</td>
+                            <td class="px-6 py-4 font-bold text-gray-900 bg-blue-50/30">330,000,000</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 bg-orange-50/30">
+                            <td class="px-6 py-4 font-medium text-orange-800">Chi tiêu tới hiện tại (đ)</td>
+                            <td id="tbl-spend-bu1" class="px-6 py-4 text-orange-700 font-semibold">...</td>
+                            <td id="tbl-spend-bu2" class="px-6 py-4 text-orange-700 font-semibold">...</td>
+                            <td id="tbl-spend-bu4" class="px-6 py-4 text-orange-700 font-semibold">...</td>
+                            <td id="tbl-spend-total" class="px-6 py-4 font-bold text-orange-800 bg-orange-100/50">...</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 text-xs text-gray-500">
+                            <td class="px-6 py-2 italic">% Tiến độ giải ngân</td>
+                            <td id="tbl-prog-bu1" class="px-6 py-2 text-red-600 font-semibold">...</td>
+                            <td id="tbl-prog-bu2" class="px-6 py-2 text-green-600 font-semibold">...</td>
+                            <td id="tbl-prog-bu4" class="px-6 py-2 text-red-600 font-semibold">...</td>
+                            <td id="tbl-prog-total" class="px-6 py-2 font-bold text-gray-900 bg-blue-50/30">...</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900">Lead Cần (Mục tiêu)</td>
+                            <td class="px-6 py-4">450</td>
+                            <td class="px-6 py-4">375</td>
+                            <td class="px-6 py-4">300</td>
+                            <td class="px-6 py-4 font-bold text-blue-900 bg-blue-50/30">1,125</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 bg-blue-50/30">
+                            <td class="px-6 py-4 font-medium text-blue-800">» Lead (Thực tế)</td>
+                            <td id="tbl-lead-bu1" class="px-6 py-4 text-blue-700 font-bold">...</td>
+                            <td id="tbl-lead-bu2" class="px-6 py-4 text-blue-700 font-bold">...</td>
+                            <td id="tbl-lead-bu4" class="px-6 py-4 text-blue-700 font-bold">...</td>
+                            <td id="tbl-lead-total" class="px-6 py-4 font-bold text-blue-900 bg-blue-100/50">...</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 text-xs text-gray-500">
+                            <td class="px-6 py-2 italic">% Tiến độ gom Lead</td>
+                            <td id="tbl-lprog-bu1" class="px-6 py-2 text-green-600 font-semibold">...</td>
+                            <td id="tbl-lprog-bu2" class="px-6 py-2 text-green-600 font-semibold">...</td>
+                            <td id="tbl-lprog-bu4" class="px-6 py-2 text-green-600 font-semibold">...</td>
+                            <td id="tbl-lprog-total" class="px-6 py-2 font-bold text-gray-900 bg-blue-50/30">...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Main Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            
+            <!-- Budget vs Spend Bar Chart -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
+                <h2 class="text-sm font-bold text-gray-800 mb-6">Ngân sách vs Chi tiêu theo BU</h2>
+                <div class="relative h-[300px] w-full">
+                    <canvas id="budgetChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Lead Distribution Pie/Doughnut -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-sm font-bold text-gray-800 mb-6">Tỷ trọng Lead theo BU</h2>
+                <div class="relative h-[250px] w-full flex items-center justify-center">
+                    <canvas id="leadChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Tabs Area -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <!-- Tabs Header -->
+            <div class="flex border-b border-gray-100 bg-gray-50 px-2 pt-2">
+                <button class="tab-btn active px-6 py-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-500 focus:outline-none transition-colors" data-target="tab-overall">
+                    TỔNG QUAN HỆ THỐNG
+                </button>
+                <button class="tab-btn px-6 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 focus:outline-none transition-colors" data-target="tab-bu1">
+                    BU1 (Trung Quốc)
+                </button>
+                <button class="tab-btn px-6 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 focus:outline-none transition-colors" data-target="tab-bu2">
+                    BU2 (Âu, Mỹ, Úc)
+                </button>
+                <button class="tab-btn px-6 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 focus:outline-none transition-colors" data-target="tab-bu4">
+                    BU4 (Thị trường ngách)
+                </button>
+            </div>
+
+            <!-- Tabs Content -->
+            <div class="p-6">
+                
+                <!-- OVERVIEW TAB -->
+                <div id="tab-overall" class="tab-content active block">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-2">
+                            <h3 class="text-lg font-bold text-gray-800 mb-3">Đánh giá Hiệu suất Q2/2026</h3>
+                            <p class="text-gray-600 mb-4 leading-relaxed text-sm">
+                                Quý 2 đánh dấu một sự <strong>tăng trưởng đột phá về lượng Lead thu thập (2,007 Leads, vượt mốc kế hoạch 1125 Leads)</strong>. Tốc độ giải ngân đạt 98.1% ngân sách (323.7 Triệu / 330 Triệu). Điều này chứng tỏ chất lượng chiến dịch (Campaign Quality) và các tệp đối tượng (Audience) đang được tối ưu rất sâu.
+                            </p>
+                            <p class="text-gray-600 mb-4 leading-relaxed text-sm">
+                                Chi phí trên mỗi Lead (CPL) trung bình toàn hệ thống rơi vào khoảng <strong>~161,328 VNĐ/Lead</strong>. Đây là một con số rất khỏe mạnh. Trọng tâm tăng trưởng đến từ sự bùng nổ của BU1 và BU4 (cả 2 đều over-perform). Ngược lại, BU2 đang gặp điểm nghẽn về tốc độ tiêu tiền.
+                            </p>
+                        </div>
+                        <div class="bg-blue-50 border border-blue-100 rounded-lg p-5">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">CHỈ SỐ CỐT LÕI TOÀN HỆ THỐNG</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <span class="block text-xs text-gray-500">Avg. CPL (Chi phí/Lead)</span>
+                                    <span class="block text-lg font-bold text-blue-700" id="overall-cpl">~161,328 đ</span>
+                                </div>
+                                <div>
+                                    <span class="block text-xs text-gray-500">Lead vượt định mức</span>
+                                    <span class="block text-lg font-bold text-green-600" id="overall-lead-surplus">+882 Leads</span>
+                                </div>
+                                <div>
+                                    <span class="block text-xs text-gray-500">Ngân sách còn dư</span>
+                                    <span class="block text-lg font-bold text-orange-600" id="overall-budget-left">6.2 Triệu đ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BU1 TAB -->
+                <div id="tab-bu1" class="tab-content hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Col 1: Budget -->
+                        <div class="border border-gray-100 bg-gray-50/50 rounded-lg p-5">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">NGÂN SÁCH & CHI TIÊU</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                    <span class="text-sm text-gray-500">Kế hoạch</span>
+                                    <span class="font-semibold text-gray-800">120.0M</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                    <span class="text-sm text-gray-500">Thực tế</span>
+                                    <span class="font-bold text-orange-600" id="inner-bu1-spend">97.9M</span>
+                                </div>
+                                <div class="flex justify-between items-center pt-1">
+                                    <span class="text-sm text-gray-500">Tiến độ</span>
+                                    <span class="font-bold text-gray-600" id="inner-bu1-diff">81.7% (Còn dư 22M)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Col 2: Leads -->
+                        <div class="border border-gray-100 bg-gray-50/50 rounded-lg p-5">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">KPI LEADS & CPL</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                    <span class="text-sm text-gray-500">Mục tiêu</span>
+                                    <span class="font-semibold text-gray-800">450 Leads</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                    <span class="text-sm text-gray-500">Thu thập</span>
+                                    <span class="font-bold text-blue-600" id="inner-bu1-leads">599 Leads</span>
+                                </div>
+                                <div class="flex justify-between items-center pt-1">
+                                    <span class="text-sm font-bold text-gray-800">Avg. CPL</span>
+                                    <span class="font-bold text-green-600 bg-green-50 px-2 py-1 rounded" id="inner-bu1-cpl">~163,590 đ/Lead</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Col 3: Insight -->
+                        <div class="bg-gray-900 rounded-lg p-5 text-white">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">ANALYST INSIGHT</h4>
+                            <p class="text-sm leading-relaxed text-gray-300">
+                                <strong>The Over-Spender with High Returns:</strong> BU1 đang là bộ phận "đốt tiền" nhanh nhất (116.7% ngân sách) nhưng mang lại kết quả cực kỳ ấn tượng (gần 200% mục tiêu Lead).
+                            </p>
+                            <p class="text-sm leading-relaxed text-gray-300 mt-2">
+                                Mặc dù chi tiêu vượt định mức, nhưng với lượng Lead khổng lồ 887, CPL chỉ ở mức ~157k (Rất sát với mục tiêu 150k). Đề xuất giữ nguyên đà tăng trưởng và mở rộng tệp.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BU2 TAB -->
+                <div id="tab-bu2" class="tab-content hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Col 1: Budget -->
+                        <div class="border border-gray-100 bg-gray-50/50 rounded-lg p-5">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">NGÂN SÁCH & CHI TIÊU</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                    <span class="text-sm text-gray-500">Kế hoạch</span>
+                                    <span class="font-semibold text-gray-800">150.0M</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                    <span class="text-sm text-gray-500">Thực tế</span>
+                                    <span class="font-bold text-orange-600" id="inner-bu2-spend">56.6M</span>
+                                </div>
+                                <div class="flex justify-between items-center pt-1">
+                                    <span class="text-sm text-gray-500">Tiến độ</span>
+                                    <span class="font-bold text-red-600" id="inner-bu2-diff">Rất chậm (37.8%)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Col 2: Leads -->
+                        <div class="border border-gray-100 bg-gray-50/50 rounded-lg p-5">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">KPI LEADS & CPL</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                    <span class="text-sm text-gray-500">Mục tiêu</span>
+                                    <span class="font-semibold text-gray-800">375 Leads</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                    <span class="text-sm text-gray-500">Thu thập</span>
+                                    <span class="font-bold text-blue-600" id="inner-bu2-leads">308 Leads</span>
+                                </div>
+                                <div class="flex justify-between items-center pt-1">
+                                    <span class="text-sm font-bold text-gray-800">Avg. CPL</span>
+                                    <span class="font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded" id="inner-bu2-cpl">~183,948 đ/Lead</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Col 3: Insight -->
+                        <div class="bg-gray-900 rounded-lg p-5 text-white">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">ANALYST INSIGHT</h4>
+                            <p class="text-sm leading-relaxed text-gray-300">
+                                <strong>Pacing Warning:</strong> BU2 đang giải ngân cực kỳ chậm (chỉ đạt 60.9% tiến độ), dẫn đến việc thu thập Lead chỉ đạt 134.9% kế hoạch (trong khi BU1 và BU4 đang bứt tốc gấp đôi).
+                            </p>
+                            <p class="text-sm leading-relaxed text-gray-300 mt-2">
+                                CPL thực tế là ~180k, cao hơn 20% so với mục tiêu. Cần khẩn trương audit lại toàn bộ tài khoản quảng cáo và thay đổi Creative (ảnh/video) vì mẫu quảng cáo cũ đã bị bão hoà (Ad Fatigue).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BU4 TAB -->
+                <div id="tab-bu4" class="tab-content hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Col 1: Budget -->
+                        <div class="border border-gray-100 bg-gray-50/50 rounded-lg p-5">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">NGÂN SÁCH & CHI TIÊU</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                    <span class="text-sm text-gray-500">Kế hoạch</span>
+                                    <span class="font-semibold text-gray-800">60.0M</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                    <span class="text-sm text-gray-500">Thực tế</span>
+                                    <span class="font-bold text-orange-600" id="inner-bu4-spend">53.8M</span>
+                                </div>
+                                <div class="flex justify-between items-center pt-1">
+                                    <span class="text-sm text-gray-500">Tiến độ</span>
+                                    <span class="font-bold text-gray-600" id="inner-bu4-diff">89.7% (Đạt)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Col 2: Leads -->
+                        <div class="border border-gray-100 bg-gray-50/50 rounded-lg p-5">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">KPI LEADS & CPL</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                    <span class="text-sm text-gray-500">Mục tiêu</span>
+                                    <span class="font-semibold text-gray-800">300 Leads</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                    <span class="text-sm text-gray-500">Thu thập</span>
+                                    <span class="font-bold text-blue-600" id="inner-bu4-leads">364 Leads</span>
+                                </div>
+                                <div class="flex justify-between items-center pt-1">
+                                    <span class="text-sm font-bold text-gray-800">Avg. CPL</span>
+                                    <span class="font-bold text-green-600 bg-green-50 px-2 py-1 rounded" id="inner-bu4-cpl">~147,784 đ/Lead</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Col 3: Insight -->
+                        <div class="bg-gray-900 rounded-lg p-5 text-white">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">ANALYST INSIGHT</h4>
+                            <p class="text-sm leading-relaxed text-gray-300">
+                                <strong>Efficiency Leader:</strong> BU4 có CPL rẻ nhất hệ thống (~151k/Lead). Ngân sách được giải ngân tốt (145.1%) và thu về lượng Lead đột phá (191.3% target).
+                            </p>
+                            <p class="text-sm leading-relaxed text-gray-300 mt-2">
+                                Việc over-spend này là hợp lý vì CPL đang được kiểm soát rất tốt. Đề xuất: Khai thác sâu hơn vào tệp khách hàng Lookalike (LAL) từ các Lead chất lượng đã chuyển đổi thành công.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW EXPERT ANALYSIS SECTION -->
+        <div class="bg-indigo-900 rounded-xl shadow-lg border border-indigo-800 p-1 mb-8">
+            <div class="bg-white rounded-lg p-6">
+                <h2 class="text-lg font-black text-indigo-900 uppercase mb-4 flex items-center gap-2">
+                    <span class="text-2xl">🧠</span> Phân Tích Chuyên Sâu Cấp Hệ Thống
+                </h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="lg:col-span-1">
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">XU HƯỚNG CPL VÀ LEADS (T4 - T6)</h4>
+                        <div class="relative h-[250px] w-full">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <div class="flex flex-col gap-4 text-sm" id="mom-insights"></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <h3 class="text-xs font-bold text-green-600 bg-green-50 px-3 py-2 rounded-t-lg uppercase tracking-wider">🏆 Top 5 Chiến Dịch Hiệu Quả Nhất</h3>
+                                <div class="overflow-x-auto border border-green-100 rounded-b-lg">
+                                    <table class="w-full text-xs text-left" id="table-best-campaigns"></table>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold text-red-600 bg-red-50 px-3 py-2 rounded-t-lg uppercase tracking-wider">🚨 Top 5 Chiến Dịch Báo Động (CPL Đắt)</h3>
+                                <div class="overflow-x-auto border border-red-100 rounded-b-lg">
+                                    <table class="w-full text-xs text-left" id="table-worst-campaigns"></table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- END OVERVIEW PAGE -->
+
+    <!-- ========================================== -->
+    <!-- NEW TOP-LEVEL DETAILED PAGES FOR BUs       -->
+    <!-- ========================================== -->
+
+    <div id="page-bu1-detail" class="page-content hidden">
+        <header class="mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <span class="text-4xl">🇨🇳</span> Chi Tiết BU1 (Thị trường Trung Quốc)
+            </h1>
+        </header>
+
+        <!-- KPI & Insight Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Analyst Insight -->
+            <div class="col-span-1 md:col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 opacity-10">
+                    <i class="fas fa-chart-line text-8xl text-white"></i>
+                </div>
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fas fa-brain text-blue-400"></i> AI ANALYST INSIGHT
+                </h4>
+                
+<p class="text-base leading-relaxed text-gray-100">
+    <strong class="text-blue-300">The Over-Spender with High Returns:</strong> BU1 đang là bộ phận "đốt tiền" nhanh nhất nhưng mang lại kết quả cực kỳ ấn tượng (gần 200% mục tiêu Lead).
+</p>
+<p class="text-base leading-relaxed text-gray-300 mt-3">
+    Mặc dù chi tiêu vượt định mức, nhưng với lượng Lead khổng lồ, CPL chỉ ở mức ~157k (rất sát với mục tiêu lý tưởng). Tệp khách hàng Trung Quốc đang có Conversion Rate xuất sắc. Đề xuất giữ nguyên đà tăng trưởng và mở rộng tệp LAL.
+</p>
+
+            </div>
+            
+            <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-6">
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-5">TỔNG QUAN CHỈ SỐ BU1</h4>
+                <div class="space-y-5">
+                    <div>
+                        <span class="block text-xs font-medium text-gray-500 mb-1">Chi Tiêu Thực Tế</span>
+                        <span class="block text-2xl font-black text-orange-600" id="page-bu1-spend">-</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-medium text-gray-500 mb-1">Khách Hàng (Leads)</span>
+                        <span class="block text-2xl font-black text-blue-600" id="page-bu1-leads">-</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-medium text-gray-500 mb-1">CPL Trung Bình</span>
+                        <span class="inline-block text-xl font-bold text-green-700 bg-green-50 px-3 py-1 rounded-md" id="page-bu1-cpl">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Chart for Top Campaigns -->
+        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-8">
+            <h3 class="font-bold text-gray-800 mb-1">Top Chiến Dịch Chi Tiêu Cao Nhất</h3>
+            <p class="text-xs text-gray-500 mb-5">Phân tích tương quan giữa chi phí (VND) và số Lead thu về.</p>
+            <div class="h-[350px]">
+                    <canvas id="chart-bu1-camps"></canvas>
+                </div>
+            </div>
+
+        <!-- NEW: Destination Breakdown -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-1">Tỷ Trọng Chi Tiêu Theo Điểm Đến</h3>
+                <p class="text-xs text-gray-500 mb-5">Đang ưu tiên bơm ngân sách vào thị trường nào?</p>
+                <div class="h-[250px] relative">
+                    <canvas id="chart-bu1-dest-pie"></canvas>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-1">Hiệu Quả Các Điểm Đến (Spend, Leads, CPL)</h3>
+                <p class="text-xs text-gray-500 mb-5">Tương quan chi phí bỏ ra và lượng khách thu về.</p>
+                <div class="h-[250px]">
+                    <canvas id="chart-bu1-dest-bar"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Raw Data -->
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div class="bg-gray-50 px-5 py-4 border-b border-gray-200">
+                <h3 class="font-bold text-gray-800">Dữ Liệu Thô Các Chiến Dịch (BU1) - Chi tiết</h3>
+            </div>
+            <div class="overflow-x-auto relative h-[600px]">
+                <table class="w-full text-sm text-left text-gray-600 relative">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 shadow-sm z-10">
+                        <tr>
+                            <th class="px-5 py-3 w-1/3">Tên Chiến Dịch / AdSet</th>
+                            <th class="px-5 py-3 text-right">Chi Tiêu (đ)</th>
+                            <th class="px-5 py-3 text-right">Lượt Tin Nhắn</th>
+                            <th class="px-5 py-3 text-right">Khách Hàng (Leads)</th>
+                            <th class="px-5 py-3 text-right">CPL Lead (đ)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100" id="bu1-deep-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="page-bu2-detail" class="page-content hidden">
+        <header class="mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <span class="text-4xl">🌍</span> Chi Tiết BU2 (Âu, Mỹ, Úc)
+            </h1>
+        </header>
+
+        <!-- KPI & Insight Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Analyst Insight -->
+            <div class="col-span-1 md:col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 opacity-10">
+                    <i class="fas fa-chart-line text-8xl text-white"></i>
+                </div>
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fas fa-brain text-blue-400"></i> AI ANALYST INSIGHT
+                </h4>
+                
+<p class="text-base leading-relaxed text-gray-100">
+    <strong class="text-red-300">Pacing Warning & Ad Fatigue:</strong> BU2 đang giải ngân cực kỳ chậm (chỉ đạt ~60% tiến độ), dẫn đến việc thu thập Lead bị tụt lại so với hệ thống.
+</p>
+<p class="text-base leading-relaxed text-gray-300 mt-3">
+    CPL thực tế đang cao hơn 20% so với mục tiêu đề ra. Các tài khoản quảng cáo thị trường Âu Mỹ đang có dấu hiệu "Ad Fatigue" (bão hoà quảng cáo). Khuyến nghị: Cần khẩn trương audit lại nội dung, thay đổi Creative (hình ảnh/video mới) và test lại Audience ngay lập tức.
+</p>
+
+            </div>
+            
+            <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-6">
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-5">TỔNG QUAN CHỈ SỐ BU2</h4>
+                <div class="space-y-5">
+                    <div>
+                        <span class="block text-xs font-medium text-gray-500 mb-1">Chi Tiêu Thực Tế</span>
+                        <span class="block text-2xl font-black text-orange-600" id="page-bu2-spend">-</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-medium text-gray-500 mb-1">Khách Hàng (Leads)</span>
+                        <span class="block text-2xl font-black text-blue-600" id="page-bu2-leads">-</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-medium text-gray-500 mb-1">CPL Trung Bình</span>
+                        <span class="inline-block text-xl font-bold text-green-700 bg-green-50 px-3 py-1 rounded-md" id="page-bu2-cpl">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Chart for Top Campaigns -->
+        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-8">
+            <h3 class="font-bold text-gray-800 mb-1">Top Chiến Dịch Chi Tiêu Cao Nhất</h3>
+            <p class="text-xs text-gray-500 mb-5">Phân tích tương quan giữa chi phí (VND) và số Lead thu về.</p>
+            <div class="h-[350px]">
+                    <canvas id="chart-bu2-camps"></canvas>
+                </div>
+            </div>
+
+        <!-- NEW: Destination Breakdown -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-1">Tỷ Trọng Chi Tiêu Theo Điểm Đến</h3>
+                <p class="text-xs text-gray-500 mb-5">Đang ưu tiên bơm ngân sách vào thị trường nào?</p>
+                <div class="h-[250px] relative">
+                    <canvas id="chart-bu2-dest-pie"></canvas>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-1">Hiệu Quả Các Điểm Đến (Spend, Leads, CPL)</h3>
+                <p class="text-xs text-gray-500 mb-5">Tương quan chi phí bỏ ra và lượng khách thu về.</p>
+                <div class="h-[250px]">
+                    <canvas id="chart-bu2-dest-bar"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Raw Data -->
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div class="bg-gray-50 px-5 py-4 border-b border-gray-200">
+                <h3 class="font-bold text-gray-800">Dữ Liệu Thô Các Chiến Dịch (BU2) - Chi tiết</h3>
+            </div>
+            <div class="overflow-x-auto relative h-[600px]">
+                <table class="w-full text-sm text-left text-gray-600 relative">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 shadow-sm z-10">
+                        <tr>
+                            <th class="px-5 py-3 w-1/3">Tên Chiến Dịch / AdSet</th>
+                            <th class="px-5 py-3 text-right">Chi Tiêu (đ)</th>
+                            <th class="px-5 py-3 text-right">Lượt Tin Nhắn</th>
+                            <th class="px-5 py-3 text-right">Khách Hàng (Leads)</th>
+                            <th class="px-5 py-3 text-right">CPL Lead (đ)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100" id="bu2-deep-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="page-bu4-detail" class="page-content hidden">
+        <header class="mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <span class="text-4xl">🏝️</span> Chi Tiết BU4 (Thị trường Ngách)
+            </h1>
+        </header>
+
+        <!-- KPI & Insight Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Analyst Insight -->
+            <div class="col-span-1 md:col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 opacity-10">
+                    <i class="fas fa-chart-line text-8xl text-white"></i>
+                </div>
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fas fa-brain text-blue-400"></i> AI ANALYST INSIGHT
+                </h4>
+                
+<p class="text-base leading-relaxed text-gray-100">
+    <strong class="text-green-300">Efficiency Leader:</strong> BU4 có CPL rẻ nhất hệ thống (~151k/Lead). Ngân sách được giải ngân xuất sắc và thu về lượng Lead đột phá (gần gấp đôi target).
+</p>
+<p class="text-base leading-relaxed text-gray-300 mt-3">
+    Việc over-spend này là một điểm cộng vì CPL đang được kiểm soát rất tốt ở thị trường ngách. Đề xuất: Khai thác sâu hơn vào tệp khách hàng Lookalike (LAL) từ các Lead chất lượng đã chốt thành công trong tháng 5 và 6.
+</p>
+
+            </div>
+            
+            <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-6">
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-5">TỔNG QUAN CHỈ SỐ BU4</h4>
+                <div class="space-y-5">
+                    <div>
+                        <span class="block text-xs font-medium text-gray-500 mb-1">Chi Tiêu Thực Tế</span>
+                        <span class="block text-2xl font-black text-orange-600" id="page-bu4-spend">-</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-medium text-gray-500 mb-1">Khách Hàng (Leads)</span>
+                        <span class="block text-2xl font-black text-blue-600" id="page-bu4-leads">-</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-medium text-gray-500 mb-1">CPL Trung Bình</span>
+                        <span class="inline-block text-xl font-bold text-green-700 bg-green-50 px-3 py-1 rounded-md" id="page-bu4-cpl">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Chart for Top Campaigns -->
+        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-8">
+            <h3 class="font-bold text-gray-800 mb-1">Top Chiến Dịch Chi Tiêu Cao Nhất</h3>
+            <p class="text-xs text-gray-500 mb-5">Phân tích tương quan giữa chi phí (VND) và số Lead thu về.</p>
+            <div class="h-[350px]">
+                    <canvas id="chart-bu4-camps"></canvas>
+                </div>
+            </div>
+
+        <!-- NEW: Destination Breakdown -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-1">Tỷ Trọng Chi Tiêu Theo Điểm Đến</h3>
+                <p class="text-xs text-gray-500 mb-5">Đang ưu tiên bơm ngân sách vào thị trường nào?</p>
+                <div class="h-[250px] relative">
+                    <canvas id="chart-bu4-dest-pie"></canvas>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-1">Hiệu Quả Các Điểm Đến (Spend, Leads, CPL)</h3>
+                <p class="text-xs text-gray-500 mb-5">Tương quan chi phí bỏ ra và lượng khách thu về.</p>
+                <div class="h-[250px]">
+                    <canvas id="chart-bu4-dest-bar"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Raw Data -->
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div class="bg-gray-50 px-5 py-4 border-b border-gray-200">
+                <h3 class="font-bold text-gray-800">Dữ Liệu Thô Các Chiến Dịch (BU4) - Chi tiết</h3>
+            </div>
+            <div class="overflow-x-auto relative h-[600px]">
+                <table class="w-full text-sm text-left text-gray-600 relative">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 shadow-sm z-10">
+                        <tr>
+                            <th class="px-5 py-3 w-1/3">Tên Chiến Dịch / AdSet</th>
+                            <th class="px-5 py-3 text-right">Chi Tiêu (đ)</th>
+                            <th class="px-5 py-3 text-right">Lượt Tin Nhắn</th>
+                            <th class="px-5 py-3 text-right">Khách Hàng (Leads)</th>
+                            <th class="px-5 py-3 text-right">CPL Lead (đ)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100" id="bu4-deep-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    </div> <!-- END CONTAINER -->
+    
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>

@@ -152,11 +152,32 @@ exports.getDocs = async (req, res) => {
       });
     }
 
+    // [MỚI] Lấy dữ liệu từ bảng rag_documents
+    try {
+        const ragResult = await db.query(`SELECT * FROM rag_documents WHERE status = 'active'`);
+        const ragDocs = ragResult.rows.map(k => ({
+            id: `rag_${k.id}`,
+            title: k.title,
+            description: '',
+            category: k.category || 'Khác',
+            visibility: k.visibility || 'private',
+            display_priority: k.display_priority || 'text',
+            // Nếu có link ngoài thì path trỏ ra ngoài, nếu không thì dẫn vào xem chi tiết
+            path: (k.drive_url) ? k.drive_url : `/tai-lieu/${k.id}`,
+            external: !!k.drive_url
+        }));
+        allDocs = [...allDocs, ...ragDocs];
+    } catch (ragErr) {
+        console.error('Error fetching rag_documents for RAG:', ragErr);
+    }
+
     const formattedDocs = allDocs.map(doc => ({
       id: doc.id || doc.path,
       title: doc.title,
       description: doc.description,
       category: doc.category,
+      visibility: doc.visibility || 'public', // STATIC_DOCS mặc định coi như public (hoặc chỉnh lại theo logic UI)
+      display_priority: doc.display_priority || 'text',
       url: doc.external ? doc.path : `https://erp.fittour.vn${doc.path === '#' ? '/tai-lieu/bieu-mau' : doc.path}`,
     }));
 
@@ -172,6 +193,31 @@ exports.getDocContent = async (req, res) => {
   if (!id) return res.status(400).json({ error: 'Missing id parameter' });
 
   try {
+        // [MỚI] Trường hợp là rag_documents (CMS mới)
+    if (id.startsWith('rag_')) {
+        const dbId = id.replace('rag_', '');
+        const itemResult = await db.query('SELECT * FROM rag_documents WHERE id = $1', [dbId]);
+        if (itemResult.rows.length === 0) return res.status(404).json({ error: 'Document not found' });
+        
+        const item = itemResult.rows[0];
+        
+        // Trả về Link A1 cho AI tự đi lấy data (đúng với kiến trúc "Bản đồ")
+        let content = '';
+        if (item.text_url) {
+            content = `[HỆ THỐNG RAG]: Nội dung chi tiết của tài liệu này là một file Text/Markdown thô. AI vui lòng truy cập vào đường link sau để đọc nội dung: ${item.text_url}`;
+        } else if (item.website_url || item.attachment_url || item.drive_url) {
+            content = `[HỆ THỐNG RAG]: Tài liệu này chỉ có Link Giao Diện / File đính kèm. Vui lòng cung cấp link này cho người dùng để họ xem: ${item.website_url || item.drive_url || item.attachment_url}`;
+        } else {
+            content = `[HỆ THỐNG RAG]: Tài liệu này hiện trống, chưa có nội dung.`;
+        }
+
+        return res.json({
+            title: item.title,
+            content: content,
+            url: item.website_url || item.drive_url || item.attachment_url || `https://erp.fittour.vn/tai-lieu/${item.id}`
+        });
+    }
+
     // Trường hợp là Biểu mẫu trong DB
     if (id.startsWith('license_')) {
       const dbId = id.replace('license_', '');

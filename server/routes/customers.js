@@ -23,7 +23,14 @@ router.delete('/events/:id', authenticateToken, permCheck('customers', 'delete')
 
 router.get('/:id', authenticateToken, permCheckAny([['customers','view_all'], ['customers','view_own']]), customerController.getCustomerById);
 router.post('/:id/notes', authenticateToken, permCheck('customers', 'edit'), customerController.addNote);
-router.put('/:id', authenticateToken, permCheckOrOwner('customers', 'edit', 'customers', 'id', 'assigned_to'), customerController.updateCustomer);
+const canEditCustomer = (req, res, next) => {
+    if (req.user && ['sales_lead', 'operations_lead'].includes(req.user.role)) {
+        return next();
+    }
+    return permCheckOrOwner('customers', 'edit', 'customers', 'id', 'assigned_to')(req, res, next);
+};
+
+router.put('/:id', authenticateToken, canEditCustomer, customerController.updateCustomer);
 router.delete('/:id', authenticateToken, permCheck('customers', 'delete'), customerController.deleteCustomer);
 router.post('/convert', authenticateToken, permCheck('customers', 'create'), customerController.convertLeadToCustomer);
 

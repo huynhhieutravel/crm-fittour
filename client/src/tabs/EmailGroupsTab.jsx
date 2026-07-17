@@ -12,12 +12,14 @@ function EmailGroupsTab({ user, addToast }) {
   const [currentGroup, setCurrentGroup] = useState(null);
   const [usersOptionGroup, setUsersOptionGroup] = useState([]);
   const [allUsersFlat, setAllUsersFlat] = useState([]);
+  const [buOptions, setBuOptions] = useState([]);
   
   const [formData, setFormData] = useState({
     code: '',
     name: '',
     description: '',
     users: [], // Array of user objects {value, label}
+    target_bus: [], // Array of BU objects {value, label}
     external_emails: '', // Comma separated string
     is_active: true
   });
@@ -26,7 +28,17 @@ function EmailGroupsTab({ user, addToast }) {
     if (user?.role !== 'admin' && user?.role !== 'manager') return;
     fetchGroups();
     fetchAllUsers();
+    fetchBUs();
   }, [user]);
+
+  const fetchBUs = async () => {
+    try {
+      const res = await axios.get('/api/business-units');
+      setBuOptions(res.data.map(b => ({ value: b.id, label: b.label || b.id })));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchAllUsers = async () => {
     try {
@@ -35,14 +47,20 @@ function EmailGroupsTab({ user, addToast }) {
         headers: { Authorization: `Bearer ${token}` }
       });
       const activeUsers = res.data.filter(u => u.is_active);
-      const flat = activeUsers.map(u => ({ value: u.id, label: `${u.full_name || u.username} (${u.email || u.phone || 'Chưa có thông tin'})` }));
+      const flat = activeUsers.map(u => ({ 
+        value: u.id, 
+        label: `${u.full_name || 'Chưa có tên'} (@${u.username}) - ${u.email || u.phone || 'Chưa có thông tin'}` 
+      }));
       setAllUsersFlat(flat);
       
       const groupsMap = {};
       activeUsers.forEach(u => {
         const rName = u.role_name || 'Khác';
         if(!groupsMap[rName]) groupsMap[rName] = [];
-        groupsMap[rName].push({ value: u.id, label: `${u.full_name || u.username} (${u.email || u.phone || 'Chưa có thông tin'})` });
+        groupsMap[rName].push({ 
+          value: u.id, 
+          label: `${u.full_name || 'Chưa có tên'} (@${u.username}) - ${u.email || u.phone || 'Chưa có thông tin'}` 
+        });
       });
       const options = Object.keys(groupsMap).map(k => ({
         label: k,
@@ -78,6 +96,7 @@ function EmailGroupsTab({ user, addToast }) {
         name: group.name,
         description: group.description || '',
         users: group.users || [],
+        target_bus: (group.target_bus || []).map(b => ({ value: b, label: b })),
         external_emails: (group.external_emails || []).join(', '),
         is_active: group.is_active !== undefined ? group.is_active : true
       });
@@ -88,6 +107,7 @@ function EmailGroupsTab({ user, addToast }) {
         name: '',
         description: '',
         users: [],
+        target_bus: [],
         external_emails: '',
         is_active: true
       });
@@ -103,6 +123,7 @@ function EmailGroupsTab({ user, addToast }) {
         name: formData.name,
         description: formData.description,
         users: formData.users.map(u => (typeof u === 'object' ? u.value : u)),
+        target_bus: formData.target_bus.map(b => (typeof b === 'object' ? b.value : b)),
         external_emails: formData.external_emails.split(',').map(e => e.trim()).filter(e => e),
         is_active: formData.is_active
       };
@@ -194,8 +215,20 @@ function EmailGroupsTab({ user, addToast }) {
                     <div style={{ fontSize: '12px', color: '#64748b' }}>{g.description}</div>
                   </td>
                   <td style={{ padding: '12px 16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Users size={14} color="#64748b" /> {g.users?.length || 0} user(s)
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+                        <Users size={14} color="#3b82f6" /> {(g.users?.length || 0) + (g.dynamic_users?.length || 0)} user(s)
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b', display: 'flex', flexWrap: 'wrap', gap: '4px', maxHeight: '60px', overflowY: 'auto' }}>
+                        {[...(g.users || []), ...(g.dynamic_users || [])].map((u, idx) => {
+                           const displayName = u.label ? u.label.split(' - ')[0].trim() : (u.full_name || 'N/A');
+                           return (
+                             <span key={u.value || u.id || idx} style={{ background: u.isDynamic ? '#eff6ff' : '#f1f5f9', color: u.isDynamic ? '#2563eb' : '#475569', border: u.isDynamic ? '1px solid #bfdbfe' : '1px solid #e2e8f0', padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                               {displayName} {u.isDynamic ? <span style={{fontSize: '9px', fontWeight: 'bold'}}>(BU)</span> : ''}
+                             </span>
+                           )
+                        })}
+                      </div>
                     </div>
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '13px', color: '#64748b' }}>
@@ -227,7 +260,7 @@ function EmailGroupsTab({ user, addToast }) {
 
       {showModal && (
         <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div className="modal-content" style={{ backgroundColor: 'white', padding: '24px', borderRadius: '8px', width: '500px', maxWidth: '90%' }}>
+          <div className="modal-content" style={{ backgroundColor: 'white', padding: '24px', borderRadius: '8px', width: '500px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto' }}>
             <h3 style={{ margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
               {currentGroup ? 'Sửa Nhóm Email' : 'Thêm Nhóm Email'}
             </h3>
@@ -273,6 +306,22 @@ function EmailGroupsTab({ user, addToast }) {
               </div>
 
               <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 500, color: '#2563eb' }}>Business Unit (Tự động quét thành viên)</label>
+                <Select
+                  isMulti
+                  options={buOptions}
+                  value={formData.target_bus}
+                  onChange={selected => setFormData({...formData, target_bus: selected || []})}
+                  placeholder="Chọn BU (VD: BU1, KETOAN...)"
+                  menuPortalTarget={document.body}
+                  styles={{ 
+                    menuPortal: base => ({ ...base, zIndex: 9999 })
+                  }}
+                />
+                <small style={{ color: '#64748b', display: 'block', marginTop: '4px' }}>Những nhân sự thuộc các BU được chọn ở đây sẽ tự động được gom vào nhóm này.</small>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '6px' }}>
                   <label style={{ margin: 0, fontWeight: 500 }}>Thành viên hệ thống (Nhận In-App & Email)</label>
                   <div style={{ display: 'flex', gap: '8px' }}>
@@ -282,17 +331,49 @@ function EmailGroupsTab({ user, addToast }) {
                 </div>
                 <Select
                   isMulti
+                  controlShouldRenderValue={false}
+                  hideSelectedOptions={true}
                   options={usersOptionGroup}
                   value={formData.users}
                   onChange={selected => setFormData({...formData, users: selected || []})}
-                  placeholder="Tìm kiếm hoặc chọn nhân sự..."
+                  placeholder="Tìm kiếm và thêm nhân sự..."
                   noOptionsMessage={() => "Không tìm thấy người dùng"}
                   menuPortalTarget={document.body}
                   styles={{ 
-                    menuPortal: base => ({ ...base, zIndex: 9999 }),
-                    valueContainer: base => ({ ...base, maxHeight: '120px', overflowY: 'auto' })
+                    menuPortal: base => ({ ...base, zIndex: 9999 })
                   }}
                 />
+
+                {/* Danh sách user đã chọn */}
+                {formData.users && formData.users.length > 0 && (
+                  <div style={{ marginTop: '12px', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '6px', backgroundColor: '#f8fafc', maxHeight: '300px', overflowY: 'auto' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#475569', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>Danh sách đã chọn ({formData.users.length} nhân sự)</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      {formData.users.map(u => (
+                        <div key={u.value} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'white', border: '1px solid #cbd5e1', padding: '6px 10px', borderRadius: '4px', fontSize: '13px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                            <span style={{ color: '#334155', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {u.label.split(' - ')[0].trim()}
+                            </span>
+                            <span style={{ color: '#64748b', fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {u.label.split(' - ').slice(1).join(' - ')}
+                            </span>
+                          </div>
+                          <button 
+                            type="button" 
+                            onClick={() => setFormData({...formData, users: formData.users.filter(x => x.value !== u.value)})}
+                            style={{ background: '#fee2e2', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '24px', minHeight: '24px' }}
+                            title="Xóa khỏi nhóm"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="form-group" style={{ marginBottom: '24px' }}>
