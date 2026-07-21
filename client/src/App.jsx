@@ -1980,18 +1980,6 @@ function AppContent() {
               >
                 <MessageCircle /> Điều Phối & Chat</Link>
 
-              <div title="Trung tâm điều phối" 
-                className={`nav-item ${activeTab === 'dispatcher-center' ? 'active' : ''}`}
-                onClick={() => navigate('/dispatcher-center')}
-              >
-                <CalendarDays /> Trung tâm điều phối</div>
-
-              <div title="Đăng ký lịch trực" 
-                className={`nav-item ${activeTab === 'dispatch-schedule' ? 'active' : ''}`}
-                onClick={() => navigate('/dispatch-schedule')}
-              >
-                <CalendarClock /> Đăng ký lịch trực</div>
-
               <Link title="Dịch vụ Hỗ trợ" 
                 to="/travel-support"
                 className={`nav-item ${activeTab === 'travel-support' ? 'active' : ''}`}
@@ -2430,6 +2418,19 @@ function AppContent() {
             onClick={() => { navigate('/staff-performance'); setHoveredMenu(null); }} 
           >
             Hiệu suất Nhân viên
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'dispatcher-center' ? 'active' : ''}`} 
+            onClick={() => { navigate('/dispatcher-center'); setHoveredMenu(null); }} 
+            style={{ borderTop: '1px solid #e2e8f0', marginTop: '4px', paddingTop: '8px', color: '#db2777', fontWeight: 'bold' }}
+          >
+            Trung tâm điều phối
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'dispatch-schedule' ? 'active' : ''}`} 
+            onClick={() => { navigate('/dispatch-schedule'); setHoveredMenu(null); }} 
+          >
+            Đăng ký lịch trực
           </div>
         </div>
       )}
