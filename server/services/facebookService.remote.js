@@ -535,7 +535,6 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                 const rawMsgText = userMsgObj && userMsgObj.message ? userMsgObj.message : null;
                 const actualMessageText = (rawMsgText && rawMsgText.trim() !== '') ? rawMsgText : '(Hình ảnh/Đính kèm)';
                 const firstMessageNote = userMsgObj ? `Facebook Message: "${actualMessageText}"` : null;
-                const fbCreatedAt = userMsgObj && userMsgObj.created_time ? new Date(userMsgObj.created_time) : new Date();
 
                 // Kéo hội thoại từ DB xem đã có chưa
                 const convRes = await db.query('SELECT * FROM conversations WHERE external_id = $1', [psid]);
@@ -560,8 +559,8 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                     console.log(`[FB POLLER] Phát hiện khách mới chat với Fanpage: ${userName}. Đang tạo Lead...`);
                     // Tạo Lead mới tinh (Kèm kiểm tra PSID dò Khách Quen)
                     const leadResult = await db.query(
-                        'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id, phone, fb_conversation_link, created_at) VALUES ($1, $2, $3, $4::text, $5, $9, (SELECT id FROM customers WHERE facebook_psid = $6::text OR phone = $7::text LIMIT 1), $7::text, $8, $9) RETURNING *',
-                        [userName, 'Messenger', 'Mới', psid, firstMessageNote, psid, extractedPhone, fbLink, fbCreatedAt]
+                        'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id, phone, fb_conversation_link) VALUES ($1, $2, $3, $4::text, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $6::text OR phone = $7::text LIMIT 1), $7::text, $8) RETURNING *',
+                        [userName, 'Messenger', 'Mới', psid, firstMessageNote, psid, extractedPhone, fbLink]
                     );
 
                     currentLeadId = leadResult.rows[0].id;
@@ -666,8 +665,8 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                                     if (['Chốt đơn', 'Thất bại'].includes(oldLead.status)) {
                                         console.log(`[FB POLLER] Khách Cũ (Đã Đóng) nhắn Fanpage: ${userName}. Tạo Lead mới...`);
                                         const newLeadResult = await db.query(
-                                            'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email, fb_conversation_link, created_at) VALUES ($1, $2, $3, $4::text, $8, (SELECT id FROM customers WHERE facebook_psid = $4::text LIMIT 1), $5, $6, $7, $8) RETURNING *',
-                                            [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email, fbLink, fbCreatedAt]
+                                            'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email, fb_conversation_link) VALUES ($1, $2, $3, $4::text, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4::text LIMIT 1), $5, $6, $7) RETURNING *',
+                                            [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email, fbLink]
                                         );
                                         currentLeadId = newLeadResult.rows[0].id;
                                         await db.query('UPDATE conversations SET lead_id = $1 WHERE id = $2', [currentLeadId, oldConv.id]);

@@ -7,7 +7,7 @@ const SystemEvents = require('../constants/SystemEvents');
 
 exports.getAllBookings = async (req, res) => {
     try {
-        const { page, limit, search, status, payment_status } = req.query;
+        const { page, limit, search, status, payment_status, sale_id } = req.query;
         
         let whereClauses = [];
         let params = [];
@@ -42,6 +42,11 @@ exports.getAllBookings = async (req, res) => {
             params.push(payment_status);
             paramCount++;
         }
+        if (sale_id) {
+            whereClauses.push(`(b.created_by = $${paramCount})`);
+            params.push(sale_id);
+            paramCount++;
+        }
 
         const whereString = whereClauses.length > 0 ? 'WHERE ' + whereClauses.join(' AND ') : '';
 
@@ -74,6 +79,7 @@ exports.getAllBookings = async (req, res) => {
                     c.past_trip_count,
                     tt.name as tour_name,
                     tt.code as tour_code,
+                    tt.bu_group,
                     td.code as departure_code,
                     COALESCE((SELECT SUM(amount) FROM booking_transactions WHERE booking_id = b.id), 0) as paid_amount
                 FROM bookings b 
@@ -103,6 +109,7 @@ exports.getAllBookings = async (req, res) => {
                 c.past_trip_count,
                 tt.name as tour_name,
                 tt.code as tour_code,
+                tt.bu_group,
                 td.code as departure_code,
                 COALESCE((SELECT SUM(amount) FROM booking_transactions WHERE booking_id = b.id), 0) as paid_amount
             FROM bookings b 

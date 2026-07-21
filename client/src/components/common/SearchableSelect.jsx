@@ -75,31 +75,31 @@ const SearchableSelect = ({
       </div>
 
       {isOpen && (
-        <div 
-          className="searchable-select-dropdown animate-fade-in" 
-          style={{ 
-            position: 'absolute', 
-            top: 'calc(100% + 5px)', 
-            left: 0, 
-            right: 0, 
-            background: 'white', 
-            borderRadius: '12px', 
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)', 
-            border: '1px solid #e2e8f0',
-            zIndex: 1000,
-            maxHeight: '300px',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden'
-          }}
-        >
+          <div 
+            className="searchable-select-dropdown animate-fade-in" 
+            style={{ 
+              position: 'absolute', 
+              top: 'calc(100% + 5px)', 
+              left: 0, 
+              minWidth: '280px', 
+              background: 'white', 
+              borderRadius: '12px', 
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)', 
+              border: '1px solid #e2e8f0',
+              zIndex: 1000,
+              maxHeight: '300px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}
+          >
           <div style={{ padding: '8px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
             <div style={{ position: 'relative' }}>
               <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
               <input 
                 autoFocus
                 type="text" 
-                placeholder="Tìm sản phẩm..." 
+                placeholder="Tìm kiếm..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ 
@@ -121,6 +121,30 @@ const SearchableSelect = ({
                 />
               )}
             </div>
+            {value && (
+              <div 
+                onClick={() => {
+                  onChange('');
+                  setIsOpen(false);
+                  setSearchTerm('');
+                }}
+                style={{ 
+                  marginTop: '8px',
+                  padding: '6px 12px', 
+                  fontSize: '0.8rem', 
+                  cursor: 'pointer',
+                  borderRadius: '6px',
+                  background: '#fee2e2',
+                  color: '#ef4444',
+                  fontWeight: 600,
+                  textAlign: 'center'
+                }}
+                onMouseEnter={(e) => e.target.style.background = '#fecaca'}
+                onMouseLeave={(e) => e.target.style.background = '#fee2e2'}
+              >
+                X Bỏ chọn (Về Chưa giao)
+              </div>
+            )}
           </div>
 
           <div style={{ overflowY: 'auto', flex: 1, padding: '4px' }}>

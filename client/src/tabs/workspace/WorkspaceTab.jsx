@@ -14,7 +14,9 @@ const WorkspaceTab = ({
   tourTemplates = [],
   users = [],
   checkPerm,
-  setShowLeaveModal
+  setShowLeaveModal,
+  fetchLeads,
+  navigateToInbox
 }) => {
   const [reminders, setReminders] = useState([]);
 
@@ -61,7 +63,9 @@ const WorkspaceTab = ({
   if (!currentUser) return <div>Đang tải Không gian làm việc...</div>;
 
   // Render SalesDashboard nếu là sales hoặc marketing (hoặc admin/manager để review)
-  if (currentUser && ['sales', 'marketing', 'admin', 'manager'].includes(currentUser.role)) {
+  const role = (currentUser?.role || '').toLowerCase();
+  const isSalesOrManager = ['sales', 'sale', 'marketing', 'admin', 'manager', 'ceo'].includes(role) || role.includes('sale');
+  if (currentUser && isSalesOrManager) {
     return (
       <SalesDashboard 
         currentUser={currentUser}
@@ -78,6 +82,8 @@ const WorkspaceTab = ({
         users={users}
         checkPerm={checkPerm}
         setShowLeaveModal={setShowLeaveModal}
+        fetchLeads={fetchLeads}
+        navigateToInbox={navigateToInbox}
       />
     );
   }

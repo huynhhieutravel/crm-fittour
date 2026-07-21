@@ -290,6 +290,7 @@ const LadakhConsultingPage = () => {
     const [copiedId, setCopiedId] = useState('');
     const [copiedLink, setCopiedLink] = useState('');
     const [showDetailsIds, setShowDetailsIds] = useState([]); // Array to store IDs of expanded detailed sections
+    const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
     const toggleAccordion = (id) => {
         setOpenIds(prev => 
@@ -375,10 +376,36 @@ const LadakhConsultingPage = () => {
     };
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: '"Inter", "Segoe UI", sans-serif', color: '#0f172a' }}>
+        <div className="ladakh-container" style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: '"Inter", "Segoe UI", sans-serif', color: '#0f172a' }}>
+            <style>{`
+                .mobile-menu-toggle { display: none; margin-bottom: 16px; width: 100%; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; color: #475569; font-weight: 600; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s; }
+                .mobile-menu-toggle:active { background: #f8fafc; }
+                @media (max-width: 1024px) {
+                    .ladakh-content { padding: 32px !important; }
+                }
+                @media (max-width: 768px) {
+                    .ladakh-container { flex-direction: column !important; }
+                    .mobile-menu-toggle { display: flex !important; }
+                    .ladakh-sidebar { 
+                        width: 100% !important; min-width: 100% !important; 
+                        height: auto !important; max-height: 400px !important; 
+                        position: relative !important; border-right: none !important; 
+                        border-bottom: 1px solid #e2e8f0 !important; padding: 16px 0 !important;
+                        display: ${showMobileSidebar ? 'flex' : 'none'} !important;
+                    }
+                    .ladakh-content { padding: 20px 16px !important; }
+                    .ladakh-title { font-size: 1.8rem !important; }
+                    .faq-variant-card { flex-direction: column !important; align-items: stretch !important; gap: 12px !important; }
+                    .faq-variant-card button { width: 100% !important; justify-content: center !important; padding: 10px !important; }
+                    .faq-inner-padding { padding: 0 16px 16px 16px !important; }
+                    .faq-header-title { font-size: 1.25rem !important; }
+                    .faq-accordion-header { padding: 12px 16px !important; }
+                    .faq-accordion-title { font-size: 0.95rem !important; margin-right: 12px !important; }
+                }
+            `}</style>
             
             {/* ====== LEFT SIDEBAR (TOC) ====== */}
-            <div style={{ 
+            <div className="ladakh-sidebar" style={{ 
                 width: '320px', 
                 minWidth: '320px',
                 height: '100vh', 
@@ -484,14 +511,18 @@ const LadakhConsultingPage = () => {
             </div>
 
             {/* ====== RIGHT CONTENT ====== */}
-            <div style={{ flex: 1, padding: '40px 60px', maxWidth: '1200px', margin: '0 auto' }}>
+            <div className="ladakh-content" style={{ flex: 1, padding: '40px 60px', maxWidth: '1200px', margin: '0 auto' }}>
+                <button className="mobile-menu-toggle" onClick={() => setShowMobileSidebar(!showMobileSidebar)}>
+                    {showMobileSidebar ? <ChevronDown size={18} /> : <Search size={18} />}
+                    {showMobileSidebar ? 'Ẩn mục lục' : 'Mục lục & Tìm kiếm'}
+                </button>
                 
                 <div style={{ marginBottom: '48px', borderBottom: '1px solid #e2e8f0', paddingBottom: '32px' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#ffedd5', color: '#ea580c', padding: '6px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700', marginBottom: '16px' }}>
                         <Sparkles size={16} /> 
                         Cẩm Nang Chốt Sale BU4
                     </div>
-                    <h1 style={{ fontSize: '2.5rem', fontWeight: '800', margin: '0 0 16px 0', letterSpacing: '-0.02em' }}>
+                    <h1 className="ladakh-title" style={{ fontSize: '2.5rem', fontWeight: '800', margin: '0 0 16px 0', letterSpacing: '-0.02em' }}>
                         Thư Viện Kịch Bản Ladakh
                     </h1>
                     <p style={{ fontSize: '1rem', color: '#64748b', margin: 0, lineHeight: '1.5' }}>
@@ -507,7 +538,7 @@ const LadakhConsultingPage = () => {
                                 <div style={{ color: '#0284c7' }}>
                                     <Library size={24} />
                                 </div>
-                                <h2 style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0, color: '#0f172a' }}>
+                                <h2 className="faq-header-title" style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0, color: '#0f172a' }}>
                                     Tài Liệu Đào Tạo & Marketing
                                 </h2>
                             </div>
@@ -599,7 +630,7 @@ const LadakhConsultingPage = () => {
                                 <div style={{ color: '#059669' }}>
                                     <Map size={24} />
                                 </div>
-                                <h2 style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0, color: '#0f172a' }}>
+                                <h2 className="faq-header-title" style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0, color: '#0f172a' }}>
                                     Sản Phẩm & Lịch Trình Tour
                                 </h2>
                             </div>
@@ -691,7 +722,7 @@ const LadakhConsultingPage = () => {
                                 <div style={{ color: group.color }}>
                                     {getIcon(group.icon)}
                                 </div>
-                                <h2 style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0, color: '#0f172a' }}>
+                                <h2 className="faq-header-title" style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0, color: '#0f172a' }}>
                                     {group.category}
                                 </h2>
                             </div>
@@ -712,6 +743,7 @@ const LadakhConsultingPage = () => {
                                     {/* Accordion Header */}
                                     <button 
                                         onClick={() => toggleAccordion(item.id)}
+                                        className="faq-accordion-header"
                                         style={{
                                             width: '100%',
                                             padding: '16px 24px',
@@ -724,7 +756,7 @@ const LadakhConsultingPage = () => {
                                             textAlign: 'left'
                                         }}
                                     >
-                                        <h3 style={{ fontSize: '1.05rem', fontWeight: '600', color: '#0f172a', margin: '0 24px 0 0', lineHeight: '1.5' }}>
+                                        <h3 className="faq-accordion-title" style={{ fontSize: '1.05rem', fontWeight: '600', color: '#0f172a', margin: '0 24px 0 0', lineHeight: '1.5' }}>
                                             {item.q}
                                         </h3>
                                         <div style={{ 
@@ -746,7 +778,7 @@ const LadakhConsultingPage = () => {
                                         transition: 'all 0.4s ease-in-out',
                                         background: '#ffffff'
                                     }}>
-                                        <div style={{ padding: '0 24px 24px 24px', borderTop: '1px solid #f1f5f9' }}>
+                                        <div className="faq-inner-padding" style={{ padding: '0 24px 24px 24px', borderTop: '1px solid #f1f5f9' }}>
                                             
                                             {/* Tùy chọn kịch bản chốt Sale */}
                                             <div style={{ marginTop: '24px' }}>
@@ -757,7 +789,7 @@ const LadakhConsultingPage = () => {
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                                     {item.variants.map((variant, vIdx) => (
                                                         <div key={vIdx} style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '16px' }}>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                                                            <div className="faq-variant-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
                                                                 <div>
                                                                     <span style={{ display: 'inline-block', background: '#dcfce7', color: '#166534', fontSize: '0.75rem', fontWeight: '700', padding: '4px 8px', borderRadius: '4px', marginBottom: '8px' }}>
                                                                         {variant.type}
@@ -771,7 +803,7 @@ const LadakhConsultingPage = () => {
                                                                     style={{
                                                                         flexShrink: 0,
                                                                         display: 'flex', alignItems: 'center', gap: '6px',
-                                                                        padding: '6px 12px', borderRadius: '6px', border: 'none',
+                                                                        padding: '6px 12px', borderRadius: '6px',
                                                                         background: copiedId === item.id + vIdx ? '#166534' : '#ffffff',
                                                                         color: copiedId === item.id + vIdx ? '#ffffff' : '#166534',
                                                                         border: '1px solid #bbf7d0',

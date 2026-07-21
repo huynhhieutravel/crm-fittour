@@ -18,7 +18,7 @@ router.get('/conversations', auth, async (req, res) => {
 
         if (search) {
             queryArgs.push(`%${search}%`);
-            conditions.push(`(l.name ILIKE $${queryArgs.length} OR c.last_message ILIKE $${queryArgs.length} OR c.external_id ILIKE $${queryArgs.length})`);
+            conditions.push(`(l.name ILIKE $${queryArgs.length} OR l.phone ILIKE $${queryArgs.length} OR c.last_message ILIKE $${queryArgs.length} OR c.external_id ILIKE $${queryArgs.length})`);
         }
 
         if (bu) {

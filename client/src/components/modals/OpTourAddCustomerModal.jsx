@@ -1338,7 +1338,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                   </div>
                   <div style={{ width: '130px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Tên:</label>
-                     <input type="text" value={m.name} onChange={e => handleMemberChange(m.id, 'name', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                     <input type="text" value={m.name} onChange={e => handleMemberChange(m.id, 'name', e.target.value)} disabled={scanningPassportId === m.id} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: scanningPassportId === m.id ? '#f8fafc' : 'white' }} />
                   </div>
 
                   {/* NEW COLUMN: PHÂN LOẠI & GHI CHÚ */}
@@ -1402,13 +1402,13 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                   </div>
                   <div style={{ width: '70px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Giới tính:</label>
-                     <select value={m.gender} onChange={e => handleMemberChange(m.id, 'gender', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }}>
+                     <select value={m.gender} onChange={e => handleMemberChange(m.id, 'gender', e.target.value)} disabled={scanningPassportId === m.id} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: scanningPassportId === m.id ? '#f8fafc' : 'white' }}>
                         <option>Chọn</option><option>Nữ</option><option>Nam</option>
                      </select>
                   </div>
                   <div style={{ width: '120px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Ngày sinh:</label>
-                     <input type="date" value={m.dob} onChange={e => handleMemberChange(m.id, 'dob', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                     <input type="date" value={m.dob} onChange={e => handleMemberChange(m.id, 'dob', e.target.value)} disabled={scanningPassportId === m.id} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: scanningPassportId === m.id ? '#f8fafc' : 'white' }} />
                   </div>
                   <div style={{ flexShrink: 0, position: 'relative' }}>
                      <label style={{ fontSize: '10px', display: 'block', marginBottom: '2px' }}>Hộ chiếu/CCCD</label>
@@ -1430,7 +1430,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                   </div>
                   <div style={{ width: '100px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>CMT/Hộ chiếu:</label>
-                     <select value={m.docType} onChange={e => handleMemberChange(m.id, 'docType', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }}>
+                     <select value={m.docType} onChange={e => handleMemberChange(m.id, 'docType', e.target.value)} disabled={scanningPassportId === m.id} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: scanningPassportId === m.id ? '#f8fafc' : 'white' }}>
                         <option>CMTND</option>
                         <option>CCCD</option>
                         <option>Hộ chiếu</option>
@@ -1438,7 +1438,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                   </div>
                   <div style={{ width: '110px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>ID:</label>
-                     <input type="text" value={m.docId} onChange={e => handleMemberChange(m.id, 'docId', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                     <input type="text" value={m.docId} onChange={e => handleMemberChange(m.id, 'docId', e.target.value)} disabled={scanningPassportId === m.id} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: scanningPassportId === m.id ? '#f8fafc' : 'white' }} />
                   </div>
 
                   <div style={{ width: '120px', flexShrink: 0 }}>
@@ -1499,7 +1499,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                 <div>
                    <div style={{ fontSize: '11px', color: '#64748b' }}>Đã thu (Cọc)</div>
                    <div style={{ position: 'relative' }}>
-                      <input type="text" value={formatCurrency(paidAmount)} onChange={e => setPaidAmount(parseCurrency(e.target.value))} style={{ padding: '4px 8px', width: '120px', border: '1px solid #cbd5e1', borderRadius: '4px', fontWeight: 'bold', color: '#10b981' }} />
+                      <input type="text" name="deposit_no_autofill_custom" autoComplete="off" data-1p-ignore="true" value={formatCurrency(paidAmount)} onChange={e => setPaidAmount(parseCurrency(e.target.value))} style={{ padding: '4px 8px', width: '120px', border: '1px solid #cbd5e1', borderRadius: '4px', fontWeight: 'bold', color: '#10b981' }} />
                    </div>
                 </div>
                 <div>

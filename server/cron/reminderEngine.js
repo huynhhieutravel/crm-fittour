@@ -58,12 +58,59 @@ const generateReminders = async () => {
     }
 };
 
+const processLeadReminders = async () => {
+    try {
+        console.log('[CRON] Quét Lead Reminders đến hạn...');
+        
+        // Tìm các nhắc nhở chưa thông báo (notified_bell = false) và đến hạn (due_date <= hiện tại)
+        const result = await db.query(`
+            SELECT lr.*, l.name as lead_name 
+            FROM lead_reminders lr
+            JOIN leads l ON lr.lead_id = l.id
+            WHERE lr.notified_bell = false 
+              AND lr.due_date <= CURRENT_TIMESTAMP
+              AND lr.status = 'PENDING'
+        `);
+        
+        for (const reminder of result.rows) {
+            const title = 'Nhắc nhở chăm sóc khách hàng';
+            const message = `Đã đến giờ hẹn chăm sóc khách: ${reminder.lead_name}. Ghi chú: ${reminder.title || 'Không có'}`;
+            const link = `/workspace?lead_id=${reminder.lead_id}`;
+            
+            // Insert notification
+            const notifRes = await db.query(`
+                INSERT INTO user_notifications (user_id, title, message, link, is_read)
+                VALUES ($1, $2, $3, $4, false)
+                RETURNING *
+            `, [reminder.assigned_to, title, message, link]);
+            
+            // Emit via socket if possible
+            if (global.io) {
+                global.io.to(`user_${reminder.assigned_to}`).emit('new_notification', notifRes.rows[0]);
+            }
+            
+            // Mark as notified
+            await db.query(`UPDATE lead_reminders SET notified_bell = true WHERE id = $1`, [reminder.id]);
+        }
+        if (result.rows.length > 0) {
+            console.log(`[CRON] Đã thông báo cho ${result.rows.length} Lead Reminders.`);
+        }
+    } catch (err) {
+        console.error('[CRON] Lỗi khi xử lý Lead Reminders:', err);
+    }
+};
+
 const startCronJobs = () => {
-    // Chạy lúc 00:30 phút mỗi ngày
+    // Chạy lúc 00:30 phút mỗi ngày cho Departure Reminders
     cron.schedule('30 0 * * *', () => {
         generateReminders();
     }, {
         timezone: "Asia/Ho_Chi_Minh"
+    });
+    
+    // Chạy mỗi 15 phút để check Lead Reminders
+    cron.schedule('*/15 * * * *', () => {
+        processLeadReminders();
     });
     
     console.log('[CRON] reminderEngine đã đính kèm vào luồng hệ thống.');
@@ -71,7 +118,8 @@ const startCronJobs = () => {
     // Auto run once immediately so we can test the UI on first start!
     setTimeout(() => {
         generateReminders();
+        processLeadReminders();
     }, 5000); // 5 sec delay on boot
 };
 
-module.exports = { startCronJobs, generateReminders };
+module.exports = { startCronJobs, generateReminders, processLeadReminders };

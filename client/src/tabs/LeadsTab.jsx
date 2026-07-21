@@ -80,8 +80,30 @@ const LeadsTab = ({
     return (a.username || '').localeCompare(b.username || '');
   });
 
-  const baseUsersOptions = saleUsers.map(u => ({ id: u.id, name: u.username }));
-  const sortedUsersOptions = baseUsersOptions;
+  const usersByBU = React.useMemo(() => {
+    const map = {};
+    const baseList = [...saleUsers].map(u => ({ ...u, displayName: u.full_name ? `${u.full_name} (${u.username})` : u.username }));
+    
+    // Get unique BUs from all leads to build map
+    const uniqueBUs = [...new Set(leads.map(l => l.bu_group).filter(Boolean))];
+    
+    uniqueBUs.forEach(bu => {
+      map[bu] = [
+        ...[...baseList].sort((a, b) => {
+           const aInBU = (a.bus || []).includes(bu);
+           const bInBU = (b.bus || []).includes(bu);
+           if (aInBU && !bInBU) return -1;
+           if (!aInBU && bInBU) return 1;
+           return 0; // Maintain base order (which has current user first)
+        }).map(u => ({ id: u.id, name: u.displayName }))
+      ];
+    });
+    
+    map['DEFAULT'] = [
+      ...baseList.map(u => ({ id: u.id, name: u.displayName }))
+    ];
+    return map;
+  }, [saleUsers, leads]);
 
   const handlePhoneSave = (id) => {
     if (tempPhone.trim() !== '') {
@@ -265,7 +287,7 @@ const LeadsTab = ({
             <select className="filter-select" value={leadFilters.assigned_to} onChange={e => setLeadFilters({...leadFilters, assigned_to: e.target.value})}>
               <option value="">-- Tất cả --</option>
               <option value="NO_STAFF">⚠ Chưa giao ai</option>
-              {saleUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
+              {saleUsers.map(u => <option key={u.id} value={u.id}>{u.full_name ? `${u.full_name} (${u.username})` : u.username}</option>)}
             </select>
           </div>
           <button 
@@ -585,7 +607,7 @@ const LeadsTab = ({
                 </td>
                 <td data-label="Tư Vấn Viên">
                   <SearchableSelect 
-                    options={sortedUsersOptions}
+                    options={usersByBU[lead.bu_group] || usersByBU['DEFAULT']}
                     value={lead.assigned_to}
                     onChange={(val) => !lead.is_locked && handleQuickUpdate(lead.id, 'assigned_to', val)}
                     placeholder="Chưa giao"

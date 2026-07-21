@@ -22,6 +22,46 @@ const EditLeadModal = ({
 }) => {
   const [existingCustomer, setExistingCustomer] = useState(null);
   const [activeTab, setActiveTab] = useState(editingLead?.openTab || 'info');
+  const [localReminders, setLocalReminders] = useState([]);
+  const [loadingReminders, setLoadingReminders] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'history' && editingLead?.id) {
+       setLoadingReminders(true);
+       axios.get(`/api/reminders/leads/by-lead/${editingLead.id}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }})
+       .then(res => setLocalReminders(res.data))
+       .catch(err => console.error(err))
+       .finally(() => setLoadingReminders(false));
+    }
+  }, [activeTab, editingLead?.id]);
+
+  const handleNoteWithReminder = async () => {
+    try {
+      await handleAddNoteForLead(editingLead.id);
+      
+      const inlineReminderDate = document.getElementById('inline_reminder_date')?.value;
+      const inlineReminderAssignedTo = document.getElementById('inline_reminder_assigned_to')?.value;
+      
+      if (inlineReminderDate) {
+         await axios.post(`/api/reminders/leads`, {
+            title: `Lịch hẹn từ Ghi chú: ${newNote.substring(0, 50)}...`,
+            lead_id: editingLead.id,
+            due_date: new Date(inlineReminderDate).toISOString(),
+            assigned_to: inlineReminderAssignedTo || null
+         }, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }});
+         
+         const res = await axios.get(`/api/reminders/leads/by-lead/${editingLead.id}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }});
+         setLocalReminders(res.data);
+         
+         if (document.getElementById('inline_reminder_date')) {
+             document.getElementById('inline_reminder_date').value = '';
+         }
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Có lỗi khi tạo lịch hẹn nhắc nhở');
+    }
+  };
 
   useEffect(() => {
     if (!editingLead?.phone || editingLead.phone.trim().length < 8) {
@@ -309,12 +349,77 @@ const EditLeadModal = ({
               value={newNote} 
               onChange={e => setNewNote(e.target.value)}
             />
-            <button disabled={editingLead.is_locked} type="button" className="note-submit-btn" style={{ opacity: editingLead.is_locked ? 0.5 : 1 }} onClick={() => handleAddNoteForLead(editingLead.id)}>
-              <Send size={16} /> Gửi
+            {!editingLead.is_locked && (
+              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Clock size={14} /> KÈM LỊCH HẸN NHẮC NHỞ (Tùy chọn)
+                </div>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                   <button type="button" onClick={() => {
+                      const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(9,0,0,0);
+                      document.getElementById('inline_reminder_date').value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,16);
+                   }} style={{ padding: '4px 10px', borderRadius: '4px', border: '1px solid #cbd5e1', background: 'white', cursor: 'pointer', fontSize: '0.8rem', color: '#334155' }}>Sáng mai (9h)</button>
+                   <button type="button" onClick={() => {
+                      const d = new Date(); d.setDate(d.getDate() + 3);
+                      document.getElementById('inline_reminder_date').value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,16);
+                   }} style={{ padding: '4px 10px', borderRadius: '4px', border: '1px solid #cbd5e1', background: 'white', cursor: 'pointer', fontSize: '0.8rem', color: '#334155' }}>Sau 3 ngày</button>
+                   <button type="button" onClick={() => {
+                      const d = new Date(); d.setDate(d.getDate() + 7);
+                      document.getElementById('inline_reminder_date').value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,16);
+                   }} style={{ padding: '4px 10px', borderRadius: '4px', border: '1px solid #cbd5e1', background: 'white', cursor: 'pointer', fontSize: '0.8rem', color: '#334155' }}>Sau 7 ngày</button>
+                </div>
+                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                   <input type="datetime-local" id="inline_reminder_date" className="modal-input" style={{ background: 'white', maxWidth: '200px' }} />
+                   <select id="inline_reminder_assigned_to" className="modal-select" style={{ background: 'white', maxWidth: '180px', padding: '6px' }} defaultValue={editingLead.assigned_to || ''}>
+                     <option value="">-- Nhắc bản thân --</option>
+                     {users && users
+                        .filter(u => u.is_active !== false)
+                        .sort((a, b) => {
+                            const aInBU = editingLead.bu_group && (a.bus || []).includes(editingLead.bu_group);
+                            const bInBU = editingLead.bu_group && (b.bus || []).includes(editingLead.bu_group);
+                            if (aInBU && !bInBU) return -1;
+                            if (!aInBU && bInBU) return 1;
+                            return (a.full_name || a.username || '').localeCompare(b.full_name || b.username || '');
+                        })
+                        .map(u => (
+                       <option key={u.id} value={u.id}>{u.full_name ? `${u.full_name} (${u.username})` : u.username}</option>
+                     ))}
+                   </select>
+                 </div>
+              </div>
+            )}
+            
+            <button disabled={editingLead.is_locked} type="button" className="note-submit-btn" style={{ position: 'relative', bottom: 'auto', right: 'auto', opacity: editingLead.is_locked ? 0.5 : 1, width: '100%', padding: '12px', fontSize: '1rem', marginTop: '16px' }} onClick={handleNoteWithReminder}>
+              <Send size={18} /> GHI NHẬN & LƯU
             </button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Reminders section */}
+            {localReminders.length > 0 && (
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#b45309', textTransform: 'uppercase', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Clock size={16} /> Lịch hẹn đang chờ
+                </div>
+                {localReminders.filter(r => r.status === 'PENDING').map(r => (
+                  <div key={r.id} style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: '1rem', borderRadius: '8px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontWeight: 800, color: '#b45309', marginBottom: '4px' }}>{new Date(r.due_date).toLocaleString('vi-VN')}</div>
+                      <div style={{ fontSize: '0.9rem', color: '#92400e' }}>{r.title}</div>
+                    </div>
+                    <button type="button" onClick={async () => {
+                        try {
+                           await axios.put(`/api/reminders/leads/${r.id}/done`, {}, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }});
+                           setLocalReminders(localReminders.map(x => x.id === r.id ? {...x, status: 'DONE'} : x));
+                        } catch(e) {}
+                     }} style={{ background: 'white', color: '#059669', border: '1px solid #a7f3d0', padding: '6px 12px', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }}>
+                        <CheckCircle size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Hoàn thành
+                     </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {leadNotes.map(note => (
               <div key={note.id} style={{ padding: '1.5rem', background: 'white', borderRadius: '1rem', border: '1px solid #eaeff4', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                 <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

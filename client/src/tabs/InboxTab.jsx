@@ -74,32 +74,39 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
 
   // Auto-select conversation khi nhận initialPsid từ Lead Chat button
   const psidHandledRef = useRef(false);
+  const hasSearchedRef = useRef(false);
+  
   useEffect(() => {
     if (!initialPsid || psidHandledRef.current) return;
     
-    if (conversations.length > 0) {
-      const matchConv = conversations.find(c => c.external_id === initialPsid);
-      if (matchConv) {
-        psidHandledRef.current = true;
-        handleSelectConv(matchConv);
-        if (clearInitialPsid) clearInitialPsid();
-      } else if (!searchKey) {
-        // Conversation không nằm trong trang hiện tại, search bằng PSID
+    // Ép kiểu String để so sánh an toàn vì PSID là số rất lớn có thể sai lệch khi so sánh Number
+    const matchConv = conversations.find(c => String(c.external_id) === String(initialPsid));
+    
+    if (matchConv) {
+      psidHandledRef.current = true;
+      handleSelectConv(matchConv);
+      if (clearInitialPsid) clearInitialPsid();
+    } else if (searchKey !== initialPsid) {
+      if (!hasSearchedRef.current) {
+        // Conversation không nằm trong trang hiện tại, hoặc chưa search -> search bằng PSID
+        hasSearchedRef.current = true;
         setSearchInput(initialPsid);
         setSearchKey(initialPsid);
-      } else if (searchKey === initialPsid && conversations.length > 0) {
-        // Đã search xong, auto chọn kết quả đầu tiên
+        setPage(1); // Cực kì quan trọng: Reset page về 1 nếu user đang ở trang 2, 3...
+      } else {
+        // Nếu đã từng tự động search initialPsid, nhưng giờ searchKey bị đổi (do user xóa bộ lọc)
+        // Tức là user can thiệp thủ công -> Hủy auto-select để không giam user trong từ khóa cũ
         psidHandledRef.current = true;
-        handleSelectConv(conversations[0]);
         if (clearInitialPsid) clearInitialPsid();
       }
     }
   }, [conversations, searchKey, initialPsid]);
 
-  // Reset ref khi initialPsid thay đổi (mới click Chat)
+  // Reset ref khi initialPsid thay đổi (mới click Chat từ Lead khác)
   useEffect(() => {
     if (initialPsid) {
       psidHandledRef.current = false;
+      hasSearchedRef.current = false;
     }
   }, [initialPsid]);
 
@@ -151,6 +158,11 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
   const handleSelectConv = (conv) => {
     setSelectedConv(conv);
     fetchMessages(conv.id);
+    // Nếu user chủ động bấm chọn 1 chat bất kỳ, hủy bỏ auto-select
+    if (initialPsid) {
+      psidHandledRef.current = true;
+      if (clearInitialPsid) clearInitialPsid();
+    }
   };
 
   const sortedSaleUsers = users.filter(u => 

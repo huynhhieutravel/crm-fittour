@@ -112,7 +112,7 @@ export const EditUserModal = ({
 }) => {
   const [formData, setFormData] = useState({
     full_name: '', email: '', phone: '', role_id: '', is_active: true, permissions: {}, bus: [],
-    birth_date: '', gender: '', id_card: '', passport_url: '', id_expiry: '', address: '', facebook_url: '', created_at: '', position: '', avatar_url: ''
+    birth_date: '', gender: '', id_card: '', passport_url: '', id_expiry: '', address: '', facebook_url: '', created_at: '', position: '', avatar_url: '', telegram_user_id: ''
   });
   const [activeTab, setActiveTab] = useState('personal');
   const [uploadingPassport, setUploadingPassport] = useState(false);
@@ -155,7 +155,7 @@ export const EditUserModal = ({
         id_expiry: user.id_expiry ? new Date(user.id_expiry).toLocaleDateString('en-CA') : '',
         address: user.address || '', facebook_url: user.facebook_url || '',
         created_at: user.created_at ? new Date(user.created_at).toLocaleDateString('en-CA') : '',
-        position: user.position || '', avatar_url: user.avatar_url || ''
+        position: user.position || '', avatar_url: user.avatar_url || '', telegram_user_id: user.telegram_user_id || ''
       });
     }
   }, [user]);
@@ -307,6 +307,10 @@ export const EditUserModal = ({
               <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
                 <label>🔗 LINK FACEBOOK</label>
                 <input className="modal-input" value={formData.facebook_url} onChange={e => setFormData({...formData, facebook_url: e.target.value})} placeholder="https://facebook.com/..." />
+              </div>
+              <div className="modal-form-group">
+                <label>💬 TELEGRAM USER ID (ĐỂ NHẬN LEAD)</label>
+                <input className="modal-input" type="number" value={formData.telegram_user_id} onChange={e => setFormData({...formData, telegram_user_id: e.target.value})} placeholder="VD: 935329248" />
               </div>
               <div className="mobile-stack-grid mobile-stack-grid" style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                 <div className="modal-form-group">

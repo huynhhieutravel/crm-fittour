@@ -214,7 +214,7 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
     const { id } = req.params;
     const { full_name, email, role_id, phone, is_active, permissions,
-            birth_date, gender, id_card, passport_url, id_expiry, address, facebook_url, created_at, position, avatar_url, bus } = req.body;
+            birth_date, gender, id_card, passport_url, id_expiry, address, facebook_url, created_at, position, avatar_url, bus, telegram_user_id } = req.body;
     console.log(`[UPDATE USER ${id}] Payload:`, JSON.stringify(req.body));
     
     const client = await db.pool.connect();
@@ -268,11 +268,11 @@ exports.updateUser = async (req, res) => {
             `UPDATE users SET full_name = $1, email = $2, role_id = $3, phone = $4, is_active = $5,
              birth_date = $7, gender = $8, id_card = $9, passport_url = $10, id_expiry = $11, address = $12, facebook_url = $13,
              created_at = COALESCE($14, created_at), position = $15, avatar_url = COALESCE($16, avatar_url),
-             bus = COALESCE($17, bus)
+             bus = COALESCE($17, bus), telegram_user_id = $18
              WHERE id = $6`,
             [full_name, email || null, role_id, phone || null, is_active !== false, id,
              birth_date || null, gender || null, id_card || null, passport_url || null, id_expiry || null, address || null, facebook_url || null,
-             created_at || null, position || null, avatar_url || null, bus || null]
+             created_at || null, position || null, avatar_url || null, bus || null, telegram_user_id || null]
         );
         
         if (updateRes.rowCount === 0) {

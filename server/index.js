@@ -146,6 +146,7 @@ const miceLeadsRoutes = require('./routes/mice_leads');
 const authController = require('./controllers/authController');
 
 app.use('/api/webhook', webhookRoutes);
+app.use('/api/telegram', require('./routes/telegramRoutes'));
 // Áp dụng Login Limiter cụ thể cho endpoint đăng nhập
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRoutes);
@@ -159,6 +160,7 @@ app.use('/api/departures', departureRoutes);
 app.use('/api/departure-card-guides', require('./routes/departureCardGuides'));
 app.use('/api/guides', guideRoutes);
 app.use('/api/leads', leadRoutes);
+app.use('/api/dispatch-schedules', require('./routes/dispatchSchedules'));
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/messages', messageRoutes);
@@ -286,6 +288,10 @@ server.listen(PORT, () => {
         // Start CSKH Auto-Sync Cron Engine (every 15 min)
         const { startCskhCron } = require('./cron/cskhEngine');
         startCskhCron();
+
+        // Start Dispatcher SLA Cron Engine (every min)
+        const { startDispatcherSLAEngine } = require('./cron/dispatcherSLAEngine');
+        startDispatcherSLAEngine();
 
         // Start Email Listeners for Event-Driven Architecture
         const { registerEmailListeners } = require('./listeners/emailListener');

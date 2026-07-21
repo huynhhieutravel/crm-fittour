@@ -173,3 +173,98 @@ exports.deleteReminder = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server' });
     }
 };
+
+// ================= LEAD REMINDERS =================
+
+exports.getLeadReminders = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const result = await db.query(`
+            SELECT lr.*, l.name as lead_name, l.phone as lead_phone, l.status as lead_status
+            FROM lead_reminders lr
+            JOIN leads l ON lr.lead_id = l.id
+            WHERE lr.assigned_to = $1 
+            ORDER BY 
+              CASE WHEN lr.status = 'PENDING' THEN 1 ELSE 2 END ASC,
+              lr.due_date ASC
+        `, [userId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Lỗi getLeadReminders:', err);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+};
+
+exports.getRemindersByLead = async (req, res) => {
+    try {
+        const { lead_id } = req.params;
+        const result = await db.query(`
+            SELECT lr.*, l.name as lead_name, l.phone as lead_phone, l.status as lead_status, u.username as assigned_to_name
+            FROM lead_reminders lr
+            JOIN leads l ON lr.lead_id = l.id
+            LEFT JOIN users u ON lr.assigned_to = u.id
+            WHERE lr.lead_id = $1
+            ORDER BY 
+              CASE WHEN lr.status = 'PENDING' THEN 1 ELSE 2 END ASC,
+              lr.due_date ASC
+        `, [lead_id]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Lỗi getRemindersByLead:', err);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+};
+
+exports.createLeadReminder = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { lead_id, title, due_date, assigned_to } = req.body;
+        const targetUserId = assigned_to || userId;
+        
+        const result = await db.query(`
+            INSERT INTO lead_reminders (lead_id, assigned_to, title, due_date)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `, [lead_id, targetUserId, title, due_date]);
+        
+        res.json({ success: true, item: result.rows[0] });
+    } catch (err) {
+        console.error('Lỗi createLeadReminder:', err);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+};
+
+exports.markLeadReminderDone = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        
+        await db.query(`
+            UPDATE lead_reminders 
+            SET status = 'DONE', resolved_at = CURRENT_TIMESTAMP
+            WHERE id = $1
+        `, [id]);
+        
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Lỗi markLeadReminderDone:', err);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+};
+
+exports.deleteLeadReminder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        
+        await db.query(`
+            DELETE FROM lead_reminders 
+            WHERE id = $1
+        `, [id]);
+        
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Lỗi deleteLeadReminder:', err);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+};
