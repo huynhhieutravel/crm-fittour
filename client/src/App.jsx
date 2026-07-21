@@ -1975,10 +1975,22 @@ function AppContent() {
 
               <Link title="Điều Phối & Chat" 
                 to="/global-chat"
-                className={`nav-item ${activeTab === 'global-chat', 'dispatcher-center', 'dispatch-schedule' ? 'active' : ''}`}
+                className={`nav-item ${['global-chat'].includes(activeTab) ? 'active' : ''}`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <MessageCircle /> Điều Phối & Chat</Link>
+
+              <div title="Trung tâm điều phối" 
+                className={`nav-item ${activeTab === 'dispatcher-center' ? 'active' : ''}`}
+                onClick={() => navigate('/dispatcher-center')}
+              >
+                <CalendarDays /> Trung tâm điều phối</div>
+
+              <div title="Đăng ký lịch trực" 
+                className={`nav-item ${activeTab === 'dispatch-schedule' ? 'active' : ''}`}
+                onClick={() => navigate('/dispatch-schedule')}
+              >
+                <CalendarClock /> Đăng ký lịch trực</div>
 
               <Link title="Dịch vụ Hỗ trợ" 
                 to="/travel-support"
@@ -2082,21 +2094,6 @@ function AppContent() {
                   onClick={() => navigate('/vouchers')}
                 >
                   <DollarSign /> Phiếu Thu / Chi</div>
-              )}
-
-              {checkView('departures') && (
-                <div title="Trung tâm điều phối" 
-                  className={`nav-item ${activeTab === 'dispatcher-center' ? 'active' : ''}`}
-                  onClick={() => navigate('/dispatcher-center')}
-                >
-                  <CalendarDays /> Trung tâm điều phối</div>
-              )}
-              {checkView('departures') && (
-                <div title="Đăng ký lịch trực" 
-                  className={`nav-item ${activeTab === 'dispatch-schedule' ? 'active' : ''}`}
-                  onClick={() => navigate('/dispatch-schedule')}
-                >
-                  <CalendarClock /> Đăng ký lịch trực</div>
               )}
 
               {checkView('guides') && (
@@ -3280,7 +3277,7 @@ function AppContent() {
             LEAD_SOURCES={LEAD_SOURCES}
             tours={tours}
             bus={bus}
-            navigateToInbox={navigateToInbox}
+            navigateToInbox={(psid) => { setInboxPsid(psid); navigate('/inbox'); setActiveTab('inbox'); }}
             handleQuickUpdate={handleQuickUpdate}
             onLeadsUpdated={fetchLeads}
           />
