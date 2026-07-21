@@ -39,6 +39,9 @@ import InsurancesTab from './tabs/InsurancesTab';
 import VisaProvidersTab from './tabs/VisaProvidersTab';
 import OpToursTab from './tabs/OpToursTab';
 import TravelSupportTab from './tabs/TravelSupportTab';
+import GlobalChat from './tabs/GlobalChat';
+import DispatcherCenterTab from './tabs/DispatcherCenterTab';
+import DispatchScheduleTab from './tabs/DispatchScheduleTab';
 import LeaveRequestsTab from './tabs/LeaveRequestsTab';
 import RoomBookingTab from './tabs/RoomBookingTab';
 import PaymentVouchersTab from './tabs/PaymentVouchersTab';
@@ -99,6 +102,7 @@ import {
   MessageSquare, 
   Calendar, 
   CalendarClock,
+  CalendarDays,
   CheckCircle,
   TrendingUp,
   UserPlus,
@@ -142,7 +146,8 @@ import {
   MapPin,
   ScanText,
   Cpu,
-  Mail
+  Mail,
+  MessageCircle
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -178,7 +183,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
-  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers'];
+  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'global-chat', 'dispatcher-center', 'dispatch-schedule'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -1934,20 +1939,18 @@ function AppContent() {
 
         <div className="sidebar-nav-scroll">
           <div className="nav-section-title">Góc Cá Nhân</div>
-          <Link to="/workspace" className={`nav-item ${activeTab === 'workspace' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
-            <Home /> Lối Tắt Làm Việc
-          </Link>
+          <Link title="Lối Tắt Làm Việc" to="/workspace" className={`nav-item ${activeTab === 'workspace' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+            <Home /> Lối Tắt Làm Việc</Link>
 
           <div className="nav-section-title">Tổng quan</div>
-          <Link to="/dashboard" className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
-            <LayoutDashboard /> Dashboard
-          </Link>
+          <Link title="Dashboard" to="/dashboard" className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
+            <LayoutDashboard /> Dashboard</Link>
           
           {(checkView('leads') || checkView('tours')) && (
             <>
               <div className="nav-section-title">Marketing & Sales</div>
               {checkView('leads') && (
-                <Link 
+                <Link title="Lead Marketing" 
                   to="/leads"
                   className={`nav-item ${activeTab === 'leads' || activeTab === 'leads-dashboard' ? 'active-parent' : ''}`} 
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -1965,21 +1968,26 @@ function AppContent() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Users /> Lead Marketing
-                  </div>
+                    <Users /> Lead Marketing</div>
                   <ChevronRight size={14} opacity={0.5} />
                 </Link>
               )}
 
-              <Link 
+              <Link title="Điều Phối & Chat" 
+                to="/global-chat"
+                className={`nav-item ${activeTab === 'global-chat', 'dispatcher-center', 'dispatch-schedule' ? 'active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <MessageCircle /> Điều Phối & Chat</Link>
+
+              <Link title="Dịch vụ Hỗ trợ" 
                 to="/travel-support"
                 className={`nav-item ${activeTab === 'travel-support' ? 'active' : ''}`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <Briefcase /> Dịch vụ Hỗ trợ
-              </Link>
+                <Briefcase /> Dịch vụ Hỗ trợ</Link>
               {checkView('leads') && (
-                <div 
+                <div title="Marketing Ads" 
                   className={`nav-item ${(activeTab === 'marketing-ads' || activeTab === 'management-dashboard') ? 'active' : ''}`} 
                   onClick={() => navigate('/marketing-ads')}
                   onMouseEnter={(e) => {
@@ -1996,16 +2004,14 @@ function AppContent() {
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Target /> Marketing Ads
-                  </div>
+                    <Target /> Marketing Ads</div>
                   <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
 
               {checkView('leads') && (
-                <div className={`nav-item ${activeTab === 'inbox' ? 'active' : ''}`} onClick={() => navigate('/inbox')}>
-                  <MessageSquare /> Messenger
-                </div>
+                <div title="Messenger" className={`nav-item ${activeTab === 'inbox' ? 'active' : ''}`} onClick={() => navigate('/inbox')}>
+                  <MessageSquare /> Messenger</div>
               )}
             </>
           )}
@@ -2015,7 +2021,7 @@ function AppContent() {
               <div className="nav-section-title">Nghiệp vụ Lõi</div>
               
               {checkView('tours') && (
-                <div 
+                <div title="Sản phẩm Tour" 
                   className={`nav-item ${activeTab === 'tours' || activeTab === 'bus' ? 'active-parent' : ''}`}
                   onClick={() => navigate('/tours')}
                   style={{ justifyContent: 'space-between' }}
@@ -2032,14 +2038,13 @@ function AppContent() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Package /> Sản phẩm Tour
-                  </div>
+                    <Package /> Sản phẩm Tour</div>
                   <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
 
               {checkView('op_tours') && (
-                <div 
+                <div title="Lịch khởi hành" 
                   className={`nav-item ${activeTab === 'op-tours' || activeTab === 'costings' || activeTab === 'reminders' ? 'active-parent' : ''}`}
                   onClick={() => navigate('/op-tours')}
                   style={{ justifyContent: 'space-between' }}
@@ -2056,37 +2061,46 @@ function AppContent() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Calendar /> Lịch khởi hành
-                  </div>
+                    <Calendar /> Lịch khởi hành</div>
                   <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
 
               {checkView('op_tours') && (
-                 <div className={`nav-item ${activeTab === 'passport-ocr' ? 'active' : ''}`} onClick={() => { navigate('/passport-ocr'); setActiveTab('passport-ocr'); }}>
-                   <ScanText size={18} /> Công cụ OCR Hộ chiếu
-                 </div>
+                 <div title="Công cụ OCR Hộ chiếu" className={`nav-item ${activeTab === 'passport-ocr' ? 'active' : ''}`} onClick={() => { navigate('/passport-ocr'); setActiveTab('passport-ocr'); }}>
+                   <ScanText size={18} /> Công cụ OCR Hộ chiếu</div>
               )}
 
               {checkView('visas') && (
-                 <div className={`nav-item ${activeTab === 'visas' ? 'active' : ''}`} onClick={() => { navigate('/visas'); setActiveTab('visas'); }}>
-                   <MapPin size={18} /> Quản lý Visa
-                 </div>
+                 <div title="Quản lý Visa" className={`nav-item ${activeTab === 'visas' ? 'active' : ''}`} onClick={() => { navigate('/visas'); setActiveTab('visas'); }}>
+                   <MapPin size={18} /> Quản lý Visa</div>
               )}
 
               {checkView('op_tours') && (
-                <div 
+                <div title="Phiếu Thu / Chi" 
                   className={`nav-item ${activeTab === 'vouchers' ? 'active' : ''}`}
                   onClick={() => navigate('/vouchers')}
                 >
-                  <DollarSign /> Phiếu Thu / Chi
-                </div>
+                  <DollarSign /> Phiếu Thu / Chi</div>
               )}
 
-              {/* Old Lịch khởi hành tab removed — merged into OpTours above */}
-              
+              {checkView('departures') && (
+                <div title="Trung tâm điều phối" 
+                  className={`nav-item ${activeTab === 'dispatcher-center' ? 'active' : ''}`}
+                  onClick={() => navigate('/dispatcher-center')}
+                >
+                  <CalendarDays /> Trung tâm điều phối</div>
+              )}
+              {checkView('departures') && (
+                <div title="Đăng ký lịch trực" 
+                  className={`nav-item ${activeTab === 'dispatch-schedule' ? 'active' : ''}`}
+                  onClick={() => navigate('/dispatch-schedule')}
+                >
+                  <CalendarClock /> Đăng ký lịch trực</div>
+              )}
+
               {checkView('guides') && (
-                <div 
+                <div title="Hướng dẫn viên" 
                   className={`nav-item ${activeTab === 'guides' ? 'active-parent' : ''}`} 
                   onClick={() => { navigate('/guides'); setActiveTab('guides'); setGuideActiveTab('list'); }}
                   style={{ justifyContent: 'space-between' }}
@@ -2103,8 +2117,7 @@ function AppContent() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Map /> Hướng dẫn viên
-                  </div>
+                    <Map /> Hướng dẫn viên</div>
                   <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
@@ -2113,14 +2126,12 @@ function AppContent() {
 
           {(checkView('bookings') || checkView('customers')) && (
             <>
-              {/* Old Đơn hàng/Booking tab removed — merged into OpTours */}
-              {false && checkView('bookings') && (
-                <div className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`} onClick={() => navigate('/bookings')}>
-                  <ShoppingCart /> Đơn hàng/Booking
-                </div>
+              {checkView('bookings') && (
+                <div title="Quản lý Booking" className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`} onClick={() => navigate('/bookings')}>
+                  <ShoppingCart /> Quản lý Booking (Đăng ký)</div>
               )}
               {checkView('customers') && (
-                <div 
+                <div title="Khách hàng" 
                   className={`nav-item ${activeTab === 'customers' ? 'active-parent' : ''}`} 
                   onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('list'); }}
                   style={{ justifyContent: 'space-between' }}
@@ -2137,8 +2148,7 @@ function AppContent() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <UserCheck /> Khách hàng
-                  </div>
+                    <UserCheck /> Khách hàng</div>
                   <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
@@ -2146,7 +2156,7 @@ function AppContent() {
           )}
 
           <div className="nav-section-title">Đối tác & Dịch vụ</div>
-          <div 
+          <div title="Nhà cung cấp" 
             className={`nav-item ${['hotels', 'restaurants', 'transports', 'tickets', 'airlines', 'landtours'].includes(activeTab) ? 'active-parent' : ''}`} 
             onClick={() => { navigate('/hotels'); setActiveTab('hotels'); }}
             style={{ justifyContent: 'space-between' }}
@@ -2163,8 +2173,7 @@ function AppContent() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Package /> Nhà cung cấp
-            </div>
+              <Package /> Nhà cung cấp</div>
             <ChevronRight size={14} opacity={0.5} />
           </div>
 
@@ -2173,16 +2182,15 @@ function AppContent() {
             <>
               <div className="nav-section-title" style={{ color: '#d97706' }}>Tour Đoàn 🔒</div>
               {checkPerm('group_projects', 'view_dashboard') && (
-                <div 
+                <div title="Dashboard MICE" 
                   className={`nav-item ${activeTab === 'group-dashboard' ? 'active' : ''}`} 
                   onClick={() => { navigate('/group/dashboard'); setActiveTab('group-dashboard'); }}
                 >
-                  <Activity /> Dashboard MICE
-                </div>
+                  <Activity /> Dashboard MICE</div>
               )}
               {checkView('group_leaders') && (
                 <>
-                  <div 
+                  <div title="Doanh nghiệp" 
                     className={`nav-item ${activeTab === 'b2b-companies' ? 'active' : ''}`} 
                     onClick={() => { navigate('/group/companies'); setActiveTab('b2b-companies'); setB2bActiveTab('list'); }}
                     style={{ justifyContent: 'space-between' }}
@@ -2198,40 +2206,36 @@ function AppContent() {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Building /> Doanh nghiệp
-                    </div>
+                      <Building /> Doanh nghiệp</div>
                     <ChevronRight size={14} opacity={0.5} />
                   </div>
-                  <div 
+                  <div title="Trưởng đoàn" 
                     className={`nav-item ${activeTab === 'group-leaders' ? 'active' : ''}`} 
                     onClick={() => { navigate('/group/leaders'); setActiveTab('group-leaders'); }}
                   >
-                    <Users /> Trưởng đoàn
-                  </div>
+                    <Users /> Trưởng đoàn</div>
                 </>
               )}
               {checkView('group_projects') && (
-                <div 
+                <div title="Dự án Tour (MICE)" 
                   className={`nav-item ${activeTab === 'group-projects' ? 'active' : ''}`} 
                   onClick={() => { navigate('/group/projects'); setActiveTab('group-projects'); }}
                 >
-                  <Briefcase /> Dự án Tour (MICE)
-                </div>
+                  <Briefcase /> Dự án Tour (MICE)</div>
               )}
               {checkView('mice_leads') && (
-                <div 
+                <div title="MICE Leads (Tiềm năng)" 
                   className={`nav-item ${activeTab === 'group-mice-leads' ? 'active' : ''}`} 
                   onClick={() => { navigate('/group/mice-leads'); setActiveTab('group-mice-leads'); }}
                 >
-                  <Filter /> MICE Leads (Tiềm năng)
-                </div>
+                  <Filter /> MICE Leads (Tiềm năng)</div>
               )}
 
             </>
           )}
 
           <div className="nav-section-title">Hệ thống & Nhân sự</div>
-          <div 
+          <div title="Quản lý Nhân sự" 
             className={`nav-item ${['users','staff-calendar','teams','team-directory','org-chart'].includes(activeTab) ? 'active' : ''}`} 
             onClick={() => { navigate('/team-directory'); setActiveTab('team-directory'); }}
             style={{ justifyContent: 'space-between' }}
@@ -2248,13 +2252,12 @@ function AppContent() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <UserCheck /> Quản lý Nhân sự
-            </div>
+              <UserCheck /> Quản lý Nhân sự</div>
             <ChevronRight size={14} opacity={0.5} />
           </div>
 
           {user && (user.role === 'admin' || user.role === 'manager') && (
-            <div 
+            <div title="Cấu hình Email" 
               className={`nav-item ${['email-rules', 'email-groups', 'notification-dashboard'].includes(activeTab) ? 'active' : ''}`} 
               onClick={() => { navigate('/email-rules'); setActiveTab('email-rules'); }}
               style={{ justifyContent: 'space-between' }}
@@ -2271,63 +2274,52 @@ function AppContent() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                <Mail /> Cấu hình Email
-              </div>
+                <Mail /> Cấu hình Email</div>
               <ChevronRight size={14} opacity={0.5} />
             </div>
           )}
 
           {checkView('markets') && (
-                <div className={`nav-item ${activeTab === 'market-settings' ? 'active' : ''}`} onClick={() => navigate('/market-settings')}>
-                  <MapPin /> Quản lý Thị trường
-                </div>
+                <div title="Quản lý Thị trường" className={`nav-item ${activeTab === 'market-settings' ? 'active' : ''}`} onClick={() => navigate('/market-settings')}>
+                  <MapPin /> Quản lý Thị trường</div>
               )}
               {checkView('settings') && (
                 <>
-                  <div className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => navigate('/settings')}>
-                    <Settings /> Cấu hình Meta
-                  </div>
+                  <div title="Cấu hình Meta" className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => navigate('/settings')}>
+                    <Settings /> Cấu hình Meta</div>
                   {user && (user.role === 'admin' || user.role === 'manager') && (
-                    <div className={`nav-item ${activeTab === 'media-settings' ? 'active' : ''}`} onClick={() => navigate('/media-settings')}>
-                      <ImageIcon /> Quản lý Media
-                    </div>
+                    <div title="Quản lý Media" className={`nav-item ${activeTab === 'media-settings' ? 'active' : ''}`} onClick={() => navigate('/media-settings')}>
+                      <ImageIcon /> Quản lý Media</div>
                   )}
-                  <div className={`nav-item ${activeTab === 'audit-logs' ? 'active' : ''}`} onClick={() => navigate('/audit-logs')}>
-                    <Activity /> Nhật ký hệ thống
-                  </div>
-                  <div className={`nav-item ${activeTab === 'agent-manager' ? 'active' : ''}`} onClick={() => navigate('/agent-manager')}>
-                    <Cpu /> AI Agent Manager
-                  </div>
+                  <div title="Nhật ký hệ thống" className={`nav-item ${activeTab === 'audit-logs' ? 'active' : ''}`} onClick={() => navigate('/audit-logs')}>
+                    <Activity /> Nhật ký hệ thống</div>
+                  <div title="AI Agent Manager" className={`nav-item ${activeTab === 'agent-manager' ? 'active' : ''}`} onClick={() => navigate('/agent-manager')}>
+                    <Cpu /> AI Agent Manager</div>
                 </>
               )}
 
           <div className="nav-section-title">Tài Liệu Nội Bộ</div>
-          <div className={`nav-item ${activeTab === 'tai-lieu' ? 'active' : ''}`} onClick={() => navigate('/tai-lieu')}>
-            <BookOpen /> Sổ Tay FIT Tour
-          </div>
-          <div className={`nav-item ${activeTab === 'workflow' ? 'active' : ''}`} onClick={() => navigate('/workflow')}>
-            <FileText /> Luồng xử lý CRM
-          </div>
+          <div title="Sổ Tay FIT Tour" className={`nav-item ${activeTab === 'tai-lieu' ? 'active' : ''}`} onClick={() => navigate('/tai-lieu')}>
+            <BookOpen /> Sổ Tay FIT Tour</div>
+          <div title="Luồng xử lý CRM" className={`nav-item ${activeTab === 'workflow' ? 'active' : ''}`} onClick={() => navigate('/workflow')}>
+            <FileText /> Luồng xử lý CRM</div>
 
 
-          <div className={`nav-item ${activeTab === 'licenses' ? 'active' : ''}`} onClick={() => navigate('/licenses')}>
-            <FileText /> Biểu Mẫu Văn Phòng
-          </div>
-          <div className={`nav-item ${activeTab === 'bu-rules' ? 'active' : ''}`} onClick={() => navigate('/bu-rules')}>
-            <FileText /> Quy tắc chọn BU
-          </div>
+          <div title="Biểu Mẫu Văn Phòng" className={`nav-item ${activeTab === 'licenses' ? 'active' : ''}`} onClick={() => navigate('/licenses')}>
+            <FileText /> Biểu Mẫu Văn Phòng</div>
+          <div title="Quy tắc chọn BU" className={`nav-item ${activeTab === 'bu-rules' ? 'active' : ''}`} onClick={() => navigate('/bu-rules')}>
+            <FileText /> Quy tắc chọn BU</div>
 
           {checkView('departures') && (
             <>
               <div className="nav-section-title">Khách hàng Công Khai</div>
-              <div className={`nav-item ${activeTab === 'admin-trip' ? 'active' : ''}`} onClick={() => { navigate('/admin-trip'); setActiveTab('admin-trip'); }} style={{ color: '#0ea5e9' }}>
-                <BookOpen size={18} /> Quản lý Thẻ HDV
-              </div>
+              <div title="Quản lý Thẻ HDV" className={`nav-item ${activeTab === 'admin-trip' ? 'active' : ''}`} onClick={() => { navigate('/admin-trip'); setActiveTab('admin-trip'); }} style={{ color: '#0ea5e9' }}>
+                <BookOpen size={18} /> Quản lý Thẻ HDV</div>
             </>
           )}
 
           <div className="nav-section-title">Trợ giúp & Hướng dẫn</div>
-          <div 
+          <div title="Sổ tay Hướng dẫn" 
             className={`nav-item ${activeTab === 'manual' ? 'active-parent' : ''}`} 
             onClick={() => navigate('/manual/overview')}
             style={{ justifyContent: 'space-between' }}
@@ -2344,14 +2336,13 @@ function AppContent() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <BookOpen size={18} /> Sổ tay Hướng dẫn
-            </div>
+              <BookOpen size={18} /> Sổ tay Hướng dẫn</div>
             <ChevronRight size={14} opacity={0.5} />
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <div className={`nav-item ${activeTab === 'my-profile' ? 'active' : ''}`} onClick={() => { navigate('/my-profile'); setActiveTab('my-profile'); }} style={{ color: '#a78bfa', background: activeTab === 'my-profile' ? 'rgba(167, 139, 250, 0.1)' : 'rgba(167, 139, 250, 0.03)', marginBottom: '5px' }}>
-              <User size={18} /> <strong>TRANG CÁ NHÂN</strong>
+            <div title="TRANG CÁ NHÂN" className={`nav-item ${activeTab === 'my-profile' ? 'active' : ''}`} onClick={() => { navigate('/my-profile'); setActiveTab('my-profile'); }} style={{ color: '#a78bfa', background: activeTab === 'my-profile' ? 'rgba(167, 139, 250, 0.1)' : 'rgba(167, 139, 250, 0.03)', marginBottom: '5px' }}>
+              <User size={18} /> TRANG CÁ NHÂN
             </div>
             <div className="nav-item" onClick={() => setShowChangeMyPassword(true)} style={{ color: '#0ea5e9', background: 'rgba(14, 165, 233, 0.05)', marginBottom: '5px' }}>
               <Lock size={18} /> <strong>ĐỔI MẬT KHẨU</strong>
@@ -3270,6 +3261,33 @@ function AppContent() {
 
         {activeTab === 'vouchers' && (
           <PaymentVouchersTab currentUser={user} />
+        )}
+
+        {activeTab === 'global-chat' && (
+          <GlobalChat user={user} />
+        )}
+
+        {activeTab === 'dispatcher-center' && (
+          <DispatcherCenterTab 
+            currentUser={user}
+            filteredLeads={filteredLeads}
+            leadFilters={leadFilters}
+            setLeadFilters={setLeadFilters}
+            setEditingLead={setEditingLead}
+            users={users}
+            getSourceIcon={getSourceIcon}
+            LEAD_STATUSES={LEAD_STATUSES}
+            LEAD_SOURCES={LEAD_SOURCES}
+            tours={tours}
+            bus={bus}
+            navigateToInbox={navigateToInbox}
+            handleQuickUpdate={handleQuickUpdate}
+            onLeadsUpdated={fetchLeads}
+          />
+        )}
+
+        {activeTab === 'dispatch-schedule' && (
+          <DispatchScheduleTab bus={bus} users={users} />
         )}
 
         {activeTab === 'travel-support' && (
