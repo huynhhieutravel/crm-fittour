@@ -1,4 +1,5 @@
 const facebookService = require('../services/facebookService');
+const notificationController = require('./notificationController');
 
 const db = require('../db');
 
@@ -73,14 +74,39 @@ exports.handleWebhookEvent = async (req, res) => {
                                     // Nếu lead chưa có BU → check lại sau mỗi page reply
                                     const leadId = echoConvRes.rows[0].lead_id;
                                     if (leadId) {
-                                        const leadCheck = await db.query('SELECT bu_group, name FROM leads WHERE id = $1', [leadId]);
-                                        if (leadCheck.rows.length > 0 && !leadCheck.rows[0].bu_group) {
+                                        const leadCheck = await db.query('SELECT bu_group, tour_id, name FROM leads WHERE id = $1', [leadId]);
+                                        if (leadCheck.rows.length > 0) {
                                             const allMsgs = await db.query('SELECT content FROM messages WHERE conversation_id = $1', [echoConvId]);
                                             const allText = allMsgs.rows.map(m => m.content || '').join(' ');
-                                            const autoBU = await facebookService.classifyBUFromMessage(allText);
-                                            if (autoBU) {
-                                                await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU, leadId]);
-                                                console.log(`[BU-AUTO] Echo Webhook Lead #${leadId} (${leadCheck.rows[0].name}) → Auto BU: ${autoBU}`);
+                                            
+                                            // BU Auto
+                                            if (!leadCheck.rows[0].bu_group) {
+                                                const autoBU = await facebookService.classifyBUFromMessage(allText);
+                                                if (autoBU) {
+                                                    await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU, leadId]);
+                                                    console.log(`[BU-AUTO] Echo Webhook Lead #${leadId} (${leadCheck.rows[0].name}) → Auto BU: ${autoBU}`);
+                                                    leadCheck.rows[0].bu_group = autoBU;
+                                                    
+                                                    // Bắn thông báo cho toàn bộ team BU
+                                                    notificationController.broadcastNewLead({ id: leadId, customer_name: leadCheck.rows[0].name }, autoBU).catch(console.error);
+                                                }
+                                            }
+                                            
+                                            // Tour Auto
+                                            if (!leadCheck.rows[0].tour_id) {
+                                                const autoTour = await facebookService.classifyTourFromMessage(allText);
+                                                if (autoTour && autoTour.tour_id) {
+                                                    // Chỉ update tour_id (không đè BU nếu đã có, nếu chưa có thì gán BU luôn vì Tour thuộc BU)
+                                                    const q = leadCheck.rows[0].bu_group ? 
+                                                        'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
+                                                        'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
+                                                    const params = leadCheck.rows[0].bu_group ? 
+                                                        [autoTour.tour_id, leadId] : 
+                                                        [autoTour.tour_id, autoTour.bu_group, leadId];
+                                                    
+                                                    await db.query(q, params);
+                                                    console.log(`[TOUR-AUTO] Echo Webhook Lead #${leadId} (${leadCheck.rows[0].name}) → Auto Tour: ${autoTour.tour_id}`);
+                                                }
                                             }
                                         }
                                     }

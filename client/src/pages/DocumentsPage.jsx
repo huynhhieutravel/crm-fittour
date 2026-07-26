@@ -16,6 +16,7 @@ import { SOP_META_ADS_MARKDOWN } from '../data/sopMetaAds';
 import { BLUEPRINT_META_ADS_MARKDOWN } from '../data/blueprintMetaAds';
 import { RULE_META_ADS_MARKDOWN } from '../data/ruleMetaAds';
 import { SOP_ASTRO_TOUR_MARKDOWN } from '../data/sopAstroTour';
+import { SOP_DISPATCH_MARKDOWN, SOP_SALES_MARKDOWN, SOP_OVERVIEW_MARKDOWN } from '../data/sopDispatchSales';
 import SopMetaAdsInfographic from './SopMetaAdsInfographic';
 import RagDocViewer from '../components/Knowledge/RagDocViewer';
 import LadakhConsultingPage from './LadakhConsultingPage';
@@ -32,7 +33,10 @@ const STATIC_DOCS = [
   { title: 'Rule Meta Ads', description: 'Các quy tắc bắt buộc và khuyến nghị khi thiết lập chiến dịch Meta Ads.', category: 'Marketing', path: '/tai-lieu/rule-meta-ads', icon: '📜' },
   { title: 'Blueprint Meta Ads', description: 'Hướng dẫn chạy quảng cáo Meta (Facebook/IG) chuẩn FIT Tour - Quy tắc đặt tên, target, content và tối ưu.', category: 'Marketing', path: '/tai-lieu/blueprint-meta-ads', icon: '🎯' },
   { title: 'HUB Kinh Doanh (Sale)', description: 'Tài liệu dành cho phòng kinh doanh, quy trình bán hàng', category: 'Sale', path: '/tai-lieu/sale', icon: '💼' },
+  { title: 'SOP Sales & Workplace', description: 'Hướng dẫn Sales nhận Lead, cập nhật ERP và tối ưu Workplace', category: 'Sale', path: '/tai-lieu/sop-sales', icon: '💼' },
   { title: 'HUB Điều Hành (OP)', description: 'Quy trình điều hành tour, vận hành dịch vụ', category: 'Điều hành', path: '/tai-lieu/dieu-hanh', icon: '🔧' },
+  { title: 'Tổng quan Quy trình Lead', description: 'Bức tranh toàn cảnh về quy trình xử lý Lead từ Điều phối đến Sales', category: 'Điều hành', path: '/tai-lieu/tong-quan-lead', icon: '🌐' },
+  { title: 'SOP Điều Phối Lead', description: 'Quy trình tiếp nhận và phân bổ Lead dành cho Trung tâm Điều phối', category: 'Điều hành', path: '/tai-lieu/sop-dieu-phoi', icon: '🔀' },
   { title: 'HUB Kế Toán', description: 'Nghiệp vụ kế toán, quy trình tài chính nội bộ', category: 'Kế toán', path: '/tai-lieu/ke-toan', icon: '📊' },
   { title: 'Biểu Mẫu Hành Chính', description: 'Giấy phép, biểu mẫu, tài liệu hành chính công ty', category: 'Biểu mẫu', path: '/tai-lieu/bieu-mau', icon: '📋' },
   { title: 'Bộ Nguyên Tắc Hành Xử Nhân Viên Văn Phòng', description: 'Quy tắc ứng xử, giao tiếp, ra quyết định, xử lý sự cố', category: 'Quy tắc', path: '/tai-lieu/bo-nguyen-tac-hanh-xu-nhan-vien', icon: '📓' },
@@ -901,28 +905,6 @@ const MarkdownViewer = ({ fileUrl, markdownContent, title, author, updatedDate, 
             <span className="blog-breadcrumb-current">{title}</span>
           </nav>
 
-          {/* Title */}
-          <h1 className="blog-body-title">{title}</h1>
-
-          {/* Header Metadata */}
-          <div className="blog-meta">
-            {author && (
-              <div className="blog-meta-item">
-                <User size={14} className="blog-meta-icon" />
-                <span className="blog-meta-label">{author}</span>
-              </div>
-            )}
-            {updatedDate && (
-              <div className="blog-meta-item">
-                <Calendar size={14} className="blog-meta-icon" />
-                <span>Cập nhật: <span className="blog-meta-label">{updatedDate}</span></span>
-              </div>
-            )}
-            <div className="blog-meta-item">
-              <Clock size={14} className="blog-meta-icon" />
-              <span>⏳ Đọc khoảng <span className="blog-meta-label">{readingTime} phút</span></span>
-            </div>
-          </div>
 
           {loading ? (
             <p>Đang tải tài liệu...</p>
@@ -1078,6 +1060,39 @@ const DocumentsPage = () => {
       title="SOP Chuyển Đổi Trang Tour: Elementor Sang Astro Native"
       author="FIT Tour Developer"
       breadcrumbs={[{ label: 'Tài liệu', path: '/tai-lieu' }]}
+    />
+  );
+  const dispatchQuickLinks = [
+    { title: 'Tổng quan Quy trình Lead', path: '/tai-lieu/tong-quan-lead', icon: '🌐' },
+    { title: 'SOP Điều Phối Lead', path: '/tai-lieu/sop-dieu-phoi', icon: '🔀' },
+    { title: 'SOP Sales & Workplace', path: '/tai-lieu/sop-sales', icon: '💼' }
+  ];
+
+  if (path === '/tai-lieu/tong-quan-lead') return (
+    <MarkdownViewer 
+      markdownContent={SOP_OVERVIEW_MARKDOWN}
+      title="Tổng quan Quy trình Xử lý Lead"
+      author="Ban Giám Đốc"
+      breadcrumbs={[{ label: 'Điều hành', path: '/tai-lieu/dieu-hanh' }]}
+      quickLinks={dispatchQuickLinks}
+    />
+  );
+  if (path === '/tai-lieu/sop-dieu-phoi') return (
+    <MarkdownViewer 
+      markdownContent={SOP_DISPATCH_MARKDOWN}
+      title="SOP Điều Phối Lead"
+      author="FIT Tour Operations"
+      breadcrumbs={[{ label: 'Điều hành', path: '/tai-lieu/dieu-hanh' }]}
+      quickLinks={dispatchQuickLinks}
+    />
+  );
+  if (path === '/tai-lieu/sop-sales') return (
+    <MarkdownViewer 
+      markdownContent={SOP_SALES_MARKDOWN}
+      title="SOP Sales & Workplace"
+      author="FIT Tour Sales"
+      breadcrumbs={[{ label: 'Sale', path: '/tai-lieu/sale' }]}
+      quickLinks={dispatchQuickLinks}
     />
   );
   if (path === '/tai-lieu' || path === '/tai-lieu/') return <DocumentsHome />;

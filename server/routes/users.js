@@ -14,6 +14,7 @@ router.get('/allowed-roles', auth, userController.getAllowedRoles);
 // Self profile (must be before /:id to avoid conflict)
 router.get('/me', auth, userController.getMyProfile);
 router.put('/me', auth, userController.updateMyProfile);
+router.put('/me/notification-preferences', auth, userController.updateMyNotificationPreferences);
 
 // Team CRUD (Admin only)
 router.post('/teams', auth, permCheck('users', 'manage_team'), userController.createTeam);

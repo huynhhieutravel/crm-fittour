@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../utils/dateUtils';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { X, User, MapPin, Calendar, CreditCard, Users, FileText, CheckCircle, Tag, DollarSign, Plus, ArrowRight } from 'lucide-react';
@@ -12,7 +13,7 @@ const BookingProfileSlider = ({ bookingId, onClose }) => {
   // Form states for transaction
   const [txAmount, setTxAmount] = useState('');
   const [txMethod, setTxMethod] = useState('CASH');
-  const [txDate, setTxDate] = useState(new Date().toISOString().slice(0, 10));
+  const [txDate, setTxDate] = useState(getLocalDateString());
 
   const fetchBooking = async () => {
     try {
@@ -182,7 +183,7 @@ const BookingProfileSlider = ({ bookingId, onClose }) => {
                   </button>
 
                   <div style={{ background: 'transparent', border: 'none', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>
-                    <Calendar size={14} /> Đi: {booking.start_date ? new Date(booking.start_date).toLocaleDateString('vi-VN') : '--'}
+                    <Calendar size={14} /> Đi: {booking.start_date ? new Date(booking.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '--'}
                   </div>
                 </div>
               </div>
@@ -435,7 +436,7 @@ const BookingProfileSlider = ({ bookingId, onClose }) => {
                         <tbody>
                            {booking.transactions.map(tx => (
                               <tr key={tx.id}>
-                                 <td>{new Date(tx.transaction_date).toLocaleDateString('vi-VN')}</td>
+                                 <td>{new Date(tx.transaction_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</td>
                                  <td style={{ fontWeight: 700, color: '#22c55e' }}>+{Number(tx.amount).toLocaleString('vi-VN')}đ</td>
                                  <td>{tx.payment_method}</td>
                                  <td>{tx.creator_name || 'System'}</td>

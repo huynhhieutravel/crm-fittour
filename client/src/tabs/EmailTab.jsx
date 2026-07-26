@@ -27,7 +27,7 @@ function formatDate(dateStr) {
   const d = new Date(dateStr);
   const now = new Date();
   const isToday = d.toDateString() === now.toDateString();
-  if (isToday) return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  if (isToday) return d.toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh',  hour: '2-digit', minute: '2-digit' });
   const diff = (now - d) / (1000 * 60 * 60 * 24);
   if (diff < 7) return d.toLocaleDateString('vi-VN', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
   return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });

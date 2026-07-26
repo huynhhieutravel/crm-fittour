@@ -7,6 +7,13 @@ const SystemEvents = [
   // Meeting Room
   { code: 'MEETING_ROOM_BOOKED', label: 'Đặt phòng họp mới', category: 'Phòng họp' },
   
+  // Khách Hàng (Đánh giá)
+  { code: 'MONTHLY_REVIEWS_STATS', label: 'Báo cáo Đánh giá hàng tháng', category: 'Khách hàng' },
+  
+  // Marketing
+  { code: 'WEEKLY_MARKETING_ADS_STATS', label: 'Báo cáo Marketing Ads hàng tuần', category: 'Marketing' },
+  { code: 'MONTHLY_MARKETING_ADS_STATS', label: 'Báo cáo Marketing Ads hàng tháng', category: 'Marketing' },
+  
   // CRM
   { code: 'LEAD_CREATED', label: 'Có Lead mới', category: 'Khách hàng' },
   { code: 'LEAD_ASSIGNED', label: 'Phân công Lead', category: 'Khách hàng' },

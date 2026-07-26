@@ -410,7 +410,7 @@ const B2BCompanyModal = ({ company, onClose, onUpdateSuccess, users = [] }) => {
                                 </div>
                             )}
                             <div style={{ fontSize: '0.8rem', color: '#64748b', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                <span>Khởi hành: {proj.departure_date ? new Date(proj.departure_date).toLocaleDateString('vi-VN') : '—'}</span>
+                                <span>Khởi hành: {proj.departure_date ? new Date(proj.departure_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '—'}</span>
                                 <span style={{ fontWeight: 600, color: '#10b981' }}>{new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND'}).format(proj.total_revenue || 0)}</span>
                             </div>
                             <div style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '10px', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', background: '#f1f5f9', color: '#64748b' }}>
@@ -462,7 +462,7 @@ const B2BCompanyModal = ({ company, onClose, onUpdateSuccess, users = [] }) => {
                                     <div style={{ fontWeight: 600, color: ev.status === 'completed' ? '#64748b' : '#92400e', textDecoration: ev.status === 'completed' ? 'line-through' : 'none' }}>
                                         {ev.event_type === 'CALL' ? '📞' : ev.event_type==='MEETING' ? '🤝' : '📌'} {ev.title}
                                     </div>
-                                    <div style={{ color: '#94a3b8' }}>{new Date(ev.event_date).toLocaleDateString('vi-VN')} - {ev.creator_name}</div>
+                                    <div style={{ color: '#94a3b8' }}>{new Date(ev.event_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })} - {ev.creator_name}</div>
                                 </div>
                                 <div>
                                     <input type="checkbox" checked={ev.status === 'completed'} onChange={() => toggleEventStatus(ev.id, ev.status)} style={{ cursor: 'pointer', width: '16px', height: '16px' }} title={ev.status === 'completed' ? 'Đánh dấu chưa xong' : 'Đánh dấu hoàn thành'} />
@@ -486,7 +486,7 @@ const B2BCompanyModal = ({ company, onClose, onUpdateSuccess, users = [] }) => {
                         <div key={note.id} style={{ padding: '0.75rem', background: 'white', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
                           <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem', display: 'flex', justifyContent: 'space-between' }}>
                             <strong style={{ color: '#3b82f6' }}>{note.creator_name}</strong>
-                            <span>{new Date(note.created_at).toLocaleString('vi-VN')}</span>
+                            <span>{new Date(note.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</span>
                           </div>
                           <div style={{ fontSize: '0.85rem', color: '#1e293b' }}>{note.content}</div>
                         </div>

@@ -82,8 +82,9 @@ const ManagementDashboardTab = ({ user }) => {
   const buColors = {
       BU1: '#f59e0b',
       BU2: '#8b5cf6',
-      BU3: '#ec4899',
-      BU4: '#10b981'
+      BU3: '#ec4899', // Pink
+      BU4: '#10b981',
+      BU5: '#f59e0b'
   };
 
   return (
@@ -190,7 +191,7 @@ const ManagementDashboardTab = ({ user }) => {
             <div className="analytics-card" style={{ gridColumn: 'span 12', background: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
               <div style={{ marginBottom: '24px' }}>
                 <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>Phân Bộ Chi Tiêu Marketing Hàng Tháng theo Từng BU</h3>
-                <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>Cột tiền được cắt lớp theo từng đội (BU1, BU2, BU3, BU4). Đường Line Xanh hiển thị lượng Khách/Lead đem về của toàn công ty.</p>
+                <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>Cột tiền được cắt lớp theo từng đội (BU1, BU2, BU3, BU4, BU5). Đường Line Xanh hiển thị lượng Khách/Lead đem về của toàn công ty.</p>
               </div>
               <div style={{ width: '100%', height: 380 }}>
                 <ResponsiveContainer>
@@ -207,8 +208,9 @@ const ManagementDashboardTab = ({ user }) => {
                      {/* Băm cột tiền theo stack BU */}
                      <Bar yAxisId="left" dataKey="BU1_spend" name="Tiền BU1" stackId="spend" barSize={32} fill={buColors.BU1} radius={[0, 0, 0, 0]} />
                      <Bar yAxisId="left" dataKey="BU2_spend" name="Tiền BU2" stackId="spend" barSize={32} fill={buColors.BU2} radius={[0, 0, 0, 0]} />
-                     <Bar yAxisId="left" dataKey="BU3_spend" name="Tiền BU3" stackId="spend" barSize={32} fill={buColors.BU3} radius={[0, 0, 0, 0]} />
-                     <Bar yAxisId="left" dataKey="BU4_spend" name="Tiền BU4" stackId="spend" barSize={32} fill={buColors.BU4} radius={[4, 4, 0, 0]} />
+                     <Bar yAxisId="left" dataKey="BU3_spend" name="Tiền BU3" stackId="spend" barSize={32} fill={buColors.BU3} />
+                     <Bar yAxisId="left" dataKey="BU4_spend" name="Tiền BU4" stackId="spend" barSize={32} fill={buColors.BU4} />
+                     <Bar yAxisId="left" dataKey="BU5_spend" name="Tiền BU5" stackId="spend" barSize={32} fill={buColors.BU5} radius={[4, 4, 0, 0]} />
                      
                      {/* Tổng Leads */}
                      <Line yAxisId="right" type="monotone" dataKey="Leads" name="Tổng Lead (Cả Công Ty)" stroke="#10b981" strokeWidth={5} dot={{r: 4, strokeWidth: 2}} activeDot={{r: 6}} />
@@ -238,6 +240,7 @@ const ManagementDashboardTab = ({ user }) => {
                      <Line type="monotone" dataKey="BU2_cpl" name="CPL BU2" stroke={buColors.BU2} strokeWidth={3} dot={{r: 3}} />
                      <Line type="monotone" dataKey="BU3_cpl" name="CPL BU3" stroke={buColors.BU3} strokeWidth={3} dot={{r: 3}} />
                      <Line type="monotone" dataKey="BU4_cpl" name="CPL BU4" stroke={buColors.BU4} strokeWidth={3} dot={{r: 3}} />
+                     <Line type="monotone" dataKey="BU5_cpl" name="CPL BU5" stroke={buColors.BU5} strokeWidth={3} dot={{r: 3}} />
                    </LineChart>
                 </ResponsiveContainer>
               </div>

@@ -103,7 +103,7 @@ export default function TrashDashboard({ type }) {
                 <td style={{ padding: '12px' }}>{type === 'OP_TOUR' ? item.tour_name : item.customer_name}</td>
                 <td style={{ padding: '12px' }}>
                   {type === 'OP_TOUR' 
-                    ? new Date(item.start_date).toLocaleDateString('vi-VN') 
+                    ? new Date(item.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) 
                     : `${item.pax_count} khách`}
                 </td>
                 <td style={{ padding: '12px' }}>

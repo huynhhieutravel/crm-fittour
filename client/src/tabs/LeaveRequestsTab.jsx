@@ -329,7 +329,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
 
       {todayLeaves.length > 0 && viewMode === 'list' && (
           <div style={{ background: '#eff6ff', borderLeft: '4px solid #3b82f6', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
-              <strong style={{ color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: '5px' }}><AlertCircle size={18}/> Nhân sự vắng mặt hôm nay ({new Date().toLocaleDateString('vi-VN')}):</strong>
+              <strong style={{ color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: '5px' }}><AlertCircle size={18}/> Nhân sự vắng mặt hôm nay ({new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}):</strong>
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
                   {todayLeaves.map(l => (
                       <div key={l.id} style={{ background: 'white', padding: '5px 10px', borderRadius: '15px', border: '1px solid #bfdbfe', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -405,7 +405,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                         {item.dates?.map((d, i) => (
                                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                                 <Calendar size={13} color="#64748b"/>
-                                                {new Date(d.date).toLocaleDateString('vi-VN')}
+                                                {new Date(d.date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                                                 {d.session !== 'full' && (
                                                     <span style={{ fontSize: '11px', color: '#f59e0b', background: '#fef3c7', padding: '1px 4px', borderRadius: '4px' }}>
                                                         {d.session === 'morning' ? 'Sáng' : 'Chiều'}
@@ -415,7 +415,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                         ))}
                                     </div>
                                     <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-                                        Gửi lúc: {new Date(item.created_at).toLocaleString('vi-VN')}
+                                        Gửi lúc: {new Date(item.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                                     </div>
                                 </td>
                                 <td align="center">

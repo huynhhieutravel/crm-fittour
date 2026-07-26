@@ -89,8 +89,8 @@ export default function OpTourDetailDrawer({ onClose, tour, onDelete }) {
         ...tour,
         tour_template_id: tour.tour_template_id || '',
         status: tour.status || 'Mở bán',
-        start_date: tour.start_date ? new Date(tour.start_date).toLocaleDateString('en-CA') : '',
-        end_date: tour.end_date ? new Date(tour.end_date).toLocaleDateString('en-CA') : '',
+        start_date: tour.start_date ? new Date(tour.start_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
+        end_date: tour.end_date ? new Date(tour.end_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
         tour_info: tour.tour_info || {},
       });
     }
@@ -123,7 +123,7 @@ export default function OpTourDetailDrawer({ onClose, tour, onDelete }) {
         if (!isNaN(startDateObj.getTime())) {
            const tenDaysBefore = new Date(startDateObj);
            tenDaysBefore.setDate(tenDaysBefore.getDate() - 10);
-           const dateStr = tenDaysBefore.toLocaleDateString('en-CA');
+           const dateStr = tenDaysBefore.toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
            
            newData.tour_info = {
               ...newData.tour_info,

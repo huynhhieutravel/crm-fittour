@@ -8,7 +8,8 @@ const SearchableSelect = ({
   placeholder = "Chọn sản phẩm...", 
   style = {}, 
   className = "",
-  shortLabel = false
+  shortLabel = false,
+  emptyText = "Không tìm thấy"
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,7 +20,7 @@ const SearchableSelect = ({
   let label = placeholder;
   if (selectedOption) {
     if (shortLabel && selectedOption.code) {
-      label = selectedOption.code;
+      label = `[${selectedOption.code}]`;
     } else {
       label = selectedOption.code ? `[${selectedOption.code}] ${selectedOption.name}` : selectedOption.name;
     }
@@ -37,8 +38,8 @@ const SearchableSelect = ({
   }, []);
 
   const filteredOptions = options.filter(opt => 
-    opt.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (opt.code && opt.code.toLowerCase().includes(searchTerm.toLowerCase()))
+    opt?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (opt?.code && opt.code.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -182,7 +183,7 @@ const SearchableSelect = ({
               ))
             ) : (
               <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
-                Không tìm thấy sản phẩm
+                {emptyText}
               </div>
             )}
           </div>

@@ -36,7 +36,7 @@ export default function AgencySharePage() {
     try {
       const parsed = new Date(d);
       if (isNaN(parsed.getTime())) return String(d);
-      return parsed.toLocaleDateString('vi-VN');
+      return parsed.toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
     } catch (e) { return String(d); }
   };
 

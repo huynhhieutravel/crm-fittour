@@ -18,7 +18,7 @@ const GroupLeaderProfileSlider = ({ leader, onClose, onAddNote, users = [], comp
         name: leader.name || '',
         phone: leader.phone || '',
         email: leader.email || '',
-        dob: new Date(leader.dob).toLocaleDateString('en-CA') || '',
+        dob: new Date(leader.dob).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) || '',
         company_id: leader.company_id || '',
         company_name: leader.company_name || '',
         position: leader.position || 'Trưởng đoàn',
@@ -308,11 +308,11 @@ const GroupLeaderProfileSlider = ({ leader, onClose, onAddNote, users = [], comp
                   </div>
                   <div>
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}><Calendar size={12} style={{marginRight:'4px'}}/> Ngày sinh</div>
-                    <div style={{ fontWeight: 500 }}>{leader.dob ? new Date(leader.dob).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</div>
+                    <div style={{ fontWeight: 500 }}>{leader.dob ? new Date(leader.dob).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'Chưa cập nhật'}</div>
                   </div>
                   <div>
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}><Building size={12} style={{marginRight:'4px'}}/> Ngày thành lập DN</div>
-                    <div style={{ fontWeight: 500 }}>{leader.company_founded_date ? new Date(leader.company_founded_date).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</div>
+                    <div style={{ fontWeight: 500 }}>{leader.company_founded_date ? new Date(leader.company_founded_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'Chưa cập nhật'}</div>
                   </div>
                 </div>
               </div>
@@ -331,7 +331,7 @@ const GroupLeaderProfileSlider = ({ leader, onClose, onAddNote, users = [], comp
                   </div>
                   <div>
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}>Ngày tạo hồ sơ</div>
-                    <div style={{ fontWeight: 500 }}>{leader.created_at ? new Date(leader.created_at).toLocaleDateString('vi-VN') : 'N/A'}</div>
+                    <div style={{ fontWeight: 500 }}>{leader.created_at ? new Date(leader.created_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'N/A'}</div>
                   </div>
                 </div>
               </div>
@@ -382,8 +382,8 @@ const GroupLeaderProfileSlider = ({ leader, onClose, onAddNote, users = [], comp
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #f1f5f9', paddingTop: '8px', marginTop: '8px' }}>
                         <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                          {p.departure_date ? new Date(p.departure_date).toLocaleDateString('vi-VN') : '---'}
-                          {p.return_date ? ` → ${new Date(p.return_date).toLocaleDateString('vi-VN')}` : ''}
+                          {p.departure_date ? new Date(p.departure_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '---'}
+                          {p.return_date ? ` → ${new Date(p.return_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}` : ''}
                         </span>
                         <span style={{ fontWeight: 600, color: '#10b981' }}>{formatMoney(p.total_revenue)}</span>
                       </div>
@@ -420,7 +420,7 @@ const GroupLeaderProfileSlider = ({ leader, onClose, onAddNote, users = [], comp
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.75rem', color: '#64748b' }}>
                           <span style={{ fontWeight: 600, color: '#3b82f6' }}>{note.creator_name || 'Hệ thống'}</span>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Clock size={12} /> {new Date(note.created_at).toLocaleString('vi-VN')}
+                            <Clock size={12} /> {new Date(note.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                           </span>
                         </div>
                         <div style={{ color: '#1e293b', fontSize: '0.9rem', lineHeight: '1.4' }}>

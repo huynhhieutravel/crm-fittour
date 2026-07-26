@@ -415,7 +415,7 @@ export default function InsuranceDetailDrawer({ insurance, onClose, refreshList,
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                     <Clock size={12} />
-                                                    <span>{new Date(note.created_at).toLocaleString('vi-VN')}</span>
+                                                    <span>{new Date(note.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</span>
                                                 </div>
                                             </div>
                                             <div style={{ fontSize: '0.95rem', color: '#1e293b', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{note.content}</div>

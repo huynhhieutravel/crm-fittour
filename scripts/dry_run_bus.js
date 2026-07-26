@@ -5,7 +5,7 @@ async function dryRun() {
         const res = await db.query('SELECT id, username, full_name, bus FROM users');
         const users = res.rows;
         
-        let counts = { BU1: 0, BU2: 0, BU3: 0, BU4: 0, UNMATCHED: 0 };
+        let counts = { BU1: 0, BU2: 0, BU3: 0, BU4: 0, BU5: 0, UNMATCHED: 0 };
         let logs = [];
         
         for (const u of users) {
@@ -17,6 +17,7 @@ async function dryRun() {
             else if (/^tq\d+\./.test(uname)) targetBU = 'BU1';
             else if (/^gu\d+\./.test(uname)) targetBU = 'BU2';
             else if (/^hi\d+\./.test(uname)) targetBU = 'BU4';
+            else if (/^h5\d*\./.test(uname) || /\.bu5$/.test(uname)) targetBU = 'BU5';
             
             if (targetBU) {
                 counts[targetBU]++;
@@ -31,6 +32,7 @@ async function dryRun() {
         console.log(`BU2 (gu): ${counts.BU2} nhân sự`);
         console.log(`BU3 (sv): ${counts.BU3} nhân sự`);
         console.log(`BU4 (hi): ${counts.BU4} nhân sự`);
+        console.log(`BU5: ${counts.BU5} nhân sự`);
         console.log(`Không khớp: ${counts.UNMATCHED} nhân sự\n`);
         
         console.log("=== DANH SÁCH CHI TIẾT ===");

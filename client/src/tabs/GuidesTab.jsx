@@ -59,7 +59,7 @@ const GuidesTab = ({
          calcStart = new Date(today.getFullYear(), q * 3, 1).toLocaleDateString('en-CA');
          calcEnd = new Date(today.getFullYear(), (q + 1) * 3, 0).toLocaleDateString('en-CA');
       } else if (dashFilter.timeRange === 'upcoming') {
-         calcStart = new Date().toLocaleDateString('en-CA');
+         calcStart = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', });
          calcEnd = new Date(today.setDate(today.getDate() + 30)).toLocaleDateString('en-CA');
       } else if (dashFilter.timeRange === 'custom') {
          if (dashFilter.startDate && dashFilter.endDate) {
@@ -73,7 +73,7 @@ const GuidesTab = ({
             const activeCount = guides ? guides.filter(g => g.status === 'Active').length : 0;
             const inRangeTours = tourDepartures ? tourDepartures.filter(td => {
                  if (!td.start_date) return false;
-                 const sd = new Date(td.start_date).toLocaleDateString('en-CA');
+                 const sd = new Date(td.start_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', });
                  return sd >= calcStart && sd <= calcEnd;
             }) : [];
             const tCount = inRangeTours.length;
@@ -254,7 +254,7 @@ const GuidesTab = ({
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#831843', fontWeight: 600 }}>
                             <Calendar size={12} /> 
-                            {new Date(guide.next_tour.start_date).toLocaleDateString('vi-VN')} - {new Date(guide.next_tour.end_date).toLocaleDateString('vi-VN')}
+                            {new Date(guide.next_tour.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })} - {new Date(guide.next_tour.end_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                           </div>
                         </div>
                       ) : (
@@ -491,14 +491,14 @@ const GuidesTab = ({
                 <input 
                   type="date" 
                   className="filter-input" 
-                  value={guideTimeFilter.startDate ? new Date(guideTimeFilter.startDate).toLocaleDateString('en-CA') : ''} 
+                  value={guideTimeFilter.startDate ? new Date(guideTimeFilter.startDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : ''} 
                   onChange={(e) => setGuideTimeFilter({ ...guideTimeFilter, startDate: new Date(e.target.value) })}
                 />
                 <ChevronRight size={16} color="#94a3b8" />
                 <input 
                   type="date" 
                   className="filter-input" 
-                  value={guideTimeFilter.endDate ? new Date(guideTimeFilter.endDate).toLocaleDateString('en-CA') : ''} 
+                  value={guideTimeFilter.endDate ? new Date(guideTimeFilter.endDate).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : ''} 
                   onChange={(e) => setGuideTimeFilter({ ...guideTimeFilter, endDate: new Date(e.target.value) })}
                 />
               </div>
@@ -668,7 +668,7 @@ const GuidesTab = ({
                                 <div style={{ fontWeight: 600, marginBottom: '6px' }}>{asg.tourName}</div>
                                 <div style={{ color: '#94a3b8', fontSize: '0.7rem' }}>
                                   <span style={{ color: '#cbd5e1' }}>Khởi hành: </span> 
-                                  {start.toLocaleDateString('vi-VN')} - {end.toLocaleDateString('vi-VN')}
+                                  {start.toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} - {end.toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}
                                 </div>
                               </div>
                             </div>

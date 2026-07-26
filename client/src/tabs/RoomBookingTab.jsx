@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../utils/dateUtils';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -37,7 +38,7 @@ const RoomBookingTab = ({ currentUser }) => {
     const formatISODate = (d) => {
         const date = new Date(d);
         const tzOffset = date.getTimezoneOffset() * 60000;
-        return (new Date(date - tzOffset)).toISOString().split('T')[0];
+        return getLocalDateString(new Date(date));
     };
     const formatISOTime = (d) => {
         const date = new Date(d);
@@ -50,6 +51,7 @@ const RoomBookingTab = ({ currentUser }) => {
         'BU2': 'purple',
         'BU3': 'green',
         'BU4': 'red',
+        'BU5': 'orange',
         'Khác': 'gray'
     };
 
@@ -319,8 +321,8 @@ const RoomBookingTab = ({ currentUser }) => {
                         handleSelect({ 
                             start: start, 
                             end: end, 
-                            startStr: (new Date(start - tzOffset)).toISOString().slice(0, -1), 
-                            endStr: (new Date(end - tzOffset)).toISOString().slice(0, -1) 
+                            startStr: getLocalDateTimeLocal(new Date(start)), 
+                            endStr: getLocalDateTimeLocal(new Date(end)) 
                         });
                     }}>+ New Booking</button>
                 </div>
@@ -374,8 +376,8 @@ const RoomBookingTab = ({ currentUser }) => {
                             const tzOffset = (new Date()).getTimezoneOffset() * 60000; 
                             handleSelect({
                                 start, end,
-                                startStr: (new Date(start - tzOffset)).toISOString().slice(0, -1),
-                                endStr: (new Date(end - tzOffset)).toISOString().slice(0, -1)
+                                startStr: getLocalDateTimeLocal(new Date(start)),
+                                endStr: getLocalDateTimeLocal(new Date(end))
                             });
                         }}
                     />
@@ -435,6 +437,7 @@ const RoomBookingTab = ({ currentUser }) => {
                                         <option value="BU2">BU2</option>
                                         <option value="BU3">BU3</option>
                                         <option value="BU4">BU4</option>
+                                        <option value="BU5">BU5</option>
                                         <option value="Khác">Khác</option>
                                     </select>
                                 </div>

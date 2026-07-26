@@ -39,9 +39,12 @@ const upload = multer({
 // Routes
 router.get('/', auth, customerReviewController.getReviews);
 router.get('/stats', auth, customerReviewController.getStats);
+router.get('/dashboard-stats', auth, customerReviewController.getDashboardStats);
+router.post('/test-monthly-email', auth, customerReviewController.testMonthlyEmail);
 router.post('/', auth, upload.single('proof_image'), customerReviewController.createReview);
 router.put('/:id', auth, upload.single('proof_image'), customerReviewController.updateReview);
 router.put('/:id/bu', auth, customerReviewController.updateReviewBU);
+router.put('/:id/guide', auth, customerReviewController.updateReviewGuide);
 router.put('/:id/approve', auth, customerReviewController.approveReview);
 router.delete('/:id', auth, customerReviewController.deleteReview);
 

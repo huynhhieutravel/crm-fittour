@@ -227,7 +227,7 @@ export default function MediaSettingsTab({ addToast }) {
                                             </a>
                                         </td>
                                         <td style={{ padding: '16px', fontWeight: 500, color: '#334155', maxWidth: '250px', wordBreak: 'break-all' }}>{m.filename}</td>
-                                        <td style={{ padding: '16px', color: '#475569' }}>{new Date(m.createdAt).toLocaleString('vi-VN')}</td>
+                                        <td style={{ padding: '16px', color: '#475569' }}>{new Date(m.createdAt).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</td>
                                         <td style={{ padding: '16px' }}>
                                             {m.type === 'passport' && (
                                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#e0e7ff', color: '#4338ca', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px' }}>

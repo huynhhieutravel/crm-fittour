@@ -316,7 +316,7 @@ const TeamDirectoryTab = ({ users }) => {
 
                   {/* Ngày gia nhập */}
                   <td style={{ padding: '1rem', color: '#475569', fontSize: '0.85rem', fontWeight: 600 }}>
-                    {u.created_at ? new Date(u.created_at).toLocaleDateString('vi-VN') : '-'}
+                    {u.created_at ? new Date(u.created_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '-'}
                   </td>
                 </tr>
               );

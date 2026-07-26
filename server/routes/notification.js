@@ -22,7 +22,9 @@ router.get('/suppression', auth, notificationController.getSuppressionList);
 router.delete('/suppression/:email', auth, notificationController.unbanEmail);
 // --- In-App Notifications ---
 router.get('/in-app', auth, notificationController.getInAppNotifications);
+router.get('/global-center', auth, notificationController.getGlobalCenterLeads);
 router.put('/in-app/read-all', auth, notificationController.markAllAsRead);
 router.put('/in-app/:id/read', auth, notificationController.markAsRead);
+router.post('/subscribe', auth, notificationController.subscribe);
 
 module.exports = router;

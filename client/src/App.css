@@ -1,0 +1,7 @@
+
+@media (max-width: 768px) {
+  .header.hide-on-mobile {
+    display: none !important;
+  }
+}
+

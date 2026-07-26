@@ -1,20 +1,103 @@
 import React, { useState, useEffect } from 'react';
+import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../utils/dateUtils';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
 import ManualReviewModal from '../components/modals/ManualReviewModal';
-import { Star, CheckCircle, XCircle, Clock, Image, Facebook, Globe, Plus, Trash2, Edit2, CalendarDays, Award, X, Activity, QrCode, ExternalLink, ArrowLeft } from 'lucide-react';
+import ReviewsDashboard from '../components/dashboard/ReviewsDashboard';
+import { Star, CheckCircle, XCircle, Clock, Image, Facebook, Globe, Plus, Trash2, Edit2, CalendarDays, Award, X, Activity, QrCode, ExternalLink, ArrowLeft, LayoutDashboard, List, Send } from 'lucide-react';
 import { swalConfirm } from '../utils/swalHelpers';
 import { useLocation } from 'react-router-dom';
+import Select from 'react-select';
 import '../styles/customerReviews.css';
+
+const selectStyles = {
+  control: (base) => ({
+    ...base,
+    minHeight: '30px',
+    height: '30px',
+    fontSize: '13px',
+    borderRadius: '4px',
+    borderColor: '#cbd5e1',
+    boxShadow: 'none',
+    width: '180px',
+    cursor: 'pointer'
+  }),
+  valueContainer: (base) => ({
+    ...base,
+    padding: '0 8px',
+  }),
+  input: (base) => ({
+    ...base,
+    margin: 0,
+    padding: 0,
+  }),
+  dropdownIndicator: (base) => ({
+    ...base,
+    padding: '4px',
+  }),
+  menu: (base) => ({
+    ...base,
+    fontSize: '13px',
+    zIndex: 9999
+  }),
+  menuPortal: base => ({ ...base, zIndex: 9999 })
+};
+
+const getColorForString = (str, type = 'bg') => {
+  if (!str) return type === 'bg' ? '#f8fafc' : '#64748b'; // white-grey for empty
+  
+  const buColors = {
+    'BU1': { bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd' }, // Blue
+    'BU2': { bg: '#fef3c7', text: '#b45309', border: '#fde68a' }, // Amber
+    'BU3': { bg: '#f0fdf4', text: '#15803d', border: '#bbf7d0' }, // Green
+    'BU4': { bg: '#fae8ff', text: '#a21caf', border: '#f5d0fe' }, // Fuchsia
+    'BU5': { bg: '#ffe4e6', text: '#be123c', border: '#fecdd3' }, // Rose
+    'BU6': { bg: '#e0e7ff', text: '#4338ca', border: '#c7d2fe' }, // Indigo
+  };
+  
+  if (buColors[str.toUpperCase()]) {
+    return type === 'bg' ? buColors[str.toUpperCase()].bg : (type === 'border' ? buColors[str.toUpperCase()].border : buColors[str.toUpperCase()].text);
+  }
+
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  const palettes = [
+    { bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd' },
+    { bg: '#fef3c7', text: '#b45309', border: '#fde68a' },
+    { bg: '#f0fdf4', text: '#15803d', border: '#bbf7d0' },
+    { bg: '#fae8ff', text: '#a21caf', border: '#f5d0fe' },
+    { bg: '#ffe4e6', text: '#be123c', border: '#fecdd3' },
+    { bg: '#e0e7ff', text: '#4338ca', border: '#c7d2fe' },
+    { bg: '#ccfbf1', text: '#0f766e', border: '#99f6e4' },
+    { bg: '#ffedd5', text: '#c2410c', border: '#fed7aa' },
+    { bg: '#f3e8ff', text: '#7e22ce', border: '#e9d5ff' },
+    { bg: '#fce7f3', text: '#be185d', border: '#fbcfe8' }
+  ];
+  
+  const index = Math.abs(hash) % palettes.length;
+  return type === 'bg' ? palettes[index].bg : (type === 'border' ? palettes[index].border : palettes[index].text);
+};
+
+const getBUColor = (buId, buList, type = 'bg') => {
+  if (!buId) return type === 'bg' ? '#f8fafc' : (type === 'border' ? '#e2e8f0' : '#64748b');
+  const bu = buList.find(b => b.id === buId);
+  const label = bu ? bu.label : buId;
+  return getColorForString(label, type);
+};
 
 const CustomerReviewsTab = ({ isHDVView = false }) => {
   const location = useLocation();
   const initialGuideName = location.state?.guideName || '';
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'dashboard'
 
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [buList, setBuList] = useState([]);
+  const [guideList, setGuideList] = useState([]);
   const [stats, setStats] = useState({ guideStats: [], buStats: [], bvGuideStats: [], bvBuStats: [] });
   const [isBangVangOpen, setIsBangVangOpen] = useState(false);
   const [bvType, setBvType] = useState('BU'); // 'BU' or 'HDV'
@@ -23,6 +106,10 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
   const [bvBU, setBvBU] = useState('Tất cả');
   const [loadingBv, setLoadingBv] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [isSendReportModalOpen, setIsSendReportModalOpen] = useState(false);
+  const [reportMonth, setReportMonth] = useState(new Date().getMonth() === 0 ? 12 : new Date().getMonth());
+  const [reportYear, setReportYear] = useState(new Date().getMonth() === 0 ? new Date().getFullYear() - 1 : new Date().getFullYear());
+  const [sendingReport, setSendingReport] = useState(false);
   
   const [filters, setFilters] = useState({
     source: '',
@@ -56,6 +143,7 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
 
   useEffect(() => {
     fetchBUs();
+    fetchGuides();
     fetchStats();
   }, []);
 
@@ -104,7 +192,7 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
       return { startDate: start, endDate: end };
   };
 
-  const formatDateString = (date) => date ? new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] : '';
+  const formatDateString = (date) => date ? getLocalDateString(date) : '';
 
   useEffect(() => {
     fetchReviews();
@@ -157,6 +245,17 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
       setBuList(res.data);
     } catch (error) {
       console.error('Error fetching BUs', error);
+    }
+  };
+
+  const fetchGuides = async () => {
+    try {
+      const res = await axios.get('/api/guides', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setGuideList(res.data);
+    } catch (error) {
+      console.error('Error fetching guides', error);
     }
   };
 
@@ -215,6 +314,24 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
     }
   };
 
+  const handleSendReport = async () => {
+    setSendingReport(true);
+    try {
+      const res = await axios.post('/api/customer-reviews/test-monthly-email', {
+        month: reportMonth,
+        year: reportYear
+      });
+      if (res.data.success) {
+        toast.success(res.data.message || 'Đã gửi yêu cầu tạo báo cáo');
+        setIsSendReportModalOpen(false);
+      }
+    } catch (error) {
+      toast.error('Lỗi khi gửi báo cáo: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setSendingReport(false);
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!await swalConfirm('Bạn có chắc chắn muốn xóa vĩnh viễn đánh giá này? Hành động này không thể hoàn tác.', { title: 'Xác nhận xóa', icon: 'error' })) return;
     
@@ -244,6 +361,21 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Lỗi khi cập nhật BU');
+    }
+  };
+
+  const handleUpdateGuide = async (id, guide_name) => {
+    try {
+      const res = await axios.put(`/api/customer-reviews/${id}/guide`, { guide_name }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.data.success) {
+        toast.success(res.data.message);
+        fetchReviews();
+        fetchStats();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Lỗi khi cập nhật HDV');
     }
   };
 
@@ -277,12 +409,26 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
 
   return (
     <div className="cr-container">
-      <div className="cr-header">
-        <div>
-          <h1 className="cr-title">Quản lý Đánh Giá (Hoa Hồng HDV)</h1>
-          <p className="cr-subtitle">Danh sách đánh giá từ khách hàng để xét duyệt hoa hồng cho Hướng dẫn viên.</p>
+      <div className="cr-header" style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div className="segmented-control glass" style={{ marginTop: 0 }}>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`segment-btn ${viewMode === 'list' ? "active" : ""}`}
+              style={{ padding: '6px 12px', fontSize: '12px' }}
+            >
+              <List size={14} style={{ marginRight: '4px' }} /> Danh Sách
+            </button>
+            <button
+              onClick={() => setViewMode('dashboard')}
+              className={`segment-btn ${viewMode === 'dashboard' ? "active" : ""}`}
+              style={{ padding: '6px 12px', fontSize: '12px' }}
+            >
+              <LayoutDashboard size={14} style={{ marginRight: '4px' }} /> Dashboard
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {isHDVView && currentUser && currentUser.role && (
             <button
               onClick={() => window.location.href = '/guides/reviews'}
@@ -291,6 +437,12 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
               <ArrowLeft size={14} /> Về ERP Quản lý
             </button>
           )}
+          <button
+            onClick={() => setIsSendReportModalOpen(true)}
+            style={{ background: '#10b981', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}
+          >
+            <Send size={14} /> Gửi Báo Cáo Tháng
+          </button>
           <button
             onClick={() => setIsQrModalOpen(true)}
             style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}
@@ -316,7 +468,7 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
       </div>
 
       {/* Stats Board */}
-      {!isHDVView && (
+      {!isHDVView && viewMode === 'list' && (
         <div className="cr-grid-2" style={{ gridTemplateColumns: '1fr' }}>
           <div className="cr-card" style={{ maxWidth: '400px' }}>
             <h3 className="cr-card-title">Top BU theo Rating</h3>
@@ -465,7 +617,7 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
                  >
                     Chưa có BU
                  </button>
-                 {buList.map(bu => {
+                 {buList.filter(bu => !['MARKETING', 'KẾ TOÁN', 'KE TOAN'].includes(bu.id?.toUpperCase())).map(bu => {
                     const isActive = filters.bu_id === bu.id;
                     return (
                        <button
@@ -492,11 +644,15 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
 
 
 
-      {/* Table */}
-      <div className="cr-table-wrapper">
-        <table className="cr-table">
-          <thead>
-            <tr>
+      {viewMode === 'dashboard' ? (
+        <ReviewsDashboard filters={filters} dateBounds={getBounds()} />
+      ) : (
+        <>
+          {/* Table */}
+          <div className="cr-table-wrapper">
+            <table className="cr-table">
+              <thead>
+                <tr>
               <th>KHÁCH HÀNG & NỘI DUNG</th>
               <th>NGUỒN</th>
               <th>BU & HDV</th>
@@ -522,11 +678,23 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
                   <div className="cr-source-icon">{getSourceIcon(review.source)}</div>
                 </td>
                 <td>
-                  {!isHDVView ? (
+                  {(!isHDVView && !['sales', 'group_staff'].includes(currentUser?.role)) ? (
                     <select 
                       value={review.bu_id || ''} 
                       onChange={(e) => handleUpdateBU(review.id, e.target.value)}
-                      style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '13px', outline: 'none', cursor: 'pointer', maxWidth: '120px', marginBottom: '4px' }}
+                      style={{ 
+                        padding: '4px 8px', 
+                        borderRadius: '4px', 
+                        border: getBUColor(review.bu_id, buList, 'border'),
+                        fontSize: '13px', 
+                        outline: 'none', 
+                        cursor: 'pointer', 
+                        maxWidth: '120px', 
+                        marginBottom: '4px',
+                        backgroundColor: getBUColor(review.bu_id, buList, 'bg'),
+                        color: getBUColor(review.bu_id, buList, 'text'),
+                        fontWeight: review.bu_id ? '600' : 'normal'
+                      }}
                     >
                       <option value="">Không có BU</option>
                       {buList.map(bu => <option key={bu.id} value={bu.id}>{bu.label}</option>)}
@@ -536,7 +704,30 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
                       {buList.find(b => b.id === review.bu_id)?.label || 'Không có BU'}
                     </div>
                   )}
-                  <div style={{ fontSize: 13, color: '#64748b' }}>HDV: {review.guide_name || 'N/A'}</div>
+                  {(!isHDVView && !['sales', 'group_staff'].includes(currentUser?.role)) ? (
+                    <Select
+                      options={[{ value: '', label: 'Không có HDV' }, ...guideList.map(g => ({ value: g.name, label: g.name }))]}
+                      value={{ value: review.guide_name || '', label: review.guide_name || 'Không có HDV' }}
+                      onChange={(option) => handleUpdateGuide(review.id, option.value)}
+                      styles={{
+                        ...selectStyles,
+                        control: (base, state) => ({
+                          ...selectStyles.control(base, state),
+                          backgroundColor: getColorForString(review.guide_name, 'bg'),
+                          borderColor: getColorForString(review.guide_name, 'border'),
+                        }),
+                        singleValue: (base) => ({
+                          ...base,
+                          color: getColorForString(review.guide_name, 'text'),
+                          fontWeight: review.guide_name ? '600' : 'normal'
+                        })
+                      }}
+                      menuPortalTarget={document.body}
+                      placeholder="Chọn HDV..."
+                    />
+                  ) : (
+                    <div style={{ fontSize: 13, color: '#64748b' }}>HDV: {review.guide_name || 'N/A'}</div>
+                  )}
                 </td>
                 <td style={{ whiteSpace: 'nowrap', verticalAlign: 'top', paddingTop: '16px', textAlign: 'center' }}>
                   {review.photo_count != null && review.photo_count > 0 ? (
@@ -606,6 +797,8 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
           </div>
         )}
       </div>
+      </>
+      )}
 
       <ManualReviewModal 
         isOpen={isModalOpen} 
@@ -759,6 +952,67 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Gửi Báo Cáo Modal */}
+      {isSendReportModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100001, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+          <div className="animate-slide-up" style={{ background: 'white', borderRadius: '16px', width: '95%', maxWidth: '400px', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px rgba(0,0,0,0.25)' }}>
+            <div style={{ padding: '20px 25px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', borderRadius: '16px 16px 0 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Send size={22} color="#10b981" />
+                <h3 style={{ margin: 0, color: '#1e293b', fontSize: '18px', fontWeight: 800 }}>Gửi Báo Cáo Tháng</h3>
+              </div>
+              <button onClick={() => setIsSendReportModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
+                <X size={22} color="#64748b" />
+              </button>
+            </div>
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <p style={{ margin: 0, fontSize: '14px', color: '#475569', lineHeight: 1.5 }}>
+                Hệ thống sẽ tổng hợp số liệu Đánh giá Google Maps của tháng bạn chọn và gửi báo cáo qua Email (theo Email Rules).
+              </p>
+              
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>Tháng</label>
+                  <select 
+                    value={reportMonth} 
+                    onChange={e => setReportMonth(Number(e.target.value))}
+                    style={{ padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px', background: 'white', outline: 'none' }}
+                  >
+                    {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => (
+                      <option key={m} value={m}>Tháng {m}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>Năm</label>
+                  <select 
+                    value={reportYear} 
+                    onChange={e => setReportYear(Number(e.target.value))}
+                    style={{ padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px', background: 'white', outline: 'none' }}
+                  >
+                    {[new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1].map(y => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <button
+                onClick={handleSendReport}
+                disabled={sendingReport}
+                style={{ 
+                  background: sendingReport ? '#94a3b8' : '#10b981', 
+                  color: 'white', border: 'none', padding: '12px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: sendingReport ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '8px'
+                }}
+              >
+                {sendingReport ? 'Đang gửi báo cáo...' : <><Send size={18} /> Xác Nhận Gửi</>}
+              </button>
             </div>
           </div>
         </div>

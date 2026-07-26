@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { Search, Eye, Edit2, Trash2 } from 'lucide-react';
 import BookingProfileSlider from '../components/BookingProfileSlider';
@@ -125,7 +126,7 @@ const BookingsTab = ({
             <tbody>
               {bookings.map(booking => {
                 const total = Number(booking.total_price) || 0;
-                const paid = Number(booking.paid_amount) || 0;
+                const paid = Number(booking.paid) || Number(booking.paid_amount) || 0;
                 const debt = Math.max(0, total - paid);
                 
                 return (
@@ -213,7 +214,15 @@ const BookingsTab = ({
                       <button className="icon-btn view" title="Xem chi tiết" onClick={() => setSelectedBookingId(booking.id)}>
                         <Eye size={18} />
                       </button>
-                      <button className="icon-btn edit" title="Sửa thông tin" onClick={() => handleEditBooking && handleEditBooking(booking)}>
+                      <button className="icon-btn edit" title="Sửa thông tin" onClick={() => {
+                        if (booking.raw_details) {
+                           localStorage.setItem('open_op_tour_departure', booking.tour_departure_id);
+                           window.location.hash = '#op-tours';
+                           window.location.reload();
+                           return;
+                        }
+                        handleEditBooking && handleEditBooking(booking);
+                      }}>
                         <Edit2 size={18} />
                       </button>
                       {['admin', 'manager'].includes(currentUser?.role) && (

@@ -251,7 +251,7 @@ const RemindersTab = ({ handleViewDeparture }) => {
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                          <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1e293b' }}>{group.tour_name}</div>
-                         <div style={{ fontSize: '0.75rem', fontWeight: 700, background: '#fef2f2', color: '#ef4444', padding: '2px 8px', borderRadius: '6px' }}>{new Date(group.tour_start_date).toLocaleDateString('vi-VN')}</div>
+                         <div style={{ fontSize: '0.75rem', fontWeight: 700, background: '#fef2f2', color: '#ef4444', padding: '2px 8px', borderRadius: '6px' }}>{new Date(group.tour_start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</div>
                          {group.tour_code && <div style={{ fontSize: '0.75rem', fontWeight: 600, background: '#f1f5f9', color: '#64748b', padding: '2px 8px', borderRadius: '6px' }}>{group.tour_code}</div>}
                       </div>
                       <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px', fontWeight: 500 }}>
@@ -303,7 +303,7 @@ const RemindersTab = ({ handleViewDeparture }) => {
                                    {getReminderLabel(r)}
                                  </div>
                                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.8rem', color: '#64748b', marginTop: '6px', fontWeight: 500 }}>
-                                    <span style={{ color: isOverdue ? '#ef4444' : 'inherit', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12}/> Hạn chót: {new Date(r.due_date).toLocaleDateString('vi-VN')} {isOverdue && '(Quá hạn)'}</span>
+                                    <span style={{ color: isOverdue ? '#ef4444' : 'inherit', display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12}/> Hạn chót: {new Date(r.due_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })} {isOverdue && '(Quá hạn)'}</span>
                                     <span>•</span>
                                     <span>Phụ trách: {r.staff_name || 'Chưa gán'}</span>
                                  </div>

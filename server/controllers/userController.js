@@ -450,6 +450,33 @@ exports.updateTeam = async (req, res) => {
     }
 };
 
+exports.updateMyNotificationPreferences = async (req, res) => {
+    try {
+        const { push_bu_message, push_personal_assignment } = req.body;
+        
+        // Fetch current preferences to merge them if needed
+        const currentRes = await db.query('SELECT notification_preferences FROM users WHERE id = $1', [req.user.id]);
+        const currentPrefs = currentRes.rows[0]?.notification_preferences || {};
+        
+        const newPrefs = {
+            ...currentPrefs,
+            push_bu_message: push_bu_message !== undefined ? push_bu_message : currentPrefs.push_bu_message,
+            push_personal_assignment: push_personal_assignment !== undefined ? push_personal_assignment : currentPrefs.push_personal_assignment
+        };
+        
+        const result = await db.query(
+            'UPDATE users SET notification_preferences = $1::jsonb WHERE id = $2 RETURNING notification_preferences',
+            [JSON.stringify(newPrefs), req.user.id]
+        );
+        
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Update notification preferences error:', err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
+
 exports.deleteTeam = async (req, res) => {
     try {
         const { id } = req.params;
@@ -535,7 +562,7 @@ exports.getMyProfile = async (req, res) => {
         const result = await db.query(`
             SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active, u.created_at,
                    u.birth_date, u.gender, u.id_card, u.passport_url, u.id_expiry, u.address, u.facebook_url,
-                   u.position, u.avatar_url, u.google_email, u.bus,
+                   u.position, u.avatar_url, u.google_email, u.bus, u.notification_preferences,
                    r.name as role_name, r.id as role_id,
                    COALESCE(
                        (SELECT json_agg(json_build_object('id', t.id, 'name', t.name, 'code', t.code) ORDER BY t.name)

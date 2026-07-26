@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../../utils/dateUtils';
 import { X, Save, CheckCircle2, Circle, Link as LinkIcon, FileText, CheckSquare, Calendar, DollarSign, Users, UserCheck, AlertTriangle, Clock, Award } from 'lucide-react';
 import Select from 'react-select';
 
@@ -205,7 +206,7 @@ export default function ProjectExecutionDrawer({ formData, setFormData, onClose,
                     [stepId]: { 
                         ...(prev.metadata?.sales_process?.[stepId] || {}), 
                         ...data, 
-                        updated_at: new Date().toISOString() 
+                        updated_at: getLocalIsoString() 
                     }
                 }
             }

@@ -66,8 +66,8 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
 
     const handleFileUpload = async (files) => {
         if (mediaFiles.length + pendingUploads.length >= 10) { addToast?.('Đã đạt tối đa 10 file!', 'error'); return; }
-        const validFiles = Array.from(files).filter(f => f.size <= 20 * 1024 * 1024);
-        if (validFiles.length < files.length) addToast?.('Một số file vượt quá 20MB và đã bị loại.', 'warning');
+        const validFiles = Array.from(files).filter(f => f.size <= 80 * 1024 * 1024);
+        if (validFiles.length < files.length) addToast?.('Một số file vượt quá 80MB và đã bị loại.', 'warning');
         
         if (!hotel?.id) {
             const newPending = validFiles.map(f => ({ file: f, url: URL.createObjectURL(f), isPending: true }));
@@ -141,7 +141,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                 setActiveContractId(hotel.contracts[0].id);
                 if (hotel.contracts[0].rates) {
                     const mappedServices = hotel.contracts[0].rates.map(r => ({
-                        id: r.id, sku: r.sku, name: r.room_name, start_date: new Date(r.start_date).toLocaleDateString('en-CA') || '', end_date: new Date(r.end_date).toLocaleDateString('en-CA') || '',
+                        id: r.id, sku: r.sku, name: r.room_name, start_date: new Date(r.start_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) || '', end_date: new Date(r.end_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) || '',
                         day_type: r.day_type, contract_price: r.contract_price, net_price: r.net_price, sell_price: r.sell_price, description: r.description, notes: r.notes
                     }));
                     setServices(mappedServices);
@@ -155,7 +155,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
 
             if (hotel.allotments) {
                  const mappedAllots = hotel.allotments.map(a => ({
-                    id: a.id, sku: a.sku, name: a.room_name, start_date: new Date(a.start_date).toLocaleDateString('en-CA') || '', end_date: new Date(a.end_date).toLocaleDateString('en-CA') || '',
+                    id: a.id, sku: a.sku, name: a.room_name, start_date: new Date(a.start_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) || '', end_date: new Date(a.end_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) || '',
                     day_type: a.day_type, allotment_count: a.allotment_count, cut_off_days: a.cut_off_days, net_price: a.net_price, sell_price: a.sell_price, description: a.description, notes: a.notes
                 }));
                 setAllotments(mappedAllots);
@@ -263,7 +263,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
         const contract = availableContracts.find(c => c.id === parseInt(contractId));
         if (contract && contract.rates) {
             const mappedServices = contract.rates.map(r => ({
-                id: r.id, sku: r.sku, name: r.room_name, start_date: new Date(r.start_date).toLocaleDateString('en-CA') || '', end_date: new Date(r.end_date).toLocaleDateString('en-CA') || '',
+                id: r.id, sku: r.sku, name: r.room_name, start_date: new Date(r.start_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) || '', end_date: new Date(r.end_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) || '',
                 day_type: r.day_type, contract_price: r.contract_price, net_price: r.net_price, sell_price: r.sell_price, description: r.description, notes: r.notes
             }));
             setServices(mappedServices);
@@ -495,7 +495,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                         <input type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style={{ display: 'none' }} ref={fileInputRef} onChange={e => handleFileUpload(e.target.files)} />
                                         <Upload size={32} color={isDragging ? '#3b82f6' : '#94a3b8'} style={{ margin: '0 auto 12px' }} />
                                         <p style={{ margin: '0 0 8px', color: '#334155', fontWeight: 600 }}>Kéo thả file vào đây hoặc click để chọn</p>
-                                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Hỗ trợ: JPG, PNG, WebP, PDF, DOC, DOCX (Tối đa 20MB/file)</p>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Hỗ trợ: JPG, PNG, WebP, PDF, DOC, DOCX (Tối đa 80MB/file)</p>
                                         {uploadProgress > 0 && <div style={{ marginTop: '1rem', background: '#e2e8f0', borderRadius: '8px', overflow: 'hidden' }}><div style={{ width: `${uploadProgress}%`, background: '#3b82f6', height: '4px', transition: 'width 0.2s' }} /></div>}
                                     </div>
                                 )}
@@ -703,7 +703,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                     <Clock size={12} />
-                                                    <span>{new Date(note.created_at).toLocaleString('vi-VN')}</span>
+                                                    <span>{new Date(note.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</span>
                                                 </div>
                                             </div>
                                             <div style={{ fontSize: '0.95rem', color: '#1e293b', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{note.content}</div>

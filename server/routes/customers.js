@@ -33,5 +33,6 @@ const canEditCustomer = (req, res, next) => {
 router.put('/:id', authenticateToken, canEditCustomer, customerController.updateCustomer);
 router.delete('/:id', authenticateToken, permCheck('customers', 'delete'), customerController.deleteCustomer);
 router.post('/convert', authenticateToken, permCheck('customers', 'create'), customerController.convertLeadToCustomer);
+router.post('/revert-convert', authenticateToken, permCheck('customers', 'create'), customerController.revertConvertLead);
 
 module.exports = router;

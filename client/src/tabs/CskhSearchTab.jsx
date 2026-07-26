@@ -10,7 +10,7 @@ const CskhSearchTab = ({ users = [], tourTemplates = [], tourDepartures = [] }) 
     search: '', tour_id: '', departure_id: '', assigned_to: '', has_phone: 'yes', min_trips: ''
   });
   const [bulkAction, setBulkAction] = useState('');
-  const [bulkTaskForm, setBulkTaskForm] = useState({ title: '', due_date: new Date().toLocaleDateString('en-CA'), priority_color: 'yellow' });
+  const [bulkTaskForm, setBulkTaskForm] = useState({ title: '', due_date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }), priority_color: 'yellow' });
   const [showBulkModal, setShowBulkModal] = useState(false);
 
   const token = localStorage.getItem('token');
@@ -188,7 +188,7 @@ const CskhSearchTab = ({ users = [], tourTemplates = [], tourDepartures = [] }) 
                   </td>
                   <td>
                     <div style={{ fontWeight: 700, color: '#1e293b' }}>{c.name}</div>
-                    {c.birth_date && <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>🎂 {new Date(c.birth_date).toLocaleDateString('vi-VN')}</div>}
+                    {c.birth_date && <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>🎂 {new Date(c.birth_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</div>}
                   </td>
                   <td>
                     <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{c.phone || '—'}</div>

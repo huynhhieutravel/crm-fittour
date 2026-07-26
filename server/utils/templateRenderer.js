@@ -68,6 +68,29 @@ function renderGenericTable(eventLabel, payload, bodyTemplate) {
  * Later can be extended to support specific templates (e.g. invoice, booking).
  */
 function render(eventCode, eventLabel, payload, bodyTemplate) {
+  if (['MONTHLY_REVIEWS_STATS', 'MONTHLY_MARKETING_ADS_STATS', 'WEEKLY_MARKETING_ADS_STATS'].includes(eventCode)) {
+    let prefaceHtml = '';
+    if (bodyTemplate) {
+      let customBody = bodyTemplate;
+      for (const [key, value] of Object.entries(payload)) {
+        if (typeof value !== 'object' && value !== null && value !== undefined) {
+          const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+          customBody = customBody.replace(regex, value);
+        }
+      }
+      customBody = customBody.replace(/\\n/g, '<br/>');
+      prefaceHtml = `<div style="color: #475569; font-size: 14px; margin-bottom: 20px; line-height: 1.6;">${customBody}</div>`;
+    }
+    return `
+      <div style="font-family: 'Inter', Helvetica, Arial, sans-serif; max-width: 800px; margin: 0 auto; background-color: #f8fafc; padding: 20px;">
+        <h2 style="color: #0f172a; font-size: 20px; margin-bottom: 16px; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; display: inline-block;">
+          ${eventLabel}
+        </h2>
+        ${prefaceHtml}
+        ${payload.html_content || ''}
+      </div>
+    `;
+  }
   // Support for specific overrides can be added here in the future
   return renderGenericTable(eventLabel, payload, bodyTemplate);
 }

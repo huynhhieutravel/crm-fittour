@@ -162,7 +162,7 @@ const AdminTripDashboard = () => {
               <div>
                 <div style={{ fontWeight: 700, color: selectedDeparture?.id === dep.id ? '#1d4ed8' : '#334155', marginBottom: '4px', fontSize: '15px' }}>{dep.id} - {dep.template_name || 'Chưa có tên'}</div>
                 <div style={{ display: 'flex', gap: '12px', fontSize: '13px', color: '#64748b' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {dep.start_date ? new Date(dep.start_date).toLocaleDateString('vi-VN') : 'N/A'}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {dep.start_date ? new Date(dep.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'N/A'}</span>
                   {dep.destination && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Map size={14} /> {dep.destination}</span>}
                 </div>
               </div>

@@ -171,18 +171,16 @@ exports.sendPurchaseEvent = async (lead, tourName, value = 0) => {
  * Send a status change event (for intermediate stages)
  */
 exports.sendStatusChangeEvent = async (lead, newStatus, tourName = null, value = 0) => {
-  // Map CRM statuses to Meta event names
   // Map CRM statuses to Meta event names (Optimized for Ads performance)
-  const statusEventMap = {
+  const STATUS_TO_EVENT = {
     'Mới': 'Lead',
     'Đang liên hệ': 'Contact',
-    'Tiềm năng': 'QualifiedLead',
-    'Đặt cọc': 'InitiateCheckout',
+    'Liên hệ lần 2': 'QualifiedLead',
     'Chốt đơn': 'Purchase',
     'Thất bại': 'Rejected'
   };
 
-  const eventName = statusEventMap[newStatus] || 'Other';
+  const eventName = STATUS_TO_EVENT[newStatus] || 'Other';
   
   return exports.sendEvent(eventName, {
     email: lead.email,

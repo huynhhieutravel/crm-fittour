@@ -94,7 +94,7 @@ const RagDocViewer = ({ idProp }) => {
                 </div>
                 <h1 style={{ fontSize: '2.5rem', fontWeight: '800', marginBottom: '16px', color: '#0f172a', lineHeight: '1.2', letterSpacing: '-0.5px' }}>{doc.title}</h1>
                 <div style={{ display: 'flex', alignItems: 'center', color: '#94a3b8', fontSize: '14px', fontWeight: 500 }}>
-                    Cập nhật lần cuối: {new Date(doc.updated_at || doc.created_at).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    Cập nhật lần cuối: {new Date(doc.updated_at || doc.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh',  hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
                 </div>
             </div>
 

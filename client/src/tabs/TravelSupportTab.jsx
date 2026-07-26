@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../utils/dateUtils';
 import { 
   Plus, Search, Filter, Trash2, Edit2, MoreVertical, 
   Calendar, CreditCard, ChevronRight, User, Package, Lock, Unlock,
@@ -35,7 +36,7 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
     op_id: '',
     service_type: 'Lưu trú',
     service_name: '',
-    usage_date: new Date().toLocaleDateString('en-CA'),
+    usage_date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }),
     unit_cost: 0,
     quantity: 1,
     unit_price: 0,
@@ -64,11 +65,11 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
     let start = '', end = '';
     const td = new Date();
     if (rangeId === 'today') {
-      start = end = td.toLocaleDateString('en-CA');
+      start = end = td.toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
     } else if (rangeId === 'yesterday') {
       const y = new Date(td);
       y.setDate(y.getDate() - 1);
-      start = end = y.toLocaleDateString('en-CA');
+      start = end = y.toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
     } else if (rangeId === 'week') {
       const first = td.getDate() - td.getDay() + 1;
       start = new Date(td.setDate(first)).toLocaleDateString('en-CA');
@@ -155,7 +156,7 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
         op_id: '',
         service_type: 'Lưu trú',
         service_name: '',
-        usage_date: new Date().toLocaleDateString('en-CA'),
+        usage_date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }),
         unit_cost: 0,
         quantity: 1,
         unit_price: 0,
@@ -219,7 +220,7 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
       'Sale Phụ Trách': item.sale_name || '---',
       'Loại Dịch Vụ': item.service_type,
       'Nội Dung / Tên Đoàn': item.service_name,
-      'Ngày Sử Dụng': item.usage_date ? new Date(item.usage_date).toLocaleDateString('vi-VN') : '',
+      'Ngày Sử Dụng': item.usage_date ? new Date(item.usage_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
       'Hành Trình': item.route || '',
       'Số Lượng': item.quantity || 1,
       'Giá Vốn': item.unit_cost,
@@ -246,7 +247,7 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "DichVuHoTro");
     
-    XLSX.writeFile(workbook, `ThongKeDV_HoTro_${new Date().toISOString().split('T')[0]}.xlsx`);
+    XLSX.writeFile(workbook, `ThongKeDV_HoTro_${getLocalDateString()}.xlsx`);
   };
 
   const handleDelete = async (id) => {
@@ -532,7 +533,7 @@ const TravelSupportTab = ({ checkPerm, users = [], currentUser }) => {
                     <td data-label="Điều hành">{item.op_name || '---'}</td>
                     <td data-label="Loại DV" className="td-desktop-only"><span style={{ fontSize: '0.75rem', color: '#6366f1', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '2px 8px', borderRadius: '6px' }}>{item.service_type}</span></td>
                     <td data-label="Tên DV" className="td-desktop-only">{item.service_name}</td>
-                    <td data-label="Ngày dùng" style={{ textAlign: 'center' }}>{item.usage_date ? new Date(item.usage_date).toLocaleDateString('vi-VN') : '--'}</td>
+                    <td data-label="Ngày dùng" style={{ textAlign: 'center' }}>{item.usage_date ? new Date(item.usage_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '--'}</td>
                     <td data-label="Giá thành" style={{ textAlign: 'right' }}>{formatMoney(item.unit_cost)}</td>
                     <td data-label="SL" style={{ textAlign: 'center' }}>{item.quantity || 1}</td>
                     <td data-label="Tổng chi" style={{ textAlign: 'right', color: '#64748b' }}>{formatMoney(total_cost)}</td>

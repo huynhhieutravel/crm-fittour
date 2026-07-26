@@ -2,6 +2,7 @@ import { swalConfirm } from '../../utils/swalHelpers';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Plus, Save, FileText, CheckCircle, Printer, Trash2 } from 'lucide-react';
+import { getLocalDateTimeLocal } from '../../utils/dateUtils';
 import PrintVoucherTemplate from '../print/PrintVoucherTemplate';
 import html2canvas from 'html2canvas';
 
@@ -39,7 +40,7 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
     payer_name: booking?.name || '',
     payer_phone: booking?.phone || '',
     notes: '',
-    voucher_date: new Date().toISOString().slice(0, 16) // yyyy-MM-ddTHH:mm for datetime-local
+    voucher_date: getLocalDateTimeLocal() // yyyy-MM-ddTHH:mm for datetime-local
   });
 
   useEffect(() => {
@@ -358,7 +359,7 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
                   ) : (
                     vouchers.map(v => (
                       <tr key={v.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '12px 16px', color: '#475569' }}>{new Date(v.created_at).toLocaleString('vi-VN')}</td>
+                        <td style={{ padding: '12px 16px', color: '#475569' }}>{new Date(v.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</td>
                         <td style={{ padding: '12px 16px' }}>
                            <button 
                              onClick={() => setViewVoucher(v)}

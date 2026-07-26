@@ -3,7 +3,7 @@ const db = require('./db');
 const path = require('path');
 
 async function importData() {
-  const filePath = path.join(__dirname, '../client/public/thu-vien-input/qc-t5-t6-2026.xlsx');
+  const filePath = path.join(__dirname, 'qc-t5-t6-2026.xlsx');
   console.log(`Reading file: ${filePath}`);
   
   const workbook = XLSX.readFile(filePath);
@@ -11,8 +11,11 @@ async function importData() {
   const worksheet = workbook.Sheets[sheetName];
   const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
   
-  const groups = {}; // { 'BU1': [], 'BU2': [] }
+  const groups = {};
   
+  const buRes = await db.query("SELECT * FROM business_units ORDER BY sort_order ASC, id ASC");
+  const activeBUs = buRes.rows || [];
+
   jsonData.forEach((row) => {
     const campaign = (row['Tên chiến dịch'] || row['Chiến dịch'] || '').toUpperCase();
     const adSet = (row['Tên nhóm quảng cáo'] || row['Nhóm quảng cáo'] || '').toUpperCase();
@@ -25,24 +28,50 @@ async function importData() {
     if (!campaign && !adSet && !ad) return;
 
     let detectedBu = null;
-    if (campaign.includes('BU1')) detectedBu = 'BU1';
-    else if (campaign.includes('BU2')) detectedBu = 'BU2';
-    else if (campaign.includes('BU3')) detectedBu = 'BU3';
-    else if (campaign.includes('BU4')) detectedBu = 'BU4';
 
-    if (!detectedBu) {
-      if (adSet.includes('BU1')) detectedBu = 'BU1';
-      else if (adSet.includes('BU2')) detectedBu = 'BU2';
-      else if (adSet.includes('BU3')) detectedBu = 'BU3';
-      else if (adSet.includes('BU4')) detectedBu = 'BU4';
+    // 1. Exact ID match in campaign or adSet (e.g. BU1, BU2...)
+    if (activeBUs.length > 0) {
+      for (const bu of activeBUs) {
+        if (campaign.includes(bu.id)) { detectedBu = bu.id; break; }
+      }
+      if (!detectedBu) {
+        for (const bu of activeBUs) {
+          if (adSet.includes(bu.id)) { detectedBu = bu.id; break; }
+        }
+      }
     }
 
+    // Fallback for ID matching if activeBUs is somehow empty
+    if (!detectedBu && activeBUs.length === 0) {
+      const fallbackBUs = ['BU1', 'BU2', 'BU3', 'BU4', 'BU5'];
+      for (const bu of fallbackBUs) {
+        if (campaign.includes(bu) || adSet.includes(bu)) {
+          detectedBu = bu; break;
+        }
+      }
+    }
+
+    // 2. Keyword matching from dynamic database arrays
     if (!detectedBu) {
       const allText = `${campaign} ${adSet} ${ad}`;
-      if (allText.includes('TRUNG QUỐC') || allText.includes('BẮC KINH') || allText.includes('THƯỢNG HẢI') || allText.includes('Á ĐINH') || allText.includes('GIANG NAM') || allText.includes('LỆ GIANG') || allText.includes('GIANG TÂY')) detectedBu = 'BU1';
-      else if (allText.includes('ALASKA') || allText.includes('NAM MỸ') || allText.includes('CHÂU ÂU') || allText.includes('SILKROAD') || allText.includes('AI CẬP')) detectedBu = 'BU2';
-      else if (allText.includes('HÀN QUỐC') || allText.includes('NHẬT BẢN') || allText.includes('ĐÀI LOAN')) detectedBu = 'BU3';
-      else if (allText.includes('BALI') || allText.includes('BHUTAN') || allText.includes('LADAKH') || allText.includes('BROMO')) detectedBu = 'BU4';
+      
+      if (activeBUs.length > 0) {
+        for (const bu of activeBUs) {
+          const keywords = [...(bu.countries || []), ...(bu.keywords || [])];
+          const isMatch = keywords.some(kw => kw && allText.includes(kw.toUpperCase()));
+          if (isMatch) {
+            detectedBu = bu.id;
+            break;
+          }
+        }
+      } else {
+        // Fallback keywords if DB query failed
+        if (allText.includes('TRUNG QUỐC') || allText.includes('BẮC KINH') || allText.includes('THƯỢNG HẢI') || allText.includes('Á ĐINH') || allText.includes('GIANG NAM') || allText.includes('LỆ GIANG') || allText.includes('GIANG TÂY')) detectedBu = 'BU1';
+        else if (allText.includes('CHÂU ÂU') || allText.includes('ÚC')) detectedBu = 'BU2';
+        else if (allText.includes('HÀN QUỐC') || allText.includes('NHẬT BẢN') || allText.includes('ĐÀI LOAN')) detectedBu = 'BU3';
+        else if (allText.includes('BALI') || allText.includes('BHUTAN') || allText.includes('LADAKH') || allText.includes('BROMO')) detectedBu = 'BU4';
+        else if (allText.includes('ALASKA') || allText.includes('BẮC MỸ') || allText.includes('BẮC CỰC') || allText.includes('NAM MỸ') || allText.includes('MÔNG CỔ') || allText.includes('MONGOLIA') || allText.includes('SILKROAD') || allText.includes('CON ĐƯỜNG TƠ LỤA') || allText.includes('TRUNG Á') || allText.includes('THỔ NHĨ KỲ') || allText.includes('MA RỐC') || allText.includes('AFRICA') || allText.includes('CHÂU PHI') || allText.includes('CANADA') || allText.includes('MỸ')) detectedBu = 'BU5';
+      }
     }
 
     if (!detectedBu) detectedBu = 'UNKNOWN';

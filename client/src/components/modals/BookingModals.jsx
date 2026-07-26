@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, LogOut, FileText, User, ShoppingCart, DollarSign, Calendar } from 'lucide-react';
+import { getLocalDateString } from '../../utils/dateUtils';
 import Select from 'react-select';
 
 export const AddBookingModal = ({ 
@@ -19,7 +20,7 @@ export const AddBookingModal = ({
     discount: 0,
     initial_deposit_amount: '',
     initial_deposit_method: 'CASH',
-    initial_deposit_date: new Date().toISOString().slice(0, 10)
+    initial_deposit_date: getLocalDateString()
   });
   
   const [paxDetails, setPaxDetails] = useState([]);
@@ -52,7 +53,7 @@ export const AddBookingModal = ({
           discount: Number(bookingToEdit.discount) || 0,
           initial_deposit_amount: '',
           initial_deposit_method: 'CASH',
-          initial_deposit_date: new Date().toISOString().slice(0, 10)
+          initial_deposit_date: getLocalDateString()
         });
         
         // Parse dynamic arrays safely
@@ -63,7 +64,7 @@ export const AddBookingModal = ({
       } else {
         setFormData({
           customer_id: '', tour_departure_id: '', notes: '', payment_status: 'unpaid', booking_status: 'Mới',
-          discount: 0, initial_deposit_amount: '', initial_deposit_method: 'CASH', initial_deposit_date: new Date().toISOString().slice(0, 10)
+          discount: 0, initial_deposit_amount: '', initial_deposit_method: 'CASH', initial_deposit_date: getLocalDateString()
         });
         setPaxDetails([]);
         setServiceDetails([]);
@@ -141,7 +142,7 @@ export const AddBookingModal = ({
 
   const departureOptions = departures.map(d => ({ 
     value: d.id, 
-    label: `[${d.code}] ${d.template_name || 'Tour'} - Đi: ${new Date(d.start_date).toLocaleDateString('vi-VN')}` 
+    label: `[${d.code}] ${d.template_name || 'Tour'} - Đi: ${new Date(d.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}` 
   }));
   const currDepartureValue = formData.tour_departure_id ? departureOptions.find(o => o.value === formData.tour_departure_id) : null;
 

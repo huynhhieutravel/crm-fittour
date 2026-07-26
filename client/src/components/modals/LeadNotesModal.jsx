@@ -28,7 +28,7 @@ const LeadNotesModal = ({
               <div key={note.id} style={{ padding: '1rem', background: '#f8fafc', borderRadius: '0.75rem', borderLeft: '4px solid #6366f1' }}>
                 <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
                   <strong>{note.creator_name}</strong>
-                  <span>{new Date(note.created_at).toLocaleString('vi-VN')}</span>
+                  <span>{new Date(note.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</span>
                 </div>
                 <div style={{ fontSize: '0.9rem' }}>{note.content}</div>
               </div>

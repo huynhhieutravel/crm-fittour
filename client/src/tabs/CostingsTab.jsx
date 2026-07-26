@@ -497,7 +497,7 @@ const CostingsTab = ({ user }) => {
                   <tr key={c.tour_departure_id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'all 0.2s', ':hover': {background: '#f8fafc'} }}>
                     <td style={{ padding: '12px 16px' }}>
                       <div style={{ fontWeight: 800, color: '#1e293b' }}>{c.departure_code || '---'}</div>
-                      <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{c.template_name} • <span style={{color: '#2563eb'}}>{new Date(c.start_date).toLocaleDateString('vi-VN')}</span></div>
+                      <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{c.template_name} • <span style={{color: '#2563eb'}}>{new Date(c.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</span></div>
                     </td>
                     <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                       <div style={{ fontWeight: 700, color: '#0f172a' }}>{currentRev.toLocaleString('vi-VN')} đ</div>

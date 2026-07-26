@@ -167,8 +167,8 @@ const StaffCalendarView = ({ users = [] }) => {
     const handleClick = () => {
         if (ev.type === 'leave') {
             const l = ev.leave_details;
-            const startDate = l.dates && l.dates.length > 0 ? new Date(l.dates[0].date).toLocaleDateString('vi-VN') : (l.start_date ? new Date(l.start_date).toLocaleDateString('vi-VN') : 'N/A');
-            const endDate = l.dates && l.dates.length > 0 ? new Date(l.dates[l.dates.length - 1].date).toLocaleDateString('vi-VN') : (l.end_date ? new Date(l.end_date).toLocaleDateString('vi-VN') : 'N/A');
+            const startDate = l.dates && l.dates.length > 0 ? new Date(l.dates[0].date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : (l.start_date ? new Date(l.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'N/A');
+            const endDate = l.dates && l.dates.length > 0 ? new Date(l.dates[l.dates.length - 1].date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : (l.end_date ? new Date(l.end_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'N/A');
             
             Swal.fire({
                 title: `🏖️ Đơn nghỉ phép của ${ev.label.replace('🏖️ ', '').replace(' (Sáng)', '').replace(' (Chiều)', '')}`,

@@ -1,4 +1,5 @@
 import { swalConfirm } from '../utils/swalHelpers';
+import { getLocalDateString } from '../utils/dateUtils';
 import Swal from 'sweetalert2';
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
@@ -180,6 +181,19 @@ export default function OpToursTab({ currentUser }) {
     }
   }, [tours]);
   
+  // Auto-open booking list modal via sessionStorage event
+  useEffect(() => {
+    const pendingBookingListId = sessionStorage.getItem('pendingOpenBookingListId');
+    if (pendingBookingListId && tours.length > 0) {
+       const found = tours.find(t => t.id === Number(pendingBookingListId));
+       if (found) {
+          setSelectedCustomerTour(found);
+          setIsBookingListOpen(true);
+       }
+       sessionStorage.removeItem('pendingOpenBookingListId');
+    }
+  }, [tours]);
+  
   // Modal states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedTour, setSelectedTour] = useState(null);
@@ -311,8 +325,8 @@ export default function OpToursTab({ currentUser }) {
 
     const tourCode = tour.tour_code || '';
     const tourName = tour.tour_name || '';
-    const departDate = tour.start_date ? new Date(tour.start_date).toLocaleDateString('vi-VN') : '';
-    const closingDate = tour.end_date ? new Date(tour.end_date).toLocaleDateString('vi-VN') : '';
+    const departDate = tour.start_date ? new Date(tour.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '';
+    const closingDate = tour.end_date ? new Date(tour.end_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '';
 
     const pickupPoint = tour.tour_info?.pickup_point || '';
     const dropoffPoint = tour.tour_info?.dropoff_point || '';
@@ -503,7 +517,7 @@ export default function OpToursTab({ currentUser }) {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Danh sách khách');
     const safeName = (tourCode || 'Tour').replace(/[\s\/\\]+/g, '_');
-    XLSX.writeFile(wb, `DanhSachKhach_${safeName}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(wb, `DanhSachKhach_${safeName}_${getLocalDateString()}.xlsx`);
   };
 
   const exportAllChinaMembersXlsx = () => {
@@ -700,7 +714,7 @@ export default function OpToursTab({ currentUser }) {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Danh sách khách TQ');
     const safeTourName = (tour?.tour_code || 'Tour').replace(/[\s\/\\]+/g, '_');
-    XLSX.writeFile(wb, `DS_TQ_${safeTourName}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(wb, `DS_TQ_${safeTourName}_${getLocalDateString()}.xlsx`);
   };
 
   useEffect(() => {
@@ -711,6 +725,18 @@ export default function OpToursTab({ currentUser }) {
       .then(res => setAirlinesList(res.data.data || []))
       .catch(console.error);
   }, []);
+
+  useEffect(() => {
+     const openId = localStorage.getItem('open_op_tour_departure');
+     if (openId && tours.length > 0) {
+         const tour = tours.find(t => t.id == openId);
+         if (tour) {
+             setSelectedBookingTour(tour);
+             setIsBookingListOpen(true);
+         }
+         localStorage.removeItem('open_op_tour_departure');
+     }
+  }, [tours]);
 
   const fetchTours = async () => {
     try {
@@ -794,15 +820,15 @@ export default function OpToursTab({ currentUser }) {
     // Set a default based on the previous code and previous start date (if any).
     // The user will change start_date which will auto-update this via handleChange in OpTourDetailDrawer.
     const baseCode = tour.template_code || tour.tour_code?.split('-')[0] || 'TOUR';
-    const dateStr = tour.start_date ? new Date(tour.start_date).toLocaleDateString('en-CA').replace(/-/g, '') : '';
+    const dateStr = tour.start_date ? new Date(tour.start_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }).replace(/-/g, '') : '';
     const newCode = dateStr ? `${baseCode}-${dateStr}` : `${baseCode}-COPY`;
 
     const cloned = {
       tour_code: newCode,
       tour_name: tour.tour_name || '',
       tour_template_id: tour.tour_template_id || '',
-      start_date: tour.start_date ? new Date(tour.start_date).toLocaleDateString('en-CA') : '',
-      end_date: tour.end_date ? new Date(tour.end_date).toLocaleDateString('en-CA') : '',
+      start_date: tour.start_date ? new Date(tour.start_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
+      end_date: tour.end_date ? new Date(tour.end_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
       market: tour.market || '',
       status: 'Mở bán',
       tour_info: { ...(tour.tour_info || {}) },
@@ -856,7 +882,7 @@ export default function OpToursTab({ currentUser }) {
   };
 
   const availableBUs = React.useMemo(() => {
-    const list = new Set();
+    const list = new Set(['BU1', 'BU2', 'BU3', 'BU4', 'BU5']);
     tours.forEach(t => {
        if (t.bu_group) list.add(t.bu_group);
     });
@@ -1024,8 +1050,9 @@ export default function OpToursTab({ currentUser }) {
     if (!buName) return '#fbbf24';
     const name = String(buName).toUpperCase();
     if (name.includes('BU1')) return '#3b82f6'; // Blue
-    if (name.includes('BU2')) return '#ef4444'; // Red
+    if (name.includes('BU3')) return '#ec4899'; // Pink
     if (name.includes('BU4')) return '#8b5cf6'; // Purple
+    if (name.includes('BU5')) return '#f59e0b'; // Amber/Orange
     
     // Hash dự phòng nếu sau này công ty có thêm BU mới
     const colors = ['#f43f5e', '#d946ef', '#8b5cf6', '#3b82f6', '#0ea5e9', '#14b8a6', '#10b981', '#84cc16', '#eab308', '#f97316'];
@@ -1442,8 +1469,8 @@ export default function OpToursTab({ currentUser }) {
                    </div>
                 </td>
                 <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                   <div style={{ fontWeight: 'bold', color: '#1e293b' }}>{tour.start_date ? new Date(tour.start_date).toLocaleDateString('vi-VN') : '---'}</div>
-                   <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>{tour.end_date ? new Date(tour.end_date).toLocaleDateString('vi-VN') : '---'}</div>
+                   <div style={{ fontWeight: 'bold', color: '#1e293b' }}>{tour.start_date ? new Date(tour.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '---'}</div>
+                   <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>{tour.end_date ? new Date(tour.end_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '---'}</div>
                 </td>
                 <td style={{ padding: '12px 8px', textAlign: 'right', fontWeight: 'bold' }}>
                     {tour.tour_info?.price_adult?.toLocaleString() || '---'}
@@ -1466,7 +1493,7 @@ export default function OpToursTab({ currentUser }) {
                     {remaining}
                 </td>
                 <td style={{ padding: '12px 8px', textAlign: 'center', color: '#64748b' }}>
-                    {tour.tour_info?.close_time ? new Date(tour.tour_info.close_time).toLocaleDateString('vi-VN') : '---'}
+                    {tour.tour_info?.close_time ? new Date(tour.tour_info.close_time).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '---'}
                 </td>
 
                 <td style={{ padding: '12px 8px', textAlign: 'center', verticalAlign: 'middle' }}>
@@ -1923,7 +1950,7 @@ export default function OpToursTab({ currentUser }) {
                               <div key={idx} style={{ padding: '16px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                   <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '0.9rem' }}>{u.tour_name}</div>
-                                  <div style={{ fontSize: '0.8rem', color: '#64748b', whiteSpace: 'nowrap', marginLeft: '12px' }}>{new Date(u.start_date).toLocaleDateString('vi-VN')}</div>
+                                  <div style={{ fontSize: '0.8rem', color: '#64748b', whiteSpace: 'nowrap', marginLeft: '12px' }}>{new Date(u.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</div>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                                   <div style={{ flex: 1, height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>

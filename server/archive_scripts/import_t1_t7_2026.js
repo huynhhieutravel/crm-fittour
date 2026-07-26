@@ -7,12 +7,12 @@ const pool = new Pool({
 });
 
 const processFiles = async () => {
-  const filePath = `../client/public/thu-vien-input/qc-t2-t7-2026.xlsx`;
+  const filePath = `../client/public/thu-vien-input/qc-t1-t7-2026.xlsx`;
   const workbook = XLSX.readFile(filePath);
   const sheetName = workbook.SheetNames[0];
   const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '' });
 
-  const WEEK = 2;
+  const WEEK = 1;
   const MONTH = 7;
   const YEAR = 2026;
   let count = 0;
@@ -37,20 +37,23 @@ const processFiles = async () => {
     else if (campaign.includes('BU2')) bu = 'BU2';
     else if (campaign.includes('BU3')) bu = 'BU3'; 
     else if (campaign.includes('BU4')) bu = 'BU4';
+    else if (campaign.includes('BU5')) bu = 'BU5';
 
     if (!bu) {
       if (adSet.includes('BU1')) bu = 'BU1';
       else if (adSet.includes('BU2')) bu = 'BU2';
       else if (adSet.includes('BU3')) bu = 'BU3';
       else if (adSet.includes('BU4')) bu = 'BU4';
+      else if (adSet.includes('BU5')) bu = 'BU5';
     }
 
     if (!bu) {
       const allText = `${campaign} ${adSet} ${ad}`.toUpperCase();
       if (allText.includes('TRUNG QUỐC') || allText.includes('BẮC KINH') || allText.includes('THƯỢNG HẢI') || allText.includes('Á ĐINH') || allText.includes('GIANG NAM') || allText.includes('TÂN CƯƠNG') || allText.includes('TÂY TẠNG') || allText.includes('LỆ GIANG') || allText.includes('THIỂM TÂY') || allText.includes('VÂN NAM')) bu = 'BU1';
-      else if (allText.includes('ALASKA') || allText.includes('NAM MỸ') || allText.includes('CHÂU ÂU') || allText.includes('ÚC') || allText.includes('MỸ') || allText.includes('CANADA') || allText.includes('MONGOLIA') || allText.includes('MÔNG CỔ')) bu = 'BU2';
+      else if (allText.includes('CHÂU ÂU') || allText.includes('ÚC')) bu = 'BU2';
       else if (allText.includes('HÀN QUỐC') || allText.includes('NHẬT BẢN') || allText.includes('ĐÀI LOAN')) bu = 'BU3';
       else if (allText.includes('BALI') || allText.includes('BHUTAN') || allText.includes('LADAKH') || allText.includes('BROMO') || allText.includes('KASHMIR') || allText.includes('ẤN ĐỘ') || allText.includes('NEPAL') || allText.includes('SRI LANKA')) bu = 'BU4';
+      else if (allText.includes('ALASKA') || allText.includes('BẮC MỸ') || allText.includes('BẮC CỰC') || allText.includes('NAM MỸ') || allText.includes('MÔNG CỔ') || allText.includes('MONGOLIA') || allText.includes('SILKROAD') || allText.includes('CON ĐƯỜNG TƠ LỤA') || allText.includes('TRUNG Á') || allText.includes('THỔ NHĨ KỲ') || allText.includes('MA RỐC') || allText.includes('AFRICA') || allText.includes('CHÂU PHI') || allText.includes('CANADA') || allText.includes('MỸ')) bu = 'BU5';
     }
 
     if (!bu) bu = 'UNKNOWN';

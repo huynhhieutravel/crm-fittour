@@ -15,6 +15,10 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
+body.sidebar-collapsed {
+  --sidebar-width: 76px;
+}
+
 body.dark-mode {
   --primary: #ffffff;
   --primary-light: #1e293b;
@@ -423,6 +427,12 @@ body {
   margin-bottom: 2rem;
 }
 
+@media (max-width: 768px) {
+  .header.hide-on-mobile {
+    display: none !important;
+  }
+}
+
 .header h1 {
   font-size: 1.75rem;
   font-weight: 700;
@@ -710,7 +720,7 @@ select.form-control {
 [class*="classification-Mới"] { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
 [class*="classification-Tiềm Năng Cao"] { background: rgba(255, 126, 51, 0.1); color: #ff7e33; border: 1px solid rgba(255, 126, 51, 0.2); }
 [class*="classification-Tiềm Năng"] { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
-[class*="classification-Không Tiềm Năng"] { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
+[class*="classification-Không có nhu cầu"], [class*="classification-Không Nhu Cầu"] { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
 
 .preset-btn {
   background: white;
@@ -2961,4 +2971,54 @@ select.form-control {
   .doc-wp-content {
     padding: 1.5rem;
   }
+}
+
+/* Management Dashboard Responsive Utilities */
+@media (max-width: 768px) {
+  .management-dashboard .executive-filter-panel {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  .management-dashboard .grid-cards-4 {
+    grid-template-columns: 1fr !important;
+  }
+  .management-dashboard .flex-row-mobile-column {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .management-dashboard .pie-chart-container {
+    align-self: center;
+    margin-bottom: 20px;
+  }
+  .management-dashboard .table-container {
+    overflow-x: auto;
+  }
+  .management-dashboard .funnel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+}
+
+/* Override SearchableSelect for Inbox Assignment */
+.inbox-assignee-select .searchable-select-trigger {
+    padding: 2px 8px !important;
+    min-height: 22px !important;
+    height: 22px !important;
+    font-size: 11px !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+    border: none !important;
+    background: transparent !important;
+}
+.inbox-assignee-select .searchable-select-container svg {
+    width: 12px !important;
+    height: 12px !important;
+}
+.inbox-assignee-select .searchable-select-dropdown {
+    font-size: 12px !important;
+}
+.inbox-assignee-select .searchable-select-dropdown .searchable-select-option {
+    padding: 4px 8px !important;
 }

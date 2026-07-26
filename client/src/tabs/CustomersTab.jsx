@@ -305,7 +305,7 @@ const CustomersTab = ({
                   </div>
                 </td>
                 <td style={{ fontSize: '0.85rem' }}>
-                  {customer.created_at ? new Date(customer.created_at).toLocaleDateString('vi-VN') : 'N/A'}
+                  {customer.created_at ? new Date(customer.created_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'N/A'}
                 </td>
                 <td style={{ fontSize: '0.85rem' }}>
                   {users.find(u => u.id === customer.assigned_to)?.username || 'Chưa gán'}

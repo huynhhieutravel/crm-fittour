@@ -157,6 +157,72 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
     return s.replace(/[^0-9]/g, '');
   };
 
+  const handleSendEmail = async (type) => {
+    if (!filters.month || !filters.year) {
+      Swal.fire('Lỗi', 'Vui lòng chọn Tháng và Năm để gửi báo cáo', 'error');
+      return;
+    }
+    
+    let selectedWeek = null;
+
+    if (type === 'weekly') {
+      const currentRanges = getWeekRanges(filters.year, filters.month);
+      const options = {};
+      Object.keys(currentRanges).forEach(w => {
+        if (currentRanges[w] !== '') {
+          options[w] = `Tuần ${w} (${currentRanges[w]})`;
+        }
+      });
+
+      const { value: weekChoice } = await Swal.fire({
+        title: 'Chọn tuần cần gửi báo cáo',
+        input: 'select',
+        inputOptions: options,
+        inputPlaceholder: 'Chọn một tuần',
+        showCancelButton: true,
+        confirmButtonText: 'Tiếp tục',
+        cancelButtonText: 'Hủy'
+      });
+
+      if (!weekChoice) return;
+      selectedWeek = weekChoice;
+    }
+
+    const text = type === 'weekly' 
+      ? `Bạn có chắc muốn gửi Báo cáo Tuần ${selectedWeek} Tháng ${filters.month}/${filters.year}?`
+      : `Bạn có chắc muốn gửi Báo cáo Tháng ${filters.month}/${filters.year}?`;
+    
+    const result = await Swal.fire({
+      title: 'Xác nhận gửi Email',
+      text,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Gửi',
+      cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        await axios.post('/api/marketing-ads/send-email', {
+          type,
+          month: filters.month,
+          year: filters.year,
+          week: selectedWeek
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        Swal.fire('Thành công', 'Email báo cáo đã được đưa vào hàng đợi gửi đi', 'success');
+      } catch (err) {
+        console.error(err);
+        Swal.fire('Lỗi', err.response?.data?.error || 'Không thể gửi báo cáo', 'error');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   const handleKpiSave = async (e) => {
     e.preventDefault();
     try {
@@ -381,24 +447,52 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
         if (!campaign && !adSet && !ad) return;
 
         let detectedBu = null;
-        if (campaign.includes('BU1')) detectedBu = 'BU1';
-        else if (campaign.includes('BU2')) detectedBu = 'BU2';
-        else if (campaign.includes('BU3')) detectedBu = 'BU3';
-        else if (campaign.includes('BU4')) detectedBu = 'BU4';
+        const activeBUs = bus || [];
 
-        if (!detectedBu) {
-          if (adSet.includes('BU1')) detectedBu = 'BU1';
-          else if (adSet.includes('BU2')) detectedBu = 'BU2';
-          else if (adSet.includes('BU3')) detectedBu = 'BU3';
-          else if (adSet.includes('BU4')) detectedBu = 'BU4';
+        // 1. Exact ID match in campaign or adSet (e.g. BU1, BU2...)
+        if (activeBUs.length > 0) {
+          for (const bu of activeBUs) {
+            if (campaign.includes(bu.id)) { detectedBu = bu.id; break; }
+          }
+          if (!detectedBu) {
+            for (const bu of activeBUs) {
+              if (adSet.includes(bu.id)) { detectedBu = bu.id; break; }
+            }
+          }
         }
 
+        // Fallback for ID matching if bus prop is not loaded
+        if (!detectedBu && activeBUs.length === 0) {
+          const fallbackBUs = ['BU1', 'BU2', 'BU3', 'BU4', 'BU5'];
+          for (const bu of fallbackBUs) {
+            if (campaign.includes(bu) || adSet.includes(bu)) {
+              detectedBu = bu; break;
+            }
+          }
+        }
+
+        // 2. Keyword matching from dynamic database arrays
         if (!detectedBu) {
           const allText = `${campaign} ${adSet} ${ad}`;
-          if (allText.includes('TRUNG QUỐC') || allText.includes('BẮC KINH') || allText.includes('THƯỢNG HẢI') || allText.includes('Á ĐINH') || allText.includes('GIANG NAM') || allText.includes('LỆ GIANG') || allText.includes('GIANG TÂY')) detectedBu = 'BU1';
-          else if (allText.includes('ALASKA') || allText.includes('NAM MỸ') || allText.includes('CHÂU ÂU') || allText.includes('SILKROAD') || allText.includes('AI CẬP')) detectedBu = 'BU2';
-          else if (allText.includes('HÀN QUỐC') || allText.includes('NHẬT BẢN') || allText.includes('ĐÀI LOAN')) detectedBu = 'BU3';
-          else if (allText.includes('BALI') || allText.includes('BHUTAN') || allText.includes('LADAKH') || allText.includes('BROMO')) detectedBu = 'BU4';
+          
+          if (activeBUs.length > 0) {
+            for (const bu of activeBUs) {
+              const keywords = [...(bu.countries || []), ...(bu.keywords || [])];
+              // Search case-insensitive since excel values are uppercase
+              const isMatch = keywords.some(kw => kw && allText.includes(kw.toUpperCase()));
+              if (isMatch) {
+                detectedBu = bu.id;
+                break;
+              }
+            }
+          } else {
+            // Fallback keywords if bus is somehow not loaded
+            if (allText.includes('TRUNG QUỐC') || allText.includes('BẮC KINH') || allText.includes('THƯỢNG HẢI') || allText.includes('Á ĐINH') || allText.includes('GIANG NAM') || allText.includes('LỆ GIANG') || allText.includes('GIANG TÂY')) detectedBu = 'BU1';
+            else if (allText.includes('CHÂU ÂU') || allText.includes('ÚC')) detectedBu = 'BU2';
+            else if (allText.includes('HÀN QUỐC') || allText.includes('NHẬT BẢN') || allText.includes('ĐÀI LOAN')) detectedBu = 'BU3';
+            else if (allText.includes('BALI') || allText.includes('BHUTAN') || allText.includes('LADAKH') || allText.includes('BROMO')) detectedBu = 'BU4';
+            else if (allText.includes('ALASKA') || allText.includes('BẮC MỸ') || allText.includes('BẮC CỰC') || allText.includes('NAM MỸ') || allText.includes('MÔNG CỔ') || allText.includes('MONGOLIA') || allText.includes('SILKROAD') || allText.includes('CON ĐƯỜNG TƠ LỤA') || allText.includes('TRUNG Á') || allText.includes('THỔ NHĨ KỲ') || allText.includes('MA RỐC') || allText.includes('AFRICA') || allText.includes('CHÂU PHI') || allText.includes('CANADA') || allText.includes('MỸ') || allText.includes('PAKISTAN') || allText.includes('TÂY Á') || allText.includes('TRUNG ĐÔNG')) detectedBu = 'BU5';
+          }
         }
 
         if (!detectedBu) detectedBu = 'UNKNOWN';
@@ -581,7 +675,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
               >
                 Tất cả
               </button>
-              {bus?.map(b => {
+              {bus?.filter(b => !['Kế toán', 'Marketing', 'KETOAN', 'MARKETING'].includes(b.id) && !['Kế toán', 'Marketing', 'KETOAN', 'MARKETING'].includes(b.label)).map(b => {
                 return (
                   <button
                     key={b.id}
@@ -735,11 +829,40 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
               </span>
             )}
 
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', background: '#f8fafc', padding: '6px 12px', borderRadius: '6px', border: '1px dashed #cbd5e1', color: '#64748b', fontSize: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '16px', height: '16px', background: '#e2e8f0', color: '#475569', borderRadius: '50%', fontWeight: 700, fontSize: '10px' }}>i</div>
-              <span style={{ fontStyle: 'italic', maxWidth: '400px' }}>
-                <b style={{ color: '#475569' }}>Lưu ý Thuật Toán Gộp Tuần:</b> Ngày lẻ mồ côi đầu/cuối tháng sẽ tự động gộp vào tuần liền kề. Đảm bảo mọi tháng chốt đúng 5 chu kỳ báo cáo chuẩn (không đẻ Tuần 6).
-              </span>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f8fafc', padding: '6px 12px', borderRadius: '6px', border: '1px dashed #cbd5e1', color: '#64748b', fontSize: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '16px', height: '16px', background: '#e2e8f0', color: '#475569', borderRadius: '50%', fontWeight: 700, fontSize: '10px' }}>i</div>
+                <span style={{ fontStyle: 'italic', maxWidth: '300px' }}>
+                  <b style={{ color: '#475569' }}>Lưu ý:</b> Ngày lẻ mồ côi đầu/cuối tháng sẽ tự động gộp vào tuần liền kề.
+                </span>
+              </div>
+              
+              <button 
+                className="btn-send-email" 
+                style={{ 
+                  background: '#0ea5e9', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', 
+                  display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', cursor: 'pointer',
+                  boxShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.2)',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => handleSendEmail('weekly')}
+              >
+                <i className="fa-solid fa-paper-plane" style={{marginRight: '5px'}}></i> 
+                Gửi Báo Cáo Tuần
+              </button>
+              <button 
+                className="btn-send-email" 
+                style={{ 
+                  background: '#10b981', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', 
+                  display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', cursor: 'pointer',
+                  boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => handleSendEmail('monthly')}
+              >
+                <i className="fa-solid fa-paper-plane" style={{marginRight: '5px'}}></i> 
+                Gửi Báo Cáo Tháng
+              </button>
             </div>
           </div>
         </>
@@ -1052,7 +1175,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                 Xem tổng quan KPI và tiến độ báo cáo
               </div>
             </div>
-            <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button 
                 style={{ 
                   display: 'inline-flex', alignItems: 'center', gap: '8px',
@@ -1060,7 +1183,8 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                   color: '#fff', border: 'none', borderRadius: '8px',
                   padding: '10px 20px', fontSize: '0.85rem', fontWeight: 700,
                   cursor: 'pointer', transition: 'all 0.2s',
-                  boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)'
+                  boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)',
+                  whiteSpace: 'nowrap', height: '100%'
                 }}
                 onMouseOver={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.5)'}
                 onMouseOut={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(245, 158, 11, 0.3)'}
@@ -1084,16 +1208,69 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
               >
                 <Edit2 size={16} /> Cập nhật Target {filters.quarter ? `Q${filters.quarter}` : filters.month ? `Tháng ${filters.month}` : 'Năm'}
               </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <button 
+                  className="btn-send-email" 
+                  style={{ 
+                    background: '#0ea5e9', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', 
+                    display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', cursor: 'pointer',
+                    boxShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.2)',
+                    whiteSpace: 'nowrap', justifyContent: 'center'
+                  }}
+                  onClick={() => handleSendEmail('weekly')}
+                >
+                  <i className="fa-solid fa-paper-plane" style={{marginRight: '5px'}}></i> 
+                  Gửi Báo Cáo Tuần
+                </button>
+                <button 
+                  className="btn-send-email" 
+                  style={{ 
+                    background: '#10b981', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', 
+                    display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', cursor: 'pointer',
+                    boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)',
+                    whiteSpace: 'nowrap', justifyContent: 'center'
+                  }}
+                  onClick={() => handleSendEmail('monthly')}
+                >
+                  <i className="fa-solid fa-paper-plane" style={{marginRight: '5px'}}></i> 
+                  Gửi Báo Cáo Tháng
+                </button>
+              </div>
             </div>
           </div>
 
           {(() => {
-            const activeBUs = bus || [];
             const isQuarterMode = !!filters.quarter;
             const quarterMonths = isQuarterMode ? getQuarterMonths(filters.quarter) : [];
             const targetMonth = filters.month ? parseInt(filters.month) : 0;
             const isMonthlyZoom = !!filters.month;
             
+            const activeBUs = (bus || []).filter(bu => {
+              if (['Kế toán', 'Marketing', 'KETOAN', 'MARKETING'].includes(bu.id) || ['Kế toán', 'Marketing', 'KETOAN', 'MARKETING'].includes(bu.label)) return false;
+              
+              let kpiList, actualRecords;
+              if (isQuarterMode) {
+                kpiList = quarterMonths.map(m => kpiData.kpis.find(k => k.bu_name === bu.id && k.month === m) || {});
+                actualRecords = kpiData.aggregates.filter(a => a.bu_name === bu.id && quarterMonths.includes(parseInt(a.month)));
+              } else {
+                kpiList = [kpiData.kpis.find(k => k.bu_name === bu.id && k.month === targetMonth) || {}];
+                actualRecords = kpiData.aggregates.filter(a => a.bu_name === bu.id && (isMonthlyZoom ? parseInt(a.month) === targetMonth : true));
+              }
+
+              const totalBudget = kpiList.reduce((s, k) => s + parseFloat(k.budget || 0), 0);
+              const totalTargetLeads = kpiList.reduce((s, k) => s + parseInt(k.target_leads || 0), 0);
+              const targetCPA = kpiList.reduce((s, k) => s + parseFloat(k.target_cpa || 0), 0);
+              
+              const actualSpend = actualRecords.reduce((s, a) => s + parseFloat(a.actual_spend || 0), 0);
+              const actualLeads = actualRecords.reduce((s, a) => s + parseInt(a.actual_leads || 0), 0);
+              const actualWon = actualRecords.reduce((s, a) => s + parseInt(a.actual_crm_won || 0), 0);
+
+              if (totalBudget === 0 && totalTargetLeads === 0 && targetCPA === 0 && actualSpend === 0 && actualLeads === 0 && actualWon === 0) {
+                 return false;
+              }
+              return true;
+            });
+
             const buData = activeBUs.map(bu => {
               let kpi, actualRecords;
               

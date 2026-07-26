@@ -17,11 +17,10 @@ exports.getAllTours = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
-
 exports.createTour = async (req, res) => {
     const { 
         name, destination, duration, price, max_pax, start_date, 
-        description, tour_type, tags, highlights, inclusions, 
+        description, tour_type, tags, keywords, highlights, inclusions, 
         exclusions, base_price, internal_cost, expected_margin, 
         schedule_link, code, bu_group, image_url, website_link, is_active
     } = req.body;
@@ -29,15 +28,16 @@ exports.createTour = async (req, res) => {
         const result = await db.query(
             `INSERT INTO tour_templates (
                 name, destination, duration, price, max_pax, start_date, 
-                description, tour_type, tags, highlights, inclusions, 
+                description, tour_type, tags, keywords, highlights, inclusions, 
                 exclusions, base_price, internal_cost, expected_margin, 
                 schedule_link, code, bu_group, image_url, website_link, is_active, created_by
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, COALESCE($21, true), $22) 
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, COALESCE($22, true), $23) 
             RETURNING *`,
             [
                 name, destination, duration, price || 0, max_pax || 0, start_date || null, 
                 description, tour_type, 
                 typeof tags === 'object' ? JSON.stringify(tags) : tags, 
+                keywords,
                 typeof highlights === 'object' ? JSON.stringify(highlights) : highlights, 
                 typeof inclusions === 'object' ? JSON.stringify(inclusions) : inclusions, 
                 typeof exclusions === 'object' ? JSON.stringify(exclusions) : exclusions, 
@@ -87,7 +87,7 @@ exports.getTourById = async (req, res) => {
 exports.updateTour = async (req, res) => {
     const { 
         name, destination, duration, price, max_pax, start_date, description, status,
-        tour_type, tags, itinerary, highlights, inclusions, exclusions,
+        tour_type, tags, keywords, itinerary, highlights, inclusions, exclusions,
         base_price, internal_cost, expected_margin, schedule_link, code, bu_group,
         image_url, website_link, is_active
     } = req.body;
@@ -109,14 +109,15 @@ exports.updateTour = async (req, res) => {
         const result = await db.query(
             `UPDATE tour_templates SET 
                 name=$1, destination=$2, duration=$3, price=$4, max_pax=$5, 
-                start_date=$6, description=$7, status=$8, tour_type=$9, tags=$10, 
-                itinerary=$11, highlights=$12, inclusions=$13, exclusions=$14, 
-                base_price=$15, internal_cost=$16, expected_margin=$17, schedule_link=$18, code=$19, bu_group=$20, image_url=$21, website_link=$22, is_active=COALESCE($23, is_active)
-            WHERE id=$24 RETURNING *`,
+                start_date=$6, description=$7, status=$8, tour_type=$9, tags=$10, keywords=$11,
+                itinerary=$12, highlights=$13, inclusions=$14, exclusions=$15, 
+                base_price=$16, internal_cost=$17, expected_margin=$18, schedule_link=$19, code=$20, bu_group=$21, image_url=$22, website_link=$23, is_active=COALESCE($24, is_active)
+            WHERE id=$25 RETURNING *`,
             [
                 name, destination, duration, price || base_price, max_pax, 
                 start_date || null, description, status, tour_type, 
                 typeof tags === 'object' ? JSON.stringify(tags) : tags, 
+                keywords,
                 typeof itinerary === 'object' ? JSON.stringify(itinerary) : itinerary, 
                 typeof highlights === 'object' ? JSON.stringify(highlights) : highlights, 
                 typeof inclusions === 'object' ? JSON.stringify(inclusions) : inclusions, 

@@ -32,12 +32,10 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   const [selectedSalesId, setSelectedSalesId] = useState('');
 
   useEffect(() => {
-    if (isPrivileged) {
-       axios.get('/api/users', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
-            .then(res => setSalesList(res.data.users || res.data || []))
-            .catch(console.error);
-    }
-  }, [isPrivileged]);
+    axios.get('/api/users', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+         .then(res => setSalesList(res.data.users || res.data || []))
+         .catch(console.error);
+  }, []);
 
   const [isQuickAdd, setIsQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState('');
@@ -481,8 +479,8 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       const newMembers = [...prev];
       const memberData = {
         phone: cust.phone || '', name: cust.name || '', gender: cust.gender || 'Chọn',
-        dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA') : '', docId: cust.id_card || '', 
-        expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA') : '',
+        dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '', docId: cust.id_card || '', 
+        expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
         passportUrl: cust.passport_url || '',
         customerSegment: cust.customer_segment || '',
         tripCount: cust.total_trip_count || 0,
@@ -785,10 +783,10 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                 name: cust.name || m.name,
                 email: cust.email || m.email,
                 gender: cust.gender || m.gender,
-                dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA') : m.dob,
+                dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : m.dob,
                 docType: cust.id_card ? 'CMTND' : m.docType,
                 docId: cust.id_card || m.docId,
-                expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA') : m.expiryDate,
+                expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : m.expiryDate,
                 crmNote: cust.ghi_chu || '',
                 customerId: cust.id || null,
                 tripCount: parseInt(cust.total_trips || cust.crm_trip_count || 0),
@@ -863,7 +861,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
         
         {/* Modal Header */}
         <div style={{ padding: '15px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, textAlign: 'center', flex: 1, fontSize: '18px', fontWeight: 'bold' }}>THÊM BOOKING (GIỮ CHỖ)</h3>
+          <h3 style={{ margin: 0, textAlign: 'center', flex: 1, fontSize: '18px', fontWeight: 'bold' }}>{initialData ? `CẬP NHẬT BOOKING / GIỮ CHỖ (${initialData.booking_code || initialData.id})` : 'THÊM BOOKING (GIỮ CHỖ)'}</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
         </div>
 
@@ -872,7 +870,6 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
           
           <h4 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px' }}>#1 Thông tin chung</h4>
           
-          {isPrivileged && (
              <div style={{ marginBottom: '20px', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#334155' }}>👤 Sale phụ trách (Quản lý):</label>
                 <select 
@@ -886,7 +883,6 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                    ))}
                 </select>
              </div>
-          )}
 
           {/* Form row 1 */}
           <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 1fr) minmax(200px, 1fr) 100px 150px', gap: '15px', alignItems: 'flex-end', marginBottom: '30px' }}>
@@ -1510,7 +1506,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
              
              <div>
                 <button onClick={handleSubmit} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '10px 25px', borderRadius: '4px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
-                   Lưu / Thêm vào tour
+                   {initialData ? 'Lưu Cập Nhật' : 'Lưu / Thêm vào tour'}
                 </button>
              </div>
           </div>

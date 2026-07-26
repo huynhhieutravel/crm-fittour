@@ -5,7 +5,7 @@ async function run() {
         const res = await db.query('SELECT id, username, full_name, bus FROM users');
         const users = res.rows;
         
-        let counts = { BU1: 0, BU2: 0, BU3: 0, BU4: 0 };
+        let counts = { BU1: 0, BU2: 0, BU3: 0, BU4: 0, BU5: 0 };
         
         for (const u of users) {
             if (!u.username) continue;
@@ -16,6 +16,7 @@ async function run() {
             else if (/^tq\d+\./.test(uname)) targetBU = 'BU1';
             else if (/^gu\d+\./.test(uname)) targetBU = 'BU2';
             else if (/^hi\d+\./.test(uname)) targetBU = 'BU4';
+            else if (/^h5\d*\./.test(uname) || /\.bu5$/.test(uname)) targetBU = 'BU5';
             
             if (targetBU) {
                 // Check if already in array to avoid duplicates

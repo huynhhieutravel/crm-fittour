@@ -17,7 +17,7 @@ const CskhTodoTab = ({ users = [], customers = [] }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAssigned, setFilterAssigned] = useState('');
   const [form, setForm] = useState({
-    customer_id: '', title: '', description: '', due_date: new Date().toLocaleDateString('en-CA'),
+    customer_id: '', title: '', description: '', due_date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }),
     assigned_to: '', priority_color: 'yellow'
   });
   const [editingId, setEditingId] = useState(null);
@@ -61,7 +61,7 @@ const CskhTodoTab = ({ users = [], customers = [] }) => {
       }
       setShowForm(false);
       setEditingId(null);
-      setForm({ customer_id: '', title: '', description: '', due_date: new Date().toLocaleDateString('en-CA'), assigned_to: '', priority_color: 'yellow' });
+      setForm({ customer_id: '', title: '', description: '', due_date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }), assigned_to: '', priority_color: 'yellow' });
       setCustomerSearch('');
       fetchTasks();
     } catch (err) {
@@ -81,7 +81,7 @@ const CskhTodoTab = ({ users = [], customers = [] }) => {
       customer_id: task.customer_id,
       title: task.title || '',
       description: task.description || '',
-      due_date: task.due_date ? new Date(task.due_date).toLocaleDateString('en-CA') : '',
+      due_date: task.due_date ? new Date(task.due_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
       assigned_to: task.assigned_to || '',
       priority_color: task.priority_color || 'yellow'
     });
@@ -125,7 +125,7 @@ const CskhTodoTab = ({ users = [], customers = [] }) => {
             )}
             <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
               <span style={{ fontSize: '0.7rem', fontWeight: 700, color: isOverdue ? '#dc2626' : '#64748b', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                <Clock size={11} /> {task.due_date ? new Date(task.due_date).toLocaleDateString('vi-VN') : '—'}
+                <Clock size={11} /> {task.due_date ? new Date(task.due_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '—'}
                 {isOverdue && ' (Quá hạn)'}
               </span>
               {task.assigned_name && (
@@ -163,7 +163,7 @@ const CskhTodoTab = ({ users = [], customers = [] }) => {
           <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#1e293b' }}>✅ Todo List — Chăm Sóc Khách Hàng</h2>
           <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748b' }}>Tạo task thủ công, giao việc cho nhân viên</p>
         </div>
-        <button onClick={() => { setShowForm(true); setEditingId(null); setForm({ customer_id: '', title: '', description: '', due_date: new Date().toLocaleDateString('en-CA'), assigned_to: '', priority_color: 'yellow' }); setCustomerSearch(''); }}
+        <button onClick={() => { setShowForm(true); setEditingId(null); setForm({ customer_id: '', title: '', description: '', due_date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }), assigned_to: '', priority_color: 'yellow' }); setCustomerSearch(''); }}
           style={{ padding: '0.6rem 1.25rem', background: 'linear-gradient(135deg, #4f46e5, #6366f1)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
         ><Plus size={16} /> Tạo Task Mới</button>
       </div>

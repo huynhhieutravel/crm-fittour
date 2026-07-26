@@ -234,11 +234,11 @@ const CskhBoardTab = ({ users = [] }) => {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem', flexShrink: 0 }}>
                   <span style={{ padding: '0.3rem 0.7rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, background: sl.bg, color: sl.color }}>{sl.label}</span>
                   <span style={{ fontSize: '0.8rem', fontWeight: 700, color: t.status === 'overdue' ? '#dc2626' : '#64748b' }}>
-                    <Clock size={12} style={{ marginRight: 2 }} />{new Date(t.due_date).toLocaleDateString('vi-VN')}
+                    <Clock size={12} style={{ marginRight: 2 }} />{new Date(t.due_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                   </span>
                   {t.next_departure && (
                     <span style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 600 }}>
-                      <Calendar size={11} /> Bay: {new Date(t.next_departure).toLocaleDateString('vi-VN')}
+                      <Calendar size={11} /> Bay: {new Date(t.next_departure).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                     </span>
                   )}
                 </div>
@@ -300,7 +300,7 @@ const CskhBoardTab = ({ users = [] }) => {
                 ['Khách hàng', modalTask.customer_name],
                 ['Điện thoại', modalTask.customer_phone || 'Chưa có'],
                 ['Lý do gọi', modalTask.rule_name || modalTask.title || '—'],
-                ['Tour sắp tới', modalTask.next_departure ? new Date(modalTask.next_departure).toLocaleDateString('vi-VN') : 'Chưa có'],
+                ['Tour sắp tới', modalTask.next_departure ? new Date(modalTask.next_departure).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'Chưa có'],
                 ['Tổng booking', `${modalTask.total_bookings || 0} đơn`],
               ].map(([label, val], i, arr) => (
                 <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0', borderBottom: i < arr.length - 1 ? '1px solid #f1f5f9' : 'none', fontSize: '0.9rem' }}>

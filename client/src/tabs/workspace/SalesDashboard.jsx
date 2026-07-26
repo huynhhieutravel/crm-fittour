@@ -6,12 +6,13 @@ import {
   PhoneCall,
   CalendarCheck,
   Zap,
+  Clock,
+  ArrowRight,
   Target,
   Plane,
   CreditCard,
   Cake,
   AlertCircle,
-  Clock,
   LayoutDashboard,
   ShoppingCart,
   CalendarHeart,
@@ -220,7 +221,7 @@ const SalesDashboard = ({
   // --- LEADS ---
   const myLeads = leads.filter(l => l.assigned_to === currentUser?.id);
   const myNewLeads = myLeads.filter(l => l.status === 'Mới');
-  const myCallingLeads = myLeads.filter(l => ['Đang liên hệ', 'Tiềm năng'].includes(l.status));
+  const myCallingLeads = myLeads.filter(l => ['Đang liên hệ', 'Liên hệ lần 2'].includes(l.status));
   const myWonLeads = myLeads.filter(l => l.status === 'Chốt đơn');
 
   const finalMyLeads = myLeads.filter(l => {
@@ -397,9 +398,9 @@ const SalesDashboard = ({
                 { id: 'ALL', label: 'Tất cả' },
                 { id: 'Mới', label: 'Mới' },
                 { id: 'Đang liên hệ', label: 'Đang liên hệ' },
-                { id: 'Tiềm năng', label: 'Tiềm năng' },
+                { id: 'Liên hệ lần 2', label: 'Liên hệ lần 2' },
                 { id: 'Chốt đơn', label: 'Chốt đơn' },
-                { id: 'Fail', label: 'Fail' }
+                { id: 'Thất bại', label: 'Thất bại' }
               ].map(status => (
                 <button
                   key={status.id}
@@ -465,9 +466,9 @@ const SalesDashboard = ({
                         >
                           <option value="Mới">Mới</option>
                           <option value="Đang liên hệ">Đang liên hệ</option>
-                          <option value="Tiềm năng">Tiềm năng</option>
+                          <option value="Liên hệ lần 2">Liên hệ lần 2</option>
                           <option value="Chốt đơn">Chốt đơn</option>
-                          <option value="Fail">Fail</option>
+                          <option value="Thất bại">Thất bại</option>
                         </select>
                       </td>
                       <td style={{ fontSize: '0.85rem', color: '#334155' }}>
@@ -646,7 +647,7 @@ const SalesDashboard = ({
                     const dep = departures.find(d => d.id === b.tour_departure_id);
                     const isUrgent = b.payment_status === 'Chưa thanh toán' && b.booking_status !== 'Huỷ';
                     
-                    const paidAmount = Number(b.paid_amount) || 0;
+                    const paidAmount = Number(b.paid) || Number(b.paid_amount) || 0;
                     const totalPrice = Number(b.total_price) || 0;
                     const debtAmount = totalPrice - paidAmount;
                     
@@ -682,7 +683,17 @@ const SalesDashboard = ({
 
                     return (
                       <tr key={b.id} style={{ background: isUrgent ? '#fef2f2' : 'transparent' }}>
-                        <td style={{ fontWeight: 700, color: '#0f172a' }}>{b.booking_code}</td>
+                        <td 
+                          style={b.raw_details ? { fontWeight: 700, color: '#0284c7', cursor: 'pointer', textDecoration: 'underline' } : { fontWeight: 700, color: '#0f172a' }}
+                          onClick={() => {
+                             if (b.raw_details) {
+                                localStorage.setItem('open_op_tour_departure', b.tour_departure_id);
+                                window.location.href = '/op-tours';
+                             }
+                          }}
+                        >
+                          {b.booking_code}
+                        </td>
                         <td>
                           <div style={{ fontWeight: 600 }}>{cust?.name || 'Chưa rõ'} ({b.pax_count || 1} khách)</div>
                           <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{cust?.phone || ''}</div>

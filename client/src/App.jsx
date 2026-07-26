@@ -39,9 +39,10 @@ import InsurancesTab from './tabs/InsurancesTab';
 import VisaProvidersTab from './tabs/VisaProvidersTab';
 import OpToursTab from './tabs/OpToursTab';
 import TravelSupportTab from './tabs/TravelSupportTab';
-import GlobalChat from './tabs/GlobalChat';
-import DispatcherCenterTab from './tabs/DispatcherCenterTab';
+
 import DispatchScheduleTab from './tabs/DispatchScheduleTab';
+import MessageTemplatesTab from './tabs/MessageTemplatesTab';
+import usePushNotifications from './hooks/usePushNotifications';
 import LeaveRequestsTab from './tabs/LeaveRequestsTab';
 import RoomBookingTab from './tabs/RoomBookingTab';
 import PaymentVouchersTab from './tabs/PaymentVouchersTab';
@@ -84,6 +85,7 @@ import AgencySharePage from './pages/AgencySharePage';
 import ServiceContractViewer from './pages/ServiceContractViewer';
 import DocumentsPage from './pages/DocumentsPage';
 import RagDocsManager from './components/Knowledge/RagDocsManager';
+import GlobalChatTab from './tabs/GlobalChatTab';
 import BrandGuidelinePage from './pages/BrandGuidelinePage';
 import BrandLogoPage from './pages/BrandLogoPage';
 import BrandColorPage from './pages/BrandColorPage';
@@ -117,6 +119,7 @@ import {
   Clock,
   ArrowUpRight,
   MoreVertical,
+  MoreHorizontal,
   Search,
   PlusCircle,
   Send,
@@ -131,7 +134,6 @@ import {
   ChevronLeft,
   Eye,
   EyeOff,
-  MoreHorizontal,
   User,
   Lock,
   PieChart,
@@ -183,7 +185,8 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
-  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'global-chat', 'dispatcher-center', 'dispatch-schedule'];
+  const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
+  const VALID_TABS = ['workspace', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'dispatch-schedule', 'notification-center'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -192,14 +195,14 @@ function AppContent() {
     if (path === 'group/companies') return 'b2b-companies';
     if (path.startsWith('group/')) return path.replace('/', '-');
     
-    let defaultTab = 'dashboard';
+    let defaultTab = 'notification-center';
     const userStr = localStorage.getItem('user');
     if (userStr) {
       try {
         const u = JSON.parse(userStr);
-        if (u && (u.role === 'sales' || u.role === 'sale' || u.role_name === 'sales' || u.role_name === 'sale')) {
-          defaultTab = 'workspace';
-        }
+        // if (u && (u.role === 'sales' || u.role === 'sale' || u.role_name === 'sales' || u.role_name === 'sale')) {
+        //   defaultTab = 'workspace';
+        // }
       } catch(e) {}
     }
     
@@ -310,6 +313,12 @@ function AppContent() {
   useEffect(() => {
     localStorage.setItem('sidebar_collapsed', isSidebarCollapsed);
   }, [isSidebarCollapsed]);
+
+  useEffect(() => {
+    const handleOpenMobileMenu = () => setIsMobileMenuOpen(true);
+    window.addEventListener('open-mobile-menu', handleOpenMobileMenu);
+    return () => window.removeEventListener('open-mobile-menu', handleOpenMobileMenu);
+  }, []);
 
   // Auto-sync profile on load to ensure Avatar and Name are always fresh
   useEffect(() => {
@@ -480,9 +489,9 @@ function AppContent() {
   const [visaProviderToDelete, setVisaProviderToDelete] = useState(null);
   const [bookingToEdit, setBookingToEdit] = useState(null);
 
-  const LEAD_SOURCES = ['Messenger', 'Zalo', 'Khách giới thiệu', 'Hotline', 'Khác'];
-  const LEAD_STATUSES = ['Mới', 'Đang liên hệ', 'Tiềm năng', 'Đặt cọc', 'Chốt đơn', 'Thất bại'];
-  const LEAD_CLASSIFICATIONS = ['Mới', 'Tiềm Năng', 'Tiềm Năng Cao', 'Không Tiềm Năng'];
+  const LEAD_SOURCES = ['Messenger', 'Zalo', 'Tiktok', 'Khách giới thiệu', 'Hotline', 'Khác'];
+  const LEAD_STATUSES = ['Mới', 'Đang liên hệ', 'Liên hệ lần 2', 'Chốt đơn', 'Thất bại'];
+  const LEAD_CLASSIFICATIONS = ['Mới', 'Tiềm Năng', 'Tiềm Năng Cao', 'Không có nhu cầu'];
   const CUSTOMER_ROLES = ['Người đại diện (booker)', 'Khách đi kèm'];
   const CUSTOMER_SEGMENTS = ['New Customer', 'Repeat Customer', 'VIP 3', 'VIP 2', 'VIP 1'];
   const CONTACT_METHODS = ['Zalo', 'Call', 'Email'];
@@ -495,9 +504,9 @@ function AppContent() {
     // /tai-lieu/* is a standalone page — skip tab sync entirely
     if (fullPath.startsWith('tai-lieu')) return;
     if (!fullPath) {
-      let defaultTab = 'dashboard';
+      let defaultTab = 'notification-center';
       if (user && (user.role === 'sales' || user.role === 'sale' || user.role_name === 'sales' || user.role_name === 'sale')) {
-        defaultTab = 'workspace';
+        // defaultTab = 'workspace';
       }
       setActiveTab(defaultTab);
       return;
@@ -538,6 +547,11 @@ function AppContent() {
     const basePath = fullPath.split('/')[0];
     if (VALID_TABS.includes(fullPath)) {
        setActiveTab(fullPath);
+       if (fullPath === 'inbox') {
+           const searchParams = new URLSearchParams(location.search);
+           const psid = searchParams.get('psid');
+           if (psid) setInboxPsid(psid);
+       }
     } else if (VALID_TABS.includes(basePath)) {
        setActiveTab(basePath);
     }
@@ -613,9 +627,20 @@ function AppContent() {
     const handleOpenAddCustomer = () => { navigate('/customers'); setActiveTab('customers'); };
     const handleOpenAddBooking = () => { navigate('/bookings'); setActiveTab('bookings'); };
 
+    const handleOpenEditLeadFromChat = async (e) => {
+      const leadId = e.detail;
+      try {
+        const res = await axios.get(`/api/leads/${leadId}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        setEditingLead(res.data);
+      } catch (err) {
+        console.error("Failed to fetch lead info for modal", err);
+      }
+    };
+
     window.addEventListener('open-add-lead-modal', handleOpenAddLead);
     window.addEventListener('open-add-customer-modal', handleOpenAddCustomer);
     window.addEventListener('open-add-booking-modal', handleOpenAddBooking);
+    window.addEventListener('open-edit-lead-modal-from-chat', handleOpenEditLeadFromChat);
 
     return () => {
       window.removeEventListener('switchAndOpenCompany', handleSwitch);
@@ -624,6 +649,7 @@ function AppContent() {
       window.removeEventListener('open-add-lead-modal', handleOpenAddLead);
       window.removeEventListener('open-add-customer-modal', handleOpenAddCustomer);
       window.removeEventListener('open-add-booking-modal', handleOpenAddBooking);
+      window.removeEventListener('open-edit-lead-modal-from-chat', handleOpenEditLeadFromChat);
     };
 
   }, [navigate]);
@@ -1950,6 +1976,14 @@ function AppContent() {
             <>
               <div className="nav-section-title">Marketing & Sales</div>
               {checkView('leads') && (
+                <Link title="Trung Tâm Điều Phối" 
+                  to="/notification-center"
+                  className={`nav-item ${['notification-center'].includes(activeTab) ? 'active' : ''}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <MessageCircle /> Trung Tâm Điều Phối</Link>
+              )}
+              {checkView('leads') && (
                 <Link title="Lead Marketing" 
                   to="/leads"
                   className={`nav-item ${activeTab === 'leads' || activeTab === 'leads-dashboard' ? 'active-parent' : ''}`} 
@@ -1973,12 +2007,7 @@ function AppContent() {
                 </Link>
               )}
 
-              <Link title="Điều Phối & Chat" 
-                to="/global-chat"
-                className={`nav-item ${['global-chat'].includes(activeTab) ? 'active' : ''}`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <MessageCircle /> Điều Phối & Chat</Link>
+
 
               <Link title="Dịch vụ Hỗ trợ" 
                 to="/travel-support"
@@ -2010,8 +2039,27 @@ function AppContent() {
               )}
 
               {checkView('leads') && (
-                <div title="Messenger" className={`nav-item ${activeTab === 'inbox' ? 'active' : ''}`} onClick={() => navigate('/inbox')}>
-                  <MessageSquare /> Messenger</div>
+                <div title="Messenger" 
+                  className={`nav-item ${['inbox', 'message-templates'].includes(activeTab) ? 'active-parent' : ''}`}
+                  onClick={() => navigate('/inbox')}
+                  style={{ justifyContent: 'space-between', color: '#6366f1', background: 'rgba(99, 102, 241, 0.1)' }}
+                  onMouseEnter={(e) => {
+                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHoveredRect(rect);
+                    setHoveredMenu('messenger');
+                  }}
+                  onMouseLeave={() => {
+                    menuTimerRef.current = setTimeout(() => {
+                      setHoveredMenu(null);
+                    }, 150);
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <MessageSquare size={18} /> Messenger
+                  </div>
+                  <ChevronRight size={14} opacity={0.5} />
+                </div>
               )}
             </>
           )}
@@ -2420,13 +2468,6 @@ function AppContent() {
             Hiệu suất Nhân viên
           </div>
           <div 
-            className={`submenu-item ${activeTab === 'dispatcher-center' ? 'active' : ''}`} 
-            onClick={() => { navigate('/dispatcher-center'); setHoveredMenu(null); }} 
-            style={{ borderTop: '1px solid #e2e8f0', marginTop: '4px', paddingTop: '8px', color: '#db2777', fontWeight: 'bold' }}
-          >
-            Trung tâm điều phối
-          </div>
-          <div 
             className={`submenu-item ${activeTab === 'dispatch-schedule' ? 'active' : ''}`} 
             onClick={() => { navigate('/dispatch-schedule'); setHoveredMenu(null); }} 
           >
@@ -2471,6 +2512,44 @@ function AppContent() {
             style={{ borderTop: '1px solid #e2e8f0', marginTop: '4px', paddingTop: '8px', color: '#db2777', fontWeight: 'bold' }}
           >
             📈 Tổng Quan Marketing
+          </div>
+        </div>
+      )}
+
+      {hoveredMenu === 'messenger' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('messenger');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'inbox' ? 'active' : ''}`} 
+            onClick={() => { navigate('/inbox'); setHoveredMenu(null); }}
+          >
+            Hộp thư đến
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'message-templates' ? 'active' : ''}`} 
+            onClick={() => { navigate('/message-templates'); setHoveredMenu(null); }} 
+          >
+            Mẫu tin nhắn Messenger
           </div>
         </div>
       )}
@@ -2969,7 +3048,7 @@ function AppContent() {
           </div>
         </div>
 
-        <header className="header">
+        <header className={`header ${activeTab === 'notification-center' ? 'hide-on-mobile' : ''}`}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button className="mobile-header-menu-btn" onClick={() => setIsMobileMenuOpen(true)}>
               <Menu size={20} />
@@ -3073,6 +3152,17 @@ function AppContent() {
                     <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '14px', height: '14px' }} />
                     Đồng bộ Gmail
                   </a>
+                  <div 
+                    className="header-dropdown-item" 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      requestSubscription(); 
+                      setHoveredMenu(null); 
+                    }}
+                    style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', fontWeight: 'bold' }}
+                  >
+                    🔔 Nhận Thông báo đẩy
+                  </div>
                   <div 
                     className="header-dropdown-item" 
                     onClick={(e) => { 
@@ -3206,7 +3296,7 @@ function AppContent() {
               />
             )}
             {activeTab === 'staff-performance' && (
-              <StaffPerformanceTab />
+              <StaffPerformanceTab bus={bus} />
             )}
 
             {activeTab === 'marketing-ads' && (
@@ -3261,28 +3351,11 @@ function AppContent() {
           <PaymentVouchersTab currentUser={user} />
         )}
 
-        {activeTab === 'global-chat' && (
-          <GlobalChat user={user} />
+        {activeTab === 'notification-center' && (
+          <GlobalChatTab users={users} tours={tourTemplates} navigateToInbox={(psid) => { setInboxPsid(psid); navigate('/inbox'); setActiveTab('inbox'); }} />
         )}
 
-        {activeTab === 'dispatcher-center' && (
-          <DispatcherCenterTab 
-            currentUser={user}
-            filteredLeads={filteredLeads}
-            leadFilters={leadFilters}
-            setLeadFilters={setLeadFilters}
-            setEditingLead={setEditingLead}
-            users={users}
-            getSourceIcon={getSourceIcon}
-            LEAD_STATUSES={LEAD_STATUSES}
-            LEAD_SOURCES={LEAD_SOURCES}
-            tours={tours}
-            bus={bus}
-            navigateToInbox={(psid) => { setInboxPsid(psid); navigate('/inbox'); setActiveTab('inbox'); }}
-            handleQuickUpdate={handleQuickUpdate}
-            onLeadsUpdated={fetchLeads}
-          />
-        )}
+
 
         {activeTab === 'dispatch-schedule' && (
           <DispatchScheduleTab bus={bus} users={users} />
@@ -3924,7 +3997,7 @@ function AppContent() {
       />
       <Route 
         path="/" 
-        element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" />} 
+        element={isLoggedIn ? <Navigate to="/notification-center" replace /> : <Navigate to="/login" />}
       />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

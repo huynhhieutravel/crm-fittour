@@ -229,7 +229,7 @@ export default function ProjectApprovalDrawer({ formData, setFormData, onClose, 
                             <h3 style={{ margin: '2px 0 0 0', fontSize: '0.9rem', color: '#64748b', fontWeight: 600 }}>HỒ SƠ YÊU CẦU & TRIỂN KHAI DỰ ÁN</h3>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '0.75rem', color: '#475569', marginBottom: '2px' }}>Ngày lập: {new Date().toLocaleDateString('vi-VN')}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#475569', marginBottom: '2px' }}>Ngày lập: {new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</div>
                             <div style={{ fontSize: '0.75rem', color: '#475569' }}>Mã dự án: <strong>{project?._id?.substring(0,6).toUpperCase() || 'N/A'}</strong></div>
                         </div>
                     </div>
@@ -242,7 +242,7 @@ export default function ProjectApprovalDrawer({ formData, setFormData, onClose, 
                             <div><strong style={{ color: '#475569' }}>Sales phụ trách:</strong> {project?.company_assigned_name || project?.assigned_name || 'Chưa rõ'}</div>
                             <div><strong style={{ color: '#475569' }}>Điểm đến:</strong> {formData.destination || 'Chưa cập nhật'}</div>
                             <div><strong style={{ color: '#475569' }}>Số lượng:</strong> {formData.expected_pax ? `${formData.expected_pax} pax` : 'Chưa cập nhật'}</div>
-                            <div><strong style={{ color: '#475569' }}>Thời gian:</strong> {formData.departure_date ? `${new Date(formData.departure_date).toLocaleDateString('vi-VN')}` : 'Chưa cập nhật'} {formData.return_date ? `- ${new Date(formData.return_date).toLocaleDateString('vi-VN')}` : ''}</div>
+                            <div><strong style={{ color: '#475569' }}>Thời gian:</strong> {formData.departure_date ? `${new Date(formData.departure_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}` : 'Chưa cập nhật'} {formData.return_date ? `- ${new Date(formData.return_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}` : ''}</div>
                             <div><strong style={{ color: '#475569' }}>Ngân sách:</strong> {formData.total_revenue ? `${new Intl.NumberFormat('vi-VN').format(formData.total_revenue)} đ` : 'Chưa cập nhật'}</div>
                         </div>
                     </div>

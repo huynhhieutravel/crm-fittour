@@ -17,8 +17,10 @@ router.get('/conversations', auth, async (req, res) => {
         let conditions = [];
 
         if (search) {
-            queryArgs.push(`%${search}%`);
-            conditions.push(`(l.name ILIKE $${queryArgs.length} OR l.phone ILIKE $${queryArgs.length} OR c.last_message ILIKE $${queryArgs.length} OR c.external_id ILIKE $${queryArgs.length})`);
+            const cleanSearch = search.trim();
+            queryArgs.push(`%${cleanSearch}%`);
+            queryArgs.push(cleanSearch);
+            conditions.push(`(l.name ILIKE $${queryArgs.length - 1} OR l.phone ILIKE $${queryArgs.length - 1} OR c.last_message ILIKE $${queryArgs.length - 1} OR c.external_id ILIKE $${queryArgs.length - 1} OR l.id::text = $${queryArgs.length} OR c.lead_id::text = $${queryArgs.length})`);
         }
 
         if (bu) {
@@ -55,10 +57,13 @@ router.get('/conversations', auth, async (req, res) => {
         const dataQuery = `
             SELECT c.*, l.name as lead_name, l.status as lead_status,
                    l.bu_group as assigned_bu, l.assigned_to as assigned_to_id,
-                   COALESCE(u.full_name, l.assigned_to::text) as assigned_to_name
+                   COALESCE(u.full_name, l.assigned_to::text) as assigned_to_name,
+                   (SELECT SUM(total_price) FROM bookings WHERE customer_id = cust.id AND booking_status NOT IN ('Huỷ', 'Mới'))::numeric as total_spent,
+                   CASE WHEN cust.id IS NOT NULL THEN true ELSE false END as is_returning_customer
             FROM conversations c
             LEFT JOIN leads l ON c.lead_id = l.id
             LEFT JOIN users u ON l.assigned_to = u.id
+            LEFT JOIN customers cust ON l.customer_id = cust.id
             ${whereClause}
             ORDER BY c.updated_at DESC
             LIMIT $${queryArgs.length + 1} OFFSET $${queryArgs.length + 2}
@@ -110,6 +115,64 @@ router.post('/conversations/delete', auth, admin, async (req, res) => {
     }
 });
 
+// 1.8 Lấy danh sách Mẫu thẻ (Message Templates)
+router.get('/templates', auth, async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM message_templates ORDER BY id ASC');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 1.9 Tạo mới Mẫu thẻ
+router.post('/templates', auth, async (req, res) => {
+    try {
+        const { name, description, payload } = req.body;
+        if (!name || !payload) {
+            return res.status(400).json({ error: 'Name and payload are required' });
+        }
+        const result = await db.query(
+            'INSERT INTO message_templates (name, description, payload) VALUES ($1, $2, $3) RETURNING *',
+            [name, description, payload]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 1.10 Cập nhật Mẫu thẻ
+router.put('/templates/:id', auth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, payload } = req.body;
+        if (!name || !payload) {
+            return res.status(400).json({ error: 'Name and payload are required' });
+        }
+        const result = await db.query(
+            'UPDATE message_templates SET name = $1, description = $2, payload = $3 WHERE id = $4 RETURNING *',
+            [name, description, payload, id]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Template not found' });
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 1.11 Xóa Mẫu thẻ
+router.delete('/templates/:id', auth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.query('DELETE FROM message_templates WHERE id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Template not found' });
+        res.json({ success: true, message: 'Template deleted' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // 2. Lấy tin nhắn của một hội thoại
 router.get('/:conversationId', auth, async (req, res) => {
     try {
@@ -125,7 +188,7 @@ router.get('/:conversationId', auth, async (req, res) => {
 
 // 3. Gửi tin nhắn phản hồi
 router.post('/send', auth, async (req, res) => {
-    const { conversationId, content } = req.body;
+    const { conversationId, content, attachment, templateName } = req.body;
     try {
         // Lấy PSID từ hội thoại
         const conv = await db.query('SELECT external_id FROM conversations WHERE id = $1', [conversationId]);
@@ -134,16 +197,22 @@ router.post('/send', auth, async (req, res) => {
         const psid = conv.rows[0].external_id;
 
         // Gửi qua Facebook API
-        await facebookService.callSendAPI(psid, { text: content });
+        if (attachment) {
+            await facebookService.callSendAPI(psid, { attachment });
+        } else {
+            await facebookService.callSendAPI(psid, { text: content });
+        }
+
+        const dbContent = attachment ? (content || `[Đã gửi thẻ: ${templateName || 'Template'}]`) : (content || '[Tin nhắn trống]');
 
         // Lưu vào database
         const msgResult = await db.query(
             'INSERT INTO messages (conversation_id, sender_type, sender_id, content) VALUES ($1, $2, $3, $4) RETURNING *',
-            [conversationId, 'user', req.user.id, content]
+            [conversationId, 'user', req.user.id, dbContent]
         );
 
         // Cập nhật last_message trong hội thoại
-        await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [content, conversationId]);
+        await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [dbContent, conversationId]);
 
         res.json(msgResult.rows[0]);
     } catch (err) {

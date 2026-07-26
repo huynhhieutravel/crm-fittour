@@ -417,19 +417,64 @@ exports.deleteCustomer = async (req, res) => {
 
 exports.convertLeadToCustomer = async (req, res) => {
     const { leadId } = req.body;
-    const client = await db.pool.connect();
     try {
-        await client.query('BEGIN');
-        
-        const customer = await convertLeadToCustomer(client, leadId, req.user ? req.user.id : null);
-        
-        await client.query('COMMIT');
-        res.json({ message: 'Chuyển đổi thành công', customer });
+        const client = await db.pool.connect();
+        try {
+            await client.query('BEGIN');
+            const customer = await convertLeadToCustomer(client, leadId, req.user ? req.user.id : null);
+            await client.query('COMMIT');
+            res.json({ message: 'Chuyển đổi thành công', customer });
+        } catch (e) {
+            await client.query('ROLLBACK');
+            throw e;
+        } finally {
+            client.release();
+        }
     } catch (err) {
-        await client.query('ROLLBACK');
         res.status(500).json({ message: err.message });
-    } finally {
-        client.release();
+    }
+};
+
+exports.revertConvertLead = async (req, res) => {
+    const { leadId, targetStatus } = req.body;
+    const finalStatus = targetStatus || 'Đang liên hệ';
+    try {
+        const client = await db.pool.connect();
+        try {
+            await client.query('BEGIN');
+            
+            // Revert lead status back to finalStatus and remove won_at
+            await client.query('UPDATE leads SET status = $1, won_at = NULL WHERE id = $2', [finalStatus, leadId]);
+            
+            // Unlink lead_notes (since the customer is about to be deleted or unlinked)
+            // Wait, we shouldn't necessarily delete the customer if they have other data.
+            // For a safe undo, let's just delete the customer if they were newly created (only 1 lead_id).
+            // Check if this customer only has this lead
+            const custRes = await client.query('SELECT id FROM customers WHERE lead_id = $1', [leadId]);
+            if (custRes.rows.length > 0) {
+                const customerId = custRes.rows[0].id;
+                // Delete notes that were just linked
+                await client.query('UPDATE lead_notes SET customer_id = NULL WHERE lead_id = $1', [leadId]);
+                // We'll leave the customer there just in case, but remove the lead_id link to avoid conflicts later
+                await client.query('UPDATE customers SET lead_id = NULL WHERE id = $1', [customerId]);
+                
+                // If it's a completely dummy customer with no bookings, we can safely delete it.
+                const bookRes = await client.query('SELECT id FROM bookings WHERE customer_id = $1', [customerId]);
+                if (bookRes.rows.length === 0) {
+                    await client.query('DELETE FROM customers WHERE id = $1', [customerId]);
+                }
+            }
+            
+            await client.query('COMMIT');
+            res.json({ message: 'Hoàn nguyên thành công' });
+        } catch (e) {
+            await client.query('ROLLBACK');
+            throw e;
+        } finally {
+            client.release();
+        }
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 };
 

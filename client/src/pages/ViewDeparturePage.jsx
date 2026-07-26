@@ -131,7 +131,7 @@ const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEdit
   const handleStartEditReminder = (r, label) => {
     setEditingReminderId(r.id);
     setEditReminderTitle(label);
-    setEditReminderDate(r.due_date ? new Date(r.due_date).toLocaleDateString('en-CA') : '');
+    setEditReminderDate(r.due_date ? new Date(r.due_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '');
   };
 
   const handleSaveEditReminder = async (id) => {
@@ -268,11 +268,11 @@ const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEdit
           <div>
             <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }}>NGÀY KHỞI HÀNH</div>
             <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#10b981' }}>
-              {currentDep.start_date ? new Date(currentDep.start_date || currentDep.tour_start_date).toLocaleDateString('vi-VN') : 'N/A'}
+              {currentDep.start_date ? new Date(currentDep.start_date || currentDep.tour_start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'N/A'}
             </div>
             {currentDep.end_date && (
               <div style={{ fontSize: '0.9rem', color: '#475569', marginTop: '4px', fontWeight: 600 }}>
-                Đến: {new Date(currentDep.end_date).toLocaleDateString('vi-VN')}
+                Đến: {new Date(currentDep.end_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
               </div>
             )}
           </div>
@@ -524,7 +524,7 @@ const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEdit
                           {label}
                         </div>
                         <div style={{ display: 'flex', gap: '12px', fontSize: '0.8rem', color: '#64748b', marginTop: '4px', fontWeight: 500 }}>
-                          <span>Hạn chót: <span style={{ color: (r.status === 'PENDING' && new Date(r.due_date) < new Date(new Date().setHours(0,0,0,0))) ? '#ef4444' : 'inherit' }}>{new Date(r.due_date).toLocaleDateString('vi-VN')}</span></span>
+                          <span>Hạn chót: <span style={{ color: (r.status === 'PENDING' && new Date(r.due_date) < new Date(new Date().setHours(0,0,0,0))) ? '#ef4444' : 'inherit' }}>{new Date(r.due_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</span></span>
                           <span>•</span>
                           <span>Phụ trách: {r.staff_name || 'Hệ thống/Chưa gán'}</span>
                           {r.status === 'CANCELLED' && <span style={{ color: '#ef4444' }}>(Đã hủy)</span>}

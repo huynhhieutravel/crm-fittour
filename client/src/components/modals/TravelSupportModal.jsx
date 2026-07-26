@@ -29,7 +29,7 @@ const TravelSupportModal = ({ isOpen, onClose, onSave, editingItem, users = [], 
   const [formData, setFormData] = useState({
     service_type: '',
     service_name: '',
-    usage_date: new Date().toLocaleDateString('en-CA'),
+    usage_date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }),
     departure_date: '',
     return_date: '',
     route: '',
@@ -50,15 +50,15 @@ const TravelSupportModal = ({ isOpen, onClose, onSave, editingItem, users = [], 
     if (editingItem) {
       setFormData({
         ...editingItem,
-        usage_date: editingItem.usage_date ? new Date(editingItem.usage_date).toLocaleDateString('en-CA') : '',
-        departure_date: editingItem.departure_date ? new Date(editingItem.departure_date).toLocaleDateString('en-CA') : '',
-        return_date: editingItem.return_date ? new Date(editingItem.return_date).toLocaleDateString('en-CA') : '',
+        usage_date: editingItem.usage_date ? new Date(editingItem.usage_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
+        departure_date: editingItem.departure_date ? new Date(editingItem.departure_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
+        return_date: editingItem.return_date ? new Date(editingItem.return_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
       });
     } else {
       setFormData({
         service_type: '',
         service_name: '',
-        usage_date: new Date().toLocaleDateString('en-CA'),
+        usage_date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }),
         departure_date: '',
         return_date: '',
         route: '',

@@ -15,3 +15,18 @@ Khi thực hiện các thao tác triển khai mã nguồn (deployment) từ môi
    - Ví dụ đúng: `rsync -avz --exclude '.env' server/ root@45.76.144.188:/var/www/fittour-crm/server/`
    - Ví dụ sai: `rsync -avz server/ root@45.76.144.188...` (sẽ chép đè `.env` gây sập DB).
 2. Trước khi deploy, Agent phải tự nhắc nhở bản thân về rủi ro mất API keys/credentials và xác nhận lệnh `rsync` đã an toàn.
+
+## Frontend Build Guardrails: Fix Nginx 500 Permission Denied
+Khi thực thi lệnh `npm run build` (cho Vite/React/Astro) trên VPS qua SSH bằng tài khoản `root`, các file được sinh ra trong thư mục `dist/` sẽ bị kẹt quyền `root:root`, khiến Nginx (`www-data`) không đọc được và trả về lỗi 500 Internal Server Error.
+
+**Guardrails:**
+1. NGAY SAU KHI chạy `npm run build` trên VPS, Agent **BẮT BUỘC** phải chạy thêm lệnh phân quyền cho Nginx:
+   `chown -R www-data:www-data /path/to/project/client/dist && chmod -R 755 /path/to/project/client/dist`
+2. Không bao giờ được quên bước này khi deploy frontend, tránh làm sập website trên production.
+
+## Data Modification Guardrails: Never Batch-Update Historical Data By Default
+Khi User yêu cầu thay đổi các quy tắc hệ thống, luật phân bổ, hoặc từ khoá (ví dụ: "Cập nhật từ khoá Mông Cổ cho BU5"), Agent **CHỈ ĐƯỢC PHÉP** cập nhật quy tắc để áp dụng cho dữ liệu tương lai (forward-looking).
+
+**Guardrails:**
+1. **Tuyệt đối không** tự ý viết script SQL hoặc code để cập nhật hàng loạt (batch-update) dữ liệu cũ/lịch sử trong Database.
+2. Việc thay đổi dữ liệu đã tồn tại có rủi ro gây sai lệch báo cáo và thống kê của User. Agent chỉ được phép càn quét cập nhật dữ liệu cũ nếu User ra lệnh rõ ràng bằng các từ ngữ như: "cập nhật luôn cả dữ liệu cũ", "chạy script sửa data lịch sử", "hồi tố".

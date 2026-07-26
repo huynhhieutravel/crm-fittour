@@ -1,0 +1,196 @@
+[
+  {
+    "exit_code": 0,
+    "node_version": "20.20.2",
+    "version": "1.0.0",
+    "unstable_restarts": 0,
+    "restart_time": 1,
+    "created_at": 1777121295703,
+    "axm_dynamic": {},
+    "axm_options": {
+      "error": true,
+      "heapdump": true,
+      "feature.profiler.heapsnapshot": false,
+      "feature.profiler.heapsampling": true,
+      "feature.profiler.cpu_js": true,
+      "latency": true,
+      "catchExceptions": true,
+      "profiling": true,
+      "metrics": {
+        "http": true,
+        "runtime": true,
+        "eventLoop": true,
+        "network": false,
+        "v8": true
+      },
+      "standalone": false,
+      "module_conf": {},
+      "apm": {
+        "version": "6.1.0",
+        "type": "node"
+      },
+      "module_name": "crm-fittour",
+      "module_version": "6.0.14"
+    },
+    "axm_monitor": {
+      "Used Heap Size": {
+        "value": "25.31",
+        "type": "internal/v8/heap/used",
+        "unit": "MiB",
+        "historic": true
+      },
+      "Heap Usage": {
+        "value": 80.05,
+        "type": "internal/v8/heap/usage",
+        "unit": "%",
+        "historic": true
+      },
+      "Heap Size": {
+        "value": "31.61",
+        "type": "internal/v8/heap/total",
+        "unit": "MiB",
+        "historic": true
+      },
+      "Event Loop Latency p95": {
+        "value": "1.22",
+        "type": "internal/libuv/latency/p95",
+        "unit": "ms",
+        "historic": true
+      },
+      "Event Loop Latency": {
+        "value": "0.36",
+        "type": "internal/libuv/latency/p50",
+        "unit": "ms",
+        "historic": true
+      },
+      "Active handles": {
+        "value": 4,
+        "type": "internal/libuv/handles",
+        "historic": true
+      },
+      "Active requests": {
+        "value": 0,
+        "type": "internal/libuv/requests",
+        "historic": true
+      },
+      "HTTP": {
+        "value": 0.03,
+        "type": "internal/http/builtin/reqs",
+        "unit": "req/min",
+        "historic": true
+      },
+      "HTTP P95 Latency": {
+        "value": 6,
+        "type": "internal/http/builtin/latency/p95",
+        "unit": "ms",
+        "historic": true
+      },
+      "HTTP Mean Latency": {
+        "value": 5.5,
+        "type": "internal/http/builtin/latency/p50",
+        "unit": "ms",
+        "historic": true
+      }
+    },
+    "axm_actions": [
+      {
+        "action_name": "km:heapdump",
+        "action_type": "internal",
+        "arity": 2
+      },
+      {
+        "action_name": "km:cpu:profiling:start",
+        "action_type": "internal",
+        "arity": 2
+      },
+      {
+        "action_name": "km:cpu:profiling:stop",
+        "action_type": "internal",
+        "arity": 1
+      },
+      {
+        "action_name": "km:heap:sampling:start",
+        "action_type": "internal",
+        "arity": 2
+      },
+      {
+        "action_name": "km:heap:sampling:stop",
+        "action_type": "internal",
+        "arity": 1
+      }
+    ],
+    "pm_uptime": 1777121295821,
+    "status": "online",
+    "unique_id": "a6af6b9b-3734-4d60-8c86-d2d9e8d59783",
+    "PM2_HOME": "/root/.pm2",
+    "PM2_USAGE": "CLI",
+    "_": "/usr/bin/pm2",
+    "OLDPWD": "/root",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/0/bus",
+    "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin",
+    "SSH_CLIENT": "115.77.12.95 50796 22",
+    "XDG_RUNTIME_DIR": "/run/user/0",
+    "XDG_SESSION_ID": "15",
+    "SHLVL": "1",
+    "USER": "root",
+    "XDG_SESSION_CLASS": "user",
+    "SSH_CONNECTION": "115.77.12.95 50796 45.76.144.188 22",
+    "LANG": "en_US.UTF-8",
+    "HOME": "/root",
+    "MOTD_SHOWN": "pam",
+    "XDG_SESSION_TYPE": "tty",
+    "LOGNAME": "root",
+    "PWD": "/var/www/fittour-crm/server",
+    "SHELL": "/bin/bash",
+    "NODE_APP_INSTANCE": 0,
+    "vizion_running": false,
+    "km_link": false,
+    "pm_pid_path": "/root/.pm2/pids/crm-fittour-0.pid",
+    "pm_err_log_path": "/root/.pm2/logs/crm-fittour-error.log",
+    "pm_out_log_path": "/root/.pm2/logs/crm-fittour-out.log",
+    "exec_mode": "fork_mode",
+    "exec_interpreter": "node",
+    "pm_cwd": "/var/www/fittour-crm/server",
+    "pm_exec_path": "/var/www/fittour-crm/server/index.js",
+    "node_args": [],
+    "name": "crm-fittour",
+    "filter_env": [],
+    "namespace": "default",
+    "env": {
+      "unique_id": "a6af6b9b-3734-4d60-8c86-d2d9e8d59783",
+      "crm-fittour": {},
+      "PM2_HOME": "/root/.pm2",
+      "PM2_USAGE": "CLI",
+      "_": "/usr/bin/pm2",
+      "OLDPWD": "/root",
+      "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/0/bus",
+      "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin",
+      "SSH_CLIENT": "115.77.12.95 50796 22",
+      "XDG_RUNTIME_DIR": "/run/user/0",
+      "XDG_SESSION_ID": "15",
+      "SHLVL": "1",
+      "USER": "root",
+      "XDG_SESSION_CLASS": "user",
+      "SSH_CONNECTION": "115.77.12.95 50796 45.76.144.188 22",
+      "LANG": "en_US.UTF-8",
+      "HOME": "/root",
+      "MOTD_SHOWN": "pam",
+      "XDG_SESSION_TYPE": "tty",
+      "LOGNAME": "root",
+      "PWD": "/var/www/fittour-crm/server",
+      "SHELL": "/bin/bash"
+    },
+    "merge_logs": true,
+    "vizion": true,
+    "autostart": true,
+    "autorestart": true,
+    "watch": false,
+    "instance_var": "NODE_APP_INSTANCE",
+    "pmx": true,
+    "automation": true,
+    "treekill": true,
+    "username": "root",
+    "windowsHide": true,
+    "kill_retry_time": 100
+  }
+]

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getLocalDateString } from '../utils/dateUtils';
 import { Search, Plus, FileText, CheckCircle, XCircle, AlertTriangle, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import Select from 'react-select';
 import VisaDetailDrawer from '../components/modals/VisaDetailDrawer';
@@ -125,7 +126,7 @@ export default function VisasTab({ currentUser, checkPerm, addToast }) {
             return [
                 i + 1, v.code, v.name || '', v.customer_name || '', v.customer_phone || '',
                 v.customer_type || '', v.market || '', v.status || '',
-                v.receipt_date ? new Date(v.receipt_date).toLocaleDateString('vi-VN') : '',
+                v.receipt_date ? new Date(v.receipt_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
                 ft.totalRevenue, ft.totalCost, ft.totalRevenue - ft.totalCost
             ];
         });
@@ -136,7 +137,7 @@ export default function VisasTab({ currentUser, checkPerm, addToast }) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `Visa_Export_${new Date().toISOString().slice(0,10)}.csv`;
+        a.download = `Visa_Export_${getLocalDateString()}.csv`;
         a.click();
         URL.revokeObjectURL(url);
         if(addToast) addToast('Xuất file thành công!', 'success');
@@ -330,7 +331,7 @@ export default function VisasTab({ currentUser, checkPerm, addToast }) {
 
                                         {/* Ngày nhận */}
                                         <td data-label="Ngày nhận:" style={{ padding: '10px', verticalAlign: 'top', fontSize: '0.85rem', color: '#475569' }}>
-                                            {v.receipt_date ? new Date(v.receipt_date).toLocaleDateString('vi-VN') : '--'}
+                                            {v.receipt_date ? new Date(v.receipt_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '--'}
                                         </td>
 
                                         {/* Chờ duyệt */}

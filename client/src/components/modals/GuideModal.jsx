@@ -309,7 +309,7 @@ const GuideModal = ({
                           </div>
                           <div style={{ display: 'flex', gap: '1rem', color: '#64748b', fontSize: '0.8rem', fontWeight: 500 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <Calendar size={14} color="#94a3b8" /> {start.toLocaleDateString('vi-VN')} - {end.toLocaleDateString('vi-VN')}
+                              <Calendar size={14} color="#94a3b8" /> {start.toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} - {end.toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}
                             </div>
                           </div>
                         </div>

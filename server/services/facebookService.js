@@ -123,6 +123,73 @@ const classifyBUFromMessage = async (messageText) => {
     }
 };
 
+const classifyTourFromMessage = async (messageText) => {
+    if (!messageText || messageText.trim().length < 2) return null;
+    
+    // Normalize: lowercase + remove diacritics
+    const normalize = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0111/g, 'd').replace(/\u0110/g, 'D');
+    
+    const normalizedMsg = normalize(messageText);
+    const msgLower = messageText.toLowerCase();
+    
+    try {
+        const toursResult = await db.query(
+            "SELECT id, keywords, bu_group FROM tour_templates WHERE is_active = true AND keywords IS NOT NULL AND keywords != ''"
+        );
+        
+        for (const tour of toursResult.rows) {
+            const keywordsStr = tour.keywords || '';
+            const keywordsList = keywordsStr.split(',').map(k => k.trim()).filter(k => k.length > 0);
+            
+            for (const keyword of keywordsList) {
+                const normalizedKw = normalize(keyword);
+                if (normalizedKw.length < 2) continue; // skip very short keywords to be safe
+                
+                // 1. Exact match (with diacritics)
+                const kwLower = keyword.toLowerCase();
+                const escapedOrig = kwLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regexOriginal = new RegExp('(?:^|[^\\p{L}\\p{N}])' + escapedOrig + '(?:$|[^\\p{L}\\p{N}])', 'iu');
+                
+                if (regexOriginal.test(' ' + msgLower + ' ')) {
+                    console.log('[TOUR-AUTO] ✅ Strict Match (dấu) "' + keyword + '" -> Tour ' + tour.id + ' | msg: "' + messageText.substring(0, 60) + '"');
+                    return { tour_id: tour.id, bu_group: tour.bu_group };
+                }
+                
+                // 2. Exact match (without diacritics - ONLY if the original message text was typed without diacritics for that word)
+                const escapedNorm = normalizedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regexNorm = new RegExp('\\b' + escapedNorm + '\\b', 'i');
+                
+                if (regexNorm.test(normalizedMsg)) {
+                    // Cần đảm bảo khách thực sự gõ không dấu, chứ không phải gõ chữ có dấu khác nhưng khi bỏ dấu thì lại giống keyword
+                    const origWords = msgLower.split(/\s+/).map(w => w.replace(/[^a-zA-Z\u00C0-\u024F\u1E00-\u1EFF\u0110\u0111]/g, ''));
+                    const kwWordCount = kwLower.split(/\s+/).length;
+                    
+                    const hasDiacritics = (str) => str.toLowerCase() !== normalize(str);
+                    
+                    let foundNoDiacritics = false;
+                    for (let i = 0; i <= origWords.length - kwWordCount; i++) {
+                        const segment = origWords.slice(i, i + kwWordCount).join(' ');
+                        if (normalize(segment) === normalizedKw && !hasDiacritics(segment)) {
+                            foundNoDiacritics = true;
+                            break;
+                        }
+                    }
+                    
+                    if (foundNoDiacritics) {
+                        console.log('[TOUR-AUTO] ✅ Strict Match (ko dấu) "' + keyword + '" -> Tour ' + tour.id + ' | msg: "' + messageText.substring(0, 60) + '"');
+                        return { tour_id: tour.id, bu_group: tour.bu_group };
+                    }
+                }
+            }
+        }
+        
+        return null; // Không tìm thấy tour nào hợp lệ
+    } catch (err) {
+        console.error('[TOUR-AUTO] Loi classifyTour:', err.message);
+        return null;
+    }
+};
+
 
 exports.handleMessage = async (sender_psid, received_message, isStandby = false) => {
     let response;
@@ -162,6 +229,19 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
             if (autoBU) {
                 await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU, leadId]);
                 console.log(`[BU-AUTO] Lead #${leadId} (${senderName}) → Auto BU: ${autoBU}`);
+            }
+
+            // Auto-classify Tour from first message
+            const autoTour = await classifyTourFromMessage(received_message.text);
+            if (autoTour && autoTour.tour_id) {
+                const q = autoBU ? 
+                    'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
+                    'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
+                const params = autoBU ? 
+                    [autoTour.tour_id, leadId] : 
+                    [autoTour.tour_id, autoTour.bu_group, leadId];
+                await db.query(q, params);
+                console.log(`[TOUR-AUTO] Lead #${leadId} (${senderName}) → Auto Tour: ${autoTour.tour_id}`);
             }
 
             // Fire CAPI Lead event (async, non-blocking)
@@ -207,6 +287,19 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
                     if (autoBU2) {
                         await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU2, leadId]);
                     }
+
+                    // Auto-classify Tour for re-opened lead
+                    const autoTour2 = await classifyTourFromMessage(received_message.text);
+                    if (autoTour2 && autoTour2.tour_id) {
+                        const q2 = autoBU2 ? 
+                            'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
+                            'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
+                        const params2 = autoBU2 ? 
+                            [autoTour2.tour_id, leadId] : 
+                            [autoTour2.tour_id, autoTour2.bu_group, leadId];
+                        await db.query(q2, params2);
+                        console.log(`[TOUR-AUTO] Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour2.tour_id} (Re-opened)`);
+                    }
                     
                     // Nối hội thoại cũ sang Lead mới tinh này
                     await db.query('UPDATE conversations SET lead_id = $1, last_message = $2, updated_at = NOW() WHERE id = $3', [leadId, received_message.text, conversationId]);
@@ -229,6 +322,32 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
                         if (autoBU3) {
                             await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU3, leadId]);
                             console.log(`[BU-AUTO] Lead #${leadId} (${oldLead.name}) → Auto BU: ${autoBU3} (từ tin nhắn tiếp theo)`);
+                        }
+                    }
+
+                    // [TOUR-AUTO] Nếu lead chưa có Tour
+                    if (!oldLead.tour_id) {
+                        // Re-fetch oldLead.bu_group to get the most updated one if it was just assigned above
+                        const updatedLead = await db.query('SELECT bu_group FROM leads WHERE id = $1', [leadId]);
+                        const currentBuGroup = updatedLead.rows[0].bu_group;
+
+                        const allMsgsResult = await db.query(
+                            'SELECT content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
+                            [conversationId]
+                        );
+                        const allText = allMsgsResult.rows.filter(m => !isAutoGreeting(m.content)).map(m => m.content || '').join(' ') + ' ' + (received_message.text || '');
+                        const autoTour3 = await classifyTourFromMessage(allText);
+                        
+                        if (autoTour3 && autoTour3.tour_id) {
+                            const q3 = currentBuGroup ? 
+                                'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
+                                'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
+                            const params3 = currentBuGroup ? 
+                                [autoTour3.tour_id, leadId] : 
+                                [autoTour3.tour_id, autoTour3.bu_group, leadId];
+                            
+                            await db.query(q3, params3);
+                            console.log(`[TOUR-AUTO] Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (từ tin nhắn tiếp theo)`);
                         }
                     }
                 }
@@ -583,6 +702,19 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller, currentLeadId]);
                         console.log(`[BU-AUTO] Poller Lead #${currentLeadId} (${userName}) → Auto BU: ${autoBUPoller}`);
                     }
+
+                    // Auto-classify Tour from ALL messages + shares ad_context
+                    const autoTourPoller = await classifyTourFromMessage(allConvMsgs + ' ' + (actualMessageText || '') + ' ' + adContextText);
+                    if (autoTourPoller && autoTourPoller.tour_id) {
+                        const q = autoBUPoller ? 
+                            'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
+                            'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
+                        const params = autoBUPoller ? 
+                            [autoTourPoller.tour_id, currentLeadId] : 
+                            [autoTourPoller.tour_id, autoTourPoller.bu_group, currentLeadId];
+                        await db.query(q, params);
+                        console.log(`[TOUR-AUTO] Poller Lead #${currentLeadId} (${userName}) → Auto Tour: ${autoTourPoller.tour_id}`);
+                    }
                     // --- LUÔN tạo Conversation để tránh tạo Lead trùng lặp mỗi lần poll ---
                     const messageForConv = actualMessageText || '(Khách mới nhắn tin)';
                     const newConv = await db.query(
@@ -685,14 +817,35 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                     }
                     
                     // Classification for existing lead if BU missing (Luôn chạy nếu chưa có BU)
-                    const leadCheckRe = await db.query('SELECT bu_group, name FROM leads WHERE id = $1', [currentLeadId]);
-                    if (leadCheckRe.rows.length > 0 && !leadCheckRe.rows[0].bu_group) {
+                    const leadCheckRe = await db.query('SELECT bu_group, tour_id, name FROM leads WHERE id = $1', [currentLeadId]);
+                    if (leadCheckRe.rows.length > 0) {
                         const allPollerMsgs = await db.query('SELECT content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC', [oldConv.id]);
                         const allPollerText = allPollerMsgs.rows.filter(m => !isAutoGreeting(m.content)).map(m => m.content || '').join(' ');
-                        const autoBUPoller2 = await classifyBUFromMessage(allPollerText + ' ' + adContextText);
-                        if (autoBUPoller2) {
-                            await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller2, currentLeadId]);
-                            console.log(`[BU-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto BU: ${autoBUPoller2}`);
+                        
+                        if (!leadCheckRe.rows[0].bu_group) {
+                            const autoBUPoller2 = await classifyBUFromMessage(allPollerText + ' ' + adContextText);
+                            if (autoBUPoller2) {
+                                await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller2, currentLeadId]);
+                                console.log(`[BU-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto BU: ${autoBUPoller2}`);
+                            }
+                        }
+
+                        if (!leadCheckRe.rows[0].tour_id) {
+                            // Re-fetch BU to get the most up-to-date one
+                            const checkBu = await db.query('SELECT bu_group FROM leads WHERE id = $1', [currentLeadId]);
+                            const autoTourPoller2 = await classifyTourFromMessage(allPollerText + ' ' + adContextText);
+                            
+                            if (autoTourPoller2 && autoTourPoller2.tour_id) {
+                                const q3 = checkBu.rows[0].bu_group ? 
+                                    'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
+                                    'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
+                                const params3 = checkBu.rows[0].bu_group ? 
+                                    [autoTourPoller2.tour_id, currentLeadId] : 
+                                    [autoTourPoller2.tour_id, autoTourPoller2.bu_group, currentLeadId];
+                                
+                                await db.query(q3, params3);
+                                console.log(`[TOUR-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto Tour: ${autoTourPoller2.tour_id}`);
+                            }
                         }
                     }
                 }
@@ -716,3 +869,5 @@ exports.startPolling = () => {
 };
 
 exports.classifyBUFromMessage = classifyBUFromMessage;
+
+exports.classifyTourFromMessage = classifyTourFromMessage;

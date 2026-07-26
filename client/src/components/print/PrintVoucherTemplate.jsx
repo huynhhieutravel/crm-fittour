@@ -8,7 +8,7 @@ const PrintVoucherTemplate = forwardRef(({ voucher, tour, booking }, ref) => {
   const day = vDate.getDate();
   const month = vDate.getMonth() + 1;
   const year = vDate.getFullYear();
-  const time = vDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const time = vDate.toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh',  hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
   return (
     <div 

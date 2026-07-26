@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { X, Star, Upload, Save, AlertCircle } from 'lucide-react';
+import { getLocalDateString } from '../../utils/dateUtils';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
@@ -10,7 +12,7 @@ export default function ManualReviewModal({ isOpen, onClose, onSuccess, initialD
     rating: 5,
     comment: '',
     photo_count: '',
-    review_date: new Date().toISOString().split('T')[0],
+    review_date: getLocalDateString(),
     source: 'other',
     guide_name: '',
     bu_id: ''
@@ -39,7 +41,7 @@ export default function ManualReviewModal({ isOpen, onClose, onSuccess, initialD
           rating: 5,
           comment: '',
           photo_count: '',
-          review_date: new Date().toISOString().split('T')[0],
+          review_date: getLocalDateString(),
           source: 'google',
           guide_name: '',
           bu_id: ''

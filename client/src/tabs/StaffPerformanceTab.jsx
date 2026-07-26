@@ -24,9 +24,11 @@ import {
   LabelList
 } from 'recharts';
 
-const StaffPerformanceTab = () => {
+const StaffPerformanceTab = ({ bus = [] }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedBU, setSelectedBU] = useState('all');
+  const [viewMode, setViewMode] = useState('staff');
   const [dateFilter, setDateFilter] = useState('month');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedQuarter, setSelectedQuarter] = useState(Math.floor(new Date().getMonth() / 3) + 1);
@@ -102,6 +104,7 @@ const StaffPerformanceTab = () => {
       const params = new URLSearchParams();
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
+      if (selectedBU !== 'all') params.append('buGroup', selectedBU);
 
       const res = await axios.get(`/api/leads/stats?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -119,7 +122,7 @@ const StaffPerformanceTab = () => {
     if (quickFilters.includes(dateFilter)) {
       fetchStats();
     }
-  }, [dateFilter]);
+  }, [dateFilter, selectedBU]);
 
   useEffect(() => {
     fetchStats();
@@ -136,12 +139,25 @@ const StaffPerformanceTab = () => {
     );
   }
 
-  const staffData = stats.staffStats.map(s => ({
+  const staffData = (stats?.staffStats || []).map(s => ({
     ...s,
     conversion: s.total_leads > 0 ? parseFloat(((s.won_leads / s.total_leads) * 100).toFixed(1)) : 0
-  })).sort((a, b) => b.won_leads - a.won_leads);
+  })).sort((a, b) => {
+    if (b.won_leads !== a.won_leads) return b.won_leads - a.won_leads;
+    return b.total_leads - a.total_leads;
+  });
 
   const topPerformer = staffData[0];
+  const bestSellerName = topPerformer && topPerformer.won_leads > 0 ? topPerformer.name : 'Chưa có data';
+
+  const buData = (stats?.buStats || []).map(b => ({
+    ...b,
+    total_leads: b.count,
+    won_leads: b.won_leads || 0,
+    conversion: b.count > 0 ? parseFloat((((b.won_leads || 0) / b.count) * 100).toFixed(1)) : 0
+  })).sort((a, b) => (b.won_leads || 0) - (a.won_leads || 0));
+
+  const bestBU = buData[0];
 
   const monthOptions = [
     "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
@@ -169,6 +185,22 @@ const StaffPerformanceTab = () => {
                     f === 'week' ? 'Tuần này' : 'Tháng này'}
                 </button>
               ))}
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="segmented-control glass">
+              <button
+                onClick={() => setViewMode('staff')}
+                className={`segment-btn ${viewMode === 'staff' ? 'active' : ''}`}
+              >
+                Cá nhân
+              </button>
+              <button
+                onClick={() => setViewMode('bu')}
+                className={`segment-btn ${viewMode === 'bu' ? 'active' : ''}`}
+              >
+                Khối BU
+              </button>
             </div>
 
             {/* Visual Separator */}
@@ -251,6 +283,22 @@ const StaffPerformanceTab = () => {
               </div>
             )}
 
+            {/* BU Filter (Only for staff view) */}
+            {viewMode === 'staff' && (
+              <div className="executive-select-wrapper">
+                <select
+                  value={selectedBU}
+                  onChange={(e) => setSelectedBU(e.target.value)}
+                >
+                  <option value="all">Tất cả Khối BU</option>
+                  <option value="NO_BU">Chưa xếp khối</option>
+                  {bus.filter(b => b.is_active !== false).map((bu) => (
+                    <option key={bu.id} value={bu.id}>{bu.label || bu.id}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {/* Final Action */}
             {advancedFilters.includes(dateFilter) && (
               <button
@@ -270,13 +318,15 @@ const StaffPerformanceTab = () => {
         <div className="stat-card premium blue">
           <div className="stat-content">
             <div className="stat-header">
-              <span className="stat-label">BEST SELLER</span>
+              <span className="stat-label">{viewMode === 'staff' ? 'BEST SELLER' : 'BEST BU'}</span>
               <div className="stat-icon-glass"><Award size={20} /></div>
             </div>
-            <div className="stat-value" style={{ fontSize: '1.75rem' }}>{topPerformer?.name || '---'}</div>
+            <div className="stat-value" style={{ fontSize: '1.75rem' }}>
+              {viewMode === 'staff' ? bestSellerName : (bestBU && bestBU.won_leads > 0 ? bestBU.name : 'Chưa có data')}
+            </div>
             <div className="stat-footer">
               <TrendingUp size={14} />
-              <span>{topPerformer?.won_leads || 0} chốt đơn thành công</span>
+              <span>{viewMode === 'staff' ? (topPerformer?.won_leads || 0) : (bestBU?.won_leads || 0)} chốt đơn thành công</span>
             </div>
           </div>
         </div>
@@ -288,11 +338,13 @@ const StaffPerformanceTab = () => {
               <div className="stat-icon-glass"><Zap size={20} /></div>
             </div>
             <div className="stat-value">
-              {(staffData.reduce((acc, curr) => acc + parseFloat(curr.conversion), 0) / (staffData.length || 1)).toFixed(1)}%
+              {viewMode === 'staff' 
+                ? (staffData.length > 0 ? (staffData.reduce((acc, curr) => acc + parseFloat(curr.conversion), 0) / staffData.length).toFixed(1) : 0)
+                : (buData.length > 0 ? (buData.reduce((acc, curr) => acc + parseFloat(curr.conversion), 0) / buData.length).toFixed(1) : 0)}%
             </div>
             <div className="stat-footer">
               <Zap size={14} />
-              <span>Tỷ lệ chốt trung bình toàn đội</span>
+              <span>Tỷ lệ chốt trung bình toàn {viewMode === 'staff' ? 'đội' : 'công ty'}</span>
             </div>
           </div>
         </div>
@@ -300,13 +352,13 @@ const StaffPerformanceTab = () => {
         <div className="stat-card premium orange">
           <div className="stat-content">
             <div className="stat-header">
-              <span className="stat-label">ACTIVE STAFF</span>
+              <span className="stat-label">{viewMode === 'staff' ? 'ACTIVE STAFF' : 'ACTIVE BU'}</span>
               <div className="stat-icon-glass"><Users size={20} /></div>
             </div>
-            <div className="stat-value">{staffData.length}</div>
+            <div className="stat-value">{viewMode === 'staff' ? staffData.length : buData.length}</div>
             <div className="stat-footer">
               <Users size={14} />
-              <span>Nhân sự đang hoạt động</span>
+              <span>{viewMode === 'staff' ? 'Nhân sự đang hoạt động' : 'Khối đang hoạt động'}</span>
             </div>
           </div>
         </div>
@@ -317,7 +369,7 @@ const StaffPerformanceTab = () => {
         <div className="analytics-card professional p-8">
           <div className="card-header border-0 mb-8">
             <div>
-              <h3>So sánh Hiệu suất Nhân viên</h3>
+              <h3>So sánh Hiệu suất {viewMode === 'staff' ? 'Nhân viên' : 'Khối BU'}</h3>
               <p className="card-subtitle">Dựa trên số lượng leads được giao và tỷ lệ chốt thành công</p>
             </div>
             <UserCheck size={24} className="text-emerald-500" />
@@ -325,7 +377,7 @@ const StaffPerformanceTab = () => {
 
           <div style={{ height: '450px', width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={staffData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+              <BarChart data={viewMode === 'staff' ? staffData : buData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis
                   dataKey="name"
@@ -360,7 +412,7 @@ const StaffPerformanceTab = () => {
             </div>
             <div style={{ height: '300px', width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={staffData} layout="vertical" margin={{ left: 30, right: 40 }}>
+                <BarChart data={viewMode === 'staff' ? staffData : buData} layout="vertical" margin={{ left: 30, right: 40 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
                   <XAxis type="number" hide />
                   <YAxis
@@ -376,7 +428,7 @@ const StaffPerformanceTab = () => {
                     contentStyle={{ borderRadius: '12px', border: 'none' }}
                   />
                   <Bar dataKey="conversion" name="Tỷ lệ chốt %" fill="#8b5cf6" radius={[0, 4, 4, 0]} barSize={20} isAnimationActive={false}>
-                    {staffData.map((entry, index) => (
+                    {(viewMode === 'staff' ? staffData : buData).map((entry, index) => (
                       <Cell key={`cell-rate-${index}`} fill={parseFloat(entry.conversion) > 20 ? '#10b981' : '#6366f1'} />
                     ))}
                     <LabelList dataKey="conversion" position="right" formatter={(v) => `${v}%`} style={{ fontSize: '10px', fontWeight: 'bold' }} />
@@ -394,14 +446,14 @@ const StaffPerformanceTab = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-50">
-                    <th className="text-left py-3 font-bold uppercase tracking-wider text-[10px]">Nhân viên</th>
+                    <th className="text-left py-3 font-bold uppercase tracking-wider text-[10px]">{viewMode === 'staff' ? 'Nhân viên' : 'Khối BU'}</th>
                     <th className="text-center py-3 font-bold uppercase tracking-wider text-[10px]">Tổng</th>
                     <th className="text-center py-3 font-bold uppercase tracking-wider text-[10px]">Chốt</th>
                     <th className="text-right py-3 font-bold uppercase tracking-wider text-[10px]">% Chốt</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {staffData.map((s, idx) => (
+                  {(viewMode === 'staff' ? staffData : buData).map((s, idx) => (
                     <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
                       <td className="py-3">
                         <div className="flex items-center gap-3">

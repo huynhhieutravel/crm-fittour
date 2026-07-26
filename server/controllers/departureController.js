@@ -146,6 +146,12 @@ exports.getDepartureById = async (req, res) => {
         }
 
         const departure = departureResult.rows[0];
+        ['price_rules', 'additional_services', 'supplier_info', 'departure_card_data'].forEach(field => {
+            if (typeof departure[field] === 'string') {
+                try { departure[field] = JSON.parse(departure[field]); } catch (e) {}
+            }
+        });
+        
         departure.bookings = bookings;
         departure.sold_pax = bookings.reduce((sum, b) => b.booking_status !== 'Huỷ' ? sum + Number(b.pax_count) : sum, 0);
 

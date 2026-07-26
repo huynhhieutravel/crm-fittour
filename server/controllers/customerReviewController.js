@@ -298,8 +298,9 @@ exports.getStats = async (req, res) => {
 exports.updateReview = async (req, res) => {
   try {
     const { id } = req.params;
-    const { reviewer_name, rating, comment, review_date, source, guide_name, bu_id, photo_count } = req.body;
+    let { reviewer_name, rating, comment, review_date, source, guide_name, bu_id, photo_count } = req.body;
     
+    if (bu_id === '') bu_id = null;
     let proof_url = req.body.proof_url;
     if (req.file) {
       proof_url = `/uploads/reviews/${req.file.filename}`;
@@ -378,5 +379,219 @@ exports.updateReviewBU = async (req, res) => {
   } catch (error) {
     console.error('Error updating BU for customer review:', error);
     res.status(500).json({ success: false, message: 'Lỗi khi cập nhật BU', error: error.message });
+  }
+};
+
+exports.updateReviewGuide = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { guide_name } = req.body;
+    
+    const oldResult = await db.query('SELECT * FROM customer_reviews WHERE id = $1', [id]);
+    const oldData = oldResult.rows[0];
+
+    if (!oldData) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy đánh giá.' });
+    }
+
+    const result = await db.query(`
+      UPDATE customer_reviews 
+      SET guide_name = $1
+      WHERE id = $2
+      RETURNING *
+    `, [guide_name || null, id]);
+
+    await logActivity({
+        user_id: req.user.id,
+        action_type: 'UPDATE',
+        entity_type: 'CUSTOMER_REVIEW',
+        entity_id: id,
+        details: `Cập nhật HDV đánh giá khách hàng ID ${id}`,
+        old_data: oldData,
+        new_data: result.rows[0]
+    });
+
+    res.json({ success: true, message: 'Cập nhật HDV thành công.', data: result.rows[0] });
+  } catch (error) {
+    console.error('Lỗi cập nhật HDV đánh giá:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server' });
+  }
+};
+
+exports.getDashboardStats = async (req, res) => {
+  try {
+    const { start_date, end_date, bu_id } = req.query;
+
+    let baseWhere = `is_deleted = false AND approval_status = 'approved' AND (bu_id IS NULL OR UPPER(bu_id) NOT IN ('MARKETING', 'KẾ TOÁN', 'KE TOAN'))`;
+    const values = [];
+    let paramIndex = 1;
+
+    let currentPeriodWhere = baseWhere;
+    let previousPeriodWhere = baseWhere;
+    let yoyPeriodWhere = baseWhere;
+    
+    const currentValues = [];
+    const previousValues = [];
+    const yoyValues = [];
+    
+    let currentParamIndex = 1;
+    let previousParamIndex = 1;
+    let yoyParamIndex = 1;
+
+    if (start_date && end_date) {
+      const startDateObj = new Date(start_date);
+      const endDateObj = new Date(end_date);
+      
+      const diffTime = Math.abs(endDateObj - startDateObj);
+      const prevStartDateObj = new Date(startDateObj.getTime() - diffTime);
+      const prevEndDateObj = new Date(endDateObj.getTime() - diffTime);
+
+      const yoyStartDateObj = new Date(startDateObj);
+      yoyStartDateObj.setFullYear(startDateObj.getFullYear() - 1);
+      const yoyEndDateObj = new Date(endDateObj);
+      yoyEndDateObj.setFullYear(endDateObj.getFullYear() - 1);
+
+      currentPeriodWhere += ` AND review_date >= $${currentParamIndex++} AND review_date <= $${currentParamIndex++}`;
+      currentValues.push(start_date, end_date);
+      
+      previousPeriodWhere += ` AND review_date >= $${previousParamIndex++} AND review_date <= $${previousParamIndex++}`;
+      previousValues.push(prevStartDateObj.toISOString().split('T')[0], prevEndDateObj.toISOString().split('T')[0]);
+
+      yoyPeriodWhere += ` AND review_date >= $${yoyParamIndex++} AND review_date <= $${yoyParamIndex++}`;
+      yoyValues.push(yoyStartDateObj.toISOString().split('T')[0], yoyEndDateObj.toISOString().split('T')[0]);
+
+      baseWhere += ` AND review_date >= $${paramIndex++} AND review_date <= $${paramIndex++}`;
+      values.push(start_date, end_date);
+    }
+
+    let baseWhereBU = baseWhere;
+    let valuesBU = [...values];
+    let paramIndexBU = paramIndex;
+    if (bu_id && bu_id !== 'Tất cả') {
+       if (bu_id === 'null') {
+          baseWhereBU += ` AND bu_id IS NULL`;
+       } else {
+          baseWhereBU += ` AND bu_id = $${paramIndexBU++}`;
+          valuesBU.push(bu_id);
+       }
+    }
+
+    const currentOverviewRes = await db.query(`
+      SELECT COUNT(*) as total, AVG(rating) as avg_rating, SUM(CASE WHEN photo_count >= 5 THEN 1 ELSE 0 END) as rich_reviews
+      FROM customer_reviews WHERE ${currentPeriodWhere}
+    `, currentValues);
+    
+    const previousOverviewRes = await db.query(`
+      SELECT COUNT(*) as total, AVG(rating) as avg_rating, SUM(CASE WHEN photo_count >= 5 THEN 1 ELSE 0 END) as rich_reviews
+      FROM customer_reviews WHERE ${previousPeriodWhere}
+    `, previousValues);
+
+    const yoyOverviewRes = await db.query(`
+      SELECT COUNT(*) as total, AVG(rating) as avg_rating, SUM(CASE WHEN photo_count >= 5 THEN 1 ELSE 0 END) as rich_reviews
+      FROM customer_reviews WHERE ${yoyPeriodWhere}
+    `, yoyValues);
+
+    const currentOverview = currentOverviewRes.rows[0];
+    const previousOverview = previousOverviewRes.rows[0];
+    const yoyOverview = yoyOverviewRes.rows[0];
+
+    const buBreakdownRes = await db.query(`
+      SELECT COALESCE(bu_id, 'Chưa phân') as bu_id, COUNT(*) as total, AVG(rating) as avg_rating, SUM(CASE WHEN photo_count >= 5 THEN 1 ELSE 0 END) as rich_reviews
+      FROM customer_reviews WHERE ${baseWhere}
+      GROUP BY COALESCE(bu_id, 'Chưa phân')
+      ORDER BY total DESC
+    `, values);
+
+    let groupType = 'month';
+    let diffDays = 0;
+    
+    if (start_date && end_date) {
+      const startDateObj = new Date(start_date);
+      const endDateObj = new Date(end_date);
+      const diffTime = Math.abs(endDateObj - startDateObj);
+      diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays <= 31) {
+        groupType = 'week';
+      } else {
+        groupType = 'month';
+      }
+    }
+
+    const trendRes = await db.query(`
+      SELECT DATE_TRUNC('${groupType}', review_date) as date, COUNT(*) as total, AVG(rating) as avg_rating
+      FROM customer_reviews WHERE ${baseWhereBU}
+      GROUP BY DATE_TRUNC('${groupType}', review_date)
+      ORDER BY date ASC
+    `, valuesBU);
+
+    const buTrendRes = await db.query(`
+      SELECT DATE_TRUNC('${groupType}', review_date) as date, COALESCE(bu_id, 'Chưa phân') as bu_id, COUNT(*) as total
+      FROM customer_reviews WHERE ${baseWhereBU}
+      GROUP BY DATE_TRUNC('${groupType}', review_date), COALESCE(bu_id, 'Chưa phân')
+    `, valuesBU);
+
+    const trendMap = {};
+    trendRes.rows.forEach(r => {
+        trendMap[r.date] = {
+            date: r.date,
+            total: parseInt(r.total),
+            avg_rating: parseFloat(r.avg_rating)
+        };
+    });
+
+    buTrendRes.rows.forEach(r => {
+        if (trendMap[r.date]) {
+            trendMap[r.date][r.bu_id] = parseInt(r.total);
+        }
+    });
+
+    const trend = Object.values(trendMap).sort((a,b) => new Date(a.date) - new Date(b.date));
+
+    res.json({
+       success: true,
+       data: {
+          group_by: groupType,
+          overview: {
+             current: {
+                total: parseInt(currentOverview.total || 0),
+                avg_rating: parseFloat(currentOverview.avg_rating || 0),
+                rich_reviews: parseInt(currentOverview.rich_reviews || 0)
+             },
+             previous: {
+                total: parseInt(previousOverview.total || 0),
+                avg_rating: parseFloat(previousOverview.avg_rating || 0),
+                rich_reviews: parseInt(previousOverview.rich_reviews || 0)
+             },
+             yoy: {
+                total: parseInt(yoyOverview.total || 0),
+                avg_rating: parseFloat(yoyOverview.avg_rating || 0),
+                rich_reviews: parseInt(yoyOverview.rich_reviews || 0)
+             }
+          },
+          bu_breakdown: buBreakdownRes.rows.map(r => ({
+             bu_id: r.bu_id,
+             total: parseInt(r.total),
+             avg_rating: parseFloat(r.avg_rating),
+             rich_reviews: parseInt(r.rich_reviews)
+          })),
+          trend: trend
+       }
+    });
+  } catch (error) {
+    console.error('Error getting dashboard stats:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
+  }
+};
+
+exports.testMonthlyEmail = async (req, res) => {
+  try {
+    const { month, year } = req.body || {};
+    const { sendMonthlyReviewsStats } = require('../cron/monthlyReviewsEmail');
+    await sendMonthlyReviewsStats(month, year);
+    res.json({ success: true, message: `Đã trigger gửi báo cáo${month ? ' tháng ' + month : ''} thành công. Hãy kiểm tra Hộp thư.` });
+  } catch (error) {
+    console.error('Error triggering test monthly email:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
   }
 };

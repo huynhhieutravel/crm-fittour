@@ -73,6 +73,24 @@ app.use(express.json());
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
+// AUTO-HEALING: Symlink for Nginx
+// Recreate the symlink if it was accidentally deleted by frontend rsync deployments
+const { execSync } = require('child_process');
+try {
+    const symlinkTarget = path.join(__dirname, 'public/uploads');
+    const symlinkPath = path.join(__dirname, '../client/dist/uploads');
+    
+    // Only attempt to create if the parent dist directory exists (i.e., on production/VPS)
+    if (fs.existsSync(path.join(__dirname, '../client/dist'))) {
+        if (!fs.existsSync(symlinkPath)) {
+            console.log('🔄 [AUTO-HEALING] Recreating missing uploads symlink for Nginx...');
+            execSync(`ln -sfn "${symlinkTarget}" "${symlinkPath}"`);
+        }
+    }
+} catch (symlinkErr) {
+    console.error('⚠️ [AUTO-HEALING] Failed to check or recreate uploads symlink:', symlinkErr.message);
+}
+
 // Request Logging Middleware & Fallback Data Recovery
 const logsDir = path.join(__dirname, 'logs');
 if (!fs.existsSync(logsDir)) {
@@ -160,6 +178,7 @@ app.use('/api/departures', departureRoutes);
 app.use('/api/departure-card-guides', require('./routes/departureCardGuides'));
 app.use('/api/guides', guideRoutes);
 app.use('/api/leads', leadRoutes);
+app.use('/api/dispatch', require('./routes/dispatch'));
 app.use('/api/dispatch-schedules', require('./routes/dispatchSchedules'));
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/customers', customerRoutes);
@@ -214,7 +233,9 @@ app.use('/api/licenses', licenseRoutes);
 app.use('/api/rag', require('./routes/rag'));
 
 const permissionRoutes = require('./routes/permissions');
+const globalActivityRoutes = require('./routes/globalActivities');
 app.use('/api/permissions', permissionRoutes);
+app.use('/api/activities/global', globalActivityRoutes);
 
 const orgChartRoutes = require('./routes/orgChart');
 app.use('/api/org-chart', orgChartRoutes);
@@ -292,6 +313,9 @@ server.listen(PORT, () => {
         // Start Dispatcher SLA Cron Engine (every min)
         const { startDispatcherSLAEngine } = require('./cron/dispatcherSLAEngine');
         startDispatcherSLAEngine();
+
+        require('./cron/monthlyReviewsEmail');
+        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, SLA, Monthly Reviews Stats).');
 
         // Start Email Listeners for Event-Driven Architecture
         const { registerEmailListeners } = require('./listeners/emailListener');

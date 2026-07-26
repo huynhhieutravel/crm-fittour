@@ -1,7 +1,8 @@
 import { swalConfirm, swalPrompt } from '../../utils/swalHelpers';
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { X, Save, Plus, Trash2, Link as LinkIcon, Paperclip, ChevronDown, ChevronRight, User, FileText, CheckCircle, AlertTriangle, ScanText } from 'lucide-react';
+import { X, Save, Plus, Trash2, Link as LinkIcon, Paperclip, ChevronDown, ChevronRight, User, FileText, CheckCircle, AlertTriangle, ScanText, Clock, Download } from 'lucide-react';
+import { getLocalDateTimeLocal } from '../../utils/dateUtils';
 import { canEdit, canDelete } from '../../utils/permissions';
 import { VISA_CHECKLIST_TEMPLATE } from './VisaChecklistTemplate';
 import { scanPassportImage } from '../../utils/passportOcr';
@@ -28,7 +29,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
     const [usersList, setUsersList] = useState([]);
     const [vouchersList, setVouchersList] = useState([]);
     const [showVoucherForm, setShowVoucherForm] = useState(false);
-    const [voucherForm, setVoucherForm] = useState({ title: 'Thu tiền Visa', amount: '', payment_method: 'Chuyển khoản', payer_name: '', payer_phone: '', notes: '', voucher_date: new Date().toISOString().slice(0, 16) });
+    const [voucherForm, setVoucherForm] = useState({ title: 'Thu tiền Visa', amount: '', payment_method: 'Chuyển khoản', payer_name: '', payer_phone: '', notes: '', voucher_date: getLocalDateTimeLocal() });
 
     useEffect(() => {
         // Load users list for commission dropdown
@@ -77,7 +78,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
             
             if(addToast) addToast('Tạo phiếu thu thành công', 'success');
             setShowVoucherForm(false);
-            setVoucherForm({ title: 'Thu tiền Visa', amount: '', payment_method: 'Chuyển khoản', payer_name: '', payer_phone: '', notes: '', voucher_date: new Date().toISOString().slice(0, 16) });
+            setVoucherForm({ title: 'Thu tiền Visa', amount: '', payment_method: 'Chuyển khoản', payer_name: '', payer_phone: '', notes: '', voucher_date: getLocalDateTimeLocal() });
             fetchVouchers();
             fetchDetail(); // Refresh total collected
             refreshList(); // Refresh list to update total
@@ -1042,7 +1043,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                                 {vouchersList.map(v => (
                                                     <tr key={v.id} style={{ borderBottom: '1px solid #f1f5f9', opacity: v.status === 'Đã hủy' ? 0.5 : 1 }}>
                                                         <td style={{ padding: '12px 1rem', fontSize: '0.85rem', fontWeight: 600, color: '#2563eb' }}>{v.voucher_code} {v.status === 'Đã hủy' && '(Đã hủy)'}</td>
-                                                        <td style={{ padding: '12px 1rem', fontSize: '0.85rem' }}>{new Date(v.created_at).toLocaleString('vi-VN')}</td>
+                                                        <td style={{ padding: '12px 1rem', fontSize: '0.85rem' }}>{new Date(v.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</td>
                                                         <td style={{ padding: '12px 1rem', fontSize: '0.85rem', fontWeight: 700, color: '#059669' }}>{Number(v.amount).toLocaleString('vi-VN')}đ</td>
                                                         <td style={{ padding: '12px 1rem', fontSize: '0.85rem' }}>{v.payment_method}</td>
                                                         <td style={{ padding: '12px 1rem', fontSize: '0.85rem' }}>{v.created_by_name}</td>

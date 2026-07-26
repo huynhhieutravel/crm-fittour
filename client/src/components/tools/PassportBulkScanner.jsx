@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../../utils/dateUtils';
 import { scanPassportImage } from '../../utils/passportOcr';
 import * as XLSX from 'xlsx-js-style';
 
@@ -192,7 +193,7 @@ export default function PassportBulkScanner() {
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Passport Scan');
-    XLSX.writeFile(wb, `Passport_Scan_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(wb, `Passport_Scan_${getLocalDateString()}.xlsx`);
   };
 
   const handleClear = () => {

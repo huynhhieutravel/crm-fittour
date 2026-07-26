@@ -538,7 +538,7 @@ const mediaStorage = multer.diskStorage({
 
 const mediaUpload = multer({
     storage: mediaStorage,
-    limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+    limits: { fileSize: 80 * 1024 * 1024 }, // 80MB
     fileFilter: (req, file, cb) => {
         const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
         if (allowed.includes(file.mimetype)) {
@@ -578,7 +578,7 @@ exports.uploadRestaurantMedia = async (req, res) => {
     mediaUpload(req, res, async (uploadErr) => {
         if (uploadErr) {
             if (uploadErr.code === 'LIMIT_FILE_SIZE') {
-                return res.status(400).json({ message: 'File quá lớn! Tối đa 10MB.' });
+                return res.status(400).json({ message: 'File quá lớn! Tối đa 80MB.' });
             }
             return res.status(400).json({ message: uploadErr.message });
         }

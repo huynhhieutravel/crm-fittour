@@ -830,7 +830,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
             <div>
               <h3>Phân loại Chất lượng Lead</h3>
               <p className="card-subtitle">
-                Tiềm năng vs Thực tế (Nóng/Ấm/Lạnh/Mới)
+                Liên hệ lần 2 vs Thực tế (Nóng/Ấm/Lạnh/Mới)
               </p>
             </div>
             <Target size={20} className="text-rose-500" />
@@ -855,7 +855,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                       fill={
                         entry.name === "Nóng"
                           ? "#ef4444"
-                          : entry.name === "Tiềm năng"
+                          : entry.name === "Liên hệ lần 2"
                             ? "#10b981"
                             : entry.name === "Ấm"
                               ? "#f59e0b"
@@ -930,7 +930,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                       fill={
                         entry.name === "Nóng"
                           ? "#ef4444"
-                          : entry.name === "Tiềm năng"
+                          : entry.name === "Liên hệ lần 2"
                             ? "#10b981"
                             : entry.name === "Ấm"
                               ? "#f59e0b"
@@ -1008,13 +1008,13 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                       </div>
                       <div className="text-right flex flex-col items-end min-w-[70px]">
                         <span className="text-[12px] font-bold text-slate-700">
-                          {new Date(lead.created_at).toLocaleString("vi-VN", {
+                          {new Date(lead.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', 
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
                         </span>
                         <span className="text-[10px] font-semibold text-slate-400 mt-0.5 uppercase">
-                          {new Date(lead.created_at).toLocaleString("vi-VN", {
+                          {new Date(lead.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', 
                             day: "2-digit",
                             month: "2-digit",
                           })}

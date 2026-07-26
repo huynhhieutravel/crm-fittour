@@ -424,11 +424,11 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                             onMouseOut={e => e.currentTarget.style.opacity = '1'}
                                         >
                                             <div style={{ color: '#1e293b', fontWeight: 600 }}>
-                                                {p.departure_date ? new Date(p.departure_date).toLocaleDateString('vi-VN') : '---'}
+                                                {p.departure_date ? new Date(p.departure_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '---'}
                                             </div>
-                                            {p.return_date && new Date(p.return_date).toLocaleDateString('en-CA') !== new Date(p.departure_date).toLocaleDateString('en-CA') && (
+                                            {p.return_date && new Date(p.return_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) !== new Date(p.departure_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) && (
                                                 <div style={{ color: '#64748b', fontSize: '0.75rem' }}>
-                                                    → {new Date(p.return_date).toLocaleDateString('vi-VN')}
+                                                    → {new Date(p.return_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                                                 </div>
                                             )}
                                         </div>

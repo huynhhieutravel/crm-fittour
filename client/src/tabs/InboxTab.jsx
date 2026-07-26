@@ -1,5 +1,6 @@
 import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../utils/dateUtils';
 import axios from "axios";
 import {
   UserPlus,
@@ -15,7 +16,9 @@ import {
   X,
   Send,
   Loader2,
+  LayoutTemplate,
 } from "lucide-react";
+import SearchableSelect from '../components/common/SearchableSelect';
 
 const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, initialPsid, clearInitialPsid, onGoBack }) => {
   // API Data States
@@ -25,6 +28,10 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
   const [loading, setLoading] = useState(true);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
+
+  // Templates
+  const [templates, setTemplates] = useState([]);
+  const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
 
   // Pagination & Search States
   const [page, setPage] = useState(1);
@@ -43,9 +50,11 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
   const [selectedIds, setSelectedIds] = useState([]);
 
   const messagesEndRef = useRef(null);
+  const prevConvIdRef = useRef(null);
+  const isScrolledUpRef = useRef(false);
 
-  const fetchConversations = useCallback(async () => {
-    setLoading(true);
+  const fetchConversations = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
@@ -64,13 +73,38 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
     } catch (err) {
       console.error("Fetch Conversations Error:", err);
     } finally {
-      setLoading(false);
+      if (!quiet) setLoading(false);
     }
   }, [page, searchKey, filterBu, filterSale, filterAssignment]);
 
   useEffect(() => {
     fetchConversations();
+    
+    // Fetch Templates
+    const fetchTemplates = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get('/api/messages/templates', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setTemplates(res.data);
+      } catch (err) {
+        console.error("Error fetching templates:", err);
+      }
+    };
+    fetchTemplates();
   }, [fetchConversations]);
+
+  // Polling for real-time updates (every 5 seconds)
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchConversations(true); // quiet fetch
+      if (selectedConv) {
+        fetchMessages(selectedConv.id);
+      }
+    }, 5000);
+    return () => clearInterval(intervalId);
+  }, [fetchConversations, selectedConv]);
 
   // Auto-select conversation khi nhận initialPsid từ Lead Chat button
   const psidHandledRef = useRef(false);
@@ -79,28 +113,32 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
   useEffect(() => {
     if (!initialPsid || psidHandledRef.current) return;
     
-    // Ép kiểu String để so sánh an toàn vì PSID là số rất lớn có thể sai lệch khi so sánh Number
-    const matchConv = conversations.find(c => String(c.external_id) === String(initialPsid));
+    const targetStr = String(initialPsid).trim().toLowerCase();
+    const matchConv = conversations.find(c => String(c.lead_id) === targetStr) ||
+                      conversations.find(c => String(c.external_id) === targetStr) ||
+                      conversations.find(c => c.phone && c.phone === targetStr) ||
+                      conversations.find(c => c.lead_name && c.lead_name.toLowerCase() === targetStr);
     
     if (matchConv) {
       psidHandledRef.current = true;
       handleSelectConv(matchConv);
       if (clearInitialPsid) clearInitialPsid();
+    } else if (hasSearchedRef.current && conversations.length > 0) {
+      psidHandledRef.current = true;
+      handleSelectConv(conversations[0]);
+      if (clearInitialPsid) clearInitialPsid();
     } else if (searchKey !== initialPsid) {
       if (!hasSearchedRef.current) {
-        // Conversation không nằm trong trang hiện tại, hoặc chưa search -> search bằng PSID
         hasSearchedRef.current = true;
         setSearchInput(initialPsid);
         setSearchKey(initialPsid);
-        setPage(1); // Cực kì quan trọng: Reset page về 1 nếu user đang ở trang 2, 3...
+        setPage(1);
       } else {
-        // Nếu đã từng tự động search initialPsid, nhưng giờ searchKey bị đổi (do user xóa bộ lọc)
-        // Tức là user can thiệp thủ công -> Hủy auto-select để không giam user trong từ khóa cũ
         psidHandledRef.current = true;
         if (clearInitialPsid) clearInitialPsid();
       }
     }
-  }, [conversations, searchKey, initialPsid]);
+  }, [conversations, searchKey, initialPsid, clearInitialPsid]);
 
   // Reset ref khi initialPsid thay đổi (mới click Chat từ Lead khác)
   useEffect(() => {
@@ -111,10 +149,16 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
   }, [initialPsid]);
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    const isNewConv = prevConvIdRef.current !== selectedConv?.id;
+    
+    if (isNewConv || !isScrolledUpRef.current) {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }
     }
-  }, [messages]);
+    
+    prevConvIdRef.current = selectedConv?.id;
+  }, [messages, selectedConv]);
 
   const fetchMessages = async (convId) => {
     try {
@@ -127,12 +171,41 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
       console.error("Fetch Messages Error:", err);
     }
   };
+  const handleSendTemplate = async (template) => {
+    if (!selectedConv) return;
+    setSending(true);
+    isScrolledUpRef.current = false;
+    setShowTemplatesDropdown(false);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(`/api/messages/send`, {
+        conversationId: selectedConv.id,
+        attachment: {
+          type: "template",
+          payload: template.payload
+        },
+        templateName: template.name
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMessages(prev => [...prev, res.data]);
+      setConversations(prev => prev.map(c => 
+        c.id === selectedConv.id ? { ...c, last_message: `[Đã gửi thẻ: ${template.name}]`, updated_at: getLocalIsoString() } : c
+      ));
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi gửi thẻ: " + (err.response?.data?.error || err.message));
+    } finally {
+      setSending(false);
+    }
+  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedConv) return;
     
     setSending(true);
+    isScrolledUpRef.current = false;
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(`/api/messages/send`, {
@@ -145,7 +218,7 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
       setNewMessage("");
       // Update last message in the left sidebar list
       setConversations(prev => prev.map(c => 
-        c.id === selectedConv.id ? { ...c, last_message: newMessage, updated_at: new Date().toISOString() } : c
+        c.id === selectedConv.id ? { ...c, last_message: newMessage, updated_at: getLocalIsoString() } : c
       ));
     } catch (err) {
       console.error(err);
@@ -156,7 +229,9 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
   };
 
   const handleSelectConv = (conv) => {
+    isScrolledUpRef.current = false;
     setSelectedConv(conv);
+    setMessages([]);
     fetchMessages(conv.id);
     // Nếu user chủ động bấm chọn 1 chat bất kỳ, hủy bỏ auto-select
     if (initialPsid) {
@@ -175,6 +250,29 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
     }
     return (a.username || '').localeCompare(b.username || '');
   });
+
+  const getSaleOptions = (targetBU) => {
+    return users.filter(u => 
+      u.is_active !== false && 
+      (['admin', 'manager', 'sales', 'marketing'].includes(u.role_name) || u.permissions?.leads?.can_view || u.permissions?.leads?.can_edit)
+    ).sort((a, b) => {
+      if (currentUser) {
+         if (a.id === currentUser.id) return -1;
+         if (b.id === currentUser.id) return 1;
+      }
+      if (targetBU) {
+        const aHasBU = a.bus && (Array.isArray(a.bus) ? a.bus.includes(targetBU) : String(a.bus).includes(targetBU));
+        const bHasBU = b.bus && (Array.isArray(b.bus) ? b.bus.includes(targetBU) : String(b.bus).includes(targetBU));
+        if (aHasBU && !bHasBU) return -1;
+        if (bHasBU && !aHasBU) return 1;
+      }
+      return (a.username || '').localeCompare(b.username || '');
+    }).map(u => ({
+      id: u.id,
+      name: u.full_name || u.username,
+      code: u.username
+    }));
+  };
 
   const handleUpdateAssignment = async (field, value) => {
     if (!selectedConv || !selectedConv.lead_id) {
@@ -282,7 +380,7 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
     if (!ts) return "";
     const date = new Date(ts);
     return (
-      date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) +
+      date.toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh',  hour: "2-digit", minute: "2-digit" }) +
       " " +
       date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" })
     );
@@ -361,18 +459,15 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
                   {bus.map(b => <option key={b.id} value={b.id}>{b.label || b.id}</option>)}
                 </select>
 
-                <select
-                  value={filterSale}
-                  onChange={(e) => { setFilterSale(e.target.value); setPage(1); }}
-                  style={{
-                    width: '100%', padding: '8px 10px', borderRadius: '8px',
-                    border: '1px solid #e2e8f0', fontSize: '13px',
-                    background: 'white', color: '#334155', cursor: 'pointer'
-                  }}
-                >
-                  <option value="">-- Tất cả Sale --</option>
-                  {sortedSaleUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
-                </select>
+                <div style={{ width: '100%' }}>
+                  <SearchableSelect
+                    options={getSaleOptions(filterBu)}
+                    value={filterSale}
+                    onChange={(val) => { setFilterSale(val); setPage(1); }}
+                    placeholder="-- Tất cả Sale --"
+                    emptyText="Không tìm thấy sale"
+                  />
+                </div>
 
                 <select
                   value={filterAssignment}
@@ -442,13 +537,16 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
                       {/* Info */}
                       <div className="conv-info">
                         <div className="info-row">
-                          <h4 className={`name ${isSelected ? "active" : ""}`}>
+                          <h4 className={`name ${isSelected ? "active" : ""}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                             {conv.lead_name || "Khách vãng lai"}
+                            {conv.is_returning_customer && (
+                                <span style={{ fontSize: '0.55rem', background: '#f3e8ff', color: '#9333ea', padding: '1px 4px', borderRadius: '4px', fontWeight: 800, whiteSpace: 'nowrap' }} title="Khách VVIP đã từng booking.">
+                                    🎖️ KHÁCH QUEN
+                                </span>
+                            )}
                           </h4>
                           <span className="time">
-                            {new Date(conv.updated_at).toLocaleDateString(
-                              "vi-VN",
-                              { day: "2-digit", month: "2-digit" },
+                            {new Date(conv.updated_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh',  day: "2-digit", month: "2-digit" },
                             )}
                           </span>
                         </div>
@@ -517,37 +615,54 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
                     {(selectedConv.lead_name || "K").charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h2 className="chat-name">
+                    <h2 className="chat-name" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       {selectedConv.lead_name || "Khách vãng lai"}
+                      {selectedConv.is_returning_customer && (
+                          <span style={{ fontSize: '0.65rem', background: '#f3e8ff', color: '#9333ea', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, whiteSpace: 'nowrap' }} title="Khách VVIP đã từng booking.">
+                              🎖️ KHÁCH QUEN {selectedConv.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(selectedConv.total_spent)}đ)` : ''}
+                          </span>
+                      )}
                     </h2>
-                    <div className="chat-source">
-                      <span className="dot"></span> Meta Messenger
-                            <span style={{ color: '#cbd5e1', margin: '0 4px' }}>|</span>
-                            BU: <select 
-                                  value={selectedConv?.assigned_bu || ""} 
-                                  onChange={(e) => handleUpdateAssignment('bu_group', e.target.value)}
-                                  className="chat-header-select"
-                                  style={{ color: selectedConv?.assigned_bu ? '#334155' : '#ef4444' }}
-                                >
-                                  <option value="">Chưa phân</option>
-                                  {bus.map(b => <option key={b.id} value={b.id}>{b.label || b.id}</option>)}
-                                </select>
-                            <span style={{ color: '#cbd5e1', margin: '0 4px' }}>|</span>
-                            Sale: <select 
-                                    value={selectedConv?.assigned_to_id || ""} 
-                                    onChange={(e) => handleUpdateAssignment('assigned_to', e.target.value)}
-                                    className="chat-header-select"
-                                    style={{ color: selectedConv?.assigned_to_name ? '#334155' : '#ef4444' }}
-                                  >
-                                    <option value="">Chưa phân</option>
-                                    {sortedSaleUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
-                                  </select>
+                    <div className="chat-source" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="dot"></span> Meta Messenger
+                      </div>
+                      <div className="chat-assignment-selectors" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <div className="assignment-badge" style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.8rem' }}>
+                          <span style={{ color: '#64748b', marginRight: '4px', fontWeight: 600 }}>BU:</span>
+                          <select 
+                            value={selectedConv?.assigned_bu || ""} 
+                            onChange={(e) => handleUpdateAssignment('bu_group', e.target.value)}
+                            className="assignment-select"
+                            style={{ color: selectedConv?.assigned_bu ? '#0f172a' : '#ef4444', background: 'transparent', border: 'none', outline: 'none', fontWeight: 700, cursor: 'pointer' }}
+                          >
+                            <option value="">Chưa phân</option>
+                            {bus.map(b => <option key={b.id} value={b.id}>{b.label || b.id}</option>)}
+                          </select>
+                        </div>
+                        <div className="assignment-badge" style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.8rem' }}>
+                          <span style={{ color: '#64748b', marginRight: '4px', fontWeight: 600 }}>Sale:</span>
+                          <div className="inbox-assignee-select" style={{ minWidth: '130px', height: '22px', marginLeft: '5px' }}>
+                            <SearchableSelect
+                              options={getSaleOptions(selectedConv?.assigned_bu)}
+                              value={selectedConv?.assigned_to_id || ""}
+                              onChange={(val) => handleUpdateAssignment('assigned_to', val)}
+                              placeholder="Chưa phân"
+                              emptyText="Không tìm thấy sale"
+                              style={{ 
+                                color: selectedConv?.assigned_to_name ? '#0f172a' : '#ef4444',
+                                fontWeight: 700 
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div className="chat-action-buttons" style={{ display: 'flex', gap: '10px' }}>
                   <button onClick={handleDeleteSingle} className="inbox-danger-btn">
                     <Trash2 size={15} /> XÓA
                   </button>
@@ -570,7 +685,14 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
               </div>
 
               {/* Messages Area */}
-              <div className="chat-messages">
+              <div 
+                className="chat-messages"
+                onScroll={(e) => {
+                  const { scrollTop, scrollHeight, clientHeight } = e.target;
+                  const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+                  isScrolledUpRef.current = !isAtBottom;
+                }}
+              >
                 <div className="messages-list">
                   {messages.map((msg, idx) => {
                     const isStaff = msg.sender_type !== "customer";
@@ -590,8 +712,39 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
                 </div>
                 
                 {/* Chat Input */}
-                <div className="chat-input-area">
+                <div className="chat-input-area" style={{ position: 'relative' }}>
+                  {showTemplatesDropdown && (
+                    <div style={{ position: 'absolute', bottom: '100%', left: '20px', marginBottom: '10px', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', width: '300px', zIndex: 10 }}>
+                      <div style={{ padding: '12px 15px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8fafc', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Gửi Thẻ Mẫu (Templates)</span>
+                        <button type="button" onClick={() => setShowTemplatesDropdown(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+                          <X size={16} />
+                        </button>
+                      </div>
+                      <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+                        {templates.length === 0 ? (
+                          <div style={{ padding: '15px', textAlign: 'center', color: '#64748b', fontSize: '14px' }}>Chưa có thẻ mẫu nào</div>
+                        ) : (
+                          templates.map(tpl => (
+                            <div 
+                              key={tpl.id} 
+                              onClick={() => handleSendTemplate(tpl)}
+                              style={{ padding: '12px 15px', display: 'flex', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', fontSize: '14px', color: '#334155' }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              <LayoutTemplate size={16} style={{marginRight: '10px', color: '#3b82f6'}}/>
+                              {tpl.name}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <form onSubmit={handleSendMessage} className="chat-input-form">
+                    <button type="button" onClick={() => setShowTemplatesDropdown(!showTemplatesDropdown)} style={{ background: 'none', border: 'none', padding: '0 10px', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center' }}>
+                      <LayoutTemplate size={22} />
+                    </button>
                     <input
                       type="text"
                       className="chat-input-field"
@@ -976,8 +1129,9 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
         }
 
         .chat-header {
-          height: 76px;
-          padding: 0 24px;
+          min-height: 84px;
+          height: auto;
+          padding: 12px 24px;
           border-bottom: 1px solid #e2e8f0;
           background-color: rgba(255, 255, 255, 0.8);
           backdrop-filter: blur(8px);
@@ -1235,6 +1389,9 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
             gap: 12px;
           }
           .chat-title-group {
+            width: 100%;
+          }
+          .chat-action-buttons {
             width: 100%;
           }
           .inbox-danger-btn, .inbox-action-btn {

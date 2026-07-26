@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Save, CheckSquare, Phone, MapPin, Calendar, MessageSquare, AlertCircle } from 'lucide-react';
+import { getLocalIsoString } from '../../utils/dateUtils';
 
 export default function MiceLeadDetailDrawer({ lead, onClose, refreshList, addToast, currentUser }) {
     const [formData, setFormData] = useState({
@@ -26,7 +27,7 @@ export default function MiceLeadDetailDrawer({ lead, onClose, refreshList, addTo
                         step3_discovery: { special_requests: '', consultation_notes: '', budget: '' }
                     }
                 },
-                deadline: lead.deadline ? new Date(lead.deadline).toISOString().substring(0, 16) : ''
+                deadline: lead.deadline ? getLocalDateTimeLocal(new Date(lead.deadline)) : ''
             });
         }
     }, [lead]);
@@ -54,7 +55,7 @@ export default function MiceLeadDetailDrawer({ lead, onClose, refreshList, addTo
             const token = localStorage.getItem('token');
             const payload = { ...formData };
             if (payload.deadline) {
-                payload.deadline = new Date(payload.deadline).toISOString();
+                payload.deadline = getLocalIsoString(payload.deadline);
             } else {
                 payload.deadline = null;
             }

@@ -1,5 +1,6 @@
 import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect, useRef } from 'react';
+import Select from 'react-select';
 import { 
   UserPlus, 
   MessageSquare, 
@@ -15,7 +16,8 @@ import {
   X,
   Eye,
   Lock,
-  Phone
+  Phone,
+  RotateCcw
 } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
 import axios from 'axios';
@@ -45,6 +47,7 @@ const LeadsTab = ({
   bus,
   fetchLeads,
   handleConvertLead,
+  handleRevertConvertLead,
   navigateToInbox
 }) => {
   const [currentPage, setCurrentPage] = useState(() => {
@@ -69,15 +72,15 @@ const LeadsTab = ({
   };
 
   const saleUsers = users.filter(u => {
-    if (u.is_active === false) return false;
-    if (['admin', 'manager', 'sales', 'marketing'].includes(u.role_name)) return true;
-    return !!(u.permissions && u.permissions.leads && (u.permissions.leads.can_view || u.permissions.leads.can_edit));
+    if (u?.is_active === false) return false;
+    if (['admin', 'manager', 'sales', 'marketing'].includes(u?.role_name)) return true;
+    return !!(u?.permissions && u?.permissions.leads && (u?.permissions.leads.can_view || u?.permissions.leads.can_edit));
   }).sort((a, b) => {
     if (currentUser) {
-       if (a.id === currentUser.id) return -1;
-       if (b.id === currentUser.id) return 1;
+       if (a?.id === currentUser?.id) return -1;
+       if (b?.id === currentUser?.id) return 1;
     }
-    return (a.username || '').localeCompare(b.username || '');
+    return (a?.username || '').localeCompare(b?.username || '');
   });
 
   const usersByBU = React.useMemo(() => {
@@ -95,12 +98,12 @@ const LeadsTab = ({
            if (aInBU && !bInBU) return -1;
            if (!aInBU && bInBU) return 1;
            return 0; // Maintain base order (which has current user first)
-        }).map(u => ({ id: u.id, name: u.displayName }))
+        }).map(u => ({ id: u?.id, name: u?.displayName }))
       ];
     });
     
     map['DEFAULT'] = [
-      ...baseList.map(u => ({ id: u.id, name: u.displayName }))
+      ...baseList.map(u => ({ id: u?.id, name: u?.displayName }))
     ];
     return map;
   }, [saleUsers, leads]);
@@ -214,7 +217,7 @@ const LeadsTab = ({
           <div className="stat-icon-bg"><MessageSquare size={24} /></div>
           <div className="stat-content">
             <span className="stat-label">ĐÃ LIÊN HỆ</span>
-            <div className="stat-value">{filteredLeads.filter(l => ['Đang liên hệ', 'Tiềm năng', 'Đặt cọc'].includes(l.status)).length}</div>
+            <div className="stat-value">{filteredLeads.filter(l => ['Đang liên hệ', 'Liên hệ lần 2'].includes(l.status)).length}</div>
           </div>
         </div>
         <div className="stat-card teal">
@@ -248,16 +251,7 @@ const LeadsTab = ({
               {LEAD_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
-          <div className="filter-group">
-            <label>NHÓM BU</label>
-            <select className="filter-select" value={leadFilters.bu_group} onChange={e => setLeadFilters({...leadFilters, bu_group: e.target.value})}>
-              <option value="">Khối: Tất cả</option>
-              <option value="NO_BU">⚠ Chưa chọn BU</option>
-              {bus.filter(bu => bu.is_active !== false).map(bu => (
-                <option key={bu.id} value={bu.id}>{bu.label}</option>
-              ))}
-            </select>
-          </div>
+
           <div className="filter-group" style={{ position: 'relative' }}>
             <label>SẢN PHẨM / TOUR</label>
             <div 
@@ -282,13 +276,36 @@ const LeadsTab = ({
               </div>
             )}
           </div>
-          <div className="filter-group">
+          <div className="filter-group" style={{ minWidth: '220px' }}>
             <label>TƯ VẤN VIÊN</label>
-            <select className="filter-select" value={leadFilters.assigned_to} onChange={e => setLeadFilters({...leadFilters, assigned_to: e.target.value})}>
-              <option value="">-- Tất cả --</option>
-              <option value="NO_STAFF">⚠ Chưa giao ai</option>
-              {saleUsers.map(u => <option key={u.id} value={u.id}>{u.full_name ? `${u.full_name} (${u.username})` : u.username}</option>)}
-            </select>
+            <Select
+              options={[
+                { value: '', label: '-- Tất cả --' },
+                { value: 'NO_STAFF', label: '⚠ Chưa giao ai' },
+                ...saleUsers.map(u => ({ value: u.id, label: u.full_name ? `${u.full_name} (${u.username})` : u.username }))
+              ]}
+              value={{ 
+                value: leadFilters.assigned_to, 
+                label: leadFilters.assigned_to === '' ? '-- Tất cả --' : (leadFilters.assigned_to === 'NO_STAFF' ? '⚠ Chưa giao ai' : (saleUsers.find(u => u.id === leadFilters.assigned_to)?.full_name ? `${saleUsers.find(u => u.id === leadFilters.assigned_to).full_name} (${saleUsers.find(u => u.id === leadFilters.assigned_to).username})` : saleUsers.find(u => u.id === leadFilters.assigned_to)?.username)) 
+              }}
+              onChange={(selectedOption) => setLeadFilters({...leadFilters, assigned_to: selectedOption ? selectedOption.value : ''})}
+              placeholder="-- Tất cả --"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: '36px',
+                  borderRadius: '6px',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: 'none',
+                  fontSize: '0.85rem'
+                }),
+                menu: (base) => ({
+                  ...base,
+                  zIndex: 9999,
+                  fontSize: '0.85rem'
+                })
+              }}
+            />
           </div>
           <button 
             className="login-btn" 
@@ -341,6 +358,21 @@ const LeadsTab = ({
                 {p.label}
               </button>
             ))}
+          </div>
+
+          <div className="filter-options-group filter-divider">
+            <span style={{ color: '#64748b', fontWeight: 600 }}>BU:</span>
+            <button className={`preset-btn ${!leadFilters.bu_group ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, bu_group: ''})}>
+              Tất cả
+            </button>
+            {bus && bus.filter(bu => bu.is_active !== false && !['khác', 'marketing', 'kế toán'].includes(bu.label.toLowerCase())).map(bu => (
+              <button key={bu.id} className={`preset-btn ${leadFilters.bu_group === bu.id ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, bu_group: bu.id})}>
+                {bu.label}
+              </button>
+            ))}
+            <button className={`preset-btn ${leadFilters.bu_group === 'NO_BU' ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, bu_group: 'NO_BU'})}>
+              Chưa lựa chọn
+            </button>
           </div>
 
           <div className="filter-options-group filter-divider filter-date-group">
@@ -439,7 +471,7 @@ const LeadsTab = ({
                         style={{ fontWeight: 600, color: '#2563eb', cursor: 'pointer', textDecoration: 'underline' }}
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingLead(lead); }}
                       >
-                        {new Date(lead.created_at).toLocaleDateString('vi-VN')}
+                        {new Date(lead.created_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                       </span>
                       {Number(lead.notes_count) > 0 && (
                         <div 
@@ -476,7 +508,7 @@ const LeadsTab = ({
                         </div>
                       )}
                     </div>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(lead.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(lead.created_at).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh',  hour: '2-digit', minute: '2-digit' })}</span>
                     {lead.facebook_psid && (
                       <button
                         onClick={(e) => { e.stopPropagation(); navigateToInbox(lead.facebook_psid); }}
@@ -574,6 +606,7 @@ const LeadsTab = ({
                       value={lead.tour_id}
                       onChange={(val) => !lead.is_locked && handleQuickUpdate(lead.id, 'tour_id', val)}
                       placeholder="Chọn tour..."
+                      shortLabel={true}
                       style={{ 
                         border: 'none', 
                         background: 'transparent',
@@ -638,10 +671,10 @@ const LeadsTab = ({
                 <td data-label="Thời Gian Liên Hệ">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.75rem', color: '#64748b' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Clock size={10} /> LH: {lead.last_contacted_at ? new Date(lead.last_contacted_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--'}
+                      <Clock size={10} /> LH: {lead.last_contacted_at ? new Date(lead.last_contacted_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh',  day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--'}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <ArrowUpRight size={10} /> BOOK: {lead.won_at ? new Date(lead.won_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--'}
+                      <ArrowUpRight size={10} /> BOOK: {lead.won_at ? new Date(lead.won_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh',  day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--'}
                     </div>
                   </div>
                 </td>
@@ -661,6 +694,21 @@ const LeadsTab = ({
                     >
                       <UserPlus size={14} />
                     </button>
+                    {lead.status === 'Chốt đơn' && (
+                      <button 
+                        type="button" 
+                        className="icon-btn-square" 
+                        style={{ color: '#eab308', background: '#fef9c3', border: 'none', cursor: 'pointer' }} 
+                        title="Hoàn nguyên (Undo) Lead về trạng thái Mới" 
+                        onClick={(e) => { 
+                          e.preventDefault(); 
+                          e.stopPropagation(); 
+                          handleRevertConvertLead(lead.id);
+                        }}
+                      >
+                        <RotateCcw size={14} />
+                      </button>
+                    )}
                     {canEdit(currentUser?.role, 'core') && (
                       <button 
                         type="button" 
@@ -732,7 +780,7 @@ const LeadsTab = ({
         </div>
       )}
 
-      {hoveredNote.id && (
+      {hoveredNote?.id && (
         <div className="dark-tooltip animate-fade-in" style={{ 
           position: 'fixed',
           top: hoveredNote.y - 8,
@@ -749,7 +797,7 @@ const LeadsTab = ({
             {hoveredNote.content || 'Không có nội dung ghi chú.'}
           </div>
           <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(hoveredNote.date).toLocaleString('vi-VN')}</span>
+            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(hoveredNote.date).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</span>
             <span style={{ fontSize: '0.75rem', color: '#3b82f6', fontWeight: 700 }}>FIT Tour CRM</span>
           </div>
         </div>

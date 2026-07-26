@@ -260,10 +260,10 @@ const DeparturesTab = ({
                         )}
                       </div>
                     )}
-                    <div style={{ fontWeight: 800 }}>{new Date(dep.start_date).toLocaleDateString('vi-VN')}</div>
+                    <div style={{ fontWeight: 800 }}>{new Date(dep.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</div>
                     {dep.end_date && (
                       <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginTop: '2px' }}>
-                        đến {new Date(dep.end_date).toLocaleDateString('vi-VN')}
+                        đến {new Date(dep.end_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                       </div>
                     )}
                     <button 

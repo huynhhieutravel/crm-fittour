@@ -184,8 +184,8 @@ img { max-width: 150px; }
                         <tbody>
                             <tr><td style={{ width: '150px' }}>Tên dịch vụ:</td><td contentEditable suppressContentEditableWarning style={{ textTransform: 'uppercase' }}>{tour.tour_name}</td></tr>
                             <tr><td>Mã:</td><td contentEditable suppressContentEditableWarning>{tour.tour_code}</td></tr>
-                            <tr><td>Ngày khởi hành:</td><td contentEditable suppressContentEditableWarning>{tour.start_date ? new Date(tour.start_date).toLocaleDateString('vi-VN') : ''}</td></tr>
-                            <tr><td>Ngày kết thúc:</td><td contentEditable suppressContentEditableWarning>{tour.end_date ? new Date(tour.end_date).toLocaleDateString('vi-VN') : ''}</td></tr>
+                            <tr><td>Ngày khởi hành:</td><td contentEditable suppressContentEditableWarning>{tour.start_date ? new Date(tour.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : ''}</td></tr>
+                            <tr><td>Ngày kết thúc:</td><td contentEditable suppressContentEditableWarning>{tour.end_date ? new Date(tour.end_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : ''}</td></tr>
                             <tr><td>Nhân viên phụ trách:</td><td contentEditable suppressContentEditableWarning>{tour.tour_info?.operators || '...'}</td></tr>
                             <tr><td>Điện thoại (Sale):</td><td contentEditable suppressContentEditableWarning>...</td></tr>
                         </tbody>
@@ -289,7 +289,7 @@ img { max-width: 150px; }
                                 <tr key={v.id}>
                                     <td style={{ padding: '8px', border: '1px solid #e2e8f0' }}>{idx + 1}</td>
                                     <td style={{ padding: '8px', border: '1px solid #e2e8f0', textAlign: 'left' }} contentEditable suppressContentEditableWarning>{v.voucher_code}</td>
-                                    <td style={{ padding: '8px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{new Date(v.created_at).toLocaleDateString('vi-VN')}</td>
+                                    <td style={{ padding: '8px', border: '1px solid #e2e8f0' }} contentEditable suppressContentEditableWarning>{new Date(v.created_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</td>
                                     <td style={{ padding: '8px', border: '1px solid #e2e8f0', textAlign: 'left' }} contentEditable suppressContentEditableWarning>{v.payment_method}</td>
                                     <td style={{ padding: '8px', border: '1px solid #e2e8f0', fontWeight: 'bold' }} contentEditable suppressContentEditableWarning>{Number(v.amount).toLocaleString('vi-VN')}</td>
                                 </tr>

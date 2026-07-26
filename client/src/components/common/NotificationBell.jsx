@@ -1,14 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, Check, ExternalLink } from 'lucide-react';
+import { Bell, Check, ExternalLink, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
+import NotificationSettingsModal from './NotificationSettingsModal';
 
 const NotificationBell = ({ currentUser }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState(
+    'Notification' in window ? Notification.permission : 'denied'
+  );
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -46,6 +51,26 @@ const NotificationBell = ({ currentUser }) => {
           ),
           { duration: 4000, position: 'top-right' }
         );
+
+        // NATIVE BROWSER NOTIFICATION
+        if ('Notification' in window && Notification.permission === 'granted') {
+          try {
+            const plainText = notif.message ? notif.message.replace(/<[^>]+>/g, '') : 'Bạn có thông báo mới';
+            const n = new Notification(notif.title || 'FIT Tour CRM', {
+              body: plainText,
+              icon: '/favicon.ico',
+            });
+            n.onclick = () => {
+              window.focus();
+              if (notif.link) {
+                navigate(notif.link);
+              }
+              n.close();
+            };
+          } catch (e) {
+            console.error('Desktop notification error', e);
+          }
+        }
       });
 
       return () => {
@@ -97,6 +122,24 @@ const NotificationBell = ({ currentUser }) => {
     setIsOpen(false);
     if (notif.link) {
       navigate(notif.link);
+    }
+  };
+
+  const requestNotificationPermission = async () => {
+    if (!('Notification' in window)) {
+      toast.error('Trình duyệt của bạn không hỗ trợ thông báo màn hình');
+      return;
+    }
+    try {
+      const permission = await Notification.requestPermission();
+      setNotificationPermission(permission);
+      if (permission === 'granted') {
+        toast.success('Đã bật thông báo màn hình thành công!');
+      } else {
+        toast.error('Bạn đã từ chối nhận thông báo màn hình');
+      }
+    } catch (error) {
+      console.error('Error requesting notification permission', error);
     }
   };
 
@@ -161,16 +204,33 @@ const NotificationBell = ({ currentUser }) => {
             borderTopRightRadius: '8px'
           }}>
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>Thông báo</h3>
-            {unreadCount > 0 && (
-              <button 
-                onClick={handleMarkAllAsRead}
-                style={{
-                  background: 'none', border: 'none', color: '#3b82f6', fontSize: '12px', cursor: 'pointer', padding: 0
-                }}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {notificationPermission === 'default' && (
+                <button 
+                  onClick={requestNotificationPermission}
+                  style={{ background: '#e0e7ff', border: '1px solid #c7d2fe', color: '#4f46e5', fontSize: '11px', cursor: 'pointer', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}
+                >
+                  🔔 Bật thông báo
+                </button>
+              )}
+              {unreadCount > 0 && (
+                <button 
+                  onClick={handleMarkAllAsRead}
+                  style={{
+                    background: 'none', border: 'none', color: '#3b82f6', fontSize: '12px', cursor: 'pointer', padding: 0
+                  }}
+                >
+                  Đã đọc tất cả
+                </button>
+              )}
+              <button
+                  onClick={(e) => { e.stopPropagation(); setShowSettings(true); setIsOpen(false); }}
+                  title="Cài đặt thông báo"
+                  style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center' }}
               >
-                Đánh dấu đã đọc tất cả
+                  <Settings size={16} />
               </button>
-            )}
+            </div>
           </div>
 
           <div style={{ overflowY: 'auto', flex: 1 }}>
@@ -206,7 +266,7 @@ const NotificationBell = ({ currentUser }) => {
                       {notif.message}
                     </div>
                     <div style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', justifyContent: 'space-between' }}>
-                      <span>{new Date(notif.created_at).toLocaleString('vi-VN')}</span>
+                      <span>{new Date(notif.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</span>
                       {notif.link && <ExternalLink size={12} />}
                     </div>
                   </div>
@@ -215,6 +275,13 @@ const NotificationBell = ({ currentUser }) => {
             )}
           </div>
         </div>
+      )}
+
+      {showSettings && (
+        <NotificationSettingsModal 
+            currentUser={currentUser} 
+            onClose={() => setShowSettings(false)} 
+        />
       )}
     </div>
   );

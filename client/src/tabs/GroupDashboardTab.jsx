@@ -331,7 +331,7 @@ const GroupDashboardTab = () => {
             Tổng quan Group Dashboard 👋
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px', color: '#64748b' }}>
-            <span>Cập nhật: {new Date().toLocaleDateString('vi-VN')} {new Date().toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</span>
+            <span>Cập nhật: {new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })} {new Date().toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute:'2-digit'})}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px', fontWeight: '600' }}>
               <Activity size={12} /> Dữ liệu real-time
             </span>

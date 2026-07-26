@@ -22,14 +22,14 @@ const MyProfileTab = ({ currentUser, addToast, onUpdateUser }) => {
         full_name: res.data.full_name || '',
         email: res.data.email || '',
         phone: res.data.phone || '',
-        birth_date: res.data.birth_date ? new Date(res.data.birth_date).toLocaleDateString('en-CA') : '',
+        birth_date: res.data.birth_date ? new Date(res.data.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
         gender: res.data.gender || '',
         id_card: res.data.id_card || '',
         passport_url: res.data.passport_url || '',
-        id_expiry: res.data.id_expiry ? new Date(res.data.id_expiry).toLocaleDateString('en-CA') : '',
+        id_expiry: res.data.id_expiry ? new Date(res.data.id_expiry).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
         address: res.data.address || '',
         facebook_url: res.data.facebook_url || '',
-        created_at: res.data.created_at ? new Date(res.data.created_at).toLocaleDateString('en-CA') : '',
+        created_at: res.data.created_at ? new Date(res.data.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
         position: res.data.position || '',
         avatar_url: res.data.avatar_url || ''
       });
@@ -176,7 +176,7 @@ const MyProfileTab = ({ currentUser, addToast, onUpdateUser }) => {
         </div>
         <div style={{ textAlign: 'right', fontSize: '0.75rem', opacity: 0.7 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
-            <Clock size={12} /> Gia nhập: {new Date(profile.created_at).toLocaleDateString('vi-VN')}
+            <Clock size={12} /> Gia nhập: {new Date(profile.created_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
           </div>
         </div>
       </div>
@@ -200,7 +200,7 @@ const MyProfileTab = ({ currentUser, addToast, onUpdateUser }) => {
             <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
               <label>ẢNH ĐẠI DIỆN (AVATAR) - Tỷ lệ vuông 1:1</label>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <input className="modal-input" disabled value={formData.avatar_url || ''} placeholder="Đường dẫn ảnh..." style={{ flex: 1 }} />
+                <input className="modal-input" value={formData.avatar_url || ''} onChange={e => setFormData({...formData, avatar_url: e.target.value})} placeholder="Đường dẫn ảnh (có thể dán link trực tiếp)..." style={{ flex: 1 }} />
                 <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '0.6rem 1rem', background: '#e0e7ff', color: '#4338ca', fontWeight: 600, borderRadius: '8px', whiteSpace: 'nowrap', fontSize: '0.85rem' }}>
                   📸 Tải ảnh lên
                   <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUploadAvatar} />

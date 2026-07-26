@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../../utils/dateUtils';
 import { X, PlusCircle, LogOut, AlertTriangle, ExternalLink } from 'lucide-react';
 import SearchableSelect from '../common/SearchableSelect';
 import axios from 'axios';
@@ -162,7 +163,7 @@ const AddLeadModal = ({
             <input 
               className="modal-input" 
               type="datetime-local" 
-              value={newLead.last_contacted_at ? new Date(new Date(newLead.last_contacted_at).getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : ''} 
+              value={newLead.last_contacted_at ? getLocalDateTimeLocal(new Date(newLead.last_contacted_at)) : ''} 
               onChange={e => setNewLead({...newLead, last_contacted_at: e.target.value})} 
             />
           </div>

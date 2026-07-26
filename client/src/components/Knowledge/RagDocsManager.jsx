@@ -32,7 +32,8 @@ const RagDocsManager = () => {
         { value: 'BU1', label: 'BU1' },
         { value: 'BU2', label: 'BU2' },
         { value: 'BU3', label: 'BU3' },
-        { value: 'BU4', label: 'BU4' }
+        { value: 'BU4', label: 'BU4' },
+        { value: 'BU5', label: 'BU5' }
     ];
 
     const [formData, setFormData] = useState({

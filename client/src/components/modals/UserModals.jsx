@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, UserPlus, Save, LogOut, Shield, Mail, User, Lock, Trash2 } from 'lucide-react';
+import { X, UserPlus, Save, LogOut, Shield, Mail, User, Lock, Trash2, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import Select from 'react-select';
 import { formatRoleDisplayName } from '../../utils/roleUtils';
@@ -149,12 +149,12 @@ export const EditUserModal = ({
         full_name: user.full_name || '', email: user.email || '', phone: user.phone || '',
         role_id: user.role_id || '', is_active: user.is_active !== false, permissions: user.permissions || {},
         bus: user.bus || [],
-        birth_date: user.birth_date ? new Date(user.birth_date).toLocaleDateString('en-CA') : '',
+        birth_date: user.birth_date ? new Date(user.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
         gender: user.gender || '', id_card: user.id_card || '',
         passport_url: user.passport_url || '',
-        id_expiry: user.id_expiry ? new Date(user.id_expiry).toLocaleDateString('en-CA') : '',
+        id_expiry: user.id_expiry ? new Date(user.id_expiry).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
         address: user.address || '', facebook_url: user.facebook_url || '',
-        created_at: user.created_at ? new Date(user.created_at).toLocaleDateString('en-CA') : '',
+        created_at: user.created_at ? new Date(user.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
         position: user.position || '', avatar_url: user.avatar_url || '', telegram_user_id: user.telegram_user_id || ''
       });
     }
@@ -384,6 +384,7 @@ export const ChangePasswordModal = ({
   onSave 
 }) => {
   const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   if (!user) return null;
 
@@ -399,15 +400,49 @@ export const ChangePasswordModal = ({
           <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Cho người dùng: <strong>{user.username}</strong></p>
         </div>
 
-        <div className="modal-form-group">
-          <label>MẬT KHẨU MỚI</label>
-          <input className="modal-input" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Nhập mật khẩu mới..." />
-        </div>
+        <form onSubmit={e => { e.preventDefault(); onSave(user.id, newPassword); setNewPassword(''); }}>
+          {/* Hidden username field for browser password managers */}
+          <input type="text" name="username" autoComplete="username" value={user.email || user.username || ''} style={{display: 'none'}} readOnly />
+          
+          <div className="modal-form-group">
+            <label>MẬT KHẨU MỚI</label>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input 
+                name="password"
+                autoComplete="new-password"
+                className="modal-input" 
+                type={showPassword ? 'text' : 'password'} 
+                value={newPassword} 
+                onChange={e => setNewPassword(e.target.value)} 
+                placeholder="Nhập mật khẩu mới..." 
+                style={{ paddingRight: '40px', width: '100%' }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0
+                }}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
 
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-          <button className="btn-pro-save" style={{ flex: 1 }} onClick={() => { onSave(user.id, newPassword); setNewPassword(''); }}>XÁC NHẬN ĐỔI</button>
-          <button className="btn-pro-cancel" style={{ flex: 1 }} onClick={onClose}>HỦY</button>
-        </div>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+            <button type="submit" className="btn-pro-save" style={{ flex: 1 }}>XÁC NHẬN ĐỔI</button>
+            <button type="button" className="btn-pro-cancel" style={{ flex: 1 }} onClick={onClose}>HỦY</button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Search, Send, Clock, Edit3, MessageSquare, CheckCircle, Smartphone, Plus, X, UserPlus, Phone, List, Package } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
 import axios from 'axios';
+import { getLocalIsoString } from '../utils/dateUtils';
 
 const DispatcherCenterTab = ({
   currentUser,
+  allLeads,
   filteredLeads,
   leadFilters,
   setLeadFilters,
@@ -65,16 +67,28 @@ const DispatcherCenterTab = ({
     try {
       const token = localStorage.getItem('token');
       await axios.put(`/api/leads/${leadId}`, {
-        is_recall: true
+        is_recall: true,
+        recalled_by_name: currentUser?.full_name || 'Điều phối viên'
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      // Update local state immediately
+      setDispatcherLeads(prev => prev.map(l => l.id === leadId ? {
+        ...l,
+        dispatched_at: null,
+        dispatched_by: null,
+        dispatched_by_name: null,
+        assigned_to: null
+      } : l));
+
       if (onLeadsUpdated) {
         onLeadsUpdated();
       }
+      alert('🚫 Đã thu hồi lượt Điều phối Lead thành công!');
     } catch (error) {
       console.error('Error recalling dispatch:', error);
-      alert('Có lỗi xảy ra khi Thu hồi. Vui lòng thử lại.');
+      alert('Có lỗi xảy ra khi Thu hồi: ' + (error.response?.data?.message || error.message));
     } finally {
       setLoadingActionId(null);
     }
@@ -87,22 +101,48 @@ const DispatcherCenterTab = ({
           const note = localNotes[leadId] !== undefined ? localNotes[leadId] : (leadToPush?.dispatcher_notes || '');
           const market = localMarkets[leadId] !== undefined ? localMarkets[leadId] : (leadToPush?.market_collection || '');
           
+          const nowIso = getLocalIsoString();
+          const token = localStorage.getItem('token');
           await axios.put(`/api/leads/${leadId}`, {
               dispatcher_notes: note,
               market_collection: market,
-              dispatched_at: new Date().toISOString(),
+              dispatched_at: nowIso,
               dispatched_by: currentUser.id,
               dispatched_by_name: currentUser.full_name
           }, {
-              headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+              headers: { Authorization: `Bearer ${token}` }
           });
+
+          // LƯU GHI CHÚ ĐIỀU PHỐI VÀO LỊCH SỬ TƯ VẤN (NOTES)
+          if (note && note.trim() !== '') {
+            try {
+              await axios.post('/api/notes', 
+                { lead_id: leadId, content: `[Ghi chú Điều phối]: ${note}` },
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+            } catch (noteErr) {
+              console.error('Error saving dispatcher note to history:', noteErr);
+            }
+          }
+
+          // Update local state immediately
+          setDispatcherLeads(prev => prev.map(l => l.id === leadId ? {
+              ...l,
+              dispatcher_notes: note,
+              market_collection: market,
+              dispatched_at: nowIso,
+              dispatched_by: currentUser.id,
+              dispatched_by_name: currentUser.full_name
+          } : l));
           
           if (onLeadsUpdated) {
             onLeadsUpdated();
           }
           
+          alert('✅ Đã duyệt và Push Lead lên Global Chat thành công!');
       } catch (err) {
           console.error('Error dispatching lead:', err);
+          alert('❌ Lỗi khi push Lead: ' + (err.response?.data?.message || err.message));
       } finally {
           setLoadingActionId(null);
       }
@@ -135,13 +175,6 @@ const DispatcherCenterTab = ({
 
   return (
     <div className="fade-in">
-      <div className="table-header" style={{ marginBottom: '16px' }}>
-        <h2>Trung tâm Điều phối Lead</h2>
-        <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
-          Màn hình dành cho Điều phối viên xử lý và push Lead.
-        </p>
-      </div>
-      
       <div className="filter-bar" style={{ display: 'flex', flexDirection: 'column-reverse', gap: '1rem' }}>
         <div className="lead-filter-grid">
           <div className="filter-group">
@@ -311,6 +344,24 @@ const DispatcherCenterTab = ({
                   rowStyle = { background: '#fff7ed', opacity: 1 }; // Đã gửi thông báo, chưa có sale (Cam nhạt)
                 }
               }
+
+              const duplicateLead = allLeads?.find(l => {
+                if (l.id === lead.id || l.status === 'won' || l.status === 'lost') return false;
+                const lPhone = l.phone ? String(l.phone).trim() : '';
+                const leadPhone = lead.phone ? String(lead.phone).trim() : '';
+                const lFB = l.facebook_psid ? String(l.facebook_psid).trim() : '';
+                const leadFB = lead.facebook_psid ? String(lead.facebook_psid).trim() : '';
+                const lEmail = l.email ? String(l.email).trim() : '';
+                const leadEmail = lead.email ? String(lead.email).trim() : '';
+
+                if (lPhone !== '' && lPhone === leadPhone) return true;
+                if (lFB !== '' && lFB === leadFB) return true;
+                if (lEmail !== '' && lEmail === leadEmail) return true;
+                
+                return false;
+              });
+              const duplicateSaleName = duplicateLead ? (users?.find(u => u.id === duplicateLead.assigned_to)?.full_name || 'Chưa phân công') : '';
+
               return (
               <tr key={lead.id} style={rowStyle}>
                 <td data-label="Ngày Tạo" style={{ color: '#64748b', fontSize: '0.85rem' }}>
@@ -320,10 +371,10 @@ const DispatcherCenterTab = ({
                         style={{ fontWeight: 600, color: '#2563eb', cursor: 'pointer', textDecoration: 'underline' }}
                         onClick={() => setEditingLead(lead)}
                       >
-                        {new Date(lead.created_at).toLocaleDateString('vi-VN')}
+                        {new Date(lead.created_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                       </span>
                     </div>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(lead.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(lead.created_at).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh',  hour: '2-digit', minute: '2-digit' })}</span>
                     {lead.facebook_psid && (
                       <button
                         onClick={(e) => { e.stopPropagation(); navigateToInbox && navigateToInbox(lead.facebook_psid); }}
@@ -345,8 +396,20 @@ const DispatcherCenterTab = ({
                 </td>
                 <td data-label="Thông Tin Lead">
                   <div className="lead-info">
-                    <span className="lead-name" style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {lead.name}
+                    <span className="lead-name" style={{ fontWeight: 700, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {lead.name}
+                        {lead.is_returning_customer && (
+                          <span style={{ fontSize: '0.65rem', background: '#f3e8ff', color: '#9333ea', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }} title="Khách VVIP đã từng booking.">
+                            🎖️ KHÁCH QUEN {lead.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(lead.total_spent)}đ)` : ''}
+                          </span>
+                        )}
+                      </div>
+                      {duplicateLead && (
+                        <div style={{ fontSize: '0.7rem', color: '#dc2626', background: '#fee2e2', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px', width: 'max-content', border: '1px solid #fca5a5' }}>
+                          <AlertTriangle size={12} /> TRÙNG KHÁCH ĐANG CHĂM SÓC ({duplicateSaleName})
+                        </div>
+                      )}
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
                       <span 
@@ -376,6 +439,7 @@ const DispatcherCenterTab = ({
                       value={lead.tour_id}
                       onChange={(val) => handleQuickUpdate && handleQuickUpdate(lead.id, 'tour_id', val)}
                       placeholder="Chọn tour..."
+                      shortLabel={true}
                       style={{ 
                         border: 'none', 
                         background: 'transparent',
@@ -492,12 +556,12 @@ const DispatcherCenterTab = ({
                   ) : (
                     <button 
                       className="btn-pro-save" 
-                      style={{ padding: '8px 16px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', margin: '0 auto', width: '100%' }}
+                      style={{ padding: '8px 8px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', margin: '0 auto', width: '100%', whiteSpace: 'nowrap' }}
                       onClick={() => handlePush(lead.id)}
                       disabled={loadingActionId === lead.id}
                     >
                       {loadingActionId === lead.id ? <Clock size={16} className="spin" /> : <Send size={16} />}
-                      Duyệt & Push
+                      Gửi Đi
                     </button>
                   )}
                 </td>

@@ -49,22 +49,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const targets = {
         'BU1': { budget: 120000000, leads: 450, color: 'rgba(59, 130, 246, 0.8)' },
         'BU2': { budget: 150000000, leads: 375, color: 'rgba(16, 185, 129, 0.8)' },
-        'BU4': { budget: 60000000, leads: 300, color: 'rgba(245, 158, 11, 0.8)' }
+        'BU4': { budget: 60000000, leads: 300, color: 'rgba(245, 158, 11, 0.8)' },
+        'BU5': { budget: 50000000, leads: 250, color: 'rgba(249, 115, 22, 0.8)' }
     };
-    const buLabels = ['BU1', 'BU2', 'BU4'];
+    const buLabels = ['BU1', 'BU2', 'BU4', 'BU5'];
 
     // Fetch Data
     fetch('ads_data.json')
         .then(res => res.json())
         .then(data => {
-            const validData = data.filter(d => ['BU1', 'BU2', 'BU4'].includes(d.bu_name));
+            const validData = data.filter(d => ['BU1', 'BU2', 'BU4', 'BU5'].includes(d.bu_name));
 
             let totalSpend = 0; let totalLeads = 0;
-            const spendByBU = { 'BU1': 0, 'BU2': 0, 'BU4': 0 };
-            const leadsByBU = { 'BU1': 0, 'BU2': 0, 'BU4': 0 };
+            const spendByBU = { 'BU1': 0, 'BU2': 0, 'BU4': 0, 'BU5': 0 };
+            const leadsByBU = { 'BU1': 0, 'BU2': 0, 'BU4': 0, 'BU5': 0 };
             const trendData = { 4: { spend: 0, leads: 0 }, 5: { spend: 0, leads: 0 }, 6: { spend: 0, leads: 0 } };
             const allCampaigns = {}; // Flat list for global Best/Worst
-            const campaignsByBU = { 'BU1': {}, 'BU2': {}, 'BU4': {} };
+            const campaignsByBU = { 'BU1': {}, 'BU2': {}, 'BU4': {}, 'BU5': {} };
             const chunkString = (str, length) => {
                 if (!str) return [];
                 const words = str.split(' ');
@@ -101,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (name.includes('SIKKIM')) return 'Sikkim';
                 return 'Khác';
             };
-            const destByBU = { 'BU1': {}, 'BU2': {}, 'BU4': {} };
+            const destByBU = { 'BU1': {}, 'BU2': {}, 'BU4': {}, 'BU5': {} };
 
 
             validData.forEach(row => {
@@ -114,12 +115,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 let rawCamp = (row.campaign_name || '') + ' - ' + (row.ad_set_name || '');
                 // Smart rename: remove repetitive prefixes/suffixes
                 const ignores = [
-                    '\\[BU1\\]', '\\[BU2\\]', '\\[BU4\\]',
-                    'BU1 - ', 'BU2 - ', 'BU4 - ',
+                    '\\[BU1\\]', '\\[BU2\\]', '\\[BU4\\]', '\\[BU5\\]',
+                    'BU1 - ', 'BU2 - ', 'BU4 - ', 'BU5 - ',
                     'CHIẾN DỊCH TRUNG QUỐC', 'CHẠY QUẢNG CÁO TRUNG QUỐC', 'CHIẾN DỊCH', 'CHẠY QUẢNG CÁO',
                     'QUÝ 2 - 3 - 2026', 'QUÝ 2', '2026',
                     '- TIN NHẮN', 'TIN NHẮN -', 'CHẠY THEO NGÀY',
-                    'NỬA CUỐI', 'Bản sao', 'QC BU4', '- Hàng ngày 100k', '-> HẾT NĂM', 'CHẠY CUỐI NĂM', 'BÀI TỔNG', 'TƯƠNG TÁC'
+                    'NỬA CUỐI', 'Bản sao', 'QC BU4', 'QC BU5', '- Hàng ngày 100k', '-> HẾT NĂM', 'CHẠY CUỐI NĂM', 'BÀI TỔNG', 'TƯƠNG TÁC'
                 ];
                 let pattern = new RegExp(ignores.join('|'), 'gi');
                 let smartName = rawCamp.replace(pattern, '').replace(/[-_\[\]]/g, ' ').replace(/\s+/g, ' ').trim();

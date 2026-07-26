@@ -1,3 +1,4 @@
+import './utils/datePatch';
 import ErrorBoundary from "./ErrorBoundary";
 import React from 'react'
 import ReactDOM from 'react-dom/client'

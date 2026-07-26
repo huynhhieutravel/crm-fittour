@@ -58,7 +58,7 @@ export default function PaymentVouchersTab() {
     const ws = XLSX.utils.json_to_sheet(filteredVouchers.map((v, i) => ({
       'STT': i + 1,
       'Số chứng từ': v.voucher_code,
-      'Ngày chứng từ': new Date(v.created_at).toLocaleString('vi-VN'),
+      'Ngày chứng từ': new Date(v.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }),
       'Thuộc Tour': v.tour_code,
       'Tên phiếu thu': v.title,
       'Số tiền thu': Number(v.amount),
@@ -222,8 +222,8 @@ export default function PaymentVouchersTab() {
               <tr><td colSpan="15" style={{ padding: '30px', color: '#64748b' }}>Không tìm thấy phiếu thu nào.</td></tr>
             ) : (
               filteredVouchers.map((v, i) => {
-                const dateStr = new Date(v.created_at).toLocaleDateString('vi-VN');
-                const timeStr = new Date(v.created_at).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                const dateStr = new Date(v.created_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', });
+                const timeStr = new Date(v.created_at).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute:'2-digit'});
                 return (
                  <tr key={v.id} style={{ borderBottom: '1px solid #f1f5f9', background: '#fff' }}>
                   <td style={{ padding: '15px 12px' }}><input type="checkbox" /></td>

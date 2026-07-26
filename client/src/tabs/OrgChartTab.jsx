@@ -397,6 +397,31 @@ const OrgChartTab = ({ currentUser, addToast }) => {
         });
 
         // ═══════════════════════════════════════════
+        //  6.5. KHỐI SALE BU5 (Tách từ BU2)
+        // ═══════════════════════════════════════════
+        const bu5Id = mkId();
+        addNode(bu5Id, 1070, 280, 'Khối Sale BU5', '', 'BU');
+        addEdge(viceId, bu5Id);
+
+        const bu5Head = mkId();
+        addNode(bu5Head, 1060, 390, 'Lê Minh Tuấn', 'Quản lý kiêm nhiệm BU5', 'MANAGER');
+        linkUser(bu5Head, 'gu1.sale');
+        addEdge(bu5Id, bu5Head, greenEdge);
+
+        const bu5Staff = [
+            { name: 'Bùi Ngọc Hiếu', pos: 'Phó phòng sales', user: 'gu2.sale' },
+            { name: 'Dương Quỳnh Như', pos: 'sales', user: 'gu4.sale' },
+            { name: 'Nguyễn Thị Hằng', pos: 'Điều hành', user: 'hang.dh' },
+            { name: 'Lê Thanh Hà', pos: 'Điều hành', user: 'ha.dh' },
+        ];
+        bu5Staff.forEach((s, i) => {
+            const sId = mkId();
+            addNode(sId, 1060, 510 + i * 100, s.name, s.pos, getStaffRole(s.pos));
+            linkUser(sId, s.user);
+            addEdge(bu5Head, sId, greenEdge);
+        });
+
+        // ═══════════════════════════════════════════
         //  7. KẾ TOÁN
         // ═══════════════════════════════════════════
         const ktId = mkId();
@@ -644,7 +669,7 @@ const OrgChartTab = ({ currentUser, addToast }) => {
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
                                     <span style={{ color: '#94a3b8' }}>Ngày tham gia:</span>
-                                    <span style={{ fontWeight: 600, color: '#1e293b' }}>{viewingUser.created_at ? new Date(viewingUser.created_at).toLocaleDateString('vi-VN') : '-'}</span>
+                                    <span style={{ fontWeight: 600, color: '#1e293b' }}>{viewingUser.created_at ? new Date(viewingUser.created_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '-'}</span>
                                 </div>
                             </div>
 

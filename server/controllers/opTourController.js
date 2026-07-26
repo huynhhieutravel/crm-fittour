@@ -352,7 +352,7 @@ exports.addOpTourBooking = async (req, res) => {
     let assignId = req.user ? req.user.id : null;
     let assignName = req.user ? (req.user.full_name || req.user.username || 'Sales') : 'Sales';
     
-    if (isPrivileged && bookingData.created_by) {
+    if ((isPrivileged || isNewBooking) && bookingData.created_by) {
         assignId = bookingData.created_by;
         assignName = bookingData.created_by_name || assignName;
     }

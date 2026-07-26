@@ -38,6 +38,12 @@ const EVENT_VARIABLES = {
     { code: 'email', label: 'Email' },
     { code: 'source', label: 'Nguồn' }
   ],
+  MONTHLY_REVIEWS_STATS: [
+    { code: 'month', label: 'Tháng báo cáo (VD: 07/2026)' },
+    { code: 'total_reviews', label: 'Tổng số đánh giá' },
+    { code: 'avg_rating', label: 'Điểm trung bình' },
+    { code: 'rich_reviews', label: 'Đánh giá có >= 5 ảnh' }
+  ],
   LEAD_ASSIGNED: [
     { code: 'lead_name', label: 'Tên Lead' },
     { code: 'assigned_to', label: 'Người nhận' },

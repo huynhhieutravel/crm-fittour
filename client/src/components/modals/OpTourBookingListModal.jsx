@@ -1,6 +1,7 @@
 import { swalConfirm } from '../../utils/swalHelpers';
 import React, { useState } from 'react';
-import { X, Trash2, Edit2, CheckCircle, Mail, DollarSign, RefreshCw, FileText, UserPlus, Users, Download, ArrowRight, AlertTriangle } from 'lucide-react';
+import { X, Trash2, Edit2, CheckCircle, Mail, DollarSign, RefreshCw, FileText, UserPlus, Users, Download, ArrowRight, AlertTriangle, Search, FileDown, MapPin, Calendar, Clock } from 'lucide-react';
+import { getLocalDateString } from '../../utils/dateUtils';
 import Select from 'react-select';
 import axios from 'axios';
 import * as XLSX from 'xlsx-js-style';
@@ -85,8 +86,8 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
       else if (m.ageType?.includes('Trẻ nhỏ') || m.ageType?.includes('Em bé')) countTN++;
     });
 
-    const departDate = tour?.start_date ? new Date(tour.start_date).toLocaleDateString('vi-VN') : '';
-    const closingDate = tour?.end_date ? new Date(tour.end_date).toLocaleDateString('vi-VN') : '';
+    const departDate = tour?.start_date ? new Date(tour.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '';
+    const closingDate = tour?.end_date ? new Date(tour.end_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '';
 
     const pickupPoint = tour?.tour_info?.pickup_point || '';
     const dropoffPoint = tour?.tour_info?.dropoff_point || '';
@@ -198,7 +199,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
     XLSX.utils.book_append_sheet(wb, ws, 'Danh sách khách');
     const safeTourName = (tour?.tour_code || 'Tour').replace(/[\s\/\\]+/g, '_');
     const safeBooking = (bookingName || 'Khach').replace(/[\s\/\\]+/g, '_');
-    XLSX.writeFile(wb, `DanhSach_${safeTourName}_${safeBooking}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(wb, `DanhSach_${safeTourName}_${safeBooking}_${getLocalDateString()}.xlsx`);
   };
 
   const exportChinaTourXlsx = (members, bookingName, bookingNote = '') => {
@@ -411,7 +412,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
     XLSX.utils.book_append_sheet(wb, ws, 'Danh sách khách TQ');
     const safeTourName = (tour?.tour_code || 'Tour').replace(/[\s\/\\]+/g, '_');
     const safeBooking = (bookingName || 'Khach').replace(/[\s\/\\]+/g, '_');
-    XLSX.writeFile(wb, `DS_TQ_${safeTourName}_${safeBooking}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(wb, `DS_TQ_${safeTourName}_${safeBooking}_${getLocalDateString()}.xlsx`);
   };
   // Calculate top cards stats
   const formatMoney = (val) => Number(val || 0).toLocaleString('vi-VN');
@@ -530,7 +531,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                     
                     const formatDate = (iso) => {
                        if (!iso) return '---';
-                       try { return new Date(iso).toLocaleDateString('vi-VN'); } catch(e) { return iso; }
+                       try { return new Date(iso).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }); } catch(e) { return iso; }
                     };
 
                     const firstMember = members[0] || {};
@@ -608,7 +609,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                            <div style={{ marginBottom: '4px' }}><b>Giá NL:</b> {formatMoney(raw.pricingRows?.[0]?.price || 0)}</div>
                         </td>
                         <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'middle', fontSize: '12px' }}>
-                           <div style={{ color: '#1d4ed8', fontWeight: 'bold' }}>T.Gian đặt: {bdt.toLocaleDateString('vi-VN')} {bdt.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</div>
+                           <div style={{ color: '#1d4ed8', fontWeight: 'bold' }}>T.Gian đặt: {bdt.toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} {bdt.toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute:'2-digit'})}</div>
                            <div style={{ marginTop: '8px', background: '#fbcfe8', color: '#be185d', padding: '4px 8px', borderRadius: '12px', display: 'inline-block', fontWeight: 'bold' }}>Mã đặt chỗ:{bInfo.reservationCode || String(b.id || '').substring(0,6) || '---'}</div>
                         </td>
                         <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'middle' }}>11/04/2026</td>
@@ -927,7 +928,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                           <div><strong>Trạng thái:</strong> <span style={{ background: '#dcfce7', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>{t.status}</span></div>
                           <div><strong>Còn trống:</strong> <span style={{ color: remaining <= 0 ? '#ef4444' : '#15803d', fontWeight: 'bold' }}>{remaining}</span> / {totalSeats} chỗ</div>
                           <div><strong>Giá Gốc (Người lớn):</strong> {priceStr}</div>
-                          <div style={{ gridColumn: '1 / -1' }}><strong>Khởi hành:</strong> {t.start_date ? new Date(t.start_date).toLocaleDateString('vi-VN') : '---'} <ArrowRight size={12} style={{ margin: '0 5px', verticalAlign: 'middle' }}/> {t.end_date ? new Date(t.end_date).toLocaleDateString('vi-VN') : '---'}</div>
+                          <div style={{ gridColumn: '1 / -1' }}><strong>Khởi hành:</strong> {t.start_date ? new Date(t.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '---'} <ArrowRight size={12} style={{ margin: '0 5px', verticalAlign: 'middle' }}/> {t.end_date ? new Date(t.end_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '---'}</div>
                        </div>
                     </div>
                  )

@@ -185,7 +185,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}>Ngày sinh</div>
-                    <div style={{ fontWeight: 500 }}>{customer.birth_date ? new Date(customer.birth_date).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</div>
+                    <div style={{ fontWeight: 500 }}>{customer.birth_date ? new Date(customer.birth_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'Chưa cập nhật'}</div>
                   </div>
                   <div>
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}>Giới tính</div>
@@ -226,7 +226,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                   </div>
                   <div>
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}>Ngày chốt đơn đầu tiên</div>
-                    <div style={{ fontWeight: 500 }}>{customer.first_deal_date ? new Date(customer.first_deal_date).toLocaleDateString('vi-VN') : 'Chưa có'}</div>
+                    <div style={{ fontWeight: 500 }}>{customer.first_deal_date ? new Date(customer.first_deal_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'Chưa có'}</div>
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}>Nhân viên chăm sóc</div>
@@ -316,7 +316,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                       <span className="badge badge-priority-medium">{b.booking_status}</span>
                     </div>
                     <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '8px' }}>
-                      <Calendar size={12} style={{marginRight:'4px', display:'inline'}} /> Khởi hành: {b.departure_date ? new Date(b.departure_date).toLocaleDateString('vi-VN') : 'N/A'}
+                      <Calendar size={12} style={{marginRight:'4px', display:'inline'}} /> Khởi hành: {b.departure_date ? new Date(b.departure_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'N/A'}
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #f1f5f9', paddingTop: '8px', marginTop: '8px' }}>
                       <span style={{ fontSize: '0.85rem' }}>{b.passengers_count} khách</span>
@@ -341,7 +341,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                     <option value="MEETING">Hẹn gặp</option>
                     <option value="OTHER">Khác</option>
                   </select>
-                  <input type="date" className="modal-input" style={{ flex: 1 }} value={newEvent.event_date ? new Date(newEvent.event_date).toLocaleDateString('en-CA') : ''} onChange={e => setNewEvent({...newEvent, event_date: e.target.value})} />
+                  <input type="date" className="modal-input" style={{ flex: 1 }} value={newEvent.event_date ? new Date(newEvent.event_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : ''} onChange={e => setNewEvent({...newEvent, event_date: e.target.value})} />
                   <button className="btn-pro-save" onClick={handleAddEventSubmit}>{editingEventId ? 'Lưu' : 'Tạo'}</button>
                   {editingEventId && (
                     <button className="btn-ghost" style={{ padding: '0 12px' }} onClick={() => { setEditingEventId(null); setNewEvent({ title: '', event_type: 'CALL', event_date: '' }); }}>Hủy</button>
@@ -369,7 +369,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                           </div>
                           {event.description && <p style={{ margin: '0 0 4px 0', fontSize: '0.85rem', color: '#64748b' }}>{event.description}</p>}
                           <div style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', gap: '16px' }}>
-                            <span>📅 {new Date(event.event_date).toLocaleDateString('vi-VN')}</span>
+                            <span>📅 {new Date(event.event_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</span>
                             {event.creator_name && <span>👤 Tạo bởi: {event.creator_name}</span>}
                           </div>
                         </div>
@@ -432,7 +432,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.75rem', color: '#64748b' }}>
                           <span style={{ fontWeight: 600, color: '#3b82f6' }}>{note.creator_name || 'Hệ thống'}</span>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Clock size={12} /> {new Date(note.created_at).toLocaleString('vi-VN')}
+                            <Clock size={12} /> {new Date(note.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                           </span>
                         </div>
                         <div style={{ color: '#1e293b', fontSize: '0.9rem', lineHeight: '1.4' }}>

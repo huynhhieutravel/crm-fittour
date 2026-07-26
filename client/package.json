@@ -19,6 +19,7 @@
     "ckeditor4-react": "^5.2.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.20",
+    "emoji-picker-react": "^4.19.1",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.473.0",
     "mrz": "^5.0.2",

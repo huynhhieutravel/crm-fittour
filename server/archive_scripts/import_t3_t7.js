@@ -3,7 +3,7 @@ const db = require('./db');
 const path = require('path');
 
 async function importData() {
-  const filePath = path.join(__dirname, 'qc-t5-t6-2026.xlsx');
+  const filePath = path.join(__dirname, 'qc-t3-t7-2026.xlsx');
   console.log(`Reading file: ${filePath}`);
   
   const workbook = XLSX.readFile(filePath);
@@ -29,20 +29,23 @@ async function importData() {
     else if (campaign.includes('BU2')) detectedBu = 'BU2';
     else if (campaign.includes('BU3')) detectedBu = 'BU3';
     else if (campaign.includes('BU4')) detectedBu = 'BU4';
+    else if (campaign.includes('BU5')) detectedBu = 'BU5';
 
     if (!detectedBu) {
       if (adSet.includes('BU1')) detectedBu = 'BU1';
       else if (adSet.includes('BU2')) detectedBu = 'BU2';
       else if (adSet.includes('BU3')) detectedBu = 'BU3';
       else if (adSet.includes('BU4')) detectedBu = 'BU4';
+      else if (adSet.includes('BU5')) detectedBu = 'BU5';
     }
 
     if (!detectedBu) {
       const allText = `${campaign} ${adSet} ${ad}`;
       if (allText.includes('TRUNG QUỐC') || allText.includes('BẮC KINH') || allText.includes('THƯỢNG HẢI') || allText.includes('Á ĐINH') || allText.includes('GIANG NAM') || allText.includes('LỆ GIANG') || allText.includes('GIANG TÂY')) detectedBu = 'BU1';
-      else if (allText.includes('ALASKA') || allText.includes('NAM MỸ') || allText.includes('CHÂU ÂU') || allText.includes('SILKROAD') || allText.includes('AI CẬP')) detectedBu = 'BU2';
+      else if (allText.includes('CHÂU ÂU') || allText.includes('ÚC')) detectedBu = 'BU2';
       else if (allText.includes('HÀN QUỐC') || allText.includes('NHẬT BẢN') || allText.includes('ĐÀI LOAN')) detectedBu = 'BU3';
       else if (allText.includes('BALI') || allText.includes('BHUTAN') || allText.includes('LADAKH') || allText.includes('BROMO')) detectedBu = 'BU4';
+      else if (allText.includes('ALASKA') || allText.includes('BẮC MỸ') || allText.includes('BẮC CỰC') || allText.includes('NAM MỸ') || allText.includes('MÔNG CỔ') || allText.includes('MONGOLIA') || allText.includes('SILKROAD') || allText.includes('CON ĐƯỜNG TƠ LỤA') || allText.includes('TRUNG Á') || allText.includes('THỔ NHĨ KỲ') || allText.includes('MA RỐC') || allText.includes('AFRICA') || allText.includes('CHÂU PHI') || allText.includes('CANADA') || allText.includes('MỸ')) detectedBu = 'BU5';
     }
 
     if (!detectedBu) detectedBu = 'UNKNOWN';
@@ -67,8 +70,8 @@ async function importData() {
   });
 
   const year = 2026;
-  const month = 6;
-  const week_number = 5;
+  const month = 7;
+  const week_number = 3;
 
   console.log(`Parsed groups:`, Object.keys(groups));
 

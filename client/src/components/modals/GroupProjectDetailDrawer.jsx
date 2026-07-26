@@ -124,7 +124,7 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
             // Create new leader on the fly if needed
             if (isAddingLeader && newLeaderName.trim()) {
                 const leaderRes = await axios.post('/api/group-leaders', 
-                    { name: newLeaderName.trim(), source: 'Dự án MICE', status: 'Tiềm năng' }, 
+                    { name: newLeaderName.trim(), source: 'Dự án MICE' }, 
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 payload.group_leader_id = leaderRes.data.id;

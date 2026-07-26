@@ -91,6 +91,11 @@ export const AddTemplateModal = ({
             <input className="modal-input" value={newTemplate.tags} onChange={e => setNewTemplate({...newTemplate, tags: e.target.value})} placeholder="Trekking, Văn hóa, Nghỉ dưỡng..." />
           </div>
           <div className="modal-form-group">
+            <label>TỪ KHOÁ TỰ ĐỘNG GÁN SẢN PHẨM (TỪ MESSENGER)</label>
+            <p style={{fontSize: '0.75rem', color: '#666', marginBottom: '6px', lineHeight: '1.2'}}>Hệ thống sẽ tự động gán khách vào Tour này nếu tin nhắn chứa các từ khoá trên (cách nhau bằng dấu phẩy). Bỏ trống nếu không chắc.</p>
+            <input className="modal-input" value={newTemplate.keywords || ''} onChange={e => setNewTemplate({...newTemplate, keywords: e.target.value})} placeholder="Vd: lệ giang, cửu trại câu..." />
+          </div>
+          <div className="modal-form-group">
              <label>GIÁ NIÊM YẾT DỰ KIẾN</label>
              <p style={{fontSize: '0.75rem', color: '#666', marginBottom: '6px', lineHeight: '1.2'}}>Hệ thống sẽ tự động chuyển thành số chuẩn khi gửi lên Meta.</p>
              <input 
@@ -245,6 +250,11 @@ export const EditTemplateModal = ({
             </div>
           </div>
           <div className="modal-form-group">
+            <label>TỪ KHOÁ TỰ ĐỘNG GÁN SẢN PHẨM (TỪ MESSENGER)</label>
+            <p style={{fontSize: '0.75rem', color: '#666', marginBottom: '6px', lineHeight: '1.2'}}>Hệ thống sẽ tự động gán khách vào Tour này nếu tin nhắn chứa các từ khoá trên (cách nhau bằng dấu phẩy). Bỏ trống nếu không chắc.</p>
+            <input className="modal-input" value={formData.keywords || ''} onChange={e => setFormData({...formData, keywords: e.target.value})} placeholder="Vd: lệ giang, cửu trại câu..." />
+          </div>
+          <div className="modal-form-group">
             <label>GIÁ NIÊM YẾT</label>
             <p style={{fontSize: '0.75rem', color: '#666', marginBottom: '6px', lineHeight: '1.2'}}>Hiển thị có dấu chấm cho dễ đọc, khi gửi Meta API vẫn là số liền.</p>
             <input 
@@ -300,8 +310,8 @@ export const EditTemplateModal = ({
                    {tourDepartures.filter(d => d.tour_template_id === template.id).map(dep => (
                      <tr key={dep.id} style={{ borderBottom: '1px solid #e2e8f0', transition: 'background 0.2s' }}>
                        <td style={{ padding: '12px', fontWeight: 'bold', color: '#3b82f6' }}>{dep.code || dep.tour_code || '-'}</td>
-                       <td style={{ padding: '12px', fontWeight: 600 }}>{dep.start_date ? new Date(dep.start_date).toLocaleDateString('vi-VN') : '-'}</td>
-                       <td style={{ padding: '12px' }}>{dep.end_date ? new Date(dep.end_date).toLocaleDateString('vi-VN') : '-'}</td>
+                       <td style={{ padding: '12px', fontWeight: 600 }}>{dep.start_date ? new Date(dep.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '-'}</td>
+                       <td style={{ padding: '12px' }}>{dep.end_date ? new Date(dep.end_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '-'}</td>
                        <td style={{ padding: '12px', textAlign: 'center' }}><span style={{background: '#e2e8f0', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold'}}>{dep.max_participants || 0}</span></td>
                        <td style={{ padding: '12px', color: '#f59e0b', fontWeight: 'bold' }}>{new Intl.NumberFormat('vi-VN').format(dep.price || dep.actual_price || 0)}đ</td>
                        <td style={{ padding: '12px' }}>
@@ -644,11 +654,11 @@ export const EditDepartureModal = ({
           </div>
           <div className="modal-form-group">
             <label>NGÀY KHỞI HÀNH *</label>
-            <input className="modal-input" type="date" required value={editingDeparture.start_date ? new Date(editingDeparture.start_date).toLocaleDateString('en-CA') : ''} onChange={e => setEditingDeparture({...editingDeparture, start_date: e.target.value})} />
+            <input className="modal-input" type="date" required value={editingDeparture.start_date ? new Date(editingDeparture.start_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : ''} onChange={e => setEditingDeparture({...editingDeparture, start_date: e.target.value})} />
           </div>
           <div className="modal-form-group">
             <label>NGÀY KẾT THÚC (DỰ KIẾN)</label>
-            <input className="modal-input" type="date" value={editingDeparture.end_date ? new Date(editingDeparture.end_date).toLocaleDateString('en-CA') : ''} onChange={e => setEditingDeparture({...editingDeparture, end_date: e.target.value})} />
+            <input className="modal-input" type="date" value={editingDeparture.end_date ? new Date(editingDeparture.end_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : ''} onChange={e => setEditingDeparture({...editingDeparture, end_date: e.target.value})} />
           </div>
           
           <div style={{ gridColumn: 'span 2', background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>

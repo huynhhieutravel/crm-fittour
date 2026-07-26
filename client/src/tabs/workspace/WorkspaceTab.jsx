@@ -9,6 +9,8 @@ const WorkspaceTab = ({
   setEditingLead,
   setShowAddLeadModal,
   bookings = [],
+  setBookingToEdit,
+  setShowAddBookingModal,
   customers = [],
   departures = [],
   tourTemplates = [],
@@ -76,6 +78,8 @@ const WorkspaceTab = ({
         markReminderDone={markReminderDone}
         getReminderLabel={getReminderLabel}
         bookings={bookings}
+        setBookingToEdit={setBookingToEdit}
+        setShowAddBookingModal={setShowAddBookingModal}
         customers={customers}
         departures={departures}
         tourTemplates={tourTemplates}

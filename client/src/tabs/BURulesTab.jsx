@@ -27,8 +27,9 @@ const BURulesTab = ({ currentUser }) => {
     const buColors = {
         'BU1': { bg: '#fef3c7', border: '#f59e0b', text: '#92400e', icon: '🇨🇳' },
         'BU2': { bg: '#dbeafe', border: '#3b82f6', text: '#1e40af', icon: '🌍' },
-        'BU3': { bg: '#fce7f3', border: '#ec4899', text: '#9d174d', icon: '🏢' },
+        'BU3': { bg: '#fae8ff', border: '#d946ef', text: '#86198f', icon: '🎤' },
         'BU4': { bg: '#d1fae5', border: '#10b981', text: '#065f46', icon: '🏔️' },
+        'BU5': { bg: '#fef3c7', border: '#f59e0b', text: '#92400e', icon: '⛺' }
     };
 
     if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>Đang tải...</div>;

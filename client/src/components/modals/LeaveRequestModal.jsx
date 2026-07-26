@@ -379,7 +379,7 @@ export default function LeaveRequestModal({ currentUser, users = [], editData, o
                             {form.leave_dates.map(item => {
                                 const [y, m, d_val] = item.date.split('-');
                                 const d = new Date(y, m - 1, d_val);
-                                const dayStr = d.toLocaleDateString('vi-VN');
+                                const dayStr = d.toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
                                 const dayOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][d.getDay()];
                                 return (
                                     <div key={item.date} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #e2e8f0', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', color: '#1e293b', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', justifyContent: 'space-between' }}>

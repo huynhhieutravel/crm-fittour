@@ -97,7 +97,7 @@ export const AddCustomerModal = ({
 
           <div className="modal-form-group">
             <label>TRỞ THÀNH KHÁCH TỪ KHI NÀO?</label>
-            <input className="modal-input" type="date" value={newCustomer.created_at || new Date().toLocaleDateString('en-CA')} onChange={e => setNewCustomer({...newCustomer, created_at: e.target.value})} />
+            <input className="modal-input" type="date" value={newCustomer.created_at || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', })} onChange={e => setNewCustomer({...newCustomer, created_at: e.target.value})} />
           </div>
           <div className="modal-form-group">
             <label>NGÀY SINH</label>
@@ -165,7 +165,7 @@ export const AddCustomerModal = ({
 
           <div className="modal-form-group">
             <label>NGÀY CHỐT ĐƠN ĐẦU TIÊN</label>
-            <input className="modal-input" type="date" value={newCustomer.first_deal_date ? new Date(newCustomer.first_deal_date).toLocaleDateString('en-CA') : ''} onChange={e => setNewCustomer({...newCustomer, first_deal_date: e.target.value})} />
+            <input className="modal-input" type="date" value={newCustomer.first_deal_date ? new Date(newCustomer.first_deal_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : ''} onChange={e => setNewCustomer({...newCustomer, first_deal_date: e.target.value})} />
           </div>
           <div className="modal-form-group">
             <label>NHÂN VIÊN CHĂM SÓC</label>
@@ -357,11 +357,11 @@ export const EditCustomerModal = ({
 
           <div className="modal-form-group">
             <label>TRỞ THÀNH KHÁCH TỪ KHI NÀO?</label>
-            <input className="modal-input" type="date" value={editingCustomer.created_at ? new Date(editingCustomer.created_at).toLocaleDateString('en-CA') : ''} onChange={e => setEditingCustomer({...editingCustomer, created_at: e.target.value})} />
+            <input className="modal-input" type="date" value={editingCustomer.created_at ? new Date(editingCustomer.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : ''} onChange={e => setEditingCustomer({...editingCustomer, created_at: e.target.value})} />
           </div>
           <div className="modal-form-group">
             <label>NGÀY SINH</label>
-            <input className="modal-input" type="date" value={editingCustomer.birth_date ? new Date(editingCustomer.birth_date).toLocaleDateString('en-CA') : ''} onChange={e => setEditingCustomer({...editingCustomer, birth_date: e.target.value})} />
+            <input className="modal-input" type="date" value={editingCustomer.birth_date ? new Date(editingCustomer.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : ''} onChange={e => setEditingCustomer({...editingCustomer, birth_date: e.target.value})} />
           </div>
           <div className="modal-form-group">
             <label>GIỚI TÍNH</label>
@@ -392,7 +392,7 @@ export const EditCustomerModal = ({
           </div>
           <div className="modal-form-group">
             <label>NGÀY HẾT HẠN PASSPORT</label>
-            <input className="modal-input" type="date" value={editingCustomer.id_expiry ? new Date(editingCustomer.id_expiry).toLocaleDateString('en-CA') : ''} onChange={e => setEditingCustomer({...editingCustomer, id_expiry: e.target.value})} />
+            <input className="modal-input" type="date" value={editingCustomer.id_expiry ? new Date(editingCustomer.id_expiry).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : ''} onChange={e => setEditingCustomer({...editingCustomer, id_expiry: e.target.value})} />
           </div>
 
           <div className="modal-form-group">
@@ -461,7 +461,7 @@ export const EditCustomerModal = ({
                 </div>
                 <div className="modal-form-group">
                   <label>NGÀY CHỐT ĐƠN ĐẦU</label>
-                  <input className="modal-input" type="date" value={editingCustomer.first_deal_date ? (typeof editingCustomer.first_deal_date === 'string' ? new Date(editingCustomer.first_deal_date).toLocaleDateString('en-CA') : new Date(editingCustomer.first_deal_date).toLocaleDateString('en-CA')) : ''} onChange={e => setEditingCustomer({...editingCustomer, first_deal_date: e.target.value})} />
+                  <input className="modal-input" type="date" value={editingCustomer.first_deal_date ? (typeof editingCustomer.first_deal_date === 'string' ? new Date(editingCustomer.first_deal_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : new Date(editingCustomer.first_deal_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', })) : ''} onChange={e => setEditingCustomer({...editingCustomer, first_deal_date: e.target.value})} />
                 </div>
                 <div className="modal-form-group">
                   <label>NHÂN VIÊN CHĂM SÓC</label>
@@ -603,7 +603,7 @@ export const EditCustomerModal = ({
                             </div>
                             <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: '#64748b' }}>
                               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <Calendar size={12} /> {booking.departure_date ? new Date(booking.departure_date).toLocaleDateString('vi-VN') : 'Sắp diễn ra'}
+                                <Calendar size={12} /> {booking.departure_date ? new Date(booking.departure_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : 'Sắp diễn ra'}
                               </span>
                               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <Users size={12} /> {booking.pax_count} khách
@@ -684,7 +684,7 @@ export const EditCustomerModal = ({
                         <div key={note.id} style={{ padding: '0.75rem', background: 'white', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
                           <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem', display: 'flex', justifyContent: 'space-between' }}>
                             <strong style={{ color: '#3b82f6' }}>{note.creator_name}</strong>
-                            <span>{new Date(note.created_at).toLocaleString('vi-VN')}</span>
+                            <span>{new Date(note.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</span>
                           </div>
                           <div style={{ fontSize: '0.85rem', color: '#1e293b' }}>{note.content}</div>
                         </div>

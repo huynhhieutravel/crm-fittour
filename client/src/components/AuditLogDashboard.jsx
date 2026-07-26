@@ -89,8 +89,8 @@ export default function AuditLogDashboard({ moduleType }) {
 
         // Format dates if they look like ISO dates
         const isIsoString = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(v);
-        if (isIsoString(oval)) oval = new Date(oval).toLocaleDateString('vi-VN');
-        if (isIsoString(nval)) nval = new Date(nval).toLocaleDateString('vi-VN');
+        if (isIsoString(oval)) oval = new Date(oval).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', });
+        if (isIsoString(nval)) nval = new Date(nval).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', });
         
         // Handle nested arrays/objects loosely
         if (typeof oval === 'object') oval = JSON.stringify(oval);
@@ -162,7 +162,7 @@ export default function AuditLogDashboard({ moduleType }) {
                 <React.Fragment key={log.id}>
                     <tr style={{ borderBottom: '1px solid #e2e8f0', background: expandedLogId === log.id ? '#fcfcfc' : 'white' }}>
                     <td style={{ padding: '12px 15px', fontSize: '13px', color: '#64748b' }}>
-                        {new Date(log.created_at).toLocaleString('vi-VN')}
+                        {new Date(log.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                     </td>
                     <td style={{ padding: '12px 15px', fontSize: '14px', fontWeight: 500 }}>
                         {log.full_name || log.username || 'System Admin'}

@@ -74,6 +74,9 @@ const UsersTab = ({
                 placeholder="Tên, username, email..." 
                 value={searchTerm} 
                 onChange={e => setSearchTerm(e.target.value)} 
+                autoComplete="off"
+                name="user-search"
+                data-lpignore="true"
               />
             </div>
           </div>
@@ -269,7 +272,7 @@ const UsersTab = ({
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#64748b' }}>
                       <Clock size={14} />
-                      {new Date(u.created_at).toLocaleDateString('vi-VN')}
+                      {new Date(u.created_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                     </div>
                   </td>
                   <td>

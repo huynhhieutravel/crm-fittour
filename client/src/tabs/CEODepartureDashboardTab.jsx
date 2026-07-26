@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../utils/dateUtils';
 import axios from 'axios';
 import { 
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Cell, PieChart, Pie
@@ -145,7 +146,7 @@ const CEODepartureDashboardTab = ({ currentUser }) => {
     fetchData();
   }, [dateFilter, selectedMonth, selectedQuarter, selectedYear, customRange.startDate, customRange.endDate, selectedBU]);
 
-  const formatDateString = (date) => date ? new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] : '';
+  const formatDateString = (date) => date ? getLocalDateString(date) : '';
 
   const fetchData = async () => {
     setLoading(true);
@@ -538,7 +539,7 @@ const CEODepartureDashboardTab = ({ currentUser }) => {
                     <div key={idx} style={{ padding: '16px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                         <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '0.9rem' }}>{u.tour_name}</div>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{new Date(u.start_date).toLocaleDateString('vi-VN')}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{new Date(u.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</div>
                       </div>
                       
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
@@ -610,7 +611,7 @@ const CEODepartureDashboardTab = ({ currentUser }) => {
                            <div style={{ fontSize: '12px', fontWeight: 500, color: '#64748b', marginTop: '4px' }}>{d.tour_name}</div>
                         </td>
                         <td style={{ padding: '12px 16px', textAlign: 'center', color: '#475569', fontWeight: 600, borderRight: '1px solid #f1f5f9' }}>
-                          {new Date(d.start_date).toLocaleDateString('vi-VN')}
+                          {new Date(d.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                         </td>
                         <td style={{ padding: '12px 16px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>
                           <span style={{ background: '#f0fdf4', color: '#16a34a', padding: '4px 10px', borderRadius: '8px', fontWeight: 700 }}>{d.total_pax}</span>
