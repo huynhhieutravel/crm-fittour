@@ -326,9 +326,7 @@ router.put('/:id', async (req, res) => {
 // Gửi Email Báo cáo Marketing Ads
 router.post('/send-email', async (req, res) => {
   try {
-    let { type, month, year, week, custom_email } = req.body; 
-    if (type === 'week') type = 'weekly';
-    if (type === 'month') type = 'monthly';
+    const { type, month, year, week } = req.body; 
     const targetYear = parseInt(year) || new Date().getFullYear();
     const targetMonth = parseInt(month) || new Date().getMonth() + 1;
     
@@ -500,33 +498,17 @@ router.post('/send-email', async (req, res) => {
       }
   
       const cpl = actual.leads > 0 ? actual.spend / actual.leads : 0;
+  
       const cpm = actual.messages > 0 ? actual.spend / actual.messages : 0;
-      let spendHtml = '';
-      if (type === 'weekly') {
-          const remaining = monthlyBudget - accumulated.spend;
-          const remainingPercent = monthlyBudget > 0 ? Math.round((remaining / monthlyBudget) * 100) : 0;
-          spendHtml = `
-            <div style="font-size: 13px;">Tuần: <b>${formatK(actual.spend)}</b></div>
-            <div style="font-size: 12px; color: #475569; margin-top: 3px;">LK: ${formatK(accumulated.spend)} / ${formatK(monthlyBudget)}</div>
-            <div style="font-size: 12px; color: #3b82f6; margin-top: 2px;">Còn: ${formatK(remaining)} (${remainingPercent}%)</div>
-          `;
-      } else {
-          const remaining = monthlyBudget - actual.spend;
-          const remainingPercent = monthlyBudget > 0 ? Math.round((remaining / monthlyBudget) * 100) : 0;
-          spendHtml = `
-            <div style="font-size: 13px;"><b>${formatK(actual.spend)}</b> / ${formatK(monthlyBudget)}</div>
-            <div style="font-size: 12px; color: #3b82f6; margin-top: 3px;">Còn: ${formatK(remaining)} (${remainingPercent}%)</div>
-          `;
-      }
-
+  
       return `
         <tr>
-          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">${bu.id}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; color: ${statusColor}; font-weight: bold;">${statusLabel}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">${spendHtml}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">${actual.messages.toLocaleString('vi-VN')} / ${formatK(cpm)}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">${actual.leads} / ${targetLeads} <span style="color: #64748b;">(${targetLeads > 0 ? Math.round((actual.leads / targetLeads) * 100) : 0}%)</span></td>
-          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">${formatK(cpl)}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-weight: bold; white-space: nowrap;">${bu.id}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; color: ${statusColor}; font-weight: bold; white-space: nowrap;">${statusLabel}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; white-space: nowrap;">${actual.spend.toLocaleString('vi-VN')} / ${budget.toLocaleString('vi-VN')} <span style="font-size: 12px; color: #64748b;">(${budget > 0 ? Math.round((actual.spend / budget) * 100) : 0}%)</span></td>
+          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; white-space: nowrap;">${actual.messages.toLocaleString('vi-VN')} / ${formatK(cpm)}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; white-space: nowrap;">${actual.leads} / ${targetLeads} <span style="color: #64748b;">(${targetLeads > 0 ? Math.round((actual.leads / targetLeads) * 100) : 0}%)</span></td>
+          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; white-space: nowrap;">${formatK(cpl)}</td>
         </tr>
       `;
     }).join('');
@@ -599,9 +581,6 @@ router.post('/send-email', async (req, res) => {
         
         <div style="margin-top: 30px; text-align: center;">
           <a href="https://erp.fittour.vn/marketing-ads" style="background: #3b82f6; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 500; display: inline-block;">Xem Bảng Điều Khiển Ads</a>
-        </div>
-        <div style="margin-top: 40px; font-size: 10px; color: #cbd5e1; text-align: center;">
-          Báo cáo tạo lúc: ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} (Tránh Gmail nhóm email)
         </div>
     `;
 

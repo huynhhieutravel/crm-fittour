@@ -199,10 +199,11 @@ function AppContent() {
     const userStr = localStorage.getItem('user');
     if (userStr) {
       try {
-        const u = JSON.parse(userStr);
-        // if (u && (u.role === 'sales' || u.role === 'sale' || u.role_name === 'sales' || u.role_name === 'sale')) {
-        //   defaultTab = 'workspace';
-        // }
+        // Cập nhật QA Guard: Chặn tài khoản không có quyền vào Notification Center mặc định
+        const perms = u.permissions || {};
+        if (u.role !== 'admin' && (!perms.leads || !perms.leads.can_view)) {
+          defaultTab = 'workspace';
+        }
       } catch(e) {}
     }
     
@@ -505,8 +506,11 @@ function AppContent() {
     if (fullPath.startsWith('tai-lieu')) return;
     if (!fullPath) {
       let defaultTab = 'notification-center';
-      if (user && (user.role === 'sales' || user.role === 'sale' || user.role_name === 'sales' || user.role_name === 'sale')) {
-        // defaultTab = 'workspace';
+      if (user && user.role !== 'admin') {
+        const perms = user.permissions || {};
+        if (!perms.leads || !perms.leads.can_view) {
+          defaultTab = 'workspace';
+        }
       }
       setActiveTab(defaultTab);
       return;
@@ -545,6 +549,38 @@ function AppContent() {
     }
     
     const basePath = fullPath.split('/')[0];
+
+    // Intercept deep links for Lead notifications
+    if (fullPath.startsWith('leads/') || fullPath === 'workspace') {
+       let leadId = null;
+       if (fullPath.startsWith('leads/')) {
+           leadId = fullPath.split('/')[1];
+       } else if (fullPath === 'workspace') {
+           const searchParams = new URLSearchParams(location.search);
+           leadId = searchParams.get('lead_id');
+       }
+
+       if (leadId) {
+           const token = localStorage.getItem('token');
+           if (token) {
+               axios.get(`/api/leads/${leadId}`, { headers: { Authorization: `Bearer ${token}` } })
+                   .then(res => {
+                       const lead = res.data;
+                       if (lead && lead.facebook_psid) {
+                           // Route to Inbox instead of Lead modal
+                           navigate(`/inbox?psid=${lead.facebook_psid}`, { replace: true });
+                       } else {
+                           // Open modal as fallback if no facebook_psid
+                           setTimeout(() => {
+                               window.dispatchEvent(new CustomEvent('open-edit-lead-modal-from-chat', { detail: leadId }));
+                           }, 100);
+                       }
+                   })
+                   .catch(err => console.error('Failed to fetch lead info', err));
+           }
+       }
+    }
+
     if (VALID_TABS.includes(fullPath)) {
        setActiveTab(fullPath);
        if (fullPath === 'inbox') {
@@ -1581,7 +1617,7 @@ function AppContent() {
   const filteredLeads = leads.filter(lead => {
     const matchesStatus = !leadFilters.status || lead.status === leadFilters.status;
     const matchesSource = !leadFilters.source || lead.source === leadFilters.source;
-    const matchesBU = !leadFilters.bu_group || (leadFilters.bu_group === 'NO_BU' ? !lead.bu_group : lead.bu_group === leadFilters.bu_group);
+    const matchesBU = !leadFilters.bu_group || (leadFilters.bu_group === 'NO_BU' ? !lead.bu_group : (leadFilters.bu_group === 'MY_BU' ? (user?.bus || []).includes(lead.bu_group) : lead.bu_group === leadFilters.bu_group));
     const matchesStaff = !leadFilters.assigned_to || (leadFilters.assigned_to === 'NO_STAFF' ? !lead.assigned_to : lead.assigned_to === Number(leadFilters.assigned_to));
     const matchesSearch = !leadFilters.search || 
       (lead.name?.toLowerCase().includes(leadFilters.search.toLowerCase())) ||
@@ -1733,20 +1769,33 @@ function AppContent() {
     return () => clearTimeout(timer);
   }, [bookingFilters, bookingCurrentPage, isLoggedIn]);
 
-  const fetchLeads = async () => {
-    setLoading(true);
+  const fetchLeads = async (isBackground = false) => {
+    if (isBackground !== true) setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('/api/leads', {
+      // Thêm cache-buster để tránh cache (đặc biệt từ Cloudflare) 
+      const res = await axios.get(`/api/leads?_t=${Date.now()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLeads(res.data);
     } catch (err) {
       console.error('Error fetching leads:', err);
     } finally {
-      setLoading(false);
+      if (isBackground !== true) setLoading(false);
     }
   };
+
+  // Background polling cho tab Leads (mỗi 60 giây)
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const interval = setInterval(() => {
+      // Chỉ poll nếu người dùng đang ở tab leads hoặc dashboard để tiết kiệm tài nguyên
+      if (activeTab === 'leads' || activeTab === 'leads-dashboard') {
+        fetchLeads(true); // background = true
+      }
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [isLoggedIn, activeTab]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -3351,7 +3400,7 @@ function AppContent() {
           <PaymentVouchersTab currentUser={user} />
         )}
 
-        {activeTab === 'notification-center' && (
+        {(activeTab === 'notification-center' && checkView('leads')) && (
           <GlobalChatTab users={users} tours={tourTemplates} navigateToInbox={(psid) => { setInboxPsid(psid); navigate('/inbox'); setActiveTab('inbox'); }} />
         )}
 

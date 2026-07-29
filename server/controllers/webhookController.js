@@ -76,8 +76,8 @@ exports.handleWebhookEvent = async (req, res) => {
                                     if (leadId) {
                                         const leadCheck = await db.query('SELECT bu_group, tour_id, name FROM leads WHERE id = $1', [leadId]);
                                         if (leadCheck.rows.length > 0) {
-                                            const allMsgs = await db.query('SELECT content FROM messages WHERE conversation_id = $1', [echoConvId]);
-                                            const allText = allMsgs.rows.map(m => m.content || '').join(' ');
+                                            const allMsgs = await db.query('SELECT sender_type, content FROM messages WHERE conversation_id = $1', [echoConvId]);
+                                            const allText = allMsgs.rows.filter(m => m.sender_type === 'customer').map(m => m.content || '').join(' ');
                                             
                                             // BU Auto
                                             if (!leadCheck.rows[0].bu_group) {

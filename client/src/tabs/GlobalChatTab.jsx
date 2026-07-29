@@ -18,6 +18,7 @@ const GlobalChatTab = ({ users = [], tours = [], navigateToInbox }) => {
     const [category, setCategory] = useState("all");
     const [searchQuery, setSearchQuery] = useState('');
     const messagesEndRef = useRef(null);
+    const isScrolledUpRef = useRef(false);
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
     const myBU = (currentUser.bus && currentUser.bus.length > 0) ? currentUser.bus[0] : 'BU1';
 
@@ -25,7 +26,9 @@ const GlobalChatTab = ({ users = [], tours = [], navigateToInbox }) => {
     const [claimTimer, setClaimTimer] = useState(null);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (!isScrolledUpRef.current) {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
     };
 
     useEffect(() => {
@@ -212,7 +215,13 @@ const GlobalChatTab = ({ users = [], tours = [], navigateToInbox }) => {
                 </div>
             </div>
 
-            <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}
+                 onScroll={(e) => {
+                     const { scrollTop, scrollHeight, clientHeight } = e.target;
+                     const isAtBottom = scrollHeight - scrollTop - clientHeight < 150;
+                     isScrolledUpRef.current = !isAtBottom;
+                 }}
+            >
                 <div style={{ textAlign: 'center', margin: '10px 0' }}>
                     <span style={{ background: '#e5e7eb', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', color: '#4b5563' }}>
                         {timeRange === 'today' ? 'Hôm nay' : timeRange === 'yesterday' ? 'Hôm qua' : timeRange === 'this_week' ? 'Tuần này' : timeRange === 'this_month' ? 'Tháng này' : 'Tất cả'}

@@ -93,11 +93,17 @@ exports.getLeaderOverview = async (req, res) => {
         
         let dateFilter, dateFilterBookings, dateFilterAds;
         let params = [yearNum];
+        let prevParams = [];
+        let dateFilterPrev, dateFilterBookingsPrev;
 
         if (filterPeriod === 'year') {
             dateFilter = "EXTRACT(YEAR FROM created_at) = $1";
             dateFilterBookings = "EXTRACT(YEAR FROM start_date) = $1";
             dateFilterAds = "year = $1";
+            
+            prevParams = [yearNum - 1];
+            dateFilterPrev = "EXTRACT(YEAR FROM created_at) = $1";
+            dateFilterBookingsPrev = "EXTRACT(YEAR FROM start_date) = $1";
         } else if (filterPeriod === 'quarter') {
             params.push(qNum);
             dateFilter = "EXTRACT(YEAR FROM created_at) = $1 AND EXTRACT(QUARTER FROM created_at) = $2";
@@ -106,11 +112,23 @@ exports.getLeaderOverview = async (req, res) => {
             let m2 = m1 + 1;
             let m3 = m2 + 1;
             dateFilterAds = `year = $1 AND month IN (${m1}, ${m2}, ${m3}) AND $2=$2`;
+            
+            let prevQ = qNum === 1 ? 4 : qNum - 1;
+            let prevY = qNum === 1 ? yearNum - 1 : yearNum;
+            prevParams = [prevY, prevQ];
+            dateFilterPrev = "EXTRACT(YEAR FROM created_at) = $1 AND EXTRACT(QUARTER FROM created_at) = $2";
+            dateFilterBookingsPrev = "EXTRACT(YEAR FROM start_date) = $1 AND EXTRACT(QUARTER FROM start_date) = $2";
         } else {
             params.push(monthNum);
             dateFilter = "EXTRACT(YEAR FROM created_at) = $1 AND EXTRACT(MONTH FROM created_at) = $2";
             dateFilterBookings = "EXTRACT(YEAR FROM start_date) = $1 AND EXTRACT(MONTH FROM start_date) = $2";
             dateFilterAds = "year = $1 AND month = $2";
+            
+            let prevM = monthNum === 1 ? 12 : monthNum - 1;
+            let prevY = monthNum === 1 ? yearNum - 1 : yearNum;
+            prevParams = [prevY, prevM];
+            dateFilterPrev = "EXTRACT(YEAR FROM created_at) = $1 AND EXTRACT(MONTH FROM created_at) = $2";
+            dateFilterBookingsPrev = "EXTRACT(YEAR FROM start_date) = $1 AND EXTRACT(MONTH FROM start_date) = $2";
         }
 
         // 1. TOP METRICS
@@ -287,6 +305,47 @@ exports.getLeaderOverview = async (req, res) => {
             }
         });
 
+        // 3.8 PREVIOUS PERIOD BU TOUR PERFORMANCE & SALES
+        const prevToursRes = await pool.query(
+            `SELECT 
+                tt.bu_group,
+                (SELECT COALESCE(SUM(total_price), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Mới')) as revenue
+             FROM tour_departures_raw td
+             JOIN tour_templates tt ON td.tour_template_id = tt.id
+             WHERE ${dateFilterBookingsPrev.replace(/start_date/g, 'td.start_date')}
+             AND td.status != 'Huỷ'`,
+            prevParams
+        );
+
+        const prevSalesRes = await pool.query(`
+            SELECT 
+                sale_bu_group as bu_group,
+                SUM(b.total_price) as revenue
+            FROM tour_departures_raw td
+            JOIN tour_templates tt ON td.tour_template_id = tt.id
+            JOIN bookings b ON b.tour_departure_id = td.id
+            LEFT JOIN users u ON b.created_by = u.id
+            CROSS JOIN LATERAL unnest(COALESCE(u.bus, ARRAY['Chưa gán'])) as sale_bu_group
+            WHERE ${dateFilterPrev.replace(/created_at/g, 'b.created_at')}
+            AND td.status != 'Huỷ'
+            AND b.booking_status NOT IN ('Huỷ', 'Mới')
+            GROUP BY sale_bu_group`, prevParams);
+
+        const prevBuData = {};
+        
+        prevToursRes.rows.forEach(t => {
+            const bu = t.bu_group || 'Khác';
+            if (!prevBuData[bu]) prevBuData[bu] = { bu_name: bu, total_revenue: 0, sales_revenue: 0 };
+            prevBuData[bu].total_revenue += parseFloat(t.revenue) || 0;
+        });
+
+        prevSalesRes.rows.forEach(s => {
+            const bu = s.bu_group || 'Khác';
+            if (!prevBuData[bu]) prevBuData[bu] = { bu_name: bu, total_revenue: 0, sales_revenue: 0 };
+            prevBuData[bu].sales_revenue += parseFloat(s.revenue) || 0;
+        });
+
+
         // 4. ALERTS
         // Unpaid bookings (start within 14 days)
         const unpaidRes = await pool.query(
@@ -368,6 +427,7 @@ exports.getLeaderOverview = async (req, res) => {
             },
             funnel,
             tourPerformance: Object.values(buData),
+            prevTourPerformance: Object.values(prevBuData),
             workSchedules: Object.values(scheduleData),
             alerts: {
                 unpaidBookings: unpaidRes.rows,

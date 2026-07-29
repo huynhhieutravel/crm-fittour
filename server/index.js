@@ -172,6 +172,7 @@ app.get('/api/google/callback', authController.googleCallback);
 app.use('/api/tours', tourRoutes);
 app.use('/api/public/contracts', publicContractsRoutes);
 app.use('/api/public/departures', publicDeparturesRoutes);
+app.use('/api/public/reviews', require('./routes/publicReviews'));
 app.use('/api/vouchers', require('./routes/vouchers'));
 app.use('/api/leaves', require('./routes/leaves'));
 app.use('/api/departures', departureRoutes);

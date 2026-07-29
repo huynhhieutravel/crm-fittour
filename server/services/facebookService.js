@@ -33,7 +33,15 @@ const isAutoGreeting = (text) => {
 // v5: Smart Diacritic-Aware Matching
 // - Pass 1: So keyword GỐC (có dấu) với tin nhắn GỐC → phân biệt "nhật" vs "nhất"
 // - Pass 2: So keyword bỏ dấu, nhưng CHỈ chấp nhận nếu từ gốc KHÔNG có dấu (khách gõ không dấu)
-const classifyBUFromMessage = async (messageText) => {
+const classifyBUFromMessage = async (messageText, adContextText = '') => {
+    let result = await _classifyBU(messageText);
+    if (!result && adContextText) {
+        result = await _classifyBU(adContextText);
+    }
+    return result;
+};
+
+const _classifyBU = async (messageText) => {
     if (!messageText || messageText.trim().length < 2) return null;
     
     // Normalize: lowercase + remove diacritics
@@ -123,7 +131,15 @@ const classifyBUFromMessage = async (messageText) => {
     }
 };
 
-const classifyTourFromMessage = async (messageText) => {
+const classifyTourFromMessage = async (messageText, adContextText = '') => {
+    let result = await _classifyTour(messageText);
+    if (!result && adContextText) {
+        result = await _classifyTour(adContextText);
+    }
+    return result;
+};
+
+const _classifyTour = async (messageText) => {
     if (!messageText || messageText.trim().length < 2) return null;
     
     // Normalize: lowercase + remove diacritics
@@ -332,10 +348,10 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
                         const currentBuGroup = updatedLead.rows[0].bu_group;
 
                         const allMsgsResult = await db.query(
-                            'SELECT content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
+                            'SELECT sender_type, content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
                             [conversationId]
                         );
-                        const allText = allMsgsResult.rows.filter(m => !isAutoGreeting(m.content)).map(m => m.content || '').join(' ') + ' ' + (received_message.text || '');
+                        const allText = allMsgsResult.rows.filter(m => m.sender_type === 'customer' && !isAutoGreeting(m.content)).map(m => m.content || '').join(' ') + ' ' + (received_message.text || '');
                         const autoTour3 = await classifyTourFromMessage(allText);
                         
                         if (autoTour3 && autoTour3.tour_id) {
@@ -695,16 +711,16 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         }
                     }
 
-                    // Auto-classify BU from ALL messages + shares ad_context
-                    const allConvMsgs = messagesList.filter(m => !isAutoGreeting(m.message)).map(m => (m.message || '')).join(' ');
-                    const autoBUPoller = await classifyBUFromMessage(allConvMsgs + ' ' + (actualMessageText || '') + ' ' + adContextText);
+                    // Auto-classify BU from ALL messages (fallback to shares ad_context)
+                    const allConvMsgs = messagesList.filter(m => m.from && m.from.id === psid && !isAutoGreeting(m.message)).map(m => (m.message || '')).join(' ');
+                    const autoBUPoller = await classifyBUFromMessage(allConvMsgs + ' ' + (actualMessageText || ''), adContextText);
                     if (autoBUPoller) {
                         await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller, currentLeadId]);
                         console.log(`[BU-AUTO] Poller Lead #${currentLeadId} (${userName}) → Auto BU: ${autoBUPoller}`);
                     }
 
-                    // Auto-classify Tour from ALL messages + shares ad_context
-                    const autoTourPoller = await classifyTourFromMessage(allConvMsgs + ' ' + (actualMessageText || '') + ' ' + adContextText);
+                    // Auto-classify Tour from ALL messages (fallback to shares ad_context)
+                    const autoTourPoller = await classifyTourFromMessage(allConvMsgs + ' ' + (actualMessageText || ''), adContextText);
                     if (autoTourPoller && autoTourPoller.tour_id) {
                         const q = autoBUPoller ? 
                             'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
@@ -819,11 +835,11 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                     // Classification for existing lead if BU missing (Luôn chạy nếu chưa có BU)
                     const leadCheckRe = await db.query('SELECT bu_group, tour_id, name FROM leads WHERE id = $1', [currentLeadId]);
                     if (leadCheckRe.rows.length > 0) {
-                        const allPollerMsgs = await db.query('SELECT content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC', [oldConv.id]);
-                        const allPollerText = allPollerMsgs.rows.filter(m => !isAutoGreeting(m.content)).map(m => m.content || '').join(' ');
+                        const allPollerMsgs = await db.query('SELECT sender_type, content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC', [oldConv.id]);
+                        const allPollerText = allPollerMsgs.rows.filter(m => m.sender_type === 'customer' && !isAutoGreeting(m.content)).map(m => m.content || '').join(' ');
                         
                         if (!leadCheckRe.rows[0].bu_group) {
-                            const autoBUPoller2 = await classifyBUFromMessage(allPollerText + ' ' + adContextText);
+                            const autoBUPoller2 = await classifyBUFromMessage(allPollerText, adContextText);
                             if (autoBUPoller2) {
                                 await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller2, currentLeadId]);
                                 console.log(`[BU-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto BU: ${autoBUPoller2}`);
@@ -833,7 +849,7 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         if (!leadCheckRe.rows[0].tour_id) {
                             // Re-fetch BU to get the most up-to-date one
                             const checkBu = await db.query('SELECT bu_group FROM leads WHERE id = $1', [currentLeadId]);
-                            const autoTourPoller2 = await classifyTourFromMessage(allPollerText + ' ' + adContextText);
+                            const autoTourPoller2 = await classifyTourFromMessage(allPollerText, adContextText);
                             
                             if (autoTourPoller2 && autoTourPoller2.tour_id) {
                                 const q3 = checkBu.rows[0].bu_group ? 

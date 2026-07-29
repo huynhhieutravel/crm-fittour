@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   ResponsiveContainer, Funnel, FunnelChart, Tooltip, Legend,
-  PieChart, Pie, Cell, LabelList
+  PieChart, Pie, Cell, LabelList, BarChart, Bar, XAxis, YAxis, CartesianGrid
 } from 'recharts';
 import { 
   TrendingUp, Activity, DollarSign, Users, Shield, AlertTriangle, ExternalLink
@@ -63,7 +63,7 @@ const LeaderDashboardView = () => {
     if (loading) return <div className="p-8 text-center text-gray-500">Đang tải báo cáo Management...</div>;
     if (!data) return <div className="p-8 text-center text-red-500">Lỗi tải dữ liệu.</div>;
 
-    const { topMetrics, funnel, tourPerformance, alerts, workSchedules } = data;
+    const { topMetrics, funnel, tourPerformance, prevTourPerformance, alerts, workSchedules } = data;
     
     // Funnel colors
     const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981'];
@@ -88,6 +88,31 @@ const LeaderDashboardView = () => {
         { name: 'Chỗ đã bán', value: activeBUData.sold_pax },
         { name: 'Chỗ trống', value: emptyPax > 0 ? emptyPax : 0 }
     ];
+
+    // Prepare Data for "Tất cả" Tabs
+    const allTourData = tourPerformance.map(bu => {
+        const prevBU = (prevTourPerformance || []).find(p => p.bu_name === bu.bu_name) || { total_revenue: 0 };
+        const growth = prevBU.total_revenue > 0 ? ((bu.total_revenue - prevBU.total_revenue) / prevBU.total_revenue) * 100 : (bu.total_revenue > 0 ? 100 : 0);
+        return {
+            name: bu.bu_name,
+            'Doanh thu': bu.total_revenue,
+            'Kỳ trước': prevBU.total_revenue,
+            growth: growth
+        };
+    });
+
+    const allSalesData = tourPerformance.map(bu => {
+        const totalSales = (bu.sales || []).reduce((sum, s) => sum + s.revenue, 0);
+        const prevBU = (prevTourPerformance || []).find(p => p.bu_name === bu.bu_name) || { sales_revenue: 0 };
+        const growth = prevBU.sales_revenue > 0 ? ((totalSales - prevBU.sales_revenue) / prevBU.sales_revenue) * 100 : (totalSales > 0 ? 100 : 0);
+        return {
+            name: bu.bu_name,
+            'Doanh thu': totalSales,
+            'Kỳ trước': prevBU.sales_revenue,
+            growth: growth
+        };
+    });
+
 
     return (
         <div className="management-dashboard animate-slide-up" style={{ padding: '0 0px 24px 0px' }}>
@@ -223,80 +248,141 @@ const LeaderDashboardView = () => {
                                 {bu.bu_name} <span style={{ fontSize: '0.85rem', marginLeft: '4px', opacity: 0.8 }}>({bu.tours.length})</span>
                             </button>
                         ))}
+                        <button 
+                            key="all"
+                            onClick={() => setActiveTab('Tất cả')}
+                            style={{
+                                padding: '8px 20px',
+                                borderRadius: '99px',
+                                fontWeight: 600,
+                                fontSize: '0.9rem',
+                                background: activeTab === 'Tất cả' ? '#1e293b' : '#f1f5f9',
+                                color: activeTab === 'Tất cả' ? '#fff' : '#64748b',
+                                border: 'none',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            Tất cả
+                        </button>
                     </div>
 
-                    <div className="flex-row-mobile-column" style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-                        <div className="pie-chart-container" style={{ flex: '0 0 200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ width: '200px', height: '200px', position: 'relative' }}>
-                                <PieChart width={200} height={200}>
-                                    <Pie
-                                        data={occupancyData}
-                                        cx={100} cy={100}
-                                        innerRadius={65} outerRadius={90}
-                                        paddingAngle={3}
-                                        dataKey="value"
-                                    >
-                                        <Cell fill="#10b981" /> {/* Sold */}
-                                        <Cell fill="#e2e8f0" /> {/* Empty */}
-                                    </Pie>
-                                    <Tooltip formatter={(value) => value.toLocaleString('vi-VN')} />
-                                </PieChart>
-                                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', width: '100%' }}>
-                                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b' }}>{activeBUData.total_pax > 0 ? Math.round((activeBUData.sold_pax / activeBUData.total_pax) * 100) : 0}%</div>
-                                    <div style={{ fontSize: '0.85rem', color: '#64748b' }}>Lấp đầy</div>
-                                </div>
+                    {activeTab === 'Tất cả' ? (
+                        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                            <div style={{ flex: '1 1 50%', minWidth: '400px', height: '300px' }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={allTourData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                                        <YAxis tickFormatter={(val) => `${(val / 1000000).toFixed(0)}M`} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                                        <Tooltip formatter={(value) => value.toLocaleString('vi-VN') + 'đ'} cursor={{fill: 'rgba(59, 130, 246, 0.05)'}} />
+                                        <Legend />
+                                        <Bar dataKey="Doanh thu" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                                        <Bar dataKey="Kỳ trước" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
                             </div>
-                            <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '0.85rem', color: '#475569', fontWeight: 500 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: 10, height: 10, background: '#10b981', borderRadius: '4px' }}></div> Bán</div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: 10, height: 10, background: '#e2e8f0', borderRadius: '4px' }}></div> Trống</div>
-                            </div>
-                        </div>
-
-                        {/* Tour List Drill-down */}
-                        <div style={{ flex: 1, maxHeight: '300px', overflowY: 'auto', paddingRight: '8px' }}>
-                            <h4 style={{ fontWeight: 'bold', color: '#334155', marginBottom: '12px' }}>
-                                Đã Thu: <span style={{ color: '#059669' }}>{activeBUData.total_collected ? activeBUData.total_collected.toLocaleString('vi-VN') : 0}đ</span> / Dự kiến: <span style={{ color: '#475569' }}>{activeBUData.total_revenue.toLocaleString('vi-VN')}đ</span> ({activeBUData.total_revenue > 0 ? Math.round((activeBUData.total_collected / activeBUData.total_revenue) * 100) : 0}%)
-                            </h4>
-                            <div className="table-container" style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
-                                <table style={{ width: '100%', textAlign: 'left', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
-                                    <thead style={{ position: 'sticky', top: 0, background: '#f8fafc', zIndex: 10 }}>
+                            <div style={{ flex: '1 1 40%', minWidth: '300px', overflowX: 'auto' }}>
+                                <h4 style={{ fontWeight: 'bold', color: '#334155', marginBottom: '12px' }}>Tăng Trưởng Doanh Thu (So với kỳ trước)</h4>
+                                <table style={{ width: '100%', textAlign: 'left', fontSize: '0.85rem', borderCollapse: 'collapse', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                                    <thead style={{ background: '#f8fafc' }}>
                                         <tr>
-                                            <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Mã Tour</th>
-                                            <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Khởi hành</th>
-                                            <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Bán/Tổng</th>
-                                            <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Doanh thu</th>
+                                            <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0' }}>BU</th>
+                                            <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0' }}>Kỳ Này</th>
+                                            <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0' }}>Kỳ Trước</th>
+                                            <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0' }}>Tăng Trưởng</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {activeBUData.tours.map(t => (
-                                            <tr key={t.tour_code} style={{ borderBottom: '1px solid #e2e8f0', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#f1f5f9'} onMouseOut={e=>e.currentTarget.style.background='transparent'}>
-                                                <td style={{ padding: '10px 12px', fontWeight: 500 }}>
-                                                    <a href="#" onClick={(e) => { e.preventDefault(); setSelectedTourForModal({ id: t.departure_id, tour_code: t.tour_code, start_date: t.start_date }); setIsBookingListOpen(true); }} style={{ color: '#2563eb', textDecoration: 'none', cursor: 'pointer' }} onMouseOver={e=>e.target.style.textDecoration='underline'} onMouseOut={e=>e.target.style.textDecoration='none'}>
-                                                        {t.tour_code}
-                                                    </a>
+                                        {allTourData.map(row => (
+                                            <tr key={row.name} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                <td style={{ padding: '10px 12px', fontWeight: 600 }}>{row.name}</td>
+                                                <td style={{ padding: '10px 12px' }}>{row['Doanh thu'].toLocaleString('vi-VN')}đ</td>
+                                                <td style={{ padding: '10px 12px', color: '#64748b' }}>{row['Kỳ trước'].toLocaleString('vi-VN')}đ</td>
+                                                <td style={{ padding: '10px 12px', fontWeight: 600, color: row.growth > 0 ? '#10b981' : row.growth < 0 ? '#ef4444' : '#64748b' }}>
+                                                    {row.growth > 0 ? '▲ ' : row.growth < 0 ? '▼ ' : '- '}
+                                                    {Math.abs(row.growth).toFixed(1)}%
                                                 </td>
-                                                <td style={{ padding: '10px 12px' }}>{new Date(t.start_date).toLocaleDateString('vi-VN')}</td>
-                                                <td style={{ padding: '10px 12px', minWidth: '150px' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <div style={{ flex: 1, background: '#e2e8f0', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
-                                                            <div style={{ height: '100%', background: t.sold_pax < t.max_pax * 0.5 ? '#ef4444' : '#10b981', width: `${t.max_pax > 0 ? Math.min((t.sold_pax / t.max_pax) * 100, 100) : 0}%`, transition: 'width 0.3s' }}></div>
-                                                        </div>
-                                                        <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#475569', minWidth: '40px' }}>{t.sold_pax}/{t.max_pax}</span>
-                                                    </div>
-                                                </td>
-                                                <td style={{ padding: '10px 12px', fontWeight: 500 }}>{t.revenue.toLocaleString('vi-VN')}đ</td>
                                             </tr>
                                         ))}
-                                        {activeBUData.tours.length === 0 && (
-                                            <tr>
-                                                <td colSpan="4" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Không có lịch khởi hành trong tháng này</td>
-                                            </tr>
-                                        )}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="flex-row-mobile-column" style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+                            <div className="pie-chart-container" style={{ flex: '0 0 200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ width: '200px', height: '200px', position: 'relative' }}>
+                                    <PieChart width={200} height={200}>
+                                        <Pie
+                                            data={occupancyData}
+                                            cx={100} cy={100}
+                                            innerRadius={65} outerRadius={90}
+                                            paddingAngle={3}
+                                            dataKey="value"
+                                        >
+                                            <Cell fill="#10b981" /> {/* Sold */}
+                                            <Cell fill="#e2e8f0" /> {/* Empty */}
+                                        </Pie>
+                                        <Tooltip formatter={(value) => value.toLocaleString('vi-VN')} />
+                                    </PieChart>
+                                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', width: '100%' }}>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b' }}>{activeBUData.total_pax > 0 ? Math.round((activeBUData.sold_pax / activeBUData.total_pax) * 100) : 0}%</div>
+                                        <div style={{ fontSize: '0.85rem', color: '#64748b' }}>Lấp đầy</div>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '0.85rem', color: '#475569', fontWeight: 500 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: 10, height: 10, background: '#10b981', borderRadius: '4px' }}></div> Bán</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: 10, height: 10, background: '#e2e8f0', borderRadius: '4px' }}></div> Trống</div>
+                                </div>
+                            </div>
+
+                            {/* Tour List Drill-down */}
+                            <div style={{ flex: 1, maxHeight: '300px', overflowY: 'auto', paddingRight: '8px' }}>
+                                <h4 style={{ fontWeight: 'bold', color: '#334155', marginBottom: '12px' }}>
+                                    Đã Thu: <span style={{ color: '#059669' }}>{activeBUData.total_collected ? activeBUData.total_collected.toLocaleString('vi-VN') : 0}đ</span> / Dự kiến: <span style={{ color: '#475569' }}>{activeBUData.total_revenue.toLocaleString('vi-VN')}đ</span> ({activeBUData.total_revenue > 0 ? Math.round((activeBUData.total_collected / activeBUData.total_revenue) * 100) : 0}%)
+                                </h4>
+                                <div className="table-container" style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
+                                    <table style={{ width: '100%', textAlign: 'left', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
+                                        <thead style={{ position: 'sticky', top: 0, background: '#f8fafc', zIndex: 10 }}>
+                                            <tr>
+                                                <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Mã Tour</th>
+                                                <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Khởi hành</th>
+                                                <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Bán/Tổng</th>
+                                                <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Doanh thu</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {activeBUData.tours.map(t => (
+                                                <tr key={t.tour_code} style={{ borderBottom: '1px solid #e2e8f0', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#f1f5f9'} onMouseOut={e=>e.currentTarget.style.background='transparent'}>
+                                                    <td style={{ padding: '10px 12px', fontWeight: 500 }}>
+                                                        <a href="#" onClick={(e) => { e.preventDefault(); setSelectedTourForModal({ id: t.departure_id, tour_code: t.tour_code, start_date: t.start_date }); setIsBookingListOpen(true); }} style={{ color: '#2563eb', textDecoration: 'none', cursor: 'pointer' }} onMouseOver={e=>e.target.style.textDecoration='underline'} onMouseOut={e=>e.target.style.textDecoration='none'}>
+                                                            {t.tour_code}
+                                                        </a>
+                                                    </td>
+                                                    <td style={{ padding: '10px 12px' }}>{new Date(t.start_date).toLocaleDateString('vi-VN')}</td>
+                                                    <td style={{ padding: '10px 12px', minWidth: '150px' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <div style={{ flex: 1, background: '#e2e8f0', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
+                                                                <div style={{ height: '100%', background: t.sold_pax < t.max_pax * 0.5 ? '#ef4444' : '#10b981', width: `${t.max_pax > 0 ? Math.min((t.sold_pax / t.max_pax) * 100, 100) : 0}%`, transition: 'width 0.3s' }}></div>
+                                                            </div>
+                                                            <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#475569', minWidth: '40px' }}>{t.sold_pax}/{t.max_pax}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ padding: '10px 12px', fontWeight: 500 }}>{t.revenue.toLocaleString('vi-VN')}đ</td>
+                                                </tr>
+                                            ))}
+                                            {activeBUData.tours.length === 0 && (
+                                                <tr>
+                                                    <td colSpan="4" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Không có lịch khởi hành trong tháng này</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -324,113 +410,174 @@ const LeaderDashboardView = () => {
                             {bu.bu_name} <span style={{ fontSize: '0.85rem', marginLeft: '4px', opacity: 0.8 }}>({(bu.sales || []).length})</span>
                         </button>
                     ))}
+                    <button 
+                        key="all-sales"
+                        onClick={() => setActiveSalesTab('Tất cả')}
+                        style={{
+                            padding: '8px 20px',
+                            borderRadius: '99px',
+                            fontWeight: 600,
+                            fontSize: '0.9rem',
+                            background: activeSalesTab === 'Tất cả' ? '#1e293b' : '#f1f5f9',
+                            color: activeSalesTab === 'Tất cả' ? '#fff' : '#64748b',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        Tất cả
+                    </button>
                 </div>
 
-                <div className="flex-row-mobile-column" style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-                    {/* Sales Pie Chart */}
-                    <div className="pie-chart-container" style={{ flex: '0 0 250px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ width: '250px', height: '250px', position: 'relative' }}>
-                            {(!activeSalesBUData.sales || activeSalesBUData.sales.length === 0 || activeSalesBUData.sales.reduce((sum, s) => sum + s.revenue, 0) === 0) ? (
-                                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '0.9rem', border: '2px dashed #e2e8f0', borderRadius: '50%' }}>Chưa có doanh thu</div>
-                            ) : (
-                                <PieChart width={300} height={250} style={{ marginLeft: '-25px' }}>
-                                    <Pie
-                                        data={(activeSalesBUData.sales || []).filter(s => s.revenue > 0).map((s, i) => ({ name: s.sale_name, value: s.revenue, fill: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#14b8a6', '#84cc16', '#6366f1'][i % 10] }))}
-                                        cx={150} cy={120}
-                                        innerRadius={60} outerRadius={90}
-                                        paddingAngle={2}
-                                        dataKey="value"
-                                        label={({ cx, cy, midAngle, innerRadius, outerRadius, value, index, name, percent }) => {
-                                            const RADIAN = Math.PI / 180;
-                                            
-                                            // Vị trí tên ở ngoài (gần hơn)
-                                            const radiusOut = outerRadius * 1.05;
-                                            const xOut = cx + radiusOut * Math.cos(-midAngle * RADIAN);
-                                            const yOut = cy + radiusOut * Math.sin(-midAngle * RADIAN);
-                                            
-                                            // Vị trí % ở trong thanh màu
-                                            const radiusIn = innerRadius + (outerRadius - innerRadius) * 0.5;
-                                            const xIn = cx + radiusIn * Math.cos(-midAngle * RADIAN);
-                                            const yIn = cy + radiusIn * Math.sin(-midAngle * RADIAN);
-
-                                            const nameShort = name.split(' ').pop(); 
-                                            
-                                            return (
-                                                <g>
-                                                    <text x={xOut} y={yOut} fill="#475569" textAnchor={xOut > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="0.75rem" fontWeight="600">
-                                                        {nameShort}
-                                                    </text>
-                                                    {percent > 0.05 && (
-                                                        <text x={xIn} y={yIn} fill="#ffffff" textAnchor="middle" dominantBaseline="central" fontSize="0.75rem" fontWeight="bold">
-                                                            {(percent * 100).toFixed(0)}%
-                                                        </text>
-                                                    )}
-                                                </g>
-                                            );
-                                        }}
-                                        labelLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
-                                    >
-                                    </Pie>
-                                    <Tooltip formatter={(value) => value.toLocaleString('vi-VN') + 'đ'} />
-                                </PieChart>
-                            )}
-                            {activeSalesBUData.sales && activeSalesBUData.sales.reduce((sum, s) => sum + s.revenue, 0) > 0 && (
-                                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', width: '100%', zIndex: -1 }}>
-                                    <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#1e293b' }}>Doanh Thu</div>
-                                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Sales Đóng Góp</div>
-                                </div>
-                            )}
+                {activeSalesTab === 'Tất cả' ? (
+                    <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                        <div style={{ flex: '1 1 50%', minWidth: '400px', height: '300px' }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={allSalesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                                    <YAxis tickFormatter={(val) => `${(val / 1000000).toFixed(0)}M`} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                                    <Tooltip formatter={(value) => value.toLocaleString('vi-VN') + 'đ'} cursor={{fill: 'rgba(59, 130, 246, 0.05)'}} />
+                                    <Legend />
+                                    <Bar dataKey="Doanh thu" fill="#10b981" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="Kỳ trước" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
-                    </div>
-
-                    <div style={{ flex: 1, maxHeight: '350px', overflowY: 'auto', paddingRight: '8px' }}>
-                        <h4 style={{ fontWeight: 'bold', color: '#334155', marginBottom: '12px' }}>
-                            Tổng Doanh Thu Đã Chốt: <span style={{ color: '#059669' }}>{(activeSalesBUData.sales || []).reduce((sum, s) => sum + s.revenue, 0).toLocaleString('vi-VN')}đ</span>
-                            {(() => {
-                                const totalCompanyRevenue = tourPerformance.reduce((acc, bu) => acc + (bu.sales || []).reduce((sum, s) => sum + s.revenue, 0), 0);
-                                const currentBURevenue = (activeSalesBUData.sales || []).reduce((sum, s) => sum + s.revenue, 0);
-                                const percentage = totalCompanyRevenue > 0 ? Math.round((currentBURevenue / totalCompanyRevenue) * 100) : 0;
-                                return <span style={{ color: '#64748b', fontSize: '0.9rem', marginLeft: '8px', fontWeight: 'normal' }}>(Chiếm {percentage}% toàn công ty)</span>;
-                            })()}
-                        </h4>
-                        <div className="table-container" style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
-                            <table style={{ width: '100%', textAlign: 'left', fontSize: '0.9rem', borderCollapse: 'collapse' }}>
-                                <thead style={{ background: '#f8fafc', position: 'sticky', top: 0, zIndex: 10 }}>
+                        <div style={{ flex: '1 1 40%', minWidth: '300px', overflowX: 'auto' }}>
+                            <h4 style={{ fontWeight: 'bold', color: '#334155', marginBottom: '12px' }}>Tăng Trưởng Sales (So với kỳ trước)</h4>
+                            <table style={{ width: '100%', textAlign: 'left', fontSize: '0.85rem', borderCollapse: 'collapse', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                                <thead style={{ background: '#f8fafc' }}>
                                     <tr>
-                                        <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Tên Nhân Viên</th>
-                                        <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Tỷ trọng</th>
-                                        <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Đơn/Khách</th>
-                                        <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Doanh Thu Ghi Nhận</th>
-                                        <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Đã Thu Khách</th>
+                                        <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0' }}>BU</th>
+                                        <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0' }}>Kỳ Này</th>
+                                        <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0' }}>Kỳ Trước</th>
+                                        <th style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0' }}>Tăng Trưởng</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {(activeSalesBUData.sales || []).map((s, idx) => {
-                                        const totalRev = (activeSalesBUData.sales || []).reduce((sum, x) => sum + x.revenue, 0);
-                                        const percentage = totalRev > 0 ? Math.round((s.revenue / totalRev) * 100) : 0;
-                                        const color = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#14b8a6', '#84cc16', '#6366f1'][idx % 10];
-                                        return (
-                                        <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#f1f5f9'} onMouseOut={e=>e.currentTarget.style.background='transparent'}>
-                                            <td style={{ padding: '12px 16px', fontWeight: 600, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: color }}></div>
-                                                {s.sale_name}
+                                    {allSalesData.map(row => (
+                                        <tr key={row.name} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                            <td style={{ padding: '10px 12px', fontWeight: 600 }}>{row.name}</td>
+                                            <td style={{ padding: '10px 12px' }}>{row['Doanh thu'].toLocaleString('vi-VN')}đ</td>
+                                            <td style={{ padding: '10px 12px', color: '#64748b' }}>{row['Kỳ trước'].toLocaleString('vi-VN')}đ</td>
+                                            <td style={{ padding: '10px 12px', fontWeight: 600, color: row.growth > 0 ? '#10b981' : row.growth < 0 ? '#ef4444' : '#64748b' }}>
+                                                {row.growth > 0 ? '▲ ' : row.growth < 0 ? '▼ ' : '- '}
+                                                {Math.abs(row.growth).toFixed(1)}%
                                             </td>
-                                            <td style={{ padding: '12px 16px', fontWeight: 'bold', color: color }}>{percentage}%</td>
-                                            <td style={{ padding: '12px 16px', color: '#475569' }}>{s.bookings_count} đơn / {s.total_pax} khách</td>
-                                            <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#3b82f6' }}>{s.revenue.toLocaleString('vi-VN')}đ</td>
-                                            <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#10b981' }}>{s.collected_revenue.toLocaleString('vi-VN')}đ</td>
                                         </tr>
-                                    )})}
-                                    {(!activeSalesBUData.sales || activeSalesBUData.sales.length === 0) && (
-                                        <tr>
-                                            <td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Không có dữ liệu sales trong kỳ này</td>
-                                        </tr>
-                                    )}
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="flex-row-mobile-column" style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+                        {/* Sales Pie Chart */}
+                        <div className="pie-chart-container" style={{ flex: '0 0 250px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: '250px', height: '250px', position: 'relative' }}>
+                                {(!activeSalesBUData.sales || activeSalesBUData.sales.length === 0 || activeSalesBUData.sales.reduce((sum, s) => sum + s.revenue, 0) === 0) ? (
+                                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '0.9rem', border: '2px dashed #e2e8f0', borderRadius: '50%' }}>Chưa có doanh thu</div>
+                                ) : (
+                                    <PieChart width={300} height={250} style={{ marginLeft: '-25px' }}>
+                                        <Pie
+                                            data={(activeSalesBUData.sales || []).filter(s => s.revenue > 0).map((s, i) => ({ name: s.sale_name, value: s.revenue, fill: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#14b8a6', '#84cc16', '#6366f1'][i % 10] }))}
+                                            cx={150} cy={120}
+                                            innerRadius={60} outerRadius={90}
+                                            paddingAngle={2}
+                                            dataKey="value"
+                                            label={({ cx, cy, midAngle, innerRadius, outerRadius, value, index, name, percent }) => {
+                                                const RADIAN = Math.PI / 180;
+                                                
+                                                // Vị trí tên ở ngoài (gần hơn)
+                                                const radiusOut = outerRadius * 1.05;
+                                                const xOut = cx + radiusOut * Math.cos(-midAngle * RADIAN);
+                                                const yOut = cy + radiusOut * Math.sin(-midAngle * RADIAN);
+                                                
+                                                // Vị trí % ở trong thanh màu
+                                                const radiusIn = innerRadius + (outerRadius - innerRadius) * 0.5;
+                                                const xIn = cx + radiusIn * Math.cos(-midAngle * RADIAN);
+                                                const yIn = cy + radiusIn * Math.sin(-midAngle * RADIAN);
+
+                                                const nameShort = name.split(' ').pop(); 
+                                                
+                                                return (
+                                                    <g>
+                                                        <text x={xOut} y={yOut} fill="#475569" textAnchor={xOut > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="0.75rem" fontWeight="600">
+                                                            {nameShort}
+                                                        </text>
+                                                        {percent > 0.05 && (
+                                                            <text x={xIn} y={yIn} fill="#ffffff" textAnchor="middle" dominantBaseline="central" fontSize="0.75rem" fontWeight="bold">
+                                                                {(percent * 100).toFixed(0)}%
+                                                            </text>
+                                                        )}
+                                                    </g>
+                                                );
+                                            }}
+                                            labelLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
+                                        >
+                                        </Pie>
+                                        <Tooltip formatter={(value) => value.toLocaleString('vi-VN') + 'đ'} />
+                                    </PieChart>
+                                )}
+                                {activeSalesBUData.sales && activeSalesBUData.sales.reduce((sum, s) => sum + s.revenue, 0) > 0 && (
+                                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', width: '100%', zIndex: -1 }}>
+                                        <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#1e293b' }}>Doanh Thu</div>
+                                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Sales Đóng Góp</div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div style={{ flex: 1, maxHeight: '350px', overflowY: 'auto', paddingRight: '8px' }}>
+                            <h4 style={{ fontWeight: 'bold', color: '#334155', marginBottom: '12px' }}>
+                                Tổng Doanh Thu Đã Chốt: <span style={{ color: '#059669' }}>{(activeSalesBUData.sales || []).reduce((sum, s) => sum + s.revenue, 0).toLocaleString('vi-VN')}đ</span>
+                                {(() => {
+                                    const totalCompanyRevenue = tourPerformance.reduce((acc, bu) => acc + (bu.sales || []).reduce((sum, s) => sum + s.revenue, 0), 0);
+                                    const currentBURevenue = (activeSalesBUData.sales || []).reduce((sum, s) => sum + s.revenue, 0);
+                                    const percentage = totalCompanyRevenue > 0 ? Math.round((currentBURevenue / totalCompanyRevenue) * 100) : 0;
+                                    return <span style={{ color: '#64748b', fontSize: '0.9rem', marginLeft: '8px', fontWeight: 'normal' }}>(Chiếm {percentage}% toàn công ty)</span>;
+                                })()}
+                            </h4>
+                            <div className="table-container" style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
+                                <table style={{ width: '100%', textAlign: 'left', fontSize: '0.9rem', borderCollapse: 'collapse' }}>
+                                    <thead style={{ background: '#f8fafc', position: 'sticky', top: 0, zIndex: 10 }}>
+                                        <tr>
+                                            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Tên Nhân Viên</th>
+                                            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Tỷ trọng</th>
+                                            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Đơn/Khách</th>
+                                            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Doanh Thu Ghi Nhận</th>
+                                            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Đã Thu Khách</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(activeSalesBUData.sales || []).map((s, idx) => {
+                                            const totalRev = (activeSalesBUData.sales || []).reduce((sum, x) => sum + x.revenue, 0);
+                                            const percentage = totalRev > 0 ? Math.round((s.revenue / totalRev) * 100) : 0;
+                                            const color = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#14b8a6', '#84cc16', '#6366f1'][idx % 10];
+                                            return (
+                                            <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#f1f5f9'} onMouseOut={e=>e.currentTarget.style.background='transparent'}>
+                                                <td style={{ padding: '12px 16px', fontWeight: 600, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: color }}></div>
+                                                    {s.sale_name}
+                                                </td>
+                                                <td style={{ padding: '12px 16px', fontWeight: 'bold', color: color }}>{percentage}%</td>
+                                                <td style={{ padding: '12px 16px', color: '#475569' }}>{s.bookings_count} đơn / {s.total_pax} khách</td>
+                                                <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#3b82f6' }}>{s.revenue.toLocaleString('vi-VN')}đ</td>
+                                                <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#10b981' }}>{s.collected_revenue.toLocaleString('vi-VN')}đ</td>
+                                            </tr>
+                                        )})}
+                                        {(!activeSalesBUData.sales || activeSalesBUData.sales.length === 0) && (
+                                            <tr>
+                                                <td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Không có dữ liệu sales trong kỳ này</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
             </>
             )}

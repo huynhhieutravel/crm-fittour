@@ -1,0 +1,1 @@
+const { Pool } = require('pg'); require('dotenv').config(); const pool = new Pool({ connectionString: process.env.DATABASE_URL }); pool.query("UPDATE leads SET tour_id = 317 WHERE id IN (11106, 11109)").then(res => { console.log('✅ Updated leads!'); process.exit(); }).catch(e => { console.error(e); process.exit(); })

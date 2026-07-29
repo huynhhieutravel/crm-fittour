@@ -65,6 +65,7 @@ const LeadsTab = ({
   const [isTourDropdownOpen, setIsTourDropdownOpen] = useState(false);
   const [editingPhoneId, setEditingPhoneId] = useState(null);
   const [tempPhone, setTempPhone] = useState('');
+  const [recentAssignments, setRecentAssignments] = useState({});
 
   const handlePhoneEdit = (lead) => {
     setEditingPhoneId(lead.id);
@@ -130,6 +131,18 @@ const LeadsTab = ({
     } else {
       setLeadFilters({ ...leadFilters, tours: [...currentTours, id] });
     }
+  };
+
+  const handleAssignedToChange = (leadId, val) => {
+    setRecentAssignments(prev => ({...prev, [leadId]: Date.now()}));
+    setTimeout(() => {
+      setRecentAssignments(prev => {
+        const next = {...prev};
+        delete next[leadId];
+        return next;
+      });
+    }, 30000);
+    handleQuickUpdate(leadId, 'assigned_to', val);
   };
 
   const handleBulkUpdate = async () => {
@@ -364,6 +377,9 @@ const LeadsTab = ({
             <span style={{ color: '#64748b', fontWeight: 600 }}>BU:</span>
             <button className={`preset-btn ${!leadFilters.bu_group ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, bu_group: ''})}>
               Tất cả
+            </button>
+            <button className={`preset-btn ${leadFilters.bu_group === 'MY_BU' ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, bu_group: 'MY_BU'})}>
+              Tôi đi
             </button>
             {bus && bus.filter(bu => bu.is_active !== false && !['khác', 'marketing', 'kế toán'].includes(bu.label.toLowerCase())).map(bu => (
               <button key={bu.id} className={`preset-btn ${leadFilters.bu_group === bu.id ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, bu_group: bu.id})}>
@@ -642,7 +658,12 @@ const LeadsTab = ({
                   <SearchableSelect 
                     options={usersByBU[lead.bu_group] || usersByBU['DEFAULT']}
                     value={lead.assigned_to}
-                    onChange={(val) => !lead.is_locked && handleQuickUpdate(lead.id, 'assigned_to', val)}
+                    onChange={(val) => {
+                      const isRecentlyAssigned = recentAssignments[lead.id];
+                      if (!lead.is_locked || isRecentlyAssigned) {
+                        handleAssignedToChange(lead.id, val);
+                      }
+                    }}
                     placeholder="Chưa giao"
                     style={{ 
                       border: 'none', 
@@ -652,8 +673,8 @@ const LeadsTab = ({
                       minWidth: '110px',
                       fontSize: '0.85rem',
                       fontWeight: 600,
-                      opacity: lead.is_locked ? 0.7 : 1,
-                      pointerEvents: lead.is_locked ? 'none' : 'auto'
+                      opacity: (lead.is_locked && !recentAssignments[lead.id]) ? 0.7 : 1,
+                      pointerEvents: (lead.is_locked && !recentAssignments[lead.id]) ? 'none' : 'auto'
                     }}
                     className="table-searchable-select"
                   />
