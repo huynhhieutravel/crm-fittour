@@ -43,24 +43,29 @@ export default function PaymentVouchersTab() {
     }
   };
 
+  const removeAccents = (str) => {
+    if (!str) return '';
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+  };
+
   const filteredVouchers = vouchers.filter(v => {
     let match = true;
     
     // Tìm kiếm chung (Tên, SĐT, Email, Số chứng từ)
     if (filters.search) {
-      const q = filters.search.toLowerCase();
-      const matchSearch = (v.voucher_code || '').toLowerCase().includes(q) ||
-             (v.title || '').toLowerCase().includes(q) ||
-             (v.payer_name || '').toLowerCase().includes(q) ||
-             (v.tour_code || '').toLowerCase().includes(q);
+      const q = removeAccents(filters.search.trim().toLowerCase());
+      const matchSearch = removeAccents((v.voucher_code || '').toLowerCase()).includes(q) ||
+             removeAccents((v.title || '').toLowerCase()).includes(q) ||
+             removeAccents((v.payer_name || '').toLowerCase()).includes(q) ||
+             removeAccents((v.tour_code || '').toLowerCase()).includes(q);
       if (!matchSearch) match = false;
     }
 
     // Tìm kiếm mã tour riêng biệt
     if (filters.tourCode) {
-      const qTour = filters.tourCode.toLowerCase();
-      const matchTourCode = (v.tour_code || '').toLowerCase().includes(qTour) || 
-                            (v.title || '').toLowerCase().includes(qTour);
+      const qTour = removeAccents(filters.tourCode.trim().toLowerCase());
+      const matchTourCode = removeAccents((v.tour_code || '').toLowerCase()).includes(qTour) || 
+                            removeAccents((v.title || '').toLowerCase()).includes(qTour);
       if (!matchTourCode) match = false;
     }
 
