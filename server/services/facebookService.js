@@ -207,7 +207,7 @@ const _classifyTour = async (messageText) => {
 };
 
 
-exports.handleMessage = async (sender_psid, received_message, isStandby = false) => {
+exports.handleMessage = async (sender_psid, received_message, isStandby = false, adContextText = '') => {
     let response;
 
     if (received_message.text) {
@@ -240,7 +240,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
             );
             leadId = leadResult.rows[0].id;
 
-            const autoBU = await classifyBUFromMessage(received_message.text);
+            const autoBU = await classifyBUFromMessage(received_message.text, adContextText);
             if (autoBU) {
                 await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU, leadId]);
                 console.log(`[BU-AUTO] Lead #${leadId} (${senderName}) → Auto BU: ${autoBU}`);
@@ -248,7 +248,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
             }
 
             // Auto-classify Tour from first message
-            const autoTour = await classifyTourFromMessage(received_message.text);
+            const autoTour = await classifyTourFromMessage(received_message.text, adContextText);
             if (autoTour && autoTour.tour_id) {
                 const q = autoBU ? 
                     'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
@@ -303,13 +303,13 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
                     leadId = newLeadResult.rows[0].id;
 
                     // Auto-classify BU for re-opened lead
-                    const autoBU2 = await classifyBUFromMessage(received_message.text);
+                    const autoBU2 = await classifyBUFromMessage(received_message.text, adContextText);
                     if (autoBU2) {
                         await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU2, leadId]);
                     }
 
                     // Auto-classify Tour for re-opened lead
-                    const autoTour2 = await classifyTourFromMessage(received_message.text);
+                    const autoTour2 = await classifyTourFromMessage(received_message.text, adContextText);
                     if (autoTour2 && autoTour2.tour_id) {
                         const q2 = autoBU2 ? 
                             'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
@@ -334,11 +334,15 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
                     // [BU-AUTO] Nếu lead chưa có BU → classify từ TẤT CẢ tin nhắn (lọc greeting template)
                     if (!oldLead.bu_group) {
                         const allMsgsResult = await db.query(
-                            'SELECT content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
+                            'SELECT sender_type, content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
                             [conversationId]
                         );
-                        const allText = allMsgsResult.rows.filter(m => !isAutoGreeting(m.content)).map(m => m.content || '').join(' ') + ' ' + (received_message.text || '');
-                        const autoBU3 = await classifyBUFromMessage(allText);
+                        // Gộp tin khách VÀ AI (trừ câu hỏi chung chung) để vớt từ khoá Quảng Cáo
+                        const allText = allMsgsResult.rows
+                            .filter(m => !isAutoGreeting(m.content) && !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)'))
+                            .map(m => m.content || '')
+                            .join(' ') + ' ' + (received_message.text || '');
+                        const autoBU3 = await classifyBUFromMessage(allText, adContextText);
                         if (autoBU3) {
                             await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU3, leadId]);
                             console.log(`[BU-AUTO] Lead #${leadId} (${oldLead.name}) → Auto BU: ${autoBU3} (từ tin nhắn tiếp theo)`);
@@ -355,8 +359,12 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
                             'SELECT sender_type, content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
                             [conversationId]
                         );
-                        const allText = allMsgsResult.rows.filter(m => m.sender_type === 'customer' && !isAutoGreeting(m.content)).map(m => m.content || '').join(' ') + ' ' + (received_message.text || '');
-                        const autoTour3 = await classifyTourFromMessage(allText);
+                        // Gộp tin khách VÀ AI (trừ câu hỏi chung chung) để vớt từ khoá Quảng Cáo
+                        const allText = allMsgsResult.rows
+                            .filter(m => !isAutoGreeting(m.content) && !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)'))
+                            .map(m => m.content || '')
+                            .join(' ') + ' ' + (received_message.text || '');
+                        const autoTour3 = await classifyTourFromMessage(allText, adContextText);
                         
                         if (autoTour3 && autoTour3.tour_id) {
                             const q3 = currentBuGroup ? 

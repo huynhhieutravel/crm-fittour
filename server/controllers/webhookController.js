@@ -77,8 +77,10 @@ exports.handleWebhookEvent = async (req, res) => {
                                         const leadCheck = await db.query('SELECT bu_group, tour_id, name FROM leads WHERE id = $1', [leadId]);
                                         if (leadCheck.rows.length > 0) {
                                             const allMsgs = await db.query('SELECT sender_type, content FROM messages WHERE conversation_id = $1', [echoConvId]);
-                                            // Gộp toàn bộ tin nhắn của khách VÀ của Page/AI trả lời để tăng tỷ lệ nhận diện từ khoá
-                                            const allText = allMsgs.rows.map(m => m.content || '').join(' ');
+                                            // Gộp tin khách VÀ AI (trừ câu hỏi chung chung) để vớt từ khoá Quảng Cáo
+                                            const allText = allMsgs.rows
+                                                .filter(m => !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)'))
+                                                .map(m => m.content || '').join(' ');
                                             
                                             // BU Auto
                                             if (!leadCheck.rows[0].bu_group) {
@@ -119,7 +121,31 @@ exports.handleWebhookEvent = async (req, res) => {
                                 console.log(`[WEBHOOK] 📤 Echo (page reply) saved for PSID: ${recipientPsid}`);
                             } else {
                                 console.log(`[WEBHOOK] Message text: "${webhook_event.message.text || '(attachment/other)'}"`);
-                                facebookService.handleMessage(sender_psid, webhook_event.message, isStandby)
+                                
+                                let adContextText = '';
+                                if (webhook_event.postback && webhook_event.postback.referral) {
+                                    if (webhook_event.postback.referral.ad_title) adContextText += webhook_event.postback.referral.ad_title + ' ';
+                                    if (webhook_event.postback.referral.ref) adContextText += webhook_event.postback.referral.ref + ' ';
+                                }
+                                if (webhook_event.referral) {
+                                    if (webhook_event.referral.ad_title) adContextText += webhook_event.referral.ad_title + ' ';
+                                    if (webhook_event.referral.ref) adContextText += webhook_event.referral.ref + ' ';
+                                }
+                                if (webhook_event.message && webhook_event.message.referral) {
+                                    if (webhook_event.message.referral.ad_title) adContextText += webhook_event.message.referral.ad_title + ' ';
+                                    if (webhook_event.message.referral.ref) adContextText += webhook_event.message.referral.ref + ' ';
+                                }
+                                if (webhook_event.message && webhook_event.message.attachments) {
+                                    webhook_event.message.attachments.forEach(att => {
+                                        if (att.title) adContextText += att.title + ' ';
+                                        if (att.url) adContextText += att.url + ' ';
+                                        if (att.payload && att.payload.title) adContextText += att.payload.title + ' ';
+                                        if (att.payload && att.payload.description) adContextText += att.payload.description + ' ';
+                                    });
+                                }
+                                if (adContextText) console.log(`[WEBHOOK] Extracted adContextText: "${adContextText.trim()}"`);
+
+                                facebookService.handleMessage(sender_psid, webhook_event.message, isStandby, adContextText)
                                     .then(() => console.log('[WEBHOOK] ✅ handleMessage completed'))
                                     .catch(err => console.error('[WEBHOOK] ❌ handleMessage error:', err.message, err.stack));
                             }
