@@ -7,7 +7,7 @@ import * as XLSX from 'xlsx-js-style';
 export default function PaymentVouchersTab() {
   const [vouchers, setVouchers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({ search: '' });
+  const [filters, setFilters] = useState({ search: '', tourCode: '', status: '', minAmount: '', maxAmount: '' });
 
   useEffect(() => {
     fetchVouchers();
@@ -44,14 +44,40 @@ export default function PaymentVouchersTab() {
   };
 
   const filteredVouchers = vouchers.filter(v => {
+    let match = true;
+    
+    // Tìm kiếm chung (Tên, SĐT, Email, Số chứng từ)
     if (filters.search) {
       const q = filters.search.toLowerCase();
-      return (v.voucher_code || '').toLowerCase().includes(q) ||
+      const matchSearch = (v.voucher_code || '').toLowerCase().includes(q) ||
              (v.title || '').toLowerCase().includes(q) ||
              (v.payer_name || '').toLowerCase().includes(q) ||
              (v.tour_code || '').toLowerCase().includes(q);
+      if (!matchSearch) match = false;
     }
-    return true;
+
+    // Tìm kiếm mã tour riêng biệt
+    if (filters.tourCode) {
+      const qTour = filters.tourCode.toLowerCase();
+      const matchTourCode = (v.tour_code || '').toLowerCase().includes(qTour) || 
+                            (v.title || '').toLowerCase().includes(qTour);
+      if (!matchTourCode) match = false;
+    }
+
+    // Lọc theo trạng thái
+    if (filters.status && filters.status !== '-- Chọn trạng thái --') {
+      if (v.status !== filters.status) match = false;
+    }
+
+    // Lọc theo số tiền (Từ -> Đến)
+    if (filters.minAmount) {
+       if (Number(v.amount) < Number(filters.minAmount)) match = false;
+    }
+    if (filters.maxAmount) {
+       if (Number(v.amount) > Number(filters.maxAmount)) match = false;
+    }
+
+    return match;
   });
 
   const exportExcel = () => {
@@ -106,7 +132,13 @@ export default function PaymentVouchersTab() {
             </div>
             <div>
                <label style={{ display: 'block', fontSize: '13px', color: '#64748b', fontWeight: 'bold', marginBottom: '6px' }}>Tìm mã tour:</label>
-               <input type="text" placeholder="Nhập mã tour" style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '14px', outline: 'none' }} />
+               <input 
+                 type="text" 
+                 placeholder="Nhập mã tour" 
+                 value={filters.tourCode}
+                 onChange={e => setFilters({...filters, tourCode: e.target.value})}
+                 style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '14px', outline: 'none' }} 
+               />
             </div>
             <div>
                <label style={{ display: 'block', fontSize: '13px', color: '#64748b', fontWeight: 'bold', marginBottom: '6px' }}>Ngày chứng từ:</label>
@@ -114,8 +146,16 @@ export default function PaymentVouchersTab() {
             </div>
             <div>
                <label style={{ display: 'block', fontSize: '13px', color: '#64748b', fontWeight: 'bold', marginBottom: '6px' }}>Trạng thái:</label>
-               <select style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '14px', outline: 'none', background: '#fff' }}>
+               <select 
+                  value={filters.status}
+                  onChange={e => setFilters({...filters, status: e.target.value})}
+                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '14px', outline: 'none', background: '#fff' }}
+               >
                   <option>-- Chọn trạng thái --</option>
+                  <option value="Đã duyệt">Đã duyệt</option>
+                  <option value="Chưa duyệt">Chưa duyệt</option>
+                  <option value="Không duyệt">Không duyệt</option>
+                  <option value="Đã hủy">Đã hủy</option>
                </select>
             </div>
             <div>
@@ -130,8 +170,8 @@ export default function PaymentVouchersTab() {
           <div>
             <label style={{ display: 'block', fontSize: '13px', color: '#64748b', fontWeight: 'bold', marginBottom: '6px' }}>Tìm kiếm theo số tiền:</label>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <input type="text" placeholder="Từ" style={{ width: '100px', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '14px', outline: 'none' }} />
-              <input type="text" placeholder="Đến" style={{ width: '100px', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '14px', outline: 'none' }} />
+              <input type="number" placeholder="Từ" value={filters.minAmount} onChange={e => setFilters({...filters, minAmount: e.target.value})} style={{ width: '100px', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '14px', outline: 'none' }} />
+              <input type="number" placeholder="Đến" value={filters.maxAmount} onChange={e => setFilters({...filters, maxAmount: e.target.value})} style={{ width: '100px', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '14px', outline: 'none' }} />
               <button style={{ background: '#22c55e', color: '#fff', border: 'none', padding: '0 15px', borderRadius: '4px', cursor: 'pointer' }}><Search size={18} /></button>
             </div>
           </div>
