@@ -112,7 +112,7 @@ export default function InsuranceDetailDrawer({ insurance, onClose, refreshList,
         }
     };
 
-    const isViewOnly = checkPerm ? (insurance ? !checkPerm('insurances', 'edit') : !checkPerm('insurances', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
+    const isViewOnly = checkPerm ? (insurance ? !(checkPerm('insurances', 'edit') || Number(insurance.created_by) === Number(currentUser?.id)) : !checkPerm('insurances', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
 
     const handleContactChange = (index, field, value) => {
         const newContacts = [...contacts];

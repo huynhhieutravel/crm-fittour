@@ -86,7 +86,7 @@ export default function LicensesTab({ currentUser, addToast }) {
     };
 
     return (
-        <div style={{ padding: '0 2rem' }}>
+        <div style={{ padding: '0 22px' }}>
             {/* Toolbar */}
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', background: 'white', padding: '1.25rem', borderRadius: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', marginBottom: '2rem' }}>
                 <div style={{ flex: 1, position: 'relative' }}>

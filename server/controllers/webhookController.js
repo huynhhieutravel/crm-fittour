@@ -77,7 +77,8 @@ exports.handleWebhookEvent = async (req, res) => {
                                         const leadCheck = await db.query('SELECT bu_group, tour_id, name FROM leads WHERE id = $1', [leadId]);
                                         if (leadCheck.rows.length > 0) {
                                             const allMsgs = await db.query('SELECT sender_type, content FROM messages WHERE conversation_id = $1', [echoConvId]);
-                                            const allText = allMsgs.rows.filter(m => m.sender_type === 'customer').map(m => m.content || '').join(' ');
+                                            // Gộp toàn bộ tin nhắn của khách VÀ của Page/AI trả lời để tăng tỷ lệ nhận diện từ khoá
+                                            const allText = allMsgs.rows.map(m => m.content || '').join(' ');
                                             
                                             // BU Auto
                                             if (!leadCheck.rows[0].bu_group) {
@@ -106,6 +107,10 @@ exports.handleWebhookEvent = async (req, res) => {
                                                     
                                                     await db.query(q, params);
                                                     console.log(`[TOUR-AUTO] Echo Webhook Lead #${leadId} (${leadCheck.rows[0].name}) → Auto Tour: ${autoTour.tour_id}`);
+                                                    
+                                                    if (!leadCheck.rows[0].bu_group && autoTour.bu_group) {
+                                                        notificationController.broadcastNewLead({ id: leadId, customer_name: leadCheck.rows[0].name }, autoTour.bu_group).catch(console.error);
+                                                    }
                                                 }
                                             }
                                         }

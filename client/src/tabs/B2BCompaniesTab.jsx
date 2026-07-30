@@ -1,3 +1,4 @@
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Search, Building, Plus, Eye, Trash2, Phone, Mail, Calendar, MapPin, Globe, ChevronDown, ChevronUp, Users, FolderOpen, X, Edit3, UserCheck } from 'lucide-react';
@@ -36,6 +37,30 @@ const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list
       sessionStorage.removeItem('pendingCompanyOpen');
     }
     
+    const handleBulkDelete = async () => {
+        if (!selectedIds.length) return;
+        const result = await swalConfirm('Bạn có chắc chắn xoá ' + selectedIds.length + ' mục đã chọn?');
+        if (!result) return;
+        
+        setActionLoading(true);
+        let successCount = 0;
+        let failCount = 0;
+        const token = localStorage.getItem('token');
+        for (const id of selectedIds) {
+            try {
+                await axios.delete(`/api/b2b-companies/${id}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
+                successCount++;
+            } catch (err) {
+                console.error(err);
+                failCount++;
+            }
+        }
+        setActionLoading(false);
+        if (addToast) addToast('Đã xoá ' + successCount + ' mục. ' + (failCount > 0 ? 'Lỗi ' + failCount + ' mục.' : ''), successCount > 0 ? 'success' : 'error');
+        setSelectedIds([]);
+        fetchB2bCompanies();
+    };
+
     return () => {
       window.removeEventListener('reloadB2bCompanies', handleReload);
     };
@@ -169,7 +194,13 @@ const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list
         <div style={{ minWidth: '200px' }}>
           <select className="filter-select" style={{ width: '100%' }} value={assignedFilter} onChange={e => setAssignedFilter(e.target.value)}>
             <option value="">Tất cả Sale phụ trách</option>
-            {users.filter(u => ['group_manager', 'group_staff', 'group_operations', 'group_operations_lead'].includes(u.role_name)).map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
+            {users.filter(u => ['group_manager', 'group_staff', 'group_operations', 'group_operations_lead'].includes(u.role_name) || companies.some(c => c.assigned_to === u.id))
+          .sort((a, b) => {
+            if (a.is_active === false && b.is_active !== false) return 1;
+            if (a.is_active !== false && b.is_active === false) return -1;
+            return (a.full_name || a.username || '').localeCompare(b.full_name || b.username || '');
+          })
+          .map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}{u.is_active === false ? ' (TẠM DỪNG)' : ''}</option>)}
           </select>
         </div>
       </div>
@@ -238,7 +269,7 @@ const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list
                     }}
                   >
                     <option value="">-- Chưa gán --</option>
-                    {users.filter(u => ['group_manager', 'group_staff', 'group_operations', 'group_operations_lead'].includes(u.role_name)).map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}</option>)}
+                    {users.filter(u => ['group_manager', 'group_staff', 'group_operations', 'group_operations_lead'].includes(u.role_name) || companies.some(c => c.assigned_to === u.id)).map(u => <option key={u.id} value={u.id}>{u.full_name || u.username}{u.is_active === false ? ' (TẠM DỪNG)' : ''}</option>)}
                   </select>
                 </td>
                 <td style={{ padding: '14px 16px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>

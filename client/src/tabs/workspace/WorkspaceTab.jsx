@@ -18,7 +18,8 @@ const WorkspaceTab = ({
   checkPerm,
   setShowLeaveModal,
   fetchLeads,
-  navigateToInbox
+  navigateToInbox,
+  handleConvertLead
 }) => {
   const [reminders, setReminders] = useState([]);
 
@@ -88,6 +89,7 @@ const WorkspaceTab = ({
         setShowLeaveModal={setShowLeaveModal}
         fetchLeads={fetchLeads}
         navigateToInbox={navigateToInbox}
+        handleConvertLead={handleConvertLead}
       />
     );
   }

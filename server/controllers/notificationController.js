@@ -130,6 +130,8 @@ const getInAppNotifications = async (req, res) => {
         params.push(userId);
       } else if (category === 'unassigned') {
         query += ` AND l.assigned_to IS NULL AND n.type = 'NEW_LEAD'`;
+      } else if (category === 'unassigned_bu') {
+        query += ` AND l.bu_group IS NULL AND n.type = 'NEW_LEAD'`;
       } else if (category.startsWith('BU')) {
         query += ` AND l.bu_group = $${paramIndex++}`;
         params.push(category);
@@ -317,6 +319,8 @@ const getGlobalCenterLeads = async (req, res) => {
         params.push(req.user.id);
       } else if (category === 'unassigned') {
         query += ` AND l.assigned_to IS NULL`;
+      } else if (category === 'unassigned_bu') {
+        query += ` AND l.bu_group IS NULL`;
       } else if (category !== 'all' && category.startsWith('BU')) {
         query += ` AND l.bu_group = $${paramIndex++}`;
         params.push(category);

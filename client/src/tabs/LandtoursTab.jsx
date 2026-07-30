@@ -1,4 +1,5 @@
 import { canCreate, canDelete, canEdit } from '../utils/permissions';
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Plus, MapPin, Map, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle , Star, ExternalLink } from 'lucide-react';
@@ -41,6 +42,7 @@ export default function LandtoursTab({ currentUser, checkPerm, addToast, handleD
     const [landtours, setLandtours] = useState([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
+    const [selectedIds, setSelectedIds] = useState([]);
     const [search, setSearch] = useState('');
     const [selectedLandtour, setSelectedLandtour] = useState(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -126,8 +128,32 @@ export default function LandtoursTab({ currentUser, checkPerm, addToast, handleD
     };
 
 
+    const handleBulkDelete = async () => {
+        if (!selectedIds.length) return;
+        const result = await swalConfirm('Bạn có chắc chắn xoá ' + selectedIds.length + ' mục đã chọn?');
+        if (!result) return;
+        
+        setActionLoading(true);
+        let successCount = 0;
+        let failCount = 0;
+        const token = localStorage.getItem('token');
+        for (const id of selectedIds) {
+            try {
+                await axios.delete(`/api/landtours/${id}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
+                successCount++;
+            } catch (err) {
+                console.error(err);
+                failCount++;
+            }
+        }
+        setActionLoading(false);
+        if (addToast) addToast('Đã xoá ' + successCount + ' mục. ' + (failCount > 0 ? 'Lỗi ' + failCount + ' mục.' : ''), successCount > 0 ? 'success' : 'error');
+        setSelectedIds([]);
+        fetchLandtours();
+    };
+
     return (
-        <div style={{ padding: '0 2rem' }}>
+        <div style={{ padding: '0 22px' }}>
             {/* Thanh công cụ */}
             <div className="filter-bar" style={{ backgroundColor: 'white', padding: '1.25rem', borderRadius: '1rem', boxShadow: 'var(--shadow)', marginBottom: '1.5rem' }}>
                 <div className="ncc-filter-grid">
@@ -147,6 +173,12 @@ export default function LandtoursTab({ currentUser, checkPerm, addToast, handleD
                         <Select options={LANDTOUR_CLASS_OPTIONS} value={LANDTOUR_CLASS_OPTIONS.find(o => o.value === starFilter) || null} onChange={option => setStarFilter(option ? option.value : '')} styles={reactSelectStyles} isClearable placeholder="Tất cả" />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                        
+                        {selectedIds.length > 0 && (
+                            <button className="btn btn-danger" onClick={handleBulkDelete} disabled={actionLoading} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '44px', padding: '0 1.5rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, background: '#ef4444', color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(239, 68, 68, 0.2)', cursor: 'pointer', whiteSpace: 'nowrap', marginRight: '8px' }}>
+                                <Trash2 size={18} /> {actionLoading ? 'Đang xoá...' : 'Xoá ' + selectedIds.length + ' mục'}
+                            </button>
+                        )}
                         {(checkPerm ? checkPerm('landtours', 'create') : canCreate(currentUser?.role, 'suppliers')) && (
                             <button className="btn btn-primary" onClick={handleAddLandtour} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '44px', padding: '0 1.5rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 700, background: '#2563eb', color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.2)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                                 <Plus size={18} /> Thêm Mới
@@ -161,6 +193,15 @@ export default function LandtoursTab({ currentUser, checkPerm, addToast, handleD
                 <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
                         <tr style={{ color: '#475569', fontSize: '0.8rem' }}>
+                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '50px' }}>
+                                <input type="checkbox" checked={landtours.length > 0 && selectedIds.length === landtours.length} onChange={(e) => setSelectedIds(e.target.checked ? landtours.map(item => item.id) : [])} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                            </th>
+                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '50px' }}>
+                                <input type="checkbox" checked={landtours.length > 0 && selectedIds.length === landtours.length} onChange={(e) => setSelectedIds(e.target.checked ? landtours.map(item => item.id) : [])} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                            </th>
+                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '50px' }}>
+                                <input type="checkbox" checked={landtours.length > 0 && selectedIds.length === landtours.length} onChange={(e) => setSelectedIds(e.target.checked ? landtours.map(item => item.id) : [])} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                            </th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '120px' }}>MÃ NCC</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left' }}>TÊN LAND TOUR</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '160px' }}>LOẠI HÌNH</th>
@@ -174,17 +215,20 @@ export default function LandtoursTab({ currentUser, checkPerm, addToast, handleD
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td>
+                                <td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td>
                             </tr>
                         ) : landtours.length === 0 ? (
                             <tr>
-                                <td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                                <td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
                                     Không có land tour nào khớp với tìm kiếm.
                                 </td>
                             </tr>
                         ) : (
                             landtours.map(h => (
                                 <tr key={h.id} className="table-row-hover" style={{ transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#f8fafc'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                                        <input type="checkbox" checked={selectedIds.includes(h.id)} onChange={() => setSelectedIds(prev => prev.includes(h.id) ? prev.filter(i => i !== h.id) : [...prev, h.id])} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                                    </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#3b82f6', cursor: 'pointer' }} onClick={() => handleOpenLandtour(h.id, 'view')}>{h.code}</td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
                                         <div style={{ gap: '8px', color: '#0f172a' }}>

@@ -13,17 +13,17 @@ router.put('/:id', authenticateToken, permCheckOrOwner('hotels', 'edit', 'hotels
 router.delete('/:id', authenticateToken, permCheckOrOwner('hotels', 'delete', 'hotels', 'id'), hotelController.deleteHotel);
 
 // Contacts
-router.post('/:hotel_id/contacts', authenticateToken, permCheck('hotels', 'edit'), hotelController.createContact);
+router.post('/:hotel_id/contacts', authenticateToken, permCheckOrOwner('hotels', 'edit', 'hotels', 'hotel_id'), hotelController.createContact);
 router.put('/contacts/:contact_id', authenticateToken, permCheck('hotels', 'edit'), hotelController.updateContact);
 router.delete('/contacts/:contact_id', authenticateToken, permCheck('hotels', 'edit'), hotelController.deleteContact);
 
 // Room Types
-router.post('/:hotel_id/room-types', authenticateToken, permCheck('hotels', 'edit'), hotelController.createRoomType);
+router.post('/:hotel_id/room-types', authenticateToken, permCheckOrOwner('hotels', 'edit', 'hotels', 'hotel_id'), hotelController.createRoomType);
 router.put('/room-types/:room_id', authenticateToken, permCheck('hotels', 'edit'), hotelController.updateRoomType);
 router.delete('/room-types/:room_id', authenticateToken, permCheck('hotels', 'edit'), hotelController.deleteRoomType);
 
 // Contracts
-router.post('/:hotel_id/contracts', authenticateToken, permCheck('hotels', 'edit'), hotelController.createContract);
+router.post('/:hotel_id/contracts', authenticateToken, permCheckOrOwner('hotels', 'edit', 'hotels', 'hotel_id'), hotelController.createContract);
 router.put('/contracts/:contract_id', authenticateToken, permCheck('hotels', 'edit'), hotelController.updateContract);
 router.delete('/contracts/:contract_id', authenticateToken, permCheck('hotels', 'edit'), hotelController.deleteContract);
 
@@ -39,11 +39,11 @@ router.delete('/allotments/:allotment_id', authenticateToken, permCheck('hotels'
 
 // Notes
 router.get('/:hotel_id/notes', authenticateToken, permCheck('hotels', 'view'), hotelController.getHotelNotes);
-router.post('/:hotel_id/notes', authenticateToken, permCheck('hotels', 'edit'), hotelController.addHotelNote);
+router.post('/:hotel_id/notes', authenticateToken, permCheckOrOwner('hotels', 'edit', 'hotels', 'hotel_id'), hotelController.addHotelNote);
 
-// Media
+// Media Gallery (Images & PDF Menus)
 router.get('/:hotel_id/media', authenticateToken, permCheck('hotels', 'view'), hotelController.getHotelMedia);
-router.post('/:hotel_id/media', authenticateToken, permCheck('hotels', 'edit'), hotelController.uploadHotelMedia);
+router.post('/:hotel_id/media', authenticateToken, permCheckOrOwner('hotels', 'edit', 'hotels', 'hotel_id'), hotelController.uploadHotelMedia);
 router.delete('/media/:media_id', authenticateToken, permCheck('hotels', 'edit'), hotelController.deleteHotelMedia);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const axios = require('axios');
 const db = require('../db');
 const metaCapi = require('./metaCapiService');
-
+const notificationController = require('../controllers/notificationController');
 const PAGE_ACCESS_TOKEN_ENV = process.env.FB_PAGE_TOKEN;
 
 const getSetting = async (key) => {
@@ -240,11 +240,11 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
             );
             leadId = leadResult.rows[0].id;
 
-            // Auto-classify BU from first message
             const autoBU = await classifyBUFromMessage(received_message.text);
             if (autoBU) {
                 await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU, leadId]);
                 console.log(`[BU-AUTO] Lead #${leadId} (${senderName}) → Auto BU: ${autoBU}`);
+                notificationController.broadcastNewLead({ id: leadId, customer_name: senderName }, autoBU).catch(console.error);
             }
 
             // Auto-classify Tour from first message
@@ -258,6 +258,10 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false)
                     [autoTour.tour_id, autoTour.bu_group, leadId];
                 await db.query(q, params);
                 console.log(`[TOUR-AUTO] Lead #${leadId} (${senderName}) → Auto Tour: ${autoTour.tour_id}`);
+                
+                if (!autoBU && autoTour.bu_group) {
+                    notificationController.broadcastNewLead({ id: leadId, customer_name: senderName }, autoTour.bu_group).catch(console.error);
+                }
             }
 
             // Fire CAPI Lead event (async, non-blocking)

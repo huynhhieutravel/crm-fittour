@@ -113,8 +113,8 @@ exports.create = async (req, res) => {
         }
 
         const result = await client.query(
-            `INSERT INTO transports (code, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *`,
-            [finalCode, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
+            `INSERT INTO transports (code, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating, drive_link, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *`,
+            [finalCode, name, tax_id, vehicle_type, phone, email, country, province, address, notes, transport_class, website, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null, req.user.id]
         );
         const newId = result.rows[0].id;
 
@@ -517,7 +517,26 @@ const upload = multer({
     }
 }).array('files', 10);
 
-exports.uploadTransportMedia = (req, res) => {
+exports.uploadTransportMedia = async (req, res) => {
+    if (req.body && req.body.file_url) {
+        try {
+            const { file_url, file_name, file_type, file_size } = req.body;
+            const transport_id = req.params.transport_id;
+            const client = await db.pool.connect();
+            try {
+                const result = await client.query(
+                    'INSERT INTO transport_media (transport_id, file_url, file_name, file_type, file_size) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+                    [transport_id, file_url, file_name, file_type, file_size]
+                );
+                return res.status(201).json(result.rows[0]);
+            } finally {
+                client.release();
+            }
+        } catch (err) {
+            return res.status(500).json({ message: err.message });
+        }
+    }
+
     upload(req, res, async function (err) {
         if (err instanceof multer.MulterError) {
             return res.status(400).json({ message: 'Lỗi tải file: ' + err.message });

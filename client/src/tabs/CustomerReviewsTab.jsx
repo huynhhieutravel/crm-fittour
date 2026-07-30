@@ -306,7 +306,7 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
       });
       if (res.data.success) {
         toast.success(res.data.message);
-        fetchReviews();
+        setReviews(prev => prev.map(r => r.id === id ? { ...r, approval_status: status, approved_by_name: currentUser?.full_name || currentUser?.username || r.approved_by_name } : r));
         fetchStats();
       }
     } catch (error) {
@@ -341,7 +341,7 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
       });
       if (res.data.success) {
         toast.success(res.data.message);
-        fetchReviews();
+        setReviews(prev => prev.filter(r => r.id !== id));
         fetchStats();
       }
     } catch (error) {
@@ -356,7 +356,7 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
       });
       if (res.data.success) {
         toast.success(res.data.message);
-        fetchReviews();
+        setReviews(prev => prev.map(r => r.id === id ? { ...r, bu_id } : r));
         fetchStats();
       }
     } catch (error) {
@@ -371,7 +371,7 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
       });
       if (res.data.success) {
         toast.success(res.data.message);
-        fetchReviews();
+        setReviews(prev => prev.map(r => r.id === id ? { ...r, guide_name } : r));
         fetchStats();
       }
     } catch (error) {

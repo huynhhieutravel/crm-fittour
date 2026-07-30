@@ -8,7 +8,7 @@ import SearchableSelect from '../components/common/SearchableSelect';
 import BUStatsTab from '../components/dispatcher/BUStatsTab';
 import './GlobalChatTab.css';
 
-const GlobalChatTab = ({ users = [], tours = [], navigateToInbox }) => {
+const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditingLead, navigateToInbox }) => {
     const navigate = useNavigate();
     const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
     const [activeMainTab, setActiveMainTab] = useState('chat');
@@ -192,7 +192,8 @@ const GlobalChatTab = ({ users = [], tours = [], navigateToInbox }) => {
                     {[
                         { id: 'all', label: 'All' },
                         { id: 'my_leads', label: 'Tôi' },
-                        { id: 'unassigned', label: 'Chưa phân' },
+                        { id: 'unassigned', label: 'Chưa phân Sale' },
+                        { id: 'unassigned_bu', label: 'Chưa phân BU' },
                         { id: 'BU1', label: 'BU1' },
                         { id: 'BU2', label: 'BU2' },
                         { id: 'BU3', label: 'BU3' },

@@ -160,9 +160,9 @@ exports.createHotel = async (req, res) => {
             `INSERT INTO hotels (
                 code, name, tax_id, build_year, phone, email, country, province, 
                 address, notes, star_rate, website, hotel_class, project_name, 
-                bank_account_name, bank_account_number, bank_name, market, rating, drive_link
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING *`,
-            [finalCode, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null]
+                bank_account_name, bank_account_number, bank_name, market, rating, drive_link, created_by
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING *`,
+            [finalCode, name, tax_id, build_year, phone, email, country, province, address, notes, star_rate, website, hotel_class, project_name, bank_account_name, bank_account_number, bank_name, market, rating || 0, drive_link || null, req.user.id]
         );
         const newHotelId = result.rows[0].id;
 
@@ -740,6 +740,20 @@ exports.uploadHotelMedia = async (req, res) => {
         }
     } catch (err) {
         return res.status(500).json({ message: err.message });
+    }
+
+    // Support JSON body directly for pre-uploaded files
+    if (req.body && req.body.file_url) {
+        try {
+            const { file_url, file_name, file_type, file_size } = req.body;
+            const result = await db.query(
+                'INSERT INTO hotel_media (hotel_id, file_url, file_name, file_type, file_size) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+                [hotel_id, file_url, file_name, file_type, file_size]
+            );
+            return res.status(201).json(result.rows[0]);
+        } catch (err) {
+            return res.status(500).json({ message: err.message });
+        }
     }
 
     mediaUpload(req, res, async (uploadErr) => {

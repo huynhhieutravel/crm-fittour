@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import SearchableSelect from '../components/common/SearchableSelect';
 
-const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, initialPsid, clearInitialPsid, onGoBack }) => {
+const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, initialPsid, clearInitialPsid, onGoBack, goBackText = "Quay lại Lead Marketing" }) => {
   // API Data States
   const [conversations, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
@@ -398,7 +398,7 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
                 onClick={onGoBack} 
                 style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '5px', background: '#ffe4e6', color: '#e11d48', padding: '6px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
               >
-                <ChevronLeft size={16} /> Quay lại Lead Marketing
+                <ChevronLeft size={16} /> {goBackText}
               </button>
             )}
             <h2 className="title">

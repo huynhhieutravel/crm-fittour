@@ -1,3 +1,4 @@
+import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Plus, Stamp, ChevronLeft, ChevronRight, Edit3, Trash2, Eye } from 'lucide-react';
@@ -6,6 +7,8 @@ import VisaProviderDetailDrawer from '../components/modals/VisaProviderDetailDra
 const VisaProvidersTab = ({ checkPerm, checkView, currentUser, setVisaProviderToDelete, addToast }) => {
     const [providers, setProviders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [actionLoading, setActionLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -57,6 +60,30 @@ const VisaProvidersTab = ({ checkPerm, checkView, currentUser, setVisaProviderTo
     };
 
     if (!checkView('suppliers')) return <div style={{ padding: '2rem', textAlign: 'center' }}>Không có quyền truy cập module này.</div>;
+
+    const handleBulkDelete = async () => {
+        if (!selectedIds.length) return;
+        const result = await swalConfirm('Bạn có chắc chắn xoá ' + selectedIds.length + ' mục đã chọn?');
+        if (!result) return;
+        
+        setActionLoading(true);
+        let successCount = 0;
+        let failCount = 0;
+        const token = localStorage.getItem('token');
+        for (const id of selectedIds) {
+            try {
+                await axios.delete(`/api/visa-providers/${id}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
+                successCount++;
+            } catch (err) {
+                console.error(err);
+                failCount++;
+            }
+        }
+        setActionLoading(false);
+        if (addToast) addToast('Đã xoá ' + successCount + ' mục. ' + (failCount > 0 ? 'Lỗi ' + failCount + ' mục.' : ''), successCount > 0 ? 'success' : 'error');
+        setSelectedIds([]);
+        fetchVisaProviders();
+    };
 
     return (
         <div style={{ padding: '2rem' }}>

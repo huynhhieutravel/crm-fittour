@@ -124,7 +124,7 @@ export default function LandtourDetailDrawer({ landtour, onClose, refreshList, c
         }
     };
 
-    const isViewOnly = forceViewMode || (checkPerm ? (landtour ? !checkPerm('landtours', 'edit') : !checkPerm('landtours', 'create')) : checkViewOnly(currentUser?.role, 'suppliers'));
+    const isViewOnly = forceViewMode || (checkPerm ? (landtour ? !(checkPerm('landtours', 'edit') || Number(landtour.created_by) === Number(currentUser?.id)) : !checkPerm('landtours', 'create')) : checkViewOnly(currentUser?.role, 'suppliers'));
 
     const handleContactChange = (index, field, value) => {
         const newContacts = [...contacts];

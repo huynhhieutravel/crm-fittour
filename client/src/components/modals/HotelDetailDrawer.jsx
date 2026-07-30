@@ -31,13 +31,14 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
     const [activeContractId, setActiveContractId] = useState(null);
 
     const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     const [hotelNotes, setHotelNotes] = useState([]);
     const [newNote, setNewNote] = useState('');
 
     const [mediaFiles, setMediaFiles] = useState([]);
     const [pendingUploads, setPendingUploads] = useState([]);
-    const [uploadProgress, setUploadProgress] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const [lightboxMedia, setLightboxMedia] = useState(null);
     const fileInputRef = useRef(null);
@@ -64,34 +65,49 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
         }
     };
 
-    const handleFileUpload = async (files) => {
+    const handleUploadMedia = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.size > 80 * 1024 * 1024) { addToast?.('File quá lớn! Tối đa 80MB.', 'error'); return; }
         if (mediaFiles.length + pendingUploads.length >= 10) { addToast?.('Đã đạt tối đa 10 file!', 'error'); return; }
-        const validFiles = Array.from(files).filter(f => f.size <= 80 * 1024 * 1024);
-        if (validFiles.length < files.length) addToast?.('Một số file vượt quá 80MB và đã bị loại.', 'warning');
-        
-        if (!hotel?.id) {
-            const newPending = validFiles.map(f => ({ file: f, url: URL.createObjectURL(f), isPending: true }));
-            setPendingUploads(prev => [...prev, ...newPending].slice(0, 10 - mediaFiles.length));
-            return;
-        }
 
-        const token = localStorage.getItem('token');
-        setLoading(true);
-        for (const file of validFiles) {
-            try {
-                const fd = new FormData();
-                fd.append('file', file);
-                await axios.post(`/api/hotels/${hotel.id}/media`, fd, {
-                    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
-                    onUploadProgress: (evt) => setUploadProgress(Math.round((evt.loaded * 100) / evt.total))
-                });
-            } catch (err) {
-                addToast?.(`Lỗi upload ${file.name}`, 'error');
-            }
-        }
+        setUploading(true);
         setUploadProgress(0);
-        setLoading(false);
-        fetchMedia();
+
+        try {
+            const token = localStorage.getItem('token');
+            const fd = new FormData();
+            fd.append('file', file);
+
+            if (!hotel?.id) {
+                const res = await axios.post('/api/media/upload', fd, {
+                    headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` },
+                    onUploadProgress: (progressEvent) => {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        setUploadProgress(percentCompleted);
+                    }
+                });
+                const file_type = file.type.startsWith('image/') ? 'image' : (file.name.endsWith('.doc') || file.name.endsWith('.docx') ? 'doc' : 'pdf');
+                setPendingUploads([...pendingUploads, { id: 'pending_' + Date.now(), file_url: res.data.url, file_name: file.name, file_size: file.size, file_type, isPending: true }]);
+                addToast?.('Tải lên thành công!');
+            } else {
+                await axios.post(`/api/hotels/${hotel.id}/media`, fd, {
+                    headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` },
+                    onUploadProgress: (progressEvent) => {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        setUploadProgress(percentCompleted);
+                    }
+                });
+                addToast?.('Tải lên thành công!');
+                fetchMedia();
+            }
+        } catch (err) {
+            addToast?.(err.response?.data?.message || 'Lỗi tải file', 'error');
+        } finally { 
+            setUploading(false); 
+            setUploadProgress(0);
+            if(fileInputRef.current) fileInputRef.current.value=''; 
+        }
     };
 
     const handleDeleteMedia = async (media) => {
@@ -107,7 +123,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
     };
 
     const handleDrag = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(e.type === "dragenter" || e.type === "dragover"); };
-    const handleDrop = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFileUpload(e.dataTransfer.files); };
+    const handleDrop = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); if (e.dataTransfer.files && e.dataTransfer.files[0]) handleUploadMedia({ target: { files: e.dataTransfer.files } }); };
     const removePendingUpload = (index) => setPendingUploads(prev => prev.filter((_, i) => i !== index));
 
     const handleAddHotelNote = async () => {
@@ -196,17 +212,18 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
                 onClose();
             } else {
                 const created = await axios.post('/api/hotels', payload, { headers: { Authorization: `Bearer ${token}` } });
+                const newHotelId = created.data.id;
                 
-                // Upload pending files for new hotel
-                if (pendingUploads.length > 0 && created.data.id) {
-                    for (const p of pendingUploads) {
+                if (pendingUploads.length > 0 && newHotelId) {
+                    for (const pending of pendingUploads) {
                         try {
-                            const fd = new FormData();
-                            fd.append('file', p.file);
-                            await axios.post(`/api/hotels/${created.data.id}/media`, fd, {
-                                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
-                            });
-                        } catch(e) { console.error("Lỗi upload file", e); }
+                            await axios.post(`/api/hotels/${newHotelId}/media`, {
+                                file_url: pending.file_url,
+                                file_name: pending.file_name,
+                                file_size: pending.file_size,
+                                file_type: pending.file_type
+                            }, { headers: { Authorization: `Bearer ${token}` } });
+                        } catch(err) { console.error('Upload pending error', err); }
                     }
                 }
                 
@@ -222,7 +239,7 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
         }
     };
 
-    const isViewOnly = checkPerm ? (hotel ? !checkPerm('hotels', 'edit') : !checkPerm('hotels', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
+    const isViewOnly = checkPerm ? (hotel ? !(checkPerm('hotels', 'edit') || Number(hotel.created_by) === Number(currentUser?.id)) : !checkPerm('hotels', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
 
     const handleContactChange = (index, field, value) => {
         const newContacts = [...contacts];
@@ -272,6 +289,18 @@ export default function HotelDetailDrawer({ hotel, onClose, refreshList, current
             setServices([]);
         }
     };
+
+    const tabStyle = (active) => ({
+        padding: '1rem 0',
+        cursor: 'pointer',
+        borderBottom: active ? '2px solid #3b82f6' : '2px solid transparent',
+        color: active ? '#3b82f6' : '#64748b',
+        fontWeight: 600,
+        fontSize: '0.9rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+    });
 
     const inputCell = { padding: '8px', borderBottom: '1px solid #e2e8f0', background: 'transparent' };
     const inlineInput = { width: '100%', border: '1px solid #cbd5e1', borderRadius: '4px', padding: '6px 8px', fontSize: '13px', background: 'white', outline: 'none' };

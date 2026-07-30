@@ -34,18 +34,18 @@ async function fetchActiveTours() {
       td.tour_info->>'tour_itinerary_web_link' as website_link,
       td.start_date, td.end_date, td.market, td.status,
       td.tour_info, td.max_participants,
-      (
-        SELECT COALESCE(SUM(b.pax_count), 0)
-        FROM bookings b
-        WHERE b.tour_departure_id = td.id AND b.booking_status NOT IN ('Huỷ', 'Mới', 'Giữ chỗ')
-      ) AS total_sold,
-      (
-        SELECT COALESCE(SUM(b.pax_count), 0)
-        FROM bookings b
-        WHERE b.tour_departure_id = td.id AND b.booking_status IN ('Giữ chỗ', 'Mới')
-      ) AS total_reserved
+      COALESCE(b_agg.total_sold, 0) AS total_sold,
+      COALESCE(b_agg.total_reserved, 0) AS total_reserved
     FROM tour_departures td
     LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+    LEFT JOIN (
+      SELECT 
+        tour_departure_id,
+        SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'Mới', 'Giữ chỗ') THEN pax_count ELSE 0 END) AS total_sold,
+        SUM(CASE WHEN booking_status IN ('Giữ chỗ', 'Mới') THEN pax_count ELSE 0 END) AS total_reserved
+      FROM bookings
+      GROUP BY tour_departure_id
+    ) b_agg ON b_agg.tour_departure_id = td.id
     WHERE td.start_date >= CURRENT_DATE
       AND COALESCE(tt.is_active, true) = true
     ORDER BY td.start_date ASC

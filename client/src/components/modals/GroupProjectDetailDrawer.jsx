@@ -187,10 +187,15 @@ export default function GroupProjectDetailDrawer({ project, onClose, refreshList
     }));
     const allowedRoles = ['group_staff', 'group_manager', 'group_operations', 'group_operations_lead', 'admin', 'manager'];
     const userOptions = (users || [])
-        .filter(u => u.is_active !== false && allowedRoles.includes(u.role_name))
+        .filter(u => (u.is_active !== false && allowedRoles.includes(u.role_name)) || u.id === formData.assigned_to)
+        .sort((a, b) => {
+            if (a.is_active === false && b.is_active !== false) return 1;
+            if (a.is_active !== false && b.is_active === false) return -1;
+            return (a.full_name || a.username || '').localeCompare(b.full_name || b.username || '');
+        })
         .map(u => ({
             value: u.id, 
-            label: `${u.full_name || u.username || `User ${u.id}`} (${formatRoleDisplayName(u.role_name)})`
+            label: `${u.full_name || u.username || `User ${u.id}`} (${formatRoleDisplayName(u.role_name)})${u.is_active === false ? ' (TẠM DỪNG)' : ''}`
         }));
 
     const handleRevenueChange = (e) => {

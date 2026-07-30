@@ -76,29 +76,38 @@ export default function TransportDetailDrawer({ transport, onClose, refreshList,
         const validFiles = Array.from(files).filter(f => f.size <= 80 * 1024 * 1024);
         if (validFiles.length < files.length) addToast?.('Một số file vượt quá 80MB và đã bị loại.', 'warning');
         
-        if (!transport?.id) {
-            const newPending = validFiles.map(f => ({ file: f, url: URL.createObjectURL(f), isPending: true }));
-            setPendingUploads(prev => [...prev, ...newPending].slice(0, 10 - mediaFiles.length));
-            return;
-        }
+        setLoading(true);
+        setUploadProgress(0);
 
         const token = localStorage.getItem('token');
-        setLoading(true);
         for (const file of validFiles) {
             try {
                 const fd = new FormData();
                 fd.append('file', file);
-                await axios.post(`/api/transports/${transport.id}/media`, fd, {
-                    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
-                    onUploadProgress: (evt) => setUploadProgress(Math.round((evt.loaded * 100) / evt.total))
-                });
+                
+                if (!transport?.id) {
+                    const res = await axios.post('/api/media/upload', fd, {
+                        headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` },
+                        onUploadProgress: (progressEvent) => {
+                            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                            setUploadProgress(percentCompleted);
+                        }
+                    });
+                    const file_type = file.type.startsWith('image/') ? 'image' : (file.name.endsWith('.doc') || file.name.endsWith('.docx') ? 'doc' : 'pdf');
+                    setPendingUploads(prev => [...prev, { id: 'pending_' + Date.now(), file_url: res.data.url, file_name: file.name, file_size: file.size, file_type, isPending: true }]);
+                } else {
+                    await axios.post(`/api/transports/${transport.id}/media`, fd, {
+                        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+                        onUploadProgress: (evt) => setUploadProgress(Math.round((evt.loaded * 100) / evt.total))
+                    });
+                }
             } catch (err) {
                 addToast?.(`Lỗi upload ${file.name}`, 'error');
             }
         }
         setUploadProgress(0);
         setLoading(false);
-        fetchMedia();
+        if (transport?.id) fetchMedia();
     };
 
     const handleDeleteMedia = async (media) => {
@@ -174,13 +183,22 @@ export default function TransportDetailDrawer({ transport, onClose, refreshList,
                 const created = await axios.post('/api/transports', payload, { headers: { Authorization: `Bearer ${token}` } });
                 
                 if (pendingUploads.length > 0 && created.data.id) {
-                    for (const p of pendingUploads) {
+                    for (const pending of pendingUploads) {
                         try {
-                            const fd = new FormData();
-                            fd.append('file', p.file);
-                            await axios.post(`/api/transports/${created.data.id}/media`, fd, {
-                                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
-                            });
+                            if (pending.file_url && pending.file_url.startsWith('/uploads/')) {
+                                await axios.post(`/api/transports/${created.data.id}/media`, {
+                                    file_url: pending.file_url,
+                                    file_name: pending.file_name,
+                                    file_size: pending.file_size,
+                                    file_type: pending.file_type
+                                }, { headers: { Authorization: `Bearer ${token}` } });
+                            } else {
+                                const fd = new FormData();
+                                fd.append('file', pending.file);
+                                await axios.post(`/api/transports/${created.data.id}/media`, fd, {
+                                    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+                                });
+                            }
                         } catch(e) { console.error("Lỗi upload file", e); }
                     }
                 }
@@ -197,7 +215,7 @@ export default function TransportDetailDrawer({ transport, onClose, refreshList,
         }
     };
 
-    const isViewOnly = checkPerm ? (transport ? !checkPerm('transports', 'edit') : !checkPerm('transports', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
+    const isViewOnly = checkPerm ? (transport ? !(checkPerm('transports', 'edit') || Number(transport.created_by) === Number(currentUser?.id)) : !checkPerm('transports', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
 
     const handleContactChange = (index, field, value) => {
         const newContacts = [...contacts];

@@ -13,17 +13,17 @@ router.put('/:id', authenticateToken, permCheckOrOwner('transports', 'edit', 'tr
 router.delete('/:id', authenticateToken, permCheckOrOwner('transports', 'delete', 'transports', 'id'), controller.delete);
 
 // Contacts
-router.post('/:transport_id/contacts', authenticateToken, permCheck('transports', 'edit'), controller.createContact);
+router.post('/:transport_id/contacts', authenticateToken, permCheckOrOwner('transports', 'edit', 'transports', 'transport_id'), controller.createContact);
 router.put('/contacts/:contact_id', authenticateToken, permCheck('transports', 'edit'), controller.updateContact);
 router.delete('/contacts/:contact_id', authenticateToken, permCheck('transports', 'edit'), controller.deleteContact);
 
 // Services
-router.post('/:transport_id/services', authenticateToken, permCheck('transports', 'edit'), controller.createService);
+router.post('/:transport_id/services', authenticateToken, permCheckOrOwner('transports', 'edit', 'transports', 'transport_id'), controller.createService);
 router.put('/services/:service_id', authenticateToken, permCheck('transports', 'edit'), controller.updateService);
 router.delete('/services/:service_id', authenticateToken, permCheck('transports', 'edit'), controller.deleteService);
 
 // Contracts
-router.post('/:transport_id/contracts', authenticateToken, permCheck('transports', 'edit'), controller.createContract);
+router.post('/:transport_id/contracts', authenticateToken, permCheckOrOwner('transports', 'edit', 'transports', 'transport_id'), controller.createContract);
 router.put('/contracts/:contract_id', authenticateToken, permCheck('transports', 'edit'), controller.updateContract);
 router.delete('/contracts/:contract_id', authenticateToken, permCheck('transports', 'edit'), controller.deleteContract);
 
@@ -34,11 +34,11 @@ router.delete('/rates/:rate_id', authenticateToken, permCheck('transports', 'edi
 
 // Notes
 router.get('/:transport_id/notes', authenticateToken, permCheck('transports', 'view'), controller.getNotes);
-router.post('/:transport_id/notes', authenticateToken, permCheck('transports', 'edit'), controller.addNote);
+router.post('/:transport_id/notes', authenticateToken, permCheckOrOwner('transports', 'edit', 'transports', 'transport_id'), controller.addNote);
 
 // Media
 router.get('/:transport_id/media', authenticateToken, permCheck('transports', 'view'), controller.getTransportMedia);
-router.post('/:transport_id/media', authenticateToken, permCheck('transports', 'edit'), controller.uploadTransportMedia);
+router.post('/:transport_id/media', authenticateToken, permCheckOrOwner('transports', 'edit', 'transports', 'transport_id'), controller.uploadTransportMedia);
 router.delete('/media/:media_id', authenticateToken, permCheck('transports', 'edit'), controller.deleteTransportMedia);
 
 module.exports = router;

@@ -226,6 +226,26 @@ function AppContent() {
     return !!(localStorage.getItem('token') && localStorage.getItem('user'));
   });
   const [inboxPsid, setInboxPsid] = useState(null);
+  
+  // Global Inbox Drawer State
+  const [isInboxDrawerOpen, setIsInboxDrawerOpen] = useState(false);
+  const [drawerInboxPsid, setDrawerInboxPsid] = useState(null);
+
+  const handleOpenInboxDrawer = (psid) => {
+      setDrawerInboxPsid(psid);
+      setIsInboxDrawerOpen(true);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isInboxDrawerOpen) {
+        setIsInboxDrawerOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isInboxDrawerOpen]);
+
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     try { return savedUser ? JSON.parse(savedUser) : null; } catch(e) { return null; }
@@ -3152,7 +3172,7 @@ function AppContent() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} title="Mở tuỳ chọn">
-                <div style={{ textAlign: 'right' }}>
+                <div className="user-profile-info" style={{ textAlign: 'right' }}>
                   <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{user?.full_name || user?.username || 'Người dùng'}</div>
                   <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{user?.role?.toUpperCase() || 'NHÂN VIÊN'}</div>
                 </div>
@@ -3294,6 +3314,9 @@ function AppContent() {
                 users={users}
                 checkPerm={checkPerm}
                 setShowLeaveModal={setShowLeaveModal}
+                navigateToInbox={handleOpenInboxDrawer}
+                fetchLeads={fetchLeads}
+                handleConvertLead={(leadId) => setLeadToConvert(leads.find(l => l.id === leadId))}
               />
             )}
 
@@ -3336,7 +3359,7 @@ function AppContent() {
                 bus={bus}
                 fetchLeads={fetchLeads}
                 handleConvertLead={(leadId) => setLeadToConvert(leads.find(l => l.id === leadId))}
-                navigateToInbox={(psid) => { setInboxPsid(psid); navigate('/inbox'); setActiveTab('inbox'); }}
+                navigateToInbox={handleOpenInboxDrawer}
               />
             )}
             {activeTab === 'leads-dashboard' && (
@@ -3401,7 +3424,15 @@ function AppContent() {
         )}
 
         {(activeTab === 'notification-center' && checkView('leads')) && (
-          <GlobalChatTab users={users} tours={tourTemplates} navigateToInbox={(psid) => { setInboxPsid(psid); navigate('/inbox'); setActiveTab('inbox'); }} />
+          <GlobalChatTab 
+            users={users} 
+            tours={tourTemplates} 
+            leads={leads}
+            currentUser={user}
+            bus={bus}
+            setEditingLead={setEditingLead}
+            navigateToInbox={handleOpenInboxDrawer} 
+          />
         )}
 
 
@@ -4162,6 +4193,25 @@ function AppContent() {
           </div>
         </div>
       </div>
+    )}
+
+    {/* INBOX DRAWER OVERLAY (GLOBAL) */}
+    {isInboxDrawerOpen && (
+        <div className="inbox-drawer-overlay">
+            <div className="inbox-drawer-content">
+                <InboxTab 
+                    initialPsid={drawerInboxPsid} 
+                    clearInitialPsid={() => setDrawerInboxPsid(null)}
+                    onGoBack={() => setIsInboxDrawerOpen(false)}
+                    leads={leads}
+                    users={users}
+                    currentUser={user}
+                    bus={bus}
+                    setEditingLead={setEditingLead}
+                    goBackText="Đóng Inbox"
+                />
+            </div>
+        </div>
     )}
   </>
 );

@@ -190,11 +190,17 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [], act
                             >
                                 <option value="">Tất cả nhân viên</option>
                                 <option value="NO_STAFF">⚠ Chưa giao ai</option>
-                                {users.filter(u => u.is_active !== false && (
+                                {users.filter(u => leaders.some(l => l.assigned_to === u.id) || (u.is_active !== false && (
                                     (u.teams || []).some(t => String(t.name || '').toLowerCase().includes('đoàn') || String(t.name || '').toLowerCase().includes('mice')) ||
                                     ['admin', 'manager', 'group_manager', 'group_staff', 'group_operations', 'group_operations_lead'].includes(u.role_name) ||
                                     u.role === 'admin' || u.role === 'manager'
-                                )).map(u => (
+                                )))
+.sort((a, b) => {
+    if (a.is_active === false && b.is_active !== false) return 1;
+    if (a.is_active !== false && b.is_active === false) return -1;
+    return (a.full_name || a.username || '').localeCompare(b.full_name || b.username || '');
+})
+.map(u => (
                                     <option key={u.id} value={u.id}>{u.username || u.full_name}</option>
                                 ))}
                             </select>

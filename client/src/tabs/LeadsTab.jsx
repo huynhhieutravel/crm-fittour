@@ -60,6 +60,7 @@ const LeadsTab = ({
   });
 
   const [selectedLeadIds, setSelectedLeadIds] = useState([]);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [bulkActionStatus, setBulkActionStatus] = useState('');
   const [bulkActionClass, setBulkActionClass] = useState('');
   const [isTourDropdownOpen, setIsTourDropdownOpen] = useState(false);
@@ -242,9 +243,58 @@ const LeadsTab = ({
         </div>
       </div>
 
-      <div className="filter-bar" style={{ display: 'flex', flexDirection: 'column-reverse', gap: '1rem' }}>
+      {/* Mobile Top Bar */}
+      <div className="lead-desktop-hide mobile-filter-top">
+         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ flex: 1, position: 'relative' }}>
+               <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+               <input 
+                 className="filter-input" 
+                 style={{ width: '100%', paddingLeft: '36px', height: '42px', borderRadius: '8px', fontSize: '16px' }} 
+                 placeholder="Tìm tên, SĐT..." 
+                 value={leadFilters.search} 
+                 onChange={e => setLeadFilters({...leadFilters, search: e.target.value})} 
+               />
+            </div>
+            <button className="mobile-filter-btn" onClick={() => setIsMobileFilterOpen(true)}>
+               <span style={{ fontSize: '1.1rem' }}>🎛️</span> Lọc {((leadFilters.status ? 1 : 0) + (leadFilters.bu_group ? 1 : 0) + (leadFilters.assigned_to ? 1 : 0) + (leadFilters.hasPhone ? 1 : 0) + ((leadFilters.tours && leadFilters.tours.length > 0) ? 1 : 0) + (leadFilters.timeRange === 'custom' ? 1 : 0)) > 0 && <span className="filter-badge">{(leadFilters.status ? 1 : 0) + (leadFilters.bu_group ? 1 : 0) + (leadFilters.assigned_to ? 1 : 0) + (leadFilters.hasPhone ? 1 : 0) + ((leadFilters.tours && leadFilters.tours.length > 0) ? 1 : 0) + (leadFilters.timeRange === 'custom' ? 1 : 0)}</span>}
+            </button>
+            <button 
+              className="login-btn" 
+              style={{ width: '42px', height: '42px', padding: 0, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#2563eb', color: 'white', border: 'none', flexShrink: 0 }} 
+              onClick={() => setShowAddLeadModal(true)}
+            >
+              <Plus size={20} strokeWidth={3} />
+            </button>
+         </div>
+         <div className="mobile-quick-chips">
+            {[
+              { id: 'today', label: 'Hôm nay' },
+              { id: 'yesterday', label: 'Hôm qua' },
+              { id: 'week', label: 'Tuần này' },
+              { id: 'month', label: 'Tháng này' },
+              { id: 'all', label: 'Tất cả' }
+            ].map(p => (
+              <button 
+                key={p.id} 
+                className={`preset-btn ${(leadFilters.timeRange === p.id && !leadFilters.startDate && !leadFilters.endDate) ? 'active' : ''}`} 
+                style={{ flexShrink: 0, whiteSpace: 'nowrap' }}
+                onClick={() => setLeadFilters({...leadFilters, timeRange: p.id, startDate: '', endDate: ''})}
+              >
+                {p.label}
+              </button>
+            ))}
+         </div>
+      </div>
+
+      <div className={`lead-mobile-overlay ${isMobileFilterOpen ? 'open' : ''}`} onClick={() => setIsMobileFilterOpen(false)}></div>
+      <div className={`filter-bar lead-mobile-drawer ${isMobileFilterOpen ? 'open' : ''}`} style={{ display: 'flex', flexDirection: 'column-reverse', gap: '1rem' }}>
+        <div className="lead-desktop-hide" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
+          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1e293b' }}>Bộ lọc nâng cao</div>
+          <button style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setIsMobileFilterOpen(false)}><X size={18} /></button>
+        </div>
         <div className="lead-filter-grid">
-          <div className="filter-group">
+          <div className="filter-group lead-mobile-hide">
             <label>TÌM KIẾM</label>
             <div style={{ position: 'relative' }}>
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
@@ -321,7 +371,7 @@ const LeadsTab = ({
             />
           </div>
           <button 
-            className="login-btn" 
+            className="login-btn lead-mobile-hide" 
             style={{ 
               width: 'auto', 
               height: '42px', 
@@ -439,7 +489,6 @@ const LeadsTab = ({
           </div>
         </div>
       </div>
-
       <div className="data-table-container">
         <table className="data-table card-view-table">
           <thead>

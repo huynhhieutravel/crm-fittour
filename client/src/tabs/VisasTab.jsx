@@ -172,7 +172,7 @@ export default function VisasTab({ currentUser, checkPerm, addToast }) {
     };
     
     return (
-        <div style={{ padding: '0 2rem' }}>
+        <div style={{ padding: '0 22px' }}>
 
             {/* Delete Confirm Modal */}
             {showDeleteConfirm !== null && (

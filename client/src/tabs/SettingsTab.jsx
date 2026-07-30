@@ -252,8 +252,8 @@ const SettingsTab = ({
             />
           </div>
           <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-            <button className="login-btn" style={{ background: '#0ea5e9', width: 'auto', padding: '0 2rem' }} onClick={handleUpdateSettings}>LƯU CẤU HÌNH WEBHOOK</button>
-            <button className="login-btn" style={{ background: '#f8fafc', color: '#0ea5e9', border: '1px solid #0ea5e9', width: 'auto', padding: '0 2rem' }} onClick={() => handleTestMeta('webhook')}>TEST KIỂM TRA QUYỀN</button>
+            <button className="login-btn" style={{ background: '#0ea5e9', width: 'auto', padding: '0 22px' }} onClick={handleUpdateSettings}>LƯU CẤU HÌNH WEBHOOK</button>
+            <button className="login-btn" style={{ background: '#f8fafc', color: '#0ea5e9', border: '1px solid #0ea5e9', width: 'auto', padding: '0 22px' }} onClick={() => handleTestMeta('webhook')}>TEST KIỂM TRA QUYỀN</button>
           </div>
         </div>
       )}
@@ -294,10 +294,10 @@ const SettingsTab = ({
             />
           </div>
           <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', width: '100%' }}>
-            <button className="login-btn" style={{ background: '#f59e0b', width: 'auto', padding: '0 2rem' }} onClick={handleUpdateSettings}>LƯU CẤU HÌNH API</button>
+            <button className="login-btn" style={{ background: '#f59e0b', width: 'auto', padding: '0 22px' }} onClick={handleUpdateSettings}>LƯU CẤU HÌNH API</button>
             <button 
               className="login-btn" 
-              style={{ background: '#fffbeb', color: '#d97706', border: '1px solid #f59e0b', width: 'auto', padding: '0 2rem', textDecoration: 'none', display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center' }}
+              style={{ background: '#fffbeb', color: '#d97706', border: '1px solid #f59e0b', width: 'auto', padding: '0 22px', textDecoration: 'none', display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center' }}
               onClick={() => {
                 if(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                     alert('Chức năng Đồng bộ API Meta bị khóa trên Localhost để tránh ghi đè dữ liệu thật. Vui lòng thao tác trên erp.fittour.vn.');

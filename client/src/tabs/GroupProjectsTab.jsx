@@ -12,7 +12,7 @@ const STATUS_OPTIONS = [
     { value: 'Thành công', label: 'Thành công' },
     { value: 'Đã quyết toán', label: 'Đã quyết toán' },
     { value: 'Chưa thành công', label: 'Chưa thành công' },
-    { value: '__ALL__', label: '⚡ Tất cả (kể cả thất bại)' }
+    { value: '__ALL__', label: '⚡ Tất cả' }
 ];
 
 
@@ -207,11 +207,25 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
         return new Date(b.departure_date) - new Date(a.departure_date);
     });
 
-    const allowedRoles = ['group_staff', 'group_manager', 'group_operations', 'group_operations_lead', 'admin', 'manager'];
-    const userOptions = (users || []).filter(u => u.is_active !== false && allowedRoles.includes(u.role_name))
+    const userOptions = (users || [])
+    .filter(u => {
+        if (!u.bus || !u.bus.includes('BU3')) return false;
+        if (u.role_name === 'admin') return false;
+        const nameL = (u.full_name || u.username || '').toLowerCase();
+        if (nameL.includes('test')) return false;
+        if (nameL.includes('hiếu') || nameL.includes('hieu')) return false; // Hardcode remove Hiếu as requested
+        return true;
+    })
+    .sort((a, b) => {
+        if (a.is_active === false && b.is_active !== false) return 1;
+        if (a.is_active !== false && b.is_active === false) return -1;
+        const nameA = (a.full_name || a.username || '').toLowerCase();
+        const nameB = (b.full_name || b.username || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+    })
     .map(u => ({
         value: u.id.toString(), 
-        label: `${u.full_name || u.username} (${formatRoleDisplayName(u.role_name)})`
+        label: `${u.full_name || u.username} (${formatRoleDisplayName(u.role_name)})${u.is_active === false ? ' (TẠM DỪNG)' : ''}`
     }));
 
     const getStatusColor = (status) => {
@@ -228,11 +242,12 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
     const formatMoney = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0);
 
     return (
-        <div style={{ padding: '0 2rem' }}>
+        <div style={{ padding: '0 22px' }}>
             <style>
                 {`
                 .filter-preset-group {
                     display: flex;
+                    flex-wrap: wrap;
                     gap: 8px;
                     padding: 4px;
                     background: #f1f5f9;
@@ -276,8 +291,8 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                 boxShadow: '0 4px 20px rgba(0,0,0,0.04)', marginBottom: '2rem',
                 border: '1px solid #f1f5f9'
             }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-start' }}>
-                    <div className="filter-group" style={{ flex: '2 1 300px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
+                    <div className="filter-group" style={{ flex: '1.5 1 250px' }}>
                         <label className="filter-label">Tìm kiếm đoàn / Đại diện</label>
                         <div style={{ position: 'relative' }}>
                             <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
@@ -293,7 +308,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                         </div>
                     </div>
 
-                    <div className="filter-group" style={{ flex: '1 1 200px' }}>
+                    <div className="filter-group" style={{ flex: '1 1 220px' }}>
                         <label className="filter-label">Tình trạng</label>
                         <Select
                             options={STATUS_OPTIONS}
@@ -319,7 +334,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                 </div>
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
                         <span className="filter-label" style={{ margin: 0 }}>Thời gian:</span>
                         <div className="filter-preset-group">
                             {[
@@ -389,51 +404,33 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                 </div>
             </div>
 
-            <div className="table-responsive" style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+            <div className="table-responsive" style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflowX: 'auto' }}>
                 <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
                         <tr style={{ color: '#475569', fontSize: '0.8rem' }}>
-                            <th style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap' }}>NGÀY ĐI - VỀ</th>
-                            <th style={{ padding: '12px 16px', textAlign: 'left' }}>TÊN ĐOÀN (DỰ ÁN)</th>
-                            <th style={{ padding: '12px 16px', textAlign: 'center', width: '180px' }}>GIAI ĐOẠN</th>
-                            <th style={{ padding: '12px 16px', textAlign: 'left' }}>TUYẾN ĐIỂM</th>
-                            <th style={{ padding: '12px 16px', textAlign: 'center' }}>QUY MÔ</th>
-                            <th style={{ padding: '12px 16px', textAlign: 'right' }}>DỰ KIẾN THU</th>
-                            {canViewProfit && <th style={{ padding: '12px 16px', textAlign: 'right' }}>LỢI NHUẬN</th>}
-                            <th style={{ padding: '12px 16px', textAlign: 'left' }}>B2B / ĐẠI DIỆN</th>
-                            <th style={{ padding: '12px 16px', textAlign: 'left' }}>SALE</th>
-                            <th style={{ padding: '12px 16px', textAlign: 'left' }}>HDV</th>
-                            <th style={{ padding: '12px 16px', textAlign: 'center', width: '80px' }}></th>
+                            <th style={{ padding: '12px 16px', textAlign: 'left', minWidth: '220px', position: 'sticky', left: 0, background: '#f8fafc', zIndex: 10, borderRight: '1px solid #e2e8f0' }}>TÊN ĐOÀN (DỰ ÁN)</th>
+                            <th style={{ padding: '12px 4px', textAlign: 'center', width: '120px', minWidth: '120px' }}>GIAI ĐOẠN</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'left', minWidth: '150px' }}>TUYẾN ĐIỂM</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'right', minWidth: '120px' }}>DỰ KIẾN THU</th>
+                            {canViewProfit && <th style={{ padding: '12px 16px', textAlign: 'right', minWidth: '120px' }}>LỢI NHUẬN</th>}
+                            <th style={{ padding: '12px 16px', textAlign: 'left', minWidth: '150px' }}>B2B / ĐẠI DIỆN</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'left', width: '120px', minWidth: '120px' }}>SALE</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'left', minWidth: '150px' }}>HDV</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'center', width: '80px', minWidth: '80px' }}></th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="11" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td></tr>
+                            <tr><td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td></tr>
                         ) : filtered.length === 0 ? (
-                            <tr><td colSpan="11" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Không có dự án MICE nào.</td></tr>
+                            <tr><td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Không có dự án MICE nào.</td></tr>
                         ) : (
                             filtered.map(p => {
                                 const stColors = getStatusColor(p.status);
                                 return (
-                                <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                    <td style={{ padding: '10px 16px', textAlign: 'center', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
-                                        <div 
-                                            onClick={() => handleOpenProject(p)}
-                                            style={{ cursor: 'pointer' }}
-                                            onMouseOver={e => e.currentTarget.style.opacity = '0.7'} 
-                                            onMouseOut={e => e.currentTarget.style.opacity = '1'}
-                                        >
-                                            <div style={{ color: '#1e293b', fontWeight: 600 }}>
-                                                {p.departure_date ? new Date(p.departure_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '---'}
-                                            </div>
-                                            {p.return_date && new Date(p.return_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) !== new Date(p.departure_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) && (
-                                                <div style={{ color: '#64748b', fontSize: '0.75rem' }}>
-                                                    → {new Date(p.return_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td style={{ padding: '10px 16px' }}>
+                                <React.Fragment key={p.id}>
+                                <tr style={{ borderBottom: '1px solid #f1f5f9', background: 'white' }}>
+                                    <td style={{ padding: '10px 16px', position: 'sticky', left: 0, background: 'white', zIndex: 1, borderRight: '1px solid #f1f5f9' }}>
                                         <div 
                                             onClick={() => handleOpenProject(p)}
                                             style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
@@ -443,13 +440,45 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                             <Briefcase size={16} color="#3b82f6" />
                                             {p.name}
                                         </div>
-                                        <div style={{ marginTop: '6px' }}>
+                                        <div 
+                                            onClick={() => handleOpenProject(p)}
+                                            style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', marginTop: '6px' }}
+                                            onMouseOver={e => e.currentTarget.style.opacity = '0.7'} 
+                                            onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                                        >
+                                            <Calendar size={12} color="#64748b" />
+                                            <div style={{ color: '#64748b', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                <span>{p.departure_date ? new Date(p.departure_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '---'}</span>
+                                                {p.return_date && new Date(p.return_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) !== new Date(p.departure_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) && (
+                                                    <>→ <span>{new Date(p.return_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}</span></>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style={{ padding: '10px 4px', textAlign: 'center' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                                            <select
+                                                value={p.status || 'Báo giá'}
+                                                onChange={(e) => handleInlineStatusChange(p.id, e.target.value)}
+                                                style={{
+                                                    padding: '4px 8px', fontSize: '0.75rem', fontWeight: 700,
+                                                    cursor: 'pointer', borderColor: 'transparent', width: '120px',
+                                                    appearance: 'none', background: stColors.bg, color: stColors.color,
+                                                    borderRadius: '6px', outline: 'none', textAlign: 'center'
+                                                }}
+                                            >
+                                                <option value="Báo giá">Báo giá</option>
+                                                <option value="Đang theo dõi">Đang theo dõi</option>
+                                                <option value="Thành công">Thành công</option>
+                                                <option value="Đã quyết toán">Đã quyết toán</option>
+                                                <option value="Chưa thành công">Chưa thành công</option>
+                                            </select>
                                             <button 
                                                 onClick={() => handleOpenProject(p, true)}
                                                 style={{
                                                     background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd',
-                                                    padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600,
-                                                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px'
+                                                    padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600,
+                                                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '4px', width: '120px'
                                                 }}
                                                 title="Mở bảng tiến độ thực thi"
                                             >
@@ -459,9 +488,8 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                                 onClick={() => handleOpenProject(p, false, true)}
                                                 style={{
                                                     background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0',
-                                                    padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600,
-                                                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px',
-                                                    marginTop: '4px'
+                                                    padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600,
+                                                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '4px', width: '120px'
                                                 }}
                                                 title="Mở bản trình duyệt A4"
                                             >
@@ -469,32 +497,14 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                             </button>
                                         </div>
                                     </td>
-                                    <td style={{ padding: '6px 8px', textAlign: 'center' }}>
-                                        <select
-                                            value={p.status || 'Báo giá'}
-                                            onChange={(e) => handleInlineStatusChange(p.id, e.target.value)}
-                                            style={{
-                                                padding: '4px 8px', fontSize: '0.75rem', fontWeight: 700,
-                                                cursor: 'pointer', borderColor: 'transparent', minWidth: '130px',
-                                                appearance: 'none', background: stColors.bg, color: stColors.color,
-                                                borderRadius: '6px', outline: 'none', textAlign: 'center'
-                                            }}
-                                        >
-                                            <option value="Báo giá">Báo giá</option>
-                                            <option value="Đang theo dõi">Đang theo dõi</option>
-                                            <option value="Thành công">Thành công</option>
-                                            <option value="Đã quyết toán">Đã quyết toán</option>
-                                            <option value="Chưa thành công">Chưa thành công</option>
-                                        </select>
-                                    </td>
                                     <td style={{ padding: '10px 16px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#475569' }}>
                                             <MapPin size={14} color="#94a3b8" />
                                             {p.destination || 'Chưa xác định'}
                                         </div>
-                                    </td>
-                                    <td style={{ padding: '10px 16px', textAlign: 'center', fontWeight: 'bold', fontSize: '0.85rem' }}>
-                                        {p.expected_pax} Pax
+                                        <div style={{ marginTop: '4px', fontSize: '0.8rem', fontWeight: 600, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Users size={12} color="#64748b" /> {p.expected_pax} Pax
+                                        </div>
                                     </td>
                                     <td style={{ padding: '10px 16px', textAlign: 'right' }}>
                                         <div style={{ fontWeight: 'bold', color: '#16a34a', fontSize: '0.85rem' }}>{formatMoney(p.total_revenue)}</div>
@@ -506,7 +516,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                     </td>
                                     )}
                                     <td style={{ padding: '10px 16px', fontSize: '0.85rem' }}>
-                                        <div style={{ fontWeight: 600, color: p.company_name ? '#0f172a' : '#94a3b8' }}>{p.company_name || '— Chưa chọn DN —'}</div>
+                                        <div style={{ fontWeight: 600, color: p.company_name ? '#0f172a' : '#94a3b8' }}>{p.company_name || '-Chưa chọn DN-'}</div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748b', marginTop: '4px', fontSize: '0.75rem' }}>
                                             <Users size={12} /> {p.leader_name || '-'}
                                         </div>
@@ -532,9 +542,7 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                     </td>
                                     <td style={{ padding: '10px 16px', textAlign: 'center' }}>
                                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                                            <button className="icon-btn" title="Xem" onClick={() => handleOpenProject(p)} style={{ color: '#0284c7', background: '#e0f2fe' }}>
-                                                <Eye size={16} />
-                                            </button>
+
                                             {(canEdit(currentUser?.role, 'group') || p.assigned_to === currentUser?.id) && (
                                                 <button className="icon-btn edit" title="Sửa" onClick={() => handleOpenProject(p)}>
                                                     <Edit2 size={16} />
@@ -548,7 +556,8 @@ export default function GroupProjectsTab({ currentUser, addToast, users, handleD
                                         </div>
                                     </td>
                                 </tr>
-                            )})
+                                </React.Fragment>
+                                )})
                         )}
                     </tbody>
                 </table>

@@ -266,12 +266,20 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
   
   const STATUS_COLORS = {
     "Mới": "#3b82f6", // blue
-    "Đang tư vấn": "#f59e0b", // yellow
+    "Chưa chăm sóc": "#94a3b8", // slate
+    "Đang liên hệ": "#f59e0b", // yellow
+    "Liên hệ lần 2": "#8b5cf6", // purple
     "Chốt đơn": "#10b981", // green
     "Thất bại": "#ef4444", // red
-    "Chăm sóc lại": "#8b5cf6", // purple
-    "Chưa tiếp cận": "#ec4899", // pink
-    "Chưa xác định": "#94a3b8" // slate
+    "Chưa xác định": "#cbd5e1" // light slate
+  };
+
+  const QUALITY_COLORS = {
+    "Tiềm Năng": "#10b981", // green
+    "Không Tiềm Năng": "#f59e0b", // yellow
+    "Không có nhu cầu": "#ef4444", // red
+    "Mới": "#3b82f6", // blue
+    "Chưa xác định": "#cbd5e1" // light slate
   };
 
   const monthOptions = [
@@ -616,13 +624,13 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                   nameKey="status"
                   isAnimationActive={false}
                   label={({ status, percent }) =>
-                    `${status}: ${(percent * 100).toFixed(0)}%`
+                    percent > 0.05 ? `${status}: ${(percent * 100).toFixed(0)}%` : ''
                   }
                 >
                   {stats.statusStats.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
+                      fill={STATUS_COLORS[entry.status] || COLORS[index % COLORS.length]}
                       cornerRadius={8}
                     />
                   ))}
@@ -665,7 +673,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                   nameKey="name"
                   isAnimationActive={false}
                   label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
+                    percent > 0.05 ? `${name}: ${(percent * 100).toFixed(0)}%` : ''
                   }
                 >
                   {stats.buStats.map((entry, index) => (
@@ -847,22 +855,15 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                   dataKey="count"
                   nameKey="name"
                   isAnimationActive={false}
-                  label={({ name, count }) => `${name}: ${count}`}
+                  label={({ name, percent, count }) => 
+                    percent > 0.05 ? `${name}: ${count}` : ''
+                  }
                 >
                   {stats.classificationStats.map((entry, index) => (
                     <Cell
                       key={`cell-quality-${index}`}
-                      fill={
-                        entry.name === "Nóng"
-                          ? "#ef4444"
-                          : entry.name === "Liên hệ lần 2"
-                            ? "#10b981"
-                            : entry.name === "Ấm"
-                              ? "#f59e0b"
-                              : entry.name === "Lạnh"
-                                ? "#6366f1"
-                                : COLORS[index % COLORS.length]
-                      }
+                      fill={QUALITY_COLORS[entry.name] || COLORS[(index + 2) % COLORS.length]}
+                      cornerRadius={8}
                     />
                   ))}
                 </Pie>
@@ -927,17 +928,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
                   {stats.classificationStats.map((entry, index) => (
                     <Cell
                       key={`cell-bar-quality-${index}`}
-                      fill={
-                        entry.name === "Nóng"
-                          ? "#ef4444"
-                          : entry.name === "Liên hệ lần 2"
-                            ? "#10b981"
-                            : entry.name === "Ấm"
-                              ? "#f59e0b"
-                              : entry.name === "Lạnh"
-                                ? "#6366f1"
-                                : COLORS[index % COLORS.length]
-                      }
+                      fill={QUALITY_COLORS[entry.name] || COLORS[(index + 2) % COLORS.length]}
                     />
                   ))}
                   <LabelList
@@ -954,86 +945,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="analytics-card professional flex-1">
-          <div className="card-header">
-            <div>
-              <h3>Lead Vừa Đăng Ký</h3>
-              <p className="card-subtitle">Hoạt động khách hàng mới nhất</p>
-            </div>
-            <Activity size={20} className="text-blue-500" />
-          </div>
-          <div className="mt-6">
-            <div className="flex flex-col gap-3">
-              {stats.recentLeads && stats.recentLeads.length > 0 ? (
-                stats.recentLeads.map((lead, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center p-4 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all cursor-pointer border border-transparent hover:border-slate-200"
-                    onClick={() => setEditingLead(lead)}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0 shadow-inner">
-                        {lead.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="font-bold text-slate-800 text-sm">
-                          {lead.name}
-                        </div>
-                        <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-1 font-medium">
-                          {lead.phone || "Không có SĐT"} •{" "}
-                          <span className="text-blue-500">
-                            {lead.source || "Khác"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <span
-                          className={`px-3 py-1.5 rounded-xl text-[11px] font-bold shadow-sm ${
-                            lead.status === "Mới"
-                              ? "bg-blue-100 text-blue-700"
-                              : lead.status === "Đang xử lý"
-                                ? "bg-amber-100 text-amber-700"
-                                : lead.status === "Chốt đơn"
-                                  ? "bg-emerald-100 text-emerald-700"
-                                  : lead.status === "Thất bại"
-                                    ? "bg-rose-100 text-rose-700"
-                                    : "bg-slate-200 text-slate-700"
-                          }`}
-                        >
-                          {lead.status}
-                        </span>
-                      </div>
-                      <div className="text-right flex flex-col items-end min-w-[70px]">
-                        <span className="text-[12px] font-bold text-slate-700">
-                          {new Date(lead.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', 
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                        <span className="text-[10px] font-semibold text-slate-400 mt-0.5 uppercase">
-                          {new Date(lead.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', 
-                            day: "2-digit",
-                            month: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="p-10 text-center bg-slate-50 border border-slate-100 rounded-2xl">
-                  <Activity size={24} className="text-slate-300 mx-auto mb-2" />
-                  <div className="text-slate-400 font-medium text-sm">
-                    Chưa có hoạt động mới
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
       <style>{`
         .dashboard-content {

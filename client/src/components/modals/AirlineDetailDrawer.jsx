@@ -112,7 +112,7 @@ export default function AirlineDetailDrawer({ airline, onClose, refreshList, cur
         }
     };
 
-    const isViewOnly = checkPerm ? (airline ? !checkPerm('airlines', 'edit') : !checkPerm('airlines', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
+    const isViewOnly = checkPerm ? (airline ? !(checkPerm('airlines', 'edit') || Number(airline.created_by) === Number(currentUser?.id)) : !checkPerm('airlines', 'create')) : checkViewOnly(currentUser?.role, 'suppliers');
 
     const handleContactChange = (index, field, value) => {
         const newContacts = [...contacts];

@@ -18,7 +18,9 @@ import {
   CalendarHeart,
   Plus,
   MessageSquare,
-  X
+  X,
+  UserCheck,
+  Menu
 } from 'lucide-react';
 import LeaveRequestsTab from '../LeaveRequestsTab';
 
@@ -62,7 +64,8 @@ const SalesDashboard = ({
   checkPerm,
   setShowLeaveModal,
   fetchLeads,
-  navigateToInbox
+  navigateToInbox,
+  handleConvertLead
 }) => {
   const getInitialTab = () => {
     const hash = window.location.hash.replace('#', '');
@@ -226,7 +229,7 @@ const SalesDashboard = ({
 
   const finalMyLeads = myLeads.filter(l => {
     if (statusFilter === 'PROCESSING') {
-      if (l.status === 'Fail' || l.status === 'Chốt đơn') return false;
+      if (l.status === 'Fail' || l.won_at) return false;
     } else if (statusFilter !== 'ALL') {
       if (l.status !== statusFilter) return false;
     }
@@ -269,19 +272,11 @@ const SalesDashboard = ({
 
 
   return (
-    <div className="animate-fade-in" style={{ paddingBottom: '2rem' }}>
-      <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+    <>
+      <div className="animate-fade-in workspace-container" style={{ paddingBottom: '2rem' }}>
+      <div style={{ marginBottom: '1.5rem', marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            Sale Workspace
-            <span style={{ fontSize: '0.8rem', padding: '4px 8px', background: '#e0e7ff', color: '#4338ca', borderRadius: '12px', fontWeight: 600 }}>WORKSPACE V3.0</span>
-          </h2>
           <p style={{ color: '#64748b' }}>Hôm nay bạn có {myNewLeads.length} Lead mới và {totalDebtBookings} Booking đang chờ thu tiền.</p>
-        </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-            <button className="btn-pro-save" onClick={() => setShowLeaveModal(true)} style={{ background: '#8b5cf6' }}>
-                <CalendarHeart size={18} /> XIN NGHỈ PHÉP
-            </button>
         </div>
       </div>
 
@@ -334,7 +329,7 @@ const SalesDashboard = ({
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '10px' }}>
+      <div className="workspace-tabs-container" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '10px', flexWrap: 'wrap' }}>
         <button 
           onClick={() => setActiveInternalTab('bookings')} 
           style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', fontSize: '1rem', fontWeight: 700, padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s', color: activeInternalTab === 'bookings' ? '#fff' : '#64748b', backgroundColor: activeInternalTab === 'bookings' ? '#059669' : 'transparent' }}
@@ -347,12 +342,7 @@ const SalesDashboard = ({
         >
           <UserPlus size={18} /> Lead Đang Quản Lý
         </button>
-        <button 
-          onClick={() => setActiveInternalTab('leaves')} 
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', fontSize: '1rem', fontWeight: 700, padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s', color: activeInternalTab === 'leaves' ? '#fff' : '#64748b', backgroundColor: activeInternalTab === 'leaves' ? '#8b5cf6' : 'transparent' }}
-        >
-          <CalendarHeart size={18} /> Nghỉ Phép
-        </button>
+
         <button 
           onClick={() => setActiveInternalTab('reminders')} 
           style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', fontSize: '1rem', fontWeight: 700, padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s', color: activeInternalTab === 'reminders' ? '#fff' : '#64748b', backgroundColor: activeInternalTab === 'reminders' ? '#eab308' : 'transparent' }}
@@ -456,6 +446,16 @@ const SalesDashboard = ({
                           )}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>{lead.phone || 'Không SĐT'}</div>
+                        {(!lead.is_locked && !lead.won_at) && (
+                          <div style={{ marginTop: '8px' }}>
+                            <button
+                              style={{ fontSize: '0.65rem', background: '#dcfce7', color: '#10b981', border: '1px solid #bbf7d0', borderRadius: '4px', padding: '4px 8px', display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 600 }}
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); if(typeof handleConvertLead === 'function') handleConvertLead(lead.id); }}
+                            >
+                              <UserCheck size={12} /> Chuyển thành Khách Hàng
+                            </button>
+                          </div>
+                        )}
                       </td>
                       <td>
                         <select
@@ -582,10 +582,10 @@ const SalesDashboard = ({
 
       {activeInternalTab === 'bookings' && (
         <div className="analytics-card" style={{ padding: '0' }}>
-          <div style={{ padding: '1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ padding: '1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: '#1e293b' }}>Đơn Giữ Chỗ Của Tôi</h3>
-              <div style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', padding: '4px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', padding: '4px', borderRadius: '8px', flexWrap: 'wrap' }}>
                 <button 
                   onClick={() => setBookingFilterTab('ALL')}
                   style={{ border: 'none', background: bookingFilterTab === 'ALL' ? '#fff' : 'transparent', color: bookingFilterTab === 'ALL' ? '#0f172a' : '#64748b', padding: '4px 12px', borderRadius: '6px', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', boxShadow: bookingFilterTab === 'ALL' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}
@@ -616,12 +616,12 @@ const SalesDashboard = ({
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>MÃ GIAO DỊCH</th>
-                  <th>KHÁCH HÀNG</th>
-                  <th>NGÀY KHÁCH BAY</th>
-                  <th>TÀI CHÍNH</th>
-                  <th>GIẤY TỜ</th>
-                  <th>TRẠNG THÁI</th>
+                  <th style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>MÃ GIAO DỊCH</th>
+                  <th style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>KHÁCH HÀNG</th>
+                  <th style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>NGÀY KHÁCH BAY</th>
+                  <th style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>TÀI CHÍNH</th>
+                  <th style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>GIẤY TỜ</th>
+                  <th style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>TRẠNG THÁI</th>
                 </tr>
               </thead>
               <tbody>
@@ -645,6 +645,8 @@ const SalesDashboard = ({
                   return displayBookings.map(b => {
                     const cust = customers.find(c => c.id === b.customer_id);
                     const dep = departures.find(d => d.id === b.tour_departure_id);
+                    const tourTemplate = dep ? tourTemplates.find(t => t.id === dep.tour_template_id) : null;
+                    const tourName = tourTemplate?.name || dep?.tour_name || dep?.name || '';
                     const isUrgent = b.payment_status === 'Chưa thanh toán' && b.booking_status !== 'Huỷ';
                     
                     const paidAmount = Number(b.paid) || Number(b.paid_amount) || 0;
@@ -683,22 +685,25 @@ const SalesDashboard = ({
 
                     return (
                       <tr key={b.id} style={{ background: isUrgent ? '#fef2f2' : 'transparent' }}>
-                        <td 
-                          style={b.raw_details ? { fontWeight: 700, color: '#0284c7', cursor: 'pointer', textDecoration: 'underline' } : { fontWeight: 700, color: '#0f172a' }}
-                          onClick={() => {
-                             if (b.raw_details) {
-                                localStorage.setItem('open_op_tour_departure', b.tour_departure_id);
-                                window.location.href = '/op-tours';
-                             }
-                          }}
-                        >
-                          {b.booking_code}
+                        <td>
+                          <div
+                            style={b.raw_details ? { fontSize: '0.85rem', fontWeight: 700, color: '#0284c7', cursor: 'pointer', textDecoration: 'underline' } : { fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}
+                            onClick={() => {
+                               if (b.raw_details) {
+                                  localStorage.setItem('open_op_tour_departure', b.tour_departure_id);
+                                  window.open('/op-tours', '_blank');
+                               }
+                            }}
+                          >
+                            {b.booking_code}
+                          </div>
+                          {tourName && <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px', maxWidth: '180px', whiteSpace: 'normal' }}>{tourName}</div>}
                         </td>
                         <td>
-                          <div style={{ fontWeight: 600 }}>{cust?.name || 'Chưa rõ'} ({b.pax_count || 1} khách)</div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{cust?.name || 'Chưa rõ'} ({b.pax_count || 1} khách)</div>
                           <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{cust?.phone || ''}</div>
                         </td>
-                        <td>{dep ? new Date(dep.start_date).toLocaleDateString('vi-VN') : (b.start_date ? new Date(b.start_date).toLocaleDateString('vi-VN') : '---')}</td>
+                        <td style={{ fontSize: '0.85rem' }}>{dep ? new Date(dep.start_date).toLocaleDateString('vi-VN') : (b.start_date ? new Date(b.start_date).toLocaleDateString('vi-VN') : '---')}</td>
                         <td>
                           <div style={{ fontSize: '0.85rem' }}>Tổng: <b>{new Intl.NumberFormat('vi-VN').format(totalPrice)}đ</b></div>
                           <div style={{ fontSize: '0.85rem', color: '#0284c7' }}>Đã thu: {new Intl.NumberFormat('vi-VN').format(paidAmount)}đ</div>
@@ -720,7 +725,7 @@ const SalesDashboard = ({
                           )}
                         </td>
                         <td>
-                          <span style={{ fontWeight: 600, color: b.booking_status === 'Huỷ' ? '#94a3b8' : '#0ea5e9' }}>{b.booking_status}</span>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: b.booking_status === 'Huỷ' ? '#94a3b8' : '#0ea5e9' }}>{b.booking_status}</span>
                         </td>
                       </tr>
                     );
@@ -732,12 +737,7 @@ const SalesDashboard = ({
         </div>
       )}
 
-      {activeInternalTab === 'leaves' && (
-        <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', minHeight: '600px' }}>
-          {/* Nhúng toàn bộ Module Nghỉ Phép vào trong Workspace */}
-          <LeaveRequestsTab users={users} currentUser={currentUser} checkPerm={checkPerm || (() => true)} />
-        </div>
-      )}
+
 
       {activeInternalTab === 'reminders' && (
         <div className="analytics-card" style={{ padding: '0' }}>
@@ -766,14 +766,14 @@ const SalesDashboard = ({
                    Không có lịch hẹn nào.
                 </div>
              ) : (
-                <div className="data-table-container" style={{ border: 'none' }}>
+                <div className="data-table-container" style={{ border: 'none', margin: 0, borderRadius: 0, boxShadow: 'none' }}>
                   <table className="data-table">
                     <thead>
                       <tr>
-                        <th style={{ width: '200px' }}>THỜI GIAN</th>
+                        <th style={{ width: '130px' }}>THỜI GIAN</th>
                         <th style={{ width: '250px' }}>KHÁCH HÀNG</th>
                         <th>NỘI DUNG NHẮC NHỞ</th>
-                        <th style={{ width: '150px', textAlign: 'center' }}>THAO TÁC</th>
+                        <th style={{ width: '120px', textAlign: 'center' }}>THAO TÁC</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -781,32 +781,51 @@ const SalesDashboard = ({
                         .sort((a,b) => new Date(a.due_date) - new Date(b.due_date))
                         .map(r => {
                         const isOverdue = new Date(r.due_date) < new Date() && r.status === 'PENDING';
+                        const d = new Date(r.due_date);
+                        const timeStr = d.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                        const dateStr = d.toLocaleDateString('vi-VN');
+                        
                         return (
-                           <tr key={r.id} style={{ background: r.status === 'DONE' ? '#f8fafc' : (isOverdue ? '#fef2f2' : 'white'), opacity: r.status === 'DONE' ? 0.7 : 1 }}>
-                              <td style={{ verticalAlign: 'top' }}>
-                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                   <Clock size={16} color={r.status === 'DONE' ? '#94a3b8' : (isOverdue ? '#ef4444' : '#eab308')} />
-                                   <span style={{ fontWeight: 800, color: r.status === 'DONE' ? '#64748b' : (isOverdue ? '#b91c1c' : '#b45309') }}>
-                                      {new Date(r.due_date).toLocaleString('vi-VN')}
-                                   </span>
+                           <tr key={r.id} style={{ background: r.status === 'DONE' ? '#f8fafc' : (isOverdue ? '#fff1f2' : 'white'), opacity: r.status === 'DONE' ? 0.7 : 1 }}>
+                              <td style={{ verticalAlign: 'top', padding: '1rem' }}>
+                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <Clock size={14} color={r.status === 'DONE' ? '#94a3b8' : (isOverdue ? '#ef4444' : '#eab308')} />
+                                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: r.status === 'DONE' ? '#64748b' : (isOverdue ? '#e11d48' : '#d97706') }}>
+                                         {timeStr}
+                                      </span>
+                                   </div>
+                                   <div style={{ fontSize: '0.8rem', color: '#64748b', paddingLeft: '20px' }}>
+                                      {dateStr}
+                                   </div>
                                  </div>
-                                 {isOverdue && <div style={{ fontSize: '0.65rem', background: '#ef4444', color: 'white', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginTop: '4px', fontWeight: 700 }}>QUÁ HẠN</div>}
+                                 {isOverdue && <div style={{ fontSize: '0.65rem', background: '#fee2e2', color: '#ef4444', border: '1px solid #fca5a5', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginTop: '6px', fontWeight: 700 }}>QUÁ HẠN</div>}
                               </td>
-                              <td style={{ verticalAlign: 'top' }}>
-                                 <div style={{ fontSize: '1rem', fontWeight: 700, color: '#2563eb', marginBottom: '4px', cursor: 'pointer' }} onClick={() => {
-                                    const lead = leads.find(l => l.id === r.lead_id);
-                                    if(lead) setEditingLead({...lead, openTab: 'reminders'});
-                                 }}>{r.lead_name}</div>
-                                 <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{r.lead_phone} - <span style={{ color: '#0ea5e9' }}>{r.lead_status}</span></div>
+                              <td style={{ verticalAlign: 'top', padding: '1rem' }}>
+                                 <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1e293b', marginBottom: '6px', cursor: 'pointer', display: 'inline-block' }} 
+                                      onClick={() => {
+                                         const lead = leads.find(l => l.id === r.lead_id);
+                                         if(lead) setEditingLead({...lead, openTab: 'reminders'});
+                                      }}
+                                      onMouseOver={(e) => e.target.style.color = '#3b82f6'}
+                                      onMouseOut={(e) => e.target.style.color = '#1e293b'}
+                                 >{r.lead_name}</div>
+                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{r.lead_phone}</span>
+                                    <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600 }}>{r.lead_status}</span>
+                                 </div>
                               </td>
-                              <td style={{ verticalAlign: 'top' }}>
-                                 <div style={{ fontSize: '0.9rem', color: '#334155', whiteSpace: 'pre-wrap' }}>
+                              <td style={{ verticalAlign: 'top', padding: '1rem' }}>
+                                 <div style={{ fontSize: '0.85rem', color: '#475569', whiteSpace: 'pre-wrap', lineHeight: '1.5', background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
                                     {r.title || 'Không có ghi chú'}
                                  </div>
                               </td>
-                              <td style={{ verticalAlign: 'top', textAlign: 'center' }}>
+                              <td style={{ verticalAlign: 'top', textAlign: 'center', padding: '1rem' }}>
                                  {r.status === 'PENDING' ? (
-                                   <button style={{ padding: '6px 12px', background: '#10b981', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }} onClick={async () => {
+                                   <button style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #10b981', color: '#10b981', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem', transition: 'all 0.2s' }} 
+                                           onMouseOver={(e) => { e.target.style.background = '#10b981'; e.target.style.color = 'white'; }}
+                                           onMouseOut={(e) => { e.target.style.background = 'transparent'; e.target.style.color = '#10b981'; }}
+                                           onClick={async () => {
                                       try {
                                          await axios.put(`/api/reminders/leads/${r.id}/done`, {}, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }});
                                          setLeadReminders(leadReminders.map(x => x.id === r.id ? {...x, status: 'DONE'} : x));
@@ -815,7 +834,7 @@ const SalesDashboard = ({
                                       <CheckCircle size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Xong
                                    </button>
                                  ) : (
-                                   <div style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                   <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                                       <CheckCircle size={14} /> Đã xong
                                    </div>
                                  )}
@@ -851,8 +870,40 @@ const SalesDashboard = ({
           </div>
         </div>
       )}
+      </div>
 
-    </div>
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="workspace-bottom-nav">
+          <div 
+              className={`workspace-bottom-nav-item ${activeInternalTab === 'bookings' ? 'active' : ''}`}
+              onClick={() => setActiveInternalTab('bookings')}
+          >
+              <ShoppingCart size={20} />
+              <span>Đơn Của Tôi ({myBookings.length})</span>
+          </div>
+          <div 
+              className={`workspace-bottom-nav-item ${activeInternalTab === 'myleads' ? 'active' : ''}`}
+              onClick={() => setActiveInternalTab('myleads')}
+          >
+              <UserPlus size={20} />
+              <span>Lead Đang Quản Lý</span>
+          </div>
+          <div 
+              className={`workspace-bottom-nav-item ${activeInternalTab === 'reminders' ? 'active' : ''}`}
+              onClick={() => setActiveInternalTab('reminders')}
+          >
+              <Clock size={20} />
+              <span>Lịch Hẹn & C.Việc</span>
+          </div>
+          <div 
+              className="workspace-bottom-nav-item"
+              onClick={() => window.dispatchEvent(new Event('open-mobile-menu'))}
+          >
+              <Menu size={20} />
+              <span>Menu</span>
+          </div>
+      </div>
+    </>
   );
 };
 
