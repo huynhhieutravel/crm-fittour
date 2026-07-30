@@ -892,7 +892,8 @@ export default function OpToursTab({ currentUser }) {
 
   const filteredTours = useMemo(() => {
     // TỐI ƯU HIỆU SUẤT TỐI ĐA (O(1) thay vì O(N) trong vòng lặp)
-    const lowerSearchTerm = searchTerm.toLowerCase();
+    const removeAccents = (str) => str ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase() : '';
+    const lowerSearchTerm = removeAccents(searchTerm);
     const childMarketIds = getChildMarketIds(activeMarket, marketOptions);
     const childMarkets = getChildMarkets(activeMarket, marketOptions);
     const { startDate, endDate } = getBounds();
@@ -913,8 +914,8 @@ export default function OpToursTab({ currentUser }) {
       // Short-circuiting evaluation to avoid unnecessary checks
       if (selectedBU && selectedBU !== 'Tất cả' && t.bu_group !== selectedBU) return false;
 
-      const matchSearch = t.tour_name?.toLowerCase().includes(lowerSearchTerm) || 
-                          t.tour_code?.toLowerCase().includes(lowerSearchTerm);
+      const matchSearch = removeAccents(t.tour_name).includes(lowerSearchTerm) || 
+                          removeAccents(t.tour_code).includes(lowerSearchTerm);
       if (!matchSearch) return false;
 
       const tourMarkets = t.market ? t.market.split(',').map(m => m.trim()) : [];
