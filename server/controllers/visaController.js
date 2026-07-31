@@ -12,13 +12,13 @@ exports.getAll = async (req, res) => {
                    u1.full_name as created_by_name, 
                    u2.full_name as handled_by_name, 
                    vt.name as visa_template_name,
-                   COALESCE(pv.total_collected, 0) as total_collected, COALESCE(pv.total_paid, 0) as total_paid
+                   COALESCE(pv.total_collected, 0) as total_collected
             FROM visas v 
             LEFT JOIN users u1 ON v.created_by = u1.id 
             LEFT JOIN users u2 ON v.handled_by = u2.id 
             LEFT JOIN visa_templates vt ON v.visa_template_id = vt.id 
             LEFT JOIN (
-                SELECT visa_id, SUM(CASE WHEN type = 'Thu' THEN amount ELSE 0 END) as total_collected, SUM(CASE WHEN type = 'Chi' THEN amount ELSE 0 END) as total_paid 
+                SELECT visa_id, SUM(amount) as total_collected 
                 FROM payment_vouchers 
                 WHERE status != 'Đã hủy'
                 GROUP BY visa_id
@@ -89,13 +89,13 @@ exports.getDetails = async (req, res) => {
                    u1.full_name as created_by_name, 
                    u2.full_name as handled_by_name, 
                    vt.name as visa_template_name,
-                   COALESCE(pv.total_collected, 0) as total_collected, COALESCE(pv.total_paid, 0) as total_paid
+                   COALESCE(pv.total_collected, 0) as total_collected
             FROM visas v 
             LEFT JOIN users u1 ON v.created_by = u1.id 
             LEFT JOIN users u2 ON v.handled_by = u2.id 
             LEFT JOIN visa_templates vt ON v.visa_template_id = vt.id 
             LEFT JOIN (
-                SELECT visa_id, SUM(CASE WHEN type = 'Thu' THEN amount ELSE 0 END) as total_collected, SUM(CASE WHEN type = 'Chi' THEN amount ELSE 0 END) as total_paid 
+                SELECT visa_id, SUM(amount) as total_collected 
                 FROM payment_vouchers 
                 WHERE status != 'Đã hủy'
                 GROUP BY visa_id
