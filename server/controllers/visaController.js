@@ -7,7 +7,24 @@ exports.getAll = async (req, res) => {
         const { search, status, market, page = 1, limit = 30 } = req.query;
         const offset = (page - 1) * limit;
 
-        let query = 'SELECT v.*, u1.full_name as created_by_name, u2.full_name as handled_by_name FROM visas v LEFT JOIN users u1 ON v.created_by = u1.id LEFT JOIN users u2 ON v.handled_by = u2.id WHERE 1=1';
+        let query = `
+            SELECT v.*, 
+                   u1.full_name as created_by_name, 
+                   u2.full_name as handled_by_name, 
+                   vt.name as visa_template_name,
+                   COALESCE(pv.total_collected, 0) as total_collected, COALESCE(pv.total_paid, 0) as total_paid
+            FROM visas v 
+            LEFT JOIN users u1 ON v.created_by = u1.id 
+            LEFT JOIN users u2 ON v.handled_by = u2.id 
+            LEFT JOIN visa_templates vt ON v.visa_template_id = vt.id 
+            LEFT JOIN (
+                SELECT visa_id, SUM(CASE WHEN type = 'Thu' THEN amount ELSE 0 END) as total_collected, SUM(CASE WHEN type = 'Chi' THEN amount ELSE 0 END) as total_paid 
+                FROM payment_vouchers 
+                WHERE status != 'Đã hủy'
+                GROUP BY visa_id
+            ) pv ON pv.visa_id = v.id
+            WHERE 1=1
+        `;
         let countQuery = 'SELECT COUNT(*) as total FROM visas v WHERE 1=1';
         let params = [];
         let paramIndex = 1;
@@ -67,7 +84,24 @@ exports.getAll = async (req, res) => {
 exports.getDetails = async (req, res) => {
     try {
         const { id } = req.params;
-        const entityRes = await db.query('SELECT v.*, u1.full_name as created_by_name, u2.full_name as handled_by_name FROM visas v LEFT JOIN users u1 ON v.created_by = u1.id LEFT JOIN users u2 ON v.handled_by = u2.id WHERE v.id = $1', [id]);
+        const entityRes = await db.query(`
+            SELECT v.*, 
+                   u1.full_name as created_by_name, 
+                   u2.full_name as handled_by_name, 
+                   vt.name as visa_template_name,
+                   COALESCE(pv.total_collected, 0) as total_collected, COALESCE(pv.total_paid, 0) as total_paid
+            FROM visas v 
+            LEFT JOIN users u1 ON v.created_by = u1.id 
+            LEFT JOIN users u2 ON v.handled_by = u2.id 
+            LEFT JOIN visa_templates vt ON v.visa_template_id = vt.id 
+            LEFT JOIN (
+                SELECT visa_id, SUM(CASE WHEN type = 'Thu' THEN amount ELSE 0 END) as total_collected, SUM(CASE WHEN type = 'Chi' THEN amount ELSE 0 END) as total_paid 
+                FROM payment_vouchers 
+                WHERE status != 'Đã hủy'
+                GROUP BY visa_id
+            ) pv ON pv.visa_id = v.id
+            WHERE v.id = $1
+        `, [id]);
         if (entityRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy hồ sơ Visa' });
         const entity = entityRes.rows[0];
 
@@ -86,15 +120,15 @@ exports.getDetails = async (req, res) => {
 exports.create = async (req, res) => {
     const client = await db.pool.connect();
     try {
-        const { code, name, customer_id, customer_name, customer_phone, customer_type, status, market, visa_type, receipt_date, result_date, fingerprint_date, stamp_date, return_date, quantity, service_package, is_urgent, is_evisa, exchange_rate, booking_code, branch, notes, handled_by, members, finance_data } = req.body;
+        const { code, name, customer_id, customer_name, customer_phone, customer_type, status, market, visa_type, receipt_date, result_date, fingerprint_date, stamp_date, return_date, quantity, service_package, is_urgent, is_evisa, exchange_rate, booking_code, branch, notes, handled_by, members, finance_data, visa_template_id } = req.body;
         const created_by = req.user?.id;
 
         await client.query('BEGIN');
 
         const result = await client.query(
-            `INSERT INTO visas (code, name, customer_id, customer_name, customer_phone, customer_type, status, market, visa_type, receipt_date, result_date, fingerprint_date, stamp_date, return_date, quantity, service_package, is_urgent, is_evisa, exchange_rate, booking_code, branch, notes, created_by, handled_by, finance_data) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25) RETURNING *`,
-            [code, name, customer_id || null, customer_name, customer_phone, customer_type, status || 'Tạo mới', market, visa_type, receipt_date || null, result_date || null, fingerprint_date || null, stamp_date || null, return_date || null, quantity || 1, service_package, is_urgent || false, is_evisa || false, exchange_rate || 1, booking_code, branch, notes, created_by, handled_by || null, finance_data ? JSON.stringify(finance_data) : '[]']
+            `INSERT INTO visas (code, name, customer_id, customer_name, customer_phone, customer_type, status, market, visa_type, receipt_date, result_date, fingerprint_date, stamp_date, return_date, quantity, service_package, is_urgent, is_evisa, exchange_rate, booking_code, branch, notes, created_by, handled_by, finance_data, visa_template_id) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26) RETURNING *`,
+            [code, name, customer_id || null, customer_name, customer_phone, customer_type, status || 'Tạo mới', market, visa_type, receipt_date || null, result_date || null, fingerprint_date || null, stamp_date || null, return_date || null, quantity || 1, service_package, is_urgent || false, is_evisa || false, exchange_rate || 1, booking_code, branch, notes, created_by, handled_by || null, finance_data ? JSON.stringify(finance_data) : '[]', visa_template_id || null]
         );
         const newId = result.rows[0].id;
 
@@ -136,7 +170,7 @@ exports.update = async (req, res) => {
     const client = await db.pool.connect();
     try {
         const { id } = req.params;
-        const { code, name, customer_id, customer_name, customer_phone, customer_type, status, market, visa_type, receipt_date, result_date, fingerprint_date, stamp_date, return_date, quantity, service_package, is_urgent, is_evisa, exchange_rate, booking_code, branch, notes, handled_by, members, deleted_member_ids, finance_data } = req.body;
+        const { code, name, customer_id, customer_name, customer_phone, customer_type, status, market, visa_type, receipt_date, result_date, fingerprint_date, stamp_date, return_date, quantity, service_package, is_urgent, is_evisa, exchange_rate, booking_code, branch, notes, handled_by, members, deleted_member_ids, finance_data, visa_template_id } = req.body;
 
         await client.query('BEGIN');
 
@@ -149,8 +183,8 @@ exports.update = async (req, res) => {
         const oldVisa = oldVisaRes.rows[0];
 
         const result = await client.query(
-            `UPDATE visas SET code=$1, name=$2, customer_id=$3, customer_name=$4, customer_phone=$5, customer_type=$6, status=$7, market=$8, visa_type=$9, receipt_date=$10, result_date=$11, fingerprint_date=$12, stamp_date=$13, return_date=$14, quantity=$15, service_package=$16, is_urgent=$17, is_evisa=$18, exchange_rate=$19, booking_code=$20, branch=$21, notes=$22, handled_by=$23, finance_data=$24, updated_at=CURRENT_TIMESTAMP WHERE id=$25 RETURNING *`,
-            [code, name, customer_id || null, customer_name, customer_phone, customer_type, status, market, visa_type, receipt_date || null, result_date || null, fingerprint_date || null, stamp_date || null, return_date || null, quantity || 1, service_package, is_urgent || false, is_evisa || false, exchange_rate || 1, booking_code, branch, notes, handled_by || null, finance_data ? JSON.stringify(finance_data) : '[]', id]
+            `UPDATE visas SET code=$1, name=$2, customer_id=$3, customer_name=$4, customer_phone=$5, customer_type=$6, status=$7, market=$8, visa_type=$9, receipt_date=$10, result_date=$11, fingerprint_date=$12, stamp_date=$13, return_date=$14, quantity=$15, service_package=$16, is_urgent=$17, is_evisa=$18, exchange_rate=$19, booking_code=$20, branch=$21, notes=$22, handled_by=$23, finance_data=$24, visa_template_id=$25, updated_at=CURRENT_TIMESTAMP WHERE id=$26 RETURNING *`,
+            [code, name, customer_id || null, customer_name, customer_phone, customer_type, status, market, visa_type, receipt_date || null, result_date || null, fingerprint_date || null, stamp_date || null, return_date || null, quantity || 1, service_package, is_urgent || false, is_evisa || false, exchange_rate || 1, booking_code, branch, notes, handled_by || null, finance_data ? JSON.stringify(finance_data) : '[]', visa_template_id || null, id]
         );
 
         if (deleted_member_ids && deleted_member_ids.length > 0) {

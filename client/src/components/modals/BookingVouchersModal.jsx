@@ -89,9 +89,9 @@ export default function BookingVouchersModal({ booking, tour, onClose, onRefresh
       alert("Số tiền phải lớn hơn 0");
       return;
     }
-    const remaining = Number((booking?.total || 0) - (booking?.paid || 0));
+    const remaining = Number((booking?.total || booking?.total_price || 0) - (booking?.paid || 0));
     if (Number(newVoucher.amount) > remaining) {
-      alert(`Số tiền thu vượt quá số tiền còn nợ (${remaining.toLocaleString('vi-VN')} đ)! Kế toán vui lòng kiểm tra lại.`);
+      alert(`Bạn đang nhập số tiền thu là ${Number(newVoucher.amount).toLocaleString('vi-VN')} đ, VƯỢT QUÁ số tiền khách còn nợ (${remaining.toLocaleString('vi-VN')} đ)!\n\nVui lòng nhập số tiền nhỏ hơn hoặc bằng số nợ còn lại.`);
       return;
     }
     try {

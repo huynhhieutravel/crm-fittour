@@ -23,10 +23,11 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
         receipt_date: '', result_date: '', fingerprint_date: '', stamp_date: '', return_date: '',
         quantity: 1, service_package: '', is_urgent: false, is_evisa: false,
         exchange_rate: 1, notes: '',
-        members: [], finance_data: [], finance_commissions: []
+        members: [], finance_data: [], finance_commissions: [], visa_template_id: ''
     });
     const [showDeleteSupplier, setShowDeleteSupplier] = useState(null); // custom confirm modal
     const [usersList, setUsersList] = useState([]);
+    const [visaTemplatesList, setVisaTemplatesList] = useState([]);
     const [vouchersList, setVouchersList] = useState([]);
     const [showVoucherForm, setShowVoucherForm] = useState(false);
     const [voucherForm, setVoucherForm] = useState({ title: 'Thu tiền Visa', amount: '', payment_method: 'Chuyển khoản', payer_name: '', payer_phone: '', notes: '', voucher_date: getLocalDateTimeLocal() });
@@ -35,6 +36,11 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
         // Load users list for commission dropdown
         axios.get('/api/users', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
             .then(res => setUsersList(res.data || []))
+            .catch(() => {});
+            
+        // Load visa templates
+        axios.get('/api/visa-templates?limit=1000', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+            .then(res => setVisaTemplatesList(res.data.data || []))
             .catch(() => {});
     }, []);
 
@@ -175,7 +181,31 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
     };
 
     const handleChange = (field, val) => {
-        setForm(prev => ({ ...prev, [field]: val }));
+        setForm(prev => {
+            const newForm = { ...prev, [field]: val };
+            if (field === 'visa_template_id') {
+                const tpl = visaTemplatesList.find(t => t.id === val);
+                if (tpl) {
+                    newForm.market = tpl.market || prev.market;
+                    newForm.visa_type = tpl.visa_type || prev.visa_type;
+                }
+            }
+            return newForm;
+        });
+    };
+
+    const getFilteredChecklist = (templateId) => {
+        if (!templateId) return JSON.parse(JSON.stringify(VISA_CHECKLIST_TEMPLATE));
+        const tpl = visaTemplatesList.find(t => t.id === templateId);
+        if (!tpl || !tpl.checklist_config || tpl.checklist_config.length === 0) {
+            return JSON.parse(JSON.stringify(VISA_CHECKLIST_TEMPLATE));
+        }
+        
+        return VISA_CHECKLIST_TEMPLATE.map(group => {
+            const matchingItems = group.items.filter(item => tpl.checklist_config.includes(item.name));
+            if (matchingItems.length > 0) return { ...group, items: matchingItems };
+            return null;
+        }).filter(g => g !== null);
     };
 
     // --- OCR MANAGEMENT ---
@@ -206,7 +236,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                         phone: '',
                         dob: result.dobDisplay ? result.dobDisplay.split('/').reverse().join('-') : '', // assuming YYYY-MM-DD
                         age_type: 'Người lớn',
-                        checklist_data: JSON.parse(JSON.stringify(VISA_CHECKLIST_TEMPLATE))
+                        checklist_data: getFilteredChecklist(prev.visa_template_id)
                     };
 
                     const isFirst = prev.members.length === 0;
@@ -312,7 +342,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                 phone: '',
                 dob: '',
                 age_type: 'Người lớn',
-                checklist_data: JSON.parse(JSON.stringify(VISA_CHECKLIST_TEMPLATE)) // Inject template
+                checklist_data: getFilteredChecklist(prev.visa_template_id)
             };
             return { ...prev, members: [...prev.members, newMember] };
         });
@@ -474,8 +504,25 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                         </select>
                                     </div>
                                     <div className="form-group">
+                                        <label>Sản phẩm Visa</label>
+                                        <select className="form-control" value={form.visa_template_id || ''} onChange={e => handleChange('visa_template_id', e.target.value ? parseInt(e.target.value) : '')}>
+                                            <option value="">Chọn sản phẩm (Tùy chọn)</option>
+                                            {visaTemplatesList.map(tpl => <option key={tpl.id} value={tpl.id}>{tpl.name}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem', marginTop: '1rem' }}>
+                                    <div className="form-group">
                                         <label>Thị trường Quốc gia</label>
                                         <input type="text" className="form-control" placeholder="Úc, Châu Âu, Mỹ..." value={form.market} onChange={e => handleChange('market', e.target.value)} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Loại hình</label>
+                                        <input type="text" className="form-control" placeholder="Du lịch, Thăm thân..." value={form.visa_type} onChange={e => handleChange('visa_type', e.target.value)} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Số lượng (Pax)</label>
+                                        <input type="number" className="form-control" value={form.quantity} onChange={e => handleChange('quantity', e.target.value)} />
                                     </div>
                                 </div>
                             </div>
@@ -509,15 +556,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                             <div style={{ background: 'white', padding: '1.25rem 1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                                 <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b', marginBottom: '1rem' }}>Tiến độ & Dịch vụ</h3>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
-                                    <div className="form-group">
-                                        <label>Loại hình</label>
-                                        <input type="text" className="form-control" placeholder="Du lịch, Thăm thân..." value={form.visa_type} onChange={e => handleChange('visa_type', e.target.value)} />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Số lượng (Pax)</label>
-                                        <input type="number" className="form-control" value={form.quantity} onChange={e => handleChange('quantity', e.target.value)} />
-                                    </div>
-                                    <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                    <div className="form-group" style={{ gridColumn: 'span 4' }}>
                                         <label>Gói dịch vụ</label>
                                         <input type="text" className="form-control" placeholder="Bao đậu, Dịch vụ thường..." value={form.service_package} onChange={e => handleChange('service_package', e.target.value)} />
                                     </div>

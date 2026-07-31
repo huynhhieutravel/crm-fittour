@@ -537,14 +537,14 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
             bank: 'Chọn', branch: 'Chi Nhánh'
           });
           const initialRows = raw.pricingRows || [
-            { id: 1, ageType: 'Người lớn', name: '', price: initialData.base_price || tour?.tour_info?.price_adult || 25490000, qty: initialData.qty || 1, surcharge: initialData.surcharge || 0, discount: initialData.discount || 0, comPerPax: 0, comCTV: 0, total: initialData.total || tour?.tour_info?.price_adult || 25490000, internalNote: '', customerNote: '', extraServices: [] },
-            { id: 2, ageType: 'Trẻ em', name: '', price: tour?.tour_info?.price_child_2_5 || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
-            { id: 3, ageType: 'Trẻ em (2-10)', name: '', price: tour?.tour_info?.price_child_6_11 || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
-            { id: 4, ageType: 'Em bé (<2)', name: '', price: tour?.tour_info?.price_infant || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+            { id: 1, ageType: 'Người lớn', name: '', price: Number(initialData.base_price) || Number(tour?.tour_info?.price_adult) || 25490000, qty: Number(initialData.qty) || 1, surcharge: Number(initialData.surcharge) || 0, discount: Number(initialData.discount) || 0, comPerPax: 0, comCTV: 0, total: Number(initialData.total) || Number(tour?.tour_info?.price_adult) || 25490000, internalNote: '', customerNote: '', extraServices: [] },
+            { id: 2, ageType: 'Trẻ em', name: '', price: Number(tour?.tour_info?.price_child_2_5) || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+            { id: 3, ageType: 'Trẻ em (2-10)', name: '', price: Number(tour?.tour_info?.price_child_6_11) || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
+            { id: 4, ageType: 'Em bé (<2)', name: '', price: Number(tour?.tour_info?.price_infant) || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
           ];
           setPricingRows(initialRows.map(r => ({ ...r, extraServices: r.extraServices || [] })));
           setMembers(raw.members || []);
-          setPaidAmount(initialData.paid || 0);
+          setPaidAmount(Number(initialData.paid) || 0);
        } else {
           setBookingInfo({
             search: '', name: '', phone: '', agentTA: 'Chọn', agentCode: '',
@@ -1493,9 +1493,12 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                    <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#f59e0b' }}>{totalPrice.toLocaleString('vi-VN')}</div>
                 </div>
                 <div>
-                   <div style={{ fontSize: '11px', color: '#64748b' }}>Đã thu (Cọc)</div>
+                   <div style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      Đã thu (Cọc)
+                      <span title="Vì lý do chuẩn hóa quy trình kế toán, tính năng tự nhập tiền cọc đã bị khóa. Vui lòng LƯU hợp đồng, sau đó ra ngoài danh sách bấm TẠO PHIẾU THU để ghi nhận cọc." style={{ cursor: 'help', color: '#3b82f6', background: '#e0f2fe', width: '14px', height: '14px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 'bold' }}>?</span>
+                   </div>
                    <div style={{ position: 'relative' }}>
-                      <input type="text" name="deposit_no_autofill_custom" autoComplete="off" data-1p-ignore="true" value={formatCurrency(paidAmount)} onChange={e => setPaidAmount(parseCurrency(e.target.value))} style={{ padding: '4px 8px', width: '120px', border: '1px solid #cbd5e1', borderRadius: '4px', fontWeight: 'bold', color: '#10b981' }} />
+                      <input type="text" name="deposit_no_autofill_custom" autoComplete="off" data-1p-ignore="true" value={formatCurrency(paidAmount)} readOnly title="Vui lòng dùng chức năng Tạo phiếu thu để ghi nhận tiền cọc" style={{ padding: '4px 8px', width: '120px', border: '1px solid #e2e8f0', borderRadius: '4px', fontWeight: 'bold', color: '#10b981', background: '#f1f5f9', cursor: 'not-allowed' }} />
                    </div>
                 </div>
                 <div>

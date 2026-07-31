@@ -28,7 +28,7 @@ exports.createVoucher = async (req, res) => {
                 const b = bookingCheck.rows[0];
                 const remaining = Number(b.total_price) - Number(b.paid);
                 if (Number(amount) > remaining) {
-                    return res.status(400).json({ message: `Số tiền thu (${Number(amount).toLocaleString('vi-VN')}đ) vượt quá số tiền còn nợ (${remaining.toLocaleString('vi-VN')}đ)!` });
+                    return res.status(400).json({ message: `Bạn đang nhập số tiền thu là ${Number(amount).toLocaleString('vi-VN')}đ, VƯỢT QUÁ số tiền khách còn nợ (${remaining.toLocaleString('vi-VN')}đ)!\n\nVui lòng nhập số tiền nhỏ hơn hoặc bằng số nợ còn lại.` });
                 }
             }
         } else if (visa_id) {
@@ -47,7 +47,7 @@ exports.createVoucher = async (req, res) => {
                 
                 const remaining = expectedRevenue - Number(v.total_collected || 0);
                 if (Number(amount) > remaining) {
-                    return res.status(400).json({ message: `Số tiền thu (${Number(amount).toLocaleString('vi-VN')}đ) vượt quá số tiền khách còn nợ (${remaining.toLocaleString('vi-VN')}đ). (Tổng dự kiến: ${expectedRevenue.toLocaleString()})!` });
+                    return res.status(400).json({ message: `Bạn đang nhập số tiền thu là ${Number(amount).toLocaleString('vi-VN')}đ, VƯỢT QUÁ số tiền khách còn nợ (${remaining.toLocaleString('vi-VN')}đ). (Tổng dự kiến: ${expectedRevenue.toLocaleString()})!\n\nVui lòng nhập số tiền nhỏ hơn hoặc bằng số nợ còn lại.` });
                 }
             }
         }

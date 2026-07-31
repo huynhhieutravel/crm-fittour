@@ -136,6 +136,7 @@ const noteRoutes = require('./routes/notes');
 const messageRoutes = require('./routes/messages');
 const userRoutes = require('./routes/users');
 const visaRoutes = require('./routes/visaRoutes');
+const visaTemplates = require('./routes/visaTemplates');
 const systemAlertsRoutes = require('./routes/systemAlerts');
 const tourTypeRoutes = require('./routes/settings');
 const webhookRoutes = require('./routes/webhook');
@@ -201,6 +202,7 @@ app.use('/api/insurances', insuranceRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/rag-docs', ragDocsAdminRoutes);
 app.use('/api/visas', visaRoutes);
+app.use('/api/visa-templates', visaTemplates);
 app.use('/api/visa-providers', require('./routes/visaProviders'));
 
 // ═══ Tour Đoàn (Group) NCC API ═══

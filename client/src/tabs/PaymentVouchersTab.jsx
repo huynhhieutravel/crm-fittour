@@ -7,7 +7,7 @@ import * as XLSX from 'xlsx-js-style';
 export default function PaymentVouchersTab() {
   const [vouchers, setVouchers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({ search: '', tourCode: '', status: '', minAmount: '', maxAmount: '' });
+  const [filters, setFilters] = useState({ search: '', status: '', minAmount: '', maxAmount: '' });
 
   useEffect(() => {
     fetchVouchers();
@@ -45,7 +45,7 @@ export default function PaymentVouchersTab() {
 
   const removeAccents = (str) => {
     if (!str) return '';
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/\s+/g, ' ').trim();
   };
 
   const filteredVouchers = vouchers.filter(v => {

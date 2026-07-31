@@ -8,7 +8,7 @@ import SearchableSelect from '../components/common/SearchableSelect';
 import BUStatsTab from '../components/dispatcher/BUStatsTab';
 import './GlobalChatTab.css';
 
-const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditingLead, navigateToInbox }) => {
+const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditingLead, navigateToInbox, handleConvertLead }) => {
     const navigate = useNavigate();
     const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
     const [activeMainTab, setActiveMainTab] = useState('chat');
@@ -413,6 +413,34 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                                             >
                                                 <MessageCircle size={14} /> Xem Inbox
                                             </button>
+                                            
+                                            {(() => {
+                                                const currentLead = leads.find(l => l.id === notif.reference_id);
+                                                if (currentLead && !currentLead.is_locked && !currentLead.won_at) {
+                                                    return (
+                                                        <button
+                                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); if(typeof handleConvertLead === 'function') handleConvertLead(currentLead.id); }}
+                                                            style={{
+                                                                padding: '4px 10px',
+                                                                background: '#dcfce7',
+                                                                color: '#10b981',
+                                                                border: '1px solid #bbf7d0',
+                                                                borderRadius: '6px',
+                                                                cursor: 'pointer',
+                                                                fontWeight: '600',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                gap: '4px',
+                                                                fontSize: '12px'
+                                                            }}
+                                                        >
+                                                            <UserCheck size={14} /> Chuyển Khách Hàng
+                                                        </button>
+                                                    );
+                                                }
+                                                return null;
+                                            })()}
 
                                             {!notif.assigned_to_name && (
                                                 claimingId === notif.reference_id ? (

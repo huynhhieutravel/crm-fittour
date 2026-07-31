@@ -16,13 +16,14 @@ Khi thực hiện các thao tác triển khai mã nguồn (deployment) từ môi
    - Ví dụ sai: `rsync -avz server/ root@45.76.144.188...` (sẽ chép đè `.env` gây sập DB).
 2. Trước khi deploy, Agent phải tự nhắc nhở bản thân về rủi ro mất API keys/credentials và xác nhận lệnh `rsync` đã an toàn.
 
-## Frontend Build Guardrails: Fix Nginx 500 Permission Denied
-Khi thực thi lệnh `npm run build` (cho Vite/React/Astro) trên VPS qua SSH bằng tài khoản `root`, các file được sinh ra trong thư mục `dist/` sẽ bị kẹt quyền `root:root`, khiến Nginx (`www-data`) không đọc được và trả về lỗi 500 Internal Server Error.
+## VPS Deployment Guardrails: Fix Nginx 500 & 403 Permission Denied (Rsync + Build)
+Khi deploy mã nguồn lên VPS qua lệnh `rsync -avz` (từ Mac OS) hoặc thực thi `npm run build` bằng quyền `root`, quyền sở hữu và phân quyền thư mục sẽ bị sai lệch (ví dụ: bị ép thành `501 staff` và `700`, hoặc `root:root`), khiến Nginx (`www-data`) bị chặn quyền truy cập từ vòng ngoài (gây lỗi 500 sập web hoặc 403 khi tải ảnh/tài liệu).
 
 **Guardrails:**
-1. NGAY SAU KHI chạy `npm run build` trên VPS, Agent **BẮT BUỘC** phải chạy thêm lệnh phân quyền cho Nginx:
-   `chown -R www-data:www-data /path/to/project/client/dist && chmod -R 755 /path/to/project/client/dist`
-2. Không bao giờ được quên bước này khi deploy frontend, tránh làm sập website trên production.
+1. NGAY SAU KHI chạy `rsync` hoặc `npm run build` trên VPS, Agent **BẮT BUỘC** phải chạy lệnh phân quyền cho TOÀN BỘ thư mục được deploy (cả `client` và `server`), KHÔNG CHỈ làm cho riêng thư mục `dist`:
+   - Đối với Frontend: `chown -R www-data:www-data /path/to/project/client && chmod -R 755 /path/to/project/client`
+   - Đối với Backend (nhằm bảo vệ `uploads/`): `chown -R www-data:www-data /path/to/project/server && find /path/to/project/server -type d -exec chmod 755 {} \; && find /path/to/project/server -type f -exec chmod 644 {} \;`
+2. Không bao giờ được quên bước này khi deploy (bất kể là FE hay BE). Việc thiếu sót sẽ chặn đứng Nginx, không cho phục vụ thư mục tĩnh như `server/public/uploads` (ảnh lỗi) hoặc `client/dist` (web chết 500).
 
 ## Data Modification Guardrails: Never Batch-Update Historical Data By Default
 Khi User yêu cầu thay đổi các quy tắc hệ thống, luật phân bổ, hoặc từ khoá (ví dụ: "Cập nhật từ khoá Mông Cổ cho BU5"), Agent **CHỈ ĐƯỢC PHÉP** cập nhật quy tắc để áp dụng cho dữ liệu tương lai (forward-looking).

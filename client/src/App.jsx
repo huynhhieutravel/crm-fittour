@@ -29,6 +29,7 @@ import HotelsTab from './tabs/HotelsTab';
 import RestaurantsTab from './tabs/RestaurantsTab';
 import TransportsTab from './tabs/TransportsTab';
 import VisasTab from './tabs/VisasTab';
+import VisaTemplatesTab from './tabs/VisaTemplatesTab';
 import TicketsTab from './tabs/TicketsTab';
 import AirlinesTab from './tabs/AirlinesTab';
 import LandtoursTab from './tabs/LandtoursTab';
@@ -2189,8 +2190,26 @@ function AppContent() {
               )}
 
               {checkView('visas') && (
-                 <div title="Quản lý Visa" className={`nav-item ${activeTab === 'visas' ? 'active' : ''}`} onClick={() => { navigate('/visas'); setActiveTab('visas'); }}>
-                   <MapPin size={18} /> Quản lý Visa</div>
+                <div title="Quản lý Visa" 
+                  className={`nav-item ${activeTab === 'visas' || activeTab === 'visa-products' ? 'active-parent' : ''}`}
+                  onClick={() => navigate('/visas')}
+                  style={{ justifyContent: 'space-between' }}
+                  onMouseEnter={(e) => {
+                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHoveredRect(rect);
+                    setHoveredMenu('visas');
+                  }}
+                  onMouseLeave={() => {
+                    menuTimerRef.current = setTimeout(() => {
+                      setHoveredMenu(null);
+                    }, 150);
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <MapPin size={18} /> Quản lý Visa</div>
+                  <ChevronRight size={14} opacity={0.5} />
+                </div>
               )}
 
               {checkView('op_tours') && (
@@ -2619,6 +2638,37 @@ function AppContent() {
             onClick={() => { navigate('/message-templates'); setHoveredMenu(null); }} 
           >
             Mẫu tin nhắn Messenger
+          </div>
+        </div>
+      )}
+
+      {hoveredMenu === 'visas' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+          }}
+          onMouseLeave={() => {
+            setHoveredMenu(null);
+          }}
+        >
+          <div className="submenu-content" style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className={`submenu-item ${activeTab === 'visa-products' ? 'active' : ''}`} onClick={() => { navigate('/visa-products'); setHoveredMenu(null); }}>
+              Sản phẩm Visa
+            </div>
+            <div className={`submenu-item ${activeTab === 'visas' ? 'active' : ''}`} onClick={() => { navigate('/visas'); setHoveredMenu(null); }}>
+              Danh sách Hồ sơ
+            </div>
           </div>
         </div>
       )}
@@ -3432,6 +3482,9 @@ function AppContent() {
             bus={bus}
             setEditingLead={setEditingLead}
             navigateToInbox={handleOpenInboxDrawer} 
+            handleConvertLead={(leadId) => {
+              setLeadToConvert(leads.find(l => l.id === leadId));
+            }}
           />
         )}
 
@@ -3650,6 +3703,9 @@ function AppContent() {
         )}
         {activeTab === 'visas' && (
           <VisasTab currentUser={user} checkPerm={checkPerm} addToast={addToast} />
+        )}
+        {activeTab === 'visa-products' && checkView('visas') && (
+          <VisaTemplatesTab currentUser={user} checkPerm={checkPerm} addToast={addToast} />
         )}
         {activeTab === 'restaurants' && (
           <RestaurantsTab currentUser={user} checkPerm={checkPerm} addToast={addToast} handleDeleteRestaurant={(id) => setRestaurantToDelete(id)} />
