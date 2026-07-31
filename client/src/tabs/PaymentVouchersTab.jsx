@@ -51,7 +51,7 @@ export default function PaymentVouchersTab() {
   const filteredVouchers = vouchers.filter(v => {
     let match = true;
     
-    // Tìm kiếm chung (Tên, SĐT, Email, Số chứng từ)
+    // Tìm kiếm chung (Tên, SĐT, Email, Số chứng từ, Mã tour)
     if (filters.search) {
       const q = removeAccents(filters.search.trim().toLowerCase());
       const matchSearch = removeAccents((v.voucher_code || '').toLowerCase()).includes(q) ||
@@ -59,14 +59,6 @@ export default function PaymentVouchersTab() {
              removeAccents((v.payer_name || '').toLowerCase()).includes(q) ||
              removeAccents((v.tour_code || '').toLowerCase()).includes(q);
       if (!matchSearch) match = false;
-    }
-
-    // Tìm kiếm mã tour riêng biệt
-    if (filters.tourCode) {
-      const qTour = removeAccents(filters.tourCode.trim().toLowerCase());
-      const matchTourCode = removeAccents((v.tour_code || '').toLowerCase()).includes(qTour) || 
-                            removeAccents((v.title || '').toLowerCase()).includes(qTour);
-      if (!matchTourCode) match = false;
     }
 
     // Lọc theo trạng thái
@@ -124,25 +116,15 @@ export default function PaymentVouchersTab() {
 
       {/* Basic Filters row similar to Screenshot 2 */}
       <div style={{ background: '#fff', padding: '15px 20px', borderRadius: '8px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-        <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1.5fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr)', gap: '15px', marginBottom: '15px' }}>
+        <div className="mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
             <div>
-               <label style={{ display: 'block', fontSize: '13px', color: '#64748b', fontWeight: 'bold', marginBottom: '6px' }}>Tìm kiếm:</label>
+               <label style={{ display: 'block', fontSize: '13px', color: '#64748b', fontWeight: 'bold', marginBottom: '6px' }}>Tìm kiếm chung:</label>
                <input 
                  type="text" 
-                 placeholder="Tên, SĐT, Email, Số chứng từ" 
+                 placeholder="Tên, SĐT, Email, Số chứng từ, Mã tour" 
                  value={filters.search}
                  onChange={e => setFilters({...filters, search: e.target.value})}
                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '14px', outline: 'none' }}
-               />
-            </div>
-            <div>
-               <label style={{ display: 'block', fontSize: '13px', color: '#64748b', fontWeight: 'bold', marginBottom: '6px' }}>Tìm mã tour:</label>
-               <input 
-                 type="text" 
-                 placeholder="Nhập mã tour" 
-                 value={filters.tourCode}
-                 onChange={e => setFilters({...filters, tourCode: e.target.value})}
-                 style={{ width: '100%', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '14px', outline: 'none' }} 
                />
             </div>
             <div>
