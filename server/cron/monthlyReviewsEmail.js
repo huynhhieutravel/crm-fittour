@@ -2,15 +2,16 @@ const cron = require('node-cron');
 const db = require('../db');
 const { onEvent, eventBus } = require('../utils/eventBus');
 
-// Run on the 1st of every month at 08:00
-cron.schedule('0 8 1 * *', async () => {
-  console.log('[Cron] Running Monthly Reviews Stats...');
-  try {
-    await sendMonthlyReviewsStats();
-  } catch (error) {
-    console.error('[Cron] Error generating Monthly Reviews Stats:', error);
-  }
-});
+// Run on the 1st of every month at 08:00 (DISABLED - User wants to send manually)
+// cron.schedule('0 8 1 * *', async () => {
+//   console.log('[Cron] Running Monthly Reviews Stats...');
+//   try {
+//     await sendMonthlyReviewsStats();
+//   } catch (error) {
+//     console.error('[Cron] Error generating Monthly Reviews Stats:', error);
+//   }
+// });
+
 
 async function sendMonthlyReviewsStats(targetMonth, targetYear) {
   const date = new Date();
