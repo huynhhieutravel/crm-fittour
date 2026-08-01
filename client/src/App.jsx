@@ -1648,37 +1648,40 @@ function AppContent() {
     let matchesTime = true;
     if (leadFilters.startDate || leadFilters.endDate) {
       const leadDate = new Date(lead.created_at);
+      const leadContactDate = new Date(lead.last_contacted_at || lead.created_at);
+      
       if (leadFilters.startDate) {
-        matchesTime = matchesTime && leadDate >= new Date(leadFilters.startDate);
+        matchesTime = matchesTime && (leadDate >= new Date(leadFilters.startDate) || leadContactDate >= new Date(leadFilters.startDate));
       }
       if (leadFilters.endDate) {
         const endDate = new Date(leadFilters.endDate);
         endDate.setHours(23, 59, 59, 999);
-        matchesTime = matchesTime && leadDate <= endDate;
+        matchesTime = matchesTime && (leadDate <= endDate || leadContactDate <= endDate);
       }
     } else if (leadFilters.timeRange !== 'all') {
       const now = new Date();
       const leadDate = new Date(lead.created_at);
+      const leadContactDate = new Date(lead.last_contacted_at || lead.created_at);
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       
       if (leadFilters.timeRange === 'today') {
-        matchesTime = leadDate >= today;
+        matchesTime = leadDate >= today || leadContactDate >= today;
       } else if (leadFilters.timeRange === 'yesterday') {
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
-        matchesTime = leadDate >= yesterday && leadDate < today;
+        matchesTime = (leadDate >= yesterday && leadDate < today) || (leadContactDate >= yesterday && leadContactDate < today);
       } else if (leadFilters.timeRange === 'week') {
         const firstDayOfWeek = new Date(today);
         const day = firstDayOfWeek.getDay() || 7; 
         if(day !== 1) firstDayOfWeek.setHours(-24 * (day - 1));
-        matchesTime = leadDate >= firstDayOfWeek;
+        matchesTime = leadDate >= firstDayOfWeek || leadContactDate >= firstDayOfWeek;
       } else if (leadFilters.timeRange === 'month') {
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        matchesTime = leadDate >= firstDayOfMonth;
+        matchesTime = leadDate >= firstDayOfMonth || leadContactDate >= firstDayOfMonth;
       } else if (leadFilters.timeRange === 'quarter') {
         const quarter = Math.floor(now.getMonth() / 3);
         const firstDayOfQuarter = new Date(now.getFullYear(), quarter * 3, 1);
-        matchesTime = leadDate >= firstDayOfQuarter;
+        matchesTime = leadDate >= firstDayOfQuarter || leadContactDate >= firstDayOfQuarter;
       }
     }
 

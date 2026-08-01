@@ -257,9 +257,16 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                 }).map((notif, index) => (
                     <div key={notif.id} className="chat-message-wrapper" style={{ maxWidth: '100%' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
-                            <span style={{ fontSize: '11px', color: '#94a3b8', marginLeft: '4px' }}>
-                                {new Date(notif.created_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '4px' }}>
+                                <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                                    {new Date(notif.created_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                {notif.last_contacted_at && new Date(notif.last_contacted_at).toDateString() !== new Date(notif.created_at).toDateString() && (
+                                    <span style={{ fontSize: '10px', background: '#fee2e2', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                        🔥 Khách cũ nhắn lại: {new Date(notif.last_contacted_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                )}
+                            </div>
                             
                             <div style={{ 
                                 background: '#fff', 

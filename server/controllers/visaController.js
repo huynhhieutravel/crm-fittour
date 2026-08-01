@@ -249,6 +249,7 @@ exports.delete = async (req, res) => {
         if (oldVisaRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy hồ sơ Visa' });
         const oldVisa = oldVisaRes.rows[0];
 
+        await db.query('DELETE FROM visa_members WHERE visa_id = $1', [id]);
         await db.query('DELETE FROM visas WHERE id = $1', [id]);
         if (req.user) {
             await logActivity({

@@ -292,7 +292,7 @@ const getGlobalCenterLeads = async (req, res) => {
   try {
     const { timeRange, category } = req.query;
     let query = `
-      SELECT l.id, l.name, l.phone, l.email, l.source, l.status, l.assigned_to, l.bu_group, l.tour_id, l.created_at, l.facebook_psid as source_id, u.full_name as assigned_to_name,
+      SELECT l.id, l.name, l.phone, l.email, l.source, l.status, l.assigned_to, l.bu_group, l.tour_id, l.created_at, l.last_contacted_at, l.facebook_psid as source_id, u.full_name as assigned_to_name,
              (SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới'))::numeric as total_spent,
              CASE WHEN c.id IS NOT NULL THEN true ELSE false END as is_returning_customer
       FROM leads l
@@ -304,13 +304,13 @@ const getGlobalCenterLeads = async (req, res) => {
     let paramIndex = 1;
 
     if (timeRange === 'today') {
-      query += ` AND l.created_at >= CURRENT_DATE`;
+      query += ` AND (l.created_at >= CURRENT_DATE OR l.last_contacted_at >= CURRENT_DATE)`;
     } else if (timeRange === 'yesterday') {
-      query += ` AND l.created_at >= CURRENT_DATE - INTERVAL '1 day' AND l.created_at < CURRENT_DATE`;
+      query += ` AND ((l.created_at >= CURRENT_DATE - INTERVAL '1 day' AND l.created_at < CURRENT_DATE) OR (l.last_contacted_at >= CURRENT_DATE - INTERVAL '1 day' AND l.last_contacted_at < CURRENT_DATE))`;
     } else if (timeRange === 'this_week') {
-      query += ` AND l.created_at >= date_trunc('week', CURRENT_DATE)`;
+      query += ` AND (l.created_at >= date_trunc('week', CURRENT_DATE) OR l.last_contacted_at >= date_trunc('week', CURRENT_DATE))`;
     } else if (timeRange === 'this_month') {
-      query += ` AND l.created_at >= date_trunc('month', CURRENT_DATE)`;
+      query += ` AND (l.created_at >= date_trunc('month', CURRENT_DATE) OR l.last_contacted_at >= date_trunc('month', CURRENT_DATE))`;
     }
 
     if (category) {
@@ -341,6 +341,7 @@ const getGlobalCenterLeads = async (req, res) => {
         link: `/leads/${l.id}`,
         is_read: !!l.assigned_to_name,
         created_at: l.created_at,
+        last_contacted_at: l.last_contacted_at,
         assigned_to: l.assigned_to,
         assigned_to_name: l.assigned_to_name,
         bu_group: l.bu_group,

@@ -2,6 +2,7 @@ const axios = require('axios');
 const db = require('../db');
 const metaCapi = require('./metaCapiService');
 const notificationController = require('../controllers/notificationController');
+const telegramService = require('./telegramService');
 const PAGE_ACCESS_TOKEN_ENV = process.env.FB_PAGE_TOKEN;
 
 const getSetting = async (key) => {
@@ -262,6 +263,11 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                 if (!autoBU && autoTour.bu_group) {
                     notificationController.broadcastNewLead({ id: leadId, customer_name: senderName }, autoTour.bu_group).catch(console.error);
                 }
+            }
+
+            if (!autoBU && (!autoTour || !autoTour.bu_group)) {
+                // Khách hàng mồ côi không có BU, báo động
+                telegramService.sendOrphanLeadNotification(leadResult.rows[0]).catch(console.error);
             }
 
             // Fire CAPI Lead event (async, non-blocking)

@@ -574,6 +574,13 @@ const LeadsTab = ({
                       )}
                     </div>
                     <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(lead.created_at).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh',  hour: '2-digit', minute: '2-digit' })}</span>
+                    {lead.last_contacted_at && new Date(lead.last_contacted_at).toDateString() !== new Date(lead.created_at).toDateString() && (
+                      <div style={{ marginTop: '4px' }}>
+                        <span style={{ fontSize: '10px', background: '#fee2e2', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                            🔥 Nhắn lại: {new Date(lead.last_contacted_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit' })}
+                        </span>
+                      </div>
+                    )}
                     {lead.facebook_psid && (
                       <button
                         onClick={(e) => { e.stopPropagation(); navigateToInbox(lead.facebook_psid); }}

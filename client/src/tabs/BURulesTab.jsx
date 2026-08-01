@@ -93,7 +93,8 @@ const BURulesTab = ({ currentUser }) => {
                     <ul style={{ paddingLeft: '20px', margin: 0, lineHeight: '1.8', color: '#334155' }}>
                         <li><strong>Ưu tiên theo Sort Order:</strong> BU nào có sort_order nhỏ hơn sẽ được kiểm tra trước (cài đặt trong Nhóm BU)</li>
                         <li><strong>Smart Matching v5 (2 lượt):</strong> So dấu chính xác trước, chỉ bỏ dấu khi khách gõ không dấu</li>
-                        <li><strong>Quét CẢ tin khách + tin Page:</strong> Tin Page tư vấn tour cũng được scan → càng chính xác hơn</li>
+                        <li><strong>Quét CẢ tin khách + tin Page (Echoes):</strong> Nếu tin nhắn đầu của khách không rõ ràng (VD: "Xin giá"), hệ thống sẽ CHỜ tin nhắn trả lời của Sale/Bot (VD: "Dạ tour Bhutan đúng ko ạ") để quét ra từ khóa và gán BU.</li>
+                        <li><strong>Match Cả Tour (Mới):</strong> Hệ thống không chỉ quét từ khóa BU, mà quét luôn <strong>Từ khóa của từng Tour cụ thể</strong> (và Lấy tên Tour làm từ khóa dự phòng nếu rỗng). Nếu trúng Tour, sẽ tự gán luôn BU chứa Tour đó.</li>
                         <li><strong>Lọc greeting tự động:</strong> Tin chào mừng khi comment (<em>"FIT xin chào... lịch trình... SDT"</em>) bị <strong>bỏ qua</strong></li>
                         <li><strong>Chỉ áp dụng cho Lead MỚI:</strong> Nếu nhân viên đã chọn BU thì hệ thống <strong>không ghi đè</strong></li>
                         <li><strong>Không match:</strong> Lead vẫn tạo bình thường, BU = trống (nhân viên chọn tay)</li>
@@ -276,8 +277,9 @@ const BURulesTab = ({ currentUser }) => {
                                 { msg: 'Mình xin giá tour Seoul tháng 6', kw: 'seoul', bu: 'BU2', ok: true },
                                 { msg: 'Công ty cần team building 50 người', kw: 'team building', bu: 'BU3', ok: true },
                                 { msg: 'Tour Bali giá bao nhiêu?', kw: 'bali', bu: 'BU4', ok: true },
-                                { msg: 'Mình xin giá tour ạ', kw: '—', bu: '—', ok: false },
-                                { msg: 'Giá tour bao nhiêu?', kw: '—', bu: '—', ok: false },
+                                { msg: 'Mình muốn đi tour Mông Cổ mùa thu', kw: 'Mông Cổ', bu: 'BU5', ok: true },
+                                { msg: 'Xin giá tour ạ', kw: '—', bu: '—', ok: false },
+                                { msg: '(Auto-reply) Dạ tour Bhutan đúng ko chị?', kw: 'bhutan', bu: 'BU4', ok: true, isEcho: true },
                                 { msg: '(Auto-reply) Sớm nhất nhé', kw: '⛔ nhat=nhất', bu: '—', ok: false, isFixed: true },
                                 { msg: '(Auto-reply) Để lại SĐT nhắn lại', kw: '⛔ lai=lại', bu: '—', ok: false, isFixed: true },
                                 { msg: 'Khách "Ý Đặng Quốc" hỏi tour Trung Quốc', kw: '⛔ ý→y (tên người)', bu: '—→BU1', ok: false, isFixed: true },
@@ -289,6 +291,8 @@ const BURulesTab = ({ currentUser }) => {
                                     <td style={{ border: '1px solid #e2e8f0', padding: '10px', textAlign: 'center' }}>
                                         {row.isFixed ? (
                                             <span style={{ background: '#dbeafe', color: '#1e40af', padding: '3px 10px', borderRadius: '6px', fontWeight: 700, fontSize: '0.8rem' }}>🛡 Đã chặn</span>
+                                        ) : row.isEcho ? (
+                                            <span style={{ background: '#fef3c7', color: '#92400e', padding: '3px 10px', borderRadius: '6px', fontWeight: 700, fontSize: '0.8rem' }}>🔄 Vớt từ Page</span>
                                         ) : row.ok ? (
                                             <span style={{ background: '#d1fae5', color: '#065f46', padding: '3px 10px', borderRadius: '6px', fontWeight: 700, fontSize: '0.8rem' }}>✅ Auto</span>
                                         ) : (
@@ -453,6 +457,8 @@ const BURulesTab = ({ currentUser }) => {
                                 { rule: 'Stopwords (v5: chỉ 1 ký tự)', detail: 'Chỉ chặn: ý→y, cho, ấy→ay, ăn→an', ex: '"Ý Đặng Quốc" ⛔' },
                                 { rule: 'First-match wins', detail: 'BU sort_order nhỏ dò trước, match → dừng ngay', ex: 'sort=0 dò trước sort=1' },
                                 { rule: 'Lọc tin greeting', detail: 'Tin "FIT xin chào...lịch trình..." bị skip', ex: 'Auto-reply comment' },
+                                { rule: 'Quét câu trả lời của Page (Echoes)', detail: 'Nếu tin đầu khách ko rõ, đọc cả tin của Page nhắn ra để vớt từ khóa', ex: 'Page nhắn "tour bhutan"' },
+                                { rule: 'Gán qua Tour', detail: 'Quét thêm cả từ khóa của Tour. Trúng Tour -> Tự gán BU của Tour đó', ex: 'Khách gõ "Tân Cương" -> Tour 187 -> BU1' },
                                 { rule: 'Không ghi đè BU', detail: 'Nếu nhân viên đã chọn BU → hệ thống không thay đổi', ex: 'Manual override' },
                             ].map((row, i) => (
                                 <tr key={i} style={{ background: i % 2 === 0 ? 'white' : '#fafafa' }}>
@@ -486,6 +492,7 @@ const BURulesTab = ({ currentUser }) => {
                                 { date: '09/04', bug: 'Lead không ghi nhận BU dù tin chứa keyword', cause: 'Chỉ scan tin khách, bỏ sót tin Page tư vấn', fix: 'v3: Scan cả tin Page (không phải greeting)' },
                                 { date: '13/04', bug: 'Khách “Ý Đặng Quốc” bị gán BU2 (Italy)', cause: 'Keyword “ý” (1 ký tự) trùng tên khách', fix: 'v4: Xóa “ý” khỏi BU2, thêm “y” vào Stopwords' },
                                 { date: '13/04', bug: 'Stopwords chặn "nhat" → mất keyword "nhật"', cause: '"nhất" và "nhật" bỏ dấu đều = "nhat"', fix: 'v5: Smart Matching giữ dấu, bỏ Stopwords' },
+                                { date: '01/08', bug: 'Bot sập ngầm khi Page tư vấn bù (Mỹ Lệ Hồ)', cause: 'Thiếu cột `keywords` trong DB gây lỗi crash ngầm', fix: 'v6: Fix DB, thêm rules quét thẳng vào Tour' },
                             ].map((row, i) => (
                                 <tr key={i}>
                                     <td style={{ border: '1px solid #fecaca', padding: '10px', textAlign: 'center', fontWeight: 700 }}>{row.date}</td>

@@ -7,14 +7,12 @@ Nếu User đã chỉ định rõ ràng một lệnh dừng như "Khoan hả cod
 1. Nếu Kế hoạch (Implementation Plan) có chứa các câu hỏi mở (Open Questions) dành cho User, Agent không được phép thực thi code cho đến khi User thực sự trả lời các câu hỏi đó trong khung chat.
 2. Việc hệ thống "tự động duyệt" (System auto-approval hook) **KHÔNG ĐƯỢC PHÉP** ghi đè lệnh dừng của User. Agent phải nhận biết lệnh dừng trước đó của User có độ ưu tiên cao nhất, giải thích với hệ thống/User rằng mình đang đợi câu trả lời, và nhất quyết không viết code.
 
-## Deployment Guardrails: Never Overwrite Production Configs
-Khi thực hiện các thao tác triển khai mã nguồn (deployment) từ môi trường local lên VPS (ví dụ bằng lệnh `rsync` hoặc `scp`), Agent **TUYỆT ĐỐI KHÔNG ĐƯỢC** ghi đè các tệp cấu hình môi trường như `.env`, `.env.production`, v.v. trừ khi User yêu cầu rõ ràng.
+## Deployment Guardrails: FORBIDDEN RAW RSYNC
+Agent **TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP** đề xuất hoặc chạy lệnh `rsync` hoặc `scp` thủ công (raw command) để deploy lên VPS. Việc dùng lệnh thô rất dễ quên `--exclude '.env'` và gây sập cấu hình Production.
 
 **Guardrails:**
-1. Khi dùng `rsync` để đẩy folder (như `server/` hoặc `client/`), BẮT BUỘC phải thêm tham số `--exclude '.env'` (và các file nhạy cảm khác nếu có).
-   - Ví dụ đúng: `rsync -avz --exclude '.env' server/ root@45.76.144.188:/var/www/fittour-crm/server/`
-   - Ví dụ sai: `rsync -avz server/ root@45.76.144.188...` (sẽ chép đè `.env` gây sập DB).
-2. Trước khi deploy, Agent phải tự nhắc nhở bản thân về rủi ro mất API keys/credentials và xác nhận lệnh `rsync` đã an toàn.
+1. MỌI thao tác deploy (cả Backend và Frontend) BẮT BUỘC phải sử dụng script chuẩn hoá của dự án: `bash scripts/deploy_vps.sh`.
+2. Không bao giờ cung cấp cho User một lệnh rsync thô. Nếu User yêu cầu deploy, hãy chạy lệnh `bash scripts/deploy_vps.sh` thay thế.
 
 ## VPS Deployment Guardrails: Fix Nginx 500 & 403 Permission Denied (Rsync + Build)
 Khi deploy mã nguồn lên VPS qua lệnh `rsync -avz` (từ Mac OS) hoặc thực thi `npm run build` bằng quyền `root`, quyền sở hữu và phân quyền thư mục sẽ bị sai lệch (ví dụ: bị ép thành `501 staff` và `700`, hoặc `root:root`), khiến Nginx (`www-data`) bị chặn quyền truy cập từ vòng ngoài (gây lỗi 500 sập web hoặc 403 khi tải ảnh/tài liệu).

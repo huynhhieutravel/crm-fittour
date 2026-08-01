@@ -147,6 +147,35 @@ ${assignedToName ? `\n✅ <b>Đã nhận bởi:</b> ${escapeHTML(assignedToName)
             console.error('[Telegram Error] Failed to delete message:', error.response?.data || error.message);
         }
     }
+
+    /**
+     * Send a notification when a new organic lead cannot be auto-assigned
+     * @param {Object} lead - The lead object
+     */
+    async sendOrphanLeadNotification(lead) {
+        if (!this.token || !this.chatId) return;
+
+        const message = `🚨 <b>CẢNH BÁO: KHÁCH HÀNG MỒ CÔI TỪ INBOX</b> 🚨
+
+Khách hàng mới nhắn tin từ kênh tự nhiên nhưng hệ thống không thể tự động phân bổ BU (không có từ khóa).
+
+👤 <b>Tên:</b> ${escapeHTML(lead.name) || 'Không có tên'}
+💬 <b>Nguồn:</b> ${escapeHTML(lead.source) || 'Messenger'}
+⏰ <b>Thời gian:</b> ${new Date().toLocaleString('vi-VN')}
+
+👉 Vui lòng vào CRM, mục <b>Chưa phân bổ</b> để gán BU thủ công!`;
+
+        try {
+            await axios.post(this.apiUrl, {
+                chat_id: this.chatId,
+                text: message,
+                parse_mode: 'HTML'
+            });
+            console.log(`[Telegram] Sent orphan lead notification for lead ${lead.id}`);
+        } catch (error) {
+            console.error('[Telegram Error] Failed to send orphan lead notification:', error.response?.data || error.message);
+        }
+    }
 }
 
 module.exports = new TelegramService();

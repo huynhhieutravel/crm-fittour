@@ -47,11 +47,22 @@ exports.handleWebhookEvent = async (req, res) => {
             console.log(`[WEBHOOK] Processing entry ID: ${entry.id}`);
             
             // Handle Messenger Conversations (Primary or Standby)
-            const webhooks = entry.messaging || entry.standby || [];
-            const isStandby = !!entry.standby;
+            const webhooksToProcess = [];
+            
+            if (entry.messaging && entry.messaging.length > 0) {
+                entry.messaging.forEach(event => {
+                    webhooksToProcess.push({ event, isStandby: false });
+                });
+            }
+            
+            if (entry.standby && entry.standby.length > 0) {
+                entry.standby.forEach(event => {
+                    webhooksToProcess.push({ event, isStandby: true });
+                });
+            }
 
-            if (webhooks.length > 0) {
-                for (const webhook_event of webhooks) {
+            if (webhooksToProcess.length > 0) {
+                for (const { event: webhook_event, isStandby } of webhooksToProcess) {
                     console.log(`[WEBHOOK] ${isStandby ? '🕵️ Standby' : '📩 Primary'} Event:`, JSON.stringify(webhook_event));
 
                     if (webhook_event.sender && webhook_event.sender.id) {
@@ -145,9 +156,12 @@ exports.handleWebhookEvent = async (req, res) => {
                                 }
                                 if (adContextText) console.log(`[WEBHOOK] Extracted adContextText: "${adContextText.trim()}"`);
 
-                                facebookService.handleMessage(sender_psid, webhook_event.message, isStandby, adContextText)
-                                    .then(() => console.log('[WEBHOOK] ✅ handleMessage completed'))
-                                    .catch(err => console.error('[WEBHOOK] ❌ handleMessage error:', err.message, err.stack));
+                                try {
+                                    await facebookService.handleMessage(sender_psid, webhook_event.message, isStandby, adContextText);
+                                    console.log('[WEBHOOK] ✅ handleMessage completed');
+                                } catch (err) {
+                                    console.error('[WEBHOOK] ❌ handleMessage error:', err.message, err.stack);
+                                }
                             }
                         } else if (webhook_event.postback) {
                             console.log(`[WEBHOOK] Postback payload: ${webhook_event.postback.payload}`);
