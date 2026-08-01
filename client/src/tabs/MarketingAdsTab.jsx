@@ -164,6 +164,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
     }
     
     let selectedWeek = null;
+    let selectedMonth = filters.month;
 
     if (type === 'weekly') {
       const currentRanges = getWeekRanges(filters.year, filters.month);
@@ -186,11 +187,29 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
 
       if (!weekChoice) return;
       selectedWeek = weekChoice;
+    } else if (type === 'monthly') {
+      const options = {};
+      for (let i = 1; i <= 12; i++) {
+        options[i] = `Tháng ${i}`;
+      }
+      
+      const { value: monthChoice } = await Swal.fire({
+        title: `Chọn tháng gửi báo cáo (Năm ${filters.year})`,
+        input: 'select',
+        inputOptions: options,
+        inputValue: filters.month,
+        showCancelButton: true,
+        confirmButtonText: 'Tiếp tục',
+        cancelButtonText: 'Hủy'
+      });
+
+      if (!monthChoice) return;
+      selectedMonth = monthChoice;
     }
 
     const text = type === 'weekly' 
-      ? `Bạn có chắc muốn gửi Báo cáo Tuần ${selectedWeek} Tháng ${filters.month}/${filters.year}?`
-      : `Bạn có chắc muốn gửi Báo cáo Tháng ${filters.month}/${filters.year}?`;
+      ? `Bạn có chắc muốn gửi Báo cáo Tuần ${selectedWeek} Tháng ${selectedMonth}/${filters.year}?`
+      : `Bạn có chắc muốn gửi Báo cáo Tháng ${selectedMonth}/${filters.year}?`;
     
     const result = await Swal.fire({
       title: 'Xác nhận gửi Email',
@@ -207,7 +226,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
         const token = localStorage.getItem('token');
         await axios.post('/api/marketing-ads/send-email', {
           type,
-          month: filters.month,
+          month: selectedMonth,
           year: filters.year,
           week: selectedWeek
         }, {

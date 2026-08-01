@@ -44,6 +44,9 @@ const EVENT_VARIABLES = {
     { code: 'avg_rating', label: 'Điểm trung bình' },
     { code: 'rich_reviews', label: 'Đánh giá có >= 5 ảnh' }
   ],
+  MONTHLY_DASHBOARD_STATS: [
+    { code: 'month', label: 'Tháng báo cáo (VD: 07/2026)' }
+  ],
   LEAD_ASSIGNED: [
     { code: 'lead_name', label: 'Tên Lead' },
     { code: 'assigned_to', label: 'Người nhận' },

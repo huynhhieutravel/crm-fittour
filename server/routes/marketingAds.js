@@ -402,6 +402,19 @@ router.post('/send-email', async (req, res) => {
     const kpiQuery = `SELECT * FROM marketing_ads_kpis WHERE year = $1 AND month = $2`;
     const kpiResult = await db.query(kpiQuery, [targetYear, targetMonth]);
   
+    // Fetch previous month stats for comparison
+    const prevMonth = targetMonth === 1 ? 12 : targetMonth - 1;
+    const prevYear = targetMonth === 1 ? targetYear - 1 : targetYear;
+    const prevAggQuery = `
+      SELECT SUM(spend) as actual_spend, SUM(leads) as actual_leads
+      FROM marketing_ads_reports
+      WHERE year = $1 AND month = $2
+    `;
+    const prevAggResult = await db.query(prevAggQuery, [prevYear, prevMonth]);
+    const prevSpend = parseFloat(prevAggResult.rows[0]?.actual_spend || 0);
+    const prevLeads = parseInt(prevAggResult.rows[0]?.actual_leads || 0);
+    const prevCPL = prevLeads > 0 ? prevSpend / prevLeads : 0;
+
     const activeBUs = [{id: 'BU1'}, {id: 'BU2'}, {id: 'BU3'}, {id: 'BU4'}, {id: 'BU5'}, {id: 'KHAC'}];
   
     let totalBudget = 0;
@@ -501,23 +514,8 @@ router.post('/send-email', async (req, res) => {
   
       const cpl = actual.leads > 0 ? actual.spend / actual.leads : 0;
       const cpm = actual.messages > 0 ? actual.spend / actual.messages : 0;
-      let spendHtml = '';
-      if (type === 'weekly') {
-          const remaining = monthlyBudget - accumulated.spend;
-          const remainingPercent = monthlyBudget > 0 ? Math.round((remaining / monthlyBudget) * 100) : 0;
-          spendHtml = `
-            <div style="font-size: 13px;">Tuần: <b>${formatK(actual.spend)}</b></div>
-            <div style="font-size: 12px; color: #475569; margin-top: 3px;">LK: ${formatK(accumulated.spend)} / ${formatK(monthlyBudget)}</div>
-            <div style="font-size: 12px; color: #3b82f6; margin-top: 2px;">Còn: ${formatK(remaining)} (${remainingPercent}%)</div>
-          `;
-      } else {
-          const remaining = monthlyBudget - actual.spend;
-          const remainingPercent = monthlyBudget > 0 ? Math.round((remaining / monthlyBudget) * 100) : 0;
-          spendHtml = `
-            <div style="font-size: 13px;"><b>${formatK(actual.spend)}</b> / ${formatK(monthlyBudget)}</div>
-            <div style="font-size: 12px; color: #3b82f6; margin-top: 3px;">Còn: ${formatK(remaining)} (${remainingPercent}%)</div>
-          `;
-      }
+      const spendPercent = budget > 0 ? Math.round((actual.spend / budget) * 100) : 0;
+      const spendHtml = `${actual.spend.toLocaleString('vi-VN')} / ${budget.toLocaleString('vi-VN')} <span style="font-size: 13px; color: #64748b;">(${spendPercent}%)</span>`;
 
       return `
         <tr>
@@ -563,7 +561,13 @@ router.post('/send-email', async (req, res) => {
                    <div style="font-size: 14px; color: #334155; font-weight: bold; margin-top: 3px;">${totalAccumulatedSpend.toLocaleString('vi-VN')} đ</div>
                    <div style="font-size: 11px; color: #475569; margin-top: 2px;">Còn lại: ${Math.max(0, totalMonthlyBudget - totalAccumulatedSpend).toLocaleString('vi-VN')} đ <span style="font-weight: 500;">(${totalMonthlyBudget > 0 ? Math.round((totalMonthlyBudget - totalAccumulatedSpend) / totalMonthlyBudget * 100) : 0}%)</span></div>
                 </div>
-                ` : ''}
+                ` : `
+                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #cbd5e1;">
+                   <div style="font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase;">Tháng trước (Tháng ${prevMonth})</div>
+                   <div style="font-size: 14px; color: #334155; font-weight: bold; margin-top: 3px;">${prevSpend.toLocaleString('vi-VN')} đ</div>
+                   <div style="font-size: 11px; color: #475569; margin-top: 2px;">Lead thực tế: ${prevLeads} <span style="font-weight: 500;">(CPL: ${(prevCPL/1000).toFixed(1)}k)</span></div>
+                </div>
+                `}
              </td>
              <td style="width: 2%;"></td>
              <td style="width: 32%; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; vertical-align: top;">
@@ -572,8 +576,8 @@ router.post('/send-email', async (req, res) => {
              </td>
              <td style="width: 2%;"></td>
              <td style="width: 32%; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; vertical-align: top;">
-                <div style="font-size: 12px; color: #64748b; font-weight: bold; text-transform: uppercase;">CPL ${totalActualCrmWon > 0 ? '/ CPA ' : ''}Trung bình</div>
-                <div style="font-size: 20px; color: #10b981; font-weight: bold; margin-top: 5px; white-space: nowrap;">${(totalCPL/1000).toFixed(1)}k${totalActualCrmWon > 0 ? ` / ${(totalCPA/1000).toFixed(1)}k` : ''}</div>
+                <div style="font-size: 12px; color: #64748b; font-weight: bold; text-transform: uppercase;">CPL Trung bình</div>
+                <div style="font-size: 20px; color: #10b981; font-weight: bold; margin-top: 5px; white-space: nowrap;">${(totalCPL/1000).toFixed(1)}k</div>
              </td>
            </tr>
         </table>

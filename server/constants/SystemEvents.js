@@ -10,9 +10,10 @@ const SystemEvents = [
   // Khách Hàng (Đánh giá)
   { code: 'MONTHLY_REVIEWS_STATS', label: 'Báo cáo Đánh giá hàng tháng', category: 'Khách hàng' },
   
-  // Marketing
+  // Marketing & Dashboard
   { code: 'WEEKLY_MARKETING_ADS_STATS', label: 'Báo cáo Marketing Ads hàng tuần', category: 'Marketing' },
   { code: 'MONTHLY_MARKETING_ADS_STATS', label: 'Báo cáo Marketing Ads hàng tháng', category: 'Marketing' },
+  { code: 'MONTHLY_DASHBOARD_STATS', label: 'Báo cáo Hiệu suất Tour hàng tháng', category: 'Sản phẩm Tour' },
   
   // CRM
   { code: 'LEAD_CREATED', label: 'Có Lead mới', category: 'Khách hàng' },

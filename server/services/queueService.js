@@ -60,7 +60,7 @@ async function processSendEmail(job) {
               <img src="https://erp.fittour.vn/logo.png" alt="FIT Tour" style="width: 120px; height: auto; display: block;" />
             </td>
             <td style="vertical-align: top;">
-              <strong style="color: #0f172a; font-size: 14px; text-transform: uppercase;">Công ty Cổ phần Lữ hành Quốc tế FIT Tour</strong><br>
+              <strong style="color: #0f172a; font-size: 14px; text-transform: uppercase;">Công ty TNHH Du lịch Quốc tế FIT Tour</strong><br>
               <span style="color: #0284c7; font-weight: 600; font-size: 12px;">TINH TẾ, CHUYÊN BIỆT & ĐẲNG CẤP</span><br>
               <div style="margin-top: 8px; font-size: 13px;">
                 <b>Hotline:</b> <a href="tel:0934888854" style="color: #0f172a; text-decoration: none;">0934 888 854</a> | <b>Website:</b> <a href="https://fittour.vn" style="color: #0284c7; text-decoration: none;">fittour.vn</a><br>

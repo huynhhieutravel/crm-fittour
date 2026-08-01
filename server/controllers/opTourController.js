@@ -263,10 +263,10 @@ exports.updateOpTour = async (req, res) => {
 exports.deleteOpTour = async (req, res) => {
   const { id } = req.params;
   try {
-    // Check if there are bookings tied to this departure
-    const bookingCheck = await db.query('SELECT COUNT(*) as cnt FROM bookings WHERE tour_departure_id = $1', [id]);
+    // Check if there are active bookings tied to this departure (bỏ qua các booking đã Huỷ)
+    const bookingCheck = await db.query("SELECT COUNT(*) as cnt FROM bookings WHERE tour_departure_id = $1 AND booking_status != 'Huỷ'", [id]);
     if (Number(bookingCheck.rows[0].cnt) > 0) {
-      return res.status(409).json({ hasBookings: true, error: `Không thể xóa: Lịch khởi hành này đang có ${bookingCheck.rows[0].cnt} khách hàng/phiếu thu. Hãy chuyển khách sang tour khác trước khi đưa vào thùng rác.` });
+      return res.status(409).json({ hasBookings: true, error: `Không thể xóa: Lịch khởi hành này đang có ${bookingCheck.rows[0].cnt} khách hàng đang hoạt động. Hãy chuyển khách sang tour khác trước khi đưa vào thùng rác.` });
     }
     
     const currentRes = await db.query('SELECT * FROM tour_departures WHERE id = $1', [id]);

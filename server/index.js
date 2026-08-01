@@ -318,7 +318,8 @@ server.listen(PORT, () => {
         startDispatcherSLAEngine();
 
         require('./cron/monthlyReviewsEmail');
-        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, SLA, Monthly Reviews Stats).');
+        require('./cron/monthlyDashboardEmail');
+        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, SLA, Monthly Reviews, Monthly Dashboard).');
 
         // Start Email Listeners for Event-Driven Architecture
         const { registerEmailListeners } = require('./listeners/emailListener');

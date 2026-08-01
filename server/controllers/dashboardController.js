@@ -213,6 +213,7 @@ exports.getLeaderOverview = async (req, res) => {
              JOIN tour_templates tt ON td.tour_template_id = tt.id
              WHERE ${dateFilterBookings.replace(/start_date/g, 'td.start_date')}
              AND td.status != 'Huỷ'
+             AND (td.is_deleted IS NULL OR td.is_deleted = false)
              ORDER BY tt.bu_group, td.start_date`,
             params
         );
@@ -268,6 +269,7 @@ exports.getLeaderOverview = async (req, res) => {
             LEFT JOIN users u ON b.created_by = u.id
             CROSS JOIN LATERAL unnest(COALESCE(u.bus, ARRAY['Chưa gán'])) as sale_bu_group
             WHERE ${dateFilter.replace(/created_at/g, 'b.created_at')}
+            AND (td.is_deleted IS NULL OR td.is_deleted = false)
             AND td.status != 'Huỷ'
             AND b.booking_status NOT IN ('Huỷ', 'Mới')
             GROUP BY sale_bu_group, COALESCE(u.full_name, b.created_by_name, 'Chưa gán')`, params);
@@ -313,7 +315,8 @@ exports.getLeaderOverview = async (req, res) => {
              FROM tour_departures_raw td
              JOIN tour_templates tt ON td.tour_template_id = tt.id
              WHERE ${dateFilterBookingsPrev.replace(/start_date/g, 'td.start_date')}
-             AND td.status != 'Huỷ'`,
+             AND td.status != 'Huỷ'
+             AND (td.is_deleted IS NULL OR td.is_deleted = false)`,
             prevParams
         );
 
@@ -327,6 +330,7 @@ exports.getLeaderOverview = async (req, res) => {
             LEFT JOIN users u ON b.created_by = u.id
             CROSS JOIN LATERAL unnest(COALESCE(u.bus, ARRAY['Chưa gán'])) as sale_bu_group
             WHERE ${dateFilterPrev.replace(/created_at/g, 'b.created_at')}
+            AND (td.is_deleted IS NULL OR td.is_deleted = false)
             AND td.status != 'Huỷ'
             AND b.booking_status NOT IN ('Huỷ', 'Mới')
             GROUP BY sale_bu_group`, prevParams);
@@ -365,6 +369,7 @@ exports.getLeaderOverview = async (req, res) => {
              JOIN tour_templates tt ON td.tour_template_id = tt.id
              WHERE td.guide_id IS NULL
              AND td.status != 'Huỷ'
+             AND (td.is_deleted IS NULL OR td.is_deleted = false)
              AND td.start_date >= CURRENT_DATE
              AND td.start_date <= CURRENT_DATE + INTERVAL '14 days'`
         );
@@ -476,6 +481,7 @@ exports.getEmployeeProfile = async (req, res) => {
             FROM tour_departures_raw td
             WHERE td.operator_id = $1 
             AND td.status != 'Huỷ'
+            AND (td.is_deleted IS NULL OR td.is_deleted = false)
             AND ${dateFilter.replace(/created_at/g, 'td.start_date')}
         `, params);
         
@@ -494,6 +500,7 @@ exports.getEmployeeProfile = async (req, res) => {
             LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
             WHERE td.operator_id = $1 
             AND td.status != 'Huỷ'
+            AND (td.is_deleted IS NULL OR td.is_deleted = false)
             AND ${dateFilter.replace(/created_at/g, 'td.start_date')}
             ORDER BY td.start_date ASC
         `, params);
