@@ -1,4 +1,8 @@
-export const VISA_CHECKLIST_TEMPLATE = [
+require('dotenv').config();
+const db = require('../server/db');
+
+async function run() {
+  const template = [
     {
         group: "A - Hồ Sơ Công Ty",
         subgroup: "",
@@ -9,7 +13,7 @@ export const VISA_CHECKLIST_TEMPLATE = [
         ]
     },
     {
-        group: "B.1 Hồ Sơ Cá Nhân: Giấy Tờ Tuỳ Thân",
+        group: "B.1 Hồ Sơ Cá Nhân: Giấy Tờ Tùy Thân",
         subgroup: "",
         items: [
             { name: "Hộ chiếu mới (có ký tên trang 3)", status: "Chờ bổ sung", file_link: "" },
@@ -55,4 +59,10 @@ export const VISA_CHECKLIST_TEMPLATE = [
             { name: "Chứng minh mối quan hệ & Hình ảnh chụp chung", status: "Chờ bổ sung", file_link: "" }
         ]
     }
-];
+  ];
+  
+  await db.query("UPDATE settings SET value = $1 WHERE key = 'visa_checklist_template'", [JSON.stringify(template)]);
+  console.log('done');
+  process.exit(0);
+}
+run();

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Search, Plus, CreditCard, ToggleLeft, ToggleRight, Settings } from 'lucide-react';
 import Select from 'react-select';
 import VisaTemplateDrawer from '../components/modals/VisaTemplateDrawer';
+import VisaChecklistConfigDrawer from '../components/modals/VisaChecklistConfigDrawer';
 import { canCreate, canEdit } from '../utils/permissions';
 import { useMarkets } from '../hooks/useMarkets';
 
@@ -16,10 +17,10 @@ const VisaTemplatesTab = ({ currentUser, checkPerm, addToast }) => {
     const [totalItems, setTotalItems] = useState(0);
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isConfigOpen, setIsConfigOpen] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
 
-    const { markets } = useMarkets();
-    const marketOptions = markets.map(m => ({ value: m.name, label: m.name }));
+    const marketOptions = useMarkets();
 
     const fetchTemplates = async () => {
         setLoading(true);
@@ -87,6 +88,11 @@ const VisaTemplatesTab = ({ currentUser, checkPerm, addToast }) => {
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
+                    {(currentUser?.role === 'admin' || currentUser?.role === 'manager' || (checkPerm && checkPerm('settings', 'edit'))) && (
+                        <button onClick={() => setIsConfigOpen(true)} style={{ height: '38px', fontSize: '0.85rem', padding: '0 16px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+                            <Settings size={16} /> Cấu hình Giấy tờ
+                        </button>
+                    )}
                     {(checkPerm ? checkPerm('visas', 'create') : canCreate(currentUser?.role, 'visas')) && (
                         <button className="btn-pro-save" onClick={() => { setSelectedId(null); setIsDrawerOpen(true); }} style={{ height: '38px', fontSize: '0.85rem', padding: '0 16px' }}>
                             <Plus size={16} /> Thêm Sản Phẩm
@@ -114,7 +120,7 @@ const VisaTemplatesTab = ({ currentUser, checkPerm, addToast }) => {
                         ) : templates.length === 0 ? (
                             <tr><td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>Chưa có sản phẩm nào.</td></tr>
                         ) : (
-                            templates.map((item) => (
+                            (templates || []).map((item) => (
                                 <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }}
                                     onClick={() => { setSelectedId(item.id); setIsDrawerOpen(true); }}
                                     onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
@@ -159,6 +165,13 @@ const VisaTemplatesTab = ({ currentUser, checkPerm, addToast }) => {
                     refreshData={fetchTemplates} 
                     checkPerm={checkPerm}
                     currentUser={currentUser}
+                />
+            )}
+
+            {isConfigOpen && (
+                <VisaChecklistConfigDrawer
+                    isOpen={isConfigOpen}
+                    onClose={() => setIsConfigOpen(false)}
                 />
             )}
         </div>

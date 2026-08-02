@@ -17,6 +17,7 @@ import { BLUEPRINT_META_ADS_MARKDOWN } from '../data/blueprintMetaAds';
 import { RULE_META_ADS_MARKDOWN } from '../data/ruleMetaAds';
 import { SOP_ASTRO_TOUR_MARKDOWN } from '../data/sopAstroTour';
 import { SOP_DISPATCH_MARKDOWN, SOP_SALES_MARKDOWN, SOP_OVERVIEW_MARKDOWN } from '../data/sopDispatchSales';
+import { QUY_TRINH_THANH_TOAN_TOUR_MARKDOWN } from '../data/quyTrinhThanhToanTour';
 import SopMetaAdsInfographic from './SopMetaAdsInfographic';
 import RagDocViewer from '../components/Knowledge/RagDocViewer';
 import LadakhConsultingPage from './LadakhConsultingPage';
@@ -38,6 +39,7 @@ const STATIC_DOCS = [
   { title: 'Tổng quan Quy trình Lead', description: 'Bức tranh toàn cảnh về quy trình xử lý Lead từ Điều phối đến Sales', category: 'Điều hành', path: '/tai-lieu/tong-quan-lead', icon: '🌐' },
   { title: 'SOP Điều Phối Lead', description: 'Quy trình tiếp nhận và phân bổ Lead dành cho Trung tâm Điều phối', category: 'Điều hành', path: '/tai-lieu/sop-dieu-phoi', icon: '🔀' },
   { title: 'HUB Kế Toán', description: 'Nghiệp vụ kế toán, quy trình tài chính nội bộ', category: 'Kế toán', path: '/tai-lieu/ke-toan', icon: '📊' },
+  { title: 'Quy Trình Thanh Toán & Quyết Toán', description: 'Quy trình thanh toán, bàn giao, quyết toán tour.', category: 'Kế toán', path: '/tai-lieu/quy-trinh-thanh-toan-ban-giao-quyet-toan-tour', icon: '💸' },
   { title: 'Biểu Mẫu Hành Chính', description: 'Giấy phép, biểu mẫu, tài liệu hành chính công ty', category: 'Biểu mẫu', path: '/tai-lieu/bieu-mau', icon: '📋' },
   { title: 'Bộ Nguyên Tắc Hành Xử Nhân Viên Văn Phòng', description: 'Quy tắc ứng xử, giao tiếp, ra quyết định, xử lý sự cố', category: 'Quy tắc', path: '/tai-lieu/bo-nguyen-tac-hanh-xu-nhan-vien', icon: '📓' },
   { title: 'Quy Chế Lương Hướng Dẫn Viên', description: 'Chính sách lương, thưởng, phụ cấp cho HDV', category: 'HDV', path: '/tai-lieu/quy-che-luong-hdv', icon: '💰' },
@@ -629,10 +631,18 @@ const DocumentsHome = () => {
               </li>
             </ul>
           </div>
-          <Link to="/tai-lieu/dieu-hanh" className="blog-top-card">
-            <img src="https://cdn-icons-png.flaticon.com/512/2830/2830305.png" alt="Điều hành" className="blog-icon-img" />
-            <span>HUB Điều Hành (OP)</span>
-          </Link>
+          <div className="blog-top-card" style={{ background: 'linear-gradient(to right, #f8fafc, #f1f5f9)', display: 'block', padding: '1.25rem' }}>
+            <Link to="/tai-lieu/dieu-hanh" style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: '#1e293b' }}>
+              <img src="https://cdn-icons-png.flaticon.com/512/2830/2830305.png" alt="Điều hành" className="blog-icon-img" />
+              <span style={{ fontWeight: 600 }}>HUB Điều Hành (OP)</span>
+            </Link>
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '0.75rem 0' }} />
+            <ul className="blog-list">
+              <li style={{ marginBottom: 0 }}>
+                <Link to="/tai-lieu/quy-trinh-thanh-toan-ban-giao-quyet-toan-tour" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>💸</span> Thanh toán, bàn giao, quyết toán</Link>
+              </li>
+            </ul>
+          </div>
           <Link to="/cam-nang-thuong-hieu" className="blog-top-card">
             <img src="https://cdn-icons-png.flaticon.com/512/3067/3067261.png" alt="Thương hiệu" className="blog-icon-img" />
             <span>Cẩm Nang Thương Hiệu</span>
@@ -1026,6 +1036,15 @@ const DocumentsPage = () => {
     { title: 'Brand Identity', path: '/tai-lieu/brand-guideline', icon: '🎨' },
     { title: 'Chính Sách Đánh Giá', path: '/tai-lieu/chinh-sach-danh-gia', icon: '⭐' }
   ];
+
+  if (path === '/tai-lieu/quy-trinh-thanh-toan-ban-giao-quyet-toan-tour') return (
+    <MarkdownViewer 
+      markdownContent={QUY_TRINH_THANH_TOAN_TOUR_MARKDOWN}
+      title="Quy Trình Thanh Toán, Bàn Giao Quyết Toán Tour"
+      author="Kế toán & Điều Hành"
+      breadcrumbs={[{ label: 'Kế toán', path: '/tai-lieu/ke-toan' }]}
+    />
+  );
 
   if (path === '/tai-lieu/sop-meta-ads') return (
     <MarkdownViewer 

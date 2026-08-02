@@ -5,7 +5,7 @@ import Select from 'react-select';
 import { canEdit, canCreate, canDelete } from '../../utils/permissions';
 import { swalConfirm } from '../../utils/swalHelpers';
 import { useMarkets } from '../../hooks/useMarkets';
-import { VISA_CHECKLIST_TEMPLATE } from './VisaChecklistTemplate';
+import { useVisaChecklistTemplate } from '../../hooks/useVisaChecklistTemplate';
 
 const reactSelectStyles = {
     control: (base) => ({
@@ -26,8 +26,8 @@ const VisaTemplateDrawer = ({ isOpen, onClose, templateId, refreshData, checkPer
         checklist_config: []
     });
 
-    const { markets } = useMarkets();
-    const marketOptions = markets.map(m => ({ value: m.name, label: m.name }));
+    const marketOptions = useMarkets();
+    const { template: VISA_CHECKLIST_TEMPLATE, loading: templateLoading } = useVisaChecklistTemplate();
 
     useEffect(() => {
         if (templateId) {
@@ -130,8 +130,15 @@ const VisaTemplateDrawer = ({ isOpen, onClose, templateId, refreshData, checkPer
     };
 
     return (
-        <div className={`drawer-overlay ${isOpen ? 'open' : ''}`} onClick={onClose} style={{ zIndex: 9999 }}>
-            <div className={`drawer-content ${isOpen ? 'open' : ''}`} onClick={e => e.stopPropagation()} style={{ width: '600px', maxWidth: '90vw' }}>
+        <div className="drawer-overlay" onClick={onClose} style={{ 
+            position: 'fixed', top: 0, right: 0, bottom: 0, left: 0,
+            background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', zIndex: 10000, display: 'flex', justifyContent: 'flex-end'
+        }}>
+            <div className="drawer-content" onClick={e => e.stopPropagation()} style={{ 
+                width: '800px', maxWidth: '100%', background: '#f8fafc', height: '100%',
+                display: 'flex', flexDirection: 'column',
+                boxShadow: '-10px 0 30px rgba(0,0,0,0.15)', animation: 'slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}>
                 
                 {/* Header */}
                 <div className="drawer-header" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
@@ -156,8 +163,8 @@ const VisaTemplateDrawer = ({ isOpen, onClose, templateId, refreshData, checkPer
                 </div>
 
                 {/* Body */}
-                <div className="drawer-body" style={{ padding: '1.5rem', height: 'calc(100vh - 75px)', overflowY: 'auto' }}>
-                    {loading ? (
+                <div className="drawer-body" style={{ padding: '1.5rem', flex: 1, overflowY: 'auto' }}>
+                    {(loading || templateLoading) ? (
                         <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>Đang tải...</div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -218,7 +225,10 @@ const VisaTemplateDrawer = ({ isOpen, onClose, templateId, refreshData, checkPer
                                         return (
                                             <div key={gIdx} style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                                    <div style={{ fontWeight: 700, color: '#334155' }}>{group.group}</div>
+                                                    <div style={{ fontWeight: 700, color: '#334155' }}>
+                                                        {group.group}
+                                                        {group.subgroup && <span style={{ marginLeft: '8px', fontWeight: 'normal', color: '#64748b', fontSize: '0.9em' }}>({group.subgroup})</span>}
+                                                    </div>
                                                     <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', cursor: 'pointer', color: '#3b82f6', fontWeight: 600 }}>
                                                         <input 
                                                             type="checkbox" 
@@ -230,13 +240,17 @@ const VisaTemplateDrawer = ({ isOpen, onClose, templateId, refreshData, checkPer
                                                 </div>
                                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                                                     {groupItems.map((item, iIdx) => (
-                                                        <label key={iIdx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#475569', cursor: 'pointer' }}>
+                                                        <label key={iIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.85rem', color: '#475569', cursor: 'pointer', marginTop: '4px' }}>
                                                             <input 
                                                                 type="checkbox" 
                                                                 checked={formData.checklist_config.includes(item.name)}
                                                                 onChange={() => handleItemToggle(item.name)}
+                                                                style={{ marginTop: '2px' }}
                                                             />
-                                                            {item.name}
+                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                <span>{item.name}</span>
+                                                                {item.note && <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic', marginTop: '2px' }}>{item.note}</span>}
+                                                            </div>
                                                         </label>
                                                     ))}
                                                 </div>

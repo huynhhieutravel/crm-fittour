@@ -103,8 +103,9 @@ exports.getDashboard = async (req, res) => {
         // Group by user and calculate average SLA
         const userStats = {};
         lbResult.rows.forEach(lead => {
-            if (!userStats[lead.assigned_to]) {
-                userStats[lead.assigned_to] = {
+            const key = `${lead.assigned_to}_${lead.bu_group}`;
+            if (!userStats[key]) {
+                userStats[key] = {
                     user_id: lead.assigned_to,
                     full_name: lead.full_name,
                     username: lead.username,
@@ -115,8 +116,8 @@ exports.getDashboard = async (req, res) => {
             }
             let sla = calculateSLAMinutes(lead.created_at, lead.assigned_at);
             if (sla !== null) {
-                userStats[lead.assigned_to].total_sla_minutes += sla;
-                userStats[lead.assigned_to].lead_count += 1;
+                userStats[key].total_sla_minutes += sla;
+                userStats[key].lead_count += 1;
             }
         });
 
@@ -142,7 +143,7 @@ exports.getDashboard = async (req, res) => {
 
         // Attach average SLA to workload and buCounts using leaderboard data
         workload.forEach(w => {
-            const stat = leaderboard.find(l => l.user_id === w.user_id);
+            const stat = leaderboard.find(l => l.user_id === w.user_id && l.bu_group === w.bu_group);
             w.avg_sla_minutes = stat ? stat.avg_sla_minutes : 0;
             w.processed_leads = stat ? stat.lead_count : 0;
         });

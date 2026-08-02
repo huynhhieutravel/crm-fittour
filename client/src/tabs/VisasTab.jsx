@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getLocalDateString } from '../utils/dateUtils';
-import { Search, Plus, FileText, CheckCircle, XCircle, AlertTriangle, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { Search, Plus, FileText, CheckCircle, XCircle, AlertTriangle, ChevronLeft, ChevronRight, Download, Trash2 } from 'lucide-react';
 import Select from 'react-select';
 import VisaDetailDrawer from '../components/modals/VisaDetailDrawer';
 import { canCreate, canDelete } from '../utils/permissions';
@@ -268,16 +268,15 @@ export default function VisasTab({ currentUser, checkPerm, addToast }) {
             <div className="data-table-container" style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
                 <table className="data-table mobile-card-table" style={{ fontSize: '0.85rem' }}>
                     <thead>
-                        <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #e2e8f0' }}>
-
-                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#475569', fontSize: '0.75rem', textTransform: 'uppercase' }}>STT</th>
-                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#475569', fontSize: '0.75rem', textTransform: 'uppercase', minWidth: '200px' }}>Mã hệ thống</th>
-                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#475569', fontSize: '0.75rem', textTransform: 'uppercase' }}>Tên đơn</th>
-                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#475569', fontSize: '0.75rem', textTransform: 'uppercase' }}>Khách hàng</th>
-                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#475569', fontSize: '0.75rem', textTransform: 'uppercase' }}>Ngày nhận</th>
-                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#475569', fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Chờ duyệt</th>
-                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#475569', fontSize: '0.75rem', textTransform: 'uppercase' }}>Phần thu</th>
-                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#475569', fontSize: '0.75rem', textTransform: 'uppercase' }}>Phần chi</th>
+                        <tr style={{ background: '#0f172a' }}>
+                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#f8fafc', fontSize: '0.75rem', textTransform: 'uppercase' }}>STT</th>
+                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#f8fafc', fontSize: '0.75rem', textTransform: 'uppercase', minWidth: '200px' }}>Mã hệ thống</th>
+                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#f8fafc', fontSize: '0.75rem', textTransform: 'uppercase' }}>Khách hàng</th>
+                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#f8fafc', fontSize: '0.75rem', textTransform: 'uppercase' }}>Ngày nhận</th>
+                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#f8fafc', fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Chờ duyệt</th>
+                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#f8fafc', fontSize: '0.75rem', textTransform: 'uppercase' }}>Phần thu</th>
+                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#f8fafc', fontSize: '0.75rem', textTransform: 'uppercase' }}>Phần chi</th>
+                            <th style={{ padding: '12px 10px', fontWeight: 700, color: '#f8fafc', fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center', width: '50px' }}></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -304,13 +303,9 @@ export default function VisasTab({ currentUser, checkPerm, addToast }) {
                                                 <FileText size={13} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle', color: '#3b82f6' }} />
                                                 {v.code}
                                             </div>
+                                            {v.name && <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.8rem', marginBottom: '4px' }}>{v.name}</div>}
                                             <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Người tạo: {v.created_by_name || 'Hệ thống'}</div>
                                             {v.handled_by_name && <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Phụ trách: {v.handled_by_name}</div>}
-                                        </td>
-
-                                        {/* Tên đơn */}
-                                        <td className="card-highlight-name" data-label="Tên đơn:" style={{ padding: '10px', verticalAlign: 'top' }} onClick={() => { setSelectedVisaId(v.id); setIsDrawerOpen(true); }}>
-                                            <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.85rem' }}>{v.name || '--'}</div>
                                         </td>
 
                                         {/* Khách hàng */}
@@ -335,29 +330,29 @@ export default function VisasTab({ currentUser, checkPerm, addToast }) {
                                         </td>
 
                                         {/* Chờ duyệt */}
-                                        <td data-label="Phê duyệt:" style={{ padding: '10px', verticalAlign: 'top', textAlign: 'center' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                                        <td data-label="Phê duyệt:" style={{ padding: '10px', verticalAlign: 'top', textAlign: 'center', width: '90px' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'stretch' }}>
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); handleQuickStatus(v.id, 'Đã duyệt'); }}
                                                     style={{ 
-                                                        display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '4px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600,
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '6px 10px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600,
                                                         background: v.status === 'Đã duyệt' || v.status === 'Thành công' ? '#16a34a' : '#f0fdf4', 
                                                         color: v.status === 'Đã duyệt' || v.status === 'Thành công' ? 'white' : '#16a34a',
                                                         transition: 'all 0.15s'
                                                     }}
                                                 >
-                                                    <CheckCircle size={13} /> Duyệt
+                                                    <CheckCircle size={14} /> Duyệt
                                                 </button>
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); handleQuickStatus(v.id, 'Không duyệt'); }}
                                                     style={{ 
-                                                        display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '4px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600,
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '6px 10px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600,
                                                         background: v.status === 'Không duyệt' || v.status === 'Rớt Visa' ? '#dc2626' : '#fef2f2', 
                                                         color: v.status === 'Không duyệt' || v.status === 'Rớt Visa' ? 'white' : '#dc2626',
                                                         transition: 'all 0.15s'
                                                     }}
                                                 >
-                                                    <XCircle size={13} /> K.duyệt
+                                                    <XCircle size={14} /> K.duyệt
                                                 </button>
                                             </div>
                                         </td>
@@ -378,6 +373,21 @@ export default function VisasTab({ currentUser, checkPerm, addToast }) {
                                                 <div><span style={{ color: '#64748b' }}>Đã chi: </span><span style={{ fontWeight: 600, color: Number(v.total_paid) > 0 ? '#16a34a' : '#64748b' }}>{formatCurrency(Number(v.total_paid))}</span></div>
                                                 <div><span style={{ color: '#64748b' }}>Còn nợ NCC: </span><span style={{ fontWeight: 600, color: ft.totalCost - Number(v.total_paid || 0) > 0 ? '#ef4444' : '#1e293b' }}>{formatCurrency(Math.max(0, ft.totalCost - Number(v.total_paid || 0)))}</span></div>
                                             </div>
+                                        </td>
+                                        
+                                        {/* Delete Button */}
+                                        <td style={{ padding: '10px', verticalAlign: 'middle', textAlign: 'center' }}>
+                                            {(checkPerm ? checkPerm('visas', 'delete') : canDelete(currentUser?.role, 'visas')) && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(v.id); }}
+                                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '6px', borderRadius: '6px' }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.background = '#fef2f2'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                                                    title="Xóa hồ sơ"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 );

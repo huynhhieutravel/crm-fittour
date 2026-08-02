@@ -136,8 +136,8 @@ exports.create = async (req, res) => {
             for (const m of members) {
                 if (m.fullname && m.fullname.trim() !== '') {
                     await client.query(
-                        'INSERT INTO visa_members (visa_id, fullname, passport_number, phone, dob, age_type, checklist_data, evaluation_data) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-                        [newId, m.fullname, m.passport_number, m.phone, m.dob || null, m.age_type || 'Người lớn', m.checklist_data ? JSON.stringify(m.checklist_data) : '[]', m.evaluation_data ? JSON.stringify(m.evaluation_data) : '{}']
+                        'INSERT INTO visa_members (visa_id, fullname, passport_number, phone, dob, age_type, checklist_data, evaluation_data, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+                        [newId, m.fullname, m.passport_number, m.phone, m.dob || null, m.age_type || 'Người lớn', m.checklist_data ? JSON.stringify(m.checklist_data) : '[]', m.evaluation_data ? JSON.stringify(m.evaluation_data) : '{}', m.notes || '']
                     );
                 }
             }
@@ -197,14 +197,14 @@ exports.update = async (req, res) => {
                 if (typeof m.id === 'string' || Number(m.id) > 1000000000) {
                     // Mới
                     await client.query(
-                        'INSERT INTO visa_members (visa_id, fullname, passport_number, phone, dob, age_type, checklist_data, evaluation_data) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-                        [id, m.fullname, m.passport_number, m.phone, m.dob || null, m.age_type || 'Người lớn', m.checklist_data ? JSON.stringify(m.checklist_data) : '[]', m.evaluation_data ? JSON.stringify(m.evaluation_data) : '{}']
+                        'INSERT INTO visa_members (visa_id, fullname, passport_number, phone, dob, age_type, checklist_data, evaluation_data, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+                        [id, m.fullname, m.passport_number, m.phone, m.dob || null, m.age_type || 'Người lớn', m.checklist_data ? JSON.stringify(m.checklist_data) : '[]', m.evaluation_data ? JSON.stringify(m.evaluation_data) : '{}', m.notes || '']
                     );
                 } else {
                     // Update
                     await client.query(
-                        'UPDATE visa_members SET fullname=$1, passport_number=$2, phone=$3, dob=$4, age_type=$5, checklist_data=$6, evaluation_data=$7 WHERE id=$8',
-                        [m.fullname, m.passport_number, m.phone, m.dob || null, m.age_type || 'Người lớn', m.checklist_data ? JSON.stringify(m.checklist_data) : '[]', m.evaluation_data ? JSON.stringify(m.evaluation_data) : '{}', m.id]
+                        'UPDATE visa_members SET fullname=$1, passport_number=$2, phone=$3, dob=$4, age_type=$5, checklist_data=$6, evaluation_data=$7, notes=$9 WHERE id=$8',
+                        [m.fullname, m.passport_number, m.phone, m.dob || null, m.age_type || 'Người lớn', m.checklist_data ? JSON.stringify(m.checklist_data) : '[]', m.evaluation_data ? JSON.stringify(m.evaluation_data) : '{}', m.id, m.notes || '']
                     );
                 }
             }

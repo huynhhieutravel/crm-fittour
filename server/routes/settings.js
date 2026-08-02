@@ -19,6 +19,41 @@ router.get('/', auth, admin, async (req, res) => {
     }
 });
 
+// 1.1 Lấy Visa Checklist Template (Public cho staff)
+router.get('/visa-checklist', auth, async (req, res) => {
+    try {
+        const result = await db.query("SELECT value FROM settings WHERE key = 'visa_checklist_template'");
+        if (result.rows.length > 0 && result.rows[0].value) {
+            let data = result.rows[0].value;
+            // Parse if it's string (sometimes Postgres JSONB is returned as object, sometimes string if stored as text)
+            if (typeof data === 'string') {
+                try { data = JSON.parse(data); } catch(e){}
+            }
+            res.json(data);
+        } else {
+            res.json(null);
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 1.2 Cập nhật Visa Checklist Template (Admin/Manager only)
+router.post('/visa-checklist', auth, admin, async (req, res) => {
+    try {
+        const { template } = req.body;
+        // Stringify if needed, or store as JSONB (assuming the column is jsonb or text)
+        const valueToStore = typeof template === 'object' ? JSON.stringify(template) : template;
+        await db.query(
+            "INSERT INTO settings (key, value) VALUES ('visa_checklist_template', $1) ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()",
+            [valueToStore]
+        );
+        res.json({ success: true, message: 'Đã cập nhật danh mục Master Checklist' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // 2. Cập nhật cài đặt
 router.post('/update', auth, admin, async (req, res) => {
     const { settings } = req.body; // { key: value, ... }

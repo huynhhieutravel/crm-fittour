@@ -1,24 +1,78 @@
 import { swalConfirm, swalPrompt } from '../../utils/swalHelpers';
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { X, Save, Plus, Trash2, Link as LinkIcon, Paperclip, ChevronDown, ChevronRight, User, FileText, CheckCircle, AlertTriangle, ScanText, Clock, Download } from 'lucide-react';
+import { X, Save, Plus, Trash2, Link as LinkIcon, Paperclip, ChevronDown, ChevronRight, User, FileText, CheckCircle, AlertTriangle, ScanText, Clock, Download, UserPlus, ExternalLink } from 'lucide-react';
+import VisaProviderDetailDrawer from './VisaProviderDetailDrawer';
+import HotelDetailDrawer from './HotelDetailDrawer';
+import AirlineDetailDrawer from './AirlineDetailDrawer';
+import InsuranceDetailDrawer from './InsuranceDetailDrawer';
+import LandtourDetailDrawer from './LandtourDetailDrawer';
 import { getLocalDateTimeLocal } from '../../utils/dateUtils';
 import { canEdit, canDelete } from '../../utils/permissions';
-import { VISA_CHECKLIST_TEMPLATE } from './VisaChecklistTemplate';
+import { useVisaChecklistTemplate } from '../../hooks/useVisaChecklistTemplate';
 import { scanPassportImage } from '../../utils/passportOcr';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
+import SearchableSelect from '../common/SearchableSelect';
+import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 
 export default function VisaDetailDrawer({ visaId, onClose, refreshList, currentUser, checkPerm, addToast }) {
     const isNew = !visaId;
     const [loading, setLoading] = useState(!isNew);
     const [saving, setSaving] = useState(false);
     
+    const { template: VISA_CHECKLIST_TEMPLATE, loading: templateLoading } = useVisaChecklistTemplate();
+
     const [activeTab, setActiveTab] = useState('info');
 
+    const [customers, setCustomers] = useState([]);
+    const [isNewCustomer, setIsNewCustomer] = useState(false);
+
+    const [supplierLists, setSupplierLists] = useState({
+        'Visa': [], 'Khách sạn': [], 'Vé máy bay': [], 'Bảo hiểm': [], 'Land tour': []
+    });
+    const [viewSupplier, setViewSupplier] = useState(null);
+
+    const fetchSuppliers = async () => {
+        const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
+            
+            const fetchSafe = async (url) => {
+                try {
+                    const res = await axios.get(url, { headers });
+                    return Array.isArray(res.data) ? res.data : (res.data.data || []);
+                } catch (err) {
+                    console.warn(`Failed to fetch ${url}`, err);
+                    return [];
+                }
+            };
+
+            const [visaData, hotelData, airData, insData, landData, customersData] = await Promise.all([
+                fetchSafe('/api/visa-providers?limit=1000'),
+                fetchSafe('/api/hotels?limit=1000'),
+                fetchSafe('/api/airlines?limit=1000'),
+                fetchSafe('/api/insurances?limit=1000'),
+                fetchSafe('/api/landtours?limit=1000'),
+                fetchSafe('/api/customers?limit=3000')
+            ]);
+            
+            setCustomers(customersData);
+            setSupplierLists({
+                'Visa': visaData,
+                'Khách sạn': hotelData,
+                'Vé máy bay': airData,
+                'Bảo hiểm': insData,
+                'Land tour': landData
+            });
+    };
+
+    useEffect(() => {
+        fetchSuppliers();
+    }, []);
+
     const [form, setForm] = useState({
-        code: '', name: '', customer_name: '', customer_phone: '', customer_type: 'Cá nhân',
+        code: '', name: '', customer_id: null, customer_name: '', customer_phone: '', customer_type: 'Cá nhân',
         status: 'Tạo mới', market: '', visa_type: 'Du lịch',
         receipt_date: '', result_date: '', fingerprint_date: '', stamp_date: '', return_date: '',
         quantity: 1, service_package: '', is_urgent: false, is_evisa: false,
@@ -54,6 +108,15 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
             setVouchersList([]);
         }
     }, [visaId]);
+
+    // Re-check loading state when both data and template are loaded
+    useEffect(() => {
+        if (!isNew && loading && !templateLoading && form.id) {
+            setLoading(false);
+        } else if (isNew && !templateLoading) {
+            setLoading(false);
+        }
+    }, [templateLoading, form.id, isNew]);
 
     const fetchVouchers = async () => {
         try {
@@ -112,6 +175,11 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                     checklist_data: typeof m.checklist_data === 'string' ? JSON.parse(m.checklist_data || '[]') : (m.checklist_data || [])
                 }));
             }
+            if (!d.customer_id && d.customer_name) {
+                setIsNewCustomer(true);
+            } else {
+                setIsNewCustomer(false);
+            }
             if (typeof d.finance_data === 'string') {
                 try { 
                     const parsed = JSON.parse(d.finance_data || '[]'); 
@@ -153,6 +221,24 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
         try {
             setSaving(true);
             const payload = { ...form };
+            
+            // Handle new customer creation
+            if (isNewCustomer && payload.customer_name) {
+                try {
+                    const custRes = await axios.post('/api/customers', {
+                        name: payload.customer_name,
+                        phone: payload.customer_phone,
+                        type: payload.customer_type
+                    }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+                    payload.customer_id = custRes.data.id;
+                } catch (err) {
+                    console.error("Error creating customer", err);
+                    if (addToast) addToast('Không thể tạo Khách hàng mới: ' + (err.response?.data?.message || err.message), 'error');
+                    setSaving(false);
+                    return;
+                }
+            }
+
             payload.finance_data = {
                 suppliers: form.finance_data || [],
                 commissions: form.finance_commissions || []
@@ -180,6 +266,27 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
         }
     };
 
+    const autoFillFirstMember = (name, phone, dobStr) => {
+        setForm(prev => {
+            let newMembers = [...prev.members];
+            if (newMembers.length === 0) {
+                newMembers.push({
+                    id: 'new_' + Date.now(),
+                    fullname: name || '',
+                    passport_number: '',
+                    phone: phone || '',
+                    dob: dobStr ? new Date(dobStr).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : '',
+                    checklist_data: getFilteredChecklist(prev.visa_template_id)
+                });
+            } else if (!newMembers[0].fullname && !newMembers[0].passport_number) {
+                newMembers[0].fullname = name || '';
+                newMembers[0].phone = phone || '';
+                if (dobStr) newMembers[0].dob = new Date(dobStr).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
+            }
+            return { ...prev, members: newMembers };
+        });
+    };
+
     const handleChange = (field, val) => {
         setForm(prev => {
             const newForm = { ...prev, [field]: val };
@@ -195,13 +302,14 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
     };
 
     const getFilteredChecklist = (templateId) => {
-        if (!templateId) return JSON.parse(JSON.stringify(VISA_CHECKLIST_TEMPLATE));
+        const baseTemplate = JSON.parse(JSON.stringify(VISA_CHECKLIST_TEMPLATE));
+        if (!templateId) return baseTemplate;
         const tpl = visaTemplatesList.find(t => t.id === templateId);
         if (!tpl || !tpl.checklist_config || tpl.checklist_config.length === 0) {
-            return JSON.parse(JSON.stringify(VISA_CHECKLIST_TEMPLATE));
+            return baseTemplate;
         }
         
-        return VISA_CHECKLIST_TEMPLATE.map(group => {
+        return baseTemplate.map(group => {
             const matchingItems = group.items.filter(item => tpl.checklist_config.includes(item.name));
             if (matchingItems.length > 0) return { ...group, items: matchingItems };
             return null;
@@ -332,6 +440,63 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
         handleChange('finance_commissions', newData);
     };
 
+    const updateMemberInfo = (mId, field, val) => {
+        setForm(prev => ({
+            ...prev,
+            members: prev.members.map(m => m.id === mId ? { ...m, [field]: val } : m)
+        }));
+    };
+
+    const saveMemberToCustomers = async (m) => {
+        if (!m.fullname || !m.phone) {
+            if (addToast) addToast('Vui lòng nhập đủ Họ tên và Số điện thoại của thành viên', 'error');
+            return;
+        }
+        try {
+            const res = await axios.post('/api/customers', {
+                name: m.fullname,
+                phone: m.phone,
+                type: 'Cá nhân'
+            }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+            
+            setCustomers(prev => [res.data, ...prev]);
+            if (addToast) addToast(`Đã lưu Khách hàng "${m.fullname}" vào danh bạ!`, 'success');
+        } catch (err) {
+            if (addToast) addToast(err.response?.data?.message || 'Lỗi lưu khách hàng', 'error');
+        }
+    };
+
+    const handleMemberPhoneBlur = async (mId, phone) => {
+        if (!phone || phone.trim().length < 8) return;
+        try {
+            const res = await axios.get('/api/customers?search=' + encodeURIComponent(phone.trim()), {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            const data = res.data?.data || res.data;
+            if (data && data.length > 0) {
+                const cust = data.find(c => c.phone && c.phone.includes(phone.trim())) || data[0];
+                if (cust) {
+                    setForm(prev => ({
+                        ...prev,
+                        members: prev.members.map(m => {
+                            if (m.id === mId) {
+                                return {
+                                    ...m,
+                                    fullname: cust.name || m.fullname,
+                                    dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : m.dob
+                                };
+                            }
+                            return m;
+                        })
+                    }));
+                    if (addToast) addToast(`Đã tự động điền thông tin khách cũ: ${cust.name}`, 'info');
+                }
+            }
+        } catch(err) {
+            console.error('Lỗi tìm khách hàng theo SĐT:', err);
+        }
+    };
+
     // --- MEMBER MANAGEMENT ---
     const addMember = () => {
         setForm(prev => {
@@ -360,13 +525,6 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                 deleted_member_ids: [...deleted, mId]
             };
         });
-    };
-
-    const updateMemberInfo = (mId, field, val) => {
-        setForm(prev => ({
-            ...prev,
-            members: prev.members.map(m => m.id === mId ? { ...m, [field]: val } : m)
-        }));
     };
 
     // --- CHECKLIST MANAGEMENT ---
@@ -413,6 +571,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
     const currentMemberForChecklist = form.members.find(m => m.id === selectedMemberForChecklist) || form.members[0];
 
     return (
+        <>
         <div className="drawer-overlay" style={{ position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', zIndex: 1000, display: 'flex', justifyContent: 'flex-end', backdropFilter: 'blur(4px)' }}>
             <div className="drawer" style={{ width: 'calc(100vw - var(--sidebar-width, 260px))', backgroundColor: '#f8fafc', height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '-10px 0 25px rgba(0,0,0,0.1)', animation: 'slideInRight 0.3s ease' }}>
                 
@@ -541,16 +700,79 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                         </select>
                                     </div>
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                                    <div className="form-group">
-                                        <label>Họ tên người liên hệ</label>
-                                        <input type="text" className="form-control" placeholder="Tên khách hàng đại diện" value={form.customer_name} onChange={e => handleChange('customer_name', e.target.value)} />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Số điện thoại</label>
-                                        <input type="text" className="form-control" placeholder="Số điện thoại liên hệ" value={form.customer_phone} onChange={e => handleChange('customer_phone', e.target.value)} />
-                                    </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                    <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569', textTransform: 'uppercase' }}>HỌ TÊN NGƯỜI LIÊN HỆ *</label>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setIsNewCustomer(!isNewCustomer)}
+                                        style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                    >
+                                        {isNewCustomer ? 'Tìm khách cũ' : '+ Thêm khách mới'}
+                                    </button>
                                 </div>
+                                {isNewCustomer ? (
+                                    <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', border: '1px dashed #cbd5e1' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                                <input type="text" className="form-control" placeholder="Tên khách hàng đại diện..." value={form.customer_name} onChange={e => handleChange('customer_name', e.target.value)} />
+                                            </div>
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                                <input type="text" className="form-control" placeholder="Số điện thoại liên hệ..." value={form.customer_phone} onChange={e => handleChange('customer_phone', e.target.value)} />
+                                            </div>
+                                        </div>
+                                        <button 
+                                            type="button" 
+                                            className="btn btn-sm"
+                                            style={{ background: '#4f46e5', color: 'white', fontWeight: 500, borderRadius: '6px', padding: '0.4rem 0.8rem', border: 'none', cursor: 'pointer' }}
+                                            onClick={async () => {
+                                                if (!form.customer_name) {
+                                                    if (addToast) addToast('Vui lòng nhập tên khách hàng', 'error');
+                                                    return;
+                                                }
+                                                try {
+                                                    const res = await axios.post('/api/customers', {
+                                                        name: form.customer_name,
+                                                        phone: form.customer_phone,
+                                                        type: form.customer_type
+                                                    }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+                                                    const newCustomer = res.data;
+                                                    setCustomers(prev => [newCustomer, ...prev]);
+                                                    handleChange('customer_id', newCustomer.id);
+                                                    setIsNewCustomer(false);
+                                                    autoFillFirstMember(newCustomer.name, newCustomer.phone, newCustomer.birth_date);
+                                                    if (addToast) addToast('Đã tạo và chọn khách hàng mới!', 'success');
+                                                } catch (err) {
+                                                    if (addToast) addToast(err.response?.data?.message || 'Lỗi tạo khách hàng', 'error');
+                                                }
+                                            }}
+                                        >
+                                            <CheckCircle size={14} style={{ display: 'inline-block', marginRight: '4px', verticalAlign: 'middle' }} />
+                                            Lưu & Chọn Khách Hàng Này
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div style={{ marginBottom: '1.5rem' }}>
+                                        <Select
+                                            options={customers.map(c => ({ value: c.id, label: `${c.name}${c.phone ? ' - ' + c.phone : ''}`, raw: c }))}
+                                            value={form.customer_id ? { value: form.customer_id, label: `${form.customer_name}${form.customer_phone ? ' - ' + form.customer_phone : ''}` } : null}
+                                            onChange={(opt) => {
+                                                handleChange('customer_id', opt ? opt.value : null);
+                                                if (opt) {
+                                                    handleChange('customer_name', opt.raw.name);
+                                                    handleChange('customer_phone', opt.raw.phone || '');
+                                                    handleChange('customer_type', opt.raw.type || 'Cá nhân');
+                                                    autoFillFirstMember(opt.raw.name, opt.raw.phone, opt.raw.birth_date);
+                                                } else {
+                                                    handleChange('customer_name', '');
+                                                    handleChange('customer_phone', '');
+                                                }
+                                            }}
+                                            placeholder="Tìm theo tên hoặc số điện thoại..."
+                                            isClearable
+                                            styles={{ control: (base) => ({ ...base, minHeight: '42px', borderRadius: '8px', border: '1px solid #cbd5e1' }) }}
+                                        />
+                                    </div>
+                                )}
                             </div>
 
                             <div style={{ background: 'white', padding: '1.25rem 1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
@@ -617,7 +839,31 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                             <div style={{ fontWeight: 800, color: '#94a3b8', fontSize: '0.85rem', width: '55px', textTransform: 'uppercase' }}>Khách {i+1}</div>
                                             <div className="form-group" style={{ margin: 0 }}>
                                                 <label style={{ fontSize: '0.75rem' }}>Họ Tên</label>
-                                                <input type="text" className="form-control" style={{ background: '#f8fafc' }} value={m.fullname} onChange={e => updateMemberInfo(m.id, 'fullname', e.target.value)} placeholder="Tên khách..." />
+                                                <CreatableSelect
+                                                    options={customers.map(c => ({
+                                                        value: c.id,
+                                                        label: `${c.name}${c.phone ? ' - ' + c.phone : ''}`,
+                                                        raw: c
+                                                    }))}
+                                                    value={m.fullname ? { label: m.fullname, value: m.fullname } : null}
+                                                    onChange={(opt) => {
+                                                        if (opt) {
+                                                            if (opt.__isNew__) {
+                                                                updateMemberInfo(m.id, 'fullname', opt.value);
+                                                            } else {
+                                                                updateMemberInfo(m.id, 'fullname', opt.raw.name);
+                                                                updateMemberInfo(m.id, 'phone', opt.raw.phone || '');
+                                                                if (opt.raw.birth_date) updateMemberInfo(m.id, 'dob', new Date(opt.raw.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }));
+                                                            }
+                                                        } else {
+                                                            updateMemberInfo(m.id, 'fullname', '');
+                                                        }
+                                                    }}
+                                                    placeholder="Chọn hoặc nhập tên..."
+                                                    formatCreateLabel={(val) => `Thêm mới "${val}"`}
+                                                    isClearable
+                                                    styles={{ control: (base) => ({ ...base, minHeight: '38px', borderRadius: '4px', border: '1px solid #cbd5e1' }) }}
+                                                />
                                             </div>
                                             <div className="form-group" style={{ margin: 0 }}>
                                                 <label style={{ fontSize: '0.75rem' }}>Số Hộ Chiếu</label>
@@ -626,7 +872,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                             <div className="form-group" style={{ margin: 0 }}>
                                                 <label style={{ fontSize: '0.75rem' }}>Số ĐT / Ngày Sinh</label>
                                                 <div style={{ display: 'flex', gap: '8px' }}>
-                                                    <input type="text" className="form-control" style={{ background: '#f8fafc', flex: 1 }} value={m.phone} onChange={e => updateMemberInfo(m.id, 'phone', e.target.value)} placeholder="SĐT..." />
+                                                    <input type="text" className="form-control" style={{ background: '#f8fafc', flex: 1, minWidth: '100px' }} value={m.phone} onChange={e => updateMemberInfo(m.id, 'phone', e.target.value)} onBlur={e => handleMemberPhoneBlur(m.id, e.target.value)} placeholder="Nhập SĐT để tra cứu..." />
                                                     <DatePicker
                                                         selected={m.dob ? new Date(m.dob) : null}
                                                         onChange={date => updateMemberInfo(m.id, 'dob', date ? format(date, 'yyyy-MM-dd') : '')}
@@ -640,6 +886,14 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                                         autoComplete="off"
                                                         wrapperClassName="datepicker-visa-dob"
                                                     />
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => saveMemberToCustomers(m)}
+                                                        style={{ color: '#4f46e5', background: '#e0e7ff', border: 'none', padding: '0 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                        title="Lưu thành viên này vào Danh bạ Khách hàng"
+                                                    >
+                                                        <UserPlus size={16}/>
+                                                    </button>
                                                 </div>
                                             </div>
                                             <div>
@@ -663,21 +917,51 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                             ) : (
                                 <div>
                                     <div style={{ display: 'flex', gap: '10px', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '10px' }}>
-                                        {form.members.map((m, i) => (
+                                        {form.members.map((m, i) => {
+                                            const progress = (() => {
+                                                if (!m.checklist_data) return {checked:0, total:0};
+                                                let c=0, t=0;
+                                                m.checklist_data.forEach(cat => cat.items && cat.items.forEach(it => { t++; if(it.checked) c++; }));
+                                                return {checked:c, total:t};
+                                            })();
+                                            const isSelected = selectedMemberForChecklist === m.id || (!selectedMemberForChecklist && i===0);
+                                            return (
                                             <button 
                                                 key={m.id}
                                                 onClick={() => setSelectedMemberForChecklist(m.id)}
                                                 style={{ 
                                                     padding: '10px 16px', borderRadius: '8px', fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
-                                                    background: (selectedMemberForChecklist === m.id || (!selectedMemberForChecklist && i===0)) ? '#3b82f6' : '#e2e8f0',
-                                                    color: (selectedMemberForChecklist === m.id || (!selectedMemberForChecklist && i===0)) ? 'white' : '#475569',
+                                                    background: isSelected ? '#3b82f6' : '#e2e8f0',
+                                                    color: isSelected ? 'white' : '#475569',
+                                                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px'
                                                 }}
                                             >
-                                                <User size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: '-3px' }}/>
-                                                {m.fullname || `Khách #${i+1}`}
+                                                <div>
+                                                    <User size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: '-3px' }}/>
+                                                    {m.fullname ? `#${i+1} ${m.fullname}` : `Khách #${i+1}`}
+                                                </div>
+                                                <div style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.9 }}>
+                                                    {progress.total > 0 ? `${progress.checked}/${progress.total} (${Math.round((progress.checked/progress.total)*100)}%)` : '0/0 (0%)'}
+                                                </div>
                                             </button>
-                                        ))}
+                                        )})}
                                     </div>
+
+                                    {currentMemberForChecklist && (
+                                        <div style={{ marginBottom: '1.5rem' }}>
+                                            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                                                <FileText size={14} /> Ghi chú riêng cho {currentMemberForChecklist.fullname || 'khách này'}
+                                            </label>
+                                            <textarea 
+                                                className="form-control"
+                                                rows={2}
+                                                placeholder="Ví dụ: Thiếu sổ hộ khẩu, Đang chờ khách gửi..."
+                                                value={currentMemberForChecklist.notes || ''}
+                                                onChange={e => updateMemberInfo(currentMemberForChecklist.id, 'notes', e.target.value)}
+                                                style={{ width: '100%', borderRadius: '8px', border: '1px solid #cbd5e1', padding: '10px', fontSize: '0.9rem', resize: 'vertical' }}
+                                            ></textarea>
+                                        </div>
+                                    )}
 
                                     {currentMemberForChecklist && currentMemberForChecklist.checklist_data && currentMemberForChecklist.checklist_data.map((category, catIndex) => (
                                         <div key={catIndex} style={{ marginBottom: category.group ? '2rem' : '1.5rem' }}>
@@ -699,7 +983,24 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                                         <div key={itemIndex} style={{ display: 'flex', alignItems: 'center', padding: '8px 10px', borderBottom: '1px solid #f1f5f9' }}>
                                                             {/* CHECKBOX AND NAME */}
                                                             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                                <input type="checkbox" style={{ width: '16px', height: '16px', accentColor: '#2563eb' }} />
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={item.checked || false}
+                                                                    onChange={e => {
+                                                                        setForm(prev => ({
+                                                                            ...prev,
+                                                                            members: prev.members.map(m => {
+                                                                                if (m.id === currentMemberForChecklist.id) {
+                                                                                    const newChecklist = [...m.checklist_data];
+                                                                                    newChecklist[catIndex].items[itemIndex].checked = e.target.checked;
+                                                                                    return { ...m, checklist_data: newChecklist };
+                                                                                }
+                                                                                return m;
+                                                                            })
+                                                                        }));
+                                                                    }}
+                                                                    style={{ width: '16px', height: '16px', accentColor: '#2563eb' }} 
+                                                                />
                                                                 <button 
                                                                     title="Đính kèm Link Drive"
                                                                     style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', padding: 0 }}
@@ -725,12 +1026,17 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                                                 }}>
                                                                     <Trash2 size={16} />
                                                                 </button>
-                                                                <span style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.85rem' }}>{item.name}</span>
-                                                                {item.file_link && (
-                                                                    <a href={item.file_link} target="_blank" rel="noreferrer" style={{ color: '#2563eb', fontSize: '0.75rem', background: '#eff6ff', padding: '2px 8px', borderRadius: '4px', textDecoration: 'none' }}>
-                                                                        Xem file
-                                                                    </a>
-                                                                )}
+                                                                <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                        <span style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.85rem' }}>{item.name}</span>
+                                                                        {item.file_link && (
+                                                                            <a href={item.file_link} target="_blank" rel="noreferrer" style={{ color: '#2563eb', fontSize: '0.75rem', background: '#eff6ff', padding: '2px 8px', borderRadius: '4px', textDecoration: 'none' }}>
+                                                                                Xem file
+                                                                            </a>
+                                                                        )}
+                                                                    </div>
+                                                                    {item.note && <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic', marginTop: '2px' }}>{item.note}</span>}
+                                                                </div>
                                                             </div>
 
                                                             {/* RADIO GROUP */}
@@ -828,6 +1134,9 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                     const supBaseCost = (sup.services || []).reduce((sum, svc) => sum + calculateServiceCostBase(svc), 0);
                                     const supTotalCost = calculateSupplierCost(sup);
                                     
+                                    const opts = supplierLists[sup.supplier_type || 'Visa'] || [];
+                                    const autoLinkedId = sup.supplier_id || (sup.supplier_name ? opts.find(o => o.name === sup.supplier_name)?.id : null);
+
                                     return (
                                         <div key={sup.id || sIdx} style={{ position: 'relative', borderBottom: sIdx !== form.finance_data.length - 1 ? '1px solid #e2e8f0' : 'none', paddingBottom: sIdx !== form.finance_data.length - 1 ? '2rem' : '0' }}>
                                             <button onClick={() => setShowDeleteSupplier(sIdx)} style={{ position: 'absolute', top: 0, right: 0, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }} title="Xóa NCC"><Trash2 size={16} /></button>
@@ -847,13 +1156,75 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                                         </select>
                                                     </div>
                                                     <div style={{ marginBottom: '10px' }}>
-                                                        <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Mã NCC</label>
-                                                        <input type="text" className="form-control" style={{ width: '100%', padding: '6px 8px', fontSize: '0.85rem' }} placeholder="VD: VisaHQ_Multi" value={sup.supplier_code || ''} onChange={e => updateSupplier(sIdx, 'supplier_code', e.target.value)} />
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                                            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', margin: 0 }}>Chọn Nhà Cung Cấp</label>
+                                                            {!autoLinkedId && (
+                                                                <button 
+                                                                    type="button"
+                                                                    onClick={() => setViewSupplier({ type: sup.supplier_type || 'Visa', id: null })}
+                                                                    title={`Thêm mới ${sup.supplier_type || 'Visa'}`} 
+                                                                    style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 600 }}
+                                                                >
+                                                                    Thêm mới {sup.supplier_type || 'Visa'} <Plus size={12} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <SearchableSelect 
+                                                            options={opts}
+                                                            value={autoLinkedId}
+                                                            onChange={(selectedId) => {
+                                                                if (!selectedId) {
+                                                                    updateSupplier(sIdx, 'supplier_id', null);
+                                                                    updateSupplier(sIdx, 'supplier_code', '');
+                                                                    updateSupplier(sIdx, 'supplier_name', '');
+                                                                    return;
+                                                                }
+                                                                const selected = opts.find(o => o.id.toString() === selectedId.toString());
+                                                                if (selected) {
+                                                                    updateSupplier(sIdx, 'supplier_id', selected.id);
+                                                                    updateSupplier(sIdx, 'supplier_code', selected.code || '');
+                                                                    updateSupplier(sIdx, 'supplier_name', selected.name || '');
+                                                                }
+                                                            }}
+                                                            placeholder="Tìm và chọn NCC..."
+                                                        />
                                                     </div>
-                                                    <div>
-                                                        <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Tên NCC</label>
-                                                        <input type="text" className="form-control" style={{ width: '100%', padding: '6px 8px', fontSize: '0.85rem' }} placeholder="VD: Korea Ambasy" value={sup.supplier_name || ''} onChange={e => updateSupplier(sIdx, 'supplier_name', e.target.value)} />
-                                                    </div>
+                                                    {sup.supplier_name && (
+                                                        <div 
+                                                            onClick={() => {
+                                                                if (autoLinkedId) {
+                                                                    if (!sup.supplier_id) updateSupplier(sIdx, 'supplier_id', autoLinkedId);
+                                                                    setViewSupplier({ type: sup.supplier_type || 'Visa', id: autoLinkedId });
+                                                                }
+                                                            }}
+                                                            title={autoLinkedId ? "Bấm để xem chi tiết" : ""}
+                                                            style={{ 
+                                                                marginTop: '8px', padding: '8px 12px', background: autoLinkedId ? '#eff6ff' : '#f8fafc', 
+                                                                borderRadius: '6px', border: `1px solid ${autoLinkedId ? '#bfdbfe' : '#e2e8f0'}`, 
+                                                                fontSize: '0.8rem', color: '#475569',
+                                                                cursor: autoLinkedId ? 'pointer' : 'default',
+                                                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                                transition: 'all 0.2s'
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                if (autoLinkedId) e.currentTarget.style.background = '#dbeafe';
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                if (autoLinkedId) e.currentTarget.style.background = '#eff6ff';
+                                                            }}
+                                                        >
+                                                            <div>
+                                                                {sup.supplier_code && <div style={{ fontWeight: 600, color: '#0f172a', marginBottom: '2px' }}>{sup.supplier_code}</div>}
+                                                                <div>{sup.supplier_name}</div>
+                                                            </div>
+                                                            {autoLinkedId && (
+                                                                <div style={{ color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, background: 'white', padding: '4px 8px', borderRadius: '4px', border: '1px solid #bfdbfe' }}>
+                                                                    <span style={{ fontSize: '0.7rem' }}>Chi tiết</span>
+                                                                    <ExternalLink size={12} />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* Right Panel: Services Grid */}
@@ -1113,5 +1484,22 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                 </div>
             </div>
         </div>
+        
+        {viewSupplier?.type === 'Khách sạn' && (
+            <HotelDetailDrawer hotel={viewSupplier.id ? { id: viewSupplier.id } : {}} onClose={() => setViewSupplier(null)} refreshList={fetchSuppliers} currentUser={currentUser} checkPerm={checkPerm} addToast={addToast} />
+        )}
+        {viewSupplier?.type === 'Vé máy bay' && (
+            <AirlineDetailDrawer airline={viewSupplier.id ? { id: viewSupplier.id } : {}} onClose={() => setViewSupplier(null)} refreshList={fetchSuppliers} currentUser={currentUser} checkPerm={checkPerm} addToast={addToast} />
+        )}
+        {viewSupplier?.type === 'Bảo hiểm' && (
+            <InsuranceDetailDrawer insurance={viewSupplier.id ? { id: viewSupplier.id } : {}} onClose={() => setViewSupplier(null)} refreshList={fetchSuppliers} currentUser={currentUser} checkPerm={checkPerm} addToast={addToast} />
+        )}
+        {viewSupplier?.type === 'Land tour' && (
+            <LandtourDetailDrawer landtour={viewSupplier.id ? { id: viewSupplier.id } : {}} onClose={() => setViewSupplier(null)} refreshList={fetchSuppliers} currentUser={currentUser} checkPerm={checkPerm} addToast={addToast} />
+        )}
+        {viewSupplier?.type === 'Visa' && (
+            <VisaProviderDetailDrawer provider={viewSupplier.id ? { id: viewSupplier.id } : {}} onClose={() => setViewSupplier(null)} refreshList={fetchSuppliers} onSuccess={fetchSuppliers} currentUser={currentUser} checkPerm={checkPerm} addToast={addToast} />
+        )}
+    </>
     );
 }

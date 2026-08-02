@@ -90,6 +90,41 @@ const globalSearchData = [
     { id: 'ceo-departures-dashboard', title: 'Dashboard Điều hành (CEO)', path: '/ceo-departures-dashboard', icon: LayoutTemplate },
     { id: 'email-mailboxes', title: 'Cấu hình Hộp thư', path: '/email/mailboxes', icon: Settings },
     { id: 'cskh-rules', title: 'Cấu hình Rules CSKH', path: '/customers/cskh-rules', icon: Settings },
+    
+    // NEW MODULES
+    { id: 'visa-products', title: 'Sản phẩm Visa', path: '/visa-products', icon: MapPin },
+    { id: 'visa-providers', title: 'NCC: Dịch vụ Visa', path: '/visa-providers', icon: Building },
+    { id: 'message-templates', title: 'Mẫu tin nhắn', path: '/message-templates', icon: MessageSquare },
+    { id: 'meeting-rooms', title: 'Phòng họp (Meeting Rooms)', path: '/meeting-rooms', icon: Building },
+    { id: 'accountants', title: 'Quản trị Kế toán', path: '/accountants', icon: DollarSign },
+    { id: 'email-groups', title: 'Nhóm Email', path: '/email-groups', icon: Mail },
+    { id: 'email-rules', title: 'Cấu hình Rules Email', path: '/email-rules', icon: Settings },
+    { id: 'notification-dashboard', title: 'Dashboard Thông báo', path: '/notification-dashboard', icon: LayoutTemplate },
+    { id: 'notification-center', title: 'Trung tâm Thông báo', path: '/notification-center', icon: Activity },
+    { id: 'dispatch-schedule', title: 'Lịch Điều phối (Dispatch)', path: '/dispatch-schedule', icon: Calendar },
+
+    // STATIC DOCS (Tài liệu nội bộ)
+    { id: 'doc-brand-guideline', title: 'Brand Identity Guideline', type: 'doc', path: '/tai-lieu/brand-guideline', icon: BookOpen },
+    { id: 'doc-hub-hdv', title: 'HUB Hướng Dẫn Viên', type: 'doc', path: '/hdv', icon: BookOpen },
+    { id: 'doc-hub-marketing', title: 'HUB Marketing', type: 'doc', path: '/tai-lieu/marketing', icon: BookOpen },
+    { id: 'doc-sop-astro-tour', title: 'SOP Dev: Elementor to Astro', type: 'doc', path: '/tai-lieu/sop-astro-tour', icon: BookOpen },
+    { id: 'doc-rule-meta-ads', title: 'Rule Meta Ads', type: 'doc', path: '/tai-lieu/rule-meta-ads', icon: BookOpen },
+    { id: 'doc-blueprint-meta-ads', title: 'Blueprint Meta Ads', type: 'doc', path: '/tai-lieu/blueprint-meta-ads', icon: BookOpen },
+    { id: 'doc-hub-sale', title: 'HUB Kinh Doanh (Sale)', type: 'doc', path: '/tai-lieu/sale', icon: BookOpen },
+    { id: 'doc-sop-sales', title: 'SOP Sales & Workplace', type: 'doc', path: '/tai-lieu/sop-sales', icon: BookOpen },
+    { id: 'doc-hub-dieu-hanh', title: 'HUB Điều Hành (OP)', type: 'doc', path: '/tai-lieu/dieu-hanh', icon: BookOpen },
+    { id: 'doc-tong-quan-lead', title: 'Tổng quan Quy trình Lead', type: 'doc', path: '/tai-lieu/tong-quan-lead', icon: BookOpen },
+    { id: 'doc-sop-dieu-phoi', title: 'SOP Điều Phối Lead', type: 'doc', path: '/tai-lieu/sop-dieu-phoi', icon: BookOpen },
+    { id: 'doc-hub-ke-toan', title: 'HUB Kế Toán', type: 'doc', path: '/tai-lieu/ke-toan', icon: BookOpen },
+    { id: 'doc-quy-trinh-thanh-toan', title: 'Quy Trình Thanh Toán & Quyết Toán', type: 'doc', path: '/tai-lieu/quy-trinh-thanh-toan-ban-giao-quyet-toan-tour', icon: BookOpen },
+    { id: 'doc-bieu-mau', title: 'Biểu Mẫu Hành Chính', type: 'doc', path: '/tai-lieu/bieu-mau', icon: BookOpen },
+    { id: 'doc-bo-nguyen-tac', title: 'Bộ Nguyên Tắc Hành Xử Nhân Viên', type: 'doc', path: '/tai-lieu/bo-nguyen-tac-hanh-xu-nhan-vien', icon: BookOpen },
+    { id: 'doc-quy-che-hdv', title: 'Quy Chế Lương Hướng Dẫn Viên', type: 'doc', path: '/tai-lieu/quy-che-luong-hdv', icon: BookOpen },
+    { id: 'doc-quy-trinh-sale-op', title: 'Quy Trình Sale & Điều Hành', type: 'doc', path: '/tai-lieu/quy-trinh-sale-dieu-hanh', icon: BookOpen },
+    { id: 'doc-dat-ten-tour', title: 'SOP Chuẩn Hóa Tên Tour', type: 'doc', path: '/tai-lieu/dat-ten-tour', icon: BookOpen },
+    { id: 'doc-zoho-email', title: 'Hướng Dẫn Kết Nối Zoho Mail', type: 'doc', path: '/tai-lieu/zoho-email', icon: BookOpen },
+    { id: 'doc-chinh-sach-danh-gia', title: 'SOP Chính Sách Đánh Giá (Review)', type: 'doc', path: '/tai-lieu/chinh-sach-danh-gia', icon: BookOpen },
+    { id: 'doc-co-che-kpi', title: 'Cơ Chế KPI', type: 'doc', path: '/tai-lieu/co-che-kpi', icon: BookOpen },
 ];
 
 const quickActions = [
