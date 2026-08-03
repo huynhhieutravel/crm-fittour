@@ -730,7 +730,7 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                     }
 
                     // Auto-classify BU from ALL messages (fallback to shares ad_context)
-                    const allConvMsgs = messagesList.filter(m => m.from && m.from.id === psid && !isAutoGreeting(m.message)).map(m => (m.message || '')).join(' ');
+                    const allConvMsgs = messagesList.filter(m => !isAutoGreeting(m.message) && !(m.message || '').includes('(Trung Quốc, Himalayas, Quốc tế...)')).map(m => (m.message || '')).join(' ');
                     const autoBUPoller = await classifyBUFromMessage(allConvMsgs + ' ' + (actualMessageText || ''), adContextText);
                     if (autoBUPoller) {
                         await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller, currentLeadId]);
@@ -854,7 +854,7 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                     const leadCheckRe = await db.query('SELECT bu_group, tour_id, name FROM leads WHERE id = $1', [currentLeadId]);
                     if (leadCheckRe.rows.length > 0) {
                         const allPollerMsgs = await db.query('SELECT sender_type, content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC', [oldConv.id]);
-                        const allPollerText = allPollerMsgs.rows.filter(m => m.sender_type === 'customer' && !isAutoGreeting(m.content)).map(m => m.content || '').join(' ');
+                        const allPollerText = allPollerMsgs.rows.filter(m => !isAutoGreeting(m.content) && !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)')).map(m => m.content || '').join(' ');
                         
                         if (!leadCheckRe.rows[0].bu_group) {
                             const autoBUPoller2 = await classifyBUFromMessage(allPollerText, adContextText);
