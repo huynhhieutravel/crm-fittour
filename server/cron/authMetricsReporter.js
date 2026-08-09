@@ -5,10 +5,10 @@ const os = require('os');
 
 function sendTelegramMessage(message) {
     const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
+    const chatId = process.env.TELEGRAM_IT_CHAT_ID; // Tách riêng Chat ID cho team IT/Hệ thống
     
     if (!token || !chatId) {
-        console.warn('Telegram Bot credentials not found. Cannot send Auth Metrics.');
+        console.warn('TELEGRAM_IT_CHAT_ID not found. Cannot send Auth Metrics.');
         return;
     }
 
