@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../db');
 const gptAuth = require('../middleware/gptAuth');
 const { emitEvent } = require('../utils/eventBus');
+const { logActivity } = require('../utils/logger');
 
 // Apply gptAuth to ALL routes — hỗ trợ cả JWT (user) và GPT_API_KEY (ChatGPT Bot read-only)
 router.use(gptAuth);
@@ -326,6 +327,10 @@ router.put('/:id', async (req, res) => {
 // Gửi Email Báo cáo Marketing Ads
 router.post('/send-email', async (req, res) => {
   try {
+    if (req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Chỉ Admin mới có quyền thực hiện thao tác này.' });
+    }
+
     let { type, month, year, week, custom_email } = req.body; 
     if (type === 'week') type = 'weekly';
     if (type === 'month') type = 'monthly';
@@ -617,12 +622,28 @@ router.post('/send-email', async (req, res) => {
         bodyHtml: html,
         from: "\"[ERP FIT Tour]\" <loki@fittour.vn>"
       }, { retryLimit: 3 });
+      
+      await logActivity({
+        user_id: req.user.id,
+        action_type: 'TRIGGER_REPORT',
+        entity_type: 'SYSTEM',
+        entity_id: null,
+        details: `Gửi thủ công Báo cáo Marketing Ads ${type === 'weekly' ? 'Tuần ' + week : 'Tháng ' + targetMonth}/${targetYear} tới ${custom_email}`
+      });
       return res.json({ success: true, message: "Đã gửi báo cáo test thành công" });
     }
 
     emitEvent(eventCode, {
       date: dateString,
       html_content: html
+    });
+    
+    await logActivity({
+      user_id: req.user.id,
+      action_type: 'TRIGGER_REPORT',
+      entity_type: 'SYSTEM',
+      entity_id: null,
+      details: `Gửi thủ công Báo cáo Marketing Ads ${type === 'weekly' ? 'Tuần ' + week : 'Tháng ' + targetMonth}/${targetYear}`
     });
 
     res.json({ success: true, message: 'Đã gửi báo cáo thành công' });

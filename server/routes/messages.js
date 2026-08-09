@@ -85,7 +85,10 @@ router.get('/conversations', auth, async (req, res) => {
 });
 
 // 1.5 Xóa hàng loạt hội thoại (Cùng tin nhắn liên quan - Admin/Manager only)
-router.post('/conversations/delete', auth, admin, async (req, res) => {
+router.post('/conversations/delete', auth, async (req, res) => {
+    if (req.user.role !== 'admin' && req.user.role !== 'SALES_LEAD') {
+        return res.status(403).json({ error: 'Chỉ Admin hoặc Trưởng nhóm Sale mới có quyền thực hiện thao tác này.' });
+    }
     const client = await db.pool.connect();
     try {
         const { ids } = req.body;

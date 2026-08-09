@@ -200,6 +200,7 @@ function AppContent() {
     const userStr = localStorage.getItem('user');
     if (userStr) {
       try {
+        const u = JSON.parse(userStr);
         // Cập nhật QA Guard: Chặn tài khoản không có quyền vào Notification Center mặc định
         const perms = u.permissions || {};
         if (u.role !== 'admin' && (!perms.leads || !perms.leads.can_view)) {
@@ -512,7 +513,7 @@ function AppContent() {
   const [bookingToEdit, setBookingToEdit] = useState(null);
 
   const LEAD_SOURCES = ['Messenger', 'Zalo', 'Tiktok', 'Khách giới thiệu', 'Hotline', 'Khác'];
-  const LEAD_STATUSES = ['Mới', 'Đang liên hệ', 'Liên hệ lần 2', 'Chốt đơn', 'Thất bại'];
+  const LEAD_STATUSES = ['Mới', 'Đang liên hệ', 'Liên hệ lần 2', 'Chốt đơn', 'Thất bại', 'Không phản hồi'];
   const LEAD_CLASSIFICATIONS = ['Mới', 'Tiềm Năng', 'Tiềm Năng Cao', 'Không có nhu cầu'];
   const CUSTOMER_ROLES = ['Người đại diện (booker)', 'Khách đi kèm'];
   const CUSTOMER_SEGMENTS = ['New Customer', 'Repeat Customer', 'VIP 3', 'VIP 2', 'VIP 1'];
@@ -2011,6 +2012,8 @@ function AppContent() {
       return false;
     };
 
+    const isVisaProductViewer = ['admin', 'manager', 'group_manager', 'sales_lead', 'sale_lead', 'operations_lead', 'group_operations_lead'].includes((user?.role || user?.role_name || '').toLowerCase());
+
 
 
 
@@ -2137,7 +2140,7 @@ function AppContent() {
             </>
           )}
 
-          {(checkView('tours') || checkView('departures') || checkView('guides')) && (
+          {(checkView('tours') || checkView('departures') || checkView('guides') || true) && (
             <>
               <div className="nav-section-title">Nghiệp vụ Lõi</div>
               
@@ -2192,7 +2195,7 @@ function AppContent() {
                    <ScanText size={18} /> Công cụ OCR Hộ chiếu</div>
               )}
 
-              {checkView('visas') && (
+              {true && (
                 <div title="Quản lý Visa" 
                   className={`nav-item ${activeTab === 'visas' || activeTab === 'visa-products' ? 'active-parent' : ''}`}
                   onClick={() => navigate('/visas')}
@@ -2564,6 +2567,13 @@ function AppContent() {
           >
             Đăng ký lịch trực
           </div>
+          <div 
+            className="submenu-item" 
+            onClick={() => { navigate('/tai-lieu/marketing/quy-tac-phan-loai'); setHoveredMenu(null); }} 
+            style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '4px', paddingTop: '8px' }}
+          >
+            Quy tắc phân loại
+          </div>
         </div>
       )}
 
@@ -2666,9 +2676,11 @@ function AppContent() {
           }}
         >
           <div className="submenu-content" style={{ display: 'flex', flexDirection: 'column' }}>
+            {isVisaProductViewer && (
             <div className={`submenu-item ${activeTab === 'visa-products' ? 'active' : ''}`} onClick={() => { navigate('/visa-products'); setHoveredMenu(null); }}>
               Sản phẩm Visa
             </div>
+            )}
             <div className={`submenu-item ${activeTab === 'visas' ? 'active' : ''}`} onClick={() => { navigate('/visas'); setHoveredMenu(null); }}>
               Danh sách Hồ sơ
             </div>
@@ -3707,7 +3719,7 @@ function AppContent() {
         {activeTab === 'visas' && (
           <VisasTab currentUser={user} checkPerm={checkPerm} addToast={addToast} />
         )}
-        {activeTab === 'visa-products' && checkView('visas') && (
+        {activeTab === 'visa-products' && isVisaProductViewer && (
           <VisaTemplatesTab currentUser={user} checkPerm={checkPerm} addToast={addToast} />
         )}
         {activeTab === 'restaurants' && (

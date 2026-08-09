@@ -586,9 +586,23 @@ exports.getDashboardStats = async (req, res) => {
 
 exports.testMonthlyEmail = async (req, res) => {
   try {
+    if (req.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Chỉ Admin mới có quyền thực hiện thao tác này.' });
+    }
+
     const { month, year } = req.body || {};
     const { sendMonthlyReviewsStats } = require('../cron/monthlyReviewsEmail');
     await sendMonthlyReviewsStats(month, year);
+    
+    // Log activity
+    await logActivity({
+      user_id: req.user.id,
+      action_type: 'TRIGGER_REPORT',
+      entity_type: 'SYSTEM',
+      entity_id: null,
+      details: `Gửi thủ công Báo cáo Đánh giá Google Maps tháng ${month || new Date().getMonth() + 1}/${year || new Date().getFullYear()}`
+    });
+
     res.json({ success: true, message: `Đã trigger gửi báo cáo${month ? ' tháng ' + month : ''} thành công. Hãy kiểm tra Hộp thư.` });
   } catch (error) {
     console.error('Error triggering test monthly email:', error);

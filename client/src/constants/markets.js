@@ -71,7 +71,8 @@ export const MARKET_OPTIONS = [
             { value: 'Kashmir', label: 'Kashmir' },
             { value: 'Ladakh', label: 'Ladakh' },
             { value: 'Nepal', label: 'Nepal' },
-            { value: 'Pakistan', label: 'Pakistan' }
+            { value: 'Pakistan', label: 'Pakistan' },
+            { value: 'Sri Lanka', label: 'Sri Lanka' }
         ]
     },
     {

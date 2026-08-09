@@ -566,7 +566,7 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
           </div>
 
           {/* Bulk Action Bar (Floating) */}
-          {selectedIds.length > 0 && (
+          {selectedIds.length > 0 && ['admin', 'SALES_LEAD'].includes(currentUser?.role) && (
             <div className="bulk-action-bar">
               <span className="count">Đã chọn {selectedIds.length}</span>
               <button onClick={handleBulkDelete} className="delete-btn">
@@ -663,9 +663,11 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
 
                 {/* Action Buttons */}
                 <div className="chat-action-buttons" style={{ display: 'flex', gap: '10px' }}>
-                  <button onClick={handleDeleteSingle} className="inbox-danger-btn">
-                    <Trash2 size={15} /> XÓA
-                  </button>
+                  {['admin', 'SALES_LEAD'].includes(currentUser?.role) && (
+                    <button onClick={handleDeleteSingle} className="inbox-danger-btn">
+                      <Trash2 size={15} /> XÓA
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       const leadLink = leads.find(

@@ -271,6 +271,7 @@ const LeadsDashboardTab = ({ setEditingLead }) => {
     "Liên hệ lần 2": "#8b5cf6", // purple
     "Chốt đơn": "#10b981", // green
     "Thất bại": "#ef4444", // red
+    "Không phản hồi": "#6b7280", // gray
     "Chưa xác định": "#cbd5e1" // light slate
   };
 

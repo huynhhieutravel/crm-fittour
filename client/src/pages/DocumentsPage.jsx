@@ -12,12 +12,14 @@ import BrandGuidelinePage from './BrandGuidelinePage';
 import QuyTrinhSaleDieuHanhPage from './QuyTrinhSaleDieuHanhPage';
 import ChinhSachDanhGiaPage from './ChinhSachDanhGiaPage';
 import CoCheKpiPage from './CoCheKpiPage';
+import MarketingTasks from './MarketingTasks';
 import { SOP_META_ADS_MARKDOWN } from '../data/sopMetaAds';
 import { BLUEPRINT_META_ADS_MARKDOWN } from '../data/blueprintMetaAds';
 import { RULE_META_ADS_MARKDOWN } from '../data/ruleMetaAds';
 import { SOP_ASTRO_TOUR_MARKDOWN } from '../data/sopAstroTour';
 import { SOP_DISPATCH_MARKDOWN, SOP_SALES_MARKDOWN, SOP_OVERVIEW_MARKDOWN } from '../data/sopDispatchSales';
 import { QUY_TRINH_THANH_TOAN_TOUR_MARKDOWN } from '../data/quyTrinhThanhToanTour';
+import { QUY_TAC_PHAN_LOAI_LEAD_MARKDOWN } from '../data/quyTacPhanLoaiLead';
 import SopMetaAdsInfographic from './SopMetaAdsInfographic';
 import RagDocViewer from '../components/Knowledge/RagDocViewer';
 import LadakhConsultingPage from './LadakhConsultingPage';
@@ -30,6 +32,7 @@ const STATIC_DOCS = [
   { title: 'Brand Identity Guideline', description: 'Tài liệu hướng dẫn nhận diện thương hiệu FIT Tour, bao gồm logo, màu sắc, font chữ...', category: 'Marketing', path: '/tai-lieu/brand-guideline', icon: '🎨' },
   { title: 'HUB Hướng Dẫn Viên', description: 'Bàn làm việc của HDV — checklist, SOP, sự cố, case study', category: 'HDV', path: '/hdv', icon: '👨‍✈️' },
   { title: 'HUB Marketing', description: 'Tài liệu Marketing, chuẩn mực content, format bài đăng & Báo cáo hiệu suất team', category: 'Marketing', path: '/tai-lieu/marketing', icon: '📈' },
+  { title: 'Quy Tắc Phân Loại Lead', description: 'Quy tắc dọn dẹp Auto-Fail và Re-open cho Lead Marketing', category: 'Marketing', path: '/tai-lieu/marketing/quy-tac-phan-loai', icon: '🧹' },
   { title: 'SOP Dev: Elementor to Astro', description: 'Quy chuẩn sử dụng Native Astro Components khi migrate (chuyển đổi) các trang Tour cũ từ Elementor sang.', category: 'Dev', path: '/tai-lieu/sop-astro-tour', icon: '💻' },
   { title: 'Rule Meta Ads', description: 'Các quy tắc bắt buộc và khuyến nghị khi thiết lập chiến dịch Meta Ads.', category: 'Marketing', path: '/tai-lieu/rule-meta-ads', icon: '📜' },
   { title: 'Blueprint Meta Ads', description: 'Hướng dẫn chạy quảng cáo Meta (Facebook/IG) chuẩn FIT Tour - Quy tắc đặt tên, target, content và tối ưu.', category: 'Marketing', path: '/tai-lieu/blueprint-meta-ads', icon: '🎯' },
@@ -988,6 +991,11 @@ const DocumentsPage = () => {
   if (path === '/tai-lieu/bieu-mau') return <BieuMauPage />;
   if (path.startsWith('/hdv')) return <HDVHub />;
   if (path === '/tai-lieu/marketing') return <MarketingHub />;
+  if (path === '/tai-lieu/marketing/tasks') return <MarketingTasks />;
+  if (path.startsWith('/tai-lieu/marketing/tasks/')) {
+    const taskId = path.split('/tai-lieu/marketing/tasks/')[1];
+    return <MarketingTasks initialTaskId={taskId} />;
+  }
   if (path === '/tai-lieu/marketing/create') return <MarketingEditor />;
   if (path === '/tai-lieu/quy-che-luong-hdv') return <BlogLayout><InternalDocsTab /></BlogLayout>;
   if (path === '/tai-lieu/quy-trinh-sale-dieu-hanh') return <BlogLayout><QuyTrinhSaleDieuHanhPage /></BlogLayout>;
@@ -1053,6 +1061,14 @@ const DocumentsPage = () => {
       author="FIT Tour Marketing"
       breadcrumbs={[{ label: 'Marketing', path: '/tai-lieu/marketing' }]}
       quickLinks={marketingQuickLinks}
+    />
+  );
+  if (path === '/tai-lieu/marketing/quy-tac-phan-loai') return (
+    <MarkdownViewer 
+      markdownContent={QUY_TAC_PHAN_LOAI_LEAD_MARKDOWN}
+      title="Quy Tắc Phân Loại & Dọn Dẹp Lead Marketing"
+      author="Ban Giám Đốc"
+      breadcrumbs={[{ label: 'Lead Marketing', path: '/leads' }]}
     />
   );
   if (path === '/tai-lieu/blueprint-meta-ads') return (

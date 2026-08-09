@@ -576,7 +576,7 @@ exports.getLeadStats = async (req, res) => {
                 END as status,
                 COUNT(*)::int as count
             FROM leads
-            ${leadWhere} AND status NOT IN ('Chốt đơn', 'Thất bại')
+            ${leadWhere} AND status NOT IN ('Chốt đơn', 'Thất bại', 'Không phản hồi')
             GROUP BY 1
         `, params);
 

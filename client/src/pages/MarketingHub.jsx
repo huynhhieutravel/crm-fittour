@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, Bell, Plus, Home, BookOpen, BarChart2, FileText, 
   LayoutTemplate, Star, Image as ImageIcon, MessageSquare, 
-  ChevronDown, ArrowRight, ArrowLeft, TrendingUp
+  ChevronDown, ArrowRight, ArrowLeft, TrendingUp, ClipboardList
 } from 'lucide-react';
 
 const MarketingHub = () => {
@@ -24,19 +24,31 @@ const MarketingHub = () => {
   const menuItems = [
     { section: 'TỔNG QUAN', items: [{ name: 'Tổng quan', icon: <Home size={18} /> }] },
     { 
+      section: 'NHIỆM VỤ & CÔNG VIỆC', 
+      items: [
+        { name: 'Tasks & SOP', icon: <ClipboardList size={18} />, url: '/tai-lieu/marketing/tasks' },
+      ] 
+    },
+    { 
       section: 'TÀI LIỆU MARKETING', 
       items: [
         { name: 'Tài liệu Marketing', icon: <BookOpen size={18} /> },
-        { name: 'Báo cáo Marketing', icon: <BarChart2 size={18} /> }
+        { name: 'Log AI Agent', icon: <FileText size={18} />, url: 'https://docs.google.com/spreadsheets/d/1sSlrtJz6TANIU3Z-dXABE3iXFOkpEOUXD5QHIIb2pok/edit?usp=sharing', external: true }
       ] 
     },
     { 
       section: 'DANH MỤC TÀI LIỆU', 
       items: [
-        { name: 'Guideline', icon: <FileText size={18} /> },
-        { name: 'Logo', icon: <ImageIcon size={18} /> },
-        { name: 'Best Content', icon: <Star size={18} /> },
-        { name: 'Asset', icon: <ImageIcon size={18} /> }
+        { name: 'Guideline', icon: <FileText size={18} />, url: '/cam-nang-thuong-hieu' },
+        { name: 'Logo', icon: <ImageIcon size={18} />, url: 'https://drive.google.com/drive/folders/1KcLWiW6mMnLjxw-xXbiOwmR6Qn9tSs6g?usp=sharing', external: true },
+        { name: 'Blueprint & SOP Ads', icon: <Star size={18} />, submenu: [
+            { name: 'Xem Blueprint', url: '/tai-lieu/blueprint-meta-ads' },
+            { name: 'SOP Đặt Tên', url: '/tai-lieu/quy-tac-dat-ten-quang-cao-meta' },
+            { name: 'Quản lý Ads', url: 'https://docs.google.com/spreadsheets/d/15O9hrCdZvVoLwC8fRQCYm5nxs0WGL9s8RQ3XScj0jQo/edit?usp=sharing', external: true }
+          ]
+        },
+        { name: 'Asset', icon: <ImageIcon size={18} />, url: '#' },
+        { name: 'Báo Cáo Ads', icon: <BarChart2 size={18} />, url: '/q2-report/index.html', external: true }
       ] 
     }
   ];
@@ -92,20 +104,69 @@ const MarketingHub = () => {
               </div>
               {block.items.map(item => {
                 const isActive = activeMenu === item.name;
+                
+                const handleClick = () => {
+                  if (item.external && item.url && item.url !== '#') {
+                    window.open(item.url, '_blank', 'noopener,noreferrer');
+                  } else if (item.url && item.url !== '#') {
+                    navigate(item.url);
+                  } else if (!item.submenu) {
+                    setActiveMenu(item.name);
+                  }
+                };
+
                 return (
-                  <div 
-                    key={item.name}
-                    onClick={() => setActiveMenu(item.name)}
-                    style={{ 
-                      display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 8,
-                      cursor: 'pointer', marginBottom: 4, transition: 'all 0.2s',
-                      backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                      color: isActive ? '#2563eb' : '#475569',
-                      fontWeight: isActive ? 600 : 500
-                    }}
-                  >
-                    <span style={{ color: isActive ? '#2563eb' : '#64748b' }}>{item.icon}</span>
-                    <span style={{ fontSize: '14px' }}>{item.name}</span>
+                  <div key={item.name}>
+                    <div 
+                      onClick={handleClick}
+                      style={{ 
+                        display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 8,
+                        cursor: 'pointer', marginBottom: 4, transition: 'all 0.2s',
+                        backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                        color: isActive ? '#2563eb' : '#475569',
+                        fontWeight: isActive ? 600 : 500
+                      }}
+                    >
+                      <span style={{ color: isActive ? '#2563eb' : '#64748b' }}>{item.icon}</span>
+                      <span style={{ fontSize: '14px', flex: 1 }}>{item.name}</span>
+                      {item.submenu && <ChevronDown size={14} color="#94a3b8" />}
+                    </div>
+                    {item.submenu && (
+                      <div style={{ paddingLeft: 34, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {item.submenu.map(sub => {
+                          const isSubActive = activeMenu === sub.name;
+                          return (
+                            <div
+                              key={sub.name}
+                              onClick={() => {
+                                setActiveMenu(sub.name);
+                                if (sub.external && sub.url) {
+                                  window.open(sub.url, '_blank', 'noopener,noreferrer');
+                                } else if (sub.url && sub.url !== '#') {
+                                  navigate(sub.url);
+                                }
+                              }}
+                              style={{
+                                fontSize: '13px',
+                                color: isSubActive ? '#2563eb' : '#64748b',
+                                fontWeight: isSubActive ? 600 : 400,
+                                padding: '6px 8px',
+                                borderRadius: 6,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                backgroundColor: isSubActive ? '#eff6ff' : 'transparent',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6
+                              }}
+                            >
+                              <span style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: isSubActive ? '#2563eb' : '#cbd5e1' }} />
+                              {sub.name}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )
               })}

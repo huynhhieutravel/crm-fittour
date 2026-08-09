@@ -151,7 +151,7 @@ const _classifyTour = async (messageText) => {
     
     try {
         const toursResult = await db.query(
-            "SELECT id, keywords, bu_group FROM tour_templates WHERE is_active = true AND keywords IS NOT NULL AND keywords != ''"
+            "SELECT id, keywords, bu_group FROM tour_templates WHERE is_active = true AND keywords IS NOT NULL AND keywords != '' AND (tour_type IS NULL OR tour_type != 'Private Tour')"
         );
         
         for (const tour of toursResult.rows) {
@@ -332,9 +332,14 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
 
                     metaCapi.sendLeadEvent(newLeadResult.rows[0]).catch(err => console.error(err));
                 } else {
-                    // LUỒNG VẪN ĐANG ACTIVE → Chỉ cập nhật ngày tháng
+                    // LUỒNG VẪN ĐANG ACTIVE → Cập nhật ngày tháng và Re-open nếu đang 'Không phản hồi'
                     leadId = currentLeadId;
-                    await db.query('UPDATE leads SET last_contacted_at = NOW() WHERE id = $1', [leadId]);
+                    if (oldLead.status === 'Không phản hồi') {
+                        console.log(`[WEBHOOK] Khách nhắn lại cho Lead (Auto-Fail): ${oldLead.name}. Re-opening -> Mới.`);
+                        await db.query("UPDATE leads SET status = 'Mới', last_contacted_at = NOW(), updated_at = NOW() WHERE id = $1", [leadId]);
+                    } else {
+                        await db.query('UPDATE leads SET last_contacted_at = NOW() WHERE id = $1', [leadId]);
+                    }
                     await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [received_message.text, conversationId]);
 
                     // [BU-AUTO] Nếu lead chưa có BU → classify từ TẤT CẢ tin nhắn (lọc greeting template)
@@ -839,7 +844,12 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                                         await db.query('UPDATE conversations SET lead_id = $1 WHERE id = $2', [currentLeadId, oldConv.id]);
                                         metaCapi.sendLeadEvent(newLeadResult.rows[0]).catch(err => console.error(err));
                                     } else {
-                                        await db.query('UPDATE leads SET last_contacted_at = NOW() WHERE id = $1', [currentLeadId]);
+                                        if (oldLead.status === 'Không phản hồi') {
+                                            console.log(`[FB POLLER] Khách nhắn lại cho Lead (Auto-Fail): ${oldLead.name}. Re-opening -> Mới.`);
+                                            await db.query("UPDATE leads SET status = 'Mới', last_contacted_at = NOW(), updated_at = NOW() WHERE id = $1", [currentLeadId]);
+                                        } else {
+                                            await db.query('UPDATE leads SET last_contacted_at = NOW() WHERE id = $1', [currentLeadId]);
+                                        }
                                     }
                                 }
                             }

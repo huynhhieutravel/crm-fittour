@@ -8,7 +8,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const db = require('../db');
 
-const API_VERSION = 'v25.0';
+const API_VERSION = 'v26.0';
 
 // Helper: SHA-256 hash (Meta requires hashed user data)
 const sha256 = (value) => {
@@ -78,7 +78,12 @@ exports.sendEvent = async (eventName, userData = {}, customData = {}, eventSourc
       user_data.fbc = `fb.1.${Date.now()}.${userData.fbclid}`;
     }
 
-    // 4. Build event payload
+    // 4. Copy lead_id from customData into user_data for matching (Facebook requires it in user_data)
+    if (customData.lead_id && !user_data.lead_id) {
+      user_data.lead_id = customData.lead_id;
+    }
+
+    // 5. Build event payload
     const eventPayload = {
       event_name: eventName,
       event_time: Math.floor(Date.now() / 1000),

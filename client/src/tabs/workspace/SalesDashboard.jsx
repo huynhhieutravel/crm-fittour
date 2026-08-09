@@ -390,7 +390,8 @@ const SalesDashboard = ({
                 { id: 'Đang liên hệ', label: 'Đang liên hệ' },
                 { id: 'Liên hệ lần 2', label: 'Liên hệ lần 2' },
                 { id: 'Chốt đơn', label: 'Chốt đơn' },
-                { id: 'Thất bại', label: 'Thất bại' }
+                { id: 'Thất bại', label: 'Thất bại' },
+                { id: 'Không phản hồi', label: 'Không phản hồi' }
               ].map(status => (
                 <button
                   key={status.id}
@@ -469,6 +470,7 @@ const SalesDashboard = ({
                           <option value="Liên hệ lần 2">Liên hệ lần 2</option>
                           <option value="Chốt đơn">Chốt đơn</option>
                           <option value="Thất bại">Thất bại</option>
+                          <option value="Không phản hồi">Không phản hồi</option>
                         </select>
                       </td>
                       <td style={{ fontSize: '0.85rem', color: '#334155' }}>

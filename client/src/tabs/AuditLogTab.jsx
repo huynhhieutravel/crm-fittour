@@ -20,7 +20,7 @@ export default function AuditLogTab() {
     { id: 'leads', label: 'Cơ hội (Leads)', icon: <Briefcase size={18} />, moduleType: 'LEAD' },
     { id: 'suppliers', label: 'Nhà cung cấp', icon: <Store size={18} />, moduleType: 'HOTEL,RESTAURANT,TRANSPORT,AIRLINE,VISA,TICKET,INSURANCE,B2B_COMPANY,GROUP_LEADER,LANDTOUR,TRAVEL_SUPPORT' },
     { id: 'guides', label: 'Hướng dẫn viên', icon: <Users size={18} />, moduleType: 'GUIDE' },
-    { id: 'system', label: 'Hệ thống', icon: <Settings size={18} />, moduleType: 'USER,LEAVE_REQUEST,ORG_CHART,BU,AGENT,MARKET,VOUCHER,PERMISSION,SYSTEM_ALERT' },
+    { id: 'system', label: 'Hệ thống', icon: <Settings size={18} />, moduleType: 'USER,LEAVE_REQUEST,ORG_CHART,BU,AGENT,MARKET,VOUCHER,PERMISSION,SYSTEM_ALERT,SYSTEM' },
   ];
 
   if (canSeeTrash) {

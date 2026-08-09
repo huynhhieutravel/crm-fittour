@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  Calendar, CheckCircle, XCircle, Clock, Trash2, User, AlertCircle, Plus, Eye, Settings, Edit, Undo2
+  Calendar, CheckCircle, XCircle, Clock, Trash2, User, AlertCircle, Plus, Eye, Settings, Edit, Undo2, BarChart2
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import Select from 'react-select';
@@ -32,6 +32,8 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
   const [selectedConfigIds, setSelectedConfigIds] = useState([]);
   const [filterConfigDept, setFilterConfigDept] = useState('');
   const [bulkDays, setBulkDays] = useState(12);
+  const [useProrata, setUseProrata] = useState(false);
+  const [buOptions, setBuOptions] = useState([]);
   
   const isManager = ['admin', 'manager', 'group_manager', 'operations_lead'].includes(currentUser?.role) || 
                     String(currentUser?.role || '').includes('manager') || 
@@ -48,6 +50,31 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
     handover_user_id: '',
     handover_note: ''
   });
+
+  const getBuName = (bus) => {
+    if (!bus) return 'Khác';
+    let busArray = [];
+    if (Array.isArray(bus)) busArray = bus;
+    else if (typeof bus === 'string') busArray = bus.replace(/[{}]/g, '').split(',');
+    
+    if (!busArray.length || !busArray[0]) return 'Khác';
+    const found = buOptions.find(opt => opt.id === busArray[0].trim());
+    return found ? found.label : 'Khác';
+  };
+
+  const getSortedBUs = () => {
+    const order = ['BU1', 'BU2', 'BU3', 'BU4', 'BU5', 'Marketing', 'Kế toán', 'Khác'];
+    return [...new Set(allBalances.map(b => getBuName(b.bus)))]
+      .filter(Boolean)
+      .sort((a, b) => {
+        const indexA = order.indexOf(a);
+        const indexB = order.indexOf(b);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return a.localeCompare(b);
+      });
+  };
 
   const handleOpenModal = (editData = null) => {
     // Fix: Ensure editData is not a React Synthetic Event object
@@ -114,6 +141,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
   const fetchAllBalances = async () => {
     try {
       const token = localStorage.getItem('token');
+      if (!token) return;
 
       // Async fetch global setting
       axios.get('/api/settings', { headers: { Authorization: `Bearer ${token}` } })
@@ -121,13 +149,20 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
              if (r.data && r.data.leave_default_days) setGlobalDefault(parseFloat(r.data.leave_default_days));
         }).catch(()=>{});
 
-      const res = await axios.get('/api/leaves/balance/all', {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { year: filterYear }
+      const res = await axios.get(`/api/leaves/balance/all?year=${filterYear}&_t=${Date.now()}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       setAllBalances(res.data);
     } catch (err) {}
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    axios.get('/api/business-units', { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => setBuOptions(res.data))
+        .catch(console.error);
+    fetchData();
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -136,7 +171,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
   useEffect(() => {
     fetchBalance();
     fetchTodayLeaves();
-    if (isManager && viewMode === 'config') fetchAllBalances();
+    if (isManager && (viewMode === 'config' || viewMode === 'dashboard')) fetchAllBalances();
   }, [viewMode, filterYear]);
 
   useEffect(() => {
@@ -202,7 +237,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
       } else if (action === 'pending') {
           const result = await Swal.fire({
               title: 'Hủy duyệt đơn?',
-              text: 'Bạn có chắc muốn chuyển đơn này về trạng thái chờ duyệt?',
+              text: 'Xác nhận chuyển đơn này về trạng thái chờ duyệt?',
               icon: 'warning',
               showCancelButton: true
           });
@@ -251,7 +286,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
               settings: { leave_default_days: globalDefault.toString() }
           }, { headers: { Authorization: `Bearer ${token}` } });
           Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Đã lưu cấu hình mặc định (Áp dụng cho NV mới)', showConfirmButton: false, timer: 2000 });
-          fetchAllBalances(); // To refresh DB coalesce and UI
+          fetchAllBalances(); 
       } catch (err) {
           Swal.fire('Lỗi', 'Không thể lưu mặc định: ' + err.message, 'error');
       }
@@ -261,7 +296,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
       if (selectedConfigIds.length === 0) return Swal.fire('Lưu ý', 'Vui lòng chọn ít nhất 1 nhân viên để cập nhật', 'warning');
       Swal.fire({
           title: 'Cập nhật hàng loạt',
-          text: `Áp mức ${bulkDays} ngày phép cho ${selectedConfigIds.length} nhân viên đã chọn trong năm ${filterYear}? Các mức cũ sẽ bị đè.`,
+          text: `Áp mức ${bulkDays} ngày phép cho ${selectedConfigIds.length} nhân viên đã chọn trong năm ${filterYear}? ${useProrata ? '(Sẽ tự động chia tỷ lệ cho người mới)' : 'Các mức cũ sẽ bị đè.'}`,
           icon: 'question',
           showCancelButton: true,
           confirmButtonText: 'Đồng ý',
@@ -271,13 +306,14 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
               try {
                   const token = localStorage.getItem('token');
                   await axios.post('/api/leaves/balance/bulk', {
-                      total_days: bulkDays, year: filterYear, userIds: selectedConfigIds
+                      total_days: bulkDays, year: filterYear, userIds: selectedConfigIds, use_prorata: useProrata
                   }, { headers: { Authorization: `Bearer ${token}` } });
                   Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Đã cập nhật hàng loạt thành công', showConfirmButton: false, timer: 2000 });
                   setSelectedConfigIds([]);
                   fetchAllBalances();
               } catch (err) {
-                  Swal.fire('Lỗi', 'Lỗi: ' + err.message, 'error');
+                  const errorMsg = err.response?.data?.error || err.message;
+                  Swal.fire('Lỗi', 'Lỗi: ' + errorMsg, 'error');
               }
           }
       });
@@ -291,7 +327,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
 
   const renderLeaveType = (type) => {
       switch (type) {
-          case 'annual': return <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: '#dbeafe', color: '#1e40af', fontSize: '11px', fontWeight: '600', marginTop: '4px' }}>Nghỉ phép năm</span>;
+          case 'annual': return <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: '#e0f2fe', color: '#0369a1', fontSize: '11px', fontWeight: '600', marginTop: '4px' }}>Phép năm</span>;
           case 'sick': return <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: '#fee2e2', color: '#991b1b', fontSize: '11px', fontWeight: '600', marginTop: '4px' }}>Nghỉ ốm</span>;
           case 'personal': return <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: '#fef3c7', color: '#92400e', fontSize: '11px', fontWeight: '600', marginTop: '4px' }}>Việc cá nhân</span>;
           case 'business_trip': return <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: '#f3e8ff', color: '#6b21a8', fontSize: '11px', fontWeight: '600', marginTop: '4px' }}>Đi công tác</span>;
@@ -311,12 +347,26 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
               {isManager && (
-                  <button 
-                      onClick={() => setViewMode(viewMode === 'list' ? 'config' : 'list')}
-                      style={{ padding: '8px 16px', background: viewMode === 'list' ? '#f1f5f9' : '#e2e8f0', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold', color: '#334155' }}
-                  >
-                      <Settings size={18} /> {viewMode === 'list' ? 'Cấu hình Phép' : 'Danh sách Đơn'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '5px', background: '#e2e8f0', padding: '4px', borderRadius: '8px' }}>
+                      <button 
+                          onClick={() => setViewMode('list')}
+                          style={{ padding: '6px 12px', background: viewMode === 'list' ? '#fff' : 'transparent', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: viewMode === 'list' ? 'bold' : 'normal', color: viewMode === 'list' ? '#334155' : '#64748b', boxShadow: viewMode === 'list' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none' }}
+                      >
+                          Danh sách Đơn
+                      </button>
+                      <button 
+                          onClick={() => setViewMode('dashboard')}
+                          style={{ padding: '6px 12px', background: viewMode === 'dashboard' ? '#fff' : 'transparent', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: viewMode === 'dashboard' ? 'bold' : 'normal', color: viewMode === 'dashboard' ? '#334155' : '#64748b', boxShadow: viewMode === 'dashboard' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none' }}
+                      >
+                          <BarChart2 size={16} /> Dashboard
+                      </button>
+                      <button 
+                          onClick={() => setViewMode('config')}
+                          style={{ padding: '6px 12px', background: viewMode === 'config' ? '#fff' : 'transparent', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: viewMode === 'config' ? 'bold' : 'normal', color: viewMode === 'config' ? '#334155' : '#64748b', boxShadow: viewMode === 'config' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none' }}
+                      >
+                          <Settings size={16} /> Cấu hình
+                      </button>
+                  </div>
               )}
               <button 
                   onClick={() => handleOpenModal()}
@@ -340,7 +390,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
           </div>
       )}
 
-      {viewMode === 'list' ? (
+      {viewMode === 'list' && (
           <>
             {/* Filters */}
             <div className="lead-filter-grid" style={{ display: 'flex', gap: '10px', marginBottom: '20px', background: '#f8fafc', padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
@@ -397,7 +447,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                 <td>#{item.id}</td>
                                 <td>
                                     <div style={{ fontWeight: 'bold', color: '#0f172a' }}>{item.user_name}</div>
-                                    <div style={{ fontSize: '12px', color: '#64748b' }}>{item.team_name || 'NV'}</div>
+                                    <div style={{ fontSize: '12px', color: '#64748b' }}>{getBuName(item.bu_ids)}</div>
                                     {renderLeaveType(item.leave_type)}
                                 </td>
                                 <td>
@@ -526,32 +576,168 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                 </div>
             )}
           </>
-      ) : (
+      )}
+      
+      {viewMode === 'dashboard' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '20px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <h3 style={{ margin: 0 }}>Dashboard Nghỉ Phép {filterYear}</h3>
+                      <button 
+                          onClick={() => setFilterConfigDept('')}
+                          style={{ padding: '6px 14px', borderRadius: '20px', border: '1px solid #cbd5e1', background: filterConfigDept === '' ? '#3b82f6' : '#f8fafc', color: filterConfigDept === '' ? '#fff' : '#475569', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'all 0.2s' }}
+                      >
+                          Tất cả BU
+                      </button>
+                      {getSortedBUs().map(dept => (
+                          <button 
+                              key={dept}
+                              onClick={() => setFilterConfigDept(dept)}
+                              style={{ padding: '6px 14px', borderRadius: '20px', border: '1px solid #cbd5e1', background: filterConfigDept === dept ? '#3b82f6' : '#f8fafc', color: filterConfigDept === dept ? '#fff' : '#475569', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'all 0.2s' }}
+                          >
+                              {dept}
+                          </button>
+                      ))}
+                  </div>
+              </div>
+
+              {(() => {
+                  const filteredBalances = allBalances.filter(b => !filterConfigDept || getBuName(b.bus) === filterConfigDept);
+                  const totalAllocated = filteredBalances.reduce((sum, b) => sum + parseFloat(b.total_days || 0), 0);
+                  const totalUsed = filteredBalances.reduce((sum, b) => sum + parseFloat(b.used_days || 0), 0);
+                  const usagePercentage = totalAllocated > 0 ? ((totalUsed / totalAllocated) * 100).toFixed(1) : 0;
+                  
+                  // Nhóm theo phòng ban để tìm phòng nghỉ nhiều nhất (chỉ tính trên ds đã filter)
+                  const deptUsage = {};
+                  filteredBalances.forEach(b => {
+                      const dept = getBuName(b.bus);
+                      if (!deptUsage[dept]) deptUsage[dept] = { used: 0, total: 0 };
+                      deptUsage[dept].used += parseFloat(b.used_days || 0);
+                      deptUsage[dept].total += parseFloat(b.total_days || 0);
+                  });
+                  
+                  let maxDept = { name: '-', used: 0 };
+                  Object.entries(deptUsage).forEach(([dept, data]) => {
+                      if (data.used > maxDept.used) maxDept = { name: dept, used: data.used };
+                  });
+
+                  return (
+                      <>
+                          {/* Tổng quan chỉ số (KPI Cards) */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+                              <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                  <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 'bold', marginBottom: '5px' }}>Tổng số phép cấp phát</div>
+                                  <div style={{ fontSize: '28px', color: '#0f172a', fontWeight: '800' }}>{totalAllocated} <span style={{ fontSize: '16px', fontWeight: 'normal', color: '#64748b' }}>ngày</span></div>
+                              </div>
+                              <div style={{ padding: '20px', background: '#fff1f2', borderRadius: '12px', border: '1px solid #fecdd3' }}>
+                                  <div style={{ fontSize: '13px', color: '#9f1239', fontWeight: 'bold', marginBottom: '5px' }}>Tổng số phép đã dùng</div>
+                                  <div style={{ fontSize: '28px', color: '#be123c', fontWeight: '800' }}>{totalUsed} <span style={{ fontSize: '16px', fontWeight: 'normal', color: '#fda4af' }}>ngày</span></div>
+                              </div>
+                              <div style={{ padding: '20px', background: '#f0fdfa', borderRadius: '12px', border: '1px solid #ccfbf1' }}>
+                                  <div style={{ fontSize: '13px', color: '#115e59', fontWeight: 'bold', marginBottom: '5px' }}>Tỷ lệ sử dụng</div>
+                                  <div style={{ fontSize: '28px', color: '#0f766e', fontWeight: '800' }}>{usagePercentage}%</div>
+                                  <div style={{ width: '100%', height: '6px', background: '#ccfbf1', borderRadius: '3px', marginTop: '10px', overflow: 'hidden' }}>
+                                      <div style={{ width: `${Math.min(usagePercentage, 100)}%`, height: '100%', background: '#0d9488' }}></div>
+                                  </div>
+                              </div>
+                              <div style={{ padding: '20px', background: '#fffbeb', borderRadius: '12px', border: '1px solid #fde68a' }}>
+                                  <div style={{ fontSize: '13px', color: '#92400e', fontWeight: 'bold', marginBottom: '5px' }}>BU dùng nhiều nhất</div>
+                                  <div style={{ fontSize: '24px', color: '#b45309', fontWeight: '800', lineHeight: 1.2 }}>{maxDept.name}</div>
+                                  <div style={{ fontSize: '13px', color: '#d97706', marginTop: '5px' }}>({maxDept.used} ngày)</div>
+                              </div>
+                          </div>
+
+                          {/* Bảng tiến độ nhân viên */}
+                          <div className="data-table-container">
+                              <table className="data-table">
+                                  <thead>
+                                      <tr>
+                                          <th>Nhân viên</th>
+                                          <th style={{ width: '40%' }}>Mức sử dụng phép</th>
+                                          <th style={{ textAlign: 'center' }}>Còn lại</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      {filteredBalances.map(b => {
+                                          const total = parseFloat(b.total_days || 0);
+                                          const used = parseFloat(b.used_days || 0);
+                                          const remain = total - used;
+                                          const pct = total > 0 ? (used / total) * 100 : 0;
+                                          
+                                          let barColor = '#3b82f6';
+                                          if (pct > 80) barColor = '#ef4444';
+                                          else if (pct > 50) barColor = '#f59e0b';
+                                          
+                                          return (
+                                              <tr key={b.user_id}>
+                                                  <td>
+                                                      <div style={{ fontWeight: 'bold', color: '#0f172a', fontSize: '14px' }}>{b.full_name}</div>
+                                                      <div style={{ fontSize: '12px', color: '#64748b' }}>{getBuName(b.bus)} {b.team_name ? `- ${b.team_name}` : ''}</div>
+                                                  </td>
+                                                  <td>
+                                                      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                                          <div style={{ flex: 1, height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                                                              <div style={{ width: `${Math.min(pct, 100)}%`, height: '100%', background: barColor, borderRadius: '4px' }}></div>
+                                                          </div>
+                                                          <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#475569', minWidth: '60px', textAlign: 'right' }}>
+                                                              {used} / {total}
+                                                          </div>
+                                                      </div>
+                                                  </td>
+                                                  <td style={{ textAlign: 'center' }}>
+                                                      <span style={{ 
+                                                          display: 'inline-block', padding: '4px 10px', borderRadius: '20px', 
+                                                          background: remain <= 2 ? '#fee2e2' : '#dcfce3', 
+                                                          color: remain <= 2 ? '#991b1b' : '#166534', 
+                                                          fontWeight: 'bold', fontSize: '13px' 
+                                                      }}>
+                                                          {remain} ngày
+                                                      </span>
+                                                  </td>
+                                              </tr>
+                                          );
+                                      })}
+                                  </tbody>
+                              </table>
+                          </div>
+                      </>
+                  );
+              })()}
+          </div>
+      )}
+
+      {viewMode === 'config' && (
           /* CONFIG MODE */
           <div style={{ background: 'white', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '20px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                      <h3 style={{ margin: 0 }}>Cấu hình số phép năm <span style={{ color: '#3b82f6' }}>{filterYear}</span></h3>
-                      <select value={filterYear} onChange={e => setFilterYear(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
-                            {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-                      </select>
-                      <select value={filterConfigDept} onChange={e => setFilterConfigDept(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
-                            <option value="">Tất cả phòng ban</option>
-                            {[...new Set(allBalances.map(b => b.team_name).filter(Boolean))].map(dept => (
-                                <option key={dept} value={dept}>{dept}</option>
-                            ))}
-                      </select>
+                  <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <h3 style={{ margin: 0 }}>Cấu hình phép {filterYear}</h3>
+                      <button 
+                          onClick={() => setFilterConfigDept('')}
+                          style={{ padding: '6px 14px', borderRadius: '20px', border: '1px solid #cbd5e1', background: filterConfigDept === '' ? '#3b82f6' : '#f8fafc', color: filterConfigDept === '' ? '#fff' : '#475569', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'all 0.2s' }}
+                      >
+                          Tất cả BU
+                      </button>
+                      {getSortedBUs().map(dept => (
+                          <button 
+                              key={dept}
+                              onClick={() => setFilterConfigDept(dept)}
+                              style={{ padding: '6px 14px', borderRadius: '20px', border: '1px solid #cbd5e1', background: filterConfigDept === dept ? '#3b82f6' : '#f8fafc', color: filterConfigDept === dept ? '#fff' : '#475569', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', transition: 'all 0.2s' }}
+                          >
+                              {dept}
+                          </button>
+                      ))}
                   </div>
                   
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center', background: '#f8fafc', padding: '10px 15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 'bold' }}>Mức chung mặc định (Mới):</span>
+                      <span style={{ fontSize: '13px', fontWeight: 'bold' }}>Mức mặc định:</span>
                       <input 
                           type="number" step="0.5" value={globalDefault}
                           onChange={e => setGlobalDefault(e.target.value)}
                           style={{ width: '70px', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
                       />
                       <button onClick={saveGlobalDefault} style={{ padding: '6px 15px', background: '#cbd5e1', color: '#334155', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-                          Lưu mẫu
+                          Lưu
                       </button>
                   </div>
               </div>
@@ -563,14 +749,18 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                           Đã chọn <span style={{ fontSize: '16px' }}>{selectedConfigIds.length}</span> nhân viên
                       </div>
                       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e40af' }}>Áp dụng mức phép:</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e40af' }}>Áp dụng mức chung:</span>
                           <input 
                               type="number" step="0.5" value={bulkDays}
                               onChange={e => setBulkDays(e.target.value)}
                               style={{ width: '70px', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
                           />
-                          <button onClick={executeBulkUpdate} style={{ padding: '6px 15px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-                              Cập nhật hàng loạt
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px', cursor: 'pointer', marginLeft: '10px', color: '#1e40af' }}>
+                              <input type="checkbox" checked={useProrata} onChange={e => setUseProrata(e.target.checked)} />
+                              Tự động chia tỷ lệ (Pro-rata) cho NV mới
+                          </label>
+                          <button onClick={executeBulkUpdate} style={{ padding: '6px 15px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginLeft: '10px' }}>
+                              Cập nhật
                           </button>
                       </div>
                   </div>
@@ -582,24 +772,23 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                           <th style={{ width: 40, textAlign: 'center' }}>
                               <input 
                                   type="checkbox" 
-                                  checked={selectedConfigIds.length === allBalances.filter(b => !filterConfigDept || b.team_name === filterConfigDept).length && selectedConfigIds.length > 0}
+                                  checked={selectedConfigIds.length === allBalances.filter(b => !filterConfigDept || getBuName(b.bus) === filterConfigDept).length && selectedConfigIds.length > 0}
                                   onChange={e => {
-                                      const filtered = allBalances.filter(b => !filterConfigDept || b.team_name === filterConfigDept);
+                                      const filtered = allBalances.filter(b => !filterConfigDept || getBuName(b.bus) === filterConfigDept);
                                       if (e.target.checked) setSelectedConfigIds(filtered.map(b => b.user_id));
                                       else setSelectedConfigIds([]);
                                   }} 
                               />
                           </th>
-                          <th>Phòng ban</th>
                           <th>Nhân viên</th>
                           <th>Số phép cấp (Ngày)</th>
                           <th>Đã dùng</th>
                           <th>Còn lại</th>
-                          <th style={{maxWidth: 100}}>Thao tác</th>
+                          <th>Lưu</th>
                       </tr>
                   </thead>
                   <tbody>
-                      {allBalances.filter(b => !filterConfigDept || b.team_name === filterConfigDept).map(b => (
+                      {allBalances.filter(b => !filterConfigDept || getBuName(b.bus) === filterConfigDept).map(b => (
                           <tr key={b.balance_id || b.user_id} style={{ background: selectedConfigIds.includes(b.user_id) ? '#f0f9ff' : 'transparent' }}>
                               <td style={{ textAlign: 'center' }}>
                                   <input 
@@ -611,7 +800,7 @@ const LeaveRequestsTab = ({ currentUser, users = [], checkPerm }) => {
                                       }}
                                   />
                               </td>
-                              <td>{b.team_name || '-'}</td>
+                              <td>{getBuName(b.bus)}</td>
                               <td><b>{b.full_name}</b> ({b.username})</td>
                               <td>
                                   <input 

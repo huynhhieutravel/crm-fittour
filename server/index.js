@@ -164,6 +164,7 @@ const groupProjectsRoutes = require('./routes/groupProjects');
 const miceLeadsRoutes = require('./routes/mice_leads');
 const authController = require('./controllers/authController');
 
+app.use('/.well-known', require('./routes/well-known'));
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/telegram', require('./routes/telegramRoutes'));
 // Áp dụng Login Limiter cụ thể cho endpoint đăng nhập
@@ -300,6 +301,10 @@ server.listen(PORT, () => {
         // Start Tour Care Reminder Cron Engine
         const { startCronJobs } = require('./cron/reminderEngine');
         startCronJobs();
+
+        // Start Lead Auto-Fail Cron Engine (Sweep unassigned leads every 1 AM)
+        const { startLeadAutoFailCron } = require('./cron/leadAutoFailEngine');
+        startLeadAutoFailCron();
 
         // Start Auto-delete Media Cron Engine (60 days)
         // const { startMediaCleanupCron } = require('./cron/mediaCleanup');

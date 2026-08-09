@@ -22,6 +22,7 @@ const B2C_MARKET_CONFIG = {
   'MÔNG CỔ':                    { label: 'Mông Cổ', slug: 'mong-co' },
   'NHẬT BẢN':                   { label: 'Nhật Bản', slug: 'nhat-ban' },
   'HÀN QUỐC':                  { label: 'Hàn Quốc', slug: 'han-quoc' },
+  'SRI LANKA':                 { label: 'Sri Lanka', slug: 'sri-lanka' },
 
   // === Trung Đông ===
   'Ả ĐÌNH':                     { label: 'Ả Rập', slug: 'a-rap' },

@@ -7,8 +7,8 @@ const { permCheck, permCheckAny } = require('../middleware/permCheck');
 // All visa routes require standard authentication
 router.use(checkAuth);
 
-router.get('/', permCheckAny([['visas', 'view_all'], ['visas', 'view_own']]), visaController.getAll);
-router.get('/:id', permCheckAny([['visas', 'view_all'], ['visas', 'view_own']]), visaController.getDetails);
+router.get('/', visaController.getAll);
+router.get('/:id', visaController.getDetails);
 router.post('/', permCheck('visas', 'create'), visaController.create);
 router.put('/:id', permCheck('visas', 'edit'), visaController.update);
 router.patch('/:id/status', permCheck('visas', 'edit'), visaController.patchStatus);

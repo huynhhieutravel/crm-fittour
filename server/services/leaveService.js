@@ -23,19 +23,28 @@ async function syncLeaveBalance(client, userId, year) {
         WHERE lr.user_id = $1 
           AND lr.status = 'approved' 
           AND lr.leave_type != 'business_trip'
-          AND EXISTS (
-              SELECT 1 FROM leave_request_dates lrd 
-              WHERE lrd.leave_request_id = lr.id AND EXTRACT(YEAR FROM lrd.leave_date) = $2
-          )
+          AND EXTRACT(YEAR FROM (
+              SELECT MIN(leave_date) 
+              FROM leave_request_dates lrd 
+              WHERE lrd.leave_request_id = lr.id
+          )) = $2
     `, [userId, year]);
     
     const used_days = parseFloat(sumRes.rows[0].total_used);
     
+    // Lấy default_days từ settings nếu chưa có row balance
+    const setRes = await client.query("SELECT value FROM settings WHERE key = 'leave_default_days'");
+    let defaultDays = 12.0;
+    if (setRes.rows.length > 0 && setRes.rows[0].value) {
+        defaultDays = parseFloat(setRes.rows[0].value);
+    }
+    
     await client.query(`
-        UPDATE leave_balances 
-        SET used_days = $1 
-        WHERE user_id = $2 AND year = $3
-    `, [used_days, userId, year]);
+        INSERT INTO leave_balances (user_id, year, total_days, used_days)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id, year) 
+        DO UPDATE SET used_days = EXCLUDED.used_days
+    `, [userId, year, defaultDays, used_days]);
 }
 
 exports.createLeave = async (data, requestUser) => {

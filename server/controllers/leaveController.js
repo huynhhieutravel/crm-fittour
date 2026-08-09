@@ -234,6 +234,8 @@ exports.getAllBalances = async (req, res) => {
            SELECT u.id as user_id, 
                   u.full_name, 
                   u.username, 
+                  u.bus,
+                  u.created_at,
                   (SELECT t.name FROM team_members tmb JOIN teams t ON tmb.team_id = t.id WHERE tmb.user_id = u.id LIMIT 1) as team_name,
                   COALESCE(b.total_days, (SELECT NULLIF(value, '')::numeric FROM settings WHERE key = 'leave_default_days'), 12) as total_days,
                   COALESCE(b.used_days, 0) as used_days,
@@ -254,7 +256,7 @@ exports.getAllBalances = async (req, res) => {
 exports.bulkUpdateBalance = async (req, res) => {
     try {
         if (!isManager(req.user)) return res.status(403).json({ error: 'Access denied' });
-        const { year, total_days, userIds } = req.body;
+        const { year, total_days, userIds, use_prorata } = req.body;
         
         if (!Array.isArray(userIds) || userIds.length === 0) {
             return res.status(400).json({ error: 'Danh sách nhân viên không hợp lệ' });
@@ -262,11 +264,43 @@ exports.bulkUpdateBalance = async (req, res) => {
 
         const q = `
             INSERT INTO leave_balances (user_id, year, total_days, used_days)
-            SELECT unnest($1::int[]), $2, $3, 0
+            SELECT u.id, $2::int, 
+                CASE 
+                    WHEN $4::boolean = true AND EXTRACT(YEAR FROM u.created_at) = $2::numeric THEN
+                        CASE 
+                            WHEN EXTRACT(DAY FROM u.created_at) <= 15 THEN 
+                                GREATEST(0::numeric, $3::numeric - EXTRACT(MONTH FROM u.created_at) + 1)
+                            ELSE 
+                                GREATEST(0::numeric, $3::numeric - EXTRACT(MONTH FROM u.created_at))
+                        END
+                    ELSE $3::numeric 
+                END, 
+                0
+            FROM users u
+            WHERE u.id = ANY($1::int[])
             ON CONFLICT (user_id, year) 
-            DO UPDATE SET total_days = $3;
+            DO UPDATE SET total_days = EXCLUDED.total_days;
         `;
-        await db.query(q, [userIds, year, parseFloat(total_days)]);
+        await db.query(q, [userIds, parseInt(year), parseFloat(total_days), use_prorata ? true : false]);
+        
+        const updateUsedDaysQuery = `
+            UPDATE leave_balances lb
+            SET used_days = COALESCE((
+                SELECT SUM(lr.total_days)
+                FROM leave_requests lr
+                WHERE lr.user_id = lb.user_id
+                  AND lr.status = 'approved'
+                  AND lr.leave_type != 'business_trip'
+                  AND EXTRACT(YEAR FROM (
+                      SELECT MIN(leave_date) 
+                      FROM leave_request_dates lrd 
+                      WHERE lrd.leave_request_id = lr.id
+                  )) = lb.year
+            ), 0)
+            WHERE lb.user_id = ANY($1::int[]) AND lb.year = $2;
+        `;
+        await db.query(updateUsedDaysQuery, [userIds, year]);
+
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -287,6 +321,25 @@ exports.updateBalance = async (req, res) => {
             RETURNING *;
         `;
         const result = await db.query(q, [user_id, year, parseFloat(total_days)]);
+        
+        const updateUsedDaysQuery = `
+            UPDATE leave_balances lb
+            SET used_days = COALESCE((
+                SELECT SUM(lr.total_days)
+                FROM leave_requests lr
+                WHERE lr.user_id = lb.user_id
+                  AND lr.status = 'approved'
+                  AND lr.leave_type != 'business_trip'
+                  AND EXTRACT(YEAR FROM (
+                      SELECT MIN(leave_date) 
+                      FROM leave_request_dates lrd 
+                      WHERE lrd.leave_request_id = lr.id
+                  )) = lb.year
+            ), 0)
+            WHERE lb.user_id = $1 AND lb.year = $2;
+        `;
+        await db.query(updateUsedDaysQuery, [user_id, year]);
+
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
