@@ -1,6 +1,7 @@
 const db = require('../db');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { generateAccessToken } = require('../utils/jwt');
 const { OAuth2Client } = require('google-auth-library');
 
 const googleClient = new OAuth2Client(
@@ -36,11 +37,7 @@ exports.login = async (req, res) => {
              return res.status(401).json({ message: 'Mật khẩu không chính xác' });
         }
 
-        const token = jwt.sign(
-            { id: user.id, username: user.username, full_name: user.full_name, role: user.role_name },
-            process.env.JWT_SECRET,
-            { expiresIn: '14d' }
-        );
+        const token = generateAccessToken(user);
 
         res.json({
             token,
@@ -69,11 +66,7 @@ exports.refreshToken = async (req, res) => {
         const user = result.rows[0];
         if (!user.is_active) return res.status(403).json({ message: 'Tài khoản đã bị vô hiệu hóa.' });
 
-        const token = jwt.sign(
-            { id: user.id, username: user.username, full_name: user.full_name, role: user.role_name },
-            process.env.JWT_SECRET,
-            { expiresIn: '14d' }
-        );
+        const token = generateAccessToken(user);
 
         res.json({
             token,
@@ -110,11 +103,11 @@ exports.googleCallback = async (req, res) => {
         const payload = ticket.getPayload();
         const email = payload.email;
 
-        // Handle Sync Flow
         if (state && state.startsWith('sync_')) {
             const token = state.replace('sync_', '');
             try {
-                const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                const { verifyTokenSafely } = require('../utils/jwt');
+                const decoded = verifyTokenSafely(token);
                 const userId = decoded.id;
                 
                 await db.query('UPDATE users SET google_email = $1 WHERE id = $2', [email, userId]);
@@ -140,11 +133,7 @@ exports.googleCallback = async (req, res) => {
              return res.redirect('/login?error=account_disabled');
         }
 
-        const token = jwt.sign(
-            { id: user.id, username: user.username, full_name: user.full_name, role: user.role_name },
-            process.env.JWT_SECRET,
-            { expiresIn: '14d' }
-        );
+        const token = generateAccessToken(user);
 
         const userStr = JSON.stringify({
             id: user.id,
