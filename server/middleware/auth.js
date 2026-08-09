@@ -8,9 +8,9 @@ module.exports = (req, res, next) => {
 
     try {
         const decodedPayload = verifyTokenSafely(token);
-        
         // Token is valid and trusted!
         req.user = decodedPayload;
+        
         next();
     } catch (err) {
         // Distinguish between structural errors and expiration if needed

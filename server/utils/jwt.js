@@ -102,6 +102,9 @@ function verifyTokenSafely(token) {
         }
     }
 
+    // Metrics / Logging for monitoring phase-out (Phase 3)
+    console.log(`[AUTH METRIC] alg=${alg} kid=${kid || 'none'} user_id=${decodedPayload.id} success=true`);
+
     return decodedPayload;
 }
 
