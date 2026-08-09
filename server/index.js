@@ -320,11 +320,14 @@ server.listen(PORT, () => {
 
         // Start Dispatcher SLA Cron Engine (every min)
         const { startDispatcherSLAEngine } = require('./cron/dispatcherSLAEngine');
+        const { startAuthMetricsReporter } = require('./cron/authMetricsReporter');
         startDispatcherSLAEngine();
-
         require('./cron/monthlyReviewsEmail');
         require('./cron/monthlyDashboardEmail');
-        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, SLA, Monthly Reviews, Monthly Dashboard).');
+        
+        startAuthMetricsReporter();
+        
+        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, SLA, Monthly Reviews, Monthly Dashboard, Auth Metrics).');
 
         // Start Email Listeners for Event-Driven Architecture
         const { registerEmailListeners } = require('./listeners/emailListener');
