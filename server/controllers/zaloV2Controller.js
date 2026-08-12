@@ -5,11 +5,14 @@ const path = require('path');
 const TOKEN_FILE_PATH = path.join(__dirname, '../../zalo_tokens.json');
 const SANDBOX_FILE_PATH = path.join(__dirname, '../../zalo_sandbox_messages.json');
 
-// Helper to save messages
 const saveMessage = (msg) => {
   let messages = [];
   if (fs.existsSync(SANDBOX_FILE_PATH)) {
     messages = JSON.parse(fs.readFileSync(SANDBOX_FILE_PATH, 'utf8'));
+  }
+  // Prevent duplicate by msg id
+  if (msg.id && messages.some(m => m.id === msg.id)) {
+    return;
   }
   messages.push({
     ...msg,
@@ -226,7 +229,7 @@ const zaloV2Controller = {
       }
       const tokens = JSON.parse(fs.readFileSync(TOKEN_FILE_PATH, 'utf8'));
       
-      await axios.post('https://openapi.zalo.me/v3.0/oa/message/cs', 
+      const response = await axios.post('https://openapi.zalo.me/v3.0/oa/message/cs', 
         {
           recipient: { user_id: recipientId },
           message: { text: text }
@@ -239,10 +242,12 @@ const zaloV2Controller = {
         }
       );
       
+      const realMsgId = response.data?.data?.message_id || Date.now().toString();
+      
       // Save to sandbox
       const profile = await getZaloProfile(recipientId);
       saveMessage({
-        id: Date.now().toString(),
+        id: realMsgId,
         senderId: recipientId, // For grouping in UI
         senderName: profile?.name,
         senderAvatar: profile?.avatar,

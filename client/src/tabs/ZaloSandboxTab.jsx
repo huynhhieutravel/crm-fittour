@@ -37,7 +37,7 @@ const ZaloSandboxTab = () => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, selectedUser]);
+  }, [messages.length, selectedUser]);
 
   const handleSend = async (e) => {
     e.preventDefault();
