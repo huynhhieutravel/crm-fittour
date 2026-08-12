@@ -47,6 +47,8 @@ const getZaloProfile = async (uid) => {
       }
     );
     
+    console.log(`[Gateway Response for UID ${uid}]:`, response.data);
+    
     return {
       name: response.data.data?.display_name,
       avatar: response.data.data?.avatar
