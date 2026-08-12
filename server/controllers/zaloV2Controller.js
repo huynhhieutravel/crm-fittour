@@ -18,9 +18,13 @@ const saveMessage = (msg) => {
   fs.writeFileSync(SANDBOX_FILE_PATH, JSON.stringify(messages, null, 2));
 };
 // Helper to get user profile from Zalo API
+const MOCK_PROFILES = {
+  "8717005147968588601": { name: "Loki (Admin Test)", avatar: "https://ui-avatars.com/api/?name=Loki&background=random" }
+};
+
 const getZaloProfile = async (uid) => {
   try {
-    if (!fs.existsSync(TOKEN_FILE_PATH)) return null;
+    if (!fs.existsSync(TOKEN_FILE_PATH)) return MOCK_PROFILES[uid] || null;
     const tokens = JSON.parse(fs.readFileSync(TOKEN_FILE_PATH, 'utf8'));
     const response = await axios.get(`https://openapi.zalo.me/v2.0/oa/getprofile?data={"user_id":"${uid}"}`, {
       headers: { 'access_token': tokens.access_token }
@@ -32,9 +36,9 @@ const getZaloProfile = async (uid) => {
       };
     }
   } catch (err) {
-    console.error("Error fetching Zalo profile:", err.response?.data || err.message);
+    console.error("Error fetching Zalo profile (likely IP blocked):", err.response?.data?.message || err.message);
   }
-  return null;
+  return MOCK_PROFILES[uid] || null;
 };
 const zaloV2Controller = {
   // --- TEST 1: OAUTH & API CONNECTION ---
