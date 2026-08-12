@@ -60,35 +60,45 @@ const ZaloSandboxTab = () => {
   const activeMessages = messages.filter(m => m.senderId === selectedUser);
 
   return (
-    <div className="flex h-full bg-gray-50 p-4 font-sans" style={{ minHeight: 'calc(100vh - 60px)' }}>
-      <div className="flex w-full max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+    <div style={{ height: 'calc(100vh - 60px)', display: 'flex', flexDirection: 'column', backgroundColor: '#f3f4f6', padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ display: 'flex', flex: 1, backgroundColor: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', border: '1px solid #e5e7eb' }}>
         
         {/* Sidebar (Users) */}
-        <div className="w-1/3 border-r border-gray-200 bg-gray-50 flex flex-col">
-          <div className="p-4 border-b border-gray-200 bg-white flex justify-between items-center">
-            <h2 className="font-bold text-lg text-gray-800">Khách Hàng (PoC)</h2>
-            <button onClick={fetchMessages} className="text-gray-500 hover:text-blue-500">
-              <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+        <div style={{ width: '30%', borderRight: '1px solid #e5e7eb', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>Khách Hàng (PoC)</h2>
+            <button onClick={fetchMessages} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
+              <RefreshCw size={20} />
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto">
+          <div style={{ flex: 1, overflowY: 'auto' }}>
             {uniqueSenders.length === 0 ? (
-              <div className="p-8 text-center text-gray-500 text-sm">
-                Chưa có tin nhắn nào.<br/>Hãy dùng Zalo cá nhân nhắn "Alo" vào OA để bắt đầu.
+              <div style={{ padding: '32px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
+                Chưa có tin nhắn nào.<br/><br/>Hãy dùng Zalo cá nhân nhắn "Alo" vào OA để bắt đầu.
               </div>
             ) : (
               uniqueSenders.map(uid => (
                 <div 
                   key={uid}
                   onClick={() => setSelectedUser(uid)}
-                  className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors flex items-center gap-3 ${selectedUser === uid ? 'bg-blue-100 border-l-4 border-blue-500' : ''}`}
+                  style={{ 
+                    padding: '16px', 
+                    borderBottom: '1px solid #f3f4f6', 
+                    cursor: 'pointer', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '12px',
+                    backgroundColor: selectedUser === uid ? '#eff6ff' : 'transparent',
+                    borderLeft: selectedUser === uid ? '4px solid #3b82f6' : '4px solid transparent',
+                    transition: 'background-color 0.2s'
+                  }}
                 >
-                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
+                  <div style={{ width: '40px', height: '40px', backgroundColor: '#d1d5db', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
                     <User size={20} />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-800">UID: {uid.substring(0, 8)}...</div>
-                    <div className="text-xs text-gray-500">Click để xem tin nhắn</div>
+                    <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>UID: {uid.substring(0, 8)}...</div>
+                    <div style={{ fontSize: '12px', color: '#6b7280' }}>Click để xem tin nhắn</div>
                   </div>
                 </div>
               ))
@@ -97,29 +107,44 @@ const ZaloSandboxTab = () => {
         </div>
 
         {/* Chat Area */}
-        <div className="w-2/3 flex flex-col bg-white relative">
+        <div style={{ width: '70%', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', position: 'relative' }}>
           {selectedUser ? (
             <>
               {/* Header */}
-              <div className="p-4 border-b border-gray-200 bg-white flex items-center gap-3 shadow-sm z-10">
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
+              <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#fff', display: 'flex', alignItems: 'center', gap: '12px', zIndex: 10, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
+                <div style={{ width: '40px', height: '40px', backgroundColor: '#3b82f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
                   <User size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-800">Zalo User ({selectedUser})</h3>
-                  <div className="text-xs text-green-500 font-medium flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span> Đang kết nối API
+                  <h3 style={{ margin: 0, fontWeight: 'bold', color: '#1f2937', fontSize: '16px' }}>Zalo User ({selectedUser})</h3>
+                  <div style={{ fontSize: '12px', color: '#10b981', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }}></span> Đang kết nối API
                   </div>
                 </div>
               </div>
 
               {/* Messages */}
-              <div className="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3">
+              <div style={{ flex: 1, padding: '20px', overflowY: 'auto', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {activeMessages.map(msg => (
-                  <div key={msg.id || msg.timestamp} className={`flex ${msg.type === 'outgoing' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] p-3 rounded-2xl shadow-sm ${msg.type === 'outgoing' ? 'bg-blue-500 text-white rounded-br-none' : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none'}`}>
-                      <div className="text-[15px]">{msg.text}</div>
-                      <div className={`text-[10px] mt-1 text-right ${msg.type === 'outgoing' ? 'text-blue-100' : 'text-gray-400'}`}>
+                  <div key={msg.id || msg.timestamp} style={{ display: 'flex', justifyContent: msg.type === 'outgoing' ? 'flex-end' : 'flex-start' }}>
+                    <div style={{ 
+                      maxWidth: '70%', 
+                      padding: '12px 16px', 
+                      borderRadius: '16px', 
+                      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                      backgroundColor: msg.type === 'outgoing' ? '#3b82f6' : '#fff',
+                      color: msg.type === 'outgoing' ? '#fff' : '#1f2937',
+                      border: msg.type === 'outgoing' ? 'none' : '1px solid #e5e7eb',
+                      borderBottomRightRadius: msg.type === 'outgoing' ? '4px' : '16px',
+                      borderBottomLeftRadius: msg.type === 'outgoing' ? '16px' : '4px'
+                    }}>
+                      <div style={{ fontSize: '15px', lineHeight: '1.4' }}>{msg.text}</div>
+                      <div style={{ 
+                        fontSize: '11px', 
+                        marginTop: '6px', 
+                        textAlign: 'right',
+                        color: msg.type === 'outgoing' ? '#dbeafe' : '#9ca3af'
+                      }}>
                         {new Date(msg.timestamp).toLocaleTimeString('vi-VN')}
                       </div>
                     </div>
@@ -129,28 +154,47 @@ const ZaloSandboxTab = () => {
               </div>
 
               {/* Input */}
-              <div className="p-4 bg-white border-t border-gray-200">
-                <form onSubmit={handleSend} className="flex gap-2 relative">
+              <div style={{ padding: '16px', backgroundColor: '#fff', borderTop: '1px solid #e5e7eb' }}>
+                <form onSubmit={handleSend} style={{ display: 'flex', gap: '12px', position: 'relative' }}>
                   <input
                     type="text"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Nhập câu trả lời test (VD: Xin chào, ERP đã nhận được)..."
-                    className="flex-1 border border-gray-300 rounded-full px-5 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    style={{ 
+                      flex: 1, 
+                      border: '1px solid #d1d5db', 
+                      borderRadius: '9999px', 
+                      padding: '12px 20px', 
+                      outline: 'none',
+                      fontSize: '15px'
+                    }}
                   />
                   <button 
                     type="submit"
                     disabled={!inputText.trim()}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-12 h-12 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    style={{ 
+                      backgroundColor: inputText.trim() ? '#2563eb' : '#9ca3af',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '48px',
+                      height: '48px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: inputText.trim() ? 'pointer' : 'not-allowed',
+                      transition: 'background-color 0.2s'
+                    }}
                   >
-                    <Send size={20} className="ml-1" />
+                    <Send size={20} style={{ marginLeft: '4px' }} />
                   </button>
                 </form>
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-gray-400 bg-gray-50 flex-col gap-4">
-              <MessageCircle size={64} className="text-gray-300" />
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', backgroundColor: '#f9fafb', flexDirection: 'column', gap: '16px' }}>
+              <MessageCircle size={64} color="#d1d5db" />
               <p>Chọn một khách hàng ở cột trái để bắt đầu test</p>
             </div>
           )}

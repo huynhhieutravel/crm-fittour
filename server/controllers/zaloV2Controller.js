@@ -119,6 +119,13 @@ const zaloV2Controller = {
         text: body.message.text,
         type: 'incoming'
       });
+    } else if (body.event_name === 'oa_send_text' && body.recipient?.id && body.message?.text) {
+      saveMessage({
+        id: body.message.msg_id || Date.now().toString(),
+        senderId: body.recipient.id, // Nhóm theo người nhận
+        text: body.message.text,
+        type: 'outgoing'
+      });
     }
 
     // Kiểm tra TEST MODE
