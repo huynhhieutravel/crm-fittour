@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { X, Calendar, MapPin, Users, CheckCircle, Clock, AlertCircle, Award } from 'lucide-react';
+import { X, Calendar, MapPin, Users, CheckCircle, Clock, AlertCircle, Award, Smartphone, Loader } from 'lucide-react';
 import { formatRoleDisplayName } from '../../utils/roleUtils';
 
 // Helper: Tính phân khúc VIP tự động
@@ -226,6 +226,40 @@ export const EditCustomerModal = ({
   const [miniEvent, setMiniEvent] = useState({ title: '', event_type: 'CALL', event_date: '', description: '' });
   const [uploadingPassport, setUploadingPassport] = useState(false);
 
+  const [appIdInput, setAppIdInput] = useState('');
+  const [isLinking, setIsLinking] = useState(false);
+
+  const handleLinkApp = async () => {
+    if (!appIdInput || appIdInput.length !== 6) return alert('Mã App phải bao gồm đúng 6 ký tự.');
+    setIsLinking(true);
+    try {
+      const res = await axios.post(`/api/customers/${editingCustomer.id}/link-app`, { app_id: appIdInput }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setEditingCustomer({ ...editingCustomer, app_id: appIdInput.toUpperCase(), mobile_link_sync_status: res.data.status || 'SYNCED' });
+      setAppIdInput('');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Lỗi liên kết App');
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
+  const handleUnlinkApp = async () => {
+    if (!window.confirm('Gỡ liên kết tài khoản Mobile App?\\nKhách sẽ không còn xem được hành trình cá nhân trên App cho đến khi tài khoản được liên kết lại.')) return;
+    setIsLinking(true);
+    try {
+      const res = await axios.delete(`/api/customers/${editingCustomer.id}/link-app`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      setEditingCustomer({ ...editingCustomer, app_id: null, mobile_link_sync_status: null });
+    } catch (err) {
+      alert(err.response?.data?.message || 'Lỗi gỡ liên kết App');
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
   const handleUploadPassport = async (file) => {
     if (!file) return;
     setUploadingPassport(true);
@@ -410,6 +444,73 @@ export const EditCustomerModal = ({
               <div className="modal-form-group">
                 <label>QUỐC TỊCH</label>
                 <input className="modal-input" value={editingCustomer.nationality || 'Việt Nam'} onChange={e => setEditingCustomer({...editingCustomer, nationality: e.target.value})} />
+              </div>
+
+              <div className="modal-form-group" style={{ gridColumn: 'span 2', marginTop: '0.5rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#1e293b' }}>
+                  <Smartphone size={16} /> TÀI KHOẢN MOBILE APP
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  {editingCustomer.app_id ? (
+                    <div style={{ padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                        <div style={{ 
+                          width: '8px', height: '8px', borderRadius: '50%', 
+                          backgroundColor: editingCustomer.mobile_link_sync_status === 'SYNCED' ? '#10b981' : (editingCustomer.mobile_link_sync_status === 'PENDING' ? '#f59e0b' : '#ef4444') 
+                        }}></div>
+                        <span style={{ fontWeight: 600, color: editingCustomer.mobile_link_sync_status === 'SYNCED' ? '#047857' : (editingCustomer.mobile_link_sync_status === 'PENDING' ? '#b45309' : '#b91c1c') }}>
+                          {editingCustomer.mobile_link_sync_status === 'SYNCED' ? 'Đã liên kết' : 
+                           (editingCustomer.mobile_link_sync_status === 'PENDING' ? 'Đang đồng bộ...' : '⚠ Chưa đồng bộ được')}
+                        </span>
+                      </div>
+                      <div style={{ marginBottom: '16px', color: '#334155' }}>
+                        Mã App: <span style={{ fontWeight: 700, fontSize: '1.1rem', letterSpacing: '2px', color: '#0f172a' }}>{editingCustomer.app_id}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          type="button"
+                          onClick={handleUnlinkApp} 
+                          disabled={isLinking}
+                          style={{ padding: '6px 16px', border: '1px solid #ef4444', backgroundColor: '#fff', color: '#ef4444', borderRadius: '6px', cursor: isLinking ? 'not-allowed' : 'pointer', fontWeight: 600 }}
+                        >
+                          {isLinking ? 'Đang xử lý...' : 'Gỡ liên kết'}
+                        </button>
+                        {editingCustomer.mobile_link_sync_status === 'FAILED' && (
+                          <button 
+                            type="button"
+                            onClick={handleLinkApp} 
+                            disabled={isLinking}
+                            style={{ padding: '6px 16px', border: 'none', backgroundColor: '#3b82f6', color: '#fff', borderRadius: '6px', cursor: isLinking ? 'not-allowed' : 'pointer', fontWeight: 600 }}
+                          >
+                            Thử lại
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                      <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '8px' }}>Mã App (6 ký tự) do khách hàng cung cấp từ ứng dụng Mobile.</div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input 
+                          type="text" 
+                          maxLength={6}
+                          value={appIdInput}
+                          onChange={e => setAppIdInput(e.target.value.toUpperCase())}
+                          placeholder="VD: ABC123"
+                          style={{ padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '6px', flex: 1, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}
+                        />
+                        <button 
+                          type="button"
+                          onClick={handleLinkApp}
+                          disabled={isLinking || appIdInput.length !== 6}
+                          style={{ padding: '8px 24px', backgroundColor: (isLinking || appIdInput.length !== 6) ? '#94a3b8' : '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: (isLinking || appIdInput.length !== 6) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          {isLinking && <Loader size={14} className="animate-spin" />} Liên kết
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

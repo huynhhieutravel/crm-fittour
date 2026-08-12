@@ -23,11 +23,11 @@ Tạo script (vd `server/vps_import_ads.js`) CHỨA LOGIC SAU:
 2. Dùng thư viện `xlsx` đọc file xlsx vừa được cung cấp.
 3. Chạy lệnh: `DELETE FROM marketing_ads_reports WHERE year = X AND month = Y AND week_number = Z` (với XYZ lấy theo biến file). Đây là thao tác Safety giúp xoá chèn nếu bị chạy lặp.
 4. Quét từng dòng dữ liệu: map tên chiến dịch / Adset để trích xuất `BU`.
-    - **BU1**: Trung Quốc, Bắc Kinh, Thượng Hải, Á Đinh, Giang Nam, Tân Cương, Tây Tạng, Lệ Giang...
-    - **BU2**: Nam Mỹ, Châu Âu, Alaska, Úc, Mỹ, Canada...
-    - **BU3**: Nhật Bản, Hàn Quốc, Đài Loan...
-    - **BU4**: Bali, Bhutan, Ladakh, Bromo, Kashmir, Mông Cổ, Ấn Độ...
-5. Vòng lặp `INSERT INTO marketing_ads_reports (bu_name, year, month, week_number, campaign_name, ad_set_name, ad_name, spend, messages, leads, cpl_msg, cpl_lead)...`. Ignore các dòng không chi tiêu.
+    - **QUY TẮC MỚI**: Ưu tiên tìm chuỗi `[BU...]` (vd: `[BU1]`, `[BU5]`) trong **Tên nhóm quảng cáo** (Ad Set Name). Nếu không có thì tìm trong **Tên chiến dịch** (Campaign Name).
+    - Đoạn Regex dùng để bóc tách: `/\[(BU\d+)\]/i`. 
+    - Nếu có, gán BU tương ứng. Nếu không tìm thấy tag nào, gán là `Khác`.
+    *(Bỏ quy tắc map thủ công địa danh cũ vì các BU thường xuyên tách/gộp tuyến).*
+5. Vòng lặp `INSERT INTO marketing_ads_reports (bu_name, year, month, week_number, campaign_name, ad_set_name, ad_name, spend, messages, leads, cpl_msg, cpl_lead)...`. Ignore các dòng không chi tiêu (hoặc dòng Tổng cộng không có tên chiến dịch).
 6. Print log số dòng thành công.
 
 *Lưu ý: Không thực thi script bằng Node ở Local, vì Node ở Local sẽ map vào Database Local (`fittour_local`) chứ không vào Production!!!*

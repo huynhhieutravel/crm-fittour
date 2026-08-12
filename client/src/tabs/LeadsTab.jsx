@@ -59,6 +59,18 @@ const LeadsTab = ({
     return saved ? (saved === 'all' ? 'all' : parseInt(saved, 10)) : 30;
   });
 
+  const getLeadStatusStyle = (status) => {
+    switch (status) {
+      case 'Mới': return { bg: '#e0f2fe', color: '#0369a1' };
+      case 'Đang liên hệ': return { bg: '#fef3c7', color: '#b45309' };
+      case 'Liên hệ lần 2': return { bg: '#ede9fe', color: '#6d28d9' };
+      case 'Chốt đơn': return { bg: '#dcfce7', color: '#15803d' };
+      case 'Thất bại': return { bg: '#fee2e2', color: '#b91c1c' };
+      case 'Không phản hồi': return { bg: '#f1f5f9', color: '#475569' };
+      default: return { bg: '#f1f5f9', color: '#475569' };
+    }
+  };
+
   const [selectedLeadIds, setSelectedLeadIds] = useState([]);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [bulkActionStatus, setBulkActionStatus] = useState('');
@@ -737,12 +749,14 @@ const LeadsTab = ({
                 </td>
                 <td data-label="Trạng Thái Tư Vấn">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <select disabled={lead.is_locked} className={`status-select badge-${lead.status} ${lead.is_locked ? 'opacity-70' : ''}`} value={lead.status} onChange={e => handleQuickUpdate(lead.id, 'status', e.target.value)}>
+                    <select disabled={lead.is_locked} className={`status-select ${lead.is_locked ? 'opacity-70' : ''}`} style={{ backgroundColor: getLeadStatusStyle(lead.status).bg, color: getLeadStatusStyle(lead.status).color }} value={lead.status} onChange={e => handleQuickUpdate(lead.id, 'status', e.target.value)}>
                       {LEAD_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
+                    {/* Tạm ẩn phân loại để tránh rối mắt, chỉ dùng Trạng thái tư vấn
                     <select disabled={lead.is_locked} className={`table-select-ghost classification-${lead.classification}`} style={{ fontSize: '0.65rem', padding: '2px 6px', fontWeight: 700 }} value={lead.classification || 'Mới'} onChange={e => handleQuickUpdate(lead.id, 'classification', e.target.value)}>
                       {LEAD_CLASSIFICATIONS.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
+                    */}
                   </div>
                 </td>
                 <td data-label="Thời Gian Liên Hệ">

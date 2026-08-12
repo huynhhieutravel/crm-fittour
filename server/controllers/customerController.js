@@ -3,6 +3,7 @@ const { logActivity } = require('../utils/logger');
 const { convertLeadToCustomer } = require('../services/conversionService');
 const { getDataScope } = require('../middleware/teamScope');
 const { getUserMergedPerms } = require('../middleware/permCheck');
+const axios = require('axios');
 
 // Helper: Tính phân khúc VIP tự động dựa trên tổng số chuyến đi
 function computeVipTier(totalTrips) {
@@ -21,7 +22,7 @@ exports.checkPhoneExists = async (req, res) => {
         const stripped = phone.replace(/[\s\-\.]/g, '');
         const result = await db.query(`
             SELECT id, name, customer_segment, past_trip_count,
-            COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as crm_trip_count
+            COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count
             FROM customers 
             WHERE REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', '') = $1
                OR REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', '') = $2
@@ -71,8 +72,8 @@ exports.getAllCustomers = async (req, res) => {
 
         let queryStr = `
             SELECT c.*, 
-                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as total_spent,
-                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as crm_trip_count,
+                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as total_spent,
+                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count,
                    (SELECT content FROM lead_notes WHERE customer_id = c.id ORDER BY created_at DESC LIMIT 1) as latest_note,
                    l.source as lead_source
             FROM customers c
@@ -214,8 +215,8 @@ exports.getCustomerById = async (req, res) => {
     try {
         const result = await db.query(`
             SELECT c.*, 
-                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0)::numeric as total_spent,
-                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as crm_trip_count
+                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0)::numeric as total_spent,
+                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count
             FROM customers c WHERE c.id = $1
         `, [req.params.id]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
@@ -372,7 +373,7 @@ exports.deleteCustomer = async (req, res) => {
     try {
         await client.query('BEGIN');
         const custId = req.params.id;
-        const resCust = await client.query('SELECT name FROM customers WHERE id = $1', [custId]);
+        const resCust = await client.query('SELECT name, app_id FROM customers WHERE id = $1', [custId]);
         if (resCust.rows.length === 0) {
             await client.query('ROLLBACK');
             return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
@@ -393,6 +394,14 @@ exports.deleteCustomer = async (req, res) => {
         await client.query('DELETE FROM customer_events WHERE customer_id = $1', [custId]);
         await client.query('UPDATE leads SET customer_id = NULL WHERE customer_id = $1', [custId]);
         await client.query('DELETE FROM booking_passengers WHERE customer_id = $1', [custId]);
+        
+        // Outbox Pattern: Unlink app_id on Astro if exists
+        if (resCust.rows[0].app_id) {
+            await client.query(
+                `INSERT INTO webhook_outbox (app_id, event_type, payload) VALUES ($1, $2, $3)`,
+                [resCust.rows[0].app_id, 'unlink', JSON.stringify({ customer_id: null })]
+            );
+        }
         
         await client.query('DELETE FROM customers WHERE id = $1', [custId]);
 
@@ -577,7 +586,14 @@ exports.mergeCustomers = async (req, res) => {
         // 5. Move leads
         await client.query(`UPDATE leads SET customer_id = $1 WHERE customer_id = ANY($2)`, [primaryId, secondaryIds]);
         
-        // 6. Delete subordinate customers
+        // 6. Delete subordinate customers and process app_id unlinks
+        const secondaryRes = await client.query(`SELECT app_id FROM customers WHERE id = ANY($1) AND app_id IS NOT NULL`, [secondaryIds]);
+        for (const row of secondaryRes.rows) {
+            await client.query(
+                `INSERT INTO webhook_outbox (app_id, event_type, payload) VALUES ($1, $2, $3)`,
+                [row.app_id, 'unlink', JSON.stringify({ customer_id: null })]
+            );
+        }
         await client.query(`DELETE FROM customers WHERE id = ANY($1)`, [secondaryIds]);
         
         await client.query('COMMIT');
@@ -591,6 +607,183 @@ exports.mergeCustomers = async (req, res) => {
         });
         
         res.json({ message: 'Merge successful' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        res.status(500).json({ message: err.message });
+    } finally {
+        client.release();
+    }
+};
+
+exports.linkApp = async (req, res) => {
+    const customerId = req.params.id;
+    const { app_id } = req.body;
+    
+    if (!app_id || app_id.length !== 6) {
+        return res.status(400).json({ message: 'Mã App không hợp lệ (phải đủ 6 ký tự)' });
+    }
+
+    const client = await db.pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Check if customer exists
+        const custRes = await client.query('SELECT name, app_id FROM customers WHERE id = $1', [customerId]);
+        if (custRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
+        }
+        
+        const customer = custRes.rows[0];
+
+        // Case A/B check
+        if (customer.app_id === app_id) {
+            await client.query('ROLLBACK');
+            return res.json({ message: 'Khách hàng này đã được liên kết với mã App này rồi.' });
+        }
+
+        // Case C: Checked implicitly by partial unique index idx_customers_app_id_unique.
+        // We update Postgres first.
+        let updateRes;
+        try {
+            updateRes = await client.query(
+                `UPDATE customers 
+                 SET app_id = $1, mobile_link_sync_status = 'PENDING' 
+                 WHERE id = $2 RETURNING *`, 
+                 [app_id.toUpperCase(), customerId]
+            );
+        } catch (dbErr) {
+            if (dbErr.code === '23505') { // unique violation
+                await client.query('ROLLBACK');
+                return res.status(400).json({ message: 'Mã App này đã được liên kết với một khách hàng khác.' });
+            }
+            throw dbErr;
+        }
+
+        // Validate App ID via Astro API (GET)
+        const astroUrl = process.env.ASTRO_API_URL || 'http://localhost:4322';
+        const astroSecret = process.env.ASTRO_ERP_SECRET;
+
+        try {
+            await axios.get(`${astroUrl}/api/erp/mobile-users/${app_id}`, {
+                headers: { 'Authorization': `Bearer ${astroSecret}` }
+            });
+        } catch (astroErr) {
+            await client.query('ROLLBACK');
+            if (astroErr.response && astroErr.response.status === 404) {
+                return res.status(404).json({ message: 'Mã App này không tồn tại trên hệ thống Mobile.' });
+            }
+            return res.status(500).json({ message: 'Lỗi kết nối tới hệ thống Astro: ' + astroErr.message });
+        }
+
+        // Sync to Astro D1 (PATCH)
+        try {
+            await axios.patch(`${astroUrl}/api/erp/mobile-users/${app_id}/link`, {
+                customer_id: customerId
+            }, {
+                headers: { 
+                    'Authorization': `Bearer ${astroSecret}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            // Update Sync Status
+            await client.query(
+                `UPDATE customers 
+                 SET mobile_link_sync_status = 'SYNCED', mobile_link_synced_at = NOW() 
+                 WHERE id = $1`, [customerId]
+            );
+        } catch (syncErr) {
+            // Failure -> Status remains PENDING/FAILED
+            await client.query(
+                `UPDATE customers SET mobile_link_sync_status = 'FAILED' WHERE id = $1`, 
+                [customerId]
+            );
+            console.error('Failed to sync link to Astro:', syncErr.message);
+        }
+
+        // Activity Log
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'UPDATE',
+            entity_type: 'CUSTOMER',
+            entity_id: customerId,
+            details: `Đã liên kết tài khoản Mobile App. App ID: ${app_id}`
+        });
+
+        await client.query('COMMIT');
+        res.json({ message: 'Liên kết thành công', status: 'SYNCED' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        res.status(500).json({ message: err.message });
+    } finally {
+        client.release();
+    }
+};
+
+exports.unlinkApp = async (req, res) => {
+    const customerId = req.params.id;
+
+    const client = await db.pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Check if customer exists
+        const custRes = await client.query('SELECT name, app_id FROM customers WHERE id = $1', [customerId]);
+        if (custRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
+        }
+        
+        const customer = custRes.rows[0];
+        const app_id = customer.app_id;
+
+        if (!app_id) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ message: 'Khách hàng này chưa liên kết App.' });
+        }
+
+        // Clear Postgres
+        await client.query(
+            `UPDATE customers 
+             SET app_id = NULL, mobile_link_sync_status = NULL, mobile_link_synced_at = NULL 
+             WHERE id = $1`, 
+             [customerId]
+        );
+
+        // Sync Unlink to Astro
+        const astroUrl = process.env.ASTRO_API_URL || 'http://localhost:4322';
+        const astroSecret = process.env.ASTRO_ERP_SECRET;
+
+        try {
+            await axios.patch(`${astroUrl}/api/erp/mobile-users/${app_id}/link`, {
+                customer_id: null
+            }, {
+                headers: { 
+                    'Authorization': `Bearer ${astroSecret}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+        } catch (syncErr) {
+            console.error('Failed to sync unlink to Astro:', syncErr.message);
+            // Xử lý mất mạng: đẩy vào Outbox để cronjob thử lại ngầm
+            await client.query(
+                `INSERT INTO webhook_outbox (app_id, event_type, payload) VALUES ($1, $2, $3)`,
+                [app_id, 'unlink', JSON.stringify({ customer_id: null })]
+            );
+        }
+
+        // Activity Log
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'UPDATE',
+            entity_type: 'CUSTOMER',
+            entity_id: customerId,
+            details: `Đã gỡ liên kết tài khoản Mobile App. App ID: ${app_id}`
+        });
+
+        await client.query('COMMIT');
+        res.json({ message: 'Gỡ liên kết thành công' });
     } catch (err) {
         await client.query('ROLLBACK');
         res.status(500).json({ message: err.message });

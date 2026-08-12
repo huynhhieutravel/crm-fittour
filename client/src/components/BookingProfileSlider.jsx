@@ -145,8 +145,8 @@ const BookingProfileSlider = ({ bookingId, onClose }) => {
                     borderRadius: '999px', 
                     fontSize: '0.75rem', 
                     fontWeight: 800, 
-                    backgroundColor: booking.booking_status === 'Giữ chỗ' ? '#e0f2fe' : booking.booking_status === 'Hoàn thành' ? '#dcfce7' : booking.booking_status === 'Huỷ' ? '#fee2e2' : booking.booking_status === 'Đã thanh toán' ? '#d1fae5' : booking.booking_status === 'Đã đặt cọc' ? '#fef3c7' : '#f1f5f9',
-                    color: booking.booking_status === 'Giữ chỗ' ? '#0369a1' : booking.booking_status === 'Hoàn thành' ? '#15803d' : booking.booking_status === 'Huỷ' ? '#b91c1c' : booking.booking_status === 'Đã thanh toán' ? '#065f46' : booking.booking_status === 'Đã đặt cọc' ? '#b45309' : '#475569',
+                    backgroundColor: (booking.booking_status === 'Giữ chỗ' || booking.booking_status === 'HELD') ? '#e0f2fe' : booking.booking_status === 'Hoàn thành' ? '#dcfce7' : booking.booking_status === 'Huỷ' ? '#fee2e2' : booking.booking_status === 'Đã thanh toán' ? '#d1fae5' : booking.booking_status === 'Đã đặt cọc' ? '#fef3c7' : '#f1f5f9',
+                    color: (booking.booking_status === 'Giữ chỗ' || booking.booking_status === 'HELD') ? '#0369a1' : booking.booking_status === 'Hoàn thành' ? '#15803d' : booking.booking_status === 'Huỷ' ? '#b91c1c' : booking.booking_status === 'Đã thanh toán' ? '#065f46' : booking.booking_status === 'Đã đặt cọc' ? '#b45309' : '#475569',
                   }}>
                     {booking.booking_status}
                   </span>

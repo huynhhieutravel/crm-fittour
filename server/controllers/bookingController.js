@@ -33,9 +33,13 @@ exports.getAllBookings = async (req, res) => {
             paramCount++;
         }
         if (status) {
-            whereClauses.push(`b.booking_status = $${paramCount}`);
-            params.push(status);
-            paramCount++;
+            if (status === 'Giữ chỗ' || status === 'HELD') {
+                whereClauses.push(`b.booking_status IN ('Giữ chỗ', 'HELD')`);
+            } else {
+                whereClauses.push(`b.booking_status = $${paramCount}`);
+                params.push(status);
+                paramCount++;
+            }
         }
         if (payment_status) {
             whereClauses.push(`b.payment_status = $${paramCount}`);
@@ -126,63 +130,28 @@ exports.getAllBookings = async (req, res) => {
 };
 
 exports.createBooking = async (req, res) => {
-    const { 
-        booking_code, customer_id, tour_id, tour_departure_id, start_date, 
-        pax_count, total_price, payment_status, booking_status, notes, 
-        pax_details, service_details, discount, 
-        initial_deposit_amount, initial_deposit_method, initial_deposit_date 
-    } = req.body;
+    // Generate Idempotency Key (Admin/Sale UI might not pass this, so we generate a fallback or allow null)
+    // Ideally, UI should send 'idempotency-key' header.
+    const idempotencyKey = req.headers['idempotency-key'] || null;
+
+    const client = await db.pool.connect();
     try {
-        // Auto-generate booking code if missing
-        let finalCode = booking_code;
-        if (!finalCode || finalCode.trim() === '') {
-            const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-            const rand = Math.floor(1000 + Math.random() * 9000);
-            finalCode = `FT-${dateStr}-${rand}`;
-        }
-
-        const result = await db.query(
-            'INSERT INTO bookings (booking_code, customer_id, tour_id, tour_departure_id, start_date, pax_count, total_price, payment_status, booking_status, notes, pax_details, service_details, discount) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *',
-            [
-              finalCode, customer_id, tour_id || null, tour_departure_id || null, 
-              start_date || null, pax_count || 0, total_price || 0, payment_status || 'unpaid', 
-              booking_status || 'Mới', notes || null, 
-              typeof pax_details === 'object' ? JSON.stringify(pax_details) : (pax_details || '[]'), 
-              typeof service_details === 'object' ? JSON.stringify(service_details) : (service_details || '[]'),
-              discount || 0
-            ]
-        );
+        await client.query('BEGIN');
+        const { createBookingWithLock } = require('../services/bookingService');
         
-        const newBooking = result.rows[0];
+        const payload = { ...req.body, created_by: req.user ? req.user.id : null };
+        const result = await createBookingWithLock(client, payload, idempotencyKey);
 
-        // Process Initial Deposit if any
-        if (initial_deposit_amount && Number(initial_deposit_amount) > 0) {
-            await db.query(`
-                INSERT INTO booking_transactions (booking_id, amount, payment_method, transaction_date, notes, created_by)
-                VALUES ($1, $2, $3, $4, $5, $6)
-            `, [
-                newBooking.id, 
-                Number(initial_deposit_amount), 
-                initial_deposit_method || 'CASH', 
-                initial_deposit_date || new Date(), 
-                'Thu cọc lúc khởi tạo Đơn hàng',
-                req.user ? req.user.id : null
-            ]);
-            
-            // Re-evaluate payment status dynamically
-            const depositAmt = Number(initial_deposit_amount);
-            const tPrice = Number(newBooking.total_price);
-            let finalStatus = 'unpaid';
-            if (depositAmt >= tPrice && tPrice > 0) finalStatus = 'paid';
-            else if (depositAmt > 0) finalStatus = 'partial';
-
-            if (finalStatus !== newBooking.payment_status) {
-                await db.query("UPDATE bookings SET payment_status = $1 WHERE id = $2", [finalStatus, newBooking.id]);
-                newBooking.payment_status = finalStatus;
-            }
+        if (!result.success) {
+            await client.query('ROLLBACK');
+            return res.status(result.statusCode || 400).json({ error: result.error });
         }
 
-        // LOG ACTIVITY
+        await client.query('COMMIT');
+        
+        const newBooking = result.booking;
+        
+        // Log activity after commit
         await logActivity({
             user_id: req.user ? req.user.id : null,
             action_type: 'CREATE',
@@ -308,13 +277,13 @@ exports.updateBooking = async (req, res) => {
 
             // EMAIL EVENTS (Sau khi Commit thành công)
             if (updates.booking_status && updates.booking_status !== oldBooking.booking_status) {
-                if (updates.booking_status === 'Xác nhận') {
+                if (updates.booking_status === 'Xác nhận' || updates.booking_status === 'CONFIRMED') {
                     emitEvent(SystemEvents.find(e => e.code === 'BOOKING_CONFIRMED').code, {
                         booking_code: updatedBooking.booking_code,
                         status: updatedBooking.booking_status,
                         updated_at: new Date().toISOString()
                     });
-                } else if (updates.booking_status === 'Huỷ') {
+                } else if (updates.booking_status === 'Huỷ' || updates.booking_status === 'CANCELLED') {
                     emitEvent(SystemEvents.find(e => e.code === 'BOOKING_CANCELLED').code, {
                         booking_code: updatedBooking.booking_code,
                         status: updatedBooking.booking_status,
@@ -417,7 +386,7 @@ exports.createGroupBooking = async (req, res) => {
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
             [
                 bookingCode, customerId, departure_id, 
-                passengers.length, total_price, 'Giữ chỗ', 
+                passengers.length, total_price, 'HELD', 
                 true, group_name, 'unpaid'
             ]
         );

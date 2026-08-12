@@ -176,6 +176,37 @@ Khách hàng mới nhắn tin từ kênh tự nhiên nhưng hệ thống không 
             console.error('[Telegram Error] Failed to send orphan lead notification:', error.response?.data || error.message);
         }
     }
+
+    /**
+     * Send a notification when a new lead is created (unassigned)
+     * @param {Object} lead - The newly created lead object
+     * @returns {Number|null} message_id if successful, or null
+     */
+    async sendNewLeadNotification(lead) {
+        if (!this.token || !this.chatId) return null;
+
+        const message = `🚨 <b>CÓ LEAD MỚI ĐĂNG KÝ</b> 🚨
+
+👤 <b>Tên:</b> ${escapeHTML(lead.name) || 'Không có tên'}
+📞 <b>SĐT:</b> ${escapeHTML(lead.phone) || 'Chưa có SĐT'}
+📧 <b>Email:</b> ${escapeHTML(lead.email) || 'Chưa có Email'}
+🔖 <b>Nguồn:</b> ${escapeHTML(lead.source) || 'Không rõ'}
+
+👉 Vui lòng vào CRM kiểm tra và liên hệ khách ngay!`;
+
+        try {
+            const res = await axios.post(this.apiUrl, {
+                chat_id: this.chatId,
+                text: message,
+                parse_mode: 'HTML'
+            });
+            console.log(`[Telegram] Sent new lead notification for lead ${lead.id}`);
+            return res.data?.result?.message_id || null;
+        } catch (error) {
+            console.error('[Telegram Error] Failed to send new lead notification:', error.response?.data || error.message);
+            return null;
+        }
+    }
 }
 
 module.exports = new TelegramService();

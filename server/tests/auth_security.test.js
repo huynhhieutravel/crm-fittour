@@ -58,7 +58,7 @@ async function runTests() {
 
     // 1. HS256 Valid
     const tokenHS256 = jwt.sign({ id: 1 }, JWT_SECRET, { expiresIn: '1h' });
-    await assertAccept('HS256 Valid', tokenHS256);
+    await assertReject('HS256 Valid', tokenHS256);
 
     // 2. RS256 Valid
     const tokenRS256 = jwt.sign(

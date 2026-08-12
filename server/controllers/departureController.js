@@ -42,7 +42,7 @@ exports.getAllDepartures = async (req, res) => {
                 td.*, 
                 tt.name as template_name, tt.duration as template_duration, tt.bu_group,
                 g.name as guide_name,
-                (SELECT COALESCE(SUM(pax_count), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ')) as sold_pax
+                (SELECT COALESCE(SUM(pax_count), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED')) as sold_pax
             FROM tour_departures td
             LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN guides g ON td.guide_id = g.id

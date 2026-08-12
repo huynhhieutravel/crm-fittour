@@ -1,4 +1,48 @@
+const { AsyncLocalStorage } = require('async_hooks');
 const db = require('../db');
+
+const asyncLocalStorage = new AsyncLocalStorage();
+
+function getCorrelationId() {
+    return asyncLocalStorage.getStore();
+}
+
+function patchConsole() {
+    if (globalThis.__correlationConsolePatched) {
+        return;
+    }
+    
+    globalThis.__correlationConsolePatched = true;
+
+    const methods = ['log', 'error', 'warn', 'info', 'debug'];
+
+    methods.forEach((method) => {
+        const originalMethod = console[method];
+        
+        console[method] = function (...args) {
+            const correlationId = getCorrelationId();
+            
+            if (correlationId) {
+                const tracePrefix = `[Trace: ${correlationId}]`;
+                
+                // If first arg is a string and already contains the exact trace prefix, don't duplicate
+                if (args.length > 0 && typeof args[0] === 'string') {
+                    if (args[0].includes(tracePrefix)) {
+                        return originalMethod.apply(console, args);
+                    }
+                    args[0] = `${tracePrefix} ${args[0]}`;
+                    return originalMethod.apply(console, args);
+                }
+                
+                // Prepend the trace prefix to the arguments array if first arg is not string
+                return originalMethod.apply(console, [tracePrefix, ...args]);
+            }
+            
+            // If no context, just log normally
+            return originalMethod.apply(console, args);
+        };
+    });
+}
 
 /**
  * Log an activity to the database
@@ -24,4 +68,9 @@ async function logActivity({ user_id, action_type, entity_type, entity_id, detai
     }
 }
 
-module.exports = { logActivity };
+module.exports = {
+    asyncLocalStorage,
+    getCorrelationId,
+    patchConsole,
+    logActivity
+};

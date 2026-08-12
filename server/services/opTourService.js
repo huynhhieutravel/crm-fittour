@@ -41,8 +41,8 @@ async function fetchActiveTours() {
     LEFT JOIN (
       SELECT 
         tour_departure_id,
-        SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'Mới', 'Giữ chỗ') THEN pax_count ELSE 0 END) AS total_sold,
-        SUM(CASE WHEN booking_status IN ('Giữ chỗ', 'Mới') THEN pax_count ELSE 0 END) AS total_reserved
+        SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED', 'Mới', 'pending', 'Giữ chỗ', 'HELD') THEN pax_count ELSE 0 END) AS total_sold,
+        SUM(CASE WHEN booking_status IN ('Giữ chỗ', 'Mới', 'pending', 'HELD') THEN pax_count ELSE 0 END) AS total_reserved
       FROM bookings
       GROUP BY tour_departure_id
     ) b_agg ON b_agg.tour_departure_id = td.id

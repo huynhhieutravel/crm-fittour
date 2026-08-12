@@ -29,3 +29,9 @@ Khi User yêu cầu thay đổi các quy tắc hệ thống, luật phân bổ, 
 **Guardrails:**
 1. **Tuyệt đối không** tự ý viết script SQL hoặc code để cập nhật hàng loạt (batch-update) dữ liệu cũ/lịch sử trong Database.
 2. Việc thay đổi dữ liệu đã tồn tại có rủi ro gây sai lệch báo cáo và thống kê của User. Agent chỉ được phép càn quét cập nhật dữ liệu cũ nếu User ra lệnh rõ ràng bằng các từ ngữ như: "cập nhật luôn cả dữ liệu cũ", "chạy script sửa data lịch sử", "hồi tố".
+
+## Marketing Ads Data Guardrails
+Khi viết script import hoặc xử lý dữ liệu báo cáo Facebook Ads (Marketing Ads), Agent BẮT BUỘC tuân thủ các nguyên tắc:
+1. **Tuyệt đối không dùng từ khoá địa danh (keyword mapping) để phân loại BU**: Do các tuyến (Mông Cổ, Pakistan, v.v.) thường xuyên được điều chuyển giữa các BU, việc hardcode từ khoá sẽ dẫn đến phân sai dữ liệu.
+2. **Quét trực tiếp Tag `[BU...]`**: Bắt buộc dùng Regex (vd: `/\[(BU\d+)\]/i`) ưu tiên trích xuất tên BU từ **Tên nhóm quảng cáo** (Ad Set Name) hoặc **Tên chiến dịch** (Campaign Name).
+3. **Bẫy dòng "Tổng cộng" (Total row)**: File Excel xuất từ Meta Ads luôn có dòng đầu tiên là "Tổng số kết quả". Bắt buộc phải có lệnh bỏ qua dòng này (ví dụ: `if (!campaignName) continue;`) nếu không dữ liệu toàn hệ thống sẽ bị nhân đôi.

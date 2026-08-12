@@ -411,8 +411,8 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                     console.log(`[FB WEBHOOK] Phát hiện SĐT mới ${extractedPhone} cho Lead ID ${leadId} (cũ: ${currentPhone || 'Trống'}). Đang ghi đè...`);
                     // Cập nhật SĐT và cố gắng định danh KH cũ
                     await db.query(
-                        'UPDATE leads SET phone = $1, customer_id = COALESCE(customer_id, (SELECT id FROM customers WHERE phone = $1 LIMIT 1)) WHERE id = $2',
-                        [extractedPhone, leadId]
+                        'UPDATE leads SET phone = $1, customer_id = COALESCE(customer_id, (SELECT id FROM customers WHERE phone = $3 LIMIT 1)) WHERE id = $2',
+                        [extractedPhone, leadId, extractedPhone]
                     );
                 }
             }

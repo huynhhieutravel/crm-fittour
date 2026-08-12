@@ -21,10 +21,16 @@ module.exports = (req, res, next) => {
         return next();
     }
 
-    // Fallback: xác thực JWT cho user bình thường
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.status(401).json({ message: 'Token không hợp lệ hoặc đã hết hạn' });
-        req.user = user;
+    // Fallback: xác thực JWT cho user bình thường (bằng RS256)
+    const { verifyTokenSafely } = require('../utils/jwt');
+    try {
+        const decodedPayload = verifyTokenSafely(token);
+        req.user = decodedPayload;
         next();
-    });
+    } catch (err) {
+        if (err.name === 'TokenExpiredError') {
+             return res.status(401).json({ message: 'Token không hợp lệ hoặc đã hết hạn' });
+        }
+        return res.status(401).json({ message: err.message || 'Token không hợp lệ' });
+    }
 };

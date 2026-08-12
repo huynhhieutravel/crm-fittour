@@ -104,7 +104,7 @@ exports.getTasks = async (req, res) => {
                     JOIN bookings b2 ON b2.tour_departure_id = td2.id 
                     WHERE b2.customer_id = t.customer_id
                    ) as last_trip_end,
-                   (SELECT COUNT(*)::int FROM bookings WHERE customer_id = t.customer_id AND booking_status NOT IN ('Huỷ','Mới')) as total_bookings
+                   (SELECT COUNT(*)::int FROM bookings WHERE customer_id = t.customer_id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')) as total_bookings
             FROM cskh_tasks t 
             JOIN customers c ON t.customer_id = c.id
             LEFT JOIN cskh_rules r ON t.rule_id = r.id
@@ -442,7 +442,7 @@ exports.searchCustomers = async (req, res) => {
         if (min_trips) {
             conditions.push(`(
                 COALESCE(c.past_trip_count, 0) + 
-                COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ','Mới')), 0)
+                COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0)
             ) >= $${idx++}`);
             params.push(parseInt(min_trips));
         }
@@ -452,7 +452,7 @@ exports.searchCustomers = async (req, res) => {
         const result = await db.query(`
             SELECT c.id, c.name, c.phone, c.email, c.customer_segment, c.assigned_to, c.birth_date,
                    COALESCE(c.past_trip_count, 0) as past_trip_count,
-                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ','Mới')), 0) as crm_trip_count,
+                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count,
                    (SELECT string_agg(DISTINCT tt.name, ', ') FROM bookings b JOIN tour_departures td ON b.tour_departure_id = td.id JOIN tour_templates tt ON td.tour_template_id = tt.id WHERE b.customer_id = c.id) as tours_history,
                    u.full_name as staff_name
             FROM customers c

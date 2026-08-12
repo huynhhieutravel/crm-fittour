@@ -3,12 +3,13 @@ const router = express.Router();
 const leadController = require('../controllers/leadController');
 const authenticateToken = require('../middleware/auth');
 const { permCheck, permCheckAny } = require('../middleware/permCheck');
+const idempotencyCheck = require('../middlewares/idempotency');
 
 router.get('/stats', authenticateToken, permCheckAny([['leads','view_all'], ['leads','view_own']]), leadController.getLeadStats);
 router.get('/dispatch-today', authenticateToken, leadController.getTodayDispatches);
 router.get('/', authenticateToken, permCheckAny([['leads','view_all'], ['leads','view_own']]), leadController.getAllLeads);
 router.post('/bulk-update', authenticateToken, permCheck('leads', 'edit'), leadController.bulkUpdateLeads);
-router.post('/', authenticateToken, permCheck('leads', 'create'), leadController.createLead);
+router.post('/', authenticateToken, permCheck('leads', 'create'), idempotencyCheck, leadController.createLead);
 router.get('/:id', authenticateToken, permCheckAny([['leads','view_all'], ['leads','view_own']]), leadController.getLeadById);
 router.put('/:id', authenticateToken, permCheck('leads', 'edit'), leadController.updateLead);
 router.get('/:id/customer-journey', authenticateToken, permCheckAny([['leads','view_all'], ['leads','view_own']]), leadController.getCustomerJourney);

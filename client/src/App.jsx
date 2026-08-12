@@ -1423,7 +1423,10 @@ function AppContent() {
     try {
       const token = localStorage.getItem('token');
       await axios.post('/api/leads', cleanedData, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Idempotency-Key': typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `idemp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        }
       });
       addToast('Đã thêm Lead mới thành công!');
       fetchLeads();
@@ -3827,7 +3830,12 @@ function AppContent() {
               await axios.post('/api/bookings', {
                 ...bookingData,
                 customer_id: finalCustomerId
-              }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+              }, { 
+                headers: { 
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
+                  'Idempotency-Key': typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `idemp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+                } 
+              });
               addToastGlobal('Lưu đơn hàng thành công!', setToasts);
             }
             

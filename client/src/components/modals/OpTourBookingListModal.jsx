@@ -429,7 +429,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
   bookings.forEach(b => {
     // Status counts
     const st = b.status || 'Giữ chỗ';
-    if (st.includes('Giữ chỗ') || st.includes('Mới')) countGiuCho++;
+    if (st.includes('Giữ chỗ') || st.includes('HELD') || st.includes('Mới')) countGiuCho++;
     else if (st.includes('cọc')) countDatCoc++;
     else if (st.includes('toán')) countThanhToan++;
 
@@ -653,13 +653,13 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                                fontSize: '12px',
                                cursor: 'pointer',
                                background: (b.status || 'Mới') === 'Mới' ? '#f1f5f9' :
-                                           (b.status || '').includes('Giữ chỗ') ? '#fff7ed' :
+                                           ((b.status || '').includes('Giữ chỗ') || (b.status || '').includes('HELD')) ? '#fff7ed' :
                                            (b.status || '').includes('cọc') ? '#fefce8' :
                                            (b.status || '').includes('toán') ? '#f0fdf4' :
                                            (b.status || '').includes('Hoàn') ? '#f8fafc' :
                                            (b.status || '').includes('uỷ') || (b.status || '').includes('ủy') ? '#fef2f2' : 'white',
                                color: (b.status || 'Mới') === 'Mới' ? '#64748b' :
-                                      (b.status || '').includes('Giữ chỗ') ? '#ea580c' :
+                                      ((b.status || '').includes('Giữ chỗ') || (b.status || '').includes('HELD')) ? '#ea580c' :
                                       (b.status || '').includes('cọc') ? '#ca8a04' :
                                       (b.status || '').includes('toán') ? '#16a34a' :
                                       (b.status || '').includes('Hoàn') ? '#475569' :
@@ -669,6 +669,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                            >
                              <option value="Mới" disabled={b.status !== 'Mới' && !!(b.paid > 0)}>⚪️ Mới (Chưa giữ chỗ)</option>
                              <option value="Giữ chỗ" disabled={!!(b.paid > 0)}>🟠 Giữ chỗ</option>
+                             {b.status === 'HELD' && <option value="HELD" disabled={!!(b.paid > 0)}>🟠 HELD (Giữ chỗ)</option>}
                              <option value="Đã đặt cọc" disabled={!(b.paid > 0 && b.paid < b.total)} title={!(b.paid > 0 && b.paid < b.total) ? 'Chỉ hệ thống Kế toán tự chọn lựa chọn này khi Số dư > 0' : 'Sẵn sàng phục hồi'}>🟡 Đã đặt cọc {!(b.paid > 0 && b.paid < b.total) ? '(Auto)' : ''}</option>
                              <option value="Đã thanh toán" disabled={!(b.paid > 0 && b.paid >= b.total)} title={!(b.paid > 0 && b.paid >= b.total) ? 'Hệ thống tự động cập nhật khi Kế toán báo Đã Tất Toán 100%' : 'Sẵn sàng phục hồi'}>🟢 Đã Tất Toán {!(b.paid > 0 && b.paid >= b.total) ? '(Auto)' : ''}</option>
                              <option value="Hoàn thành" disabled={currentUser?.role !== 'admin' && currentUser?.role !== 'manager' && currentUser?.role !== 'operator'}>✅ Hoàn thành</option>

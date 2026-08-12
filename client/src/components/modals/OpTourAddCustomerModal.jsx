@@ -842,7 +842,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       discount: totalDiscount,
       total: totalPrice,
       paid: paidAmount || 0,
-      status: (paidAmount > 0 && paidAmount < totalPrice) ? 'Đã đặt cọc' : (paidAmount >= totalPrice && totalPrice > 0 ? 'Đã thanh toán' : (initialData?.status || 'Giữ chỗ')),
+      status: (paidAmount > 0 && paidAmount < totalPrice) ? 'Đã đặt cọc' : (paidAmount >= totalPrice && totalPrice > 0 ? 'Đã thanh toán' : (initialData?.status || 'HELD')),
       created_by: selectedSalesId,
       created_by_name: salesList.find(u => u.id == selectedSalesId)?.full_name || currentUser?.full_name || 'Sales',
       raw_details: { bookingInfo, pricingRows, members } // Lưu tất cả data gốc dưới dạng JSONB

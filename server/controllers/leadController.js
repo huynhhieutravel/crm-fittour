@@ -29,7 +29,7 @@ exports.getAllLeads = async (req, res) => {
                    (SELECT content FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note,
                    (SELECT created_at FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note_at,
                    c.id as returning_customer_id,
-                   (SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới'))::numeric as total_spent,
+                   (SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED'))::numeric as total_spent,
                    CASE WHEN c.id IS NOT NULL THEN true ELSE false END as is_returning_customer
             FROM leads l 
             LEFT JOIN tour_templates tt ON l.tour_id = tt.id 
@@ -122,6 +122,18 @@ exports.createLead = async (req, res) => {
             status: newLead.status,
             created_at: new Date().toISOString()
         });
+
+        // TELEGRAM NOTIFICATION (NEW)
+        try {
+            const messageId = await telegramService.sendNewLeadNotification(newLead);
+            if (messageId) {
+                // Optionally save the message ID if we want to delete/update it later
+                await db.query('UPDATE leads SET telegram_message_id = $1 WHERE id = $2', [messageId, newLead.id]);
+                newLead.telegram_message_id = messageId;
+            }
+        } catch (e) {
+            console.error('Failed to send telegram notification for new lead:', e);
+        }
 
         // GLOBAL CHAT BOT NOTIFICATION
         try {

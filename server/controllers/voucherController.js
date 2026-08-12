@@ -203,7 +203,7 @@ exports.cancelVoucher = async (req, res) => {
                 
                 let autoStatus = bCheck.booking_status;
                 if (newPaid === 0 && (bCheck.booking_status === 'Đã đặt cọc' || bCheck.booking_status === 'Đã thanh toán')) {
-                    autoStatus = 'Giữ chỗ';
+                    autoStatus = 'HELD';
                 } else if (newPaid > 0 && newPaid < total) {
                     autoStatus = 'Đã đặt cọc';
                 }
@@ -275,7 +275,7 @@ exports.deleteVoucher = async (req, res) => {
                 
                 let autoStatus = bCheck.booking_status;
                 if (newPaid === 0 && (bCheck.booking_status === 'Đã đặt cọc' || bCheck.booking_status === 'Đã thanh toán')) {
-                    autoStatus = 'Giữ chỗ';
+                    autoStatus = 'HELD';
                 } else if (newPaid > 0 && newPaid < total) {
                     autoStatus = 'Đã đặt cọc';
                 }

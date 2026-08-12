@@ -30,10 +30,10 @@ exports.getAllOpTours = async (req, res) => {
       LEFT JOIN (
         SELECT 
           tour_departure_id,
-          SUM(CASE WHEN booking_status NOT IN ('Huỷ') THEN pax_count ELSE 0 END) AS total_sold,
-          SUM(CASE WHEN booking_status IN ('Giữ chỗ', 'Mới') THEN pax_count ELSE 0 END) AS total_reserved,
-          SUM(CASE WHEN booking_status NOT IN ('Huỷ') THEN COALESCE(paid, 0) ELSE 0 END) AS total_paid,
-          SUM(CASE WHEN booking_status NOT IN ('Huỷ') THEN COALESCE(total_price, 0) ELSE 0 END) AS total_booking_amount
+          SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED') THEN pax_count ELSE 0 END) AS total_sold,
+          SUM(CASE WHEN booking_status IN ('Giữ chỗ', 'Mới', 'pending', 'HELD') THEN pax_count ELSE 0 END) AS total_reserved,
+          SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED') THEN COALESCE(paid, 0) ELSE 0 END) AS total_paid,
+          SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED') THEN COALESCE(total_price, 0) ELSE 0 END) AS total_booking_amount
         FROM bookings
         GROUP BY tour_departure_id
       ) ba ON ba.tour_departure_id = td.id
@@ -61,12 +61,12 @@ exports.getPublicOpTours = async (req, res) => {
         (
           SELECT COALESCE(SUM(b.pax_count), 0)
           FROM bookings b
-          WHERE b.tour_departure_id = td.id AND b.booking_status NOT IN ('Huỷ', 'Mới', 'Giữ chỗ')
+          WHERE b.tour_departure_id = td.id AND b.booking_status NOT IN ('Huỷ', 'Mới', 'Giữ chỗ', 'CANCELLED', 'EXPIRED', 'HELD')
         ) AS total_sold,
         (
           SELECT COALESCE(SUM(b.pax_count), 0)
           FROM bookings b
-          WHERE b.tour_departure_id = td.id AND b.booking_status IN ('Giữ chỗ', 'Mới')
+          WHERE b.tour_departure_id = td.id AND b.booking_status IN ('Giữ chỗ', 'Mới', 'pending', 'HELD')
         ) AS total_reserved
       FROM tour_departures td
       LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
@@ -320,7 +320,11 @@ exports.addOpTourBooking = async (req, res) => {
         const soldRes = await client.query(`
            SELECT COALESCE(SUM(pax_count), 0) as sold
            FROM bookings
-           WHERE tour_departure_id = $1 AND id != $2 AND booking_status NOT IN ('Huỷ')
+           WHERE tour_departure_id = $1 AND id != $2 
+           AND (
+               booking_status IN ('CONFIRMED', 'COMPLETED', 'Xác nhận', 'Hoàn thành', 'Mới', 'pending')
+               OR (booking_status IN ('HELD', 'Giữ chỗ') AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP))
+           )
         `, [id, bookingData.id || -1]);
         
         const soldSoFar = Number(soldRes.rows[0].sold || 0);
@@ -458,7 +462,7 @@ exports.addOpTourBooking = async (req, res) => {
                UPDATE customers 
                SET updated_at = CURRENT_TIMESTAMP
                WHERE id = $1 
-               RETURNING past_trip_count, COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as crm_trip_count
+               RETURNING past_trip_count, COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count
            `, [bookingData.customer_id]);
            
            if (updateRes.rows.length > 0) {
@@ -641,7 +645,7 @@ exports.updateOpTourBooking = async (req, res) => {
             const custId = custRes.rows[0].customer_id;
             const vipRes = await db.query(`
                 SELECT past_trip_count,
-                       COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = $1 AND booking_status NOT IN ('Huỷ', 'Mới')), 0) as crm_trip_count
+                       COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = $1 AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count
                 FROM customers WHERE id = $1
             `, [custId]);
             if (vipRes.rows.length > 0) {
@@ -789,7 +793,7 @@ exports.transferOpTourBooking = async (req, res) => {
     const allowOverbooking = tourInfo.allow_overbooking === true;
 
     if (!allowOverbooking && totalSeats > 0) {
-        const currentBookedRes = await client.query(`SELECT SUM(pax_count) as total_booked FROM bookings WHERE tour_departure_id = $1 AND (booking_status != 'Huỷ' AND booking_status != 'Hủy')`, [targetTourId]);
+        const currentBookedRes = await client.query(`SELECT COALESCE(SUM(pax_count), 0) as total_booked FROM bookings WHERE tour_departure_id = $1 AND (booking_status IN ('CONFIRMED', 'COMPLETED', 'Xác nhận', 'Hoàn thành', 'Mới', 'pending') OR (booking_status IN ('HELD', 'Giữ chỗ') AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)))`, [targetTourId]);
         const currentBooked = Number(currentBookedRes.rows[0].total_booked || 0);
         const incomingQty = Number(booking.pax_count || 0);
         

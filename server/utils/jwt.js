@@ -35,12 +35,12 @@ function generateAccessToken(user) {
                 header: { typ: 'access+jwt' }
             });
         } catch (err) {
-            console.error('Error signing with RS256, falling back to HS256:', err);
+            console.error('Error signing with RS256:', err);
+            throw new Error('Không thể tạo token RS256');
         }
+    } else {
+        throw new Error('Thiếu cấu hình JWT_ACTIVE_KID hoặc Private Key');
     }
-    
-    // Fallback for environments that haven't generated keys yet
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '14d' });
 }
 
 /**
@@ -77,13 +77,7 @@ function verifyTokenSafely(token) {
         let secretOrPublicKey;
         let verifyOptions = {};
 
-        if (alg === 'HS256') {
-            if (!process.env.JWT_SECRET) {
-                fail('Xác thực HS256 không còn được hỗ trợ');
-            }
-            secretOrPublicKey = process.env.JWT_SECRET;
-            verifyOptions.algorithms = ['HS256'];
-        } else if (alg === 'RS256') {
+        if (alg === 'RS256') {
             if (!isKnownKid(kid)) {
                 fail('Khóa không xác định (Unknown kid)');
             }
