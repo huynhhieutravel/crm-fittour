@@ -53,3 +53,4 @@ server/migrate_*.js
 .agents/tmp_scrape/
 _backups/
 server/public/uploads/
+zalo_tokens.json

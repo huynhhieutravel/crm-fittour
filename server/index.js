@@ -1,3 +1,6 @@
+const { patchConsole } = require('./utils/logger');
+patchConsole();
+
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -66,7 +69,10 @@ const loginLimiter = rateLimit({
 // Áp dụng Rate Limiter chung cho tất cả /api
 app.use('/api/', apiLimiter);
 
+const correlationIdMiddleware = require('./middlewares/correlation');
+
 app.use(cors());
+app.use(correlationIdMiddleware);
 app.use(express.json());
 
 // Serve static files for media uploads
@@ -167,6 +173,7 @@ const authController = require('./controllers/authController');
 app.use('/.well-known', require('./routes/well-known'));
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/telegram', require('./routes/telegramRoutes'));
+app.use('/api/zalo-v2', require('./routes/zalo_v2'));
 // Áp dụng Login Limiter cụ thể cho endpoint đăng nhập
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRoutes);
@@ -183,6 +190,7 @@ app.use('/api/guides', guideRoutes);
 app.use('/api/leads', leadRoutes);
 app.use('/api/dispatch', require('./routes/dispatch'));
 app.use('/api/dispatch-schedules', require('./routes/dispatchSchedules'));
+app.use('/api/reservations', require('./routes/reservations'));
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/messages', messageRoutes);
@@ -321,13 +329,21 @@ server.listen(PORT, () => {
         // Start Dispatcher SLA Cron Engine (every min)
         const { startDispatcherSLAEngine } = require('./cron/dispatcherSLAEngine');
         const { startAuthMetricsReporter } = require('./cron/authMetricsReporter');
+        const { startReservationReleaseCron } = require('./cron/reservationReleaseEngine');
         startDispatcherSLAEngine();
         require('./cron/monthlyReviewsEmail');
         require('./cron/monthlyDashboardEmail');
         
         startAuthMetricsReporter();
+        startReservationReleaseCron();
         
-        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, SLA, Monthly Reviews, Monthly Dashboard, Auth Metrics).');
+        const startIdempotencyCleanup = require('./cron/idempotencyCleanup');
+        startIdempotencyCleanup();
+        
+        const { startWebhookOutboxEngine } = require('./cron/webhookOutboxEngine');
+        startWebhookOutboxEngine();
+        
+        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, SLA, Monthly Reviews, Monthly Dashboard, Auth Metrics, Reservation Release, Idempotency Cleanup, Webhook Outbox).');
 
         // Start Email Listeners for Event-Driven Architecture
         const { registerEmailListeners } = require('./listeners/emailListener');
@@ -342,3 +358,4 @@ server.listen(PORT, () => {
 });
  
  
+module.exports = { app, server };
