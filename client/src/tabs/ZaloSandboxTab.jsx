@@ -57,7 +57,18 @@ const ZaloSandboxTab = () => {
 
   // Group by sender
   const uniqueSenders = [...new Set(messages.map(m => m.senderId))];
+  const senderProfiles = uniqueSenders.map(uid => {
+    const msgs = messages.filter(m => m.senderId === uid);
+    const msgWithName = msgs.slice().reverse().find(m => m.senderName);
+    return {
+      uid,
+      name: msgWithName ? msgWithName.senderName : `Zalo User (${uid.substring(0, 8)}...)`,
+      avatar: msgWithName ? msgWithName.senderAvatar : null
+    };
+  });
+
   const activeMessages = messages.filter(m => m.senderId === selectedUser);
+  const selectedUserProfile = senderProfiles.find(p => p.uid === selectedUser);
 
   return (
     <div style={{ height: 'calc(100vh - 60px)', display: 'flex', flexDirection: 'column', backgroundColor: '#f3f4f6', padding: '20px', fontFamily: 'Arial, sans-serif' }}>
@@ -77,10 +88,10 @@ const ZaloSandboxTab = () => {
                 Chưa có tin nhắn nào.<br/><br/>Hãy dùng Zalo cá nhân nhắn "Alo" vào OA để bắt đầu.
               </div>
             ) : (
-              uniqueSenders.map(uid => (
+              senderProfiles.map(profile => (
                 <div 
-                  key={uid}
-                  onClick={() => setSelectedUser(uid)}
+                  key={profile.uid}
+                  onClick={() => setSelectedUser(profile.uid)}
                   style={{ 
                     padding: '16px', 
                     borderBottom: '1px solid #f3f4f6', 
@@ -88,16 +99,20 @@ const ZaloSandboxTab = () => {
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '12px',
-                    backgroundColor: selectedUser === uid ? '#eff6ff' : 'transparent',
-                    borderLeft: selectedUser === uid ? '4px solid #3b82f6' : '4px solid transparent',
+                    backgroundColor: selectedUser === profile.uid ? '#eff6ff' : 'transparent',
+                    borderLeft: selectedUser === profile.uid ? '4px solid #3b82f6' : '4px solid transparent',
                     transition: 'background-color 0.2s'
                   }}
                 >
-                  <div style={{ width: '40px', height: '40px', backgroundColor: '#d1d5db', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                    <User size={20} />
-                  </div>
+                  {profile.avatar ? (
+                    <img src={profile.avatar} alt="avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: '40px', height: '40px', backgroundColor: '#d1d5db', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                      <User size={20} />
+                    </div>
+                  )}
                   <div>
-                    <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>UID: {uid.substring(0, 8)}...</div>
+                    <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>{profile.name}</div>
                     <div style={{ fontSize: '12px', color: '#6b7280' }}>Click để xem tin nhắn</div>
                   </div>
                 </div>
@@ -112,11 +127,15 @@ const ZaloSandboxTab = () => {
             <>
               {/* Header */}
               <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#fff', display: 'flex', alignItems: 'center', gap: '12px', zIndex: 10, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
-                <div style={{ width: '40px', height: '40px', backgroundColor: '#3b82f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                  <User size={20} />
-                </div>
+                {selectedUserProfile?.avatar ? (
+                  <img src={selectedUserProfile.avatar} alt="avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: '40px', height: '40px', backgroundColor: '#3b82f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                    <User size={20} />
+                  </div>
+                )}
                 <div>
-                  <h3 style={{ margin: 0, fontWeight: 'bold', color: '#1f2937', fontSize: '16px' }}>Zalo User ({selectedUser})</h3>
+                  <h3 style={{ margin: 0, fontWeight: 'bold', color: '#1f2937', fontSize: '16px' }}>{selectedUserProfile?.name || 'Loading...'}</h3>
                   <div style={{ fontSize: '12px', color: '#10b981', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }}></span> Đang kết nối API
                   </div>

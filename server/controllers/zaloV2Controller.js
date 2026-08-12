@@ -17,7 +17,25 @@ const saveMessage = (msg) => {
   });
   fs.writeFileSync(SANDBOX_FILE_PATH, JSON.stringify(messages, null, 2));
 };
-
+// Helper to get user profile from Zalo API
+const getZaloProfile = async (uid) => {
+  try {
+    if (!fs.existsSync(TOKEN_FILE_PATH)) return null;
+    const tokens = JSON.parse(fs.readFileSync(TOKEN_FILE_PATH, 'utf8'));
+    const response = await axios.get(`https://openapi.zalo.me/v2.0/oa/getprofile?data={"user_id":"${uid}"}`, {
+      headers: { 'access_token': tokens.access_token }
+    });
+    if (response.data && response.data.data) {
+      return {
+        name: response.data.data.display_name,
+        avatar: response.data.data.avatar
+      };
+    }
+  } catch (err) {
+    console.error("Error fetching Zalo profile:", err.response?.data || err.message);
+  }
+  return null;
+};
 const zaloV2Controller = {
   // --- TEST 1: OAUTH & API CONNECTION ---
   login: (req, res) => {
@@ -113,16 +131,22 @@ const zaloV2Controller = {
     
     // Save to Sandbox if it's a message
     if (body.event_name === 'user_send_text' && body.sender?.id && body.message?.text) {
+      const profile = await getZaloProfile(body.sender.id);
       saveMessage({
         id: body.message.msg_id || Date.now().toString(),
         senderId: body.sender.id,
+        senderName: profile?.name,
+        senderAvatar: profile?.avatar,
         text: body.message.text,
         type: 'incoming'
       });
     } else if (body.event_name === 'oa_send_text' && body.recipient?.id && body.message?.text) {
+      const profile = await getZaloProfile(body.recipient.id);
       saveMessage({
         id: body.message.msg_id || Date.now().toString(),
         senderId: body.recipient.id, // Nhóm theo người nhận
+        senderName: profile?.name,
+        senderAvatar: profile?.avatar,
         text: body.message.text,
         type: 'outgoing'
       });
@@ -212,9 +236,12 @@ const zaloV2Controller = {
       );
       
       // Save to sandbox
+      const profile = await getZaloProfile(recipientId);
       saveMessage({
         id: Date.now().toString(),
         senderId: recipientId, // For grouping in UI
+        senderName: profile?.name,
+        senderAvatar: profile?.avatar,
         text: text,
         type: 'outgoing'
       });
