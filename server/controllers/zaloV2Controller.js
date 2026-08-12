@@ -11,9 +11,8 @@ const zaloV2Controller = {
       return res.status(403).send('Zalo V2 Module is DISABLED (Kill Switch ON).');
     }
     const appId = process.env.ZALO_APP_ID;
-    // Callback URL that we will set in Zalo Dashboard
-    const callbackUrl = encodeURIComponent(`https://${req.get('host')}/api/zalo-v2/auth/callback`);
-    // Redirect to Zalo consent page
+    // Hardcode URL để tránh lỗi Nginx proxy trả về host nội bộ (localhost:4000)
+    const callbackUrl = encodeURIComponent(`https://erp.fittour.vn/api/zalo-v2/auth/callback`);
     const authUrl = `https://oauth.zaloapp.com/v4/oa/permission?app_id=${appId}&redirect_uri=${callbackUrl}`;
     res.redirect(authUrl);
   },
