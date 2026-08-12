@@ -1,0 +1,11 @@
+  const getLeadStatusStyle = (status) => {
+    switch (status) {
+      case 'Mới': return { bg: '#e0f2fe', color: '#0369a1' };
+      case 'Đang liên hệ': return { bg: '#fef3c7', color: '#b45309' };
+      case 'Liên hệ lần 2': return { bg: '#ede9fe', color: '#6d28d9' };
+      case 'Chốt đơn': return { bg: '#dcfce7', color: '#15803d' };
+      case 'Thất bại': return { bg: '#fee2e2', color: '#b91c1c' };
+      case 'Không phản hồi': return { bg: '#f1f5f9', color: '#475569' };
+      default: return { bg: '#f1f5f9', color: '#475569' };
+    }
+  };

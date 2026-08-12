@@ -3,6 +3,20 @@ const fs = require('fs');
 const path = require('path');
 
 const TOKEN_FILE_PATH = path.join(__dirname, '../../zalo_tokens.json');
+const SANDBOX_FILE_PATH = path.join(__dirname, '../../zalo_sandbox_messages.json');
+
+// Helper to save messages
+const saveMessage = (msg) => {
+  let messages = [];
+  if (fs.existsSync(SANDBOX_FILE_PATH)) {
+    messages = JSON.parse(fs.readFileSync(SANDBOX_FILE_PATH, 'utf8'));
+  }
+  messages.push({
+    ...msg,
+    timestamp: new Date().toISOString()
+  });
+  fs.writeFileSync(SANDBOX_FILE_PATH, JSON.stringify(messages, null, 2));
+};
 
 const zaloV2Controller = {
   // --- TEST 1: OAUTH & API CONNECTION ---
@@ -97,6 +111,16 @@ const zaloV2Controller = {
     console.log('\n--- [ZALO V2 WEBHOOK] Nhận được Event ---');
     console.log(JSON.stringify(body, null, 2));
     
+    // Save to Sandbox if it's a message
+    if (body.event_name === 'user_send_text' && body.sender?.id && body.message?.text) {
+      saveMessage({
+        id: body.message.msg_id || Date.now().toString(),
+        senderId: body.sender.id,
+        text: body.message.text,
+        type: 'incoming'
+      });
+    }
+
     // Kiểm tra TEST MODE
     const testMode = process.env.ZALO_V2_TEST_MODE === 'ON';
     if (!testMode) {
@@ -139,6 +163,59 @@ const zaloV2Controller = {
       } catch (error) {
         console.error('❌ Lỗi Auto-Reply:', error.response?.data || error.message);
       }
+    }
+  },
+
+  // --- SANDBOX ---
+  getSandboxMessages: (req, res) => {
+    try {
+      if (!fs.existsSync(SANDBOX_FILE_PATH)) {
+        return res.json([]);
+      }
+      const messages = JSON.parse(fs.readFileSync(SANDBOX_FILE_PATH, 'utf8'));
+      res.json(messages);
+    } catch (error) {
+      res.status(500).json({ error: 'Lỗi đọc sandbox messages' });
+    }
+  },
+
+  replySandboxMessage: async (req, res) => {
+    const { recipientId, text } = req.body;
+    if (!recipientId || !text) {
+      return res.status(400).json({ error: 'Missing recipientId or text' });
+    }
+    
+    try {
+      if (!fs.existsSync(TOKEN_FILE_PATH)) {
+        return res.status(400).json({ error: 'Chưa có token. Vui lòng gọi GET /api/zalo-v2/auth/login trước.' });
+      }
+      const tokens = JSON.parse(fs.readFileSync(TOKEN_FILE_PATH, 'utf8'));
+      
+      await axios.post('https://openapi.zalo.me/v3.0/oa/message/cs', 
+        {
+          recipient: { user_id: recipientId },
+          message: { text: text }
+        },
+        {
+          headers: {
+            'access_token': tokens.access_token,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      // Save to sandbox
+      saveMessage({
+        id: Date.now().toString(),
+        senderId: recipientId, // For grouping in UI
+        text: text,
+        type: 'outgoing'
+      });
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('❌ Lỗi Reply Sandbox:', error.response?.data || error.message);
+      res.status(500).json({ error: 'Lỗi khi gửi tin', details: error.response?.data || error.message });
     }
   }
 };

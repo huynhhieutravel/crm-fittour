@@ -68,6 +68,7 @@ import TeamsTab from './tabs/TeamsTab';
 import ManualTab from './tabs/ManualTab';
 import MyProfileTab from './tabs/MyProfileTab';
 import TeamDirectoryTab from './tabs/TeamDirectoryTab';
+import ZaloSandboxTab from './tabs/ZaloSandboxTab';
 import AddLeadModal from './components/modals/AddLeadModal';
 import EditLeadModal from './components/modals/EditLeadModal';
 import NotificationBell from './components/common/NotificationBell';
@@ -187,7 +188,7 @@ function AppContent() {
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
   const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
-  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'marketing-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'dispatch-schedule', 'notification-center'];
+  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'zalo-sandbox', 'marketing-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'dispatch-schedule', 'notification-center'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -2559,6 +2560,12 @@ function AppContent() {
             Dashboard Thống kê
           </div>
           <div 
+            className={`submenu-item ${activeTab === 'zalo-sandbox' ? 'active' : ''}`} 
+            onClick={() => { navigate('/zalo-sandbox'); setHoveredMenu(null); }} 
+          >
+            Zalo Sandbox (Test)
+          </div>
+          <div 
             className={`submenu-item ${activeTab === 'staff-performance' ? 'active' : ''}`} 
             onClick={() => { navigate('/staff-performance'); setHoveredMenu(null); }} 
           >
@@ -3404,6 +3411,7 @@ function AppContent() {
 
             {activeTab === 'licenses' && <LicensesTab currentUser={user} addToast={addToast} />}
             {activeTab === 'bu-rules' && <BURulesTab currentUser={user} />}
+            {activeTab === 'zalo-sandbox' && <ZaloSandboxTab />}
 
             {activeTab === 'leads' && (
               <LeadsTab 

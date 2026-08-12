@@ -11,4 +11,8 @@ router.get('/test-connection', zaloV2Controller.testConnection);
 router.get('/webhook', zaloV2Controller.verifyWebhook);
 router.post('/webhook', zaloV2Controller.handleWebhook);
 
+// SANDBOX UI
+router.get('/sandbox/messages', zaloV2Controller.getSandboxMessages);
+router.post('/sandbox/reply', zaloV2Controller.replySandboxMessage);
+
 module.exports = router;
