@@ -2141,6 +2141,16 @@ function AppContent() {
                   <ChevronRight size={14} opacity={0.5} />
                 </div>
               )}
+
+              {checkView('leads') && (
+                <Link title="Zalo Sandbox (Test)" 
+                  to="/zalo-sandbox"
+                  className={`nav-item ${activeTab === 'zalo-sandbox' ? 'active' : ''}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <MessageCircle /> Zalo Sandbox (Test)
+                </Link>
+              )}
             </>
           )}
 
