@@ -1,6 +1,7 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const TOKEN_FILE_PATH = path.join(__dirname, '../../zalo_tokens.json');
 const SANDBOX_FILE_PATH = path.join(__dirname, '../../zalo_sandbox_messages.json');
@@ -20,28 +21,41 @@ const saveMessage = (msg) => {
   });
   fs.writeFileSync(SANDBOX_FILE_PATH, JSON.stringify(messages, null, 2));
 };
-// Helper to get user profile from Zalo API
-const MOCK_PROFILES = {
-  "8717005147968588601": { name: "Loki (Admin Test)", avatar: "https://ui-avatars.com/api/?name=Loki&background=random" }
-};
-
+// Helper to get user profile from Zalo API via Zalo Gateway VN
 const getZaloProfile = async (uid) => {
   try {
-    if (!fs.existsSync(TOKEN_FILE_PATH)) return MOCK_PROFILES[uid] || null;
+    if (!fs.existsSync(TOKEN_FILE_PATH)) return null;
     const tokens = JSON.parse(fs.readFileSync(TOKEN_FILE_PATH, 'utf8'));
-    const response = await axios.get(`https://openapi.zalo.me/v2.0/oa/getprofile?data={"user_id":"${uid}"}`, {
-      headers: { 'access_token': tokens.access_token }
-    });
-    if (response.data && response.data.data) {
-      return {
-        name: response.data.data.display_name,
-        avatar: response.data.data.avatar
-      };
-    }
-  } catch (err) {
-    console.error("Error fetching Zalo profile (likely IP blocked):", err.response?.data?.message || err.message);
+    
+    // Tạo HMAC Signature
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const sharedSecret = 'F!tT0urG@t3w4y2026VN';
+    const payload = timestamp + uid;
+    const signature = crypto.createHmac('sha256', sharedSecret).update(payload).digest('hex');
+
+    // Mặc định timeout 2 giây để không block luồng Webhook
+    const response = await axios.post('https://crm.simoncenter.vn/zalo-gateway/profile.php', 
+      { uid: uid },
+      {
+        headers: {
+          'X-Gateway-Timestamp': timestamp,
+          'X-Gateway-Signature': signature,
+          'X-Zalo-Access-Token': tokens.access_token,
+          'Content-Type': 'application/json'
+        },
+        timeout: 2000 // Timeout 2s
+      }
+    );
+    
+    return {
+      name: response.data.data?.display_name,
+      avatar: response.data.data?.avatar
+    };
+  } catch (error) {
+    console.error(`❌ Zalo Gateway Error cho UID ${uid}:`, error.message);
+    // Fallback về Zalo User
+    return null;
   }
-  return MOCK_PROFILES[uid] || null;
 };
 const zaloV2Controller = {
   // --- TEST 1: OAUTH & API CONNECTION ---
