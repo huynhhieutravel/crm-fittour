@@ -17,10 +17,15 @@ async function convertLeadToCustomer(client, leadId, userId) {
     // 2. Normalize data
     const normalizedName = lead.name ? lead.name.toUpperCase().trim() : '';
     
-    // 3. Check if customer already exists for this lead or phone
+    // 3. Check if customer already exists for this lead, phone, or social UID
     const existingRes = await client.query(
-        'SELECT id FROM customers WHERE lead_id = $1 OR (phone IS NOT NULL AND phone != \'\' AND phone = $2)',
-        [leadId, lead.phone]
+        `SELECT id FROM customers 
+         WHERE lead_id = $1 
+            OR (phone IS NOT NULL AND phone != '' AND phone = $2)
+            OR (zalo_uid IS NOT NULL AND zalo_uid != '' AND zalo_uid = $3)
+            OR (facebook_psid IS NOT NULL AND facebook_psid != '' AND facebook_psid = $4)
+         LIMIT 1`,
+        [leadId, lead.phone, lead.zalo_uid, lead.facebook_psid]
     );
 
     let customer;
@@ -33,8 +38,9 @@ async function convertLeadToCustomer(client, leadId, userId) {
                 gender = COALESCE(NULLIF($3, ''), gender), 
                 birth_date = COALESCE($4::date, birth_date), 
                 nationality = COALESCE(NULLIF($5, ''), nationality),
-                facebook_psid = COALESCE(NULLIF($6, ''), facebook_psid)
-             WHERE id = $7 RETURNING *`,
+                facebook_psid = COALESCE(NULLIF($6, ''), facebook_psid),
+                zalo_uid = COALESCE(NULLIF($7, ''), zalo_uid)
+             WHERE id = $8 RETURNING *`,
             [
                 normalizedName, 
                 lead.email, 
@@ -42,6 +48,7 @@ async function convertLeadToCustomer(client, leadId, userId) {
                 lead.birth_date, 
                 lead.nationality || 'Việt Nam', 
                 lead.facebook_psid || null,
+                lead.zalo_uid || null,
                 existingRes.rows[0].id
             ]
         );
@@ -53,9 +60,9 @@ async function convertLeadToCustomer(client, leadId, userId) {
             `INSERT INTO customers (
                 name, phone, email, gender, birth_date, lead_id, 
                 notes, preferred_contact, nationality, role, 
-                customer_segment, first_deal_date, assigned_to, facebook_psid
+                customer_segment, first_deal_date, assigned_to, facebook_psid, zalo_uid
             ) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`,
             [
                 normalizedName, 
                 lead.phone, 
@@ -70,7 +77,8 @@ async function convertLeadToCustomer(client, leadId, userId) {
                 'New Customer',
                 new Date(), // first_deal_date
                 lead.assigned_to, // assigned_to (Sales staff)
-                lead.facebook_psid || null
+                lead.facebook_psid || null,
+                lead.zalo_uid || null
             ]
         );
         customer = res.rows[0];

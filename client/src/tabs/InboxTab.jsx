@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import SearchableSelect from '../components/common/SearchableSelect';
 
-const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, initialPsid, clearInitialPsid, onGoBack, goBackText = "Quay lại Lead Marketing" }) => {
+const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handleConvertLead, setEditingLead, initialPsid, clearInitialPsid, onGoBack, goBackText = "Quay lại Lead Marketing" }) => {
   // API Data States
   const [conversations, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
@@ -28,6 +28,7 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
   const [loading, setLoading] = useState(true);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [converting, setConverting] = useState(false);
 
   // Templates
   const [templates, setTemplates] = useState([]);
@@ -276,7 +277,7 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
 
   const handleUpdateAssignment = async (field, value) => {
     if (!selectedConv || !selectedConv.lead_id) {
-      alert("Khách hàng này chưa có hồ sơ Lead. Hãy nhấn 'XEM HỒ SƠ LEAD' để tạo mới.");
+      alert("Khách hàng này chưa có hồ sơ Lead. Hãy nhấn 'XEM PROFILE' để tạo mới.");
       return;
     }
     try {
@@ -293,6 +294,8 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
         const u = users.find(x => x.id == value);
         newConv.assigned_to_name = u ? u.full_name || u.username : null;
         newConv.assigned_to_id = value || null;
+      } else if (field === 'tour_id') {
+        newConv.lead_tour_id = value || null;
       }
       setSelectedConv(newConv);
       setConversations(prev => prev.map(c => c.id === newConv.id ? newConv : c));
@@ -529,11 +532,6 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
                         </div>
                       </div>
 
-                      {/* Avatar */}
-                      <div className={`avatar ${isSelected ? "active" : ""}`}>
-                        {(conv.lead_name || "K").charAt(0).toUpperCase()}
-                      </div>
-
                       {/* Info */}
                       <div className="conv-info">
                         <div className="info-row">
@@ -602,20 +600,18 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
           {selectedConv ? (
             <>
               {/* Chat Header */}
-              <div className="chat-header">
-                <div className="chat-title-group">
-                  <button 
-                    className="mobile-back-to-list" 
-                    onClick={() => setSelectedConv(null)}
-                    style={{ background: 'none', border: 'none', padding: '0 8px 0 0', cursor: 'pointer', display: 'none', color: '#4f46e5', fontWeight: 'bold' }}
-                  >
-                    <ChevronLeft size={24} />
-                  </button>
-                  <div className="chat-avatar">
-                    {(selectedConv.lead_name || "K").charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h2 className="chat-name" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div className="chat-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', borderBottom: '1px solid #e2e8f0', paddingBottom: '15px', marginBottom: '15px' }}>
+                <div className="chat-title-row">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <button 
+                      className="mobile-back-to-list" 
+                      onClick={() => setSelectedConv(null)}
+                      style={{ background: 'none', border: 'none', padding: '0 8px 0 0', cursor: 'pointer', display: 'none', color: '#4f46e5', fontWeight: 'bold' }}
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+
+                    <h2 className="chat-name" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', margin: 0 }}>
                       {selectedConv.lead_name || "Khách vãng lai"}
                       {selectedConv.is_returning_customer && (
                           <span style={{ fontSize: '0.65rem', background: '#f3e8ff', color: '#9333ea', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, whiteSpace: 'nowrap' }} title="Khách VVIP đã từng booking.">
@@ -623,66 +619,109 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
                           </span>
                       )}
                     </h2>
-                    <div className="chat-source" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span className="dot"></span> Meta Messenger
-                      </div>
-                      <div className="chat-assignment-selectors" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        <div className="assignment-badge" style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.8rem' }}>
-                          <span style={{ color: '#64748b', marginRight: '4px', fontWeight: 600 }}>BU:</span>
-                          <select 
-                            value={selectedConv?.assigned_bu || ""} 
-                            onChange={(e) => handleUpdateAssignment('bu_group', e.target.value)}
-                            className="assignment-select"
-                            style={{ color: selectedConv?.assigned_bu ? '#0f172a' : '#ef4444', background: 'transparent', border: 'none', outline: 'none', fontWeight: 700, cursor: 'pointer' }}
-                          >
-                            <option value="">Chưa phân</option>
-                            {bus.map(b => <option key={b.id} value={b.id}>{b.label || b.id}</option>)}
-                          </select>
-                        </div>
-                        <div className="assignment-badge" style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.8rem' }}>
-                          <span style={{ color: '#64748b', marginRight: '4px', fontWeight: 600 }}>Sale:</span>
-                          <div className="inbox-assignee-select" style={{ minWidth: '130px', height: '22px', marginLeft: '5px' }}>
-                            <SearchableSelect
-                              options={getSaleOptions(selectedConv?.assigned_bu)}
-                              value={selectedConv?.assigned_to_id || ""}
-                              onChange={(val) => handleUpdateAssignment('assigned_to', val)}
-                              placeholder="Chưa phân"
-                              emptyText="Không tìm thấy sale"
-                              style={{ 
-                                color: selectedConv?.assigned_to_name ? '#0f172a' : '#ef4444',
-                                fontWeight: 700 
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="chat-action-buttons" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    {['admin', 'SALES_LEAD'].includes(currentUser?.role) && (
+                      <button onClick={handleDeleteSingle} className="inbox-danger-btn">
+                        <Trash2 size={15} /> XÓA
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        const leadLink = leads.find(
+                          (l) => l.id === selectedConv.lead_id,
+                        );
+                        if (leadLink) setEditingLead(leadLink);
+                        else
+                          alert(
+                            "Khách hàng này chưa được gán Lead ID nào. Vui lòng tạo lead mới.",
+                          );
+                      }}
+                      className="inbox-action-btn"
+                    >
+                      <User size={15} /> XEM PROFILE
+                    </button>
+                    {handleConvertLead && (
+                      <button
+                        disabled={converting}
+                        onClick={async () => {
+                           if (!selectedConv.lead_id) {
+                              alert("Khách hàng này chưa có hồ sơ Lead.");
+                              return;
+                           }
+                           if (
+                             await swalConfirm(
+                               `Bạn có chắc chắn muốn chuyển khách này sang Chốt Đơn & Tạo Khách Hàng?`,
+                             )
+                           ) {
+                              setConverting(true);
+                              await handleConvertLead(selectedConv.lead_id);
+                              setConverting(false);
+                           }
+                        }}
+                        className="btn-pro-save"
+                        style={{ background: '#10b981', opacity: converting ? 0.7 : 1, padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', border: 'none', color: 'white', cursor: converting ? 'not-allowed' : 'pointer' }}
+                      >
+                        <CheckSquare size={15} /> {converting ? 'ĐANG XỬ LÝ...' : 'CHỐT ĐƠN'}
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="chat-action-buttons" style={{ display: 'flex', gap: '10px' }}>
-                  {['admin', 'SALES_LEAD'].includes(currentUser?.role) && (
-                    <button onClick={handleDeleteSingle} className="inbox-danger-btn">
-                      <Trash2 size={15} /> XÓA
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      const leadLink = leads.find(
-                        (l) => l.id === selectedConv.lead_id,
-                      );
-                      if (leadLink) setEditingLead(leadLink);
-                      else
-                        alert(
-                          "Khách hàng này chưa được gán Lead ID nào. Vui lòng tạo lead mới.",
-                        );
-                    }}
-                    className="inbox-action-btn"
-                  >
-                    <User size={15} /> XEM HỒ SƠ LEAD
-                  </button>
+                {/* ROW 2: Source & Selectors */}
+                <div className="chat-source" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="dot"></span> Meta Messenger
+                  </div>
+                  <div className="chat-assignment-selectors" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div className="assignment-badge" style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.8rem' }}>
+                      <span style={{ color: '#64748b', marginRight: '4px', fontWeight: 600 }}>BU:</span>
+                      <select 
+                        value={selectedConv?.assigned_bu || ""} 
+                        onChange={(e) => handleUpdateAssignment('bu_group', e.target.value)}
+                        className="assignment-select"
+                        style={{ color: selectedConv?.assigned_bu ? '#0f172a' : '#ef4444', background: 'transparent', border: 'none', outline: 'none', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        <option value="">Chưa phân</option>
+                        {bus.map(b => <option key={b.id} value={b.id}>{b.label || b.id}</option>)}
+                      </select>
+                    </div>
+                    <div className="assignment-badge" style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.8rem' }}>
+                      <span style={{ color: '#64748b', marginRight: '4px', fontWeight: 600 }}>Sale:</span>
+                      <div className="inbox-assignee-select" style={{ minWidth: '130px', height: '22px', marginLeft: '5px' }}>
+                        <SearchableSelect
+                          options={getSaleOptions(selectedConv?.assigned_bu)}
+                          value={selectedConv?.assigned_to_id || ""}
+                          onChange={(val) => handleUpdateAssignment('assigned_to', val)}
+                          placeholder="Chưa phân"
+                          emptyText="Không tìm thấy sale"
+                          style={{ 
+                            color: selectedConv?.assigned_to_name ? '#0f172a' : '#ef4444',
+                            fontWeight: 700 
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="assignment-badge" style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.8rem' }}>
+                      <span style={{ color: '#64748b', marginRight: '4px', fontWeight: 600 }}>Tour:</span>
+                      <div className="inbox-assignee-select" style={{ minWidth: '150px', height: '22px', marginLeft: '5px' }}>
+                        <SearchableSelect
+                          options={tours}
+                          value={selectedConv?.lead_tour_id || ""}
+                          onChange={(val) => handleUpdateAssignment('tour_id', val)}
+                          placeholder="Chưa chọn Tour"
+                          emptyText="Không tìm thấy tour"
+                          shortLabel={true}
+                          style={{ 
+                            color: selectedConv?.lead_tour_id ? '#0f172a' : '#ef4444',
+                            fontWeight: 700 
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1363,7 +1402,19 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], setEditingLead, in
         }
 
         /* MOBILE RESPONSIVE OVERRIDES */
+        .chat-title-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+          width: 100%;
+          gap: 15px;
+        }
         @media screen and (max-width: 768px) {
+          .chat-title-row {
+            flex-direction: column;
+            align-items: flex-start;
+          }
           .inbox-wrapper {
              height: calc(100vh - 100px);
           }

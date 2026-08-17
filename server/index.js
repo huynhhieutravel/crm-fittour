@@ -328,13 +328,11 @@ server.listen(PORT, () => {
 
         // Start Dispatcher SLA Cron Engine (every min)
         const { startDispatcherSLAEngine } = require('./cron/dispatcherSLAEngine');
-        const { startAuthMetricsReporter } = require('./cron/authMetricsReporter');
         const { startReservationReleaseCron } = require('./cron/reservationReleaseEngine');
         startDispatcherSLAEngine();
         require('./cron/monthlyReviewsEmail');
         require('./cron/monthlyDashboardEmail');
         
-        startAuthMetricsReporter();
         startReservationReleaseCron();
         
         const startIdempotencyCleanup = require('./cron/idempotencyCleanup');
@@ -343,7 +341,7 @@ server.listen(PORT, () => {
         const { startWebhookOutboxEngine } = require('./cron/webhookOutboxEngine');
         startWebhookOutboxEngine();
         
-        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, SLA, Monthly Reviews, Monthly Dashboard, Auth Metrics, Reservation Release, Idempotency Cleanup, Webhook Outbox).');
+        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, SLA, Monthly Reviews, Monthly Dashboard, Reservation Release, Idempotency Cleanup, Webhook Outbox).');
 
         // Start Email Listeners for Event-Driven Architecture
         const { registerEmailListeners } = require('./listeners/emailListener');

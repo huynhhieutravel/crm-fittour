@@ -160,8 +160,9 @@ exports.createCustomer = async (req, res) => {
                 id_card, id_expiry, address, preferred_contact, role,
                 customer_segment, tour_interests, special_requests, internal_notes, 
                 lead_id, location_city, travel_season, first_deal_date, assigned_to,
-                destinations, experiences, travel_styles, created_at, past_trip_count, passport_url
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26) RETURNING *`,
+                destinations, experiences, travel_styles, created_at, past_trip_count, passport_url,
+                facebook_psid, zalo_uid
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28) RETURNING *`,
             [
                 normalizedName, body.phone || null, body.email || null, body.gender || null, 
                 body.birth_date || null, body.nationality || 'Việt Nam', 
@@ -177,22 +178,25 @@ exports.createCustomer = async (req, res) => {
                 body.travel_styles ? JSON.stringify(body.travel_styles) : '[]',
                 body.created_at || new Date(),
                 parseInt(body.past_trip_count) || 0,
-                body.passport_url || null
+                body.passport_url || null,
+                body.facebook_psid || null,
+                body.zalo_uid || null
             ]
         );
 
         const newCustomer = result.rows[0];
 
         // 2. Retroactive Lead Claiming
-        if (newCustomer.phone || newCustomer.facebook_psid) {
+        if (newCustomer.phone || newCustomer.facebook_psid || newCustomer.zalo_uid) {
             await db.query(`
                 UPDATE leads 
                 SET customer_id = $1 
                 WHERE customer_id IS NULL AND (
                     (phone = $2 AND $2 IS NOT NULL AND $2 != '') OR 
-                    (facebook_psid = $3 AND $3 IS NOT NULL AND $3 != '')
+                    (facebook_psid = $3 AND $3 IS NOT NULL AND $3 != '') OR
+                    (zalo_uid = $4 AND $4 IS NOT NULL AND $4 != '')
                 )
-            `, [newCustomer.id, newCustomer.phone, newCustomer.facebook_psid]);
+            `, [newCustomer.id, newCustomer.phone, newCustomer.facebook_psid, newCustomer.zalo_uid]);
         }
 
         // LOG ACTIVITY
@@ -303,7 +307,7 @@ exports.updateCustomer = async (req, res) => {
             'customer_segment', 'tour_interests', 'special_requests', 
             'internal_notes', 'location_city', 'travel_season', 
             'first_deal_date', 'assigned_to', 'destinations', 'experiences', 'travel_styles', 'created_at',
-            'past_trip_count', 'passport_url'
+            'past_trip_count', 'passport_url', 'facebook_psid', 'zalo_uid'
         ];
 
         Object.keys(updates).forEach(key => {
@@ -326,19 +330,21 @@ exports.updateCustomer = async (req, res) => {
             const updatedCustomer = result.rows[0];
 
             // 2.5 Retroactive Lead Claiming after Update
-            if (updates.phone !== undefined || updates.facebook_psid !== undefined) {
+            if (updates.phone !== undefined || updates.facebook_psid !== undefined || updates.zalo_uid !== undefined) {
                 const phoneToCheck = updates.phone !== undefined ? updates.phone : updatedCustomer.phone;
                 const psidToCheck = updates.facebook_psid !== undefined ? updates.facebook_psid : updatedCustomer.facebook_psid;
+                const zaloToCheck = updates.zalo_uid !== undefined ? updates.zalo_uid : updatedCustomer.zalo_uid;
                 
-                if (phoneToCheck || psidToCheck) {
+                if (phoneToCheck || psidToCheck || zaloToCheck) {
                     await client.query(`
                         UPDATE leads 
                         SET customer_id = $1 
                         WHERE customer_id IS NULL AND (
                             (phone = $2 AND $2 IS NOT NULL AND $2 != '') OR 
-                            (facebook_psid = $3 AND $3 IS NOT NULL AND $3 != '')
+                            (facebook_psid = $3 AND $3 IS NOT NULL AND $3 != '') OR
+                            (zalo_uid = $4 AND $4 IS NOT NULL AND $4 != '')
                         )
-                    `, [updatedCustomer.id, phoneToCheck, psidToCheck]);
+                    `, [updatedCustomer.id, phoneToCheck, psidToCheck, zaloToCheck]);
                 }
             }
 

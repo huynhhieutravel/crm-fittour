@@ -68,7 +68,7 @@ exports.getAllLeads = async (req, res) => {
 
 exports.createLead = async (req, res) => {
     try {
-        const { name, phone, email, source, tour_id, assigned_to, consultation_note, bu_group, gender, birth_date, classification, last_contacted_at, facebook_psid, meta_lead_id, fbclid } = req.body;
+        const { name, phone, email, source, tour_id, assigned_to, consultation_note, bu_group, gender, birth_date, classification, last_contacted_at, facebook_psid, meta_lead_id, fbclid, zalo_uid } = req.body;
         
         // Normalize
         const normalizedName = name ? name.toUpperCase().trim() : 'KHÁCH HÀNG MỚI';
@@ -76,12 +76,12 @@ exports.createLead = async (req, res) => {
         const finalEmail = (email && email.trim() !== '') ? email.trim() : null;
         const finalTourId = (tour_id === '' || !tour_id) ? null : tour_id;
         const finalAssignedTo = (assigned_to === '' || !assigned_to) ? null : assigned_to;
-        // Auto-link retroactively: Check if customer exists by phone or facebook_psid
+        // Auto-link retroactively: Check if customer exists by phone, facebook_psid or zalo_uid
         let customerIdStr = null;
-        if (finalPhone || facebook_psid) {
+        if (finalPhone || facebook_psid || zalo_uid) {
             const custRes = await db.query(
-                `SELECT id FROM customers WHERE (phone = $1 AND $1 IS NOT NULL) OR (facebook_psid = $2 AND $2 IS NOT NULL) LIMIT 1`, 
-                [finalPhone, facebook_psid]
+                `SELECT id FROM customers WHERE (phone = $1 AND $1 IS NOT NULL) OR (facebook_psid = $2 AND $2 IS NOT NULL) OR (zalo_uid = $3 AND $3 IS NOT NULL) LIMIT 1`, 
+                [finalPhone, facebook_psid, zalo_uid]
             );
             if (custRes.rows.length > 0) {
                 customerIdStr = custRes.rows[0].id;
@@ -91,13 +91,14 @@ exports.createLead = async (req, res) => {
         const finalStatus = req.body.status || 'Mới';
 
         const result = await db.query(
-            'INSERT INTO leads (name, phone, email, source, tour_id, assigned_to, status, consultation_note, bu_group, gender, birth_date, classification, last_contacted_at, facebook_psid, meta_lead_id, fbclid, customer_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *',
+            'INSERT INTO leads (name, phone, email, source, tour_id, assigned_to, status, consultation_note, bu_group, gender, birth_date, classification, last_contacted_at, facebook_psid, meta_lead_id, fbclid, customer_id, zalo_uid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *',
             [
                 normalizedName, finalPhone, finalEmail, source || 'Messenger', 
                 finalTourId, finalAssignedTo, finalStatus, 
                 consultation_note || null, bu_group || null, gender || null, 
                 birth_date || null, classification || 'Mới', last_contacted_at || new Date(),
-                facebook_psid || null, meta_lead_id || null, fbclid || null, customerIdStr
+                facebook_psid || null, meta_lead_id || null, fbclid || null, customerIdStr,
+                zalo_uid || null
             ]
         );
 
@@ -253,7 +254,7 @@ exports.updateLead = async (req, res) => {
             'name', 'phone', 'email', 'source', 'tour_id', 'status', 
             'assigned_to', 'consultation_note', 'bu_group', 'gender', 
             'birth_date', 'classification', 'last_contacted_at', 'won_at',
-            'facebook_psid', 'meta_lead_id', 'fbclid',
+            'facebook_psid', 'meta_lead_id', 'fbclid', 'zalo_uid',
             'dispatched_at', 'dispatched_by', 'dispatched_by_name', 'dispatcher_notes', 'market_collection'
         ];
 
@@ -293,15 +294,16 @@ exports.updateLead = async (req, res) => {
             const result = await client.query(updateQuery, queryValues);
             let updatedLead = result.rows[0];
 
-            // 2.5 Retroactive link if phone or facebook_psid was updated
-            if (updates.phone !== undefined || updates.facebook_psid !== undefined) {
+            // 2.5 Retroactive link if phone, facebook_psid or zalo_uid was updated
+            if (updates.phone !== undefined || updates.facebook_psid !== undefined || updates.zalo_uid !== undefined) {
                 const phoneToCheck = updates.phone !== undefined ? updates.phone : updatedLead.phone;
                 const psidToCheck = updates.facebook_psid !== undefined ? updates.facebook_psid : updatedLead.facebook_psid;
+                const zaloToCheck = updates.zalo_uid !== undefined ? updates.zalo_uid : updatedLead.zalo_uid;
                 
-                if (phoneToCheck || psidToCheck) {
+                if (phoneToCheck || psidToCheck || zaloToCheck) {
                     const custRes = await client.query(
-                        `SELECT id FROM customers WHERE (phone = $1 AND $1 IS NOT NULL AND $1 != '') OR (facebook_psid = $2 AND $2 IS NOT NULL AND $2 != '') LIMIT 1`, 
-                        [phoneToCheck, psidToCheck]
+                        `SELECT id FROM customers WHERE (phone = $1 AND $1 IS NOT NULL AND $1 != '') OR (facebook_psid = $2 AND $2 IS NOT NULL AND $2 != '') OR (zalo_uid = $3 AND $3 IS NOT NULL AND $3 != '') LIMIT 1`, 
+                        [phoneToCheck, psidToCheck, zaloToCheck]
                     );
                     if (custRes.rows.length > 0) {
                         await client.query(`UPDATE leads SET customer_id = $1 WHERE id = $2`, [custRes.rows[0].id, leadId]);
@@ -881,7 +883,7 @@ exports.unclaimLead = async (req, res) => {
 exports.getTodayDispatches = async (req, res) => {
     try {
         const { rows } = await db.pool.query(`
-            SELECT l.id, l.name, l.phone, l.facebook_psid, l.source, tt.name as tour_name, 
+            SELECT l.id, l.name, l.phone, l.facebook_psid, l.zalo_uid, l.source, tt.name as tour_name, 
                    l.market_collection, l.bu_group, l.assigned_to, l.dispatched_at, 
                    l.dispatched_by_name, l.dispatcher_notes, l.created_at, l.status,
                    u.full_name as assigned_to_name
@@ -904,15 +906,15 @@ exports.getCustomerJourney = async (req, res) => {
         const leadId = req.params.id;
         
         // 1. Get current lead
-        const leadRes = await db.query('SELECT id, phone, email, facebook_psid FROM leads WHERE id = $1', [leadId]);
+        const leadRes = await db.query('SELECT id, phone, email, facebook_psid, zalo_uid FROM leads WHERE id = $1', [leadId]);
         if (leadRes.rows.length === 0) {
             return res.status(404).json({ error: 'Lead not found' });
         }
         
         const currentLead = leadRes.rows[0];
-        const { phone, email, facebook_psid } = currentLead;
+        const { phone, email, facebook_psid, zalo_uid } = currentLead;
         
-        if (!phone && !email && !facebook_psid) {
+        if (!phone && !email && !facebook_psid && !zalo_uid) {
             return res.json([]); // No identifiable info
         }
         
@@ -925,9 +927,10 @@ exports.getCustomerJourney = async (req, res) => {
             WHERE 
               (l.phone = $1 AND $1 IS NOT NULL AND $1 != '') OR 
               (l.email = $2 AND $2 IS NOT NULL AND $2 != '') OR 
-              (l.facebook_psid = $3 AND $3 IS NOT NULL AND $3 != '')
+              (l.facebook_psid = $3 AND $3 IS NOT NULL AND $3 != '') OR
+              (l.zalo_uid = $4 AND $4 IS NOT NULL AND $4 != '')
             ORDER BY l.created_at DESC
-        `, [phone, email, facebook_psid]);
+        `, [phone, email, facebook_psid, zalo_uid]);
         
         const relatedLeads = pastLeadsRes.rows.filter(l => l.id != leadId); // Exclude current lead
         

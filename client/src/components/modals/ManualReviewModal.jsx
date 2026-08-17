@@ -87,7 +87,6 @@ export default function ManualReviewModal({ isOpen, onClose, onSuccess, initialD
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.reviewer_name) return toast.error('Vui lòng nhập tên người đánh giá!');
-    if (!formData.comment) return toast.error('Vui lòng nhập nội dung đánh giá!');
     
     setLoading(true);
     try {
@@ -156,8 +155,8 @@ export default function ManualReviewModal({ isOpen, onClose, onSuccess, initialD
             </div>
 
             <div className="cr-filter-item cr-col-span-2">
-              <label className="cr-filter-label">Nội dung đánh giá *</label>
-              <textarea name="comment" value={formData.comment} onChange={handleChange} required rows="3" className="cr-input" placeholder="Khách nói gì về tour..." />
+              <label className="cr-filter-label">Nội dung đánh giá</label>
+              <textarea name="comment" value={formData.comment} onChange={handleChange} rows="3" className="cr-input" placeholder="Khách nói gì về tour... (Không bắt buộc)" />
             </div>
 
             <div className="cr-filter-item cr-col-span-2">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import axios from 'axios';
 import { swalConfirm } from './utils/swalHelpers';
 import { 
@@ -12,68 +12,69 @@ import {
 } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
-import SettingsTab from './tabs/SettingsTab';
-import MarketSettingsTab from './tabs/MarketSettingsTab';
-import NotificationDashboardTab from './tabs/NotificationDashboardTab';
-import EmailRulesTab from './tabs/EmailRulesTab';
-import MediaSettingsTab from './tabs/MediaSettingsTab';
-import AuditLogTab from './tabs/AuditLogTab';
-import BookingsTab from './tabs/BookingsTab';
-import CostingsTab from './tabs/CostingsTab';
-import CustomersTab from './tabs/CustomersTab';
-import InboxTab from './tabs/InboxTab';
-import ToursTab from './tabs/ToursTab';
-import DeparturesTab from './tabs/DeparturesTab';
-import RemindersTab from './tabs/RemindersTab';
-import HotelsTab from './tabs/HotelsTab';
-import RestaurantsTab from './tabs/RestaurantsTab';
-import TransportsTab from './tabs/TransportsTab';
-import VisasTab from './tabs/VisasTab';
-import VisaTemplatesTab from './tabs/VisaTemplatesTab';
-import TicketsTab from './tabs/TicketsTab';
-import AirlinesTab from './tabs/AirlinesTab';
-import LandtoursTab from './tabs/LandtoursTab';
-import InternalDocsTab from './tabs/InternalDocsTab';
-import LicensesTab from './tabs/LicensesTab';
-import BURulesTab from './tabs/BURulesTab';
-import InsurancesTab from './tabs/InsurancesTab';
-import VisaProvidersTab from './tabs/VisaProvidersTab';
-import OpToursTab from './tabs/OpToursTab';
-import TravelSupportTab from './tabs/TravelSupportTab';
+const SettingsTab = lazy(() => import('./tabs/SettingsTab'));
+const MarketSettingsTab = lazy(() => import('./tabs/MarketSettingsTab'));
+const NotificationDashboardTab = lazy(() => import('./tabs/NotificationDashboardTab'));
+const EmailRulesTab = lazy(() => import('./tabs/EmailRulesTab'));
+const MediaSettingsTab = lazy(() => import('./tabs/MediaSettingsTab'));
+const AuditLogTab = lazy(() => import('./tabs/AuditLogTab'));
+const BookingsTab = lazy(() => import('./tabs/BookingsTab'));
+const CostingsTab = lazy(() => import('./tabs/CostingsTab'));
+const CustomersTab = lazy(() => import('./tabs/CustomersTab'));
+const InboxTab = lazy(() => import('./tabs/InboxTab'));
+const ToursTab = lazy(() => import('./tabs/ToursTab'));
+const DeparturesTab = lazy(() => import('./tabs/DeparturesTab'));
+const RemindersTab = lazy(() => import('./tabs/RemindersTab'));
+const HotelsTab = lazy(() => import('./tabs/HotelsTab'));
+const RestaurantsTab = lazy(() => import('./tabs/RestaurantsTab'));
+const TransportsTab = lazy(() => import('./tabs/TransportsTab'));
+const VisasTab = lazy(() => import('./tabs/VisasTab'));
+const VisaTemplatesTab = lazy(() => import('./tabs/VisaTemplatesTab'));
+const TicketsTab = lazy(() => import('./tabs/TicketsTab'));
+const AirlinesTab = lazy(() => import('./tabs/AirlinesTab'));
+const LandtoursTab = lazy(() => import('./tabs/LandtoursTab'));
+const InternalDocsTab = lazy(() => import('./tabs/InternalDocsTab'));
+const LicensesTab = lazy(() => import('./tabs/LicensesTab'));
+const BURulesTab = lazy(() => import('./tabs/BURulesTab'));
+const InsurancesTab = lazy(() => import('./tabs/InsurancesTab'));
+const VisaProvidersTab = lazy(() => import('./tabs/VisaProvidersTab'));
+const OpToursTab = lazy(() => import('./tabs/OpToursTab'));
+const TravelSupportTab = lazy(() => import('./tabs/TravelSupportTab'));
 
-import DispatchScheduleTab from './tabs/DispatchScheduleTab';
-import MessageTemplatesTab from './tabs/MessageTemplatesTab';
+const DispatchScheduleTab = lazy(() => import('./tabs/DispatchScheduleTab'));
+const MessageTemplatesTab = lazy(() => import('./tabs/MessageTemplatesTab'));
+const ZaloChatDrawer = lazy(() => import('./components/drawers/ZaloChatDrawer'));
 import usePushNotifications from './hooks/usePushNotifications';
-import LeaveRequestsTab from './tabs/LeaveRequestsTab';
-import RoomBookingTab from './tabs/RoomBookingTab';
-import PaymentVouchersTab from './tabs/PaymentVouchersTab';
+const LeaveRequestsTab = lazy(() => import('./tabs/LeaveRequestsTab'));
+const RoomBookingTab = lazy(() => import('./tabs/RoomBookingTab'));
+const PaymentVouchersTab = lazy(() => import('./tabs/PaymentVouchersTab'));
 // ═══ Tour Đoàn Tab Imports ═══
-import GroupProjectsTab from './tabs/GroupProjectsTab';
-import MiceLeadsTab from './tabs/MiceLeadsTab';
-import GroupLeadersTab from './tabs/GroupLeadersTab';
-import B2BCompaniesTab from './tabs/B2BCompaniesTab';
-import DashboardTab from './tabs/DashboardTab';
-import WorkspaceTab from './tabs/workspace/WorkspaceTab';
-import ManagementDashboardTab from './tabs/ManagementDashboardTab';
-import CEODepartureDashboardTab from './tabs/CEODepartureDashboardTab';
-import GroupDashboardTab from './tabs/GroupDashboardTab';
-import LeadsTab from './tabs/LeadsTab';
-import LeadsDashboardTab from './tabs/LeadsDashboardTab';
-import StaffPerformanceTab from './tabs/StaffPerformanceTab';
-import GuidesTab from './tabs/GuidesTab';
-import MarketingAdsTab from './tabs/MarketingAdsTab';
-import UsersTab from './tabs/UsersTab';
+const GroupProjectsTab = lazy(() => import('./tabs/GroupProjectsTab'));
+const MiceLeadsTab = lazy(() => import('./tabs/MiceLeadsTab'));
+const GroupLeadersTab = lazy(() => import('./tabs/GroupLeadersTab'));
+const B2BCompaniesTab = lazy(() => import('./tabs/B2BCompaniesTab'));
+const DashboardTab = lazy(() => import('./tabs/DashboardTab'));
+const WorkspaceTab = lazy(() => import('./tabs/workspace/WorkspaceTab'));
+const ManagementDashboardTab = lazy(() => import('./tabs/ManagementDashboardTab'));
+const CEODepartureDashboardTab = lazy(() => import('./tabs/CEODepartureDashboardTab'));
+const GroupDashboardTab = lazy(() => import('./tabs/GroupDashboardTab'));
+const LeadsTab = lazy(() => import('./tabs/LeadsTab'));
+const LeadsDashboardTab = lazy(() => import('./tabs/LeadsDashboardTab'));
+const StaffPerformanceTab = lazy(() => import('./tabs/StaffPerformanceTab'));
+const GuidesTab = lazy(() => import('./tabs/GuidesTab'));
+const MarketingAdsTab = lazy(() => import('./tabs/MarketingAdsTab'));
+const UsersTab = lazy(() => import('./tabs/UsersTab'));
 import StaffCalendarView from './components/StaffCalendarView';
-import TeamsTab from './tabs/TeamsTab';
-import ManualTab from './tabs/ManualTab';
-import MyProfileTab from './tabs/MyProfileTab';
-import TeamDirectoryTab from './tabs/TeamDirectoryTab';
-import ZaloSandboxTab from './tabs/ZaloSandboxTab';
+const TeamsTab = lazy(() => import('./tabs/TeamsTab'));
+const ManualTab = lazy(() => import('./tabs/ManualTab'));
+const MyProfileTab = lazy(() => import('./tabs/MyProfileTab'));
+const TeamDirectoryTab = lazy(() => import('./tabs/TeamDirectoryTab'));
+const ZaloSandboxTab = lazy(() => import('./tabs/ZaloSandboxTab'));
 import AddLeadModal from './components/modals/AddLeadModal';
 import EditLeadModal from './components/modals/EditLeadModal';
 import NotificationBell from './components/common/NotificationBell';
 import CommandPalette from './components/CommandPalette';
-import EmailGroupsTab from './tabs/EmailGroupsTab';
+const EmailGroupsTab = lazy(() => import('./tabs/EmailGroupsTab'));
 import LeaveRequestModal from './components/modals/LeaveRequestModal';
 import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
 import { AddBookingModal } from './components/modals/BookingModals';
@@ -87,7 +88,7 @@ import AgencySharePage from './pages/AgencySharePage';
 import ServiceContractViewer from './pages/ServiceContractViewer';
 import DocumentsPage from './pages/DocumentsPage';
 import RagDocsManager from './components/Knowledge/RagDocsManager';
-import GlobalChatTab from './tabs/GlobalChatTab';
+const GlobalChatTab = lazy(() => import('./tabs/GlobalChatTab'));
 import BrandGuidelinePage from './pages/BrandGuidelinePage';
 import BrandLogoPage from './pages/BrandLogoPage';
 import BrandColorPage from './pages/BrandColorPage';
@@ -156,13 +157,13 @@ import {
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import DataDeletion from './pages/DataDeletion';
-import OrgChartTab from './tabs/OrgChartTab';
-import CskhBoardTab from './tabs/CskhBoardTab';
-import CskhTodoTab from './tabs/CskhTodoTab';
-import CskhSearchTab from './tabs/CskhSearchTab';
-import CskhRulesTab from './tabs/CskhRulesTab';
-import CustomerReviewsTab from './tabs/CustomerReviewsTab';
-import WorkflowTab from './tabs/WorkflowTab';
+const OrgChartTab = lazy(() => import('./tabs/OrgChartTab'));
+const CskhBoardTab = lazy(() => import('./tabs/CskhBoardTab'));
+const CskhTodoTab = lazy(() => import('./tabs/CskhTodoTab'));
+const CskhSearchTab = lazy(() => import('./tabs/CskhSearchTab'));
+const CskhRulesTab = lazy(() => import('./tabs/CskhRulesTab'));
+const CustomerReviewsTab = lazy(() => import('./tabs/CustomerReviewsTab'));
+const WorkflowTab = lazy(() => import('./tabs/WorkflowTab'));
 import PassportBulkScanner from './components/tools/PassportBulkScanner';
 
 const addToastGlobal = (message, setToasts, type = 'success') => {
@@ -239,15 +240,25 @@ function AppContent() {
       setIsInboxDrawerOpen(true);
   };
 
+  // Global Zalo Drawer State
+  const [isZaloDrawerOpen, setIsZaloDrawerOpen] = useState(false);
+  const [drawerZaloUid, setDrawerZaloUid] = useState(null);
+
+  const handleOpenZaloDrawer = (zaloUid) => {
+      setDrawerZaloUid(zaloUid);
+      setIsZaloDrawerOpen(true);
+  };
+
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isInboxDrawerOpen) {
-        setIsInboxDrawerOpen(false);
+      if (e.key === 'Escape') {
+        if (isInboxDrawerOpen) setIsInboxDrawerOpen(false);
+        if (isZaloDrawerOpen) setIsZaloDrawerOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isInboxDrawerOpen]);
+  }, [isInboxDrawerOpen, isZaloDrawerOpen]);
 
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
@@ -3385,7 +3396,7 @@ function AppContent() {
             loading={loading}
           />
         ) : (
-          <>
+          <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%', padding: '5rem' }}><div style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #10b981', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div><style>{'@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }'}</style></div>}>
             {activeTab === 'workspace' && (
               <WorkspaceTab 
                 currentUser={user}
@@ -3400,6 +3411,7 @@ function AppContent() {
                 checkPerm={checkPerm}
                 setShowLeaveModal={setShowLeaveModal}
                 navigateToInbox={handleOpenInboxDrawer}
+                openZaloDrawer={handleOpenZaloDrawer}
                 fetchLeads={fetchLeads}
                 handleConvertLead={(leadId) => setLeadToConvert(leads.find(l => l.id === leadId))}
               />
@@ -3421,7 +3433,18 @@ function AppContent() {
 
             {activeTab === 'licenses' && <LicensesTab currentUser={user} addToast={addToast} />}
             {activeTab === 'bu-rules' && <BURulesTab currentUser={user} />}
-            {activeTab === 'zalo-sandbox' && <ZaloSandboxTab />}
+            {activeTab === 'zalo-sandbox' && (
+              <ZaloSandboxTab 
+                setEditingLead={setEditingLead}
+                handleConvertLead={handleConvertLead}
+                leads={leads}
+                users={users}
+                tours={tourTemplates}
+                currentUser={user}
+                bus={bus}
+                fetchLeads={fetchLeads}
+              />
+            )}
 
             {activeTab === 'leads' && (
               <LeadsTab 
@@ -3446,6 +3469,7 @@ function AppContent() {
                 fetchLeads={fetchLeads}
                 handleConvertLead={(leadId) => setLeadToConvert(leads.find(l => l.id === leadId))}
                 navigateToInbox={handleOpenInboxDrawer}
+                openZaloDrawer={handleOpenZaloDrawer}
               />
             )}
             {activeTab === 'leads-dashboard' && (
@@ -3464,8 +3488,10 @@ function AppContent() {
         {activeTab === 'inbox' && (
           <InboxTab 
             setEditingLead={setEditingLead}
+            handleConvertLead={handleConvertLead}
             leads={leads}
             users={users}
+            tours={tourTemplates}
             currentUser={user}
             bus={bus}
             initialPsid={inboxPsid}
@@ -3518,6 +3544,8 @@ function AppContent() {
             bus={bus}
             setEditingLead={setEditingLead}
             navigateToInbox={handleOpenInboxDrawer} 
+            openZaloDrawer={handleOpenZaloDrawer}
+            fetchLeads={fetchLeads}
             handleConvertLead={(leadId) => {
               setLeadToConvert(leads.find(l => l.id === leadId));
             }}
@@ -3787,7 +3815,7 @@ function AppContent() {
           <PassportBulkScanner />
         )}
 
-      </>
+      </Suspense>
     )}
   </main>
 
@@ -4296,17 +4324,37 @@ function AppContent() {
     {isInboxDrawerOpen && (
         <div className="inbox-drawer-overlay">
             <div className="inbox-drawer-content">
-                <InboxTab 
-                    initialPsid={drawerInboxPsid} 
-                    clearInitialPsid={() => setDrawerInboxPsid(null)}
-                    onGoBack={() => setIsInboxDrawerOpen(false)}
-                    leads={leads}
-                    users={users}
-                    currentUser={user}
-                    bus={bus}
-                    setEditingLead={setEditingLead}
-                    goBackText="Đóng Inbox"
-                />
+                <Suspense fallback={<div className="flex items-center justify-center h-full p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div></div>}>
+                    <InboxTab 
+                        initialPsid={drawerInboxPsid} 
+                        clearInitialPsid={() => setDrawerInboxPsid(null)}
+                        onGoBack={() => setIsInboxDrawerOpen(false)}
+                        leads={leads}
+                        users={users}
+                        tours={tourTemplates}
+                        handleConvertLead={handleConvertLead}
+                        currentUser={user}
+                        bus={bus}
+                        setEditingLead={setEditingLead}
+                        goBackText="Đóng Inbox"
+                    />
+                </Suspense>
+            </div>
+        </div>
+    )}
+
+    {/* ZALO DRAWER OVERLAY (GLOBAL) */}
+    {isZaloDrawerOpen && (
+        <div className="inbox-drawer-overlay">
+            <div className="inbox-drawer-content">
+                <Suspense fallback={<div className="flex items-center justify-center h-full p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div></div>}>
+                    <ZaloChatDrawer 
+                        initialZaloUid={drawerZaloUid} 
+                        onClose={() => setIsZaloDrawerOpen(false)}
+                        leads={leads}
+                        currentUser={user}
+                    />
+                </Suspense>
             </div>
         </div>
     )}

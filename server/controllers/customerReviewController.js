@@ -96,8 +96,8 @@ exports.createReview = async (req, res) => {
     
     // Check duplicates (soft warning, but we still insert)
     const duplicateCheck = await db.query(
-      'SELECT id FROM customer_reviews WHERE reviewer_name = $1 AND comment = $2 AND review_date = $3 AND is_deleted = false LIMIT 1',
-      [reviewer_name, comment, review_date]
+      'SELECT id FROM customer_reviews WHERE reviewer_name = $1 AND COALESCE(comment, \'\') = COALESCE($2, \'\') AND review_date = $3 AND is_deleted = false LIMIT 1',
+      [reviewer_name, comment || '', review_date]
     );
     const isDuplicate = duplicateCheck.rows.length > 0;
 
@@ -111,7 +111,7 @@ exports.createReview = async (req, res) => {
       (reviewer_name, rating, comment, review_date, source, guide_name, bu_id, proof_url, photo_count, created_by, approval_status, approved_by, approved_at)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'approved', $10, NOW())
       RETURNING *
-    `, [reviewer_name, rating, comment, review_date, source || 'other', guide_name, bu_id || null, proof_url, photo_count || 0, created_by]);
+    `, [reviewer_name, rating, comment || null, review_date, source || 'other', guide_name, bu_id || null, proof_url, photo_count || 0, created_by]);
 
     // Audit log
     await logActivity({
@@ -317,7 +317,7 @@ exports.updateReview = async (req, res) => {
       UPDATE customer_reviews 
       SET reviewer_name = COALESCE($1, reviewer_name),
           rating = COALESCE($2, rating),
-          comment = COALESCE($3, comment),
+          comment = CASE WHEN $11 THEN $3 ELSE comment END,
           review_date = COALESCE($4, review_date),
           source = COALESCE($5, source),
           guide_name = COALESCE($6, guide_name),
@@ -326,7 +326,7 @@ exports.updateReview = async (req, res) => {
           photo_count = COALESCE($9, photo_count)
       WHERE id = $10
       RETURNING *
-    `, [reviewer_name, rating, comment, review_date, source, guide_name, bu_id, proof_url, photo_count != null ? photo_count : null, id]);
+    `, [reviewer_name, rating, comment || null, review_date, source, guide_name, bu_id, proof_url, photo_count != null ? photo_count : null, id, comment !== undefined]);
 
     // Audit log
     await logActivity({

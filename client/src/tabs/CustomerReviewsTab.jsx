@@ -671,7 +671,9 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
                 <td>
                   <div className="cr-reviewer-name">{review.reviewer_name}</div>
                   <div className="cr-rating-stars">{renderStars(review.rating)}</div>
-                  <div className="cr-comment" title={review.comment} style={{ fontSize: '13px', lineHeight: '1.4', marginTop: '4px' }}>{review.comment}</div>
+                  <div className="cr-comment" title={review.comment} style={{ fontSize: '13px', lineHeight: '1.4', marginTop: '4px' }}>
+                    {review.comment && review.comment.trim() !== '.' ? review.comment : <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Không có nội dung nhận xét</span>}
+                  </div>
                   <div className="cr-date" style={{ marginTop: '6px' }}>Ngày đánh giá: {review.review_date_str ? format(new Date(review.review_date_str), 'dd/MM/yyyy') : (review.review_date ? format(new Date(review.review_date), 'dd/MM/yyyy') : 'N/A')}</div>
                 </td>
                 <td style={{ verticalAlign: 'top', paddingTop: '16px' }}>

@@ -14,5 +14,6 @@ router.post('/webhook', zaloV2Controller.handleWebhook);
 // SANDBOX UI
 router.get('/sandbox/messages', zaloV2Controller.getSandboxMessages);
 router.post('/sandbox/reply', zaloV2Controller.replySandboxMessage);
+router.delete('/sandbox/messages/:uid', zaloV2Controller.deleteSandboxMessages);
 
 module.exports = router;

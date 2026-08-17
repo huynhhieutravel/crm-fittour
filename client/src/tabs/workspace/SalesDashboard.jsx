@@ -18,6 +18,7 @@ import {
   CalendarHeart,
   Plus,
   MessageSquare,
+  MessageCircle,
   X,
   UserCheck,
   Menu
@@ -65,6 +66,7 @@ const SalesDashboard = ({
   setShowLeaveModal,
   fetchLeads,
   navigateToInbox,
+  openZaloDrawer,
   handleConvertLead
 }) => {
   const getInitialTab = () => {
@@ -443,6 +445,14 @@ const SalesDashboard = ({
                               onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (typeof navigateToInbox === 'function') navigateToInbox(lead.facebook_psid || lead.meta_lead_id || lead.phone); }}
                             >
                               <MessageSquare size={10} /> Chat
+                            </button>
+                          )}
+                          {(lead.zalo_uid || (lead.source && lead.source.toLowerCase().includes('zalo'))) && (
+                            <button
+                              style={{ fontSize: '0.65rem', background: '#eff6ff', color: '#0068ff', border: '1px solid #bfdbfe', borderRadius: '4px', padding: '2px 6px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', transition: 'all 0.2s' }}
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (typeof openZaloDrawer === 'function') openZaloDrawer(lead.zalo_uid); }}
+                            >
+                              <MessageCircle size={10} /> Zalo
                             </button>
                           )}
                         </div>

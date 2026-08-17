@@ -8,7 +8,7 @@ import SearchableSelect from '../components/common/SearchableSelect';
 import BUStatsTab from '../components/dispatcher/BUStatsTab';
 import './GlobalChatTab.css';
 
-const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditingLead, navigateToInbox, handleConvertLead }) => {
+const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditingLead, navigateToInbox, openZaloDrawer, handleConvertLead, fetchLeads }) => {
     const navigate = useNavigate();
     const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
     const [activeMainTab, setActiveMainTab] = useState('chat');
@@ -85,8 +85,9 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
             await axios.put(`/api/leads/${leadId}`, { bu_group: newBU }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            toast.success('Đã cập nhật BU thành công');
+            toast.success('Đã chuyển BU thành công');
             setNotifications(prev => prev.map(n => n.reference_id === leadId ? { ...n, bu_group: newBU } : n));
+            if (typeof fetchLeads === 'function') fetchLeads();
         } catch (error) {
             toast.error('Lỗi cập nhật BU');
         }
@@ -100,6 +101,7 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
             });
             toast.success('Đã cập nhật sản phẩm thành công');
             setNotifications(prev => prev.map(n => n.reference_id === leadId ? { ...n, tour_id: newTourId } : n));
+            if (typeof fetchLeads === 'function') fetchLeads();
         } catch (error) {
             toast.error('Lỗi cập nhật sản phẩm');
         }
@@ -113,6 +115,7 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
             });
             toast.success('Đã phân công thành công');
             setNotifications(prev => prev.map(n => n.reference_id === leadId ? { ...n, assigned_to: newAssigneeId, assigned_to_name: newAssigneeName } : n));
+            if (typeof fetchLeads === 'function') fetchLeads();
         } catch (error) {
             toast.error('Lỗi phân công nhân viên');
         }
@@ -395,31 +398,41 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                                     
                                     {notif.type === 'NEW_LEAD' && (
                                         <div className="chat-actions-wrapper">
-                                            <button
-                                                onClick={() => {
-                                                    if (notif.source_id && navigateToInbox) {
-                                                        navigateToInbox(notif.source_id);
-                                                    } else {
-                                                        navigate(`/leads/${notif.reference_id}`);
-                                                    }
-                                                }}
-                                                style={{
-                                                    padding: '4px 10px',
-                                                    background: '#f1f5f9',
-                                                    color: '#334155',
-                                                    border: '1px solid #e2e8f0',
-                                                    borderRadius: '6px',
-                                                    cursor: 'pointer',
-                                                    fontWeight: '500',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    gap: '4px',
-                                                    fontSize: '12px'
-                                                }}
-                                            >
-                                                <MessageCircle size={14} /> Xem Inbox
-                                            </button>
+                                            {(() => {
+                                                const currentLead = leads.find(l => l.id === notif.reference_id);
+                                                const targetSourceId = notif.source_id || (currentLead ? (currentLead.facebook_psid || currentLead.psid || currentLead.zalo_uid) : null);
+                                                
+                                                if (!targetSourceId) return null;
+                                                
+                                                return (
+                                                    <button
+                                                        onClick={() => {
+                                                            const isZalo = currentLead?.source === 'Zalo' || currentLead?.zalo_uid || notif?.source === 'Zalo';
+                                                            if (isZalo && openZaloDrawer) {
+                                                                openZaloDrawer(targetSourceId);
+                                                            } else if (navigateToInbox) {
+                                                                navigateToInbox(targetSourceId);
+                                                            }
+                                                        }}
+                                                        style={{
+                                                            padding: '4px 10px',
+                                                            background: '#f1f5f9',
+                                                            color: '#334155',
+                                                            border: '1px solid #e2e8f0',
+                                                            borderRadius: '6px',
+                                                            cursor: 'pointer',
+                                                            fontWeight: '500',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '4px',
+                                                            fontSize: '12px'
+                                                        }}
+                                                    >
+                                                        <MessageCircle size={14} /> Xem Inbox
+                                                    </button>
+                                                );
+                                            })()}
                                             
                                             {(() => {
                                                 const currentLead = leads.find(l => l.id === notif.reference_id);

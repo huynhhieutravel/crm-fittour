@@ -19,6 +19,7 @@ const WorkspaceTab = ({
   setShowLeaveModal,
   fetchLeads,
   navigateToInbox,
+  openZaloDrawer,
   handleConvertLead
 }) => {
   const [reminders, setReminders] = useState([]);
@@ -45,18 +46,17 @@ const WorkspaceTab = ({
       await axios.put(`/api/reminders/${id}/done`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      fetchReminders();
+      setReminders(prev => prev.filter(r => r.id !== id));
     } catch (err) {
-      console.error(err);
+      console.error('Lỗi khi đánh dấu hoàn thành:', err);
     }
   };
 
   const getReminderLabel = (type) => {
-    switch(type) {
-      case 'PREPARE_DOCS': return 'Nhắc chuẩn bị giấy tờ/Visa';
-      case 'PAYMENT': return 'Nhắc thanh toán & Hành lý';
-      case 'ITINERARY': return 'Gửi Lịch trình chi tiết';
-      case 'FEEDBACK': return 'Xin Feedback chuyến đi';
+    switch (type) {
+      case 'PAYMENT_DUE': return 'Hạn thanh toán cọc/tour';
+      case 'VISA_DEADLINE': return 'Hạn nộp hồ sơ Visa';
+      case 'BRIEFING': return 'Họp đoàn trước khởi hành';
       case 'REBOOK': return 'Chăm sóc / Gợi ý Upsell';
       default: return 'Nhắc nhở khác';
     }
@@ -89,6 +89,7 @@ const WorkspaceTab = ({
         setShowLeaveModal={setShowLeaveModal}
         fetchLeads={fetchLeads}
         navigateToInbox={navigateToInbox}
+        openZaloDrawer={openZaloDrawer}
         handleConvertLead={handleConvertLead}
       />
     );

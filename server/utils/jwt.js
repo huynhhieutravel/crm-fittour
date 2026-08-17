@@ -4,7 +4,6 @@ const crypto = require('crypto');
 /**
  * Generates an Access Token (RS256) for a given user.
  * Includes all required security claims (iss, aud, typ, jti, nbf).
- * Falls back to HS256 if RSA keys are not yet configured in the environment.
  * 
  * @param {Object} user User object containing id, username, full_name, role_name
  * @returns {string} The signed JWT
@@ -44,7 +43,7 @@ function generateAccessToken(user) {
 }
 
 /**
- * Safely verifies a JWT supporting both HS256 and RS256 (Dual-Verification).
+ * Safely verifies a JWT supporting RS256 Asymmetric Key Verification.
  * Implements strict algorithm and kid checks to prevent Algorithm Confusion.
  * 
  * @param {string} token The JWT string to verify
@@ -56,62 +55,51 @@ function verifyTokenSafely(token) {
 
     const decodedUnverified = jwt.decode(token, { complete: true });
     if (!decodedUnverified || !decodedUnverified.header) {
-        console.log(`[AUTH METRIC] alg=unknown kid=none success=false reason="Invalid token format"`);
         throw new Error('Token không hợp lệ');
     }
 
     const { header } = decodedUnverified;
     const { alg, kid, typ } = header;
 
-        // Metrics / Logging for monitoring phase-out (Phase 3)
-        // Helper to log and throw
-        const fail = (msg) => {
-            console.log(`[AUTH METRIC] alg=${alg} kid=${kid || 'none'} success=false reason="${msg}"`);
-            throw new Error(msg);
-        };
+    const fail = (msg) => {
+        throw new Error(msg);
+    };
 
-        if (typ && typ !== 'JWT' && typ !== 'access+jwt') {
-            fail('Loại token không được chấp nhận (wrong typ)');
-        }
+    if (typ && typ !== 'JWT' && typ !== 'access+jwt') {
+        fail('Loại token không được chấp nhận (wrong typ)');
+    }
 
-        let secretOrPublicKey;
-        let verifyOptions = {};
+    if (alg !== 'RS256') {
+        fail('Thuật toán không được hỗ trợ (Algorithm not allowed)');
+    }
 
-        if (alg === 'RS256') {
-            if (!isKnownKid(kid)) {
-                fail('Khóa không xác định (Unknown kid)');
-            }
-            
-            secretOrPublicKey = getPublicKeyPemForKid(kid);
-            if (!secretOrPublicKey) {
-                fail('Không tìm thấy Public Key cho kid này');
-            }
-            
-            verifyOptions.algorithms = ['RS256'];
-        } else {
-            fail('Thuật toán không được hỗ trợ (Algorithm not allowed)');
-        }
+    if (!isKnownKid(kid)) {
+        fail('Khóa không xác định (Unknown kid)');
+    }
+    
+    const publicKey = getPublicKeyPemForKid(kid);
+    if (!publicKey) {
+        fail('Không tìm thấy Public Key cho kid này');
+    }
+    
+    const verifyOptions = {
+        algorithms: ['RS256']
+    };
 
-        let decodedPayload;
-        try {
-            decodedPayload = jwt.verify(token, secretOrPublicKey, verifyOptions);
-        } catch (err) {
-            console.log(`[AUTH METRIC] alg=${alg} kid=${kid || 'none'} success=false reason="${err.message}"`);
-            throw err;
-        }
+    let decodedPayload;
+    try {
+        decodedPayload = jwt.verify(token, publicKey, verifyOptions);
+    } catch (err) {
+        throw err;
+    }
 
-        // Additional Claims validation for RS256
-        if (alg === 'RS256') {
-            if (decodedPayload.iss !== 'https://erp.fittour.vn' || decodedPayload.aud !== 'fittour-api') {
-                fail('Token claims (iss/aud) không hợp lệ');
-            }
-            if (decodedPayload.typ && decodedPayload.typ !== 'access+jwt') {
-                 fail('Sai loại token (typ)');
-            }
-        }
-
-    // Metrics / Logging for monitoring phase-out (Phase 3)
-    console.log(`[AUTH METRIC] alg=${alg} kid=${kid || 'none'} user_id=${decodedPayload.id} success=true`);
+    // Additional Claims validation for RS256
+    if (decodedPayload.iss !== 'https://erp.fittour.vn' || decodedPayload.aud !== 'fittour-api') {
+        fail('Token claims (iss/aud) không hợp lệ');
+    }
+    if (decodedPayload.typ && decodedPayload.typ !== 'access+jwt') {
+        fail('Sai loại token (typ)');
+    }
 
     return decodedPayload;
 }

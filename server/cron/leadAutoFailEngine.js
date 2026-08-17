@@ -23,7 +23,7 @@ const startLeadAutoFailCron = () => {
                   AND status NOT IN ('Chốt đơn', 'Thất bại', 'Không phản hồi')
                   AND (phone IS NULL OR phone = '')
                   AND (email IS NULL OR email = '')
-                  AND COALESCE(last_contacted_at, created_at) < NOW() - INTERVAL '7 days'
+                  AND COALESCE(last_contacted_at, created_at) < NOW() - INTERVAL '3 days'
                 RETURNING id, name, facebook_psid, status;
             `;
             
@@ -32,18 +32,19 @@ const startLeadAutoFailCron = () => {
             if (result.rows.length > 0) {
                 console.log(`[CRON] Đã dọn dẹp (Auto-Fail) thành công ${result.rows.length} Leads rác.`);
                 
-                // Ghi log qua eventBus (Tuỳ chọn)
                 const eventCode = SystemEvents.find(e => e.code === 'LEAD_STATUS_CHANGED')?.code;
                 if (eventCode) {
                     for (const lead of result.rows) {
-                        emitEvent(eventCode, {
-                            lead_id: lead.id,
-                            lead_name: lead.name,
-                            old_status: 'Mới',
-                            status: lead.status,
-                            user_id: 1, // Admin / System
-                            user_name: 'Hệ thống (Auto-Fail)'
-                        }).catch(() => {});
+                        try {
+                            emitEvent(eventCode, {
+                                lead_id: lead.id,
+                                lead_name: lead.name,
+                                old_status: 'Mới',
+                                status: lead.status,
+                                user_id: 1, // Admin / System
+                                user_name: 'Hệ thống (Auto-Fail)'
+                            });
+                        } catch (e) {}
                     }
                 }
             } else {

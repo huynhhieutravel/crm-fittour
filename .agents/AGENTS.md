@@ -13,6 +13,7 @@ Agent **TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP** đề xuất hoặc chạy lệnh
 **Guardrails:**
 1. MỌI thao tác deploy (cả Backend và Frontend) BẮT BUỘC phải sử dụng script chuẩn hoá của dự án: `bash scripts/deploy_vps.sh`.
 2. Không bao giờ cung cấp cho User một lệnh rsync thô. Nếu User yêu cầu deploy, hãy chạy lệnh `bash scripts/deploy_vps.sh` thay thế.
+3. **STRICT TOOL CONSTRAINT**: Agent tuyệt đối KHÔNG ĐƯỢC sử dụng tool `run_command` để gọi lệnh `rsync` trong bất kỳ tình huống nào (kể cả khi chỉ muốn "push nhanh", "hotfix", hay "sync 1 file"). Nếu cần sửa nóng trên VPS, hãy dùng SSH để sửa trực tiếp, hoặc BẮT BUỘC chạy toàn bộ script `bash scripts/deploy_vps.sh`. Vi phạm điều này sẽ gây hậu quả xoá sổ file `.env` Production.
 
 ## VPS Deployment Guardrails: Fix Nginx 500 & 403 Permission Denied (Rsync + Build)
 Khi deploy mã nguồn lên VPS qua lệnh `rsync -avz` (từ Mac OS) hoặc thực thi `npm run build` bằng quyền `root`, quyền sở hữu và phân quyền thư mục sẽ bị sai lệch (ví dụ: bị ép thành `501 staff` và `700`, hoặc `root:root`), khiến Nginx (`www-data`) bị chặn quyền truy cập từ vòng ngoài (gây lỗi 500 sập web hoặc 403 khi tải ảnh/tài liệu).

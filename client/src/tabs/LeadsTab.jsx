@@ -4,6 +4,7 @@ import Select from 'react-select';
 import { 
   UserPlus, 
   MessageSquare, 
+  MessageCircle,
   CheckCircle, 
   Search, 
   Plus, 
@@ -48,7 +49,8 @@ const LeadsTab = ({
   fetchLeads,
   handleConvertLead,
   handleRevertConvertLead,
-  navigateToInbox
+  navigateToInbox,
+  openZaloDrawer
 }) => {
   const [currentPage, setCurrentPage] = useState(() => {
     const saved = sessionStorage.getItem('leadsCurrentPage');
@@ -593,23 +595,42 @@ const LeadsTab = ({
                         </span>
                       </div>
                     )}
-                    {lead.facebook_psid && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); navigateToInbox(lead.facebook_psid); }}
-                        title="Xem hội thoại Messenger"
-                        style={{
-                          display: 'inline-flex', alignItems: 'center', gap: '3px',
-                          background: '#eff6ff', color: '#3b82f6', border: '1px solid #bfdbfe',
-                          borderRadius: '4px', padding: '2px 6px', fontSize: '0.65rem',
-                          fontWeight: 700, cursor: 'pointer', marginTop: '2px',
-                          transition: 'all 0.15s'
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.background = '#3b82f6'; e.currentTarget.style.color = '#fff'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = '#3b82f6'; }}
-                      >
-                        <MessageSquare size={10} /> Chat
-                      </button>
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
+                      {lead.facebook_psid && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigateToInbox(lead.facebook_psid); }}
+                          title="Xem hội thoại Messenger"
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '3px',
+                            background: '#eff6ff', color: '#3b82f6', border: '1px solid #bfdbfe',
+                            borderRadius: '4px', padding: '2px 6px', fontSize: '0.65rem',
+                            fontWeight: 700, cursor: 'pointer',
+                            transition: 'all 0.15s'
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#3b82f6'; e.currentTarget.style.color = '#fff'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = '#3b82f6'; }}
+                        >
+                          <MessageSquare size={10} /> Chat
+                        </button>
+                      )}
+                      {lead.zalo_uid && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openZaloDrawer && openZaloDrawer(lead.zalo_uid); }}
+                          title="Xem hội thoại Zalo OA"
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '3px',
+                            background: '#eff6ff', color: '#0068ff', border: '1px solid #bfdbfe',
+                            borderRadius: '4px', padding: '2px 6px', fontSize: '0.65rem',
+                            fontWeight: 700, cursor: 'pointer',
+                            transition: 'all 0.15s'
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#0068ff'; e.currentTarget.style.color = '#fff'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = '#0068ff'; }}
+                        >
+                          <MessageCircle size={10} /> Zalo
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </td>
                 <td data-label="Thông Tin Lead">
@@ -678,6 +699,11 @@ const LeadsTab = ({
                       {(lead.facebook_psid || lead.meta_lead_id) && (
                         <div title="Đơn từ luồng tự động Meta" style={{ background: '#e0f2fe', color: '#0284c7', fontSize: '0.55rem', padding: '1px 4px', borderRadius: '4px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '3px' }}>
                            META
+                        </div>
+                      )}
+                      {lead.zalo_uid && (
+                        <div title="Đơn từ luồng tự động Zalo OA" style={{ background: '#e0f0ff', color: '#0068ff', fontSize: '0.55rem', padding: '1px 4px', borderRadius: '4px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                           ZALO
                         </div>
                       )}
                     </div>
