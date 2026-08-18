@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../utils/dateUtils';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { X, User, MapPin, Calendar, CreditCard, Users, FileText, CheckCircle, Tag, DollarSign, Plus, ArrowRight } from 'lucide-react';
+import { X, User, MapPin, Calendar, CreditCard, Users, FileText, CheckCircle, Tag, DollarSign, Plus, ArrowRight, MessageCircle, Send } from 'lucide-react';
 
 const BookingProfileSlider = ({ bookingId, onClose }) => {
   const navigate = useNavigate();
@@ -49,6 +49,30 @@ const BookingProfileSlider = ({ bookingId, onClose }) => {
        console.error(err);
        alert('Lỗi tạo giao dịch');
      }
+  };
+
+  const handleSendZaloPaymentReq = async () => {
+    if (!window.confirm('Gửi tin nhắn Yêu cầu thanh toán qua Zalo ZNS cho khách hàng này?')) return;
+    try {
+      const res = await axios.post(`/api/bookings/${booking.id}/send-zalo-payment-request`, {}, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      alert(res.data.message || 'Đã gửi thành công!');
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || 'Lỗi gửi Zalo');
+    }
+  };
+
+  const handleSendZaloConfirm = async () => {
+    if (!window.confirm('Gửi tin nhắn Xác nhận Booking qua Zalo ZNS cho khách hàng này?')) return;
+    try {
+      const res = await axios.post(`/api/bookings/${booking.id}/send-zalo-payment-confirm`, {}, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      alert(res.data.message || 'Đã gửi thành công!');
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || 'Lỗi gửi Zalo');
+    }
   };
 
   useEffect(() => {
@@ -103,109 +127,145 @@ const BookingProfileSlider = ({ bookingId, onClose }) => {
   // Render Component Content
   const modalContent = (
     <div 
-      className="modal-overlay" 
       onClick={onClose} 
       style={{ 
-        zIndex: 1050, 
+        zIndex: 9999, 
         position: 'fixed', 
         inset: 0, 
-        backgroundColor: 'rgba(0,0,0,0.5)', 
+        backgroundColor: 'rgba(15, 23, 42, 0.6)', 
+        backdropFilter: 'blur(4px)',
         display: 'flex', 
         justifyContent: 'flex-end',
         alignItems: 'stretch'
       }}
     >
       <div 
-        className="modal-content animate-slide-up" 
         onClick={e => e.stopPropagation()}
         style={{ 
-          maxWidth: '800px', 
-          width: '100%',
+          width: '920px', 
+          maxWidth: '96vw',
+          height: '100vh',
           backgroundColor: '#f8fafc',
           padding: 0,
           display: 'flex', 
           flexDirection: 'column',
-          boxShadow: '-4px 0 24px rgba(0,0,0,0.1)',
-          animation: 'slideInRight 0.3s ease-out'
+          boxShadow: '-8px 0 32px rgba(0,0,0,0.2)',
+          zIndex: 10000
         }}
       >
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>Loading...</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#64748b', fontWeight: 600 }}>Đang tải dữ liệu đơn hàng...</div>
         ) : (
           <>
             {/* Header Area */}
-            <div style={{ padding: '1.5rem', backgroundColor: '#fff', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ background: '#f1f5f9', padding: '6px 12px', borderRadius: '8px', fontWeight: 800, color: '#0f172a', fontSize: '1.25rem', letterSpacing: '0.5px' }}>
+            <div style={{ backgroundColor: '#fff', borderBottom: '1px solid #e2e8f0' }}>
+              
+              {/* Row 1: Code, Status & Actions */}
+              <div style={{ padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '5px 12px', borderRadius: '8px', fontWeight: 800, color: '#0f172a', fontSize: '1.15rem', fontFamily: 'monospace' }}>
                     {booking.booking_code}
-                  </div>
+                  </span>
                   <span style={{ 
-                    padding: '4px 10px', 
-                    borderRadius: '999px', 
-                    fontSize: '0.75rem', 
-                    fontWeight: 800, 
+                    padding: '5px 12px', 
+                    borderRadius: '20px', 
+                    fontSize: '0.8rem', 
+                    fontWeight: 700, 
                     backgroundColor: (booking.booking_status === 'Giữ chỗ' || booking.booking_status === 'HELD') ? '#e0f2fe' : booking.booking_status === 'Hoàn thành' ? '#dcfce7' : booking.booking_status === 'Huỷ' ? '#fee2e2' : booking.booking_status === 'Đã thanh toán' ? '#d1fae5' : booking.booking_status === 'Đã đặt cọc' ? '#fef3c7' : '#f1f5f9',
                     color: (booking.booking_status === 'Giữ chỗ' || booking.booking_status === 'HELD') ? '#0369a1' : booking.booking_status === 'Hoàn thành' ? '#15803d' : booking.booking_status === 'Huỷ' ? '#b91c1c' : booking.booking_status === 'Đã thanh toán' ? '#065f46' : booking.booking_status === 'Đã đặt cọc' ? '#b45309' : '#475569',
                   }}>
                     {booking.booking_status}
                   </span>
                   {booking.payment_status === 'paid' && (
-                    <span style={{ padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 800, backgroundColor: '#dcfce7', color: '#166534', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 700, backgroundColor: '#dcfce7', color: '#166534', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <CheckCircle size={12} /> Đã thanh toán đủ
                     </span>
                   )}
                 </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <button 
-                    onClick={() => { onClose(); navigate('/customers'); }}
-                    style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '6px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', color: '#334155', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s' }}
-                    onMouseOver={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.color = '#2563eb'; }}
-                    onMouseOut={e => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.color = '#334155'; }}
-                    title="Đến trang Quản lý Khách Hàng"
-                  >
-                    <User size={14} /> {booking.customer_name} <ArrowRight size={12} />
-                  </button>
-                  
-                  <button 
-                    onClick={() => { 
-                      if (booking.tour_departure_id) {
-                        onClose(); navigate(`/departures/view/${booking.tour_departure_id}`);
-                      }
-                    }}
-                    style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '6px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', color: '#334155', cursor: booking.tour_departure_id ? 'pointer' : 'default', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s' }}
-                    onMouseOver={e => { if(booking.tour_departure_id) { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.color = '#2563eb'; } }}
-                    onMouseOut={e => { if(booking.tour_departure_id) { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.color = '#334155'; } }}
-                    title={booking.tour_departure_id ? "Xem chi tiết Lịch khởi hành" : ""}
-                  >
-                    <MapPin size={14} /> {booking.tour_name || 'Booking vé lẻ'} {booking.tour_departure_id && <ArrowRight size={12} />}
-                  </button>
 
-                  <div style={{ background: 'transparent', border: 'none', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>
-                    <Calendar size={14} /> Đi: {booking.start_date ? new Date(booking.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', }) : '--'}
-                  </div>
+                {/* Top Actions */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button 
+                    onClick={handleSendZaloPaymentReq}
+                    style={{ background: '#fdf4ff', border: '1px solid #f0abfc', color: '#a21caf', padding: '6px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
+                    onMouseOver={e => { e.currentTarget.style.background = '#fae8ff'; }}
+                    onMouseOut={e => { e.currentTarget.style.background = '#fdf4ff'; }}
+                    title="Gửi Zalo ZNS Yêu cầu thanh toán"
+                  >
+                    <MessageCircle size={14} /> Yêu cầu CK (Zalo)
+                  </button>
+                  <button 
+                    onClick={handleSendZaloConfirm}
+                    style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#15803d', padding: '6px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
+                    onMouseOver={e => { e.currentTarget.style.background = '#dcfce7'; }}
+                    onMouseOut={e => { e.currentTarget.style.background = '#f0fdf4'; }}
+                    title="Gửi Zalo ZNS Xác nhận Booking"
+                  >
+                    <MessageCircle size={14} /> Xác nhận (Zalo)
+                  </button>
+                  <a 
+                    href={`/receipt/${booking.public_token}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ background: '#f0f9ff', border: '1px solid #bae6fd', color: '#0369a1', padding: '6px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none', transition: 'all 0.2s' }}
+                    onMouseOver={e => { e.currentTarget.style.background = '#e0f2fe'; }}
+                    onMouseOut={e => { e.currentTarget.style.background = '#f0f9ff'; }}
+                    title="Mở giao diện Hóa Đơn Công Khai"
+                  >
+                    <FileText size={14} /> Hóa Đơn
+                  </a>
+                  <button 
+                    onClick={() => window.print()} 
+                    style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569', padding: '6px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
+                    onMouseOver={e => { e.currentTarget.style.background = '#e2e8f0'; }}
+                    onMouseOut={e => { e.currentTarget.style.background = '#f8fafc'; }}
+                    title="In nội bộ"
+                  >
+                    <FileText size={14} /> In
+                  </button>
+                  <button 
+                    onClick={onClose} 
+                    style={{ background: '#fee2e2', border: 'none', cursor: 'pointer', padding: '6px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', transition: 'all 0.2s', marginLeft: '4px' }}
+                    onMouseOver={e => { e.currentTarget.style.background = '#fca5a5'; e.currentTarget.style.color = '#7f1d1d'; }}
+                    onMouseOut={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.color = '#ef4444'; }}
+                    title="Đóng"
+                  >
+                    <X size={18} strokeWidth={2.5} />
+                  </button>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
+              {/* Row 2: Customer & Tour Context Bar */}
+              <div style={{ padding: '0.75rem 1.5rem', background: '#fafafa', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '0.825rem' }}>
                 <button 
-                  onClick={() => window.print()} 
-                  style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569', padding: '8px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseOver={e => { e.currentTarget.style.background = '#e2e8f0'; e.currentTarget.style.color = '#0f172a'; }}
-                  onMouseOut={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#475569'; }}
+                  onClick={() => { onClose(); navigate('/customers'); }}
+                  style={{ background: '#fff', border: '1px solid #e2e8f0', padding: '4px 10px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', color: '#1e293b', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' }}
+                  onMouseOver={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.color = '#2563eb'; }}
+                  onMouseOut={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.color = '#1e293b'; }}
+                  title="Xem hồ sơ khách hàng"
                 >
-                  <FileText size={14} /> In Phiếu Thu
+                  <User size={13} color="#2563eb" /> {booking.customer_name} <ArrowRight size={11} />
                 </button>
+                
                 <button 
-                  onClick={onClose} 
-                  style={{ background: '#fef2f2', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', transition: 'all 0.2s' }}
-                  onMouseOver={e => { e.currentTarget.style.background = '#fca5a5'; e.currentTarget.style.color = '#7f1d1d'; }}
-                  onMouseOut={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#ef4444'; }}
+                  onClick={() => { 
+                    if (booking.tour_departure_id) {
+                      onClose(); navigate(`/departures/view/${booking.tour_departure_id}`);
+                    }
+                  }}
+                  style={{ background: '#fff', border: '1px solid #e2e8f0', padding: '4px 10px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', color: '#1e293b', cursor: booking.tour_departure_id ? 'pointer' : 'default', fontWeight: 600, transition: 'all 0.2s', maxWidth: '400px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  onMouseOver={e => { if(booking.tour_departure_id) { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.color = '#2563eb'; } }}
+                  onMouseOut={e => { if(booking.tour_departure_id) { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.color = '#1e293b'; } }}
+                  title={booking.tour_name}
                 >
-                  <X size={20} strokeWidth={3} />
+                  <MapPin size={13} color="#ea580c" /> {booking.tour_name || 'Booking vé lẻ'} {booking.tour_departure_id && <ArrowRight size={11} />}
                 </button>
+
+                <div style={{ background: '#fff', border: '1px solid #e2e8f0', padding: '4px 10px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', color: '#64748b', fontWeight: 500 }}>
+                  <Calendar size={13} /> Đi: {booking.start_date ? new Date(booking.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }) : '--'}
+                </div>
               </div>
+
             </div>
 
             {/* Navigation Tabs */}

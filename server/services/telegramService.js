@@ -207,6 +207,80 @@ Khách hàng mới nhắn tin từ kênh tự nhiên nhưng hệ thống không 
             return null;
         }
     }
+    async sendGeminiCostReport(reportData) {
+        if (!this.token || !this.chatId) {
+            console.warn('Telegram token or chat ID is not configured. Skipping Gemini cost report.');
+            return null;
+        }
+
+        const message = `📊 <b>BÁO CÁO CHI PHÍ AI (ZALO BOT)</b> 🤖
+
+📅 <b>Ngày:</b> ${reportData.date}
+⚡ <b>Model:</b> ${reportData.modelName}
+
+📈 <b>THỐNG KÊ TOKEN:</b>
+- Input Tokens: <b>${reportData.promptTokens.toLocaleString()}</b> (Giá: $0.75/1M)
+- Cached Tokens: <b>${reportData.cachedTokens.toLocaleString()}</b> (Giá: $0.075/1M)
+- Output Tokens: <b>${reportData.candidateTokens.toLocaleString()}</b> (Giá: $3.75/1M)
+- Tổng Tokens: <b>${reportData.totalTokens.toLocaleString()}</b>
+
+💰 <b>CHI PHÍ HÔM NAY:</b>
+- Chi phí: <b>$${reportData.costUsd.toFixed(4)}</b>
+- Ước tính VNĐ: <b>${Math.round(reportData.costUsd * 25400).toLocaleString()} VNĐ</b>
+
+<i>⏳ Báo cáo được gửi tự động lúc 20:00 (GMT+7) hàng ngày.</i>`;
+
+        try {
+            const res = await axios.post(this.apiUrl, {
+                chat_id: this.chatId,
+                text: message,
+                parse_mode: 'HTML'
+            });
+            console.log(`[Telegram] Sent Gemini cost report for date ${reportData.date}`);
+            return res.data?.result?.message_id || null;
+        } catch (error) {
+            console.error('[Telegram Error] Failed to send Gemini cost report:', error.response?.data || error.message);
+            return null;
+        }
+    }
+
+    /**
+     * Thông báo Telegram khi AI bắt được SĐT nóng từ khách hàng Zalo
+     */
+    async sendHotLeadPhoneCapturedAlert(lead, phone) {
+        if (!this.token || !this.chatId) {
+            return null;
+        }
+
+        // Bỏ qua các lead test tự động để tránh làm phiền group Telegram
+        if (lead.zalo_uid?.startsWith('qa_') || lead.name?.startsWith('QA_') || ['0912345678', '0938112233', '0988776655'].includes(phone)) {
+            console.log(`[Telegram] Skipped test lead notification for ${lead.name} (${phone})`);
+            return null;
+        }
+
+        const message = `🔥 <b>[HOT LEAD] KHÁCH ĐÃ ĐỂ LẠI SỐ ĐIỆN THOẠI TRÊN ZALO</b> 📞
+
+👤 <b>Khách hàng:</b> ${escapeHTML(lead.name) || 'Khách Zalo'}
+📞 <b>Số điện thoại:</b> <code>${escapeHTML(phone)}</code>
+🏢 <b>BU phụ trách:</b> ${escapeHTML(lead.bu_group) || 'Chưa phân nhóm'}
+📦 <b>Nhu cầu / Tour:</b> ${escapeHTML(lead.tour_name) || 'Đang trao đổi qua Zalo'}
+🤖 <b>Trạng thái AI:</b> <i>Đã tự động ngắt bot để chuyển giao cho Sales</i>
+
+👉 <i>Vui lòng phân bổ Sale hoặc mở CRM gọi điện tư vấn ngay cho khách nhé!</i>`;
+
+        try {
+            const res = await axios.post(this.apiUrl, {
+                chat_id: this.chatId,
+                text: message,
+                parse_mode: 'HTML'
+            });
+            console.log(`[Telegram] Sent Hot Lead Phone Alert for lead ${lead.id || lead.name}`);
+            return res.data?.result?.message_id || null;
+        } catch (error) {
+            console.error('[Telegram Error] Failed to send hot lead phone alert:', error.response?.data || error.message);
+            return null;
+        }
+    }
 }
 
 module.exports = new TelegramService();

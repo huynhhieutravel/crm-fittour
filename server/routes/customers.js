@@ -4,6 +4,12 @@ const customerController = require('../controllers/customerController');
 const authenticateToken = require('../middleware/auth');
 const { permCheck, permCheckAny, permCheckOrOwner } = require('../middleware/permCheck');
 const customerEventController = require('../controllers/customerEventController');
+const customerAnalyticsController = require('../controllers/customerAnalyticsController');
+
+// Analytics & Data Integrity Audit (Must be before /:id)
+router.get('/analytics/overview', authenticateToken, permCheckAny([['customers','view_all'], ['customers','view_own']]), customerAnalyticsController.getOverviewStats);
+router.get('/analytics/growth-chart', authenticateToken, permCheckAny([['customers','view_all'], ['customers','view_own']]), customerAnalyticsController.getGrowthChart);
+router.get('/analytics/data-audit', authenticateToken, permCheckAny([['customers','view_all'], ['customers','view_own']]), customerAnalyticsController.getDataIntegrityAudit);
 
 router.get('/birthdays/upcoming', authenticateToken, permCheckAny([['customers','view_all'], ['customers','view_own']]), customerController.getUpcomingBirthdays);
 router.get('/check-phone', authenticateToken, permCheckAny([['customers','view_all'], ['customers','view_own']]), customerController.checkPhoneExists);

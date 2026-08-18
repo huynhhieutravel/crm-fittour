@@ -1,27 +1,66 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
-import { Send, User, RefreshCw, MessageCircle, Paperclip, X, File, FileText, AlertTriangle, Trash2, CheckSquare, ChevronLeft, Search, Loader2 } from 'lucide-react';
+import { Send, User, RefreshCw, MessageCircle, Paperclip, X, File, FileText, AlertTriangle, Trash2, CheckSquare, ChevronLeft, Search, Loader2, Bot, Sparkles } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
 import { swalConfirm } from '../utils/swalHelpers';
+import ZaloAISettingsTab from './ZaloAISettingsTab';
 
 const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users = [], tours = [], currentUser, bus = [], fetchLeads }) => {
   const [messages, setMessages] = useState([]);
+  const [currentView, setCurrentView] = useState('chat'); // 'chat' | 'ai_settings'
   const [inputText, setInputText] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filePreview, setFilePreview] = useState(null);
+  const [aiSession, setAiSession] = useState({ is_ai_active: true });
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const [localLeadData, setLocalLeadData] = useState(null);
   const [converting, setConverting] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const fetchAiSession = async (uid) => {
+    if (!uid) return;
+    try {
+      const res = await axios.get(`/api/zalo-v2/ai-session/${uid}`);
+      if (res.data?.success && res.data?.data) {
+        setAiSession(res.data.data);
+      }
+    } catch (e) {
+      console.warn('Không lấy được trạng thái AI session:', e.message);
+    }
+  };
+
+  const handleToggleAi = async () => {
+    if (!selectedUser) return;
+    try {
+      const nextState = !aiSession.is_ai_active;
+      const res = await axios.post('/api/zalo-v2/ai-session/toggle', {
+        zaloUid: selectedUser,
+        isAiActive: nextState
+      });
+      if (res.data?.success) {
+        setAiSession(prev => ({ ...prev, is_ai_active: res.data.is_ai_active, muted_by: res.data.muted_by }));
+      }
+    } catch (err) {
+      alert('Lỗi chuyển trạng thái AI: ' + err.message);
+    }
+  };
 
   useEffect(() => {
     if (selectedUser) {
       const l = leads?.find(l => String(l.zalo_uid) === String(selectedUser));
       setLocalLeadData(l ? { ...l } : null);
+      fetchAiSession(selectedUser);
     } else {
       setLocalLeadData(null);
     }
@@ -98,7 +137,7 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
   };
 
   const handleDeleteSingle = async () => {
-    if (await swalConfirm('Bạn có chắc chắn muốn xóa hội thoại Zalo Sandbox này?', 'warning')) {
+    if (await swalConfirm('Bạn có chắc chắn muốn xóa hội thoại Zalo Chat này?', 'warning')) {
       try {
         await axios.delete(`/api/zalo-v2/sandbox/messages/${selectedUser}`);
         setSelectedUser(null);
@@ -109,22 +148,29 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
     }
   };
 
+  const selectedUserRef = useRef(selectedUser);
+  useEffect(() => {
+    selectedUserRef.current = selectedUser;
+  }, [selectedUser]);
+
+  const hasInitialSelected = useRef(false);
+
   const fetchMessages = async () => {
     try {
       setLoading(true);
       const res = await axios.get('/api/zalo-v2/sandbox/messages');
       setMessages(res.data || []);
       
-      // Auto-select latest user if none selected (using functional state update to avoid stale closures from socket listeners)
-      setSelectedUser(prev => {
-        if (!prev && res.data && res.data.length > 0) {
+      // Auto-select latest user ONLY on initial desktop load (never on mobile or when user explicitly navigated back)
+      if (!isMobile && !hasInitialSelected.current && !selectedUserRef.current) {
+        hasInitialSelected.current = true;
+        if (res.data && res.data.length > 0) {
           const uniqueSenders = [...new Set(res.data.map(m => m.senderId))];
           if (uniqueSenders.length > 0) {
-            return uniqueSenders[uniqueSenders.length - 1];
+            setSelectedUser(uniqueSenders[uniqueSenders.length - 1]);
           }
         }
-        return prev;
-      });
+      }
     } catch (error) {
       console.error('Error fetching messages:', error);
     } finally {
@@ -137,9 +183,15 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
     const serverUrl = window.location.hostname === 'localhost' ? 'http://localhost:5001' : window.location.origin;
     const socket = io(serverUrl);
     socket.on('zalo_message_update', fetchMessages);
+    socket.on('zalo_ai_session_update', (data) => {
+      if (data && String(data.zalo_uid) === String(selectedUserRef.current)) {
+        setAiSession(prev => ({ ...prev, is_ai_active: data.is_ai_active, muted_by: data.muted_by }));
+      }
+    });
     
     return () => {
       socket.off('zalo_message_update', fetchMessages);
+      socket.off('zalo_ai_session_update');
       socket.disconnect();
     };
   }, []);
@@ -233,7 +285,16 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
   const uniqueSenders = [...new Set(messages.map(m => m.senderId))];
   const senderProfiles = uniqueSenders.map(uid => {
     const msgs = messages.filter(m => m.senderId === uid);
-    const msgWithName = msgs.slice().reverse().find(m => m.senderName);
+    const matchedLead = leads.find(l => String(l.zalo_uid) === String(uid));
+    // Tìm tên khách hàng thật (ưu tiên matchedLead nếu không phải tên tạm, sau đó là tin nhắn có senderName)
+    const hasRealLeadName = matchedLead?.name && !matchedLead.name.startsWith('Zalo Guest') && !matchedLead.name.startsWith('Zalo User');
+    const msgWithCustomerName = msgs.slice().reverse().find(m => m.senderName && !m.senderName.includes('AI Agent') && !m.senderName.startsWith('Zalo Guest') && !m.senderName.startsWith('Zalo User'));
+    
+    const customerName = hasRealLeadName 
+      ? matchedLead.name 
+      : (msgWithCustomerName?.senderName || matchedLead?.name || `Zalo User (${uid.substring(0, 8)}...)`);
+    const customerAvatar = (msgWithCustomerName && msgWithCustomerName.senderAvatar) || (matchedLead?.avatar_url) || null;
+    
     const lastMessageTimestamp = msgs.length > 0 ? new Date(msgs[msgs.length - 1].timestamp).getTime() : 0;
     
     const incomingMsgs = msgs.filter(m => m.type === 'incoming');
@@ -254,11 +315,11 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
 
     return {
       uid,
-      name: msgWithName ? msgWithName.senderName : `Zalo User (${uid.substring(0, 8)}...)`,
-      avatar: msgWithName ? msgWithName.senderAvatar : null,
+      name: customerName,
+      avatar: customerAvatar,
       lastMessageTimestamp,
       lastIncomingTimestamp,
-      matchedLead: leads.find(l => String(l.zalo_uid) === String(uid)),
+      matchedLead,
       lastMessageText
     };
   }).sort((a, b) => b.lastMessageTimestamp - a.lastMessageTimestamp);
@@ -276,12 +337,88 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
   });
 
   return (
-    <div style={{ height: 'calc(100vh - 60px)', display: 'flex', flexDirection: 'column', backgroundColor: '#f3f4f6', padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <div style={{ display: 'flex', flex: 1, backgroundColor: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', border: '1px solid #e5e7eb' }}>
+    <div style={{ height: 'calc(100vh - 75px)', display: 'flex', flexDirection: 'column', backgroundColor: '#f3f4f6', padding: '12px 16px', fontFamily: 'Arial, sans-serif', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+      
+      {/* Top Header Navigation: Sub-menu between Chat Sandbox & AI Settings */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', background: '#fff', padding: '10px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => setCurrentView('chat')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: 600,
+              border: 'none',
+              cursor: 'pointer',
+              background: currentView === 'chat' ? '#2563eb' : 'transparent',
+              color: currentView === 'chat' ? '#fff' : '#4b5563',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <MessageCircle size={16} /> 💬 Zalo Chat ({uniqueSenders.length})
+          </button>
+
+          <button
+            onClick={() => setCurrentView('ai_settings')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: 600,
+              border: 'none',
+              cursor: 'pointer',
+              background: currentView === 'ai_settings' ? '#2563eb' : 'transparent',
+              color: currentView === 'ai_settings' ? '#fff' : '#4b5563',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Sparkles size={16} /> 🤖 Cài Đặt AI Agent & RAG (Meta Style)
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '12px', color: '#6b7280' }}>
+            Gemini 2.5 Flash • RAG Engine
+          </span>
+          <button 
+            onClick={fetchMessages} 
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f3f4f6', border: '1px solid #d1d5db', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', color: '#374151', fontSize: '12px', fontWeight: 500 }}
+            title="Làm mới tin nhắn"
+          >
+            <RefreshCw size={14} /> Làm mới
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      {currentView === 'ai_settings' ? (
+        <div style={{ flex: 1, borderRadius: '12px', overflow: 'auto', minHeight: 0 }}>
+          <ZaloAISettingsTab currentUser={currentUser} />
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flex: 1, minHeight: 0, backgroundColor: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', border: '1px solid #e5e7eb', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
         
         {/* Sidebar (Users) */}
-        <div style={{ width: '30%', borderRight: '1px solid #e5e7eb', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#fff', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ 
+          width: isMobile ? '100%' : '340px', 
+          minWidth: isMobile ? '100%' : '300px', 
+          maxWidth: isMobile ? '100%' : '360px', 
+          flexShrink: 0, 
+          borderRight: isMobile ? 'none' : '1px solid #e5e7eb', 
+          backgroundColor: '#f9fafb', 
+          display: (isMobile && selectedUser) ? 'none' : 'flex', 
+          flexDirection: 'column', 
+          height: '100%', 
+          overflow: 'hidden' 
+        }}>
+          <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#fff', display: 'flex', flexDirection: 'column', gap: '12px', flexShrink: 0 }}>
             <button 
               onClick={() => {
                 const searchParams = new URLSearchParams(window.location.search);
@@ -293,11 +430,31 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
             </button>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                Zalo Sandbox <span style={{ background: '#e0e7ff', color: '#4f46e5', padding: '2px 8px', borderRadius: '12px', fontSize: '12px' }}>{uniqueSenders.length}</span>
+                Zalo Chat <span style={{ background: '#e0e7ff', color: '#4f46e5', padding: '2px 8px', borderRadius: '12px', fontSize: '12px' }}>{uniqueSenders.length}</span>
               </h2>
-              <button onClick={fetchMessages} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
-                <RefreshCw size={20} />
-              </button>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <a 
+                  href="/zalo-ai-settings"
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '4px', 
+                    background: '#eff6ff', 
+                    color: '#2563eb', 
+                    padding: '4px 8px', 
+                    borderRadius: '6px', 
+                    fontSize: '11px', 
+                    fontWeight: 600, 
+                    textDecoration: 'none',
+                    border: '1px solid #bfdbfe'
+                  }}
+                >
+                  🤖 Cài đặt AI
+                </a>
+                <button onClick={fetchMessages} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }} title="Làm mới">
+                  <RefreshCw size={18} />
+                </button>
+              </div>
             </div>
             <div style={{ position: 'relative' }}>
                <input
@@ -305,12 +462,12 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                  placeholder="Tìm tin nhắn, tên khách..."
                  value={searchTerm}
                  onChange={(e) => setSearchTerm(e.target.value)}
-                 style={{ width: '100%', padding: '8px 12px 8px 32px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '13px' }}
+                 style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px 8px 32px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '13px' }}
                />
                <Search size={15} color="#9ca3af" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
             </div>
           </div>
-          <div style={{ flex: 1, overflowY: 'auto' }}>
+          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
             {filteredSenderProfiles.length === 0 ? (
               <div style={{ padding: '32px', textAlign: 'center', color: '#6b7280', fontSize: '14px', whiteSpace: 'pre-wrap' }}>
                 {searchTerm ? 'Không tìm thấy kết quả phù hợp.' : 'Chưa có tin nhắn nào.\\n\\nHãy dùng Zalo cá nhân nhắn "Alo" vào OA để bắt đầu.'}
@@ -331,10 +488,11 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                     gap: '12px',
                     backgroundColor: selectedUser === profile.uid ? '#eff6ff' : '#fff',
                     borderLeft: selectedUser === profile.uid ? '4px solid #3b82f6' : '4px solid transparent',
-                    transition: 'background-color 0.2s'
+                    transition: 'background-color 0.2s',
+                    overflow: 'hidden'
                   }}
                 >
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                       <div style={{ fontWeight: '600', color: selectedUser === profile.uid ? '#1d4ed8' : '#1f2937', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         {profile.name}
@@ -344,18 +502,18 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                             </span>
                         )}
                       </div>
-                      <span style={{ fontSize: '11px', color: '#9ca3af', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: '11px', color: '#9ca3af', whiteSpace: 'nowrap', flexShrink: 0 }}>
                         {new Date(profile.lastMessageTimestamp).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: "2-digit", month: "2-digit" })}
                       </span>
                     </div>
                     
-                    <div style={{ display: 'flex', gap: '4px', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '6px', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '10px', padding: '1px 4px', borderRadius: '4px', background: (lead && lead.bu_group) ? '#e0e7ff' : '#4338ca', color: (lead && lead.bu_group) ? '#4338ca' : '#e0e7ff', fontWeight: 'bold' }}>BU: {(lead && lead.bu_group) ? bus.find(b => b.id === lead.bu_group)?.name || lead.bu_group : 'Chưa phân'}</span>
                       <span style={{ fontSize: '10px', padding: '1px 4px', borderRadius: '4px', background: (lead && (lead.assigned_to || lead.sale_id)) ? '#dcfce7' : '#fee2e2', color: (lead && (lead.assigned_to || lead.sale_id)) ? '#15803d' : '#b91c1c', fontWeight: 'bold' }}>Sale: {(lead && (lead.assigned_to || lead.sale_id)) ? users.find(u => u.id === (lead.assigned_to || lead.sale_id))?.full_name || 'Đã phân' : 'Chưa phân'}</span>
                     </div>
                     
                     <div style={{ fontSize: '13px', color: selectedUser === profile.uid ? '#3b82f6' : '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {profile.lastMessageText || `Zalo Sandbox ID: ${profile.uid}`}
+                      {profile.lastMessageText || `Zalo ID: ${profile.uid}`}
                     </div>
                   </div>
                 </div>
@@ -365,12 +523,29 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
         </div>
 
         {/* Chat Area */}
-        <div style={{ width: '70%', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', position: 'relative' }}>
+        <div style={{ 
+          flex: 1, 
+          minWidth: 0, 
+          display: (isMobile && !selectedUser) ? 'none' : 'flex', 
+          flexDirection: 'column', 
+          backgroundColor: '#fff', 
+          position: 'relative', 
+          height: '100%', 
+          overflow: 'hidden' 
+        }}>
           {selectedUser ? (
             <>
               {/* Chat Header */}
-              <div className="chat-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', borderBottom: '1px solid #e2e8f0', padding: '16px', backgroundColor: '#fff', zIndex: 10, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
-                <div className="chat-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', flexWrap: 'wrap', marginBottom: '15px' }}>
+              <div className="chat-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', borderBottom: '1px solid #e2e8f0', padding: isMobile ? '10px 12px' : '16px', backgroundColor: '#fff', zIndex: 10, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
+                {isMobile && (
+                  <button 
+                    onClick={() => setSelectedUser(null)}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', borderRadius: '6px', padding: '6px 12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', marginBottom: '10px', alignSelf: 'flex-start' }}
+                  >
+                    <ChevronLeft size={16} /> Danh sách hội thoại
+                  </button>
+                )}
+                <div className="chat-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <div>
                       <h3 className="chat-name" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', margin: 0, fontWeight: 'bold', color: '#1f2937', fontSize: '16px' }}>
@@ -488,14 +663,79 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                     </div>
                   </div>
                 </div>
+
+                {/* AI AGENT STATUS & HUMAN TAKEOVER BANNER */}
+                <div style={{
+                  padding: isMobile ? '6px 10px' : '8px 16px',
+                  marginTop: isMobile ? '6px' : '10px',
+                  borderRadius: '8px',
+                  backgroundColor: aiSession.is_ai_active ? '#f0fdf4' : '#fffbeb',
+                  border: aiSession.is_ai_active ? '1px solid #bbf7d0' : '1px solid #fde68a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '8px',
+                  transition: 'all 0.2s'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, flex: 1 }}>
+                    <span style={{ 
+                      display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0,
+                      backgroundColor: aiSession.is_ai_active ? '#22c55e' : '#f59e0b',
+                      boxShadow: aiSession.is_ai_active ? '0 0 8px #22c55e' : 'none'
+                    }}></span>
+                    <div style={{ minWidth: 0, overflow: 'hidden' }}>
+                      <div style={{ 
+                        fontSize: isMobile ? '11px' : '12.5px', 
+                        fontWeight: 700, 
+                        color: aiSession.is_ai_active ? '#15803d' : '#b45309',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
+                        {aiSession.is_ai_active ? '🟢 AI Agent Đang Tự Động Trực & Tư Vấn' : '🟠 Nhân Viên Tiếp Quản (AI Tắt)'}
+                      </div>
+                      {!isMobile && (
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>
+                          {aiSession.is_ai_active 
+                            ? '• AI sẽ tự động trả lời tin nhắn của khách' 
+                            : `• ${aiSession.muted_by === 'human_message' ? 'Đã ngắt khi nhân viên gửi tin' : aiSession.muted_by === 'sales_assigned' ? 'Đã gán cho Sales' : 'Đã tắt thủ công'}`}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleToggleAi}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: isMobile ? '4px 8px' : '5px 12px',
+                      borderRadius: '6px',
+                      fontSize: isMobile ? '10.5px' : '11.5px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      border: 'none',
+                      backgroundColor: aiSession.is_ai_active ? '#ef4444' : '#0284c7',
+                      color: '#ffffff',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                      transition: 'all 0.15s',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0
+                    }}
+                  >
+                    {aiSession.is_ai_active ? '🛑 Dừng AI' : '⚡ Bật Lại AI'}
+                  </button>
+                </div>
               </div>
 
               {/* Messages */}
-              <div style={{ flex: 1, padding: '20px', overflowY: 'auto', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ flex: 1, minHeight: 0, padding: '16px 20px', overflowY: 'auto', overflowX: 'hidden', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column', gap: '14px', width: '100%', boxSizing: 'border-box' }}>
                 {activeMessages.map(msg => (
-                  <div key={msg.id || msg.timestamp} style={{ display: 'flex', justifyContent: msg.type === 'outgoing' ? 'flex-end' : 'flex-start' }}>
+                  <div key={msg.id || msg.timestamp} style={{ display: 'flex', justifyContent: msg.type === 'outgoing' ? 'flex-end' : 'flex-start', width: '100%' }}>
                     <div style={{ 
-                      maxWidth: '70%', 
+                      maxWidth: '75%', 
                       padding: '12px 16px', 
                       borderRadius: '16px', 
                       boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
@@ -505,7 +745,52 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                       borderBottomRightRadius: msg.type === 'outgoing' ? '4px' : '16px',
                       borderBottomLeftRadius: msg.type === 'outgoing' ? '16px' : '4px'
                     }}>
-                      <div style={{ fontSize: '15px', lineHeight: '1.4' }}>{msg.text}</div>
+                      {/* Sender Badge */}
+                      {msg.type === 'outgoing' && (
+                        <div style={{ fontSize: '10.5px', color: '#bfdbfe', fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          {msg.senderType === 'ai' || msg.senderId === 'zalo_ai_agent' 
+                            ? '🤖 FIT TOUR AI Agent' 
+                            : `👤 ${msg.senderStaffName || 'Tư vấn viên'}`}
+                        </div>
+                      )}
+                      <div style={{ fontSize: '15px', lineHeight: '1.6', wordBreak: 'break-word' }}>
+                        {String(msg.text || '').split('\n').map((line, lIdx, arr) => {
+                          const urlRegex = /(https?:\/\/[^\s]+)/g;
+                          const parts = line.split(urlRegex);
+                          return (
+                            <React.Fragment key={lIdx}>
+                              {parts.map((part, pIdx) => {
+                                if (part.match(urlRegex)) {
+                                  return (
+                                    <a 
+                                      key={pIdx} 
+                                      href={part} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      style={{ color: msg.type === 'outgoing' ? '#bae6fd' : '#0284c7', textDecoration: 'underline', wordBreak: 'break-all', fontWeight: 600 }}
+                                    >
+                                      {part}
+                                    </a>
+                                  );
+                                }
+                                const boldRegex = /(\*\*[^*]+\*\*)/g;
+                                const subParts = part.split(boldRegex);
+                                return subParts.map((sub, sIdx) => {
+                                  if (sub.startsWith('**') && sub.endsWith('**') && sub.length > 4) {
+                                    return (
+                                      <strong key={`${pIdx}-${sIdx}`} style={{ fontWeight: 700, color: msg.type === 'outgoing' ? '#ffffff' : '#111827' }}>
+                                        {sub.slice(2, -2)}
+                                      </strong>
+                                    );
+                                  }
+                                  return sub;
+                                });
+                              })}
+                              {lIdx < arr.length - 1 && <br />}
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
                       
                       {/* Hiển thị đính kèm */}
                       {msg.attachments && msg.attachments.length > 0 && (
@@ -549,44 +834,44 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
               </div>
 
               {/* Input */}
-              <div style={{ padding: '16px', backgroundColor: '#fff', borderTop: '1px solid #e5e7eb', position: 'relative' }}>
+              <div style={{ padding: isMobile ? '8px 12px' : '16px', backgroundColor: '#fff', borderTop: '1px solid #e5e7eb', position: 'relative' }}>
                 
                 {isWindowClosed && (
-                  <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '12px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: '#b91c1c' }}>
-                    <AlertTriangle size={20} />
-                    <span style={{ fontSize: '13.5px', fontWeight: '500' }}>
-                      Cửa sổ tương tác miễn phí (7 ngày) đã đóng. Khách hàng cần nhắn lại để mở khóa hệ thống Zalo OA.
+                  <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '8px 12px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: '#b91c1c' }}>
+                    <AlertTriangle size={18} />
+                    <span style={{ fontSize: '12px', fontWeight: '500' }}>
+                      Cửa sổ tương tác miễn phí (7 ngày) đã đóng. Khách hàng cần nhắn lại để mở khóa.
                     </span>
                   </div>
                 )}
 
                 {filePreview && (
                   <div style={{ 
-                    position: 'absolute', top: '-70px', left: '16px', 
-                    padding: '8px', backgroundColor: '#fff', 
+                    position: 'absolute', top: '-60px', left: '12px', 
+                    padding: '6px 10px', backgroundColor: '#fff', 
                     border: '1px solid #e5e7eb', borderRadius: '8px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                    display: 'flex', alignItems: 'center', gap: '12px'
+                    display: 'flex', alignItems: 'center', gap: '8px'
                   }}>
                     {filePreview === 'file' ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#4b5563' }}>
-                        <File size={24} />
-                        <span style={{ fontSize: '13px', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedFile?.name}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4b5563' }}>
+                        <File size={20} />
+                        <span style={{ fontSize: '12px', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedFile?.name}</span>
                       </div>
                     ) : (
-                      <img src={filePreview} alt="preview" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px' }} />
+                      <img src={filePreview} alt="preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
                     )}
                     <button onClick={removeFile} style={{ 
                       background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', 
-                      width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                      width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
                       cursor: 'pointer' 
                     }}>
-                      <X size={14} />
+                      <X size={12} />
                     </button>
                   </div>
                 )}
                 
-                <form onSubmit={handleSend} style={{ display: 'flex', gap: '12px', position: 'relative', alignItems: 'center' }}>
+                <form onSubmit={handleSend} style={{ display: 'flex', gap: isMobile ? '8px' : '12px', position: 'relative', alignItems: 'center' }}>
                   
                   <input 
                     type="file" 
@@ -602,11 +887,11 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                     style={{ 
                       background: 'none', border: 'none', cursor: 'pointer', 
                       color: selectedFile ? '#3b82f6' : '#6b7280',
-                      padding: '8px'
+                      padding: '4px'
                     }}
                     title="Đính kèm Ảnh / File PDF"
                   >
-                    <Paperclip size={22} />
+                    <Paperclip size={isMobile ? 20 : 22} />
                   </button>
 
                   <input
@@ -618,9 +903,9 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                       flex: 1, 
                       border: '1px solid #d1d5db', 
                       borderRadius: '9999px', 
-                      padding: '12px 20px', 
+                      padding: isMobile ? '8px 14px' : '12px 20px', 
                       outline: 'none',
-                      fontSize: '15px'
+                      fontSize: isMobile ? '13.5px' : '15px'
                     }}
                   />
                   
@@ -632,8 +917,9 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                       color: '#fff',
                       border: 'none',
                       borderRadius: '50%',
-                      width: '48px',
-                      height: '48px',
+                      width: isMobile ? '38px' : '48px',
+                      height: isMobile ? '38px' : '48px',
+                      minWidth: isMobile ? '38px' : '48px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -642,7 +928,7 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                       opacity: loading ? 0.7 : 1
                     }}
                   >
-                    <Send size={20} style={{ marginLeft: '4px' }} />
+                    <Send size={isMobile ? 16 : 20} style={{ marginLeft: '2px' }} />
                   </button>
                 </form>
               </div>
@@ -654,10 +940,10 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
             </div>
           )}
         </div>
-
       </div>
-    </div>
-  );
+    )}
+  </div>
+);
 };
 
 export default ZaloSandboxTab;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Send, Clock, Edit3, MessageSquare, MessageCircle, CheckCircle, Smartphone, Plus, X, UserPlus, Phone, List, Package } from 'lucide-react';
+import { Search, Send, Clock, Edit3, MessageSquare, MessageCircle, CheckCircle, Smartphone, Plus, X, UserPlus, Phone, List, Package, AlertTriangle } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
 import axios from 'axios';
 import { getLocalIsoString } from '../utils/dateUtils';

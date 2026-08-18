@@ -552,6 +552,18 @@ export const EditDepartureModal = ({
     }
   }, [showEditDepartureModal, editingDeparture?.id]);
 
+  const handleUpdateNote = async (bookingId, noteValue) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/bookings/${bookingId}`, { notes: noteValue }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setLinkedBookings(prev => prev.map(b => b.id === bookingId ? { ...b, notes: noteValue } : b));
+    } catch (err) {
+      console.error('Failed to update booking note:', err);
+    }
+  };
+
   if (!showEditDepartureModal || !editingDeparture) return null;
 
   const handleExportCSV = () => {

@@ -21,6 +21,7 @@ const AuditLogTab = lazy(() => import('./tabs/AuditLogTab'));
 const BookingsTab = lazy(() => import('./tabs/BookingsTab'));
 const CostingsTab = lazy(() => import('./tabs/CostingsTab'));
 const CustomersTab = lazy(() => import('./tabs/CustomersTab'));
+const CustomerAnalyticsDashboard = lazy(() => import('./tabs/CustomerAnalyticsDashboard'));
 const InboxTab = lazy(() => import('./tabs/InboxTab'));
 const ToursTab = lazy(() => import('./tabs/ToursTab'));
 const DeparturesTab = lazy(() => import('./tabs/DeparturesTab'));
@@ -70,6 +71,7 @@ const ManualTab = lazy(() => import('./tabs/ManualTab'));
 const MyProfileTab = lazy(() => import('./tabs/MyProfileTab'));
 const TeamDirectoryTab = lazy(() => import('./tabs/TeamDirectoryTab'));
 const ZaloSandboxTab = lazy(() => import('./tabs/ZaloSandboxTab'));
+const ZaloAISettingsTab = lazy(() => import('./tabs/ZaloAISettingsTab'));
 import AddLeadModal from './components/modals/AddLeadModal';
 import EditLeadModal from './components/modals/EditLeadModal';
 import NotificationBell from './components/common/NotificationBell';
@@ -96,6 +98,8 @@ import BrandTypographyPage from './pages/BrandTypographyPage';
 import BrandSocialPage from './pages/BrandSocialPage';
 import BrandLayout from './pages/BrandLayout';
 import AdminTripDashboard from './pages/AdminTripDashboard';
+import PublicReceiptPage from './pages/PublicReceiptPage';
+import ZnsDemoTab from './tabs/ZnsDemoTab';
 
 import { 
   Menu,
@@ -152,7 +156,9 @@ import {
   ScanText,
   Cpu,
   Mail,
-  MessageCircle
+  MessageCircle,
+  Bot,
+  Sparkles
 } from 'lucide-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -189,7 +195,7 @@ function AppContent() {
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
   const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
-  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'zalo-sandbox', 'marketing-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'dispatch-schedule', 'notification-center'];
+  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'dispatch-schedule', 'notification-center'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -559,10 +565,12 @@ function AppContent() {
     }
     if (fullPath.startsWith('customers')) {
       setActiveTab('customers');
-      if (fullPath === 'customers/cskh-rules') setCustomerActiveTab('cskh-rules');
+      if (fullPath === 'customers/analytics' || fullPath === 'customers/dashboard') setCustomerActiveTab('analytics');
+      else if (fullPath === 'customers/cskh-rules') setCustomerActiveTab('cskh-rules');
       else if (fullPath === 'customers/cskh-board') setCustomerActiveTab('cskh-board');
       else if (fullPath === 'customers/cskh-todo') setCustomerActiveTab('cskh-todo');
       else if (fullPath === 'customers/cskh-search') setCustomerActiveTab('cskh-search');
+      else if (fullPath === 'customers/calendar') setCustomerActiveTab('calendar');
       else setCustomerActiveTab('list');
       return;
     }
@@ -1716,43 +1724,6 @@ function AppContent() {
     return matchesStatus && matchesSource && matchesSearch && matchesBU && matchesStaff && matchesTime && matchesTours && matchesPhone;
   });
 
-  const fetchConversations = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      const res = await axios.get('/api/messages/conversations', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setConversations(res.data);
-    } catch (err) { console.error(err); }
-  };
-
-  const fetchMessages = async (convId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`/api/messages/${convId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMessages(res.data);
-    } catch (err) { console.error(err); }
-  };
-
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !selectedConv) return;
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.post('/api/messages/send', {
-        conversationId: selectedConv.id,
-        content: newMessage
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMessages([...messages, res.data]);
-      setNewMessage('');
-      fetchConversations();
-    } catch (err) { console.error(err); }
-  };
 
   const handleInlineUpdate = async (id, field, value) => {
     try {
@@ -2154,13 +2125,27 @@ function AppContent() {
               )}
 
               {checkView('leads') && (
-                <Link title="Zalo Sandbox (Test)" 
-                  to="/zalo-sandbox"
-                  className={`nav-item ${activeTab === 'zalo-sandbox' ? 'active' : ''}`}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                <div title="Zalo Chat" 
+                  className={`nav-item ${['zalo-sandbox', 'zalo-ai-settings'].includes(activeTab) ? 'active-parent' : ''}`}
+                  onClick={() => navigate('/zalo-sandbox')}
+                  style={{ justifyContent: 'space-between', color: '#0ea5e9' }}
+                  onMouseEnter={(e) => {
+                    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHoveredRect(rect);
+                    setHoveredMenu('zalo-chat');
+                  }}
+                  onMouseLeave={() => {
+                    menuTimerRef.current = setTimeout(() => {
+                      setHoveredMenu(null);
+                    }, 150);
+                  }}
                 >
-                  <MessageCircle /> Zalo Sandbox (Test)
-                </Link>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <MessageCircle size={18} /> Zalo Chat
+                  </div>
+                  <ChevronRight size={14} opacity={0.5} />
+                </div>
               )}
             </>
           )}
@@ -2584,7 +2569,14 @@ function AppContent() {
             className={`submenu-item ${activeTab === 'zalo-sandbox' ? 'active' : ''}`} 
             onClick={() => { navigate('/zalo-sandbox'); setHoveredMenu(null); }} 
           >
-            Zalo Sandbox (Test)
+            Zalo Chat
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'zalo-ai-settings' ? 'active' : ''}`} 
+            onClick={() => { navigate('/zalo-ai-settings'); setHoveredMenu(null); }} 
+            style={{ color: '#60a5fa', fontWeight: 500 }}
+          >
+            🤖 Cài đặt AI Agent (Zalo)
           </div>
           <div 
             className={`submenu-item ${activeTab === 'staff-performance' ? 'active' : ''}`} 
@@ -2686,6 +2678,45 @@ function AppContent() {
         </div>
       )}
 
+      {hoveredMenu === 'zalo-chat' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('zalo-chat');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'zalo-sandbox' ? 'active' : ''}`} 
+            onClick={() => { navigate('/zalo-sandbox'); setHoveredMenu(null); }}
+          >
+            💬 Hội thoại Zalo Chat
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'zalo-ai-settings' ? 'active' : ''}`} 
+            onClick={() => { navigate('/zalo-ai-settings'); setHoveredMenu(null); }} 
+            style={{ color: '#0ea5e9', fontWeight: 600 }}
+          >
+            🤖 Cài đặt AI Agent (RAG)
+          </div>
+        </div>
+      )}
+
       {hoveredMenu === 'visas' && hoveredRect && (
         <div 
           className="submenu-flyout"
@@ -2774,6 +2805,13 @@ function AppContent() {
           >
             Tiến độ Chăm sóc (Draft)
           </div>
+          <div 
+            className={`submenu-item ${activeTab === 'zns-demo' ? 'active' : ''}`} 
+            onClick={() => { navigate('/zns-demo'); setActiveTab('zns-demo'); setHoveredMenu(null); }}
+            style={{ color: '#0284c7', fontWeight: 600 }}
+          >
+            ZNS Demo (Mock)
+          </div>
         </div>
       )}
 
@@ -2856,6 +2894,12 @@ function AppContent() {
             onClick={() => { navigate('/customers'); setActiveTab('customers'); setCustomerActiveTab('list'); setHoveredMenu(null); }}
           >
             📋 Danh sách Khách hàng
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'customers' && customerActiveTab === 'analytics' ? 'active' : ''}`} 
+            onClick={() => { navigate('/customers/analytics'); setActiveTab('customers'); setCustomerActiveTab('analytics'); setHoveredMenu(null); }}
+          >
+            📊 Dashboard & Kiểm toán
           </div>
           <div 
             className={`submenu-item ${activeTab === 'customers' && customerActiveTab === 'calendar' ? 'active' : ''}`} 
@@ -3446,6 +3490,13 @@ function AppContent() {
               />
             )}
 
+            {activeTab === 'zalo-ai-settings' && (
+              <ZaloAISettingsTab 
+                currentUser={user}
+                addToast={addToast}
+              />
+            )}
+
             {activeTab === 'leads' && (
               <LeadsTab 
                 currentUser={user}
@@ -3635,7 +3686,25 @@ function AppContent() {
           <RemindersTab handleViewDeparture={handleViewDeparture} />
         )}
 
-        {activeTab === 'customers' && customerActiveTab !== 'cskh-board' && customerActiveTab !== 'cskh-todo' && customerActiveTab !== 'cskh-search' && customerActiveTab !== 'cskh-rules' && customerActiveTab !== 'customer-reviews' && (
+        {activeTab === 'customers' && customerActiveTab === 'analytics' && (
+          <CustomerAnalyticsDashboard 
+            currentUser={user}
+            onViewCustomer={(id) => {
+              navigate(`/customers?view=${id}`);
+              setCustomerActiveTab('list');
+            }}
+            onViewLead={(id) => {
+              navigate(`/leads?edit=${id}`);
+              setActiveTab('leads');
+            }}
+            onViewBooking={(id) => {
+              navigate(`/bookings?edit=${id}`);
+              setActiveTab('bookings');
+            }}
+          />
+        )}
+
+        {activeTab === 'customers' && customerActiveTab !== 'analytics' && customerActiveTab !== 'cskh-board' && customerActiveTab !== 'cskh-todo' && customerActiveTab !== 'cskh-search' && customerActiveTab !== 'cskh-rules' && customerActiveTab !== 'customer-reviews' && (
           <CustomersTab 
             currentUser={user}
             customers={customers}
@@ -3646,6 +3715,7 @@ function AppContent() {
             handleDeleteCustomer={handleDeleteCustomer}
             users={users}
             customerActiveTab={customerActiveTab}
+            setCustomerActiveTab={setCustomerActiveTab}
           />
         )}
 
@@ -4068,7 +4138,9 @@ function AppContent() {
       <Route path="/cam-nang-thuong-hieu" element={isLoggedIn ? <BrandLayout><BrandGuidelinePage /></BrandLayout> : <Navigate to="/login" />} />
       <Route path="/cam-nang-thuong-hieu/*" element={isLoggedIn ? <BrandLayout><BrandGuidelinePage /></BrandLayout> : <Navigate to="/login" />} />
       <Route path="/simple-list-share/lich_dai_ly" element={<AgencySharePage />} />
+      <Route path="/receipt/:token" element={<PublicReceiptPage />} />
       <Route path="/service-confirm/:tourId/:bookingId" element={<ServiceContractViewer />} />
+      <Route path="/zns-demo" element={isLoggedIn ? <ZnsDemoTab /> : <Navigate to="/login" />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/chinh-sach-bao-mat" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />

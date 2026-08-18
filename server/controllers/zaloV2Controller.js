@@ -6,6 +6,8 @@ const db = require('../db');
 const facebookService = require('../services/facebookService');
 const notificationController = require('./notificationController');
 const telegramService = require('../services/telegramService');
+const zaloAiService = require('../services/zaloAiService');
+const zaloZnsService = require('../services/zaloZnsService');
 
 const extractVietnamPhone = (text) => {
   if (!text) return null;
@@ -25,12 +27,28 @@ const SANDBOX_FILE_PATH = path.join(__dirname, '../../zalo_sandbox_messages.json
 const saveMessage = (msg) => {
   let messages = [];
   if (fs.existsSync(SANDBOX_FILE_PATH)) {
-    messages = JSON.parse(fs.readFileSync(SANDBOX_FILE_PATH, 'utf8'));
+    try {
+      messages = JSON.parse(fs.readFileSync(SANDBOX_FILE_PATH, 'utf8'));
+    } catch (e) {
+      messages = [];
+    }
   }
-  // Prevent duplicate by msg id
+  // 1. Prevent duplicate by exact msg id
   if (msg.id && messages.some(m => m.id === msg.id)) {
     return;
   }
+
+  // 2. Prevent duplicate outgoing messages sent within 10 seconds with identical text
+  const isDuplicateOutgoing = messages.some(m => 
+    m.type === 'outgoing' && 
+    (m.senderId === msg.senderId || m.recipientId === msg.senderId) && 
+    m.text && msg.text && m.text.trim() === msg.text.trim() &&
+    Math.abs(Date.now() - new Date(m.timestamp).getTime()) < 10000
+  );
+  if (isDuplicateOutgoing) {
+    return;
+  }
+
   messages.push({
     ...msg,
     timestamp: new Date().toISOString()
@@ -42,6 +60,68 @@ const saveMessage = (msg) => {
     global.io.emit('zalo_message_update');
   }
 };
+
+// Helper quản lý phiên AI (Session State) theo từng khách hàng Zalo
+const getAiSession = async (zaloUid) => {
+  if (!zaloUid) return { is_ai_active: true, message_count: 0 };
+  try {
+    const res = await db.query(`SELECT * FROM zalo_ai_sessions WHERE zalo_uid = $1`, [String(zaloUid)]);
+    if (res.rows.length > 0) {
+      return res.rows[0];
+    }
+    return { zalo_uid: String(zaloUid), is_ai_active: true, message_count: 0 };
+  } catch (e) {
+    console.error('[ZaloV2] Error getAiSession:', e.message);
+    return { is_ai_active: true, message_count: 0 };
+  }
+};
+
+const incrementAiSessionTurn = async (zaloUid) => {
+  if (!zaloUid) return 1;
+  try {
+    const res = await db.query(`
+      INSERT INTO zalo_ai_sessions (zalo_uid, is_ai_active, message_count, last_message_at, updated_at)
+      VALUES ($1, true, 1, NOW(), NOW())
+      ON CONFLICT (zalo_uid) DO UPDATE
+      SET message_count = COALESCE(zalo_ai_sessions.message_count, 0) + 1,
+          last_message_at = NOW(),
+          updated_at = NOW()
+      RETURNING message_count, is_ai_active;
+    `, [String(zaloUid)]);
+    return res.rows[0]?.message_count || 1;
+  } catch (e) {
+    console.error('[ZaloV2] Error incrementAiSessionTurn:', e.message);
+    return 1;
+  }
+};
+
+const setAiSession = async (zaloUid, isAiActive, mutedBy, notes = null) => {
+  if (!zaloUid) return;
+  try {
+    await db.query(`
+      INSERT INTO zalo_ai_sessions (zalo_uid, is_ai_active, muted_by, muted_at, updated_at, notes)
+      VALUES ($1, $2, $3, CASE WHEN $2 = false THEN NOW() ELSE NULL END, NOW(), $4)
+      ON CONFLICT (zalo_uid) DO UPDATE
+      SET is_ai_active = $2,
+          muted_by = $3,
+          muted_at = CASE WHEN $2 = false THEN NOW() ELSE NULL END,
+          updated_at = NOW(),
+          notes = COALESCE($4, zalo_ai_sessions.notes)
+    `, [String(zaloUid), isAiActive, mutedBy, notes]);
+
+    if (global.io) {
+      global.io.emit('zalo_ai_session_update', {
+        zalo_uid: String(zaloUid),
+        is_ai_active: isAiActive,
+        muted_by: mutedBy,
+        notes
+      });
+    }
+  } catch (e) {
+    console.error('[ZaloV2] Error setAiSession:', e.message);
+  }
+};
+
 // Helper to get user profile from Zalo API via Zalo Gateway VN
 const getZaloProfile = async (uid) => {
   try {
@@ -92,6 +172,56 @@ const refreshZaloToken = async (refreshToken) => {
   } catch (err) {
     console.error('Lỗi khi refresh Zalo token:', err.response?.data || err.message);
     return null;
+  }
+};
+
+const sendZaloCsMessageWithAutoRefresh = async (recipientId, text) => {
+  let tokens = null;
+  if (fs.existsSync(TOKEN_FILE_PATH)) {
+    try {
+      tokens = JSON.parse(fs.readFileSync(TOKEN_FILE_PATH, 'utf8'));
+    } catch (e) {
+      console.error('[ZaloV2] Error reading token file:', e.message);
+    }
+  }
+  if (!tokens?.access_token) {
+    console.error('[ZaloV2] No valid access token found');
+    return false;
+  }
+
+  const sendOnce = async (token) => {
+    return await axios.post('https://openapi.zalo.me/v3.0/oa/message/cs', 
+      {
+        recipient: { user_id: recipientId },
+        message: { text }
+      },
+      {
+        headers: {
+          'access_token': token,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+  };
+
+  try {
+    let res = await sendOnce(tokens.access_token);
+    if (res.data?.error === -216 || res.data?.error === -215) {
+      console.log('[ZaloV2] Access Token expired (-216), auto-refreshing token...');
+      const newTokens = await refreshZaloToken(tokens.refresh_token);
+      if (newTokens?.access_token) {
+        console.log('[ZaloV2] Retrying send message with new access token...');
+        res = await sendOnce(newTokens.access_token);
+      }
+    }
+    if (res.data?.error && res.data.error !== 0) {
+      console.error('[ZaloV2] Error from Zalo API:', res.data);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('[ZaloV2] Error sending CS message:', err.response?.data || err.message);
+    return false;
   }
 };
 
@@ -304,7 +434,10 @@ const zaloV2Controller = {
           } else {
             // LUỒNG VẪN ĐANG ACTIVE
             leadId = oldLead.id;
-            if (oldLead.status === 'Không phản hồi') {
+            if (profile?.name && (oldLead.name.startsWith('Zalo Guest') || oldLead.name.startsWith('Zalo User'))) {
+              await db.query('UPDATE leads SET name = $1, last_contacted_at = NOW() WHERE id = $2', [profile.name, leadId]);
+              console.log(`[ZALO WEBHOOK] ✅ Đã cập nhật tên Lead #${leadId} từ ${oldLead.name} -> ${profile.name}`);
+            } else if (oldLead.status === 'Không phản hồi') {
               console.log(`[ZALO WEBHOOK] Khách nhắn lại cho Lead (Auto-Fail): ${oldLead.name}. Re-opening -> Mới.`);
               await db.query("UPDATE leads SET status = 'Mới', last_contacted_at = NOW(), updated_at = NOW() WHERE id = $1", [leadId]);
             } else {
@@ -369,45 +502,121 @@ const zaloV2Controller = {
       });
     }
 
-    // Kiểm tra TEST MODE
-    const testMode = process.env.ZALO_V2_TEST_MODE === 'ON';
-    if (!testMode) {
-      console.log('Test mode đang OFF. Bỏ qua auto-reply.');
-      return;
-    }
-
-    // Logic cho Test 3: Trả lời tự động nếu là tin nhắn text
+    // Logic: Trả lời tự động cho Zalo OA nếu là tin nhắn text từ khách hàng
     if (body.event_name === 'user_send_text') {
       const senderId = body.sender?.id;
       const text = body.message?.text;
-      const testUid = process.env.ZALO_TEST_UID;
 
-      if (!senderId) return;
+      if (!senderId || !text) return;
 
-      if (senderId !== testUid) {
-        console.log(`[Bảo vệ] Bỏ qua tin nhắn từ người lạ (UID: ${senderId}). Chỉ trả lời Test UID.`);
+      // 1. Kiểm tra cấu hình AI Agent toàn cục
+      const aiConfig = await zaloAiService.getAiConfig();
+      if (!aiConfig || aiConfig.system_config?.is_sandbox_bot_enabled === false) {
+        console.log(`[AI Agent] Bot đang tắt trong Cài đặt Zalo AI. Bỏ qua Auto-Reply.`);
         return;
       }
 
-      console.log(`Tiến hành Auto-Reply tới Test UID: ${senderId}`);
+      // 2. Kiểm tra trạng thái phiên AI của khách hàng này (Nhân viên tiếp quản / Human Takeover)
+      const aiSession = await getAiSession(senderId);
+      if (aiSession && aiSession.is_ai_active === false) {
+        console.log(`[AI Muted] UID ${senderId} đã được nhân viên tiếp quản (Muted by: ${aiSession.muted_by}). Bỏ qua Auto-Reply để nhân viên chat.`);
+        return;
+      }
+
+      // 3. Kiểm tra Giới hạn số tin nhắn AI tối đa (Max Turns - Mặc định 10 lượt)
+      const maxTurns = Number(aiConfig.system_config?.max_ai_turns || 10);
+      const currentTurn = await incrementAiSessionTurn(senderId);
+
+      // Lấy Access Token hợp lệ của Zalo OA
+      let accessToken = null;
+      if (fs.existsSync(TOKEN_FILE_PATH)) {
+        try {
+          const tokenData = JSON.parse(fs.readFileSync(TOKEN_FILE_PATH, 'utf8'));
+          accessToken = tokenData?.access_token;
+        } catch (e) {
+          console.error('[ZaloV2] Lỗi đọc token file:', e.message);
+        }
+      }
+
+      if (!accessToken) {
+        console.error('[ZaloV2] Không tìm thấy Zalo OA access_token hợp lệ. Vui lòng đăng nhập lại Zalo OA.');
+        return;
+      }
+
+      if (currentTurn > maxTurns) {
+        console.log(`[AI Max Turns Reached] UID ${senderId} đã đạt ngưỡng ${currentTurn}/${maxTurns} tin nhắn. Tự động ngắt AI và gửi câu chuyển giao cho chuyên viên.`);
+        
+        const handoverText = `Dạ để hỗ trợ Anh/Chị chu đáo và chi tiết nhất cho hành trình này, em đã chuyển tiếp toàn bộ thông tin của mình tới Chuyên viên tư vấn chuyên tuyến của FIT TOUR. Chuyên viên sẽ trực tiếp nhắn tin hỗ trợ Anh/Chị ngay tại khung chat này nhé ạ! 💚`;
+        
+        try {
+          await sendZaloCsMessageWithAutoRefresh(senderId, handoverText);
+
+          const customerProfile = await getZaloProfile(senderId);
+          saveMessage({
+            id: Date.now().toString(),
+            senderId: senderId,
+            senderName: customerProfile?.name || profile?.name,
+            senderAvatar: customerProfile?.avatar || profile?.avatar,
+            recipientId: senderId,
+            text: handoverText,
+            type: 'outgoing',
+            senderType: 'ai',
+            senderStaffName: 'AI Agent'
+          });
+
+          await setAiSession(senderId, false, 'max_turn_limit', `Đã đạt giới hạn ${maxTurns} tin nhắn`);
+        } catch (e) {
+          console.error('[ZaloV2] Lỗi gửi tin nhắn chuyển giao max turns:', e.message);
+        }
+        return;
+      }
+
+      console.log(`[Zalo OA AI Agent] 🤖 Đang sinh phản hồi tự động (Lượt ${currentTurn}/${maxTurns}) cho UID: ${senderId}`);
       
       try {
-        if (!fs.existsSync(TOKEN_FILE_PATH)) return;
-        const tokens = JSON.parse(fs.readFileSync(TOKEN_FILE_PATH, 'utf8'));
-        
-        await axios.post('https://openapi.zalo.me/v3.0/oa/message/cs', 
-          {
-            recipient: { user_id: senderId },
-            message: { text: 'ERP FIT TOUR xác nhận đã nhận tin nhắn PoC của bạn!' }
-          },
-          {
-            headers: {
-              'access_token': tokens.access_token,
-              'Content-Type': 'application/json'
-            }
+        // Lấy lịch sử hội thoại gần nhất của khách hàng này (tối đa 6 tin)
+        let conversationHistory = [];
+        if (fs.existsSync(SANDBOX_FILE_PATH)) {
+          try {
+            const allMsgs = JSON.parse(fs.readFileSync(SANDBOX_FILE_PATH, 'utf8'));
+            conversationHistory = allMsgs
+              .filter(m => m.senderId === senderId || m.recipientId === senderId)
+              .slice(-6)
+              .map(m => ({
+                sender: m.senderId === senderId ? 'user' : 'model',
+                text: m.text || ''
+              }));
+          } catch (e) {
+            console.error('[ZaloV2] Lỗi đọc lịch sử tin nhắn:', e.message);
           }
-        );
-        console.log('✅ Auto-Reply thành công!');
+        }
+
+        // Tạo câu trả lời thông minh từ Gemini + RAG
+        const aiResult = await zaloAiService.processCustomerMessage({
+          message: text,
+          conversationHistory,
+          leadContext: { zalo_uid: senderId }
+        });
+
+        const replyText = aiResult?.reply || 'Dạ em chào Anh/Chị, FIT TOUR hân hạnh được hỗ trợ tư vấn tour cho mình ạ!';
+
+        await sendZaloCsMessageWithAutoRefresh(senderId, replyText);
+
+        // Lưu tin nhắn Bot gửi vào Sandbox
+        const customerProfile = await getZaloProfile(senderId);
+        saveMessage({
+          id: Date.now().toString(),
+          senderId: senderId,
+          senderName: customerProfile?.name || profile?.name,
+          senderAvatar: customerProfile?.avatar || profile?.avatar,
+          recipientId: senderId,
+          text: replyText,
+          type: 'outgoing',
+          senderType: 'ai',
+          senderStaffName: 'AI Agent'
+        });
+
+        console.log('✅ Auto-Reply Gemini AI thành công:', replyText);
       } catch (error) {
         console.error('❌ Lỗi Auto-Reply:', error.response?.data || error.message);
       }
@@ -536,6 +745,9 @@ const zaloV2Controller = {
       
       const realMsgId = result.realMsgId;
       
+      // Auto-Mute AI khi nhân viên gửi tin nhắn trực tiếp
+      await setAiSession(recipientId, false, 'human_message', `Nhân viên gửi tin: ${(text || 'File đính kèm').substring(0, 40)}`);
+
       // Save to sandbox
       const profile = await getZaloProfile(recipientId);
       saveMessage({
@@ -545,6 +757,8 @@ const zaloV2Controller = {
         senderAvatar: profile?.avatar,
         text: text || '',
         type: 'outgoing',
+        senderType: 'human',
+        senderStaffName: req.user?.full_name || req.user?.username || 'Tư vấn viên',
         attachments: attachmentUrl ? [{
           type: attachmentType,
           url: attachmentUrl,
@@ -552,7 +766,7 @@ const zaloV2Controller = {
         }] : null
       });
       
-      res.json({ success: true });
+      res.json({ success: true, ai_muted: true });
     } catch (error) {
       console.error('❌ Lỗi Reply Sandbox:', error.response?.data || error.message);
       res.status(500).json({ error: 'Lỗi khi gửi tin', details: error.response?.data || error.message });
@@ -572,6 +786,60 @@ const zaloV2Controller = {
     } catch (error) {
       console.error('❌ Lỗi Xóa Sandbox:', error);
       res.status(500).json({ error: 'Lỗi khi xóa tin nhắn', details: error.message });
+    }
+  },
+
+  // --- AI AGENT SESSION & TAKEOVER CONTROLLER ---
+  getAiSessionStatus: async (req, res) => {
+    try {
+      const { zaloUid } = req.params;
+      const session = await getAiSession(zaloUid);
+      res.json({ success: true, data: session });
+    } catch (error) {
+      console.error('❌ Lỗi getAiSessionStatus:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  },
+
+  toggleAiSession: async (req, res) => {
+    try {
+      const { zaloUid, isAiActive, mutedBy } = req.body;
+      if (!zaloUid) {
+        return res.status(400).json({ success: false, error: 'Thiếu zaloUid' });
+      }
+      const current = await getAiSession(zaloUid);
+      const nextState = isAiActive !== undefined ? !!isAiActive : !current.is_ai_active;
+      const reason = mutedBy || (nextState ? 'manual_enable' : 'manual_toggle');
+      await setAiSession(zaloUid, nextState, reason, nextState ? 'Nhân viên bật lại AI' : 'Nhân viên tắt AI thủ công');
+      res.json({ success: true, is_ai_active: nextState, muted_by: reason });
+    } catch (error) {
+      console.error('❌ Lỗi toggleAiSession:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  },
+
+  // --- ZNS DEMO MODULE ---
+  sendZnsDemo: async (req, res) => {
+    try {
+      const { phone, templateType } = req.body;
+      if (!phone || !templateType) {
+        return res.status(400).json({ success: false, message: 'Thiếu thông tin số điện thoại hoặc loại mẫu.' });
+      }
+
+      const templateId = templateType === 'REQUEST_PAYMENT' ? "REQUEST_PAYMENT_TEMPLATE_ID" : "CONFIRM_PAYMENT_TEMPLATE_ID";
+      
+      const templateData = {
+        customer_name: "Khách hàng Demo",
+        booking_code: "DEMO_FIT_" + Math.floor(Math.random() * 10000),
+        amount: templateType === 'REQUEST_PAYMENT' ? "5000000" : undefined,
+        receipt_url: "https://erp.fittour.vn/receipt/demo-uuid-1234"
+      };
+
+      const response = await zaloZnsService.sendZnsMessage(phone, templateId, templateData);
+      res.json({ success: true, message: 'Đã gửi Demo ZNS thành công!', data: response });
+    } catch (error) {
+      console.error('❌ Lỗi sendZnsDemo:', error);
+      res.status(500).json({ success: false, message: error.message });
     }
   }
 };

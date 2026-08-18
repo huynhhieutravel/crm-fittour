@@ -82,7 +82,7 @@ const VisaProvidersTab = ({ checkPerm, checkView, currentUser, setVisaProviderTo
         setActionLoading(false);
         if (addToast) addToast('Đã xoá ' + successCount + ' mục. ' + (failCount > 0 ? 'Lỗi ' + failCount + ' mục.' : ''), successCount > 0 ? 'success' : 'error');
         setSelectedIds([]);
-        fetchVisaProviders();
+        fetchProviders();
     };
 
     return (

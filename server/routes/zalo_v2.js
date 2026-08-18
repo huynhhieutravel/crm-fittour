@@ -16,4 +16,12 @@ router.get('/sandbox/messages', zaloV2Controller.getSandboxMessages);
 router.post('/sandbox/reply', zaloV2Controller.replySandboxMessage);
 router.delete('/sandbox/messages/:uid', zaloV2Controller.deleteSandboxMessages);
 
+// --- AI Session Management ---
+router.get('/ai-session/:zaloUid', zaloV2Controller.getAiSessionStatus);
+router.get('/ai-session/:zaloUid/status', zaloV2Controller.getAiSessionStatus);
+router.post('/ai-session/toggle', zaloV2Controller.toggleAiSession);
+
+// --- ZNS Demo Module ---
+router.post('/zns/demo-send', zaloV2Controller.sendZnsDemo);
+
 module.exports = router;

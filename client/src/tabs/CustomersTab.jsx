@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { Search, UserPlus, Edit3, Trash2, Eye, Filter, MessageSquareText } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  Search, UserPlus, Edit3, Trash2, Eye, Filter, MessageSquareText, 
+  BarChart3, Repeat, TrendingUp, TrendingDown, AlertTriangle, ArrowUpRight, 
+  Calendar as CalendarIcon, List as ListIcon, ShieldAlert, Sparkles, CheckCircle2 
+} from 'lucide-react';
 import axios from 'axios';
 import CustomerProfileSlider from '../components/CustomerProfileSlider';
 import CustomerCalendarView from '../components/CustomerCalendarView';
 import CustomerDuplicateManager from '../components/CustomerDuplicateManager';
-import { Calendar as CalendarIcon, List as ListIcon, Network } from 'lucide-react';
 import { canEdit, canDelete } from '../utils/permissions';
 
 const CustomersTab = ({ 
@@ -16,7 +19,8 @@ const CustomersTab = ({
   setEditingCustomer,
   handleDeleteCustomer,
   users = [],
-  customerActiveTab = 'list'
+  customerActiveTab = 'list',
+  setCustomerActiveTab
 }) => {
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [selectedCustomerFull, setSelectedCustomerFull] = useState(null);
@@ -25,6 +29,26 @@ const CustomersTab = ({
   const [hoveredNoteId, setHoveredNoteId] = useState(null);
 
   const [localFilters, setLocalFilters] = useState({ segment: '', minSpent: '', source: '', assignedTo: '' });
+  const [quickStats, setQuickStats] = useState(null);
+  const [quickStatsLoading, setQuickStatsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchQuickStats = async () => {
+      setQuickStatsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('/api/customers/analytics/overview?period=month', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setQuickStats(res.data);
+      } catch (e) {
+        console.error('Error fetching quick customer stats:', e);
+      } finally {
+        setQuickStatsLoading(false);
+      }
+    };
+    fetchQuickStats();
+  }, []);
 
   React.useEffect(() => {
     const s = new URLSearchParams(window.location.search).get('search');
@@ -97,9 +121,177 @@ const CustomersTab = ({
     }
   };
 
+  const kpi = quickStats?.kpi || {};
+  const integrity = quickStats?.dataIntegritySummary || {};
+
   return (
     <>
-      <div className="animate-fade-in">
+      <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        
+        {/* Top Navigation Subtabs */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ display: 'flex', background: '#ffffff', padding: '4px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', gap: '4px' }}>
+            <button
+              onClick={() => setCustomerActiveTab && setCustomerActiveTab('list')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: 'none',
+                fontSize: '0.85rem',
+                fontWeight: customerActiveTab === 'list' ? 700 : 500,
+                background: customerActiveTab === 'list' ? '#0284c7' : 'transparent',
+                color: customerActiveTab === 'list' ? '#ffffff' : '#64748b',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <ListIcon size={16} /> Danh Sách Khách Hàng
+            </button>
+
+            <button
+              onClick={() => setCustomerActiveTab && setCustomerActiveTab('analytics')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: 'none',
+                fontSize: '0.85rem',
+                fontWeight: customerActiveTab === 'analytics' ? 700 : 500,
+                background: customerActiveTab === 'analytics' ? '#0284c7' : 'transparent',
+                color: customerActiveTab === 'analytics' ? '#ffffff' : '#64748b',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <BarChart3 size={16} /> Dashboard & Kiểm Toán
+              {integrity?.totalIssues > 0 && (
+                <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.7rem', fontWeight: 800, padding: '1px 6px', borderRadius: '10px' }}>
+                  {integrity.totalIssues}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setCustomerActiveTab && setCustomerActiveTab('calendar')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: 'none',
+                fontSize: '0.85rem',
+                fontWeight: customerActiveTab === 'calendar' ? 700 : 500,
+                background: customerActiveTab === 'calendar' ? '#0284c7' : 'transparent',
+                color: customerActiveTab === 'calendar' ? '#ffffff' : '#64748b',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <CalendarIcon size={16} /> Lịch Chăm Sóc & Sinh Nhật
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              className="btn-pro-save" 
+              style={{ width: 'auto', padding: '0.5rem 1rem' }} 
+              onClick={() => setShowAddCustomerModal(true)}
+            >
+              <UserPlus size={16} strokeWidth={3} /> THÊM KHÁCH HÀNG
+            </button>
+          </div>
+        </div>
+
+        {/* Quick KPI Overview Banner (Hiển thị tóm tắt Tháng Này) */}
+        {customerActiveTab === 'list' && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+            gap: '1rem'
+          }}>
+            {/* KPI 1 */}
+            <div style={{ background: '#ffffff', padding: '1rem 1.25rem', borderRadius: '12px', border: '1px solid #bbf7d0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#16a34a', textTransform: 'uppercase' }}>Khách Mới Tháng Này</span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
+                  <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0f172a' }}>{kpi.newCustomersCount ?? '...'}</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: (kpi.momGrowth || 0) >= 0 ? '#16a34a' : '#ef4444', display: 'flex', alignItems: 'center' }}>
+                    {(kpi.momGrowth || 0) >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+                    {(kpi.momGrowth || 0) > 0 ? `+${kpi.momGrowth}%` : `${kpi.momGrowth || 0}%`}
+                  </span>
+                </div>
+              </div>
+              <div style={{ padding: '8px', borderRadius: '10px', background: '#dcfce7', color: '#16a34a' }}>
+                <UserPlus size={20} />
+              </div>
+            </div>
+
+            {/* KPI 2 */}
+            <div style={{ background: '#ffffff', padding: '1rem 1.25rem', borderRadius: '12px', border: '1px solid #bfdbfe', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase' }}>Khách Cũ Mua Tour Lại</span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
+                  <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0f172a' }}>{kpi.returningCustomersCount ?? '...'}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>({kpi.repeatBookingsCount || 0} booking)</span>
+                </div>
+              </div>
+              <div style={{ padding: '8px', borderRadius: '10px', background: '#dbeafe', color: '#2563eb' }}>
+                <Repeat size={20} />
+              </div>
+            </div>
+
+            {/* KPI 3 */}
+            <div style={{ background: '#ffffff', padding: '1rem 1.25rem', borderRadius: '12px', border: '1px solid #fde68a', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#d97706', textTransform: 'uppercase' }}>Tỷ Lệ Khách Quay Lại</span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
+                  <span style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0f172a' }}>{kpi.repeatRate ?? '...'}%</span>
+                  <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>Retention</span>
+                </div>
+              </div>
+              <div style={{ padding: '8px', borderRadius: '10px', background: '#fef3c7', color: '#d97706' }}>
+                <Sparkles size={20} />
+              </div>
+            </div>
+
+            {/* KPI 4 */}
+            <div 
+              onClick={() => setCustomerActiveTab && setCustomerActiveTab('analytics')}
+              style={{ 
+                background: (integrity.totalIssues || 0) > 0 ? '#fff1f2' : '#ffffff', 
+                padding: '1rem 1.25rem', 
+                borderRadius: '12px', 
+                border: (integrity.totalIssues || 0) > 0 ? '1px solid #fecdd3' : '1px solid #e2e8f0', 
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)', 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: (integrity.totalIssues || 0) > 0 ? '#be123c' : '#64748b', textTransform: 'uppercase' }}>Cảnh Báo Dữ Liệu</span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
+                  <span style={{ fontSize: '1.6rem', fontWeight: 900, color: (integrity.totalIssues || 0) > 0 ? '#e11d48' : '#0f172a' }}>{integrity.totalIssues ?? 0}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#e11d48', fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+                    Chi tiết <ArrowUpRight size={13} />
+                  </span>
+                </div>
+              </div>
+              <div style={{ padding: '8px', borderRadius: '10px', background: (integrity.totalIssues || 0) > 0 ? '#ffe4e6' : '#f1f5f9', color: (integrity.totalIssues || 0) > 0 ? '#e11d48' : '#64748b' }}>
+                <ShieldAlert size={20} />
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="filter-bar" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -118,13 +310,6 @@ const CustomersTab = ({
                 Xóa lọc
               </button>
             ) : null}
-            <button 
-              className="btn-pro-save" 
-              style={{ width: 'auto', padding: '0.5rem 1rem' }} 
-              onClick={() => setShowAddCustomerModal(true)}
-            >
-              <UserPlus size={16} strokeWidth={3} /> THÊM KHÁCH HÀNG
-            </button>
           </div>
         </div>
 

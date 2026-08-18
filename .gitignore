@@ -54,3 +54,5 @@ server/migrate_*.js
 _backups/
 server/public/uploads/
 zalo_tokens.json
+scratch/
+

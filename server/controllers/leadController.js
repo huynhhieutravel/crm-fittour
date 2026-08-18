@@ -124,17 +124,7 @@ exports.createLead = async (req, res) => {
             created_at: new Date().toISOString()
         });
 
-        // TELEGRAM NOTIFICATION (NEW)
-        try {
-            const messageId = await telegramService.sendNewLeadNotification(newLead);
-            if (messageId) {
-                // Optionally save the message ID if we want to delete/update it later
-                await db.query('UPDATE leads SET telegram_message_id = $1 WHERE id = $2', [messageId, newLead.id]);
-                newLead.telegram_message_id = messageId;
-            }
-        } catch (e) {
-            console.error('Failed to send telegram notification for new lead:', e);
-        }
+        // (Đã tắt gửi Telegram khi tạo lead thủ công theo yêu cầu quản trị)
 
         // GLOBAL CHAT BOT NOTIFICATION
         try {
@@ -338,6 +328,33 @@ exports.updateLead = async (req, res) => {
 
             // EMAIL EVENT for Assignment
             if (updates.assigned_to !== undefined && updates.assigned_to !== oldLead.assigned_to && updates.assigned_to !== null) {
+                // Tự động ngắt AI Agent nếu Lead có liên kết Zalo UID
+                if (updatedLead.zalo_uid) {
+                    await db.query(`
+                        INSERT INTO zalo_ai_sessions (zalo_uid, is_ai_active, muted_by, muted_at, updated_at, notes)
+                        VALUES ($1, false, 'sales_assigned', NOW(), NOW(), 'Đã phân bổ cho Sales chăm sóc')
+                        ON CONFLICT (zalo_uid) DO UPDATE
+                        SET is_ai_active = false, muted_by = 'sales_assigned', muted_at = NOW(), updated_at = NOW()
+                    `, [updatedLead.zalo_uid]).catch(e => console.error('Error auto-muting AI on lead assign:', e.message));
+                    if (global.io) {
+                        global.io.emit('zalo_ai_session_update', {
+                            zalo_uid: updatedLead.zalo_uid,
+                            is_ai_active: false,
+                            muted_by: 'sales_assigned'
+                        });
+                    }
+                }
+
+                if (global.io) {
+                    global.io.emit('lead_assigned', {
+                        leadId: updatedLead.id,
+                        leadName: updatedLead.name,
+                        assigned_to: updatedLead.assigned_to,
+                        source: updatedLead.source,
+                        market_collection: updatedLead.market_collection
+                    });
+                }
+                
                 emitEvent(SystemEvents.find(e => e.code === 'LEAD_ASSIGNED').code, {
                     lead_name: updatedLead.name,
                     assigned_to: updatedLead.assigned_to,
@@ -817,6 +834,24 @@ exports.claimLead = async (req, res) => {
         // Update Telegram Notification
         if (updatedLead.telegram_message_id) {
             await telegramService.updateLeadDispatchNotification(updatedLead.telegram_message_id, updatedLead, userName);
+        }
+
+        // Tự động ngắt AI Agent nếu Lead có liên kết Zalo UID khi Sales nhận Lead
+        if (updatedLead.zalo_uid) {
+            await db.query(`
+                INSERT INTO zalo_ai_sessions (zalo_uid, is_ai_active, muted_by, muted_at, updated_at, notes)
+                VALUES ($1, false, 'sales_claimed', NOW(), NOW(), $2)
+                ON CONFLICT (zalo_uid) DO UPDATE
+                SET is_ai_active = false, muted_by = 'sales_claimed', muted_at = NOW(), updated_at = NOW(), notes = $2
+            `, [updatedLead.zalo_uid, `Lead được tiếp nhận bởi ${userName}`]).catch(e => console.error('Error auto-muting AI on claimLead:', e.message));
+
+            if (global.io) {
+                global.io.emit('zalo_ai_session_update', {
+                    zalo_uid: updatedLead.zalo_uid,
+                    is_ai_active: false,
+                    muted_by: 'sales_claimed'
+                });
+            }
         }
 
         res.json({ message: 'Nhận Lead thành công!', lead: updatedLead });

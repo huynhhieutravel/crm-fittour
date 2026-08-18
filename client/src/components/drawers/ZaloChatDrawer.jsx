@@ -10,8 +10,37 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
   const [selectedUser, setSelectedUser] = useState(initialZaloUid || null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
+  const [aiSession, setAiSession] = useState({ is_ai_active: true });
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  const fetchAiSession = async (uid) => {
+    if (!uid) return;
+    try {
+      const res = await axios.get(`/api/zalo-v2/ai-session/${uid}`);
+      if (res.data?.success && res.data?.data) {
+        setAiSession(res.data.data);
+      }
+    } catch (e) {
+      console.error('Error fetching AI session:', e);
+    }
+  };
+
+  const handleToggleAi = async () => {
+    if (!selectedUser) return;
+    try {
+      const nextState = !aiSession.is_ai_active;
+      const res = await axios.post('/api/zalo-v2/ai-session/toggle', {
+        zaloUid: selectedUser,
+        isAiActive: nextState
+      });
+      if (res.data?.success) {
+        setAiSession(prev => ({ ...prev, is_ai_active: res.data.is_ai_active, muted_by: res.data.muted_by }));
+      }
+    } catch (err) {
+      alert('Lỗi chuyển trạng thái AI: ' + err.message);
+    }
+  };
 
   const fetchMessages = async () => {
     try {
@@ -41,12 +70,24 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
     const serverUrl = window.location.hostname === 'localhost' ? 'http://localhost:5001' : window.location.origin;
     const socket = io(serverUrl);
     socket.on('zalo_message_update', fetchMessages);
+    socket.on('zalo_ai_session_update', (data) => {
+      if (data && String(data.zalo_uid) === String(selectedUser)) {
+        setAiSession(prev => ({ ...prev, is_ai_active: data.is_ai_active, muted_by: data.muted_by }));
+      }
+    });
     
     return () => {
       socket.off('zalo_message_update', fetchMessages);
+      socket.off('zalo_ai_session_update');
       socket.disconnect();
     };
-  }, []);
+  }, [selectedUser]);
+
+  useEffect(() => {
+    if (selectedUser) {
+      fetchAiSession(selectedUser);
+    }
+  }, [selectedUser]);
 
   useEffect(() => {
     if (initialZaloUid) {
@@ -141,19 +182,24 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
   const uniqueSenders = [...new Set(messages.map(m => m.senderId))];
   const senderProfiles = uniqueSenders.map(uid => {
     const msgs = messages.filter(m => m.senderId === uid);
-    const msgWithName = msgs.slice().reverse().find(m => m.senderName);
+    const matchedLead = leads.find(l => String(l.zalo_uid) === String(uid));
+
+    // Tìm tên khách hàng thật (ưu tiên matchedLead, sau đó là tin incoming hoặc tin không phải bot)
+    const msgWithCustomerName = msgs.slice().reverse().find(m => m.type === 'incoming' && m.senderName) ||
+                               msgs.slice().reverse().find(m => m.senderName && !m.senderName.includes('AI Agent'));
+
+    const customerName = matchedLead?.name || (msgWithCustomerName ? msgWithCustomerName.senderName : `Zalo User (${uid.substring(0, 8)}...)`);
+    const customerAvatar = (msgWithCustomerName && msgWithCustomerName.senderAvatar) || (matchedLead?.avatar_url) || null;
+
     const lastMessageTimestamp = msgs.length > 0 ? new Date(msgs[msgs.length - 1].timestamp).getTime() : 0;
     
     const incomingMsgs = msgs.filter(m => m.type === 'incoming');
     const lastIncomingTimestamp = incomingMsgs.length > 0 ? new Date(incomingMsgs[incomingMsgs.length - 1].timestamp).getTime() : 0;
-    
-    // Check if linked to lead
-    const matchedLead = leads.find(l => l.zalo_uid === uid);
 
     return {
       uid,
-      name: matchedLead?.name || (msgWithName ? msgWithName.senderName : `Zalo User (${uid.substring(0, 8)}...)`),
-      avatar: msgWithName ? msgWithName.senderAvatar : null,
+      name: customerName,
+      avatar: customerAvatar,
       lastMessageTimestamp,
       lastIncomingTimestamp,
       matchedLead
@@ -293,6 +339,63 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
                 </div>
               </div>
 
+              {/* AI AGENT STATUS & HUMAN TAKEOVER BANNER */}
+              <div style={{
+                padding: '8px 16px',
+                backgroundColor: aiSession.is_ai_active ? '#f0fdf4' : '#fffbeb',
+                borderBottom: aiSession.is_ai_active ? '1px solid #bbf7d0' : '1px solid #fde68a',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
+                transition: 'all 0.2s'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ 
+                    display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%',
+                    backgroundColor: aiSession.is_ai_active ? '#22c55e' : '#f59e0b',
+                    boxShadow: aiSession.is_ai_active ? '0 0 8px #22c55e' : 'none'
+                  }}></span>
+                  <div>
+                    <span style={{ 
+                      fontSize: '12.5px', 
+                      fontWeight: 700, 
+                      color: aiSession.is_ai_active ? '#15803d' : '#b45309' 
+                    }}>
+                      {aiSession.is_ai_active ? '🟢 AI Agent Đang Tự Động Trực & Tư Vấn' : '🟠 Nhân Viên Đang Tiếp Quản (AI Đã Tắt)'}
+                    </span>
+                    <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '8px' }}>
+                      {aiSession.is_ai_active 
+                        ? '• AI sẽ tự động phản hồi tin nhắn của khách' 
+                        : `• ${aiSession.muted_by === 'human_message' ? 'Đã ngắt khi nhân viên gửi tin' : aiSession.muted_by === 'sales_assigned' ? 'Đã gán cho Sales' : 'Đã tắt thủ công'}`}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleToggleAi}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '5px 12px',
+                    borderRadius: '8px',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    border: 'none',
+                    backgroundColor: aiSession.is_ai_active ? '#ef4444' : '#0284c7',
+                    color: '#ffffff',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                    transition: 'all 0.15s',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {aiSession.is_ai_active ? '🛑 Dừng AI & Tiếp Quản' : '⚡ Bật Lại AI Agent'}
+                </button>
+              </div>
+
               {/* Message List */}
               <div style={{ flex: 1, padding: '16px 20px', overflowY: 'auto', backgroundColor: '#f1f5f9', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {activeMessages.map(msg => (
@@ -308,7 +411,39 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
                       borderBottomRightRadius: msg.type === 'outgoing' ? '3px' : '14px',
                       borderBottomLeftRadius: msg.type === 'outgoing' ? '14px' : '3px'
                     }}>
-                      <div style={{ fontSize: '14px', lineHeight: '1.45', wordBreak: 'break-word' }}>{msg.text}</div>
+                      {/* Sender Badge */}
+                      {msg.type === 'outgoing' && (
+                        <div style={{ fontSize: '10.5px', color: '#bfdbfe', fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          {msg.senderType === 'ai' || msg.senderId === 'zalo_ai_agent' 
+                            ? '🤖 FIT TOUR AI Agent' 
+                            : `👤 ${msg.senderStaffName || 'Tư vấn viên'}`}
+                        </div>
+                      )}
+
+                      <div style={{ fontSize: '14px', lineHeight: '1.6', wordBreak: 'break-word' }}>
+                        {String(msg.text || '').split('\n').map((line, lIdx, arr) => {
+                          const urlRegex = /(https?:\/\/[^\s]+)/g;
+                          const parts = line.split(urlRegex);
+                          return (
+                            <React.Fragment key={lIdx}>
+                              {parts.map((part, pIdx) => 
+                                part.match(urlRegex) ? (
+                                  <a 
+                                    key={pIdx} 
+                                    href={part} 
+                                    target="_blank" 
+                                    rel="noreferrer" 
+                                    style={{ color: msg.type === 'outgoing' ? '#bae6fd' : '#0284c7', textDecoration: 'underline', wordBreak: 'break-all' }}
+                                  >
+                                    {part}
+                                  </a>
+                                ) : part
+                              )}
+                              {lIdx < arr.length - 1 && <br />}
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
                       
                       {msg.attachments && msg.attachments.length > 0 && (
                         <div style={{ marginTop: msg.text ? '8px' : '0', display: 'flex', flexDirection: 'column', gap: '6px' }}>

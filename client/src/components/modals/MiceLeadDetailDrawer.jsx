@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Save, CheckSquare, Phone, MapPin, Calendar, MessageSquare, AlertCircle } from 'lucide-react';
-import { getLocalIsoString } from '../../utils/dateUtils';
+import { getLocalIsoString, getLocalDateTimeLocal } from '../../utils/dateUtils';
 
 export default function MiceLeadDetailDrawer({ lead, onClose, refreshList, addToast, currentUser }) {
     const [formData, setFormData] = useState({

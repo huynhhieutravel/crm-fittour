@@ -4,6 +4,7 @@ const { getDataScope } = require('../middleware/teamScope');
 const { getUserMergedPerms } = require('../middleware/permCheck');
 const { emitEvent } = require('../utils/eventBus');
 const SystemEvents = require('../constants/SystemEvents');
+const zaloZnsService = require('../services/zaloZnsService');
 
 exports.getAllBookings = async (req, res) => {
     try {
@@ -191,6 +192,14 @@ exports.getBookingById = async (req, res) => {
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy booking' });
         
         const booking = result.rows[0];
+
+        // Auto-fix missing public_token for old bookings (Migrations fallback)
+        if (!booking.public_token) {
+            const tokenRes = await db.query('UPDATE bookings_raw SET public_token = gen_random_uuid() WHERE id = $1 RETURNING public_token', [booking.id]);
+            if (tokenRes.rows.length > 0) {
+                booking.public_token = tokenRes.rows[0].public_token;
+            }
+        }
         
         // Fetch Passengers 
         // Note: fallback to the c_name if full_name is empty (migrating data)
@@ -213,6 +222,48 @@ exports.getBookingById = async (req, res) => {
             WHERE bt.booking_id = $1
             ORDER BY bt.transaction_date ASC, bt.created_at ASC
         `, [req.params.id]);
+        booking.transactions = txResult.rows;
+
+        res.json(booking);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getPublicReceipt = async (req, res) => {
+    try {
+        const { token } = req.params;
+        // Fetch Booking
+        const result = await db.query(`
+            SELECT b.id, b.booking_code, b.start_date, b.pax_count, b.total_price, b.payment_status, b.booking_status, b.created_at, b.public_token,
+                   c.name as customer_name, c.phone as customer_phone, c.email as customer_email,
+                   tt.name as tour_name, tt.code as tour_code, td.code as departure_code,
+                   b.tour_departure_id
+            FROM bookings b
+            LEFT JOIN customers c ON b.customer_id = c.id
+            LEFT JOIN tour_departures td ON b.tour_departure_id = td.id
+            LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+            WHERE b.public_token = $1
+        `, [token]);
+        if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy hóa đơn' });
+        
+        const booking = result.rows[0];
+        
+        // Fetch Passengers
+        const paxResult = await db.query(`
+            SELECT full_name, pax_type, price
+            FROM booking_passengers 
+            WHERE booking_id = $1
+        `, [booking.id]);
+        booking.passengers = paxResult.rows;
+
+        // Fetch Transactions
+        const txResult = await db.query(`
+            SELECT amount, payment_method, transaction_date
+            FROM booking_transactions
+            WHERE booking_id = $1
+            ORDER BY transaction_date ASC
+        `, [booking.id]);
         booking.transactions = txResult.rows;
 
         res.json(booking);
@@ -495,6 +546,86 @@ exports.updatePassenger = async (req, res) => {
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy khách' });
         
         res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.sendZaloPaymentRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.query(`
+            SELECT b.booking_code, b.total_price, b.public_token, c.phone, c.name as customer_name, tt.name as tour_name, td.code as tour_code
+            FROM bookings b
+            JOIN customers c ON b.customer_id = c.id
+            LEFT JOIN tour_departures td ON b.tour_departure_id = td.id
+            LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+            WHERE b.id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) return res.status(404).json({ message: 'Booking not found' });
+        const booking = result.rows[0];
+        if (!booking.phone) return res.status(400).json({ message: 'Khách hàng không có số điện thoại' });
+
+        const txResult = await db.query('SELECT SUM(amount) as paid FROM booking_transactions WHERE booking_id = $1', [id]);
+        const paid = Number(txResult.rows[0].paid) || 0;
+        const remaining = Number(booking.total_price) - paid;
+
+        // NOTE: In production, ZNS template_id needs to be registered with Zalo
+        // We use a dummy templateId for now, and format data accordingly.
+        const templateId = "REQUEST_PAYMENT_TEMPLATE_ID"; 
+        const templateData = {
+            customer_name: booking.customer_name,
+            booking_code: booking.booking_code,
+            tour_name: booking.tour_name || 'Tour Khách Đoàn',
+            tour_code: booking.tour_code || '',
+            total_price: Number(booking.total_price).toString(),
+            paid_amount: paid.toString(),
+            amount: remaining.toString(),
+            transfer_amount: remaining.toString()
+        };
+
+        const response = await zaloZnsService.sendZnsMessage(booking.phone, templateId, templateData);
+        res.json({ message: 'Đã gửi yêu cầu thanh toán qua Zalo ZNS', data: response });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.sendZaloPaymentConfirm = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.query(`
+            SELECT b.booking_code, b.total_price, b.public_token, c.phone, c.name as customer_name, tt.name as tour_name, td.code as tour_code
+            FROM bookings b
+            JOIN customers c ON b.customer_id = c.id
+            LEFT JOIN tour_departures td ON b.tour_departure_id = td.id
+            LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+            WHERE b.id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) return res.status(404).json({ message: 'Booking not found' });
+        const booking = result.rows[0];
+        if (!booking.phone) return res.status(400).json({ message: 'Khách hàng không có số điện thoại' });
+
+        const txResult = await db.query('SELECT SUM(amount) as paid FROM booking_transactions WHERE booking_id = $1', [id]);
+        const paid = Number(txResult.rows[0].paid) || 0;
+
+        // NOTE: In production, ZNS template_id needs to be registered with Zalo
+        const templateId = "CONFIRM_PAYMENT_TEMPLATE_ID"; 
+        const templateData = {
+            customer_name: booking.customer_name,
+            booking_code: booking.booking_code,
+            tour_name: booking.tour_name || 'Tour Khách Đoàn',
+            tour_code: booking.tour_code || '',
+            total_price: Number(booking.total_price).toString(),
+            paid_amount: paid.toString(),
+            booking_status: booking.booking_status || 'Đã đặt cọc',
+            receipt_url: `https://erp.fittour.vn/receipt/${booking.public_token}`
+        };
+
+        const response = await zaloZnsService.sendZnsMessage(booking.phone, templateId, templateData);
+        res.json({ message: 'Đã xác nhận thanh toán qua Zalo ZNS', data: response });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

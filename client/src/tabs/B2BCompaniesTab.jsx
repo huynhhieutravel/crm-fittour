@@ -36,30 +36,6 @@ const B2BCompaniesTab = ({ currentUser, addToast, users = [], activeView = 'list
       }
       sessionStorage.removeItem('pendingCompanyOpen');
     }
-    
-    const handleBulkDelete = async () => {
-        if (!selectedIds.length) return;
-        const result = await swalConfirm('Bạn có chắc chắn xoá ' + selectedIds.length + ' mục đã chọn?');
-        if (!result) return;
-        
-        setActionLoading(true);
-        let successCount = 0;
-        let failCount = 0;
-        const token = localStorage.getItem('token');
-        for (const id of selectedIds) {
-            try {
-                await axios.delete(`/api/b2b-companies/${id}?force=true`, { headers: { Authorization: `Bearer ${token}` } });
-                successCount++;
-            } catch (err) {
-                console.error(err);
-                failCount++;
-            }
-        }
-        setActionLoading(false);
-        if (addToast) addToast('Đã xoá ' + successCount + ' mục. ' + (failCount > 0 ? 'Lỗi ' + failCount + ' mục.' : ''), successCount > 0 ? 'success' : 'error');
-        setSelectedIds([]);
-        fetchB2bCompanies();
-    };
 
     return () => {
       window.removeEventListener('reloadB2bCompanies', handleReload);

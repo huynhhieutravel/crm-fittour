@@ -174,6 +174,7 @@ app.use('/.well-known', require('./routes/well-known'));
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/telegram', require('./routes/telegramRoutes'));
 app.use('/api/zalo-v2', require('./routes/zalo_v2'));
+app.use('/api/zalo-ai', require('./routes/zaloAiAgent'));
 // Áp dụng Login Limiter cụ thể cho endpoint đăng nhập
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRoutes);
@@ -326,11 +327,13 @@ server.listen(PORT, () => {
         const { startCskhCron } = require('./cron/cskhEngine');
         startCskhCron();
 
-        // Start Dispatcher SLA Cron Engine (every min)
-        const { startDispatcherSLAEngine } = require('./cron/dispatcherSLAEngine');
+        // Start Dispatcher SLA Cron Engine (Đã tắt theo yêu cầu quản trị)
+        // const { startDispatcherSLAEngine } = require('./cron/dispatcherSLAEngine');
+        // startDispatcherSLAEngine();
+        
         const { startReservationReleaseCron } = require('./cron/reservationReleaseEngine');
-        startDispatcherSLAEngine();
         require('./cron/monthlyReviewsEmail');
+        require('./cron/geminiCostReporter').start();
         require('./cron/monthlyDashboardEmail');
         
         startReservationReleaseCron();
@@ -341,7 +344,7 @@ server.listen(PORT, () => {
         const { startWebhookOutboxEngine } = require('./cron/webhookOutboxEngine');
         startWebhookOutboxEngine();
         
-        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, SLA, Monthly Reviews, Monthly Dashboard, Reservation Release, Idempotency Cleanup, Webhook Outbox).');
+        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, Monthly Reviews, Monthly Dashboard, Reservation Release, Idempotency Cleanup, Webhook Outbox).');
 
         // Start Email Listeners for Event-Driven Architecture
         const { registerEmailListeners } = require('./listeners/emailListener');
