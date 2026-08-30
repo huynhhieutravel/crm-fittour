@@ -327,7 +327,8 @@ exports.updateLead = async (req, res) => {
             await client.query('COMMIT');
 
             // EMAIL EVENT for Assignment
-            if (updates.assigned_to !== undefined && updates.assigned_to !== oldLead.assigned_to && updates.assigned_to !== null) {
+            const newAssignedTo = updatedLead.assigned_to;
+            if (newAssignedTo && newAssignedTo !== oldLead.assigned_to) {
                 // Tự động ngắt AI Agent nếu Lead có liên kết Zalo UID
                 if (updatedLead.zalo_uid) {
                     await db.query(`
@@ -349,7 +350,7 @@ exports.updateLead = async (req, res) => {
                     global.io.emit('lead_assigned', {
                         leadId: updatedLead.id,
                         leadName: updatedLead.name,
-                        assigned_to: updatedLead.assigned_to,
+                        assigned_to: newAssignedTo,
                         source: updatedLead.source,
                         market_collection: updatedLead.market_collection
                     });
@@ -357,14 +358,14 @@ exports.updateLead = async (req, res) => {
                 
                 emitEvent(SystemEvents.find(e => e.code === 'LEAD_ASSIGNED').code, {
                     lead_name: updatedLead.name,
-                    assigned_to: updatedLead.assigned_to,
+                    assigned_to: newAssignedTo,
                     status: updatedLead.status,
                     updated_at: new Date().toISOString()
                 });
                 
                 // GLOBAL CHAT BOT NOTIFICATION & PUSH NOTIFICATION
                 try {
-                    const assignRes = await db.pool.query('SELECT full_name FROM users WHERE id = $1', [updates.assigned_to]);
+                    const assignRes = await db.pool.query('SELECT full_name FROM users WHERE id = $1', [newAssignedTo]);
                     const saleName = assignRes.rows.length > 0 ? assignRes.rows[0].full_name : 'Sale';
                     
                     // Lấy tên tour để gửi push cụ thể
@@ -392,10 +393,10 @@ exports.updateLead = async (req, res) => {
                     await db.pool.query(
                         `INSERT INTO user_notifications (user_id, title, message, link, type, reference_id) 
                          VALUES ($1, $2, $3, $4, $5, $6)`,
-                        [updates.assigned_to, pushTitle, pushBody, `/leads/${updatedLead.id}`, 'NEW_LEAD', updatedLead.id]
+                        [newAssignedTo, pushTitle, pushBody, `/leads/${updatedLead.id}`, 'NEW_LEAD', updatedLead.id]
                     );
                     
-                    await notificationController.sendPushToUser(updates.assigned_to, {
+                    await notificationController.sendPushToUser(newAssignedTo, {
                         title: pushTitle,
                         body: pushBody,
                         url: `/inbox?psid=${updatedLead.id}`
@@ -686,6 +687,527 @@ exports.getLeadStats = async (req, res) => {
             timeSeriesStats = Object.values(pivotMap);
         }
 
+        // 10. Correlation & Comparison Analysis (CRM Leads vs Marketing Ads Spend)
+        let correlationStats = {
+            mode: 'weeks',
+            targetYear: new Date().getFullYear(),
+            targetMonth: new Date().getMonth() + 1,
+            selectedBu: req.query.comparisonBu || req.query.buGroup || 'ALL',
+            availableBus: ['BU1', 'BU2', 'BU3', 'BU4', 'BU5'],
+            periods: [],
+            summary: {
+                totalLeads: 0,
+                totalWon: 0,
+                totalSpend: 0,
+                avgCpl: 0,
+                avgConversionRate: 0,
+                bestPeriod: null,
+                highestCplPeriod: null
+            }
+        };
+
+        try {
+            const comparisonBu = req.query.comparisonBu || req.query.buGroup || 'ALL';
+            const reqDateFilter = req.query.dateFilter || '';
+            const isYearly = reqDateFilter === 'year' || groupBy === 'month';
+            
+            let refDate = new Date();
+            if (endDate) {
+                const parsedEnd = new Date(endDate.split(' ')[0] + 'T00:00:00');
+                if (!isNaN(parsedEnd.getTime())) refDate = parsedEnd;
+            } else if (startDate) {
+                const parsedStart = new Date(startDate.split(' ')[0] + 'T00:00:00');
+                if (!isNaN(parsedStart.getTime())) refDate = parsedStart;
+            }
+
+            const targetYear = refDate.getFullYear();
+            const targetMonth = refDate.getMonth() + 1; // 1-12
+
+            correlationStats.mode = isYearly ? 'months' : 'weeks';
+            correlationStats.targetYear = targetYear;
+            correlationStats.targetMonth = targetMonth;
+            correlationStats.selectedBu = comparisonBu;
+
+            // Fetch distinct available BUs
+            const busRes = await db.query(`
+                SELECT DISTINCT bu_name as bu FROM marketing_ads_reports WHERE bu_name IS NOT NULL AND bu_name != ''
+                UNION
+                SELECT DISTINCT bu_group as bu FROM leads WHERE bu_group IS NOT NULL AND bu_group != ''
+                ORDER BY 1
+            `).catch(() => ({ rows: [] }));
+            
+            const discoveredBus = busRes.rows.map(r => r.bu).filter(Boolean);
+            if (discoveredBus.length > 0) {
+                correlationStats.availableBus = Array.from(new Set(['BU1', 'BU2', 'BU3', 'BU4', 'BU5', ...discoveredBus]));
+            }
+
+            let periodsData = [];
+            const prevMonth = targetMonth === 1 ? 12 : targetMonth - 1;
+            const prevYear = isYearly ? targetYear - 1 : (targetMonth === 1 ? targetYear - 1 : targetYear);
+            const prevPeriodLabel = isYearly ? `Năm ${targetYear - 1}` : `Tháng ${prevMonth}/${prevYear}`;
+
+            let prevAdsMap = {};
+            let prevLeadsMap = {};
+
+            if (isYearly) {
+                // MONTHLY BREAKDOWN (12 Months)
+                const adsQuery = `
+                    SELECT 
+                        month,
+                        COALESCE(SUM(spend), 0)::numeric as spend,
+                        COALESCE(SUM(messages), 0)::int as messages,
+                        COALESCE(SUM(leads), 0)::int as leads
+                    FROM marketing_ads_reports
+                    WHERE year = $1 ${comparisonBu !== 'ALL' ? 'AND bu_name = $2' : ''}
+                    GROUP BY month
+                `;
+                const adsParams = comparisonBu !== 'ALL' ? [targetYear, comparisonBu] : [targetYear];
+                const adsRes = await db.query(adsQuery, adsParams).catch(() => ({ rows: [] }));
+                const adsMap = {};
+                adsRes.rows.forEach(r => adsMap[parseInt(r.month)] = r);
+
+                // Previous Year Ads
+                const prevAdsRes = await db.query(adsQuery, comparisonBu !== 'ALL' ? [targetYear - 1, comparisonBu] : [targetYear - 1]).catch(() => ({ rows: [] }));
+                prevAdsRes.rows.forEach(r => prevAdsMap[parseInt(r.month)] = r);
+
+                const yearStart = `${targetYear}-01-01 00:00:00`;
+                const yearEnd = `${targetYear}-12-31 23:59:59`;
+                const leadsQuery = `
+                    SELECT 
+                        EXTRACT(MONTH FROM l.created_at AT TIME ZONE 'Asia/Ho_Chi_Minh')::int as month,
+                        COUNT(l.id)::int as total_leads,
+                        COUNT(CASE WHEN l.status = 'Chốt đơn' THEN 1 END)::int as won_leads
+                    FROM leads l
+                    LEFT JOIN tour_templates tt ON l.tour_id = tt.id
+                    WHERE l.created_at >= $1 AND l.created_at <= $2
+                    ${comparisonBu !== 'ALL' ? "AND (l.bu_group = $3 OR tt.bu_group = $3)" : ""}
+                    GROUP BY 1
+                `;
+                const leadsParams = comparisonBu !== 'ALL' ? [yearStart, yearEnd, comparisonBu] : [yearStart, yearEnd];
+                const leadsRes = await db.query(leadsQuery, leadsParams).catch(() => ({ rows: [] }));
+                const leadsMap = {};
+                leadsRes.rows.forEach(r => leadsMap[parseInt(r.month)] = r);
+
+                // Previous Year Leads
+                const prevYearStart = `${targetYear - 1}-01-01 00:00:00`;
+                const prevYearEnd = `${targetYear - 1}-12-31 23:59:59`;
+                const prevLeadsRes = await db.query(leadsQuery, comparisonBu !== 'ALL' ? [prevYearStart, prevYearEnd, comparisonBu] : [prevYearStart, prevYearEnd]).catch(() => ({ rows: [] }));
+                prevLeadsRes.rows.forEach(r => prevLeadsMap[parseInt(r.month)] = r);
+
+                for (let m = 1; m <= 12; m++) {
+                    const lData = leadsMap[m] || { total_leads: 0, won_leads: 0 };
+                    const aData = adsMap[m] || { spend: 0, messages: 0, leads: 0 };
+                    const prevL = prevLeadsMap[m] || { total_leads: 0, won_leads: 0 };
+                    const prevA = prevAdsMap[m] || { spend: 0, messages: 0, leads: 0 };
+
+                    const daysCount = new Date(targetYear, m, 0).getDate();
+                    const prevDaysCount = new Date(targetYear - 1, m, 0).getDate();
+
+                    const crmLeads = parseInt(lData.total_leads) || 0;
+                    const crmWon = parseInt(lData.won_leads) || 0;
+                    const adsSpend = Math.round(parseFloat(aData.spend) || 0);
+                    const adsMessages = parseInt(aData.messages) || 0;
+                    const adsLeads = parseInt(aData.leads) || 0;
+                    const cplCrm = crmLeads > 0 && adsSpend > 0 ? Math.round(adsSpend / crmLeads) : 0;
+                    const conversionRate = crmLeads > 0 ? parseFloat(((crmWon / crmLeads) * 100).toFixed(1)) : 0;
+
+                    const dailyLeads = daysCount > 0 ? parseFloat((crmLeads / daysCount).toFixed(1)) : 0;
+                    const dailySpend = daysCount > 0 ? Math.round(adsSpend / daysCount) : 0;
+
+                    const prevCrmLeads = parseInt(prevL.total_leads) || 0;
+                    const prevAdsSpend = Math.round(parseFloat(prevA.spend) || 0);
+                    const prevCplCrm = (prevCrmLeads > 0 && prevAdsSpend > 0) ? Math.round(prevAdsSpend / prevCrmLeads) : 0;
+                    const prevDailyLeads = prevDaysCount > 0 ? parseFloat((prevCrmLeads / prevDaysCount).toFixed(1)) : 0;
+                    const prevDailySpend = prevDaysCount > 0 ? Math.round(prevAdsSpend / prevDaysCount) : 0;
+
+                    const deltaMoMLeadsPct = prevCrmLeads > 0 ? parseFloat((((crmLeads - prevCrmLeads) / prevCrmLeads) * 100).toFixed(1)) : null;
+                    const deltaMoMSpendPct = prevAdsSpend > 0 ? parseFloat((((adsSpend - prevAdsSpend) / prevAdsSpend) * 100).toFixed(1)) : null;
+                    const deltaMoMCplPct = (cplCrm > 0 && prevCplCrm > 0) ? parseFloat((((cplCrm - prevCplCrm) / prevCplCrm) * 100).toFixed(1)) : null;
+                    const deltaDailyLeadsPct = prevDailyLeads > 0 ? parseFloat((((dailyLeads - prevDailyLeads) / prevDailyLeads) * 100).toFixed(1)) : null;
+                    const deltaDailySpendPct = prevDailySpend > 0 ? parseFloat((((dailySpend - prevDailySpend) / prevDailySpend) * 100).toFixed(1)) : null;
+
+                    periodsData.push({
+                        periodKey: m,
+                        periodLabel: `Tháng ${m}`,
+                        periodSub: `T${m}/${targetYear}`,
+                        daysCount,
+                        dailyLeads,
+                        dailySpend,
+                        crmLeads,
+                        crmWon,
+                        conversionRate,
+                        adsSpend,
+                        adsMessages,
+                        adsLeads,
+                        cplCrm,
+                        prevCrmLeads,
+                        prevAdsSpend,
+                        prevCplCrm,
+                        prevDaysCount,
+                        prevPeriodSub: `T${m}/${targetYear - 1}`,
+                        prevDailyLeads,
+                        prevDailySpend,
+                        deltaMoMLeadsPct,
+                        deltaMoMSpendPct,
+                        deltaMoMCplPct,
+                        deltaDailyLeadsPct,
+                        deltaDailySpendPct,
+                        deltaLeadsPct: 0,
+                        deltaSpendPct: 0,
+                        deltaCplPct: 0,
+                        lastPeriod: null,
+                        diagnosis: ''
+                    });
+                }
+            } else {
+                // WEEKLY BREAKDOWN (5 Weeks of selected Month matching Marketing Ads SOP)
+                const adsQuery = `
+                    SELECT 
+                        week_number,
+                        COALESCE(SUM(spend), 0)::numeric as spend,
+                        COALESCE(SUM(messages), 0)::int as messages,
+                        COALESCE(SUM(leads), 0)::int as leads
+                    FROM marketing_ads_reports
+                    WHERE year = $1 AND month = $2 ${comparisonBu !== 'ALL' ? 'AND bu_name = $3' : ''}
+                    GROUP BY week_number
+                `;
+                const adsParams = comparisonBu !== 'ALL' ? [targetYear, targetMonth, comparisonBu] : [targetYear, targetMonth];
+                const adsRes = await db.query(adsQuery, adsParams).catch(() => ({ rows: [] }));
+                const adsMap = {};
+                adsRes.rows.forEach(r => adsMap[parseInt(r.week_number)] = r);
+
+                // Previous Month Ads
+                const prevAdsParams = comparisonBu !== 'ALL' ? [prevYear, prevMonth, comparisonBu] : [prevYear, prevMonth];
+                const prevAdsRes = await db.query(adsQuery, prevAdsParams).catch(() => ({ rows: [] }));
+                const prevAdsMap = {};
+                prevAdsRes.rows.forEach(r => prevAdsMap[parseInt(r.week_number)] = r);
+
+                const lastDayOfMonth = new Date(targetYear, targetMonth, 0).getDate();
+                const monthStart = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01 00:00:00`;
+                const monthEnd = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${String(lastDayOfMonth).padStart(2, '0')} 23:59:59`;
+
+                // Standard week ranges matching Marketing Ads SOP (Monday-Sunday, merging orphaned days)
+                const getWeekRanges = (y, m) => {
+                    const firstDay = new Date(y, m - 1, 1);
+                    const lastDay = new Date(y, m, 0); 
+                    let firstSunday = new Date(firstDay);
+                    while (firstSunday.getDay() !== 0) {
+                        firstSunday.setDate(firstSunday.getDate() + 1);
+                    }
+                    let w1End = new Date(firstSunday);
+                    const daysInFirstSegment = firstSunday.getDate() - firstDay.getDate() + 1;
+                    if (daysInFirstSegment <= 2 && w1End.getDate() + 7 <= lastDay.getDate()) {
+                        w1End.setDate(w1End.getDate() + 7);
+                    }
+                    const ranges = {};
+                    ranges[1] = {
+                        startDay: firstDay.getDate(),
+                        endDay: w1End.getDate(),
+                        days: w1End.getDate() - firstDay.getDate() + 1,
+                        sub: `${String(firstDay.getDate()).padStart(2, '0')} - ${String(w1End.getDate()).padStart(2, '0')}/${String(m).padStart(2, '0')}`
+                    };
+                    let currentStart = new Date(w1End);
+                    currentStart.setDate(currentStart.getDate() + 1);
+                    for (let w = 2; w <= 4; w++) {
+                        if (currentStart > lastDay) {
+                            ranges[w] = null;
+                            continue;
+                        }
+                        let currentEnd = new Date(currentStart);
+                        currentEnd.setDate(currentEnd.getDate() + 6);
+                        if (currentEnd > lastDay) currentEnd = new Date(lastDay);
+                        ranges[w] = {
+                            startDay: currentStart.getDate(),
+                            endDay: currentEnd.getDate(),
+                            days: currentEnd.getDate() - currentStart.getDate() + 1,
+                            sub: `${String(currentStart.getDate()).padStart(2, '0')} - ${String(currentEnd.getDate()).padStart(2, '0')}/${String(m).padStart(2, '0')}`
+                        };
+                        currentStart = new Date(currentEnd);
+                        currentStart.setDate(currentStart.getDate() + 1);
+                    }
+                    if (currentStart <= lastDay) {
+                        ranges[5] = {
+                            startDay: currentStart.getDate(),
+                            endDay: lastDay.getDate(),
+                            days: lastDay.getDate() - currentStart.getDate() + 1,
+                            sub: `${String(currentStart.getDate()).padStart(2, '0')} - ${String(lastDay.getDate()).padStart(2, '0')}/${String(m).padStart(2, '0')}`
+                        };
+                    } else {
+                        ranges[5] = null;
+                    }
+                    return ranges;
+                };
+
+                const weekRanges = getWeekRanges(targetYear, targetMonth);
+                const prevWeekRanges = getWeekRanges(prevYear, prevMonth);
+
+                let caseClauses = [];
+                for (let w = 1; w <= 5; w++) {
+                    if (weekRanges[w]) {
+                        caseClauses.push(`WHEN EXTRACT(DAY FROM l.created_at AT TIME ZONE 'Asia/Ho_Chi_Minh') BETWEEN ${weekRanges[w].startDay} AND ${weekRanges[w].endDay} THEN ${w}`);
+                    }
+                }
+                const caseSql = caseClauses.length > 0 
+                    ? `CASE ${caseClauses.join(' ')} ELSE 1 END`
+                    : `CEIL(EXTRACT(DAY FROM l.created_at AT TIME ZONE 'Asia/Ho_Chi_Minh') / 7.0)::int`;
+
+                const leadsQuery = `
+                    SELECT 
+                        ${caseSql} as week_number,
+                        COUNT(l.id)::int as total_leads,
+                        COUNT(CASE WHEN l.status = 'Chốt đơn' THEN 1 END)::int as won_leads
+                    FROM leads l
+                    LEFT JOIN tour_templates tt ON l.tour_id = tt.id
+                    WHERE l.created_at >= $1 AND l.created_at <= $2
+                    ${comparisonBu !== 'ALL' ? "AND (l.bu_group = $3 OR tt.bu_group = $3)" : ""}
+                    GROUP BY 1
+                `;
+                const leadsParams = comparisonBu !== 'ALL' ? [monthStart, monthEnd, comparisonBu] : [monthStart, monthEnd];
+                const leadsRes = await db.query(leadsQuery, leadsParams).catch(() => ({ rows: [] }));
+                const leadsMap = {};
+                leadsRes.rows.forEach(r => leadsMap[parseInt(r.week_number)] = r);
+
+                // Previous Month Leads
+                const prevLastDay = new Date(prevYear, prevMonth, 0).getDate();
+                const prevMonthStart = `${prevYear}-${String(prevMonth).padStart(2, '0')}-01 00:00:00`;
+                const prevMonthEnd = `${prevYear}-${String(prevMonth).padStart(2, '0')}-${String(prevLastDay).padStart(2, '0')} 23:59:59`;
+
+                let prevCaseClauses = [];
+                for (let w = 1; w <= 5; w++) {
+                    if (prevWeekRanges[w]) {
+                        prevCaseClauses.push(`WHEN EXTRACT(DAY FROM l.created_at AT TIME ZONE 'Asia/Ho_Chi_Minh') BETWEEN ${prevWeekRanges[w].startDay} AND ${prevWeekRanges[w].endDay} THEN ${w}`);
+                    }
+                }
+                const prevCaseSql = prevCaseClauses.length > 0 
+                    ? `CASE ${prevCaseClauses.join(' ')} ELSE 1 END`
+                    : `CEIL(EXTRACT(DAY FROM l.created_at AT TIME ZONE 'Asia/Ho_Chi_Minh') / 7.0)::int`;
+
+                const prevLeadsQuery = `
+                    SELECT 
+                        ${prevCaseSql} as week_number,
+                        COUNT(l.id)::int as total_leads,
+                        COUNT(CASE WHEN l.status = 'Chốt đơn' THEN 1 END)::int as won_leads
+                    FROM leads l
+                    LEFT JOIN tour_templates tt ON l.tour_id = tt.id
+                    WHERE l.created_at >= $1 AND l.created_at <= $2
+                    ${comparisonBu !== 'ALL' ? "AND (l.bu_group = $3 OR tt.bu_group = $3)" : ""}
+                    GROUP BY 1
+                `;
+                const prevLeadsParams = comparisonBu !== 'ALL' ? [prevMonthStart, prevMonthEnd, comparisonBu] : [prevMonthStart, prevMonthEnd];
+                const prevLeadsRes = await db.query(prevLeadsQuery, prevLeadsParams).catch(() => ({ rows: [] }));
+                const prevLeadsMap = {};
+                prevLeadsRes.rows.forEach(r => prevLeadsMap[parseInt(r.week_number)] = r);
+
+                for (let w = 1; w <= 5; w++) {
+                    const lData = leadsMap[w] || { total_leads: 0, won_leads: 0 };
+                    const aData = adsMap[w] || { spend: 0, messages: 0, leads: 0 };
+                    const prevL = prevLeadsMap[w] || { total_leads: 0, won_leads: 0 };
+                    const prevA = prevAdsMap[w] || { spend: 0, messages: 0, leads: 0 };
+
+                    const daysCount = weekRanges[w] ? weekRanges[w].days : 7;
+                    const prevDaysCount = prevWeekRanges[w] ? prevWeekRanges[w].days : 7;
+
+                    const crmLeads = parseInt(lData.total_leads) || 0;
+                    const crmWon = parseInt(lData.won_leads) || 0;
+                    const adsSpend = Math.round(parseFloat(aData.spend) || 0);
+                    const adsMessages = parseInt(aData.messages) || 0;
+                    const adsLeads = parseInt(aData.leads) || 0;
+                    const cplCrm = crmLeads > 0 && adsSpend > 0 ? Math.round(adsSpend / crmLeads) : 0;
+                    const conversionRate = crmLeads > 0 ? parseFloat(((crmWon / crmLeads) * 100).toFixed(1)) : 0;
+                    const periodSub = weekRanges[w] ? weekRanges[w].sub : `Tuần ${w}`;
+
+                    const dailyLeads = daysCount > 0 ? parseFloat((crmLeads / daysCount).toFixed(1)) : 0;
+                    const dailySpend = daysCount > 0 ? Math.round(adsSpend / daysCount) : 0;
+
+                    const prevCrmLeads = parseInt(prevL.total_leads) || 0;
+                    const prevAdsSpend = Math.round(parseFloat(prevA.spend) || 0);
+                    const prevCplCrm = (prevCrmLeads > 0 && prevAdsSpend > 0) ? Math.round(prevAdsSpend / prevCrmLeads) : 0;
+                    const prevDailyLeads = prevDaysCount > 0 ? parseFloat((prevCrmLeads / prevDaysCount).toFixed(1)) : 0;
+                    const prevDailySpend = prevDaysCount > 0 ? Math.round(prevAdsSpend / prevDaysCount) : 0;
+                    const prevPeriodSub = prevWeekRanges[w] ? prevWeekRanges[w].sub : `Tuần ${w}`;
+
+                    const deltaMoMLeadsPct = prevCrmLeads > 0 ? parseFloat((((crmLeads - prevCrmLeads) / prevCrmLeads) * 100).toFixed(1)) : null;
+                    const deltaMoMSpendPct = prevAdsSpend > 0 ? parseFloat((((adsSpend - prevAdsSpend) / prevAdsSpend) * 100).toFixed(1)) : null;
+                    const deltaMoMCplPct = (cplCrm > 0 && prevCplCrm > 0) ? parseFloat((((cplCrm - prevCplCrm) / prevCplCrm) * 100).toFixed(1)) : null;
+                    const deltaDailyLeadsPct = prevDailyLeads > 0 ? parseFloat((((dailyLeads - prevDailyLeads) / prevDailyLeads) * 100).toFixed(1)) : null;
+                    const deltaDailySpendPct = prevDailySpend > 0 ? parseFloat((((dailySpend - prevDailySpend) / prevDailySpend) * 100).toFixed(1)) : null;
+
+                    periodsData.push({
+                        periodKey: w,
+                        periodLabel: `Tuần ${w}`,
+                        periodSub: periodSub,
+                        daysCount,
+                        dailyLeads,
+                        dailySpend,
+                        crmLeads,
+                        crmWon,
+                        conversionRate,
+                        adsSpend,
+                        adsMessages,
+                        adsLeads,
+                        cplCrm,
+                        prevCrmLeads,
+                        prevAdsSpend,
+                        prevCplCrm,
+                        prevDaysCount,
+                        prevPeriodSub,
+                        prevDailyLeads,
+                        prevDailySpend,
+                        deltaMoMLeadsPct,
+                        deltaMoMSpendPct,
+                        deltaMoMCplPct,
+                        deltaDailyLeadsPct,
+                        deltaDailySpendPct,
+                        deltaLeadsPct: 0,
+                        deltaSpendPct: 0,
+                        deltaCplPct: 0,
+                        lastPeriod: null,
+                        diagnosis: ''
+                    });
+                }
+            }
+
+            // Calculate Deltas & Smart Diagnoses (Kỳ Trước Liền Kề - WoW)
+            for (let i = 0; i < periodsData.length; i++) {
+                const curr = periodsData[i];
+                if (i > 0) {
+                    const prev = periodsData[i - 1];
+                    if (prev.crmLeads > 0) {
+                        curr.deltaLeadsPct = parseFloat((((curr.crmLeads - prev.crmLeads) / prev.crmLeads) * 100).toFixed(1));
+                    } else if (curr.crmLeads > 0) {
+                        curr.deltaLeadsPct = 100;
+                    }
+
+                    if (prev.adsSpend > 0) {
+                        curr.deltaSpendPct = parseFloat((((curr.adsSpend - prev.adsSpend) / prev.adsSpend) * 100).toFixed(1));
+                    } else if (curr.adsSpend > 0) {
+                        curr.deltaSpendPct = 100;
+                    }
+
+                    if (prev.cplCrm > 0 && curr.cplCrm > 0) {
+                        curr.deltaCplPct = parseFloat((((curr.cplCrm - prev.cplCrm) / prev.cplCrm) * 100).toFixed(1));
+                    }
+
+                    // Attach previous period details
+                    curr.lastPeriod = {
+                        periodLabel: prev.periodLabel,
+                        periodSub: prev.periodSub,
+                        daysCount: prev.daysCount,
+                        crmLeads: prev.crmLeads,
+                        dailyLeads: prev.dailyLeads,
+                        adsSpend: prev.adsSpend,
+                        dailySpend: prev.dailySpend,
+                        cplCrm: prev.cplCrm,
+                        conversionRate: prev.conversionRate,
+                        deltaLeadsPct: curr.deltaLeadsPct,
+                        deltaSpendPct: curr.deltaSpendPct,
+                        deltaCplPct: curr.deltaCplPct,
+                        deltaDailyLeadsPct: prev.dailyLeads > 0 ? parseFloat((((curr.dailyLeads - prev.dailyLeads) / prev.dailyLeads) * 100).toFixed(1)) : null,
+                        deltaDailySpendPct: prev.dailySpend > 0 ? parseFloat((((curr.dailySpend - prev.dailySpend) / prev.dailySpend) * 100).toFixed(1)) : null
+                    };
+
+                    // Smart Diagnosis Rules
+                    if (curr.deltaLeadsPct < -12) {
+                        if (curr.deltaSpendPct < -15) {
+                            curr.diagnosis = `📉 Lượng Lead giảm ${Math.abs(curr.deltaLeadsPct)}% do ngân sách Ads giảm ${Math.abs(curr.deltaSpendPct)}% (TB ${curr.dailyLeads} lead/ngày).`;
+                        } else if (curr.deltaCplPct > 20) {
+                            curr.diagnosis = `⚠️ Chi phí/Lead (CPL) tăng cao (+${curr.deltaCplPct}%) khiến lượng Lead sụt giảm dù vẫn duy trì ngân sách.`;
+                        } else {
+                            curr.diagnosis = `Lượng Lead giảm ${Math.abs(curr.deltaLeadsPct)}% so với ${prev.periodLabel}.`;
+                        }
+                    } else if (curr.deltaLeadsPct > 12) {
+                        if (curr.deltaCplPct < -8) {
+                            curr.diagnosis = `🚀 Tăng trưởng hiệu quả cao: Lead tăng ${curr.deltaLeadsPct}% với giá thầu CPL tối ưu giảm ${Math.abs(curr.deltaCplPct)}% (TB ${curr.dailyLeads} lead/ngày).`;
+                        } else if (curr.deltaSpendPct > 15) {
+                            curr.diagnosis = `📈 Lead tăng ${curr.deltaLeadsPct}% nhờ mở rộng quy mô ngân sách Ads (+${curr.deltaSpendPct}%).`;
+                        } else {
+                            curr.diagnosis = `Lượng Lead tăng trưởng tích cực (+${curr.deltaLeadsPct}% so với ${prev.periodLabel}).`;
+                        }
+                    } else if (curr.crmLeads > 0 || curr.adsSpend > 0) {
+                        if (curr.deltaCplPct > 25) {
+                            curr.diagnosis = `⚠️ Cảnh báo CPL tăng ${curr.deltaCplPct}%, cần theo dõi nội dung hoặc tệp Ads.`;
+                        } else {
+                            curr.diagnosis = `Số lượng Lead (${curr.dailyLeads}/ngày) và chi phí duy trì ổn định so với ${prev.periodLabel}.`;
+                        }
+                    } else {
+                        curr.diagnosis = `Chưa có đủ dữ liệu chạy Ads hoặc phát sinh Lead trong kỳ.`;
+                    }
+                } else {
+                    if (curr.crmLeads > 0 && curr.cplCrm > 0) {
+                        curr.diagnosis = `Kỳ đầu (${curr.daysCount} ngày): ${curr.crmLeads} Lead (TB ${curr.dailyLeads}/ngày) với CPL trung bình ${curr.cplCrm.toLocaleString('vi-VN')} đ/lead.`;
+                    } else if (curr.crmLeads > 0) {
+                        curr.diagnosis = `Kỳ đầu (${curr.daysCount} ngày): Thu thập ${curr.crmLeads} Lead CRM (TB ${curr.dailyLeads}/ngày).`;
+                    } else {
+                        curr.diagnosis = `Kỳ bắt đầu theo dõi (${curr.daysCount} ngày).`;
+                    }
+                }
+            }
+
+            // Calculate Summary & MoM totals
+            const totalLeadsSum = periodsData.reduce((acc, p) => acc + p.crmLeads, 0);
+            const totalWonSum = periodsData.reduce((acc, p) => acc + p.crmWon, 0);
+            const totalSpendSum = periodsData.reduce((acc, p) => acc + p.adsSpend, 0);
+            const overallCpl = totalLeadsSum > 0 && totalSpendSum > 0 ? Math.round(totalSpendSum / totalLeadsSum) : 0;
+            const overallConv = totalLeadsSum > 0 ? parseFloat(((totalWonSum / totalLeadsSum) * 100).toFixed(1)) : 0;
+
+            const totalDaysSum = periodsData.reduce((acc, p) => acc + (p.daysCount || 0), 0);
+            const avgDailyLeads = totalDaysSum > 0 ? parseFloat((totalLeadsSum / totalDaysSum).toFixed(1)) : 0;
+            const avgDailySpend = totalDaysSum > 0 ? Math.round(totalSpendSum / totalDaysSum) : 0;
+
+            const prevTotalLeadsSum = periodsData.reduce((acc, p) => acc + (p.prevCrmLeads || 0), 0);
+            const prevTotalSpendSum = periodsData.reduce((acc, p) => acc + (p.prevAdsSpend || 0), 0);
+            const prevOverallCpl = (prevTotalLeadsSum > 0 && prevTotalSpendSum > 0) ? Math.round(prevTotalSpendSum / prevTotalLeadsSum) : 0;
+
+            const prevTotalDaysSum = periodsData.reduce((acc, p) => acc + (p.prevDaysCount || 0), 0);
+            const prevAvgDailyLeads = prevTotalDaysSum > 0 ? parseFloat((prevTotalLeadsSum / prevTotalDaysSum).toFixed(1)) : 0;
+            const prevAvgDailySpend = prevTotalDaysSum > 0 ? Math.round(prevTotalSpendSum / prevTotalDaysSum) : 0;
+
+            const momTotalLeadsPct = prevTotalLeadsSum > 0 ? parseFloat((((totalLeadsSum - prevTotalLeadsSum) / prevTotalLeadsSum) * 100).toFixed(1)) : null;
+            const momTotalSpendPct = prevTotalSpendSum > 0 ? parseFloat((((totalSpendSum - prevTotalSpendSum) / prevTotalSpendSum) * 100).toFixed(1)) : null;
+            const momAvgCplPct = (overallCpl > 0 && prevOverallCpl > 0) ? parseFloat((((overallCpl - prevOverallCpl) / prevOverallCpl) * 100).toFixed(1)) : null;
+            const momDailyLeadsPct = prevAvgDailyLeads > 0 ? parseFloat((((avgDailyLeads - prevAvgDailyLeads) / prevAvgDailyLeads) * 100).toFixed(1)) : null;
+            const momDailySpendPct = prevAvgDailySpend > 0 ? parseFloat((((avgDailySpend - prevAvgDailySpend) / prevAvgDailySpend) * 100).toFixed(1)) : null;
+
+            const validCplPeriods = periodsData.filter(p => p.cplCrm > 0 && p.crmLeads >= 3);
+            let bestPeriod = null;
+            let highestCplPeriod = null;
+
+            if (validCplPeriods.length > 0) {
+                bestPeriod = [...validCplPeriods].sort((a, b) => a.cplCrm - b.cplCrm)[0]?.periodLabel;
+                highestCplPeriod = [...validCplPeriods].sort((a, b) => b.cplCrm - a.cplCrm)[0]?.periodLabel;
+            }
+
+            correlationStats.periods = periodsData;
+            correlationStats.summary = {
+                targetMonth,
+                targetYear,
+                prevPeriodLabel,
+                totalDays: totalDaysSum,
+                avgDailyLeads,
+                avgDailySpend,
+                totalLeads: totalLeadsSum,
+                totalWon: totalWonSum,
+                totalSpend: totalSpendSum,
+                avgCpl: overallCpl,
+                avgConversionRate: overallConv,
+                prevTotalDays: prevTotalDaysSum,
+                prevAvgDailyLeads,
+                prevAvgDailySpend,
+                prevTotalLeads: prevTotalLeadsSum,
+                prevTotalSpend: prevTotalSpendSum,
+                prevAvgCpl: prevOverallCpl,
+                momTotalLeadsPct,
+                momTotalSpendPct,
+                momAvgCplPct,
+                momDailyLeadsPct,
+                momDailySpendPct,
+                bestPeriod,
+                highestCplPeriod
+            };
+        } catch (corrErr) {
+            console.error('Error calculating correlation stats:', corrErr);
+        }
+
         res.json({
             statusStats: statusStats.rows,
             sourceStats: sourceStats.rows,
@@ -695,7 +1217,8 @@ exports.getLeadStats = async (req, res) => {
             careStats: careStats.rows,
             recentLeads: recentLeads.rows,
             classificationStats: classificationStats.rows,
-            timeSeriesStats: timeSeriesStats
+            timeSeriesStats: timeSeriesStats,
+            correlationStats: correlationStats
         });
     } catch (err) {
         console.error('Get Lead Stats Error:', err);

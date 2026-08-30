@@ -1,0 +1,9 @@
+{"timestamp":"2026-08-19T11:27:56.006Z","method":"POST","url":"/api/auth/login","status":401,"user_id":null,"body":{"username":"admin","password":"admin"}}
+{"timestamp":"2026-08-19T11:37:09.849Z","method":"POST","url":"/api/auth/login","status":500,"user_id":null,"body":{"username":"admin","password":"admin"}}
+{"timestamp":"2026-08-19T11:37:31.267Z","method":"POST","url":"/api/auth/login","status":500,"user_id":null,"body":{"username":"admin","password":"admin"}}
+{"timestamp":"2026-08-19T11:37:44.087Z","method":"POST","url":"/api/auth/login","status":500,"user_id":null,"body":{"username":"admin","password":"admin"}}
+{"timestamp":"2026-08-19T11:37:50.408Z","method":"POST","url":"/api/auth/login","status":401,"user_id":null,"body":{"username":"nonexistentuser","password":"password"}}
+{"timestamp":"2026-08-19T11:37:54.356Z","method":"POST","url":"/api/auth/login","status":401,"user_id":null,"body":{"username":"admin","password":"wrongpassword"}}
+{"timestamp":"2026-08-19T11:38:16.202Z","method":"POST","url":"/api/auth/login","status":500,"user_id":null,"body":{"username":"admin","password":"admin"}}
+{"timestamp":"2026-08-19T11:39:03.162Z","method":"POST","url":"/api/auth/login","status":200,"user_id":null,"body":{"username":"admin","password":"admin"}}
+{"timestamp":"2026-08-19T11:39:32.652Z","method":"POST","url":"/api/auth/login","status":200,"user_id":null,"body":{"username":"admin","password":"admin"}}

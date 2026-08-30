@@ -574,18 +574,18 @@ const zaloV2Controller = {
       console.log(`[Zalo OA AI Agent] 🤖 Đang sinh phản hồi tự động (Lượt ${currentTurn}/${maxTurns}) cho UID: ${senderId}`);
       
       try {
-        // Lấy lịch sử hội thoại gần nhất của khách hàng này (tối đa 6 tin)
+        // Lấy lịch sử hội thoại gần nhất của khách hàng này (tối đa 6 tin quá khứ)
         let conversationHistory = [];
         if (fs.existsSync(SANDBOX_FILE_PATH)) {
           try {
             const allMsgs = JSON.parse(fs.readFileSync(SANDBOX_FILE_PATH, 'utf8'));
-            conversationHistory = allMsgs
-              .filter(m => m.senderId === senderId || m.recipientId === senderId)
-              .slice(-6)
-              .map(m => ({
-                sender: m.senderId === senderId ? 'user' : 'model',
-                text: m.text || ''
-              }));
+            const userMsgs = allMsgs.filter(m => (m.senderId === senderId || m.recipientId === senderId) && m.text);
+            // Tin nhắn hiện tại (vừa nhận) đã được saveMessage ở trên, nên cần loại bỏ tin cuối cùng để không bị lặp context
+            const historySlice = userMsgs.length > 1 ? userMsgs.slice(-7, -1) : [];
+            conversationHistory = historySlice.map(m => ({
+              sender: m.type === 'incoming' ? 'user' : 'model',
+              text: m.text || ''
+            }));
           } catch (e) {
             console.error('[ZaloV2] Lỗi đọc lịch sử tin nhắn:', e.message);
           }
@@ -821,22 +821,55 @@ const zaloV2Controller = {
   // --- ZNS DEMO MODULE ---
   sendZnsDemo: async (req, res) => {
     try {
-      const { phone, templateType } = req.body;
+      const { 
+        phone, 
+        templateType, 
+        customer_name, 
+        booking_code, 
+        tour_name, 
+        total_price, 
+        paid_amount, 
+        amount 
+      } = req.body;
+
       if (!phone || !templateType) {
         return res.status(400).json({ success: false, message: 'Thiếu thông tin số điện thoại hoặc loại mẫu.' });
       }
 
-      const templateId = templateType === 'REQUEST_PAYMENT' ? "REQUEST_PAYMENT_TEMPLATE_ID" : "CONFIRM_PAYMENT_TEMPLATE_ID";
+      const templateId = templateType === 'REQUEST_PAYMENT' ? "625192" : "625193";
       
+      const numTotalPrice = total_price !== undefined ? Number(String(total_price).replace(/[^\d]/g, '')) : 25000000;
+      const numPaidAmount = paid_amount !== undefined ? Number(String(paid_amount).replace(/[^\d]/g, '')) : 10000000;
+      const numAmount = amount !== undefined ? Number(String(amount).replace(/[^\d]/g, '')) : (numTotalPrice - numPaidAmount);
+
+      // Tự động làm sạch booking_code theo quy định Zalo bank_transfer_note (Zalo cấm các ký tự đặc biệt như -, _, /, #, @...)
+      const cleanBookingCode = String(booking_code || 'BKMSYHPP3M')
+        .replace(/[^a-zA-Z0-9\s]/g, '')
+        .trim() || 'BKMSYHPP3M';
+
       const templateData = {
-        customer_name: "Khách hàng Demo",
-        booking_code: "DEMO_FIT_" + Math.floor(Math.random() * 10000),
-        amount: templateType === 'REQUEST_PAYMENT' ? "5000000" : undefined,
-        receipt_url: "https://erp.fittour.vn/receipt/demo-uuid-1234"
+        customer_name: customer_name?.trim() || "Khách hàng FIT Tour",
+        booking_code: cleanBookingCode,
+        tour_name: tour_name?.trim() || "Tour Bhutan 5 ngày 4 đêm",
+        total_price: numTotalPrice,
+        paid_amount: numPaidAmount
       };
 
+      if (templateType === 'REQUEST_PAYMENT') {
+        templateData.amount = numAmount;
+      }
+
       const response = await zaloZnsService.sendZnsMessage(phone, templateId, templateData);
-      res.json({ success: true, message: 'Đã gửi Demo ZNS thành công!', data: response });
+      res.json({ 
+        success: true, 
+        message: 'Đã gửi ZBS thành công tới máy chủ Zalo!', 
+        data: response,
+        sentPayload: {
+          phone,
+          templateId,
+          templateData
+        }
+      });
     } catch (error) {
       console.error('❌ Lỗi sendZnsDemo:', error);
       res.status(500).json({ success: false, message: error.message });

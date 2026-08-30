@@ -68,6 +68,14 @@ function renderGenericTable(eventLabel, payload, bodyTemplate) {
  * Later can be extended to support specific templates (e.g. invoice, booking).
  */
 function render(eventCode, eventLabel, payload, bodyTemplate) {
+  // If payload already contains a full standalone HTML document (e.g. Marketing Ads Report), return it directly
+  if (payload && payload.html_content) {
+    const trimmed = payload.html_content.trim();
+    if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html')) {
+      return payload.html_content;
+    }
+  }
+
   if (['MONTHLY_REVIEWS_STATS', 'MONTHLY_MARKETING_ADS_STATS', 'WEEKLY_MARKETING_ADS_STATS'].includes(eventCode)) {
     let prefaceHtml = '';
     if (bodyTemplate) {

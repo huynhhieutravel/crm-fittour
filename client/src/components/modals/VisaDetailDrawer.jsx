@@ -1,7 +1,7 @@
 import { swalConfirm, swalPrompt } from '../../utils/swalHelpers';
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { X, Save, Plus, Trash2, Link as LinkIcon, Paperclip, ChevronDown, ChevronRight, User, FileText, CheckCircle, AlertTriangle, ScanText, Clock, Download, UserPlus, ExternalLink } from 'lucide-react';
+import { X, Save, Plus, Trash2, Link as LinkIcon, Paperclip, ChevronDown, ChevronRight, User, FileText, CheckCircle, AlertTriangle, ScanText, Clock, Download, UserPlus, ExternalLink, RefreshCw } from 'lucide-react';
 import VisaProviderDetailDrawer from './VisaProviderDetailDrawer';
 import HotelDetailDrawer from './HotelDetailDrawer';
 import AirlineDetailDrawer from './AirlineDetailDrawer';
@@ -26,6 +26,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
     const { template: VISA_CHECKLIST_TEMPLATE, loading: templateLoading } = useVisaChecklistTemplate();
 
     const [activeTab, setActiveTab] = useState('info');
+    const [activeChecklistSubTab, setActiveChecklistSubTab] = useState('assessment');
 
     const [customers, setCustomers] = useState([]);
     const [isNewCustomer, setIsNewCustomer] = useState(false);
@@ -76,12 +77,13 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
         status: 'Tạo mới', market: '', visa_type: 'Du lịch',
         receipt_date: '', result_date: '', fingerprint_date: '', stamp_date: '', return_date: '',
         quantity: 1, service_package: '', is_urgent: false, is_evisa: false,
-        exchange_rate: 1, notes: '',
-        members: [], finance_data: [], finance_commissions: [], visa_template_id: ''
+        exchange_rate: 1, notes: '', public_token: '',
+        members: [], finance_data: [], finance_commissions: [], visa_template_id: '', form_template_id: ''
     });
     const [showDeleteSupplier, setShowDeleteSupplier] = useState(null); // custom confirm modal
     const [usersList, setUsersList] = useState([]);
     const [visaTemplatesList, setVisaTemplatesList] = useState([]);
+    const [visaFormTemplatesList, setVisaFormTemplatesList] = useState([]);
     const [vouchersList, setVouchersList] = useState([]);
     const [showVoucherForm, setShowVoucherForm] = useState(false);
     const [voucherForm, setVoucherForm] = useState({ title: 'Thu tiền Visa', amount: '', payment_method: 'Chuyển khoản', payer_name: '', payer_phone: '', notes: '', voucher_date: getLocalDateTimeLocal() });
@@ -95,6 +97,11 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
         // Load visa templates
         axios.get('/api/visa-templates?limit=1000', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
             .then(res => setVisaTemplatesList(res.data.data || []))
+            .catch(() => {});
+            
+        // Load visa form templates
+        axios.get('/api/visa-form-templates', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+            .then(res => setVisaFormTemplatesList(Array.isArray(res.data) ? res.data : (res.data?.data || [])))
             .catch(() => {});
     }, []);
 
@@ -172,7 +179,8 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
             else {
                 d.members = d.members.map(m => ({
                     ...m,
-                    checklist_data: typeof m.checklist_data === 'string' ? JSON.parse(m.checklist_data || '[]') : (m.checklist_data || [])
+                    checklist_data: typeof m.checklist_data === 'string' ? JSON.parse(m.checklist_data || '[]') : (m.checklist_data || []),
+                    evaluation_data: typeof m.evaluation_data === 'string' ? JSON.parse(m.evaluation_data || '{}') : (m.evaluation_data || {})
                 }));
             }
             if (!d.customer_id && d.customer_name) {
@@ -558,6 +566,21 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
         }));
     };
 
+    const currentMemberForChecklist = (form.members || []).find(m => m.id === selectedMemberForChecklist) || (form.members || [])[0] || {};
+
+    const activeFormTemplateFields = React.useMemo(() => {
+        let tplId = form.form_template_id;
+        if (tplId) {
+            const tpl = visaFormTemplatesList.find(t => t.id == tplId);
+            if (tpl && tpl.fields) return tpl.fields;
+        }
+        if (visaFormTemplatesList.length > 0) {
+            const defaultTpl = visaFormTemplatesList.find(t => t.name.includes('Pháp') || t.name.includes('Tiêu Chuẩn')) || visaFormTemplatesList[0];
+            if (defaultTpl) return defaultTpl.fields || [];
+        }
+        return [];
+    }, [form.form_template_id, visaFormTemplatesList]);
+
     if (loading) {
         return (
             <div className="drawer-overlay" style={{ position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', justifyContent: 'flex-end' }}>
@@ -567,8 +590,6 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
             </div>
         );
     }
-
-    const currentMemberForChecklist = form.members.find(m => m.id === selectedMemberForChecklist) || form.members[0];
 
     return (
         <>
@@ -683,6 +704,22 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                         <label>Số lượng (Pax)</label>
                                         <input type="number" className="form-control" value={form.quantity} onChange={e => handleChange('quantity', e.target.value)} />
                                     </div>
+                                </div>
+                                <div style={{ marginTop: '1rem', background: '#eff6ff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+                                    <label style={{ color: '#1e40af', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '0.85rem' }}>
+                                        <FileText size={16} /> MẪU FORM KHẢO SÁT VISA (Dành cho khách điền Online hoặc Sales nhập)
+                                    </label>
+                                    <select 
+                                        className="form-control" 
+                                        value={form.form_template_id || ''} 
+                                        onChange={e => handleChange('form_template_id', e.target.value ? parseInt(e.target.value) : '')}
+                                        style={{ borderColor: '#93c5fd', background: 'white', fontWeight: 600, color: '#1e293b' }}
+                                    >
+                                        <option value="">-- Mặc định ({visaFormTemplatesList[0]?.name || 'Mẫu Form Visa Pháp'}) --</option>
+                                        {visaFormTemplatesList.filter(t => t.is_active).map(t => (
+                                            <option key={t.id} value={t.id}>{t.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
 
@@ -916,6 +953,21 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                 </div>
                             ) : (
                                 <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                        <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', margin: 0 }}>Chọn khách hàng:</h3>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button 
+                                                onClick={() => {
+                                                    fetchDetail();
+                                                    if(addToast) addToast('Đã tải lại dữ liệu mới nhất', 'success');
+                                                }}
+                                                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f1f5f9', color: '#475569', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
+                                                title="Tải lại để xem dữ liệu khách vừa điền"
+                                            >
+                                                <RefreshCw size={14} /> Làm mới
+                                            </button>
+                                        </div>
+                                    </div>
                                     <div style={{ display: 'flex', gap: '10px', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '10px' }}>
                                         {form.members.map((m, i) => {
                                             const progress = (() => {
@@ -948,6 +1000,139 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                     </div>
 
                                     {currentMemberForChecklist && (
+                                        <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
+                                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                                <button 
+                                                    onClick={() => setActiveChecklistSubTab('assessment')}
+                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem 1rem', fontWeight: 600, color: activeChecklistSubTab === 'assessment' ? '#2563eb' : '#64748b', borderBottom: activeChecklistSubTab === 'assessment' ? '2px solid #2563eb' : '2px solid transparent' }}
+                                                >
+                                                    1. Khảo sát & Thẩm định
+                                                </button>
+                                                <button 
+                                                    onClick={() => setActiveChecklistSubTab('checklist')}
+                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem 1rem', fontWeight: 600, color: activeChecklistSubTab === 'checklist' ? '#2563eb' : '#64748b', borderBottom: activeChecklistSubTab === 'checklist' ? '2px solid #2563eb' : '2px solid transparent' }}
+                                                >
+                                                    2. Danh mục Checklist
+                                                </button>
+                                            </div>
+                                            {form.public_token && activeChecklistSubTab === 'assessment' && (
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button 
+                                                        onClick={() => {
+                                                            const link = `${window.location.origin}/visa-portal/${form.public_token}?memberId=${currentMemberForChecklist.id}`;
+                                                            navigator.clipboard.writeText(link);
+                                                            if(addToast) addToast(`Đã copy link riêng của ${currentMemberForChecklist.fullname || 'khách này'}`, 'success');
+                                                        }}
+                                                        style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#e0e7ff', color: '#4338ca', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
+                                                    >
+                                                        <ExternalLink size={14} /> Gửi link cho {currentMemberForChecklist.fullname ? currentMemberForChecklist.fullname.split(' ').pop() : 'khách này'}
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => {
+                                                            const link = `${window.location.origin}/visa-portal/${form.public_token}`;
+                                                            navigator.clipboard.writeText(link);
+                                                            if(addToast) addToast(`Đã copy link chung cho toàn bộ khách`, 'success');
+                                                        }}
+                                                        style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', padding: '5px 12px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
+                                                        title="Gửi link này để một người điền cho toàn bộ gia đình/nhóm"
+                                                    >
+                                                        <ExternalLink size={14} /> Link cả đoàn
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {currentMemberForChecklist && activeChecklistSubTab === 'assessment' && (
+                                        <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', background: '#f8fafc', padding: '10px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                                    <FileText size={18} color="#2563eb" />
+                                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155' }}>Mẫu Form Khảo Sát:</span>
+                                                    <select 
+                                                        className="form-control"
+                                                        value={form.form_template_id || ''} 
+                                                        onChange={e => handleChange('form_template_id', e.target.value ? parseInt(e.target.value) : '')}
+                                                        style={{ width: 'auto', display: 'inline-block', padding: '4px 10px', fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', background: 'white', borderColor: '#cbd5e1' }}
+                                                    >
+                                                        <option value="">-- Mặc định ({visaFormTemplatesList[0]?.name || 'Mẫu Form Visa Pháp'}) --</option>
+                                                        {visaFormTemplatesList.filter(t => t.is_active).map(t => (
+                                                            <option key={t.id} value={t.id}>{t.name}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
+                                                    Gồm <strong>{activeFormTemplateFields.length}</strong> câu hỏi
+                                                </span>
+                                            </div>
+                                            
+                                            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b', marginBottom: '1rem' }}>Thông tin khảo sát (Khách tự điền hoặc Sales nhập tay)</h3>
+                                            
+                                            {activeFormTemplateFields.length === 0 ? (
+                                                <div style={{ color: '#64748b', fontStyle: 'italic' }}>Chưa có câu hỏi khảo sát nào.</div>
+                                            ) : (
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                                    {activeFormTemplateFields.map(field => {
+                                                        const val = currentMemberForChecklist.evaluation_data?.[field.name] || '';
+                                                        
+                                                        return (
+                                                            <div className="form-group" key={field.name} style={field.type === 'textarea' ? { gridColumn: '1 / -1' } : {}}>
+                                                                <label>{field.label}</label>
+                                                                
+                                                                {field.type === 'text' && (
+                                                                    <input type="text" className="form-control" placeholder={field.placeholder || ''} value={val} onChange={e => updateMemberInfo(currentMemberForChecklist.id, 'evaluation_data', { ...currentMemberForChecklist.evaluation_data, [field.name]: e.target.value })} />
+                                                                )}
+                                                                
+                                                                {field.type === 'textarea' && (
+                                                                    <textarea className="form-control" rows={2} placeholder={field.placeholder || ''} value={val} onChange={e => updateMemberInfo(currentMemberForChecklist.id, 'evaluation_data', { ...currentMemberForChecklist.evaluation_data, [field.name]: e.target.value })}></textarea>
+                                                                )}
+                                                                
+                                                                {field.type === 'select' && (
+                                                                    <>
+                                                                        <select className="form-control" value={field.allow_custom && !field.options.includes(val) && val !== '' ? 'Khác' : val} onChange={e => updateMemberInfo(currentMemberForChecklist.id, 'evaluation_data', { ...currentMemberForChecklist.evaluation_data, [field.name]: e.target.value === 'Khác' ? '' : e.target.value })}>
+                                                                            <option value="">-- Chọn --</option>
+                                                                            {field.options.map((opt, idx) => (
+                                                                                <option key={idx} value={opt}>{opt}</option>
+                                                                            ))}
+                                                                            {field.allow_custom && <option value="Khác">Khác (Nhập tay)</option>}
+                                                                        </select>
+                                                                        {field.allow_custom && !field.options.includes(val) && val !== '' && (
+                                                                            <input type="text" className="form-control" style={{ marginTop: '8px' }} placeholder={`Nhập ${field.label.toLowerCase()}...`} value={val} onChange={e => updateMemberInfo(currentMemberForChecklist.id, 'evaluation_data', { ...currentMemberForChecklist.evaluation_data, [field.name]: e.target.value })} />
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+
+                                            {/* Phần Render Dữ Liệu Khác (Đã Ẩn) - Đề phòng template thay đổi nhưng data cũ vẫn còn */}
+                                            {(() => {
+                                                if (!currentMemberForChecklist.evaluation_data) return null;
+                                                const knownKeys = activeFormTemplateFields.map(f => f.name);
+                                                const orphanKeys = Object.keys(currentMemberForChecklist.evaluation_data).filter(k => !knownKeys.includes(k) && currentMemberForChecklist.evaluation_data[k]);
+                                                if (orphanKeys.length === 0) return null;
+                                                return (
+                                                    <div style={{ marginTop: '2rem', padding: '1rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px' }}>
+                                                        <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#92400e' }}>Dữ liệu lưu trữ khác (Không nằm trong Mẫu hiện tại)</h4>
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                                            {orphanKeys.map(k => (
+                                                                <div key={k}>
+                                                                    <label style={{ fontSize: '0.8rem', color: '#92400e', display: 'block', marginBottom: '4px' }}>{k}</label>
+                                                                    <div style={{ background: 'white', padding: '8px', borderRadius: '4px', border: '1px solid #fcd34d', fontSize: '0.9rem', color: '#b45309' }}>
+                                                                        {currentMemberForChecklist.evaluation_data[k]}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    )}
+
+                                    {currentMemberForChecklist && activeChecklistSubTab === 'checklist' && (
                                         <div style={{ marginBottom: '1.5rem' }}>
                                             <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                                                 <FileText size={14} /> Ghi chú riêng cho {currentMemberForChecklist.fullname || 'khách này'}
@@ -963,7 +1148,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                                         </div>
                                     )}
 
-                                    {currentMemberForChecklist && currentMemberForChecklist.checklist_data && currentMemberForChecklist.checklist_data.map((category, catIndex) => (
+                                    {currentMemberForChecklist && activeChecklistSubTab === 'checklist' && currentMemberForChecklist.checklist_data && currentMemberForChecklist.checklist_data.map((category, catIndex) => (
                                         <div key={catIndex} style={{ marginBottom: category.group ? '2rem' : '1.5rem' }}>
                                             {category.group && (
                                                 <h3 style={{ textAlign: 'center', fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginBottom: '1.5rem', marginTop: catIndex > 0 ? '1rem' : 0 }}>

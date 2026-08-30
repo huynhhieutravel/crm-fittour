@@ -16,13 +16,13 @@ echo "🚀 Bắt đầu Deploy Lên VPS ($VPS_IP)..."
 
 # 1. Deploy Backend (Thư mục server)
 echo "📦 Đang đẩy thư mục 'server'..."
-rsync -avz --exclude '.env' --exclude 'node_modules' --exclude '.DS_Store' server/ ${VPS_USER}@${VPS_IP}:${VPS_PATH}/server/
+rsync -avz --exclude '.env' --exclude '.env.*' --exclude 'node_modules' --exclude '.DS_Store' --exclude 'public/uploads' server/ ${VPS_USER}@${VPS_IP}:${VPS_PATH}/server/
 
 # 2. Deploy Frontend (Thư mục client)
 # Nếu có thư mục client thì mới rsync
 if [ -d "client" ]; then
     echo "📦 Đang đẩy thư mục 'client'..."
-    rsync -avz --exclude '.env' --exclude 'node_modules' --exclude '.DS_Store' client/ ${VPS_USER}@${VPS_IP}:${VPS_PATH}/client/
+    rsync -avz --exclude '.env' --exclude '.env.*' --exclude 'node_modules' --exclude '.DS_Store' client/ ${VPS_USER}@${VPS_IP}:${VPS_PATH}/client/
 fi
 
 # 3. Deploy Data Import (Thư mục data_import)

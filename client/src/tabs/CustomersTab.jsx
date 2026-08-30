@@ -583,12 +583,14 @@ const CustomersTab = ({
       )}
       </div>
 
-      <CustomerProfileSlider 
-        customer={selectedCustomerFull} 
-        users={users}
-        onClose={() => { setSelectedCustomerId(null); setSelectedCustomerFull(null); }} 
-        onAddNote={handleAddNote}
-      />
+      {selectedCustomerFull && (
+        <CustomerProfileSlider 
+          customer={selectedCustomerFull} 
+          users={users}
+          onClose={() => { setSelectedCustomerId(null); setSelectedCustomerFull(null); }} 
+          onAddNote={handleAddNote}
+        />
+      )}
 
       {showDuplicateManager && (
         <CustomerDuplicateManager 

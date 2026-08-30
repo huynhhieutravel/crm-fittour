@@ -76,7 +76,8 @@ const globalSearchData = [
 
     // Docs & System
     { id: 'tai-lieu', title: 'Tài liệu nội bộ', path: '/tai-lieu', icon: BookOpen },
-    { id: 'licenses', title: 'Biểu mẫu Văn phòng', path: '/licenses', icon: FileText },
+    { id: 'licenses', title: 'Biểu mẫu Văn phòng', path: '/licenses?tab=licenses', icon: FileText },
+    { id: 'announcements', title: 'Văn bản Thông báo Nội bộ', path: '/licenses?tab=announcements', icon: FileText },
     { id: 'manual', title: 'Sổ tay hướng dẫn (Manual)', path: '/manual/overview', icon: BookOpen },
     { id: 'workflow', title: 'Quy trình làm việc (Workflow)', path: '/workflow', icon: Activity },
     { id: 'bu-rules', title: 'Quy tắc Business Unit (BU)', path: '/bu-rules', icon: Shield },
@@ -151,23 +152,45 @@ const CommandPalette = ({ onNavigate }) => {
     const inputRef = useRef(null);
     const navigate = useNavigate();
 
-    // Fetch dynamic licenses (biểu mẫu)
+    // Fetch dynamic licenses & announcements
     useEffect(() => {
         const fetchRemoteDocs = async () => {
             try {
                 const token = localStorage.getItem('token');
                 if (!token) return;
-                const res = await axios.get('/api/licenses', { headers: { Authorization: `Bearer ${token}` } });
-                const docs = res.data.map(l => ({
-                    id: `license-${l.id}`,
-                    title: `Biểu mẫu: ${l.name}`,
-                    type: 'doc-dynamic',
-                    path: l.link || '#',
-                    icon: ExternalLink
-                }));
+                const [licRes, annRes] = await Promise.allSettled([
+                    axios.get('/api/licenses', { headers: { Authorization: `Bearer ${token}` } }),
+                    axios.get('/api/announcements', { headers: { Authorization: `Bearer ${token}` } })
+                ]);
+                
+                const docs = [];
+                if (licRes.status === 'fulfilled' && Array.isArray(licRes.value.data)) {
+                    licRes.value.data.forEach(l => {
+                        docs.push({
+                            id: `license-${l.id}`,
+                            title: `Biểu mẫu: ${l.name}`,
+                            type: 'doc-dynamic',
+                            path: l.link || '/licenses?tab=licenses',
+                            icon: ExternalLink
+                        });
+                    });
+                }
+
+                if (annRes.status === 'fulfilled' && Array.isArray(annRes.value.data)) {
+                    annRes.value.data.forEach(a => {
+                        docs.push({
+                            id: `announcement-${a.id}`,
+                            title: `[${a.code}] ${a.title}`,
+                            type: 'doc-dynamic',
+                            path: `/licenses?tab=announcements&id=${a.id}`,
+                            icon: FileText
+                        });
+                    });
+                }
+
                 setDynamicDocs(docs);
             } catch (err) {
-                console.error('Failed to pre-fetch licenses', err);
+                console.error('Failed to pre-fetch licenses & announcements', err);
             }
         };
         fetchRemoteDocs();

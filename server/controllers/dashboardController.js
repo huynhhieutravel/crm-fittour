@@ -208,7 +208,7 @@ exports.getLeaderOverview = async (req, res) => {
                 td.max_participants as max_pax,
                 (SELECT COALESCE(SUM(pax_count), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')) as sold_pax,
                 (SELECT COALESCE(SUM(total_price), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')) as revenue,
-                (SELECT COALESCE(SUM(pv.amount), 0) FROM payment_vouchers pv JOIN bookings b ON pv.booking_id::varchar = b.id::varchar WHERE b.tour_departure_id = td.id AND pv.status = 'Đã duyệt' AND b.booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')) as collected_revenue
+                (SELECT COALESCE(SUM(paid), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')) as collected_revenue
              FROM tour_departures_raw td
              JOIN tour_templates tt ON td.tour_template_id = tt.id
              WHERE ${dateFilterBookings.replace(/start_date/g, 'td.start_date')}

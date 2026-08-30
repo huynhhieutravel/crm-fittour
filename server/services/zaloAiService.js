@@ -139,7 +139,7 @@ class ZaloAiService {
       if (result.rows.length === 0) {
         return {
           found: false,
-          message: 'Bảng Lịch khởi hành chưa có ngày đi cụ thể được lên lịch. Hãy tra cứu tài liệu KIẾN THỨC NỘI BỘ (RAG) hoặc Tour Mới để tóm tắt thông tin tour (Tên tour, thời gian dự kiến, mức giá dự kiến, điểm nổi bật) cho khách tham khảo.'
+          message: 'Hệ thống hiện tại chưa có lịch khởi hành ghép đoàn cho tuyến này. Bạn HÃY GỌI TOOL searchKnowledgeBase (RAG) để tìm thông tin chung về điểm đến (nếu cần). Sau đó, hãy khéo léo báo với khách là "Dạ hiện tại lịch khởi hành mới nhất của tuyến này bên em đang được cập nhật lại", và NGAY LẬP TỨC xin số điện thoại thật tự nhiên, ví dụ: "Anh/Chị có thể cho em xin số điện thoại/Zalo để chuyên viên phụ trách tuyến này bên em liên hệ tư vấn chi tiết và báo lịch sớm nhất cho mình được không ạ?"'
         };
       }
 
@@ -305,7 +305,7 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
    - Kết thúc bằng một câu hỏi mở ngắn gọn, tự nhiên để tiếp tục cuộc trò chuyện.
 3. BÁM SÁT 100% NỘI DUNG VÀ HƯỚNG DẪN TRONG TÀI LIỆU (SAU KHI SEARCH TOOL):
    - Khi đã dùng Tool \`searchKnowledgeBase\` và nhận được thông tin, bạn BẮT BUỘC phải bám sát chính xác các thông tin đó để trả lời khách.
-   - Tuyệt đối không tự bịa thêm các chi tiết ngoài tài liệu. Nếu tìm không thấy, hãy báo khách đợi chuyên viên hỗ trợ.
+   - Tuyệt đối không tự bịa thêm các chi tiết ngoài tài liệu. Nếu tìm không thấy hoặc chưa có lịch, hãy báo khéo léo (ví dụ: "Dạ hiện tại tour này bên em đang cập nhật lịch mới...") và xin số điện thoại/Zalo thật mềm mỏng, tự nhiên để chuyên viên tư vấn gửi lịch trình chi tiết (KHÔNG xin số kiểu cứng nhắc như cái máy).
 4. Nếu khách cho số điện thoại (ví dụ: "0849164037", "090..."), hãy gọi Tool saveLeadPhone lưu lại, cảm ơn khách và báo chuyên viên sẽ liên hệ hỗ trợ ngay.
 5. Trình bày thoáng, đẹp mắt, chia đoạn bằng dấu xuống dòng (\n\n), không viết một khối chữ đặc.`;
 
@@ -351,6 +351,18 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
             parts: [{ text: item.parts[0].text }]
           });
         }
+      }
+
+      // Đảm bảo tin nhắn đầu tiên gửi cho Gemini API luôn phải có role 'user' (Quy định bắt buộc của Gemini)
+      while (mergedContents.length > 0 && mergedContents[0].role === 'model') {
+        mergedContents.shift();
+      }
+
+      if (mergedContents.length === 0) {
+        mergedContents.push({
+          role: 'user',
+          parts: [{ text: message }]
+        });
       }
 
       // Định nghĩa Tool Calling cho Gemini tra cứu lịch khởi hành và lưu lead
@@ -442,11 +454,21 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
         ]).catch(e => console.error('[ZaloAiService] Lỗi lưu token usage:', e.message));
       }
 
-      // Kiểm tra xem Gemini có yêu cầu gọi Tool không
-      const functionCallPart = candidate?.content?.parts?.find(p => p.functionCall);
-      if (functionCallPart) {
+      // Khởi tạo vòng lặp cho tool calling (tối đa 3 lần)
+      let currentCandidate = candidate;
+      let currentContents = mergedContents.length > 0 ? mergedContents : formattedContents;
+      let iterations = 0;
+      const MAX_ITERATIONS = 3;
+      let lastToolName = null;
+      let lastToolArgs = null;
+
+      while (currentCandidate?.content?.parts?.some(p => p.functionCall) && iterations < MAX_ITERATIONS) {
+        iterations++;
+        const functionCallPart = currentCandidate.content.parts.find(p => p.functionCall);
         const functionCall = functionCallPart.functionCall;
         let toolResult = null;
+        lastToolName = functionCall.name;
+        lastToolArgs = functionCall.args;
 
         if (functionCall.name === 'queryDepartures') {
           toolResult = await this.queryDepartures(functionCall.args);
@@ -456,12 +478,12 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
           toolResult = await this.saveLeadPhone(leadContext, functionCall.args.phone);
         }
 
-        // Gửi kết quả Tool ngược lại cho Gemini để sinh câu trả lời hoàn chỉnh
-        const followUpContents = [
-          ...formattedContents,
+        // Gửi kết quả Tool ngược lại cho Gemini để sinh câu trả lời hoàn chỉnh hoặc gọi tool tiếp theo
+        currentContents = [
+          ...currentContents,
           {
             role: 'model',
-            parts: candidate.content.parts
+            parts: currentCandidate.content.parts
           },
           {
             role: 'user',
@@ -480,7 +502,7 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
         ];
 
         const followUpRes = await axios.post(endpoint, {
-          contents: followUpContents,
+          contents: currentContents,
           systemInstruction: { parts: [{ text: systemPrompt }] },
           tools: tools,
           generationConfig: {
@@ -489,7 +511,7 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
           }
         }, { timeout: 25000 });
 
-        const finalReply = followUpRes.data?.candidates?.[0]?.content?.parts?.filter(p => p.text).map(p => p.text).join('\n') || '';
+        currentCandidate = followUpRes.data?.candidates?.[0];
         
         // Lưu trữ Token Usage cho cuộc gọi follow up (Tool Call)
         const followUpUsage = followUpRes.data?.usageMetadata;
@@ -509,25 +531,27 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
             followUpUsage.totalTokenCount || 0
           ]).catch(e => console.error('[ZaloAiService] Lỗi lưu follow-up token usage:', e.message));
         }
-
-        return {
-          reply: this.formatAiReply(finalReply) || 'Dạ Anh/Chị cho em xin số điện thoại để em hỗ trợ tư vấn chi tiết nhất nhé ạ!',
-          tool_used: functionCall.name,
-          tool_args: functionCall.args
-        };
       }
 
-      const finalReplyText = candidate?.content?.parts?.filter(p => p.text).map(p => p.text).join('\n') || 'Dạ em chào Anh/Chị, FIT TOUR có thể hỗ trợ thông tin gì cho mình ạ?';
+      let finalReplyText = currentCandidate?.content?.parts?.filter(p => p.text).map(p => p.text).join('\n') || '';
+
+      if (!finalReplyText && iterations > 0) {
+        finalReplyText = 'Dạ hiện tại em đang kiểm tra thông tin trên hệ thống. Anh/Chị có thể để lại số điện thoại để chuyên viên tư vấn bên em liên hệ hỗ trợ và gửi lịch trình cụ thể cho mình được không ạ?';
+      } else if (!finalReplyText) {
+        finalReplyText = 'Dạ em chào Anh/Chị, FIT TOUR có thể hỗ trợ thông tin gì cho mình ạ?';
+      }
 
       return {
         reply: this.formatAiReply(finalReplyText),
+        tool_used: lastToolName,
+        tool_args: lastToolArgs,
         meta: { model: modelName }
       };
 
     } catch (err) {
       console.error('[ZaloAiService] Lỗi gọi Gemini API:', err?.response?.data || err.message);
       return {
-        reply: `Chào Anh/Chị! Em là tư vấn viên FIT TOUR. Anh/Chị để lại số điện thoại/Zalo để em gửi file PDF lịch trình chi tiết và tư vấn cụ thể cho mình nhé ạ!`,
+        reply: `Dạ hiện tại hệ thống tra cứu lịch trình bên em đang xử lý hơi chậm một chút. Anh/Chị có thể để lại số điện thoại/Zalo để em nhờ chuyên viên trực tiếp kiểm tra và gửi thông tin sớm nhất cho nhà mình được không ạ?`,
         error: err.message
       };
     }

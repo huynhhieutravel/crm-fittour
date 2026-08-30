@@ -11,6 +11,7 @@ import {
   Link
 } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import PublicVisaPortalPage from './pages/PublicVisaPortalPage';
 
 const SettingsTab = lazy(() => import('./tabs/SettingsTab'));
 const MarketSettingsTab = lazy(() => import('./tabs/MarketSettingsTab'));
@@ -76,6 +77,8 @@ import AddLeadModal from './components/modals/AddLeadModal';
 import EditLeadModal from './components/modals/EditLeadModal';
 import NotificationBell from './components/common/NotificationBell';
 import CommandPalette from './components/CommandPalette';
+import HolidayAnnouncementModal from './components/modals/HolidayAnnouncementModal';
+import SystemAnnouncementPopup from './components/modals/SystemAnnouncementPopup';
 const EmailGroupsTab = lazy(() => import('./tabs/EmailGroupsTab'));
 import LeaveRequestModal from './components/modals/LeaveRequestModal';
 import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
@@ -88,6 +91,7 @@ import GuideModal from './components/modals/GuideModal';
 import ViewDeparturePage from './pages/ViewDeparturePage';
 import AgencySharePage from './pages/AgencySharePage';
 import ServiceContractViewer from './pages/ServiceContractViewer';
+import VisaFormTemplatesPage from './pages/VisaFormTemplatesPage';
 import DocumentsPage from './pages/DocumentsPage';
 import RagDocsManager from './components/Knowledge/RagDocsManager';
 const GlobalChatTab = lazy(() => import('./tabs/GlobalChatTab'));
@@ -99,6 +103,7 @@ import BrandSocialPage from './pages/BrandSocialPage';
 import BrandLayout from './pages/BrandLayout';
 import AdminTripDashboard from './pages/AdminTripDashboard';
 import PublicReceiptPage from './pages/PublicReceiptPage';
+import PublicAnnouncementPage from './pages/PublicAnnouncementPage';
 import ZnsDemoTab from './tabs/ZnsDemoTab';
 
 import { 
@@ -195,7 +200,7 @@ function AppContent() {
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
   const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
-  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'dispatch-schedule', 'notification-center'];
+  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'announcements', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'visa-form-templates', 'dispatch-schedule', 'notification-center'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -2207,7 +2212,7 @@ function AppContent() {
 
               {true && (
                 <div title="Quản lý Visa" 
-                  className={`nav-item ${activeTab === 'visas' || activeTab === 'visa-products' ? 'active-parent' : ''}`}
+                  className={`nav-item ${['visas', 'visa-products', 'visa-form-templates'].includes(activeTab) ? 'active-parent' : ''}`}
                   onClick={() => navigate('/visas')}
                   style={{ justifyContent: 'space-between' }}
                   onMouseEnter={(e) => {
@@ -2442,8 +2447,26 @@ function AppContent() {
             <FileText /> Luồng xử lý CRM</div>
 
 
-          <div title="Biểu Mẫu Văn Phòng" className={`nav-item ${activeTab === 'licenses' ? 'active' : ''}`} onClick={() => navigate('/licenses')}>
-            <FileText /> Biểu Mẫu Văn Phòng</div>
+          <div title="Biểu Mẫu & Văn Bản" 
+            className={`nav-item ${['licenses', 'announcements'].includes(activeTab) ? 'active' : ''}`} 
+            onClick={() => navigate('/licenses')}
+            style={{ justifyContent: 'space-between' }}
+            onMouseEnter={(e) => {
+              if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+              const rect = e.currentTarget.getBoundingClientRect();
+              setHoveredRect(rect);
+              setHoveredMenu('licenses-menu');
+            }}
+            onMouseLeave={() => {
+              menuTimerRef.current = setTimeout(() => {
+                setHoveredMenu(null);
+              }, 150);
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <FileText /> Biểu Mẫu & Văn Bản</div>
+            <ChevronRight size={14} opacity={0.5} />
+          </div>
           <div title="Quy tắc chọn BU" className={`nav-item ${activeTab === 'bu-rules' ? 'active' : ''}`} onClick={() => navigate('/bu-rules')}>
             <FileText /> Quy tắc chọn BU</div>
 
@@ -2745,6 +2768,9 @@ function AppContent() {
             )}
             <div className={`submenu-item ${activeTab === 'visas' ? 'active' : ''}`} onClick={() => { navigate('/visas'); setHoveredMenu(null); }}>
               Danh sách Hồ sơ
+            </div>
+            <div className={`submenu-item ${activeTab === 'visa-form-templates' ? 'active' : ''}`} onClick={() => { navigate('/visa-form-templates'); setHoveredMenu(null); }}>
+              Mẫu Form Visa
             </div>
           </div>
         </div>
@@ -3175,6 +3201,44 @@ function AppContent() {
         </div>
       )}
 
+      {hoveredMenu === 'licenses-menu' && hoveredRect && (
+        <div 
+          className="submenu-flyout"
+          style={{ 
+            position: 'fixed', 
+            left: `${hoveredRect.right + 5}px`, 
+            top: `${hoveredRect.top}px`, 
+            display: 'flex', 
+            opacity: 1, 
+            transform: 'none',
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+          onMouseEnter={() => {
+            if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('licenses-menu');
+          }}
+          onMouseLeave={() => {
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
+          }}
+        >
+          <div 
+            className={`submenu-item ${activeTab === 'licenses' ? 'active' : ''}`} 
+            onClick={() => { navigate('/licenses?tab=licenses'); setActiveTab('licenses'); setHoveredMenu(null); }}
+          >
+            📋 Biểu Mẫu Văn Phòng
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'announcements' ? 'active' : ''}`} 
+            onClick={() => { navigate('/licenses?tab=announcements'); setActiveTab('licenses'); setHoveredMenu(null); }}
+          >
+            📜 Văn Bản Thông Báo
+          </div>
+        </div>
+      )}
+
       
       {hoveredMenu === 'manual' && hoveredRect && (
         <div 
@@ -3268,7 +3332,8 @@ function AppContent() {
             activeTab === 'leads-dashboard' ? 'Dashboard Lead Marketing' :
             activeTab === 'management-dashboard' ? 'Tổng quan Marketing' :
             activeTab === 'bus' ? 'Quản lý Khối Kinh doanh (BU)' :
-            activeTab === 'licenses' ? 'Biểu Mẫu Văn Phòng' :
+            activeTab === 'licenses' ? 'Biểu Mẫu & Văn Bản Văn Phòng' :
+            activeTab === 'announcements' ? 'Văn Bản Thông Báo' :
             activeTab === 'bu-rules' ? 'Quy tắc chọn BU cho Lead' :
             activeTab === 'manual' ? 'Sổ tay HDSD CRM' :
             activeTab === 'op-tours' ? 'Lịch khởi hành' :
@@ -3399,6 +3464,17 @@ function AppContent() {
                     className="header-dropdown-item" 
                     onClick={(e) => { 
                       e.stopPropagation(); 
+                      window.dispatchEvent(new Event('open-holiday-popup'));
+                      setHoveredMenu(null); 
+                    }}
+                    style={{ padding: '12px 16px', borderTop: '1px solid #f1f5f9', color: '#e55e20', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    🇻🇳 Lịch Nghỉ Lễ 2/9
+                  </div>
+                  <div 
+                    className="header-dropdown-item" 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
                       navigate('/staff-calendar');
                       setActiveTab('staff-calendar');
                       setHoveredMenu(null); 
@@ -3412,6 +3488,9 @@ function AppContent() {
             </div>
           </div>
         </header>
+
+        <HolidayAnnouncementModal currentUser={user} />
+        <SystemAnnouncementPopup currentUser={user} />
 
         <CommandPalette onNavigate={(id) => {
             if (VALID_TABS.includes(id)) {
@@ -3475,7 +3554,8 @@ function AppContent() {
 
             {activeTab === 'manual' && <ManualTab />}
 
-            {activeTab === 'licenses' && <LicensesTab currentUser={user} addToast={addToast} />}
+            {activeTab === 'licenses' && <LicensesTab currentUser={user} addToast={addToast} defaultSubTab="licenses" />}
+            {activeTab === 'announcements' && <LicensesTab currentUser={user} addToast={addToast} defaultSubTab="announcements" />}
             {activeTab === 'bu-rules' && <BURulesTab currentUser={user} />}
             {activeTab === 'zalo-sandbox' && (
               <ZaloSandboxTab 
@@ -3838,6 +3918,9 @@ function AppContent() {
         {activeTab === 'visas' && (
           <VisasTab currentUser={user} checkPerm={checkPerm} addToast={addToast} />
         )}
+        {activeTab === 'visa-form-templates' && (
+          <VisaFormTemplatesPage />
+        )}
         {activeTab === 'visa-products' && isVisaProductViewer && (
           <VisaTemplatesTab currentUser={user} checkPerm={checkPerm} addToast={addToast} />
         )}
@@ -4127,6 +4210,7 @@ function AppContent() {
       <Route path="/tai-lieu/sop-astro-tour" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
       <Route path="/tai-lieu/rule-meta-ads" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
       <Route path="/tai-lieu/blueprint-meta-ads" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
+
       <Route path="/tai-lieu/:subtab/:id/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
       <Route path="/tai-lieu/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
       <Route path="/hdv" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
@@ -4140,6 +4224,11 @@ function AppContent() {
       <Route path="/simple-list-share/lich_dai_ly" element={<AgencySharePage />} />
       <Route path="/receipt/:token" element={<PublicReceiptPage />} />
       <Route path="/service-confirm/:tourId/:bookingId" element={<ServiceContractViewer />} />
+      <Route path="/visa-portal/:token" element={<PublicVisaPortalPage />} />
+      <Route path="/thong-bao/:id" element={<PublicAnnouncementPage />} />
+      <Route path="/thong-bao/code/:code" element={<PublicAnnouncementPage />} />
+      <Route path="/announcements/:id" element={<PublicAnnouncementPage />} />
+      <Route path="/van-ban/:id" element={<PublicAnnouncementPage />} />
       <Route path="/zns-demo" element={isLoggedIn ? <ZnsDemoTab /> : <Navigate to="/login" />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/chinh-sach-bao-mat" element={<PrivacyPolicy />} />

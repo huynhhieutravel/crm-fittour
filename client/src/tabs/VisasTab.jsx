@@ -68,6 +68,8 @@ export default function VisasTab({ currentUser, checkPerm, addToast }) {
     const [marketFilter, setMarketFilter] = useState('');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
     const [statusCounts, setStatusCounts] = useState({});
+    const [marketCounts, setMarketCounts] = useState({});
+    console.log("VisasTab loaded v2 (cache busted)");
     
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);

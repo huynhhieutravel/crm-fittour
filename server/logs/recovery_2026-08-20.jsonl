@@ -1,0 +1,1 @@
+{"timestamp":"2026-08-20T10:08:41.436Z","method":"POST","url":"/api/zalo-v2/zns/demo-send","status":500,"user_id":null,"body":{"phone":"0901234567","templateType":"REQUEST_PAYMENT"}}

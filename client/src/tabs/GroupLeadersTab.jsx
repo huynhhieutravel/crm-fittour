@@ -356,16 +356,18 @@ export default function GroupLeadersTab({ currentUser, addToast, users = [], act
                 )}
             </div>
 
-            <GroupLeaderProfileSlider
+            {selectedLeaderFull && (
+              <GroupLeaderProfileSlider
                 leader={selectedLeaderFull}
                 users={users}
                 companies={companies}
                 onClose={() => { setSelectedLeaderFull(null); setAutoEditOnOpen(false); }}
                 onAddNote={handleAddNote}
-                onLeaderUpdated={() => { fetchLeaders(); handleViewProfile(selectedLeaderFull.id); }}
+                onLeaderUpdated={() => { fetchLeaders(); if (selectedLeaderFull?.id) handleViewProfile(selectedLeaderFull.id); }}
                 autoEdit={autoEditOnOpen}
                 onAutoEditConsumed={() => setAutoEditOnOpen(false)}
-            />
+              />
+            )}
 
             <GroupLeaderAddModal
                 open={showCreateModal}

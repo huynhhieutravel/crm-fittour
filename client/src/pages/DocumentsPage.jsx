@@ -656,6 +656,52 @@ const DocumentsHome = () => {
           </Link>
         </div>
 
+        {/* Banner Thông Báo Nghỉ Lễ Quốc Khánh */}
+        <div 
+          onClick={() => window.dispatchEvent(new Event('open-holiday-popup'))}
+          style={{
+            background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
+            border: '1.5px solid #fed7aa',
+            borderRadius: '16px',
+            padding: '14px 20px',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(234, 88, 12, 0.08)',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(234, 88, 12, 0.15)'; }}
+          onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(234, 88, 12, 0.08)'; }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <span style={{ fontSize: '1.8rem' }}>🇻🇳</span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#9a3412', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                Thông báo Lịch nghỉ lễ Quốc Khánh 2/9/2026
+                <span style={{ fontSize: '0.72rem', background: '#ea580c', color: 'white', padding: '2px 8px', borderRadius: '20px', fontWeight: 600 }}>Nghỉ 5 ngày (29/8 - 2/9)</span>
+              </div>
+              <div style={{ fontSize: '0.82rem', color: '#c2410c', marginTop: '2px' }}>
+                Bấm vào đây để xem chi tiết poster thông báo và lịch làm bù chính thức từ FIT TOUR.
+              </div>
+            </div>
+          </div>
+          <button style={{
+            background: '#ea580c',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '8px 16px',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            whiteSpace: 'nowrap'
+          }}>
+            Xem Poster →
+          </button>
+        </div>
+
         {/* Welcome Block */}
         <div className="blog-welcome">
           <p>👋 <span className="blog-text-orange">Chào mừng các chiến binh FIT TOUR!</span> Đây là <strong>không gian làm việc chung</strong> dành riêng cho đội ngũ Fit Tour – nơi <span className="blog-text-orange">lưu trữ thông tin, kết nối nội bộ</span> và <span className="blog-text-orange">hỗ trợ bạn chủ động trong công việc</span> mỗi ngày.</p>

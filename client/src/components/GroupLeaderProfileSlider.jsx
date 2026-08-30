@@ -18,7 +18,7 @@ const GroupLeaderProfileSlider = ({ leader, onClose, onAddNote, users = [], comp
         name: leader.name || '',
         phone: leader.phone || '',
         email: leader.email || '',
-        dob: new Date(leader.dob).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) || '',
+        dob: leader.dob ? new Date(leader.dob).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
         company_id: leader.company_id || '',
         company_name: leader.company_name || '',
         position: leader.position || 'Trưởng đoàn',

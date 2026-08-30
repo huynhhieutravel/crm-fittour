@@ -19,7 +19,7 @@ exports.createVoucher = async (req, res) => {
         } = req.body;
 
         const created_by = req.user.id;
-        const created_by_name = req.user.username;
+        const created_by_name = req.user.full_name || req.user.username || 'Hệ thống';
 
         // VALIDATION: Prevent Overcharging
         if (booking_id) {
@@ -134,7 +134,9 @@ exports.getVouchersByBooking = async (req, res) => {
     try {
         const { bookingId } = req.params;
         const result = await db.query(`
-            SELECT pv.*, u.full_name as created_by_full_name 
+            SELECT pv.*, 
+                   COALESCE(u.full_name, u.username, pv.created_by_name) as created_by_full_name,
+                   COALESCE(u.full_name, u.username, pv.created_by_name) as created_by_name
             FROM payment_vouchers pv 
             LEFT JOIN users u ON pv.created_by = u.id 
             WHERE pv.booking_id = $1 
@@ -153,11 +155,15 @@ exports.getAllVouchers = async (req, res) => {
             SELECT v.*, 
                    td.code as tour_code,
                    tt.name as tour_name,
-                   b.booking_status
+                   b.booking_status,
+                   COALESCE(u.full_name, u.username, v.created_by_name) as created_by_name,
+                   COALESCE(u.full_name, u.username, v.created_by_name) as creator_full_name,
+                   u.username as creator_username
             FROM payment_vouchers v
             LEFT JOIN tour_departures td ON v.tour_id = td.id
             LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
-            LEFT JOIN bookings b ON v.booking_id = b.id
+            LEFT JOIN bookings b ON (v.booking_id ~ '^[0-9]+$' AND v.booking_id::integer = b.id)
+            LEFT JOIN users u ON v.created_by = u.id
             ORDER BY v.created_at DESC
             LIMIT 2000
         `);
@@ -311,7 +317,9 @@ exports.getVouchersByVisa = async (req, res) => {
     try {
         const { visaId } = req.params;
         const result = await db.query(`
-            SELECT pv.*, u.full_name as created_by_full_name 
+            SELECT pv.*, 
+                   COALESCE(u.full_name, u.username, pv.created_by_name) as created_by_full_name,
+                   COALESCE(u.full_name, u.username, pv.created_by_name) as created_by_name
             FROM payment_vouchers pv 
             LEFT JOIN users u ON pv.created_by = u.id 
             WHERE pv.visa_id = $1 

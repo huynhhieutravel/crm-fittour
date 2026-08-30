@@ -18,14 +18,18 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
     setLocalCustomer(customer);
   }, [customer]);
 
+  const activeCustomer = (localCustomer && customer && localCustomer.id === customer.id) ? localCustomer : (customer || {});
+
   const handleLinkApp = async () => {
     if (!appIdInput || appIdInput.length !== 6) return alert('Mã App phải bao gồm đúng 6 ký tự.');
+    const targetId = activeCustomer?.id || customer?.id;
+    if (!targetId) return;
     setIsLinking(true);
     try {
-      const res = await axios.post(`/api/customers/${localCustomer.id}/link-app`, { app_id: appIdInput }, {
+      const res = await axios.post(`/api/customers/${targetId}/link-app`, { app_id: appIdInput }, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
-      setLocalCustomer({ ...localCustomer, app_id: appIdInput.toUpperCase(), mobile_link_sync_status: res.data.status || 'SYNCED' });
+      setLocalCustomer({ ...(customer || {}), ...activeCustomer, app_id: appIdInput.toUpperCase(), mobile_link_sync_status: res.data?.status || 'SYNCED' });
       setAppIdInput('');
     } catch (err) {
       alert(err.response?.data?.message || 'Lỗi liên kết App');
@@ -36,12 +40,14 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
 
   const handleUnlinkApp = async () => {
     if (!window.confirm('Gỡ liên kết tài khoản Mobile App?\nKhách sẽ không còn xem được hành trình cá nhân trên App cho đến khi tài khoản được liên kết lại.')) return;
+    const targetId = activeCustomer?.id || customer?.id;
+    if (!targetId) return;
     setIsLinking(true);
     try {
-      const res = await axios.delete(`/api/customers/${localCustomer.id}/link-app`, {
+      const res = await axios.delete(`/api/customers/${targetId}/link-app`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
-      setLocalCustomer({ ...localCustomer, app_id: null, mobile_link_sync_status: null });
+      setLocalCustomer({ ...(customer || {}), ...activeCustomer, app_id: null, mobile_link_sync_status: null });
     } catch (err) {
       alert(err.response?.data?.message || 'Lỗi gỡ liên kết App');
     } finally {
@@ -279,20 +285,20 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                   <Smartphone size={16} /> Tài khoản Mobile App
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {localCustomer.app_id ? (
+                  {activeCustomer?.app_id ? (
                     <div style={{ padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                         <div style={{ 
                           width: '8px', height: '8px', borderRadius: '50%', 
-                          backgroundColor: localCustomer.mobile_link_sync_status === 'SYNCED' ? '#10b981' : (localCustomer.mobile_link_sync_status === 'PENDING' ? '#f59e0b' : '#ef4444') 
+                          backgroundColor: activeCustomer.mobile_link_sync_status === 'SYNCED' ? '#10b981' : (activeCustomer.mobile_link_sync_status === 'PENDING' ? '#f59e0b' : '#ef4444') 
                         }}></div>
-                        <span style={{ fontWeight: 600, color: localCustomer.mobile_link_sync_status === 'SYNCED' ? '#047857' : (localCustomer.mobile_link_sync_status === 'PENDING' ? '#b45309' : '#b91c1c') }}>
-                          {localCustomer.mobile_link_sync_status === 'SYNCED' ? 'Đã liên kết' : 
-                           (localCustomer.mobile_link_sync_status === 'PENDING' ? 'Đang đồng bộ...' : '⚠ Chưa đồng bộ được')}
+                        <span style={{ fontWeight: 600, color: activeCustomer.mobile_link_sync_status === 'SYNCED' ? '#047857' : (activeCustomer.mobile_link_sync_status === 'PENDING' ? '#b45309' : '#b91c1c') }}>
+                          {activeCustomer.mobile_link_sync_status === 'SYNCED' ? 'Đã liên kết' : 
+                           (activeCustomer.mobile_link_sync_status === 'PENDING' ? 'Đang đồng bộ...' : '⚠ Chưa đồng bộ được')}
                         </span>
                       </div>
                       <div style={{ marginBottom: '16px', color: '#334155' }}>
-                        Mã App: <span style={{ fontWeight: 700, fontSize: '1.1rem', letterSpacing: '2px', color: '#0f172a' }}>{localCustomer.app_id}</span>
+                        Mã App: <span style={{ fontWeight: 700, fontSize: '1.1rem', letterSpacing: '2px', color: '#0f172a' }}>{activeCustomer.app_id}</span>
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button 
@@ -302,7 +308,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
                         >
                           {isLinking ? 'Đang xử lý...' : 'Gỡ liên kết'}
                         </button>
-                        {localCustomer.mobile_link_sync_status === 'FAILED' && (
+                        {activeCustomer.mobile_link_sync_status === 'FAILED' && (
                           <button 
                             onClick={handleLinkApp} 
                             disabled={isLinking}

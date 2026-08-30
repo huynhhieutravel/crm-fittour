@@ -89,7 +89,7 @@ export default function PaymentVouchersTab() {
       'SĐT': v.payer_phone,
       'HT Thanh toán': v.payment_method,
       'Trạng thái': v.status,
-      'Người tạo': v.created_by_name
+      'Người tạo': v.creator_full_name || v.creator_username || v.created_by_name || 'Hệ thống'
     })));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Phiếu Thu");
@@ -288,7 +288,7 @@ export default function PaymentVouchersTab() {
                   </td>
 
                   <td style={{ padding: '15px 12px', color: '#334155', whiteSpace: 'nowrap' }}>
-                     <div style={{ fontWeight: 600 }}>{v.created_by_name}</div>
+                     <div style={{ fontWeight: 600 }}>{v.creator_full_name || v.creator_username || v.created_by_name || 'Hệ thống'}</div>
                   </td>
 
                   <td style={{ padding: '15px 12px', color: '#334155', whiteSpace: 'nowrap' }}>
@@ -305,7 +305,7 @@ export default function PaymentVouchersTab() {
 
                   <td style={{ padding: '15px 12px', whiteSpace: 'nowrap' }}>
                      <div style={{ fontSize: '12px', fontWeight: 'bold', color: v.status === 'Đã hủy' ? '#ef4444' : '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                         {v.status === 'Đã hủy' ? <><X size={14} color="#ef4444" /> ĐÃ HỦY</> : <>{v.created_by_name} - <CheckCircle size={14} color="#16a34a" /></>}
+                         {v.status === 'Đã hủy' ? <><X size={14} color="#ef4444" /> ĐÃ HỦY</> : <>{v.creator_full_name || v.creator_username || v.created_by_name || 'Hệ thống'} - <CheckCircle size={14} color="#16a34a" /></>}
                      </div>
                      {v.status !== 'Đã hủy' && (
                        <button onClick={() => handleCancelVoucher(v.id, v.voucher_code, v.amount)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', border: '1px solid #f87171', background: '#fff', color: '#ef4444', fontWeight: 'bold', padding: '3px 8px', borderRadius: '15px', marginTop: '6px', fontSize: '11px', cursor: 'pointer', margin: '6px auto 0' }}>

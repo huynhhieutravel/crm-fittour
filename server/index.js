@@ -142,6 +142,7 @@ const noteRoutes = require('./routes/notes');
 const messageRoutes = require('./routes/messages');
 const userRoutes = require('./routes/users');
 const visaRoutes = require('./routes/visaRoutes');
+const visaFormTemplatesRoutes = require('./routes/visaFormTemplates');
 const visaTemplates = require('./routes/visaTemplates');
 const systemAlertsRoutes = require('./routes/systemAlerts');
 const tourTypeRoutes = require('./routes/settings');
@@ -212,6 +213,8 @@ app.use('/api/insurances', insuranceRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/rag-docs', ragDocsAdminRoutes);
 app.use('/api/visas', visaRoutes);
+app.use('/api/visa-form-templates', visaFormTemplatesRoutes);
+app.use('/api/public/visas', require('./routes/publicVisas'));
 app.use('/api/visa-templates', visaTemplates);
 app.use('/api/visa-providers', require('./routes/visaProviders'));
 
@@ -243,6 +246,7 @@ app.use('/api/dashboard', dashboardRoutes);
 
 const licenseRoutes = require('./routes/licenses');
 app.use('/api/licenses', licenseRoutes);
+app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/rag', require('./routes/rag'));
 
 const permissionRoutes = require('./routes/permissions');

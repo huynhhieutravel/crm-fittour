@@ -407,14 +407,14 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   };
 
   const handleCreateQuickCustomer = async () => {
-    if (!quickAddName.trim() || !quickAddPhone.trim()) {
-      toast.error("Vui lòng nhập Tên và SĐT khách hàng!");
+    if (!quickAddName.trim()) {
+      toast.error("Vui lòng nhập Tên hoặc Nick của khách hàng!");
       return;
     }
     try {
       const res = await axios.post('/api/customers', {
-        name: quickAddName,
-        phone: quickAddPhone,
+        name: quickAddName.trim(),
+        phone: quickAddPhone.trim() || null,
         customer_segment: 'New Customer'
       }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -427,7 +427,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       toast.success("Tạo Khách hàng mới thành công và đã tự động chọn!");
     } catch (err) {
       console.error(err);
-      toast.error("Lỗi khi tạo mới khách hàng.");
+      toast.error("Lỗi khi tạo mới khách hàng: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -901,17 +901,18 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                    <div style={{ display: 'flex', gap: '5px' }}>
                       <input 
                          type="text" 
-                         placeholder="Tên khách..." 
+                         placeholder="Tên / Nick khách (*)..." 
                          value={quickAddName} 
                          onChange={e => setQuickAddName(e.target.value)} 
-                         style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', minWidth: 0 }}
+                         style={{ flex: 1.2, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', minWidth: 0 }}
+                         autoFocus
                       />
                       <input 
                          type="text" 
-                         placeholder="SĐT..." 
+                         placeholder="SĐT (tùy chọn)..." 
                          value={quickAddPhone} 
                          onChange={e => setQuickAddPhone(e.target.value)} 
-                         style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', minWidth: 0 }}
+                         style={{ flex: 0.8, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', minWidth: 0 }}
                       />
                       <button 
                          onClick={handleCreateQuickCustomer}
