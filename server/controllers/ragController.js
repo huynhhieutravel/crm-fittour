@@ -112,6 +112,7 @@ const STATIC_DOCS = [
   { title: 'SOP Chuẩn Hóa Tên Tour', description: 'Quy chuẩn đặt tên tour trên ERP, Website và Social', category: 'Điều hành', path: '/tai-lieu/dat-ten-tour', icon: '📝' },
   { title: 'Hướng Dẫn Kết Nối Zoho Mail', description: 'Hướng dẫn cài đặt Zoho Mail với Outlook, Apple Mail, Spark (IMAP)', category: 'Hành chính', path: '/tai-lieu/zoho-email', icon: '📧' },
   { title: 'SOP Chính Sách Đánh Giá (Review)', description: 'Điều chỉnh và hướng dẫn chính sách đánh giá trên Google Review', category: 'Marketing', path: '/tai-lieu/chinh-sach-danh-gia', icon: '⭐' },
+  { title: 'Hướng Dẫn Đánh Giá FIT TOUR Trên Google Maps', description: 'Hướng dẫn từng bước cách đánh giá 5 sao kèm hình ảnh trên Google Maps FIT TOUR', category: 'HDV', path: 'https://fittour.vn/huong-dan-danh-gia-fit-tour', icon: '⭐', external: true },
   { title: 'Cơ Chế KPI', description: 'Quyết định ban hành cơ chế lương – KPI – thưởng và phúc lợi nhân sự', category: 'Hành chính', path: '/tai-lieu/co-che-kpi', icon: '💼' },
   { title: 'Văn Bản Cơ Chế KPI', description: 'Văn bản chi tiết về cơ chế lương thưởng KPI', category: 'Hành chính', path: '/tai-lieu/van-ban-co-che-kpi', icon: '📄' }
 ];

@@ -149,10 +149,10 @@ const groupedFaqs = [
         id: "q15", 
         q: "15. Cách đăng ký tour như thế nào em?", 
         variants: [
-            { type: "Nhanh gọn (Tiện lợi)", text: "Dạ anh/chị chỉ cần gửi em ảnh chụp mặt hộ chiếu còn hạn và cọc giữ chỗ là hoàn tất. Mọi thủ tục còn lại (E-visa, họp đoàn) bên em lo A-Z ạ." },
-            { type: "Tạo khan hiếm (FOMO)", text: "Dạ vì đoàn bên em giới hạn chỉ 9-11 khách/chuyến để đảm bảo chất lượng, nếu anh/chị đã chốt được lịch thì mình tranh thủ gửi hộ chiếu và cọc sớm để bên em giữ chỗ đẹp cho mình nhé." }
+            { type: "Nhanh gọn (Tiện lợi)", text: "Dạ anh/chị chỉ cần gửi em ảnh chụp mặt hộ chiếu còn hạn trên 6 tháng và chuyển khoản đặt cọc giữ chỗ 20.000.000 VNĐ/khách là hoàn tất đăng ký ạ. Mọi thủ tục còn lại (E-visa Ấn Độ, họp đoàn, chuẩn bị hành lý) bên em sẽ lo trọn gói từ A-Z cho mình nhé!" },
+            { type: "Tạo khan hiếm & Quy trình rõ ràng (FOMO)", text: "Dạ quy trình đăng ký bên em rất nhanh gọn:\n1. Anh/chị gửi ảnh mặt hộ chiếu (còn hạn trên 6 tháng).\n2. Đặt cọc giữ chỗ 20.000.000 VNĐ/khách (công ty có hợp đồng và phiếu thu đầy đủ).\nSố tiền còn lại mình sẽ thanh toán trước ngày khởi hành theo tiến độ tour. Vì mỗi đoàn bên em chỉ giới hạn từ 9-11 khách để chăm sóc chu đáo nhất nên mình tranh thủ cọc sớm để giữ slot đẹp nhé ạ!" }
         ],
-        a: ["Dạ anh/chị chỉ cần gửi em ảnh chụp mặt hộ chiếu còn hạn và cọc giữ chỗ là hoàn tất đăng ký ạ.", "Sau đó bên em sẽ hỗ trợ từ A-Z, từ E-visa, họp đoàn đến chuẩn bị hành lý. Vì mỗi đoàn chỉ nhận 9–11 khách nên nếu anh/chị đã chốt được thời gian thì mình đăng ký sớm để giữ chỗ nhé. 😊"] 
+        a: ["Dạ anh/chị chỉ cần gửi em ảnh chụp mặt hộ chiếu còn hạn và chuyển khoản cọc giữ chỗ 20.000.000 VNĐ/khách là hoàn tất đăng ký ạ.", "Sau đó bên em sẽ hỗ trợ từ A-Z: Xin E-visa Ấn Độ, tạo nhóm Zalo họp đoàn, gửi checklist hành lý và theo sát sức khỏe.", "Số tiền còn lại sẽ được thanh toán trước ngày khởi hành theo tiến độ quy định của tour.", "Vì mỗi đoàn chỉ nhận giới hạn 9–11 khách nên khách chốt sớm sẽ đảm bảo giữ được chỗ tốt nhất. 😊"] 
       }
     ]
   },
@@ -265,12 +265,18 @@ const groupedFaqs = [
       },
       { 
         id: "q13", 
-        q: "13. Chị đi một mình thì sao?", 
+        q: "13. Chị đi một mình thì sao? Có phụ thu phòng đơn không?", 
         variants: [
-            { type: "Đồng cảm (Xóa rào cản)", text: "Dạ đa số khách FIT TOUR đều đi 1 mình nên chị không lo lạc lõng đâu ạ. Khách đi núi thường cực kỳ cởi mở, sau 1-2 ngày vượt đèo cùng nhau là cả đoàn thân thiết như người nhà luôn ạ." },
-            { type: "Kinh tế (Giải quyết chi phí)", text: "Dạ đi 1 mình bên em sẽ chủ động ghép phòng với một khách cùng giới tính trong đoàn để chị đỡ tốn phụ phí phòng đơn. Chị cứ yên tâm nhé." }
+            { type: "Kinh tế & Ghép phòng miễn phí (Khuyên dùng)", text: "Dạ đi 1 mình bên em sẽ chủ động ghép phòng đôi với một khách cùng giới tính trong đoàn hoàn toàn miễn phí để chị không phát sinh phụ phí phòng đơn. Còn trường hợp anh/chị muốn ở riêng 1 phòng để hoàn toàn riêng tư, thoải mái thì bên em chỉ charge thêm 7.000.000 VNĐ/phòng cho suốt hành trình thôi ạ." },
+            { type: "Đồng cảm (Xóa rào cản)", text: "Dạ đa số khách FIT TOUR đều đi 1 mình nên chị không lo lạc lõng đâu ạ. Khách đi núi thường cực kỳ cởi mở, sau 1-2 ngày vượt đèo cùng nhau là cả đoàn thân thiết như người nhà luôn ạ. Bên em ghép phòng cùng giới tính chu đáo, còn nếu chị muốn ngủ riêng thì phụ thu phòng đơn chỉ 7.000.000 VNĐ/phòng thôi ạ." }
         ],
-        a: ["Dạ anh/chị cứ yên tâm nhé. Thực tế, đa số khách của bên em đều đăng ký đi một mình, nên anh/chị sẽ không bị lạc lõng đâu ạ.", "Nếu anh/chị đi một mình, bên em sẽ sắp xếp ghép phòng với một khách nữ hoặc nam cùng đoàn (tùy theo giới tính) để mình tiết kiệm chi phí. Nếu anh/chị muốn ở phòng riêng thì bên em cũng có thể hỗ trợ với phụ phí theo nhu cầu.", "Điều em rất thích ở các đoàn Ladakh là mọi người thường rất dễ kết nối với nhau. Sau vài ngày cùng vượt đèo, ngắm cảnh và trải nghiệm, cả đoàn thường trở nên rất thân thiết. Nhiều anh/chị ban đầu đi một mình nhưng khi kết thúc chuyến đi lại có thêm những người bạn đồng hành mới."] 
+        a: [
+            "Dạ anh/chị cứ yên tâm nhé. Thực tế, đa số khách của bên em đều đăng ký đi một mình, nên anh/chị sẽ không bị lạc lõng đâu ạ.",
+            "Chính sách phòng cho khách đi lẻ:",
+            "- Ghép phòng miễn phí: FIT Tour sẽ chủ động sắp xếp ghép phòng với một khách cùng giới tính (phòng Twin 2 giường đơn) để tiết kiệm chi phí, không phụ thu.",
+            "- Đăng ký ở riêng phòng đơn: Nếu khách có nhu cầu ở riêng 1 phòng suốt hành trình, công ty chỉ charge thêm 7.000.000 VNĐ/phòng.",
+            "Mức phụ thu 7 triệu/phòng là mức giá hỗ trợ rất tốt cho khách hàng, giúp khách hoàn toàn thoải mái tận hưởng không gian riêng tư ở vùng cao Himalaya."
+        ] 
       },
       { 
         id: "q14", 

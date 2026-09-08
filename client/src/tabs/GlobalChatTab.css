@@ -127,6 +127,7 @@
         margin: 0 !important;
         border-radius: 0 !important;
         height: 100vh !important;
+        height: 100dvh !important;
     }
     
     .global-chat-header {

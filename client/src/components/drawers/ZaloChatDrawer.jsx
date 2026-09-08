@@ -11,8 +11,17 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const [aiSession, setAiSession] = useState({ is_ai_active: true });
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
+  const initialUidHandledRef = useRef(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchAiSession = async (uid) => {
     if (!uid) return;
@@ -49,8 +58,12 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
       setMessages(res.data || []);
       
       setSelectedUser(prev => {
-        if (initialZaloUid) return initialZaloUid;
-        if (!prev && res.data && res.data.length > 0) {
+        if (prev) return prev;
+        if (initialZaloUid && !initialUidHandledRef.current) {
+          initialUidHandledRef.current = true;
+          return initialZaloUid;
+        }
+        if (!isMobile && !prev && res.data && res.data.length > 0) {
           const uniqueSenders = [...new Set(res.data.map(m => m.senderId))];
           if (uniqueSenders.length > 0) {
             return uniqueSenders[uniqueSenders.length - 1];
@@ -91,6 +104,7 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
 
   useEffect(() => {
     if (initialZaloUid) {
+      initialUidHandledRef.current = true;
       setSelectedUser(initialZaloUid);
     }
   }, [initialZaloUid]);
@@ -126,9 +140,36 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) {
+        return;
+      }
+      e.preventDefault();
+      handleSend(e);
+    }
+  };
+
+  const handleTextareaChange = (e) => {
+    setInputText(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 130) + 'px';
+    }
+  };
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      if (inputText) {
+        textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 130) + 'px';
+      }
+    }
+  }, [inputText]);
+
   const handleSend = async (e) => {
-    e.preventDefault();
-    if ((!inputText.trim() && !selectedFile) || !selectedUser) return;
+    if (e && e.preventDefault) e.preventDefault();
+    if ((!inputText.trim() && !selectedFile) || !selectedUser || loading) return;
     
     try {
       setLoading(true);
@@ -160,6 +201,9 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
       });
       
       setInputText('');
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
       removeFile();
       fetchMessages();
     } catch (error) {
@@ -211,36 +255,37 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
   const isWindowClosed = selectedUserProfile && (Date.now() - selectedUserProfile.lastIncomingTimestamp > 7 * 24 * 60 * 60 * 1000 || selectedUserProfile.lastIncomingTimestamp === 0);
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', fontFamily: 'Arial, sans-serif' }}>
+    <div style={{ height: '100%', height: '100dvh', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', fontFamily: 'Arial, sans-serif', overflow: 'hidden' }}>
       {/* Top Header */}
       <div style={{ 
-        padding: '12px 20px', 
+        padding: isMobile ? '10px 14px' : '12px 20px', 
         borderBottom: '1px solid #e2e8f0', 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
         background: 'linear-gradient(135deg, #0068ff 0%, #004ecc 100%)',
-        color: '#fff'
+        color: '#fff',
+        flexShrink: 0
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '12px' }}>
           <div style={{ background: '#fff', borderRadius: '8px', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <MessageCircle size={22} color="#0068ff" />
+            <MessageCircle size={isMobile ? 18 : 22} color="#0068ff" />
           </div>
           <div>
-            <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>Zalo OA Chat</h2>
-            <p style={{ margin: 0, fontSize: '11px', opacity: 0.9 }}>Tương tác trực tiếp khách hàng Zalo Official Account</p>
+            <h2 style={{ margin: 0, fontSize: isMobile ? '14px' : '16px', fontWeight: 'bold' }}>Zalo OA Chat</h2>
+            {!isMobile && <p style={{ margin: 0, fontSize: '11px', opacity: 0.9 }}>Tương tác trực tiếp khách hàng Zalo Official Account</p>}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button 
             onClick={fetchMessages} 
             title="Làm mới tin nhắn"
             style={{ 
               background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', 
-              cursor: 'pointer', color: '#fff', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px'
+              cursor: 'pointer', color: '#fff', padding: isMobile ? '5px 8px' : '6px 10px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px'
             }}
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Làm mới
+            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} /> {isMobile ? '' : 'Làm mới'}
           </button>
           <button 
             onClick={onClose} 
@@ -256,11 +301,20 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
       </div>
 
       {/* Main Content Area */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* Sidebar (Users) */}
-        <div style={{ width: '320px', minWidth: '280px', borderRight: '1px solid #e5e7eb', backgroundColor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#fff', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
-            Danh sách hội thoại ({uniqueSenders.length})
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative', width: '100%' }}>
+        {/* Sidebar (Users) - Trên mobile: ẩn khi đang chat với user, hiện khi selectedUser = null */}
+        <div style={{ 
+          width: isMobile ? '100%' : '320px', 
+          minWidth: isMobile ? '100%' : '280px', 
+          borderRight: isMobile ? 'none' : '1px solid #e5e7eb', 
+          backgroundColor: '#f8fafc', 
+          display: (isMobile && selectedUser) ? 'none' : 'flex', 
+          flexDirection: 'column',
+          height: '100%',
+          overflow: 'hidden'
+        }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#fff', fontSize: '13px', fontWeight: 600, color: '#475569', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+            <span>Danh sách hội thoại ({uniqueSenders.length})</span>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {uniqueSenders.length === 0 ? (
@@ -285,9 +339,9 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
                   }}
                 >
                   {profile.avatar ? (
-                    <img src={profile.avatar} alt="avatar" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <img src={profile.avatar} alt="avatar" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                   ) : (
-                    <div style={{ width: '38px', height: '38px', backgroundColor: '#cbd5e1', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                    <div style={{ width: '38px', height: '38px', backgroundColor: '#cbd5e1', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 }}>
                       <User size={18} />
                     </div>
                   )}
@@ -298,9 +352,12 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
                     <div style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
                       <span style={{ 
                         display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%',
-                        backgroundColor: (Date.now() - profile.lastIncomingTimestamp <= 7 * 24 * 60 * 60 * 1000) ? '#10b981' : '#f59e0b'
+                        backgroundColor: (Date.now() - profile.lastIncomingTimestamp <= 7 * 24 * 60 * 60 * 1000) ? '#10b981' : '#f59e0b',
+                        flexShrink: 0
                       }}></span>
-                      {new Date(profile.lastMessageTimestamp).toLocaleDateString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {new Date(profile.lastMessageTimestamp).toLocaleDateString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -309,25 +366,68 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
           </div>
         </div>
 
-        {/* Chat Messages Area */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#fff', position: 'relative' }}>
+        {/* Chat Messages Area - Trên mobile: ẩn khi selectedUser = null, chiếm 100% khi đang chat */}
+        <div style={{ 
+          flex: 1, 
+          display: (isMobile && !selectedUser) ? 'none' : 'flex', 
+          flexDirection: 'column', 
+          backgroundColor: '#fff', 
+          position: 'relative',
+          width: isMobile ? '100%' : 'auto',
+          height: '100%',
+          overflow: 'hidden'
+        }}>
           {selectedUser ? (
             <>
               {/* Active User Header */}
-              <div style={{ padding: '12px 20px', borderBottom: '1px solid #e2e8f0', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ 
+                padding: isMobile ? '10px 14px' : '12px 20px', 
+                borderBottom: '1px solid #e2e8f0', 
+                backgroundColor: '#f8fafc', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                flexShrink: 0
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                  {/* Nút quay lại danh sách trên mobile */}
+                  {isMobile && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedUser(null)}
+                      title="Quay lại danh sách hội thoại"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        background: '#eff6ff',
+                        border: '1px solid #bfdbfe',
+                        borderRadius: '8px',
+                        padding: '6px 10px',
+                        color: '#0068ff',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                        fontSize: '12px',
+                        fontWeight: 600
+                      }}
+                    >
+                      <ArrowLeft size={16} /> Danh sách
+                    </button>
+                  )}
+
                   {selectedUserProfile?.avatar ? (
-                    <img src={selectedUserProfile.avatar} alt="avatar" style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <img src={selectedUserProfile.avatar} alt="avatar" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                   ) : (
-                    <div style={{ width: '38px', height: '38px', backgroundColor: '#0068ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                    <div style={{ width: '36px', height: '36px', backgroundColor: '#0068ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 }}>
                       <User size={18} />
                     </div>
                   )}
-                  <div>
-                    <h3 style={{ margin: 0, fontWeight: 700, color: '#0f172a', fontSize: '15px' }}>
+                  <div style={{ minWidth: 0, overflow: 'hidden' }}>
+                    <h3 style={{ margin: 0, fontWeight: 700, color: '#0f172a', fontSize: isMobile ? '14px' : '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {selectedUserProfile?.name || 'Zalo User'}
                     </h3>
-                    <div style={{ fontSize: '11.5px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                       <span>UID: {selectedUser}</span>
                       {selectedUserProfile?.matchedLead && (
                         <span style={{ background: '#dbeafe', color: '#1d4ed8', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, fontSize: '10.5px' }}>
@@ -341,33 +441,33 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
 
               {/* AI AGENT STATUS & HUMAN TAKEOVER BANNER */}
               <div style={{
-                padding: '8px 16px',
+                padding: isMobile ? '6px 12px' : '8px 16px',
                 backgroundColor: aiSession.is_ai_active ? '#f0fdf4' : '#fffbeb',
                 borderBottom: aiSession.is_ai_active ? '1px solid #bbf7d0' : '1px solid #fde68a',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: '12px',
-                transition: 'all 0.2s'
+                gap: '8px',
+                flexShrink: 0
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, flex: 1 }}>
                   <span style={{ 
-                    display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%',
+                    display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%',
                     backgroundColor: aiSession.is_ai_active ? '#22c55e' : '#f59e0b',
-                    boxShadow: aiSession.is_ai_active ? '0 0 8px #22c55e' : 'none'
+                    boxShadow: aiSession.is_ai_active ? '0 0 6px #22c55e' : 'none',
+                    flexShrink: 0
                   }}></span>
-                  <div>
+                  <div style={{ minWidth: 0, overflow: 'hidden' }}>
                     <span style={{ 
-                      fontSize: '12.5px', 
+                      fontSize: isMobile ? '11.5px' : '12.5px', 
                       fontWeight: 700, 
-                      color: aiSession.is_ai_active ? '#15803d' : '#b45309' 
+                      color: aiSession.is_ai_active ? '#15803d' : '#b45309',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: 'block'
                     }}>
-                      {aiSession.is_ai_active ? '🟢 AI Agent Đang Tự Động Trực & Tư Vấn' : '🟠 Nhân Viên Đang Tiếp Quản (AI Đã Tắt)'}
-                    </span>
-                    <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '8px' }}>
-                      {aiSession.is_ai_active 
-                        ? '• AI sẽ tự động phản hồi tin nhắn của khách' 
-                        : `• ${aiSession.muted_by === 'human_message' ? 'Đã ngắt khi nhân viên gửi tin' : aiSession.muted_by === 'sales_assigned' ? 'Đã gán cho Sales' : 'Đã tắt thủ công'}`}
+                      {aiSession.is_ai_active ? '🟢 AI Tự Động Trực' : '🟠 Nhân Viên Tiếp Quản'}
                     </span>
                   </div>
                 </div>
@@ -378,31 +478,31 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
-                    padding: '5px 12px',
-                    borderRadius: '8px',
-                    fontSize: '11.5px',
+                    gap: '4px',
+                    padding: isMobile ? '4px 8px' : '5px 12px',
+                    borderRadius: '6px',
+                    fontSize: isMobile ? '11px' : '11.5px',
                     fontWeight: 700,
                     cursor: 'pointer',
                     border: 'none',
                     backgroundColor: aiSession.is_ai_active ? '#ef4444' : '#0284c7',
                     color: '#ffffff',
                     boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                    transition: 'all 0.15s',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
                   }}
                 >
-                  {aiSession.is_ai_active ? '🛑 Dừng AI & Tiếp Quản' : '⚡ Bật Lại AI Agent'}
+                  {aiSession.is_ai_active ? '🛑 Dừng AI' : '⚡ Bật Lại AI'}
                 </button>
               </div>
 
               {/* Message List */}
-              <div style={{ flex: 1, padding: '16px 20px', overflowY: 'auto', backgroundColor: '#f1f5f9', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ flex: 1, padding: isMobile ? '12px 10px' : '16px 20px', overflowY: 'auto', backgroundColor: '#f1f5f9', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {activeMessages.map(msg => (
                   <div key={msg.id || msg.timestamp} style={{ display: 'flex', justifyContent: msg.type === 'outgoing' ? 'flex-end' : 'flex-start' }}>
                     <div style={{ 
-                      maxWidth: '75%', 
-                      padding: '10px 14px', 
+                      maxWidth: isMobile ? '88%' : '75%', 
+                      padding: isMobile ? '8px 12px' : '10px 14px', 
                       borderRadius: '14px', 
                       boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
                       backgroundColor: msg.type === 'outgoing' ? '#0068ff' : '#fff',
@@ -420,7 +520,7 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
                         </div>
                       )}
 
-                      <div style={{ fontSize: '14px', lineHeight: '1.6', wordBreak: 'break-word' }}>
+                      <div style={{ fontSize: '14px', lineHeight: '1.5', wordBreak: 'break-word' }}>
                         {String(msg.text || '').split('\n').map((line, lIdx, arr) => {
                           const urlRegex = /(https?:\/\/[^\s]+)/g;
                           const parts = line.split(urlRegex);
@@ -486,35 +586,35 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
               </div>
 
               {/* Bottom Input Area */}
-              <div style={{ padding: '14px 20px', backgroundColor: '#fff', borderTop: '1px solid #e2e8f0', position: 'relative' }}>
+              <div style={{ padding: isMobile ? '8px 10px' : '14px 20px', backgroundColor: '#fff', borderTop: '1px solid #e2e8f0', position: 'relative', flexShrink: 0 }}>
                 {isWindowClosed && (
-                  <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', color: '#b91c1c' }}>
-                    <AlertTriangle size={18} />
-                    <span style={{ fontSize: '12.5px', fontWeight: 500 }}>
-                      Cửa sổ tương tác 7 ngày đã đóng. Khách hàng cần nhắn lại để mở khóa hệ thống Zalo OA.
+                  <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '8px 12px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: '#b91c1c' }}>
+                    <AlertTriangle size={16} style={{ flexShrink: 0 }} />
+                    <span style={{ fontSize: '11.5px', fontWeight: 500 }}>
+                      Cửa sổ tương tác 7 ngày đã đóng. Khách hàng cần nhắn lại để mở khóa Zalo OA.
                     </span>
                   </div>
                 )}
 
                 {filePreview && (
                   <div style={{ 
-                    position: 'absolute', top: '-65px', left: '20px', 
-                    padding: '6px 12px', backgroundColor: '#fff', 
+                    position: 'absolute', top: '-60px', left: '10px', 
+                    padding: '6px 10px', backgroundColor: '#fff', 
                     border: '1px solid #e2e8f0', borderRadius: '8px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                    display: 'flex', alignItems: 'center', gap: '10px'
+                    display: 'flex', alignItems: 'center', gap: '8px'
                   }}>
                     {filePreview === 'file' ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#475569' }}>
-                        <File size={20} />
-                        <span style={{ fontSize: '12px', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedFile?.name}</span>
+                        <File size={18} />
+                        <span style={{ fontSize: '12px', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedFile?.name}</span>
                       </div>
                     ) : (
-                      <img src={filePreview} alt="preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                      <img src={filePreview} alt="preview" style={{ width: '38px', height: '38px', objectFit: 'cover', borderRadius: '4px' }} />
                     )}
                     <button onClick={removeFile} style={{ 
                       background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', 
-                      width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                      width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
                       cursor: 'pointer' 
                     }}>
                       <X size={12} />
@@ -522,7 +622,7 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
                   </div>
                 )}
 
-                <form onSubmit={handleSend} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <form onSubmit={handleSend} style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                   <input 
                     type="file" 
                     ref={fileInputRef}
@@ -537,25 +637,39 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
                     style={{ 
                       background: 'none', border: 'none', cursor: 'pointer', 
                       color: selectedFile ? '#0068ff' : '#64748b',
-                      padding: '6px'
+                      padding: '4px',
+                      height: '38px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
                     }}
                     title="Đính kèm Ảnh / File PDF"
                   >
-                    <Paperclip size={20} />
+                    <Paperclip size={18} />
                   </button>
 
-                  <input
-                    type="text"
+                  <textarea
+                    ref={textareaRef}
                     value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder="Nhập tin nhắn phản hồi Zalo..."
+                    onChange={handleTextareaChange}
+                    onKeyDown={handleKeyDown}
+                    placeholder={isMobile ? "Nhập tin nhắn..." : "Nhập tin nhắn phản hồi Zalo (Shift + Enter để xuống dòng, Enter để gửi)..."}
+                    rows={1}
                     style={{ 
                       flex: 1, 
                       border: '1px solid #cbd5e1', 
-                      borderRadius: '9999px', 
-                      padding: '10px 18px', 
+                      borderRadius: '20px', 
+                      padding: isMobile ? '8px 14px' : '10px 18px', 
                       outline: 'none',
-                      fontSize: '14px'
+                      fontSize: '14px',
+                      lineHeight: '1.4',
+                      fontFamily: 'inherit',
+                      resize: 'none',
+                      minHeight: '38px',
+                      maxHeight: '120px',
+                      overflowY: 'auto',
+                      boxSizing: 'border-box'
                     }}
                   />
                   
@@ -567,16 +681,20 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
                       color: '#fff',
                       border: 'none',
                       borderRadius: '50%',
-                      width: '42px',
-                      height: '42px',
+                      width: '38px',
+                      height: '38px',
+                      minWidth: '38px',
+                      minHeight: '38px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: (inputText.trim() || selectedFile) ? 'pointer' : 'not-allowed',
-                      opacity: loading ? 0.7 : 1
+                      opacity: loading ? 0.7 : 1,
+                      flexShrink: 0
                     }}
+                    title="Gửi tin nhắn (Enter)"
                   >
-                    <Send size={18} style={{ marginLeft: '2px' }} />
+                    <Send size={16} style={{ marginLeft: '2px' }} />
                   </button>
                 </form>
               </div>

@@ -348,9 +348,15 @@ const zaloV2Controller = {
         const messageText = body.message.text || '';
         const senderName = profile?.name || `Zalo Guest ${senderId.substring(0, 5)}`;
         
-        // 1. Kiểm tra Lead hiện tại theo zalo_uid
+        // 1. Kiểm tra Lead hiện tại theo zalo_uid (ưu tiên Lead active và đã gán nhân viên)
         const leadRes = await db.query(
-          'SELECT * FROM leads WHERE zalo_uid = $1 ORDER BY created_at DESC LIMIT 1',
+          `SELECT * FROM leads 
+           WHERE zalo_uid = $1 
+           ORDER BY 
+             CASE WHEN status NOT IN ('Chốt đơn', 'Thất bại') THEN 0 ELSE 1 END,
+             CASE WHEN assigned_to IS NOT NULL THEN 0 ELSE 1 END,
+             created_at DESC 
+           LIMIT 1`,
           [senderId]
         );
 
@@ -375,20 +381,21 @@ const zaloV2Controller = {
             notificationController.broadcastNewLead({ id: leadId, customer_name: senderName }, autoBU).catch(console.error);
           }
 
-          // Auto-classify Tour
-          const autoTour = await facebookService.classifyTourFromMessage(messageText);
+          // Auto-classify Tour (ưu tiên tìm trong autoBU nếu có)
+          const autoTour = await facebookService.classifyTourFromMessage(messageText, '', autoBU);
           if (autoTour && autoTour.tour_id) {
-            const q = autoBU ? 
-              'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
-              'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
-            const params = autoBU ? 
-              [autoTour.tour_id, leadId] : 
-              [autoTour.tour_id, autoTour.bu_group, leadId];
+            const targetBU = autoBU || autoTour.bu_group;
+            const q = targetBU ? 
+              'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+              'UPDATE leads SET tour_id = $1 WHERE id = $2';
+            const params = targetBU ? 
+              [autoTour.tour_id, targetBU, leadId] : 
+              [autoTour.tour_id, leadId];
             await db.query(q, params);
-            console.log(`[TOUR-AUTO] Zalo Lead #${leadId} (${senderName}) → Auto Tour: ${autoTour.tour_id}`);
+            console.log(`[TOUR-AUTO] Zalo Lead #${leadId} (${senderName}) → Auto Tour: ${autoTour.tour_id} (BU: ${targetBU})`);
             
-            if (!autoBU && autoTour.bu_group) {
-              notificationController.broadcastNewLead({ id: leadId, customer_name: senderName }, autoTour.bu_group).catch(console.error);
+            if (targetBU && targetBU !== autoBU) {
+              notificationController.broadcastNewLead({ id: leadId, customer_name: senderName }, targetBU).catch(console.error);
             }
           }
 
@@ -421,15 +428,17 @@ const zaloV2Controller = {
             if (autoBU2) {
               await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU2, leadId]);
             }
-            const autoTour2 = await facebookService.classifyTourFromMessage(messageText);
+            const autoTour2 = await facebookService.classifyTourFromMessage(messageText, '', autoBU2);
             if (autoTour2 && autoTour2.tour_id) {
-              const q2 = autoBU2 ? 
-                'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
-                'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
-              const params2 = autoBU2 ? 
-                [autoTour2.tour_id, leadId] : 
-                [autoTour2.tour_id, autoTour2.bu_group, leadId];
+              const targetBU2 = autoBU2 || autoTour2.bu_group;
+              const q2 = targetBU2 ? 
+                'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+                'UPDATE leads SET tour_id = $1 WHERE id = $2';
+              const params2 = targetBU2 ? 
+                [autoTour2.tour_id, targetBU2, leadId] : 
+                [autoTour2.tour_id, leadId];
               await db.query(q2, params2);
+              console.log(`[TOUR-AUTO] Zalo Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour2.tour_id} (BU: ${targetBU2}) (Re-opened)`);
             }
           } else {
             // LUỒNG VẪN ĐANG ACTIVE
@@ -455,18 +464,19 @@ const zaloV2Controller = {
 
             // Phân loại Tour nếu chưa có
             if (!oldLead.tour_id && messageText) {
-              const autoTour3 = await facebookService.classifyTourFromMessage(messageText);
+              const updatedLead = await db.query('SELECT bu_group FROM leads WHERE id = $1', [leadId]);
+              const currentBuGroup = updatedLead.rows[0]?.bu_group;
+              const autoTour3 = await facebookService.classifyTourFromMessage(messageText, '', currentBuGroup);
               if (autoTour3 && autoTour3.tour_id) {
-                const updatedLead = await db.query('SELECT bu_group FROM leads WHERE id = $1', [leadId]);
-                const currentBuGroup = updatedLead.rows[0]?.bu_group;
-                const q3 = currentBuGroup ? 
-                  'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
-                  'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
-                const params3 = currentBuGroup ? 
-                  [autoTour3.tour_id, leadId] : 
-                  [autoTour3.tour_id, autoTour3.bu_group, leadId];
+                const targetBU3 = currentBuGroup || autoTour3.bu_group;
+                const q3 = targetBU3 ? 
+                  'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+                  'UPDATE leads SET tour_id = $1 WHERE id = $2';
+                const params3 = targetBU3 ? 
+                  [autoTour3.tour_id, targetBU3, leadId] : 
+                  [autoTour3.tour_id, leadId];
                 await db.query(q3, params3);
-                console.log(`[TOUR-AUTO] Zalo Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id}`);
+                console.log(`[TOUR-AUTO] Zalo Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (BU: ${targetBU3})`);
               }
             }
           }
@@ -484,6 +494,64 @@ const zaloV2Controller = {
                 'UPDATE leads SET phone = $1, customer_id = COALESCE(customer_id, (SELECT id FROM customers WHERE phone = $3 LIMIT 1)) WHERE id = $2',
                 [extractedPhone, leadId, extractedPhone]
               );
+            }
+          }
+        }
+
+        // --- REAL-TIME NOTIFICATION & SOUND ALERT CHO SALES ĐƯỢC GIAO ---
+        if (leadId) {
+          const currentLeadRes = await db.query(
+            'SELECT id, name, assigned_to, bu_group FROM leads WHERE id = $1',
+            [leadId]
+          );
+          const currentLead = currentLeadRes.rows[0];
+
+          if (currentLead) {
+            const customerDisplayName = currentLead.name || senderName;
+            const notifMessage = messageText || (attachments && attachments.length > 0 ? '[Đã gửi file/hình ảnh đính kèm]' : 'Khách đã gửi tin nhắn');
+            const notifTitle = `💬 Tin nhắn Zalo từ ${customerDisplayName}`;
+            const notifLink = `/zalo-sandbox?uid=${senderId}`;
+
+            // 1. Nếu Lead đã được phân công cho 1 Sales cụ thể -> Gửi thông báo trực tiếp
+            if (currentLead.assigned_to) {
+              const notifRes = await db.query(
+                `INSERT INTO user_notifications (user_id, title, message, link, type, reference_id) 
+                 VALUES ($1, $2, $3, $4, 'CUSTOMER_MESSAGE', $5) 
+                 RETURNING *`,
+                [currentLead.assigned_to, notifTitle, notifMessage.substring(0, 200), notifLink, leadId]
+              );
+
+              if (global.io) {
+                global.io.to(`user_${currentLead.assigned_to}`).emit('new_notification', {
+                  ...notifRes.rows[0],
+                  sound_type: 'message',
+                  play_sound: true,
+                  customer_name: customerDisplayName,
+                  source: 'zalo',
+                  uid: senderId,
+                  lead_id: leadId
+                });
+              }
+
+              notificationController.sendPushToUser(currentLead.assigned_to, {
+                title: notifTitle,
+                body: notifMessage.substring(0, 150),
+                url: notifLink
+              }, 'CUSTOMER_MESSAGE').catch(console.error);
+            }
+
+            // 2. Bắn sự kiện customer_new_message toàn cục để cập nhật âm thanh/toast/UI ngay lập tức
+            if (global.io) {
+              global.io.emit('customer_new_message', {
+                source: 'zalo',
+                senderId: senderId,
+                senderName: customerDisplayName,
+                text: notifMessage,
+                leadId: leadId,
+                assigned_to: currentLead.assigned_to,
+                bu_group: currentLead.bu_group,
+                timestamp: new Date().toISOString()
+              });
             }
           }
         }

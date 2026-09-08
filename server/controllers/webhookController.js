@@ -78,10 +78,40 @@ exports.handleWebhookEvent = async (req, res) => {
                                 const echoConvRes = await db.query('SELECT id, lead_id FROM conversations WHERE external_id = $1', [recipientPsid]);
                                 if (echoConvRes.rows.length > 0) {
                                     const echoConvId = echoConvRes.rows[0].id;
-                                    await db.query(
-                                        'INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)',
-                                        [echoConvId, 'page', echoText]
-                                    );
+                                    // Chống trùng lặp tin nhắn vừa được gửi qua Send API từ CRM hoặc duplicate echo webhook
+                                    const isCrmSent = webhook_event.message.metadata === 'CRM_SENT';
+                                    let isDuplicate = isCrmSent;
+
+                                    if (!isDuplicate) {
+                                        // Kiểm tra xem CRM vừa lưu tin này (sender_type = 'user') trong 30s qua không
+                                        // hoặc tin page cùng nội dung vừa được lưu trong 5s qua (chống webhook retry lặp lại)
+                                        const recentCheck = await db.query(
+                                            `SELECT id FROM messages 
+                                             WHERE conversation_id = $1 
+                                               AND content = $2 
+                                               AND (
+                                                 (sender_type = 'user' AND created_at >= NOW() - INTERVAL '30 seconds')
+                                                 OR 
+                                                 (sender_type = 'page' AND created_at >= NOW() - INTERVAL '5 seconds')
+                                               )
+                                             LIMIT 1`,
+                                            [echoConvId, echoText]
+                                        );
+                                        if (recentCheck.rows.length > 0) {
+                                            isDuplicate = true;
+                                            console.log(`[WEBHOOK] ⏭️ Echo message already recorded (id: ${recentCheck.rows[0].id}). Skipping duplicate for PSID: ${recipientPsid}`);
+                                        }
+                                    } else {
+                                        console.log(`[WEBHOOK] ⏭️ Echo from CRM Send API (metadata: CRM_SENT). Skipping duplicate insert for PSID: ${recipientPsid}`);
+                                    }
+
+                                    if (!isDuplicate) {
+                                        await db.query(
+                                            'INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)',
+                                            [echoConvId, 'page', echoText]
+                                        );
+                                        console.log(`[WEBHOOK] 📤 Echo (page reply from Meta) saved for PSID: ${recipientPsid}`);
+                                    }
                                     // Nếu lead chưa có BU → check lại sau mỗi page reply
                                     const leadId = echoConvRes.rows[0].lead_id;
                                     if (leadId) {
@@ -108,7 +138,7 @@ exports.handleWebhookEvent = async (req, res) => {
                                             
                                             // Tour Auto
                                             if (!leadCheck.rows[0].tour_id) {
-                                                const autoTour = await facebookService.classifyTourFromMessage(allText);
+                                                const autoTour = await facebookService.classifyTourFromMessage(allText, '', leadCheck.rows[0].bu_group);
                                                 if (autoTour && autoTour.tour_id) {
                                                     // Chỉ update tour_id (không đè BU nếu đã có, nếu chưa có thì gán BU luôn vì Tour thuộc BU)
                                                     const q = leadCheck.rows[0].bu_group ? 

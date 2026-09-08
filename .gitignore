@@ -55,4 +55,5 @@ _backups/
 server/public/uploads/
 zalo_tokens.json
 scratch/
-
+server/logs/
+*.jsonl

@@ -452,7 +452,7 @@ exports.updateTeam = async (req, res) => {
 
 exports.updateMyNotificationPreferences = async (req, res) => {
     try {
-        const { push_bu_message, push_personal_assignment } = req.body;
+        const { push_bu_message, push_personal_assignment, push_customer_message } = req.body;
         
         // Fetch current preferences to merge them if needed
         const currentRes = await db.query('SELECT notification_preferences FROM users WHERE id = $1', [req.user.id]);
@@ -460,8 +460,9 @@ exports.updateMyNotificationPreferences = async (req, res) => {
         
         const newPrefs = {
             ...currentPrefs,
-            push_bu_message: push_bu_message !== undefined ? push_bu_message : currentPrefs.push_bu_message,
-            push_personal_assignment: push_personal_assignment !== undefined ? push_personal_assignment : currentPrefs.push_personal_assignment
+            push_bu_message: push_bu_message !== undefined ? push_bu_message : (currentPrefs.push_bu_message ?? true),
+            push_personal_assignment: push_personal_assignment !== undefined ? push_personal_assignment : (currentPrefs.push_personal_assignment ?? true),
+            push_customer_message: push_customer_message !== undefined ? push_customer_message : (currentPrefs.push_customer_message ?? true)
         };
         
         const result = await db.query(

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, CircleDollarSign, CheckCircle2, Star, MessageSquare, ShieldCheck, Image as ImageIcon, Globe, Camera, UserCircle, Users, Calculator, CalendarCheck, Phone, Facebook, ChevronRight } from 'lucide-react';
+import { Target, CircleDollarSign, CheckCircle2, Star, MessageSquare, ShieldCheck, Image as ImageIcon, Globe, Camera, UserCircle, Users, Calculator, CalendarCheck, Phone, Facebook, ChevronRight, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ChinhSachDanhGiaPage = () => {
@@ -33,10 +33,26 @@ const ChinhSachDanhGiaPage = () => {
         }
       `}</style>
       {/* Breadcrumb */}
-      <nav style={{ padding: '20px 40px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#64748b', flexWrap: 'wrap' }}>
-        <Link to="/tai-lieu" style={{ color: '#e55e20', textDecoration: 'none', fontWeight: 600 }}>Trang chủ Tài Liệu</Link>
-        <ChevronRight size={14} />
-        <span style={{ color: '#1e293b', fontWeight: 600 }}>SOP Chính Sách Đánh Giá</span>
+      <nav style={{ padding: '20px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '15px', fontSize: '14px', color: '#64748b', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Link to="/tai-lieu" style={{ color: '#e55e20', textDecoration: 'none', fontWeight: 600 }}>Trang chủ Tài Liệu</Link>
+          <ChevronRight size={14} />
+          <span style={{ color: '#1e293b', fontWeight: 600 }}>SOP Chính Sách Đánh Giá</span>
+        </div>
+        <a
+          href="https://fittour.vn/huong-dan-danh-gia-fit-tour"
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            color: '#e55e20', background: '#fff7ed', border: '1px solid #fed7aa',
+            padding: '6px 14px', borderRadius: '8px', fontWeight: 700,
+            textDecoration: 'none', fontSize: '13px'
+          }}
+        >
+          <span>⭐ Hướng dẫn đánh giá FIT TOUR trên Google Maps</span>
+          <ExternalLink size={14} />
+        </a>
       </nav>
       {/* Removed Image block as requested */}
 
@@ -75,6 +91,62 @@ const ChinhSachDanhGiaPage = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Banner Hướng Dẫn Đánh Giá FIT Tour Trên Google Maps */}
+        <div style={{
+          background: 'linear-gradient(135deg, #fffaf5 0%, #fff1e6 100%)',
+          border: '2px dashed #f97316',
+          borderRadius: '16px',
+          padding: '20px 24px',
+          marginBottom: '35px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '20px',
+          flexWrap: 'wrap',
+          boxShadow: '0 2px 12px rgba(229, 94, 32, 0.08)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: '1 1 450px' }}>
+            <div style={{
+              width: '48px', height: '48px', borderRadius: '14px',
+              background: '#e55e20', color: 'white', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              boxShadow: '0 4px 10px rgba(229, 94, 32, 0.3)'
+            }}>
+              <Star size={24} fill="white" />
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#9a3412', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                Tài liệu gửi khách hàng & HDV: Hướng dẫn đánh giá trên Google Maps
+              </div>
+              <p style={{ margin: '4px 0 0', fontSize: '0.92rem', color: '#475569', lineHeight: 1.5 }}>
+                Bài viết hướng dẫn từng bước (kèm hình ảnh trực quan): cách mở link, chấm 5 sao, viết nhận xét thực tế và tải lên từ 5 – 10 hình ảnh để đạt chuẩn ghi nhận thưởng.
+              </p>
+            </div>
+          </div>
+          <a
+            href="https://fittour.vn/huong-dan-danh-gia-fit-tour"
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              background: 'linear-gradient(135deg, #e55e20 0%, #f97316 100%)',
+              color: 'white',
+              padding: '12px 22px',
+              borderRadius: '12px',
+              fontWeight: 800,
+              fontSize: '0.95rem',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 14px rgba(229, 94, 32, 0.35)',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <span>Mở trang hướng dẫn</span>
+            <ExternalLink size={16} />
+          </a>
         </div>
 
         {/* I. MỤC ĐÍCH */}
@@ -143,6 +215,17 @@ const ChinhSachDanhGiaPage = () => {
                   <div style={{ fontSize: '0.95rem', fontWeight: 500 }}>{item.text}</div>
                 </div>
               ))}
+            </div>
+            <div style={{
+              marginTop: '20px', padding: '12px 16px', borderRadius: '10px',
+              background: '#fff7ed', border: '1px solid #fed7aa',
+              fontSize: '0.88rem', color: '#9a3412', display: 'flex',
+              alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap'
+            }}>
+              <span>📌 <strong>Hướng dẫn mẫu cho khách:</strong></span>
+              <a href="https://fittour.vn/huong-dan-danh-gia-fit-tour" target="_blank" rel="noreferrer" style={{ color: '#e55e20', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                fittour.vn/huong-dan-danh-gia-fit-tour <ExternalLink size={14} />
+              </a>
             </div>
           </div>
         </div>
@@ -242,7 +325,10 @@ const ChinhSachDanhGiaPage = () => {
               </div>
               <ul style={{ margin: 0, paddingLeft: '32px', fontSize: '0.95rem', fontWeight: 500, lineHeight: 1.6 }}>
                 <li>Chủ động hướng dẫn khách hàng thực hiện đánh giá sau hành trình.</li>
-                <li>Hỗ trợ khách hàng đăng tải hình ảnh và nội dung review đúng quy chuẩn.</li>
+                <li>
+                  Gửi link bài viết hướng dẫn chi tiết cho khách: <a href="https://fittour.vn/huong-dan-danh-gia-fit-tour" target="_blank" rel="noreferrer" style={{ color: '#e55e20', fontWeight: 700, textDecoration: 'underline' }}>fittour.vn/huong-dan-danh-gia-fit-tour</a>
+                </li>
+                <li>Hỗ trợ khách hàng đăng tải hình ảnh và nội dung review đúng quy chuẩn (tối thiểu 5 – 10 ảnh).</li>
                 <li>Tổng hợp danh sách review gửi về bộ phận phụ trách theo quy định.</li>
               </ul>
             </div>

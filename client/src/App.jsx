@@ -65,6 +65,7 @@ const LeadsDashboardTab = lazy(() => import('./tabs/LeadsDashboardTab'));
 const StaffPerformanceTab = lazy(() => import('./tabs/StaffPerformanceTab'));
 const GuidesTab = lazy(() => import('./tabs/GuidesTab'));
 const MarketingAdsTab = lazy(() => import('./tabs/MarketingAdsTab'));
+const GoogleAdsTab = lazy(() => import('./tabs/GoogleAdsTab'));
 const UsersTab = lazy(() => import('./tabs/UsersTab'));
 import StaffCalendarView from './components/StaffCalendarView';
 const TeamsTab = lazy(() => import('./tabs/TeamsTab'));
@@ -77,7 +78,6 @@ import AddLeadModal from './components/modals/AddLeadModal';
 import EditLeadModal from './components/modals/EditLeadModal';
 import NotificationBell from './components/common/NotificationBell';
 import CommandPalette from './components/CommandPalette';
-import HolidayAnnouncementModal from './components/modals/HolidayAnnouncementModal';
 import SystemAnnouncementPopup from './components/modals/SystemAnnouncementPopup';
 const EmailGroupsTab = lazy(() => import('./tabs/EmailGroupsTab'));
 import LeaveRequestModal from './components/modals/LeaveRequestModal';
@@ -200,7 +200,7 @@ function AppContent() {
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
   const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
-  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'announcements', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'visa-form-templates', 'dispatch-schedule', 'notification-center'];
+  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'marketing-google-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'announcements', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'visa-form-templates', 'dispatch-schedule', 'notification-center'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -589,6 +589,8 @@ function AppContent() {
         } else {
           setB2bActiveTab('list');
         }
+      } else if (fullPath === 'group/google-ads') {
+        setActiveTab('marketing-google-ads');
       } else {
         setActiveTab(fullPath.replace('/', '-'));
       }
@@ -638,6 +640,9 @@ function AppContent() {
     } else if (VALID_TABS.includes(basePath)) {
        setActiveTab(basePath);
     }
+
+    setIsMobileMenuOpen(false);
+    setHoveredMenu(null);
   }, [location.pathname, location.search, user]);
 
   useEffect(() => {
@@ -646,6 +651,9 @@ function AppContent() {
         const token = localStorage.getItem('token');
         if (token && config.url !== '/api/auth/login') {
           config.headers.Authorization = `Bearer ${token}`;
+        }
+        if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase()) && !config.headers['Idempotency-Key'] && !config.headers['idempotency-key']) {
+          config.headers['Idempotency-Key'] = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `idemp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         }
         return config;
       },
@@ -2320,7 +2328,7 @@ function AppContent() {
           </div>
 
           {/* ═══ TOUR ĐOÀN SECTION ═══ */}
-          {(['group_projects', 'group_leaders'].some(mod => checkView(mod))) && (
+          {(['group_projects', 'group_leaders', 'mice_leads', 'marketing_ads'].some(mod => checkView(mod))) && (
             <>
               <div className="nav-section-title" style={{ color: '#d97706' }}>Tour Đoàn 🔒</div>
               {checkPerm('group_projects', 'view_dashboard') && (
@@ -2371,6 +2379,13 @@ function AppContent() {
                   onClick={() => { navigate('/group/mice-leads'); setActiveTab('group-mice-leads'); }}
                 >
                   <Filter /> MICE Leads (Tiềm năng)</div>
+              )}
+              {(checkView('marketing_ads') || checkView('group_projects') || user?.role === 'admin') && (
+                <div title="Báo Cáo Google Ads (BU3)" 
+                  className={`nav-item ${activeTab === 'marketing-google-ads' ? 'active' : ''}`} 
+                  onClick={() => { navigate('/group/google-ads'); setActiveTab('marketing-google-ads'); }}
+                >
+                  <Search /> Báo Cáo Google Ads (BU3)</div>
               )}
 
             </>
@@ -2651,7 +2666,7 @@ function AppContent() {
             className={`submenu-item ${activeTab === 'marketing-ads' ? 'active' : ''}`} 
             onClick={() => { navigate('/marketing-ads'); setHoveredMenu(null); }} 
           >
-            Quản trị Chiến dịch (Data/KPI)
+            Quản trị Meta Ads (Data/KPI)
           </div>
           <div 
             className={`submenu-item ${activeTab === 'management-dashboard' ? 'active' : ''}`} 
@@ -3315,6 +3330,7 @@ function AppContent() {
           <div className="breadcrumb">CRM / {
               activeTab === 'op-tours' ? 'LỊCH KHỞI HÀNH' : 
               activeTab === 'management-dashboard' ? 'TỔNG QUAN MARKETING' : 
+              activeTab === 'marketing-google-ads' ? 'TOUR ĐOÀN / GOOGLE ADS BU3' : 
               activeTab.toUpperCase()
           }</div>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
@@ -3331,6 +3347,7 @@ function AppContent() {
             activeTab === 'leads' ? 'Quản lý Lead Marketing' : 
             activeTab === 'leads-dashboard' ? 'Dashboard Lead Marketing' :
             activeTab === 'management-dashboard' ? 'Tổng quan Marketing' :
+            activeTab === 'marketing-google-ads' ? 'Báo Cáo Google Ads (BU3 B2B)' :
             activeTab === 'bus' ? 'Quản lý Khối Kinh doanh (BU)' :
             activeTab === 'licenses' ? 'Biểu Mẫu & Văn Bản Văn Phòng' :
             activeTab === 'announcements' ? 'Văn Bản Thông Báo' :
@@ -3464,17 +3481,6 @@ function AppContent() {
                     className="header-dropdown-item" 
                     onClick={(e) => { 
                       e.stopPropagation(); 
-                      window.dispatchEvent(new Event('open-holiday-popup'));
-                      setHoveredMenu(null); 
-                    }}
-                    style={{ padding: '12px 16px', borderTop: '1px solid #f1f5f9', color: '#e55e20', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
-                  >
-                    🇻🇳 Lịch Nghỉ Lễ 2/9
-                  </div>
-                  <div 
-                    className="header-dropdown-item" 
-                    onClick={(e) => { 
-                      e.stopPropagation(); 
                       navigate('/staff-calendar');
                       setActiveTab('staff-calendar');
                       setHoveredMenu(null); 
@@ -3489,7 +3495,6 @@ function AppContent() {
           </div>
         </header>
 
-        <HolidayAnnouncementModal currentUser={user} />
         <SystemAnnouncementPopup currentUser={user} />
 
         <CommandPalette onNavigate={(id) => {
@@ -3614,6 +3619,10 @@ function AppContent() {
 
             {activeTab === 'marketing-ads' && (
               <MarketingAdsTab addToast={addToast} currentUser={user} bus={bus.filter(b => b.is_active !== false)} />
+            )}
+
+            {activeTab === 'marketing-google-ads' && (
+              <GoogleAdsTab addToast={addToast} currentUser={user} />
             )}
 
         {activeTab === 'inbox' && (

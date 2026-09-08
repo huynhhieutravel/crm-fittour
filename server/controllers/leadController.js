@@ -88,6 +88,93 @@ exports.createLead = async (req, res) => {
             }
         }
 
+        // DEDUPLICATION GUARD for social chat channels (Zalo OA / Facebook Messenger)
+        // If an active lead exists for this zalo_uid or facebook_psid within 30 days, merge & update instead of inserting a duplicate
+        let existingActiveLead = null;
+        if (zalo_uid) {
+            const existingRes = await db.query(
+                `SELECT * FROM leads 
+                 WHERE zalo_uid = $1 
+                   AND status NOT IN ('Chốt đơn', 'Thất bại') 
+                   AND (last_contacted_at > NOW() - INTERVAL '30 days' OR created_at > NOW() - INTERVAL '30 days')
+                 ORDER BY CASE WHEN assigned_to IS NOT NULL THEN 0 ELSE 1 END, created_at DESC LIMIT 1`,
+                [zalo_uid]
+            );
+            if (existingRes.rows.length > 0) existingActiveLead = existingRes.rows[0];
+        } else if (facebook_psid) {
+            const existingRes = await db.query(
+                `SELECT * FROM leads 
+                 WHERE facebook_psid = $1 
+                   AND status NOT IN ('Chốt đơn', 'Thất bại') 
+                   AND (last_contacted_at > NOW() - INTERVAL '30 days' OR created_at > NOW() - INTERVAL '30 days')
+                 ORDER BY CASE WHEN assigned_to IS NOT NULL THEN 0 ELSE 1 END, created_at DESC LIMIT 1`,
+                [facebook_psid]
+            );
+            if (existingRes.rows.length > 0) existingActiveLead = existingRes.rows[0];
+        }
+
+        if (existingActiveLead) {
+            const updateFields = [];
+            const updateValues = [];
+            let valIdx = 1;
+
+            if (finalPhone && !existingActiveLead.phone) {
+                updateFields.push(`phone = $${valIdx++}`);
+                updateValues.push(finalPhone);
+            }
+            if (finalTourId && (!existingActiveLead.tour_id || existingActiveLead.tour_id !== finalTourId)) {
+                updateFields.push(`tour_id = $${valIdx++}`);
+                updateValues.push(finalTourId);
+            }
+            if (bu_group && (!existingActiveLead.bu_group || existingActiveLead.bu_group !== bu_group)) {
+                updateFields.push(`bu_group = $${valIdx++}`);
+                updateValues.push(bu_group);
+            }
+            if (finalAssignedTo && !existingActiveLead.assigned_to) {
+                updateFields.push(`assigned_to = $${valIdx++}`);
+                updateValues.push(finalAssignedTo);
+                updateFields.push(`assigned_at = NOW()`);
+                if (existingActiveLead.status === 'Mới') {
+                    updateFields.push(`status = 'Chưa chăm sóc'`);
+                }
+            }
+            if (consultation_note) {
+                const combinedNote = existingActiveLead.consultation_note 
+                    ? `${existingActiveLead.consultation_note}\n[${new Date().toLocaleTimeString('vi-VN')}]: ${consultation_note}`
+                    : consultation_note;
+                updateFields.push(`consultation_note = $${valIdx++}`);
+                updateValues.push(combinedNote);
+            }
+            if (customerIdStr && !existingActiveLead.customer_id) {
+                updateFields.push(`customer_id = $${valIdx++}`);
+                updateValues.push(customerIdStr);
+            }
+            if (normalizedName && normalizedName !== 'KHÁCH HÀNG MỚI' && 
+                (existingActiveLead.name.startsWith('Zalo Guest') || existingActiveLead.name.startsWith('Messenger Guest') || existingActiveLead.name.startsWith('KHÁCH HÀNG MỚI'))) {
+                updateFields.push(`name = $${valIdx++}`);
+                updateValues.push(normalizedName);
+            }
+
+            updateFields.push(`last_contacted_at = NOW()`);
+            updateFields.push(`updated_at = NOW()`);
+            updateValues.push(existingActiveLead.id);
+
+            const mergeQuery = `UPDATE leads SET ${updateFields.join(', ')} WHERE id = $${valIdx} RETURNING *`;
+            const mergeRes = await db.query(mergeQuery, updateValues);
+            const mergedLead = mergeRes.rows[0];
+
+            await logActivity({
+                user_id: req.user ? req.user.id : null,
+                action_type: 'UPDATE',
+                entity_type: 'LEAD',
+                entity_id: mergedLead.id,
+                details: `Tự động gộp thông tin từ kênh tương tác (${mergedLead.source || 'Social'}): ${mergedLead.name}`,
+                new_data: mergedLead
+            });
+
+            return res.status(200).json(mergedLead);
+        }
+
         const finalStatus = req.body.status || 'Mới';
 
         const result = await db.query(
@@ -139,6 +226,40 @@ exports.createLead = async (req, res) => {
                 global.io.emit('new_global_activity', newAct);
             }
         } catch(e) { console.error('Global activity emit error:', e); }
+
+        // AUTO-MUTE AI AND NOTIFY IF ASSIGNED UPON CREATION
+        if (newLead.assigned_to) {
+            try {
+                if (newLead.zalo_uid) {
+                    await db.query(`
+                        INSERT INTO zalo_ai_sessions (zalo_uid, is_ai_active, muted_by, muted_at, updated_at, notes)
+                        VALUES ($1, false, 'sales_assigned', NOW(), NOW(), 'Đã phân bổ cho Sales chăm sóc')
+                        ON CONFLICT (zalo_uid) DO UPDATE
+                        SET is_ai_active = false, muted_by = 'sales_assigned', muted_at = NOW(), updated_at = NOW()
+                    `, [newLead.zalo_uid]).catch(e => console.error('Error auto-muting AI on lead create:', e.message));
+
+                    if (global.io) {
+                        global.io.emit('zalo_ai_session_update', {
+                            zalo_uid: newLead.zalo_uid,
+                            is_ai_active: false,
+                            muted_by: 'sales_assigned'
+                        });
+                    }
+                }
+
+                if (global.io) {
+                    global.io.emit('lead_assigned', {
+                        leadId: newLead.id,
+                        leadName: newLead.name,
+                        assigned_to: newLead.assigned_to,
+                        source: newLead.source,
+                        market_collection: newLead.market_collection
+                    });
+                }
+            } catch (err) {
+                console.error('Error in lead creation assignment side effects:', err);
+            }
+        }
 
         res.status(201).json(newLead);
     } catch (err) {
@@ -259,6 +380,7 @@ exports.updateLead = async (req, res) => {
                 if (key === 'name' && val) val = val.toUpperCase().trim();
                 if (key === 'tour_id' && val === '') val = null;
                 if (key === 'assigned_to' && val === '') val = null;
+                if (key === 'bu_group' && val === '') val = null;
 
                 // Auto-update status to 'Đang liên hệ' if newly assigned and status is 'Mới'
                 if (key === 'assigned_to' && val !== null && oldLead.status === 'Mới' && updates.status === undefined) {
@@ -390,11 +512,21 @@ exports.updateLead = async (req, res) => {
                     const pushTitle = '🎯 Bạn được giao 1 Lead mới!';
                     const pushBody = `Khách hàng: ${updatedLead.name} - Nhu cầu: ${tourName}. Click để xem ngay!`;
                     
-                    await db.pool.query(
+                    const notifInsert = await db.pool.query(
                         `INSERT INTO user_notifications (user_id, title, message, link, type, reference_id) 
-                         VALUES ($1, $2, $3, $4, $5, $6)`,
+                         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
                         [newAssignedTo, pushTitle, pushBody, `/leads/${updatedLead.id}`, 'NEW_LEAD', updatedLead.id]
                     );
+
+                    if (global.io) {
+                        global.io.to(`user_${newAssignedTo}`).emit('new_notification', {
+                            ...notifInsert.rows[0],
+                            sound_type: 'assignment',
+                            play_sound: true,
+                            lead_id: updatedLead.id,
+                            lead_name: updatedLead.name
+                        });
+                    }
                     
                     await notificationController.sendPushToUser(newAssignedTo, {
                         title: pushTitle,

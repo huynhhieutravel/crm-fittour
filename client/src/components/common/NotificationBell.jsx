@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, Check, ExternalLink, Settings } from 'lucide-react';
+import { Bell, Check, ExternalLink, Settings, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import NotificationSettingsModal from './NotificationSettingsModal';
+import { playMessageChime, playLeadChime, isSoundEnabled } from '../../utils/audioNotification';
 
 const NotificationBell = ({ currentUser }) => {
   const [notifications, setNotifications] = useState([]);
@@ -33,29 +34,52 @@ const NotificationBell = ({ currentUser }) => {
     if (currentUser) {
       fetchNotifications();
       
-      const serverUrl = window.location.hostname === 'localhost' ? 'http://localhost:5001' : 'https://erp.fittour.vn';
+      const serverUrl = window.location.hostname === 'localhost' ? 'http://localhost:5001' : window.location.origin;
       const socket = io(serverUrl);
 
       // Tham gia room của user hiện tại
       socket.emit('join', `user_${currentUser.id}`);
 
+      // Lắng nghe thông báo cá nhân (phân công lead, tin nhắn từ khách...)
       socket.on('new_notification', (notif) => {
         setNotifications(prev => [notif, ...prev]);
         setUnreadCount(prev => prev + 1);
+
+        // PHÁT CHUÔNG ÂM THANH
+        if (notif.sound_type === 'message' || notif.type === 'CUSTOMER_MESSAGE') {
+          playMessageChime();
+        } else {
+          playLeadChime();
+        }
+
+        // POPUP TOAST THÔNG BÁO TỨC THÌ
         toast(
           (t) => (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <span style={{ fontWeight: 'bold' }}>🔔 {notif.title}</span>
-              <span style={{ fontSize: '0.85em' }}>{notif.message}</span>
+            <div 
+              style={{ display: 'flex', flexDirection: 'column', gap: '5px', cursor: 'pointer' }}
+              onClick={() => {
+                toast.dismiss(t.id);
+                if (notif.link) navigate(notif.link);
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                <span style={{ fontWeight: 'bold', color: '#1e293b', fontSize: '13px' }}>
+                  {notif.sound_type === 'message' ? '💬 ' : '🔔 '}{notif.title}
+                </span>
+                <span style={{ fontSize: '11px', color: '#2563eb', fontWeight: 600 }}>Xem ngay &rarr;</span>
+              </div>
+              <span style={{ fontSize: '12px', color: '#475569', lineHeight: 1.4 }}>
+                {notif.message ? notif.message.replace(/<[^>]+>/g, '') : 'Có cập nhật mới'}
+              </span>
             </div>
           ),
-          { duration: 4000, position: 'top-right' }
+          { duration: 6000, position: 'top-right', style: { border: '1px solid #bfdbfe', background: '#f0f9ff' } }
         );
 
-        // NATIVE BROWSER NOTIFICATION
+        // NATIVE BROWSER DESKTOP NOTIFICATION (kể cả khi ẩn tab)
         if ('Notification' in window && Notification.permission === 'granted') {
           try {
-            const plainText = notif.message ? notif.message.replace(/<[^>]+>/g, '') : 'Bạn có thông báo mới';
+            const plainText = notif.message ? notif.message.replace(/<[^>]+>/g, '') : 'Bạn có thông báo mới từ FIT Tour CRM';
             const n = new Notification(notif.title || 'FIT Tour CRM', {
               body: plainText,
               icon: '/favicon.ico',
@@ -73,11 +97,27 @@ const NotificationBell = ({ currentUser }) => {
         }
       });
 
+      // Lắng nghe sự kiện khách nhắn tin mới toàn cục (để hỗ trợ backup nếu unassigned / BU)
+      socket.on('customer_new_message', (msg) => {
+        const isMyLead = msg.assigned_to && String(msg.assigned_to) === String(currentUser.id);
+        const isAdmin = ['admin', 'manager'].includes(currentUser.role_name || currentUser.role);
+        const isMyBU = !msg.assigned_to && msg.bu_group && currentUser.bus && (
+          Array.isArray(currentUser.bus) ? currentUser.bus.includes(msg.bu_group) : String(currentUser.bus).includes(msg.bu_group)
+        );
+
+        // Nếu là lead chưa phân công của BU mình hoặc admin, mà chưa có thông báo cá nhân thì phát chuông
+        if (!isMyLead && (isMyBU || (isAdmin && !msg.assigned_to))) {
+          playMessageChime();
+        }
+      });
+
       return () => {
+        socket.off('new_notification');
+        socket.off('customer_new_message');
         socket.disconnect();
       };
     }
-  }, [currentUser]);
+  }, [currentUser, navigate]);
 
   // Click ra ngoài để đóng dropdown
   useEffect(() => {

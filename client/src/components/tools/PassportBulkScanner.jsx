@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../../utils/dateUtils';
 import { scanPassportImage } from '../../utils/passportOcr';
+import { loadPdfDocument, renderPdfPageToCanvas } from '../../utils/pdfToImages';
 import * as XLSX from 'xlsx-js-style';
 
 const isExpiringSoon = (dateStr) => {
@@ -24,11 +25,13 @@ export default function PassportBulkScanner() {
   const fileInputRef = useRef(null);
 
   const handleFiles = useCallback((newFiles) => {
-    const imageFiles = Array.from(newFiles).filter(f => f.type.startsWith('image/'));
+    const validFiles = Array.from(newFiles).filter(f => 
+      f.type.startsWith('image/') || f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+    );
     setFiles(prev => {
-      const combined = [...prev, ...imageFiles];
+      const combined = [...prev, ...validFiles];
       if (combined.length > 20) {
-        alert('⚠️ Để đảm bảo tốc độ và tránh treo máy, hệ thống giới hạn tối đa 20 ảnh/lần quét. Bạn vui lòng chia nhỏ file ra nhé!');
+        alert('⚠️ Để đảm bảo tốc độ và tránh quá tải bộ nhớ, hệ thống giới hạn tối đa 20 tệp/lần quét. Bạn vui lòng chia nhỏ file ra nhé!');
         return combined.slice(0, 20);
       }
       return combined;
@@ -44,35 +47,112 @@ export default function PassportBulkScanner() {
   const handleStartScan = async () => {
     if (files.length === 0) return;
     setScanning(true);
-    const newResults = [];
+    setResults([]);
+
+    const allResults = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      setResults(prev => [...prev.slice(0, i), { status: 'scanning', progress: 0, fileName: file.name }, ...prev.slice(i + 1)]);
-      
-      try {
-        const result = await scanPassportImage(file, (pct) => {
-          setResults(prev => {
-            const updated = [...prev];
-            updated[i] = { ...updated[i], progress: pct };
-            return updated;
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+      if (isPdf) {
+        try {
+          const pdfDoc = await loadPdfDocument(file);
+          const totalPages = pdfDoc.numPages;
+          const maxPagesToScan = Math.min(totalPages, 20); // Guardrail 20 pages max
+
+          let detectedRotation = 0;
+
+          for (let pageNum = 1; pageNum <= maxPagesToScan; pageNum++) {
+            const pageItemName = `${file.name} (Trang ${pageNum}/${totalPages})`;
+            const currentItemIdx = allResults.length;
+
+            allResults.push({ status: 'scanning', progress: 0, fileName: pageItemName });
+            setResults([...allResults]);
+
+            let pageCleanup = null;
+            try {
+              const { canvas, cleanup } = await renderPdfPageToCanvas(pdfDoc, pageNum, 1.8);
+              pageCleanup = cleanup;
+
+              const pageResult = await scanPassportImage(canvas, (pct) => {
+                setResults(prev => {
+                  const updated = [...prev];
+                  if (updated[currentItemIdx]) {
+                    updated[currentItemIdx] = { ...updated[currentItemIdx], progress: pct };
+                  }
+                  return updated;
+                });
+              }, { preferredRotation: detectedRotation });
+
+              if (pageResult && pageResult.rotationUsed !== undefined) {
+                detectedRotation = pageResult.rotationUsed;
+              }
+
+              allResults[currentItemIdx] = {
+                fileName: pageItemName,
+                status: (pageResult.valid || pageResult.docId) ? 'success' : 'error',
+                ...pageResult,
+              };
+            } catch (err) {
+              allResults[currentItemIdx] = {
+                fileName: pageItemName,
+                status: 'error',
+                error: err.message,
+              };
+            } finally {
+              if (pageCleanup) pageCleanup();
+            }
+
+            setResults([...allResults]);
+          }
+
+          try {
+            pdfDoc.cleanup();
+            pdfDoc.destroy();
+          } catch (e) {
+            // ignore cleanup error
+          }
+        } catch (pdfErr) {
+          allResults.push({
+            fileName: file.name,
+            status: 'error',
+            error: `Lỗi đọc file PDF: ${pdfErr.message}`,
           });
-        });
+          setResults([...allResults]);
+        }
+      } else {
+        // Normal image file
+        const currentItemIdx = allResults.length;
+        allResults.push({ status: 'scanning', progress: 0, fileName: file.name });
+        setResults([...allResults]);
 
-        newResults.push({
-          fileName: file.name,
-          status: (result.valid || result.docId) ? 'success' : 'error',
-          ...result,
-        });
-      } catch (err) {
-        newResults.push({
-          fileName: file.name,
-          status: 'error',
-          error: err.message,
-        });
+        try {
+          const result = await scanPassportImage(file, (pct) => {
+            setResults(prev => {
+              const updated = [...prev];
+              if (updated[currentItemIdx]) {
+                updated[currentItemIdx] = { ...updated[currentItemIdx], progress: pct };
+              }
+              return updated;
+            });
+          });
+
+          allResults[currentItemIdx] = {
+            fileName: file.name,
+            status: (result.valid || result.docId) ? 'success' : 'error',
+            ...result,
+          };
+        } catch (err) {
+          allResults[currentItemIdx] = {
+            fileName: file.name,
+            status: 'error',
+            error: err.message,
+          };
+        }
+
+        setResults([...allResults]);
       }
-
-      setResults([...newResults]);
     }
 
     setScanning(false);
@@ -199,6 +279,9 @@ export default function PassportBulkScanner() {
   const handleClear = () => {
     setFiles([]);
     setResults([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -208,7 +291,7 @@ export default function PassportBulkScanner() {
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', background: 'white', borderRadius: '12px 12px 0 0' }}>
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#1e293b' }}>🔍 Công Cụ Quét Hộ Chiếu (OCR)</h2>
-          <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#64748b' }}>Trích xuất thông tin tự động từ ảnh Hộ chiếu. Xử lý 100% bảo mật trên trình duyệt.</p>
+          <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#64748b' }}>Trích xuất thông tin tự động từ ảnh hoặc file scan PDF Hộ chiếu. Xử lý 100% bảo mật trên trình duyệt.</p>
         </div>
 
         {/* Body */}
@@ -237,22 +320,25 @@ export default function PassportBulkScanner() {
             }}
           >
             <div style={{ fontSize: '40px', marginBottom: '8px' }}>📂</div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>Kéo thả ảnh hộ chiếu vào đây</div>
-            <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>hoặc click để chọn file (hỗ trợ nhiều file cùng lúc)</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>Kéo thả ảnh hoặc file scan PDF hộ chiếu vào đây</div>
+            <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>hoặc click để chọn file (ảnh JPG, PNG hoặc file scan PDF nhiều trang)</div>
             <input 
               ref={fileInputRef}
               type="file" 
               multiple 
-              accept="image/*" 
+              accept="image/*,application/pdf" 
               style={{ display: 'none' }}
-              onChange={(e) => handleFiles(e.target.files)}
+              onChange={(e) => {
+                handleFiles(e.target.files);
+                e.target.value = '';
+              }}
             />
           </div>
 
           {/* File list + Actions */}
           {files.length > 0 && (
             <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>📎 {files.length} ảnh đã chọn</span>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>📎 {files.length} tệp đã chọn</span>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={handleClear} style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}>🗑️ Xóa hết</button>
                 <button 
@@ -266,20 +352,27 @@ export default function PassportBulkScanner() {
             </div>
           )}
 
-          {/* Scanning progress */}
-          {scanning && results.length > 0 && (
-            <div style={{ marginBottom: '16px' }}>
+          {/* Scanning progress / Status summary */}
+          {results.length > 0 && (
+            <div style={{ marginBottom: '16px', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '8px' }}>
+                {scanning ? '⏳ Tiến trình quét:' : '📊 Trạng thái chi tiết từng trang:'}
+              </div>
               {results.map((r, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 0', fontSize: '12px' }}>
-                  <span style={{ width: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#475569' }}>{r.fileName}</span>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '4px 0', fontSize: '12px' }}>
+                  <span style={{ width: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#475569', fontWeight: 500 }}>{r.fileName}</span>
                   {r.status === 'scanning' ? (
                     <div style={{ flex: 1, height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
                       <div style={{ width: `${r.progress}%`, height: '100%', background: '#3b82f6', borderRadius: '3px', transition: 'width 0.3s' }} />
                     </div>
                   ) : r.status === 'success' ? (
-                    <span style={{ color: '#16a34a', fontWeight: 600 }}>✅ Thành công</span>
+                    <span style={{ color: '#16a34a', fontWeight: 600 }}>
+                      ✅ Thành công {r.docId ? `(${r.docId} - ${r.surname} ${r.givenName})` : ''}
+                    </span>
                   ) : (
-                    <span style={{ color: '#ef4444', fontWeight: 600 }}>❌ Lỗi</span>
+                    <span style={{ color: '#ef4444', fontWeight: 600 }}>
+                      ❌ {r.error || 'Không trích xuất được thông tin'}
+                    </span>
                   )}
                 </div>
               ))}

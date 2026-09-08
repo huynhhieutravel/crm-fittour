@@ -300,6 +300,17 @@ box-shadow: 0 2px 4px rgba(229, 94, 32, 0.3);
 </table>
 </div>
 
+<!-- Banner Hướng Dẫn Khách Hàng Đánh Giá -->
+<div style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1.5px solid #fed7aa; border-radius: 12px; padding: 16px 20px; margin-top: 30px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+  <div>
+    <strong style="color: #c2410c; font-size: 1rem;">📍 Hướng dẫn khách hàng đánh giá FIT TOUR trên Google Maps:</strong>
+    <p style="margin: 4px 0 0; font-size: 0.9rem; color: #7c2d12;">Bài viết chi tiết các bước mở link, chấm 5 sao, viết nhận xét thực tế và tải lên hình ảnh hành trình để review đạt chuẩn thưởng:</p>
+  </div>
+  <a href="https://fittour.vn/huong-dan-danh-gia-fit-tour" target="_blank" rel="noreferrer" style="background: #e55e20; color: white; padding: 8px 18px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.9rem; white-space: nowrap;">
+    Xem bài viết hướng dẫn &rarr;
+  </a>
+</div>
+
 <!-- Mục đích -->
 <div class="sop-section" style="margin-top: 40px; border-color: #f1f5f9; background: #fafaf9;">
 <h4 class="sop-section-title">🎯 I. MỤC ĐÍCH</h4>
@@ -443,7 +454,8 @@ box-shadow: 0 2px 4px rgba(229, 94, 32, 0.3);
 <div class="sop-role-title">👨‍✈️ TOUR LEADER / HƯỚNG DẪN VIÊN</div>
 <ul class="sop-role-list">
 <li>Chủ động hướng dẫn khách hàng thực hiện đánh giá sau hành trình.</li>
-<li>Hỗ trợ khách hàng đăng tải hình ảnh và nội dung review đúng quy chuẩn.</li>
+<li>Gửi link hướng dẫn chuẩn cho khách: <a href="https://fittour.vn/huong-dan-danh-gia-fit-tour" target="_blank" rel="noreferrer" style="color: #e55e20; font-weight: bold; text-decoration: underline;">fittour.vn/huong-dan-danh-gia-fit-tour</a></li>
+<li>Hỗ trợ khách hàng đăng tải hình ảnh và nội dung review đúng quy chuẩn (tối thiểu 5 – 10 hình).</li>
 <li>Tổng hợp danh sách review gửi về bộ phận phụ trách theo quy định.</li>
 </ul>
 </div>

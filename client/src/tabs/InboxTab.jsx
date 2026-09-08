@@ -1,7 +1,8 @@
 import { swalConfirm } from '../utils/swalHelpers';
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../utils/dateUtils';
 import axios from "axios";
+import { io } from "socket.io-client";
 import {
   UserPlus,
   Search,
@@ -25,6 +26,31 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
   const [conversations, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
   const [messages, setMessages] = useState([]);
+
+  // Khử trùng lặp tin nhắn nhân viên (user / page) gửi cùng nội dung trong khoảng thời gian ngắn (< 60s)
+  const displayMessages = useMemo(() => {
+    const clean = [];
+    for (const msg of messages) {
+      const prev = clean[clean.length - 1];
+      const isStaff = msg.sender_type !== "customer";
+      const isPrevStaff = prev && prev.sender_type !== "customer";
+
+      if (
+        isStaff &&
+        isPrevStaff &&
+        (msg.content || "").trim() === (prev.content || "").trim() &&
+        Math.abs(new Date(msg.created_at).getTime() - new Date(prev.created_at).getTime()) < 60000
+      ) {
+        // Ưu tiên bản ghi có sender_id (nhân viên CRM thực tế gửi)
+        if (msg.sender_id && !prev.sender_id) {
+          clean[clean.length - 1] = msg;
+        }
+        continue;
+      }
+      clean.push(msg);
+    }
+    return clean;
+  }, [messages]);
   const [loading, setLoading] = useState(true);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -53,6 +79,15 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
   const messagesEndRef = useRef(null);
   const prevConvIdRef = useRef(null);
   const isScrolledUpRef = useRef(false);
+  const textareaRef = useRef(null);
+
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchConversations = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -96,16 +131,38 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
     fetchTemplates();
   }, [fetchConversations]);
 
-  // Polling for real-time updates (every 5 seconds)
+  // Real-time socket listener + polling backup
+  const selectedConvRef = useRef(selectedConv);
   useEffect(() => {
+    selectedConvRef.current = selectedConv;
+  }, [selectedConv]);
+
+  useEffect(() => {
+    const serverUrl = window.location.hostname === 'localhost' ? 'http://localhost:5001' : window.location.origin;
+    const socket = io(serverUrl);
+
+    socket.on('customer_new_message', (msg) => {
+      if (msg && msg.source === 'messenger') {
+        fetchConversations(true);
+        if (selectedConvRef.current) {
+          fetchMessages(selectedConvRef.current.id);
+        }
+      }
+    });
+
     const intervalId = setInterval(() => {
-      fetchConversations(true); // quiet fetch
-      if (selectedConv) {
-        fetchMessages(selectedConv.id);
+      fetchConversations(true); // quiet fetch backup
+      if (selectedConvRef.current) {
+        fetchMessages(selectedConvRef.current.id);
       }
     }, 5000);
-    return () => clearInterval(intervalId);
-  }, [fetchConversations, selectedConv]);
+
+    return () => {
+      socket.off('customer_new_message');
+      socket.disconnect();
+      clearInterval(intervalId);
+    };
+  }, [fetchConversations]);
 
   // Auto-select conversation khi nhận initialPsid từ Lead Chat button
   const psidHandledRef = useRef(false);
@@ -201,25 +258,56 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) {
+        return;
+      }
+      e.preventDefault();
+      handleSendMessage(e);
+    }
+  };
+
+  const handleTextareaChange = (e) => {
+    setNewMessage(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 130) + 'px';
+    }
+  };
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      if (newMessage) {
+        textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 130) + 'px';
+      }
+    }
+  }, [newMessage]);
+
   const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !selectedConv) return;
+    if (e && e.preventDefault) e.preventDefault();
+    if (!newMessage.trim() || !selectedConv || sending) return;
     
+    const messageToSend = newMessage;
     setSending(true);
     isScrolledUpRef.current = false;
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(`/api/messages/send`, {
         conversationId: selectedConv.id,
-        content: newMessage
+        content: messageToSend
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessages(prev => [...prev, res.data]);
       setNewMessage("");
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
       // Update last message in the left sidebar list
       setConversations(prev => prev.map(c => 
-        c.id === selectedConv.id ? { ...c, last_message: newMessage, updated_at: getLocalIsoString() } : c
+        c.id === selectedConv.id ? { ...c, last_message: messageToSend, updated_at: getLocalIsoString() } : c
       ));
     } catch (err) {
       console.error(err);
@@ -602,23 +690,62 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
               {/* Chat Header */}
               <div className="chat-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', borderBottom: '1px solid #e2e8f0', paddingBottom: '15px', marginBottom: '15px' }}>
                 <div className="chat-title-row">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <button 
-                      className="mobile-back-to-list" 
-                      onClick={() => setSelectedConv(null)}
-                      style={{ background: 'none', border: 'none', padding: '0 8px 0 0', cursor: 'pointer', display: 'none', color: '#4f46e5', fontWeight: 'bold' }}
-                    >
-                      <ChevronLeft size={24} />
-                    </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', width: '100%', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                      <button 
+                        className="mobile-back-to-list" 
+                        onClick={() => setSelectedConv(null)}
+                        style={{
+                          background: '#eef2ff',
+                          border: '1px solid #c7d2fe',
+                          borderRadius: '8px',
+                          padding: '6px 10px',
+                          cursor: 'pointer',
+                          display: 'none',
+                          color: '#4f46e5',
+                          fontWeight: 600,
+                          fontSize: '12px',
+                          alignItems: 'center',
+                          gap: '4px',
+                          flexShrink: 0
+                        }}
+                      >
+                        <ChevronLeft size={16} /> Danh sách
+                      </button>
 
-                    <h2 className="chat-name" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', margin: 0 }}>
-                      {selectedConv.lead_name || "Khách vãng lai"}
-                      {selectedConv.is_returning_customer && (
-                          <span style={{ fontSize: '0.65rem', background: '#f3e8ff', color: '#9333ea', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, whiteSpace: 'nowrap' }} title="Khách VVIP đã từng booking.">
-                              🎖️ KHÁCH QUEN {selectedConv.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(selectedConv.total_spent)}đ)` : ''}
-                          </span>
-                      )}
-                    </h2>
+                      <h2 className="chat-name" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', margin: 0 }}>
+                        {selectedConv.lead_name || "Khách vãng lai"}
+                        {selectedConv.is_returning_customer && (
+                            <span style={{ fontSize: '0.65rem', background: '#f3e8ff', color: '#9333ea', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, whiteSpace: 'nowrap' }} title="Khách VVIP đã từng booking.">
+                                🎖️ KHÁCH QUEN {selectedConv.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(selectedConv.total_spent)}đ)` : ''}
+                            </span>
+                        )}
+                      </h2>
+                    </div>
+
+                    {onGoBack && isMobile && (
+                      <button
+                        type="button"
+                        onClick={onGoBack}
+                        title={goBackText}
+                        style={{
+                          background: '#ffe4e6',
+                          border: '1px solid #fecdd3',
+                          borderRadius: '8px',
+                          color: '#e11d48',
+                          padding: '6px 10px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          flexShrink: 0
+                        }}
+                      >
+                        <X size={15} /> Đóng
+                      </button>
+                    )}
                   </div>
 
                   {/* Action Buttons */}
@@ -735,11 +862,11 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
                 }}
               >
                 <div className="messages-list">
-                  {messages.map((msg, idx) => {
+                  {displayMessages.map((msg, idx) => {
                     const isStaff = msg.sender_type !== "customer";
                     return (
                       <div
-                        key={idx}
+                        key={msg.id || idx}
                         className={`msg-wrapper ${isStaff ? "staff" : "customer"}`}
                       >
                         <div className="msg-bubble">{msg.content}</div>
@@ -751,54 +878,56 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
                   })}
                   <div ref={messagesEndRef} />
                 </div>
+              </div>
                 
-                {/* Chat Input */}
-                <div className="chat-input-area" style={{ position: 'relative' }}>
-                  {showTemplatesDropdown && (
-                    <div style={{ position: 'absolute', bottom: '100%', left: '20px', marginBottom: '10px', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', width: '300px', zIndex: 10 }}>
-                      <div style={{ padding: '12px 15px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8fafc', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
-                        <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Gửi Thẻ Mẫu (Templates)</span>
-                        <button type="button" onClick={() => setShowTemplatesDropdown(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
-                          <X size={16} />
-                        </button>
-                      </div>
-                      <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
-                        {templates.length === 0 ? (
-                          <div style={{ padding: '15px', textAlign: 'center', color: '#64748b', fontSize: '14px' }}>Chưa có thẻ mẫu nào</div>
-                        ) : (
-                          templates.map(tpl => (
-                            <div 
-                              key={tpl.id} 
-                              onClick={() => handleSendTemplate(tpl)}
-                              style={{ padding: '12px 15px', display: 'flex', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', fontSize: '14px', color: '#334155' }}
-                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
-                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                            >
-                              <LayoutTemplate size={16} style={{marginRight: '10px', color: '#3b82f6'}}/>
-                              {tpl.name}
-                            </div>
-                          ))
-                        )}
-                      </div>
+              {/* Chat Input */}
+              <div className="chat-input-area" style={{ position: 'relative', flexShrink: 0 }}>
+                {showTemplatesDropdown && (
+                  <div style={{ position: 'absolute', bottom: '100%', left: isMobile ? '8px' : '20px', marginBottom: '10px', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', width: '300px', maxWidth: 'calc(100vw - 30px)', zIndex: 20 }}>
+                    <div style={{ padding: '12px 15px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8fafc', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+                      <span style={{ fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>Gửi Thẻ Mẫu (Templates)</span>
+                      <button type="button" onClick={() => setShowTemplatesDropdown(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+                        <X size={16} />
+                      </button>
                     </div>
-                  )}
-                  <form onSubmit={handleSendMessage} className="chat-input-form">
-                    <button type="button" onClick={() => setShowTemplatesDropdown(!showTemplatesDropdown)} style={{ background: 'none', border: 'none', padding: '0 10px', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center' }}>
-                      <LayoutTemplate size={22} />
-                    </button>
-                    <input
-                      type="text"
-                      className="chat-input-field"
-                      placeholder="Nhập tin nhắn trả lời..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      disabled={sending}
-                    />
-                    <button type="submit" className="chat-send-btn" disabled={!newMessage.trim() || sending}>
-                      {sending ? <Loader2 size={18} className="spin-icon" /> : <Send size={18} />}
-                    </button>
-                  </form>
-                </div>
+                    <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+                      {templates.length === 0 ? (
+                        <div style={{ padding: '15px', textAlign: 'center', color: '#64748b', fontSize: '14px' }}>Chưa có thẻ mẫu nào</div>
+                      ) : (
+                        templates.map(tpl => (
+                          <div 
+                            key={tpl.id} 
+                            onClick={() => handleSendTemplate(tpl)}
+                            style={{ padding: '12px 15px', display: 'flex', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', fontSize: '14px', color: '#334155' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
+                            <LayoutTemplate size={16} style={{marginRight: '10px', color: '#3b82f6'}}/>
+                            {tpl.name}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+                <form onSubmit={handleSendMessage} className="chat-input-form">
+                  <button type="button" onClick={() => setShowTemplatesDropdown(!showTemplatesDropdown)} style={{ background: 'none', border: 'none', padding: '0 8px', height: '42px', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} title="Chọn mẫu tin nhắn">
+                    <LayoutTemplate size={22} />
+                  </button>
+                  <textarea
+                    ref={textareaRef}
+                    className="chat-input-field"
+                    placeholder="Nhập tin nhắn trả lời (Shift + Enter để xuống dòng, Enter để gửi)..."
+                    value={newMessage}
+                    onChange={handleTextareaChange}
+                    onKeyDown={handleKeyDown}
+                    disabled={sending}
+                    rows={1}
+                  />
+                  <button type="submit" className="chat-send-btn" disabled={!newMessage.trim() || sending} title="Gửi tin nhắn (Enter)">
+                    {sending ? <Loader2 size={18} className="spin-icon" /> : <Send size={18} />}
+                  </button>
+                </form>
               </div>
             </>
           ) : (
@@ -867,17 +996,24 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
         .chat-input-form {
           display: flex;
           gap: 10px;
-          align-items: center;
+          align-items: flex-end;
         }
         
         .chat-input-field {
           flex: 1;
-          padding: 12px 15px;
+          padding: 10px 16px;
           border: 1px solid #e2e8f0;
           border-radius: 20px;
           outline: none;
           font-size: 0.95rem;
-          transition: all 0.2s;
+          line-height: 1.4;
+          font-family: inherit;
+          resize: none;
+          min-height: 42px;
+          max-height: 130px;
+          overflow-y: auto;
+          box-sizing: border-box;
+          transition: border-color 0.2s, box-shadow 0.2s;
         }
         
         .chat-input-field:focus {
@@ -891,12 +1027,15 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
           border: none;
           width: 42px;
           height: 42px;
+          min-width: 42px;
+          min-height: 42px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           transition: all 0.2s;
+          flex-shrink: 0;
         }
         
         .chat-send-btn:hover:not(:disabled) {
@@ -1417,6 +1556,10 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
           }
           .inbox-wrapper {
              height: calc(100vh - 100px);
+             height: calc(100dvh - 100px);
+          }
+          .inbox-container {
+             border-radius: 12px;
           }
           .inbox-sidebar.mobile-hidden, .inbox-chat.mobile-hidden {
             display: none !important;
@@ -1429,17 +1572,17 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
             width: 100% !important;
           }
           .mobile-back-to-list {
-            display: flex !important;
+            display: inline-flex !important;
             align-items: center;
           }
           .chat-header {
-            padding: 10px 15px;
+            padding: 10px 14px;
             height: auto;
-            min-height: 70px;
+            min-height: 60px;
             flex-direction: column;
             align-items: flex-start;
             justify-content: center;
-            gap: 12px;
+            gap: 10px;
           }
           .chat-title-group {
             width: 100%;
@@ -1447,10 +1590,20 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
           .chat-action-buttons {
             width: 100%;
           }
-          .inbox-danger-btn, .inbox-action-btn {
+          .inbox-danger-btn, .inbox-action-btn, .btn-pro-save {
             flex: 1;
             justify-content: center;
-            padding: 10px;
+            padding: 8px 10px;
+          }
+          .chat-messages {
+            padding: 12px 10px !important;
+          }
+          .msg-bubble {
+            max-width: 88% !important;
+            padding: 10px 14px !important;
+          }
+          .chat-input-area {
+            padding: 8px 10px !important;
           }
         }
       `}</style>

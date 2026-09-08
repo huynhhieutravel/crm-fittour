@@ -180,10 +180,33 @@ router.delete('/templates/:id', auth, async (req, res) => {
 router.get('/:conversationId', auth, async (req, res) => {
     try {
         const result = await db.query(
-            'SELECT * FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
+            'SELECT * FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC, id ASC',
             [req.params.conversationId]
         );
-        res.json(result.rows);
+
+        // Khử trùng lặp tin nhắn nhân viên (user / page) gửi cùng nội dung trong thời gian ngắn (< 60s)
+        const cleanRows = [];
+        for (const msg of result.rows) {
+            const prev = cleanRows[cleanRows.length - 1];
+            const isStaff = msg.sender_type !== 'customer';
+            const isPrevStaff = prev && prev.sender_type !== 'customer';
+
+            if (
+                isStaff &&
+                isPrevStaff &&
+                (msg.content || '').trim() === (prev.content || '').trim() &&
+                Math.abs(new Date(msg.created_at).getTime() - new Date(prev.created_at).getTime()) < 60000
+            ) {
+                // Ưu tiên bản ghi có sender_id (nhân viên CRM thực tế gửi)
+                if (msg.sender_id && !prev.sender_id) {
+                    cleanRows[cleanRows.length - 1] = msg;
+                }
+                continue;
+            }
+            cleanRows.push(msg);
+        }
+
+        res.json(cleanRows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

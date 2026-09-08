@@ -20,10 +20,10 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
   const fileInputRef = useRef(null);
   const [localLeadData, setLocalLeadData] = useState(null);
   const [converting, setConverting] = useState(false);
-  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -71,7 +71,8 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
     if (!targetLead || !targetLead.id) {
       try {
         const token = localStorage.getItem("token");
-        const profile = senderProfiles.find(p => p.uid === selectedUser);
+        const profile = senderProfiles.find(p => String(p.uid) === String(selectedUser));
+        const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `idemp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const res = await axios.post('/api/leads', {
           name: profile?.name || `Zalo Guest ${String(selectedUser).substring(0, 5)}`,
           source: 'Zalo',
@@ -79,7 +80,10 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
           zalo_uid: String(selectedUser),
           [field]: value || null
         }, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Idempotency-Key': idempotencyKey
+          }
         });
         targetLead = res.data;
         setLocalLeadData(targetLead);
@@ -87,7 +91,8 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
         return;
       } catch (err) {
         console.error("Auto create lead error:", err);
-        alert("Khách hàng này chưa có hồ sơ Lead. Lỗi tạo tự động: " + err.message);
+        const errMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+        alert("Khách hàng này chưa có hồ sơ Lead. Lỗi tạo tự động: " + errMsg);
         return;
       }
     }
@@ -155,12 +160,37 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
 
   const hasInitialSelected = useRef(false);
 
+  // Auto-select từ URL query param (?uid=... hoặc ?leadId=...)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlUid = params.get('uid');
+    const urlLeadId = params.get('leadId');
+    if (urlUid) {
+      setSelectedUser(urlUid);
+      hasInitialSelected.current = true;
+    } else if (urlLeadId && leads && leads.length > 0) {
+      const matchLead = leads.find(l => String(l.id) === String(urlLeadId));
+      if (matchLead && matchLead.zalo_uid) {
+        setSelectedUser(matchLead.zalo_uid);
+        hasInitialSelected.current = true;
+      }
+    }
+  }, [leads]);
+
   const fetchMessages = async () => {
     try {
       setLoading(true);
       const res = await axios.get('/api/zalo-v2/sandbox/messages');
       setMessages(res.data || []);
       
+      const params = new URLSearchParams(window.location.search);
+      const urlUid = params.get('uid');
+      if (urlUid) {
+        setSelectedUser(urlUid);
+        hasInitialSelected.current = true;
+        return;
+      }
+
       // Auto-select latest user ONLY on initial desktop load (never on mobile or when user explicitly navigated back)
       if (!isMobile && !hasInitialSelected.current && !selectedUserRef.current) {
         hasInitialSelected.current = true;
@@ -182,7 +212,16 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
     fetchMessages();
     const serverUrl = window.location.hostname === 'localhost' ? 'http://localhost:5001' : window.location.origin;
     const socket = io(serverUrl);
-    socket.on('zalo_message_update', fetchMessages);
+    socket.on('zalo_message_update', () => {
+      fetchMessages();
+      if (typeof fetchLeads === 'function') fetchLeads(true);
+    });
+    socket.on('customer_new_message', (msg) => {
+      if (msg && msg.source === 'zalo') {
+        fetchMessages();
+        if (typeof fetchLeads === 'function') fetchLeads(true);
+      }
+    });
     socket.on('zalo_ai_session_update', (data) => {
       if (data && String(data.zalo_uid) === String(selectedUserRef.current)) {
         setAiSession(prev => ({ ...prev, is_ai_active: data.is_ai_active, muted_by: data.muted_by }));
@@ -191,6 +230,7 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
     
     return () => {
       socket.off('zalo_message_update', fetchMessages);
+      socket.off('customer_new_message');
       socket.off('zalo_ai_session_update');
       socket.disconnect();
     };
@@ -337,20 +377,20 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
   });
 
   return (
-    <div style={{ height: 'calc(100vh - 75px)', display: 'flex', flexDirection: 'column', backgroundColor: '#f3f4f6', padding: '12px 16px', fontFamily: 'Arial, sans-serif', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+    <div style={{ height: isMobile ? 'calc(100vh - 65px)' : 'calc(100vh - 75px)', height: isMobile ? 'calc(100dvh - 65px)' : 'calc(100vh - 75px)', display: 'flex', flexDirection: 'column', backgroundColor: '#f3f4f6', padding: isMobile ? '8px' : '12px 16px', fontFamily: 'Arial, sans-serif', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
       
       {/* Top Header Navigation: Sub-menu between Chat Sandbox & AI Settings */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', background: '#fff', padding: '10px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isMobile ? '8px' : '12px', background: '#fff', padding: isMobile ? '8px 12px' : '10px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', flexShrink: 0, gap: '8px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px', flexWrap: 'wrap' }}>
           <button
             onClick={() => setCurrentView('chat')}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
+              gap: '4px',
+              padding: isMobile ? '6px 10px' : '8px 16px',
               borderRadius: '8px',
-              fontSize: '13px',
+              fontSize: isMobile ? '12px' : '13px',
               fontWeight: 600,
               border: 'none',
               cursor: 'pointer',
@@ -359,7 +399,7 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
               transition: 'all 0.15s ease'
             }}
           >
-            <MessageCircle size={16} /> 💬 Zalo Chat ({uniqueSenders.length})
+            <MessageCircle size={15} /> 💬 {isMobile ? 'Chat' : 'Zalo Chat'} ({uniqueSenders.length})
           </button>
 
           <button
@@ -367,10 +407,10 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
+              gap: '4px',
+              padding: isMobile ? '6px 10px' : '8px 16px',
               borderRadius: '8px',
-              fontSize: '13px',
+              fontSize: isMobile ? '12px' : '13px',
               fontWeight: 600,
               border: 'none',
               cursor: 'pointer',
@@ -379,20 +419,22 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
               transition: 'all 0.15s ease'
             }}
           >
-            <Sparkles size={16} /> 🤖 Cài Đặt AI Agent & RAG (Meta Style)
+            <Sparkles size={15} /> 🤖 {isMobile ? 'Cài đặt AI' : 'Cài Đặt AI Agent (Meta Style)'}
           </button>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '12px', color: '#6b7280' }}>
-            Gemini 2.5 Flash • RAG Engine
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {!isMobile && (
+            <span style={{ fontSize: '12px', color: '#6b7280' }}>
+              Gemini 2.5 Flash • RAG Engine
+            </span>
+          )}
           <button 
             onClick={fetchMessages} 
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f3f4f6', border: '1px solid #d1d5db', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', color: '#374151', fontSize: '12px', fontWeight: 500 }}
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f3f4f6', border: '1px solid #d1d5db', padding: isMobile ? '5px 8px' : '6px 10px', borderRadius: '6px', cursor: 'pointer', color: '#374151', fontSize: '12px', fontWeight: 500 }}
             title="Làm mới tin nhắn"
           >
-            <RefreshCw size={14} /> Làm mới
+            <RefreshCw size={13} /> {isMobile ? '' : 'Làm mới'}
           </button>
         </div>
       </div>
@@ -571,20 +613,25 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                         } else {
                           try {
                             const token = localStorage.getItem("token");
-                            const profile = senderProfiles.find(p => p.uid === selectedUser);
+                            const profile = senderProfiles.find(p => String(p.uid) === String(selectedUser));
+                            const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `idemp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                             const res = await axios.post('/api/leads', {
                               name: profile?.name || `Zalo Guest ${String(selectedUser).substring(0, 5)}`,
                               source: 'Zalo',
                               status: 'Mới',
                               zalo_uid: String(selectedUser)
                             }, {
-                              headers: { Authorization: `Bearer ${token}` }
+                              headers: { 
+                                Authorization: `Bearer ${token}`,
+                                'Idempotency-Key': idempotencyKey
+                              }
                             });
                             setLocalLeadData(res.data);
                             if (fetchLeads) fetchLeads(true);
                             setEditingLead(res.data);
                           } catch (err) {
-                            alert("Không thể tạo hồ sơ Lead: " + err.message);
+                            const errMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+                            alert("Không thể tạo hồ sơ Lead: " + errMsg);
                           }
                         }
                       }}
@@ -597,13 +644,38 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                       <button
                         disabled={converting}
                         onClick={async () => {
-                           if (!localLeadData) {
-                              alert("Khách hàng này chưa có hồ sơ Lead.");
-                              return;
+                           let targetLead = localLeadData;
+                           if (!targetLead || !targetLead.id) {
+                              try {
+                                 setConverting(true);
+                                 const token = localStorage.getItem("token");
+                                 const profile = senderProfiles.find(p => String(p.uid) === String(selectedUser));
+                                 const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `idemp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                                 const res = await axios.post('/api/leads', {
+                                   name: profile?.name || `Zalo Guest ${String(selectedUser).substring(0, 5)}`,
+                                   source: 'Zalo',
+                                   status: 'Mới',
+                                   zalo_uid: String(selectedUser)
+                                 }, {
+                                   headers: { 
+                                     Authorization: `Bearer ${token}`,
+                                     'Idempotency-Key': idempotencyKey
+                                   }
+                                 });
+                                 targetLead = res.data;
+                                 setLocalLeadData(targetLead);
+                                 if (fetchLeads) fetchLeads(true);
+                              } catch (err) {
+                                 const errMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+                                 alert("Không thể tạo hồ sơ Lead: " + errMsg);
+                                 return;
+                              } finally {
+                                 setConverting(false);
+                              }
                            }
                            if (await swalConfirm(`Bạn có chắc chắn muốn chuyển khách này sang Chốt Đơn & Tạo Khách Hàng?`)) {
                               setConverting(true);
-                              await handleConvertLead(localLeadData.id);
+                              await handleConvertLead(targetLead.id);
                               setConverting(false);
                            }
                         }}
@@ -731,12 +803,12 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
               </div>
 
               {/* Messages */}
-              <div style={{ flex: 1, minHeight: 0, padding: '16px 20px', overflowY: 'auto', overflowX: 'hidden', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column', gap: '14px', width: '100%', boxSizing: 'border-box' }}>
+              <div style={{ flex: 1, minHeight: 0, padding: isMobile ? '12px 10px' : '16px 20px', overflowY: 'auto', overflowX: 'hidden', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column', gap: isMobile ? '10px' : '14px', width: '100%', boxSizing: 'border-box' }}>
                 {activeMessages.map(msg => (
                   <div key={msg.id || msg.timestamp} style={{ display: 'flex', justifyContent: msg.type === 'outgoing' ? 'flex-end' : 'flex-start', width: '100%' }}>
                     <div style={{ 
-                      maxWidth: '75%', 
-                      padding: '12px 16px', 
+                      maxWidth: isMobile ? '88%' : '75%', 
+                      padding: isMobile ? '8px 12px' : '12px 16px', 
                       borderRadius: '16px', 
                       boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
                       backgroundColor: msg.type === 'outgoing' ? '#3b82f6' : '#fff',

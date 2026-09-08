@@ -11,6 +11,7 @@ import { getLocalDateTimeLocal } from '../../utils/dateUtils';
 import { canEdit, canDelete } from '../../utils/permissions';
 import { useVisaChecklistTemplate } from '../../hooks/useVisaChecklistTemplate';
 import { scanPassportImage } from '../../utils/passportOcr';
+import { loadPdfDocument, renderPdfPageToCanvas } from '../../utils/pdfToImages';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
@@ -337,35 +338,100 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
         if (addToast) addToast('Đang nhận diện Hộ chiếu bằng AI...', 'info');
 
         try {
-            const result = await scanPassportImage(file, (progress) => {
-                setScanProgress(progress);
-            });
-            if (result && result.valid) {
-                // Auto inject new member
-                setForm(prev => {
-                    const fullName = result.surname && result.givenName ? `${result.surname} ${result.givenName}` : '';
-                    
-                    const newMember = {
-                        id: 'new_' + Date.now(),
-                        fullname: fullName,
-                        passport_number: result.docId || '',
-                        phone: '',
-                        dob: result.dobDisplay ? result.dobDisplay.split('/').reverse().join('-') : '', // assuming YYYY-MM-DD
-                        age_type: 'Người lớn',
-                        checklist_data: getFilteredChecklist(prev.visa_template_id)
-                    };
+            const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+            if (isPdf) {
+                let pdfDoc = null;
+                try {
+                    pdfDoc = await loadPdfDocument(file);
+                    const totalPages = pdfDoc.numPages;
+                    const maxPages = Math.min(totalPages, 20);
+                    const extractedMembers = [];
+                    let detectedRotation = 0;
 
-                    const isFirst = prev.members.length === 0;
-                    return { 
-                        ...prev, 
-                        customer_name: (isFirst && !prev.customer_name) ? fullName : prev.customer_name,
-                        name: (isFirst && !prev.name && fullName) ? `HỒ SƠ VISA: ${fullName}` : prev.name,
-                        members: [...prev.members, newMember] 
-                    };
-                });
-                if (addToast) addToast('Quét thành công! Đã tự động điền thông tin.', 'success');
+                    for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+                        let pageCleanup = null;
+                        try {
+                            const { canvas, cleanup } = await renderPdfPageToCanvas(pdfDoc, pageNum, 1.8);
+                            pageCleanup = cleanup;
+                            const result = await scanPassportImage(canvas, (progress) => {
+                                setScanProgress(Math.round(((pageNum - 1) / maxPages) * 100 + (progress / maxPages)));
+                            }, { preferredRotation: detectedRotation });
+                            if (result && result.rotationUsed !== undefined) {
+                                detectedRotation = result.rotationUsed;
+                            }
+                            if (result && (result.valid || result.docId)) {
+                                const fullName = result.surname && result.givenName ? `${result.surname} ${result.givenName}` : '';
+                                extractedMembers.push({
+                                    id: 'new_' + Date.now() + '_' + pageNum,
+                                    fullname: fullName,
+                                    passport_number: result.docId || '',
+                                    phone: '',
+                                    dob: result.dobDisplay ? result.dobDisplay.split('/').reverse().join('-') : '',
+                                    age_type: 'Người lớn',
+                                    checklist_data: []
+                                });
+                            }
+                        } finally {
+                            if (pageCleanup) pageCleanup();
+                        }
+                    }
+
+                    if (extractedMembers.length > 0) {
+                        setForm(prev => {
+                            const isFirst = prev.members.length === 0;
+                            const firstMem = extractedMembers[0];
+                            const checklist = getFilteredChecklist(prev.visa_template_id);
+                            const membersWithChecklist = extractedMembers.map(m => ({
+                                ...m,
+                                checklist_data: checklist
+                            }));
+                            return {
+                                ...prev,
+                                customer_name: (isFirst && !prev.customer_name) ? firstMem.fullname : prev.customer_name,
+                                name: (isFirst && !prev.name && firstMem.fullname) ? `HỒ SƠ VISA: ${firstMem.fullname}` : prev.name,
+                                members: [...prev.members, ...membersWithChecklist]
+                            };
+                        });
+                        if (addToast) addToast(`Quét thành công ${extractedMembers.length} hộ chiếu từ PDF!`, 'success');
+                    } else {
+                        if (addToast) addToast('Không nhận diện được Hộ chiếu từ file PDF.', 'error');
+                    }
+                } finally {
+                    if (pdfDoc) {
+                        try { pdfDoc.cleanup(); pdfDoc.destroy(); } catch (e) {}
+                    }
+                }
             } else {
-                if (addToast) addToast('Không nhận diện được Hộ chiếu.', 'error');
+                const result = await scanPassportImage(file, (progress) => {
+                    setScanProgress(progress);
+                });
+                if (result && (result.valid || result.docId)) {
+                    // Auto inject new member
+                    setForm(prev => {
+                        const fullName = result.surname && result.givenName ? `${result.surname} ${result.givenName}` : '';
+                        
+                        const newMember = {
+                            id: 'new_' + Date.now(),
+                            fullname: fullName,
+                            passport_number: result.docId || '',
+                            phone: '',
+                            dob: result.dobDisplay ? result.dobDisplay.split('/').reverse().join('-') : '', // assuming YYYY-MM-DD
+                            age_type: 'Người lớn',
+                            checklist_data: getFilteredChecklist(prev.visa_template_id)
+                        };
+
+                        const isFirst = prev.members.length === 0;
+                        return { 
+                            ...prev, 
+                            customer_name: (isFirst && !prev.customer_name) ? fullName : prev.customer_name,
+                            name: (isFirst && !prev.name && fullName) ? `HỒ SƠ VISA: ${fullName}` : prev.name,
+                            members: [...prev.members, newMember] 
+                        };
+                    });
+                    if (addToast) addToast('Quét thành công! Đã tự động điền thông tin.', 'success');
+                } else {
+                    if (addToast) addToast('Không nhận diện được Hộ chiếu.', 'error');
+                }
             }
         } catch (err) {
             console.error(err);
@@ -632,7 +698,7 @@ export default function VisaDetailDrawer({ visaId, onClose, refreshList, current
                             </div>
                         </button>
                         {/* Hidden input for the global scan button */}
-                        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleOCRUpload} style={{ display: 'none' }} />
+                        <input type="file" accept="image/*,application/pdf" ref={fileInputRef} onChange={handleOCRUpload} style={{ display: 'none' }} />
 
                         <button onClick={onClose} style={{ width: '36px', height: '36px', background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseOver={e=>e.currentTarget.style.background='#f1f5f9'} onMouseOut={e=>e.currentTarget.style.background='transparent'}>
                             <X size={24} />

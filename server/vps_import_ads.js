@@ -5,9 +5,9 @@ const fs = require('fs');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 const YEAR = 2026;
-const MONTH = 8;
-const WEEK = 2;
-const FILE_NAME = 'qc-t2-t8-2026.xlsx';
+const MONTH = 9;
+const WEEK = 1;
+const FILE_NAME = 'qc-t1-t9-2026.xlsx';
 
 async function run() {
   const pool = new Pool({
@@ -111,7 +111,7 @@ async function run() {
   try {
     await client.query('BEGIN');
 
-    // 1. Xoá dữ liệu cũ của Tuần 2 Tháng 8 Năm 2026 (Safety)
+    // 1. Xoá dữ liệu cũ của Tuần 1 Tháng 9 Năm 2026 (Safety)
     const delRes = await client.query(`
       DELETE FROM marketing_ads_reports 
       WHERE year = $1 AND month = $2 AND week_number = $3

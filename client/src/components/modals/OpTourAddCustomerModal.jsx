@@ -5,6 +5,7 @@ import { X, Search, Plus } from 'lucide-react';
 import AsyncSelect from 'react-select/async';
 import CustomerProfileSlider from '../CustomerProfileSlider';
 import { scanPassportImage } from '../../utils/passportOcr';
+import { loadPdfDocument, renderPdfPageToCanvas } from '../../utils/pdfToImages';
 import * as XLSX from 'xlsx';
 import { toast } from 'react-hot-toast';
 
@@ -231,9 +232,8 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
     if (!file) return;
     setScanningPassportId('global');
     try {
-      const scanResult = await scanPassportImage(file);
-      const ocrValid = scanResult && scanResult.valid;
-      
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
       let uploadedUrl = '';
       try {
         const formData = new FormData();
@@ -245,53 +245,149 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       } catch (uploadErr) {
         console.warn('Upload sau scan lỗi (OCR vẫn OK):', uploadErr.message);
       }
-      
-      if (ocrValid || uploadedUrl) {
-         setMembers(prev => {
+
+      if (isPdf) {
+        let pdfDoc = null;
+        try {
+          pdfDoc = await loadPdfDocument(file);
+          const totalPages = pdfDoc.numPages;
+          const maxPagesToScan = Math.min(totalPages, 20);
+          let successCount = 0;
+          let detectedRotation = 0;
+
+          for (let pageNum = 1; pageNum <= maxPagesToScan; pageNum++) {
+            let pageCleanup = null;
+            try {
+              const { canvas, cleanup } = await renderPdfPageToCanvas(pdfDoc, pageNum, 1.8);
+              pageCleanup = cleanup;
+
+              const scanResult = await scanPassportImage(canvas, undefined, { preferredRotation: detectedRotation });
+              if (scanResult && scanResult.rotationUsed !== undefined) {
+                detectedRotation = scanResult.rotationUsed;
+              }
+              const ocrValid = scanResult && (scanResult.valid || scanResult.docId);
+
+              if (ocrValid) {
+                successCount++;
+                setMembers(prev => {
+                  const updated = [...prev];
+                  let targetIdx = updated.findIndex(m => !m.name && !m.docId);
+                  if (targetIdx === -1) {
+                    updated.push({
+                      id: Date.now() + Math.floor(Math.random() * 1000),
+                      phone: '', name: '', email: '', ageType: 'Người lớn', gender: 'Chọn',
+                      dob: '', docType: 'Hộ chiếu', docId: '', issueDate: '', expiryDate: '', passportUrl: '',
+                      flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
+                      note: '', roomType: '-Chọn-', hotel: '', roomCode: '', customerSegment: '', tripCount: 0, crmNote: ''
+                    });
+                    targetIdx = updated.length - 1;
+                  }
+                  const targetM = { ...updated[targetIdx] };
+                  if (uploadedUrl) targetM.passportUrl = uploadedUrl;
+                  if (scanResult.surname || scanResult.givenName) {
+                    targetM.name = `${scanResult.surname || ''} ${scanResult.givenName || ''}`.trim();
+                  }
+                  if (scanResult.gender) {
+                    const g = scanResult.gender.toUpperCase();
+                    targetM.gender = g === 'M' ? 'Nam' : (g === 'F' ? 'Nữ' : 'Chọn');
+                  }
+                  if (scanResult.dobDisplay) {
+                    const [dd, mm, yyyy] = scanResult.dobDisplay.split('/');
+                    if (yyyy && mm && dd) targetM.dob = `${yyyy}-${mm}-${dd}`;
+                  }
+                  if (scanResult.docId) {
+                    targetM.docId = scanResult.docId;
+                    targetM.docType = 'Hộ chiếu';
+                  }
+                  if (scanResult.personalId) {
+                    targetM.personalId = scanResult.personalId;
+                  }
+                  if (scanResult.doiDisplay) {
+                    const [dd, mm, yyyy] = scanResult.doiDisplay.split('/');
+                    if (yyyy && mm && dd) targetM.issueDate = `${yyyy}-${mm}-${dd}`;
+                  }
+                  if (scanResult.expiryDisplay) {
+                    const [dd, mm, yyyy] = scanResult.expiryDisplay.split('/');
+                    if (yyyy && mm && dd) targetM.expiryDate = `${yyyy}-${mm}-${dd}`;
+                  }
+                  updated[targetIdx] = targetM;
+                  return updated;
+                });
+              }
+            } catch (err) {
+              console.warn(`Lỗi scan trang PDF ${pageNum}:`, err.message);
+            } finally {
+              if (pageCleanup) pageCleanup();
+            }
+          }
+
+          if (successCount > 0) {
+            toast.success(`Đã quét thành công ${successCount}/${totalPages} trang hộ chiếu từ file PDF!`);
+          } else {
+            toast.error('Không nhận diện được Hộ chiếu từ các trang trong file PDF!');
+          }
+        } finally {
+          if (pdfDoc) {
+            try {
+              pdfDoc.cleanup();
+              pdfDoc.destroy();
+            } catch (e) {}
+          }
+        }
+      } else {
+        const scanResult = await scanPassportImage(file);
+        const ocrValid = scanResult && scanResult.valid;
+
+        if (ocrValid || uploadedUrl) {
+          setMembers(prev => {
             const updated = [...prev];
             let targetIdx = updated.findIndex(m => !m.name && !m.docId);
             if (targetIdx === -1) {
-                updated.push({
-                   id: Date.now(),
-                   phone: '', name: '', email: '', ageType: 'Người lớn', gender: 'Chọn',
-                   dob: '', docType: 'Hộ chiếu', docId: '', issueDate: '', expiryDate: '', passportUrl: '',
-                   flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
-                   note: '', roomType: '-Chọn-', hotel: '', roomCode: '', customerSegment: '', tripCount: 0, crmNote: ''
-                });
-                targetIdx = updated.length - 1;
+              updated.push({
+                id: Date.now(),
+                phone: '', name: '', email: '', ageType: 'Người lớn', gender: 'Chọn',
+                dob: '', docType: 'Hộ chiếu', docId: '', issueDate: '', expiryDate: '', passportUrl: '',
+                flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
+                note: '', roomType: '-Chọn-', hotel: '', roomCode: '', customerSegment: '', tripCount: 0, crmNote: ''
+              });
+              targetIdx = updated.length - 1;
             }
             const targetM = { ...updated[targetIdx] };
             if (uploadedUrl) targetM.passportUrl = uploadedUrl;
             if (ocrValid) {
-                if (scanResult.surname || scanResult.givenName) {
-                  targetM.name = `${scanResult.surname || ''} ${scanResult.givenName || ''}`.trim();
-                }
-                if (scanResult.gender) {
-                  const g = scanResult.gender.toUpperCase();
-                  targetM.gender = g === 'M' ? 'Nam' : (g === 'F' ? 'Nữ' : 'Chọn');
-                }
-                if (scanResult.dobDisplay) {
-                   const [dd, mm, yyyy] = scanResult.dobDisplay.split('/');
-                   if (yyyy && mm && dd) targetM.dob = `${yyyy}-${mm}-${dd}`;
-                }
-                if (scanResult.docId) {
-                   targetM.docId = scanResult.docId;
-                   targetM.docType = 'Hộ chiếu';
-                }
-                if (scanResult.doiDisplay) {
-                   const [dd, mm, yyyy] = scanResult.doiDisplay.split('/');
-                   if (yyyy && mm && dd) targetM.issueDate = `${yyyy}-${mm}-${dd}`;
-                }
-                if (scanResult.expiryDisplay) {
-                   const [dd, mm, yyyy] = scanResult.expiryDisplay.split('/');
-                   if (yyyy && mm && dd) targetM.expiryDate = `${yyyy}-${mm}-${dd}`;
-                }
+              if (scanResult.surname || scanResult.givenName) {
+                targetM.name = `${scanResult.surname || ''} ${scanResult.givenName || ''}`.trim();
+              }
+              if (scanResult.gender) {
+                const g = scanResult.gender.toUpperCase();
+                targetM.gender = g === 'M' ? 'Nam' : (g === 'F' ? 'Nữ' : 'Chọn');
+              }
+              if (scanResult.dobDisplay) {
+                const [dd, mm, yyyy] = scanResult.dobDisplay.split('/');
+                if (yyyy && mm && dd) targetM.dob = `${yyyy}-${mm}-${dd}`;
+              }
+              if (scanResult.docId) {
+                targetM.docId = scanResult.docId;
+                targetM.docType = 'Hộ chiếu';
+              }
+              if (scanResult.personalId) {
+                targetM.personalId = scanResult.personalId;
+              }
+              if (scanResult.doiDisplay) {
+                const [dd, mm, yyyy] = scanResult.doiDisplay.split('/');
+                if (yyyy && mm && dd) targetM.issueDate = `${yyyy}-${mm}-${dd}`;
+              }
+              if (scanResult.expiryDisplay) {
+                const [dd, mm, yyyy] = scanResult.expiryDisplay.split('/');
+                if (yyyy && mm && dd) targetM.expiryDate = `${yyyy}-${mm}-${dd}`;
+              }
             }
             updated[targetIdx] = targetM;
             return updated;
-         });
-      } else {
-         toast.error(scanResult?.error || "Không nhận diện được Hộ chiếu từ ảnh này!");
+          });
+        } else {
+          toast.error(scanResult?.error || "Không nhận diện được Hộ chiếu từ ảnh này!");
+        }
       }
     } catch (err) {
       console.error('OCR Bulk Scan error:', err);
@@ -305,8 +401,28 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
     if (!file) return;
     setScanningPassportId(memberId);
     try {
-      const scanResult = await scanPassportImage(file);
-      const ocrValid = scanResult && scanResult.valid;
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      let scanResult = null;
+      let pageCleanup = null;
+      let pdfDoc = null;
+
+      if (isPdf) {
+        try {
+          pdfDoc = await loadPdfDocument(file);
+          const { canvas, cleanup } = await renderPdfPageToCanvas(pdfDoc, 1, 1.8);
+          pageCleanup = cleanup;
+          scanResult = await scanPassportImage(canvas);
+        } finally {
+          if (pageCleanup) pageCleanup();
+          if (pdfDoc) {
+            try { pdfDoc.cleanup(); pdfDoc.destroy(); } catch (e) {}
+          }
+        }
+      } else {
+        scanResult = await scanPassportImage(file);
+      }
+
+      const ocrValid = scanResult && (scanResult.valid || scanResult.docId);
       
       let uploadedUrl = '';
       try {
@@ -1325,7 +1441,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                               <span style={{ fontSize: '13px' }}>🔍</span> Quét Hộ chiếu
                            </div>
                         )}
-                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { handleScanPassport(m.id, e.target.files[0]); e.target.value = ''; }} />
+                        <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={(e) => { handleScanPassport(m.id, e.target.files[0]); e.target.value = ''; }} />
                      </label>
                   </div>
 

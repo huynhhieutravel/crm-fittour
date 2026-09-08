@@ -30,6 +30,34 @@ const isAutoGreeting = (text) => {
     return lower.includes('fit xin chào') && lower.includes('team fit') && lower.includes('lịch trình');
 };
 
+// Lọc nguyên đoạn chat AI mẫu tư vấn vé máy bay liệt kê các tour ví dụ
+// (VD: "...hầu hết các tour trọn gói của FIT TOUR đều đã bao gồm vé máy bay khứ hồi... ví dụ như tour Ai Cập bay Qatar Airways, tour Sri Lanka bay thẳng Vietnam Airlines hay tour Mông Cổ bay Cathay Pacific...")
+const isAirlineExampleBoilerplate = (text) => {
+    if (!text || text.length < 80) return false;
+    const lower = text.toLowerCase();
+    
+    // 1. Phải có ngữ cảnh văn phong mẫu của AI bot về tour trọn gói / vé máy bay / bộ sưu tập
+    const hasAiContext = (
+        lower.includes('hầu hết các tour trọn gói') ||
+        lower.includes('hãng bay cụ thể') ||
+        lower.includes('trong bộ sưu tập trên') ||
+        (lower.includes('vé máy bay khứ hồi') && lower.includes('landtour'))
+    );
+    
+    // 2. Liệt kê từ 2 hãng bay quốc tế lớn trở lên hoặc từ 3 điểm đến ví dụ trong cùng đoạn
+    let airlineCount = 0;
+    if (lower.includes('qatar airways') || lower.includes('qatar')) airlineCount++;
+    if (lower.includes('vietnam airlines')) airlineCount++;
+    if (lower.includes('cathay pacific') || lower.includes('cathay')) airlineCount++;
+    if (lower.includes('emirates')) airlineCount++;
+    if (lower.includes('singapore airlines')) airlineCount++;
+
+    const hasMultiDestinations = lower.includes('ai cập') && lower.includes('sri lanka') && lower.includes('mông cổ');
+
+    return (hasAiContext && (airlineCount >= 2 || hasMultiDestinations)) || (airlineCount >= 3);
+};
+
+
 // Auto-classify BU from message keywords
 // v5: Smart Diacritic-Aware Matching
 // - Pass 1: So keyword GỐC (có dấu) với tin nhắn GỐC → phân biệt "nhật" vs "nhất"
@@ -44,6 +72,10 @@ const classifyBUFromMessage = async (messageText, adContextText = '') => {
 
 const _classifyBU = async (messageText) => {
     if (!messageText || messageText.trim().length < 2) return null;
+    if (isAirlineExampleBoilerplate(messageText)) {
+        console.log('[BU-AUTO] ⚠️ Bỏ qua nguyên đoạn chat AI mẫu liệt kê ví dụ hãng bay đa tour');
+        return null;
+    }
     
     // Normalize: lowercase + remove diacritics
     const normalize = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0111/g, 'd').replace(/\u0110/g, 'D');
@@ -56,10 +88,12 @@ const _classifyBU = async (messageText) => {
     // Stopwords: CHỈ chặn những từ quá ngắn / 1 ký tự gây false positive tuyệt đối
     // "nhat" KHÔNG còn ở đây → đã được xử lý bởi smart matching (nhật ≠ nhất)
     const STOPWORDS = new Set([
-        'y',      // ý → y (1 ký tự, trùng tên người VD: "Ý Đặng Quốc")
-        'cho',    // cho
-        'ay',     // ấy
-        'an',     // ăn/an
+        'y',          // ý → y (1 ký tự, trùng tên người VD: "Ý Đặng Quốc")
+        'cho',        // cho
+        'ay',         // ấy
+        'an',         // ăn/an
+        'himalaya',   // Địa danh dãy núi quá rộng (trải dài nhiều BU), không dùng để map BU
+        'himalayas',
     ]);
     
     try {
@@ -67,6 +101,8 @@ const _classifyBU = async (messageText) => {
             "SELECT id, label, countries, keywords FROM business_units WHERE is_active = true ORDER BY sort_order ASC"
         );
         
+        const matchedBUs = new Map(); // bu.id -> Array of matched keywords
+
         for (const bu of busResult.rows) {
             const allKeywords = [
                 ...(bu.countries || []),
@@ -89,8 +125,10 @@ const _classifyBU = async (messageText) => {
                 const regexOriginal = new RegExp('(?:^|[^\\p{L}\\p{N}])' + escapedOrig + '(?:$|[^\\p{L}\\p{N}])', 'iu');
                 
                 if (regexOriginal.test(' ' + msgLower + ' ')) {
-                    console.log('[BU-AUTO] ✅ Pass1 (dấu chính xác) "' + keyword + '" -> ' + bu.id + ' | msg: "' + messageText.substring(0, 60) + '"');
-                    return bu.id;
+                    const matchIndex = msgLower.indexOf(kwLower);
+                    if (!matchedBUs.has(bu.id)) matchedBUs.set(bu.id, []);
+                    matchedBUs.get(bu.id).push({ keyword, index: matchIndex >= 0 ? matchIndex : 0 });
+                    break;
                 }
                 
                 // === PASS 2: So keyword BỎ DẤU, nhưng CHỈ chấp nhận nếu từ gốc KHÔNG CÓ DẤU ===
@@ -115,15 +153,39 @@ const _classifyBU = async (messageText) => {
                     }
                     
                     if (foundNoDiacritics) {
-                        console.log('[BU-AUTO] ✅ Pass2 (ko dấu) "' + keyword + '" -> ' + bu.id + ' | msg: "' + messageText.substring(0, 60) + '"');
-                        return bu.id;
-                    } else {
-                        console.log('[BU-AUTO] ⛔ Skip "' + keyword + '" - bản gốc có dấu nhưng khác từ | msg: "' + messageText.substring(0, 60) + '"');
+                        const normIndex = normalizedMsg.indexOf(normalizedKw);
+                        if (!matchedBUs.has(bu.id)) matchedBUs.set(bu.id, []);
+                        matchedBUs.get(bu.id).push({ keyword, index: normIndex >= 0 ? normIndex : 0 });
+                        break;
                     }
                 }
             }
         }
         
+        if (matchedBUs.size >= 1) {
+            // Sắp xếp các BU:
+            // 1. BU có từ khóa xuất hiện sớm nhất trong tin nhắn (ưu tiên nhu cầu đầu tiên khách đề cập)
+            // 2. BU có nhiều từ khóa được đề cập hơn
+            const sortedBUs = Array.from(matchedBUs.entries()).sort((a, b) => {
+                const minIndexA = Math.min(...a[1].map(k => k.index));
+                const minIndexB = Math.min(...b[1].map(k => k.index));
+                if (minIndexA !== minIndexB) return minIndexA - minIndexB;
+                return b[1].length - a[1].length;
+            });
+
+            const chosenBU = sortedBUs[0][0];
+            const chosenKws = sortedBUs[0][1].map(k => k.keyword);
+
+            if (matchedBUs.size > 1) {
+                const allMatchedSummary = sortedBUs.map(([buId, kws]) => `${buId}: [${kws.map(k => k.keyword).join(', ')}]`).join(' | ');
+                console.log(`[BU-AUTO] ℹ️ Khách đề cập 2-3 tour thuộc nhiều BU (${allMatchedSummary}) -> Auto gán 1 BU trước: ${chosenBU} ("${chosenKws.join(', ')}")`);
+            } else {
+                console.log(`[BU-AUTO] ✅ Chốt BU duy nhất: ${chosenBU} (từ khoá: "${chosenKws.join(', ')}") | msg: "${messageText.substring(0, 60)}"`);
+            }
+
+            return chosenBU;
+        }
+
         console.log('[BU-AUTO] Khong match BU cho tin nhan: "' + messageText.substring(0, 80) + '"');
         return null;
     } catch (err) {
@@ -132,16 +194,37 @@ const _classifyBU = async (messageText) => {
     }
 };
 
-const classifyTourFromMessage = async (messageText, adContextText = '') => {
-    let result = await _classifyTour(messageText);
+// Generic keywords that describe tour formats/types, NOT specific destinations/tours
+const GENERIC_TOUR_STOPWORDS = new Set([
+    'roadtrip',
+    'road trip',
+    'trekking',
+    'hiking',
+    'camping',
+    'tour',
+    'du lich',
+    'kham pha',
+    'no shopping',
+    'tron goi',
+    'gia re',
+    'himalaya',
+    'himalayas'
+]);
+
+const classifyTourFromMessage = async (messageText, adContextText = '', preferredBU = null) => {
+    let result = await _classifyTour(messageText, preferredBU);
     if (!result && adContextText) {
-        result = await _classifyTour(adContextText);
+        result = await _classifyTour(adContextText, preferredBU);
     }
     return result;
 };
 
-const _classifyTour = async (messageText) => {
+const _classifyTour = async (messageText, preferredBU = null) => {
     if (!messageText || messageText.trim().length < 2) return null;
+    if (isAirlineExampleBoilerplate(messageText)) {
+        console.log('[TOUR-AUTO] ⚠️ Bỏ qua nguyên đoạn chat AI mẫu liệt kê ví dụ hãng bay đa tour');
+        return null;
+    }
     
     // Normalize: lowercase + remove diacritics
     const normalize = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0111/g, 'd').replace(/\u0110/g, 'D');
@@ -150,10 +233,20 @@ const _classifyTour = async (messageText) => {
     const msgLower = messageText.toLowerCase();
     
     try {
-        const toursResult = await db.query(
-            "SELECT id, keywords, bu_group FROM tour_templates WHERE is_active = true AND keywords IS NOT NULL AND keywords != '' AND (tour_type IS NULL OR tour_type != 'Private Tour')"
-        );
+        const query = preferredBU ?
+            `SELECT id, keywords, bu_group FROM tour_templates 
+             WHERE is_active = true AND keywords IS NOT NULL AND keywords != '' AND (tour_type IS NULL OR tour_type != 'Private Tour')
+             ORDER BY CASE WHEN bu_group = $1 THEN 0 ELSE 1 END, id ASC` :
+            `SELECT id, keywords, bu_group FROM tour_templates 
+             WHERE is_active = true AND keywords IS NOT NULL AND keywords != '' AND (tour_type IS NULL OR tour_type != 'Private Tour')
+             ORDER BY id ASC`;
+        const params = preferredBU ? [preferredBU] : [];
+        const toursResult = await db.query(query, params);
         
+        let bestMatch = null;
+        let bestScore = 0;
+        const matchedTourCandidates = [];
+
         for (const tour of toursResult.rows) {
             const keywordsStr = tour.keywords || '';
             const keywordsList = keywordsStr.split(',').map(k => k.trim()).filter(k => k.length > 0);
@@ -161,45 +254,68 @@ const _classifyTour = async (messageText) => {
             for (const keyword of keywordsList) {
                 const normalizedKw = normalize(keyword);
                 if (normalizedKw.length < 2) continue; // skip very short keywords to be safe
+                if (GENERIC_TOUR_STOPWORDS.has(normalizedKw)) continue; // skip generic tour format keywords
                 
+                let matched = false;
+                let matchType = '';
+
                 // 1. Exact match (with diacritics)
                 const kwLower = keyword.toLowerCase();
                 const escapedOrig = kwLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const regexOriginal = new RegExp('(?:^|[^\\p{L}\\p{N}])' + escapedOrig + '(?:$|[^\\p{L}\\p{N}])', 'iu');
                 
                 if (regexOriginal.test(' ' + msgLower + ' ')) {
-                    console.log('[TOUR-AUTO] ✅ Strict Match (dấu) "' + keyword + '" -> Tour ' + tour.id + ' | msg: "' + messageText.substring(0, 60) + '"');
-                    return { tour_id: tour.id, bu_group: tour.bu_group };
-                }
-                
-                // 2. Exact match (without diacritics - ONLY if the original message text was typed without diacritics for that word)
-                const escapedNorm = normalizedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regexNorm = new RegExp('\\b' + escapedNorm + '\\b', 'i');
-                
-                if (regexNorm.test(normalizedMsg)) {
-                    // Cần đảm bảo khách thực sự gõ không dấu, chứ không phải gõ chữ có dấu khác nhưng khi bỏ dấu thì lại giống keyword
-                    const origWords = msgLower.split(/\s+/).map(w => w.replace(/[^a-zA-Z\u00C0-\u024F\u1E00-\u1EFF\u0110\u0111]/g, ''));
-                    const kwWordCount = kwLower.split(/\s+/).length;
+                    matched = true;
+                    matchType = 'dấu';
+                } else {
+                    // 2. Exact match (without diacritics - ONLY if the original message text was typed without diacritics for that word)
+                    const escapedNorm = normalizedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regexNorm = new RegExp('\\b' + escapedNorm + '\\b', 'i');
                     
-                    const hasDiacritics = (str) => str.toLowerCase() !== normalize(str);
-                    
-                    let foundNoDiacritics = false;
-                    for (let i = 0; i <= origWords.length - kwWordCount; i++) {
-                        const segment = origWords.slice(i, i + kwWordCount).join(' ');
-                        if (normalize(segment) === normalizedKw && !hasDiacritics(segment)) {
-                            foundNoDiacritics = true;
-                            break;
+                    if (regexNorm.test(normalizedMsg)) {
+                        // Cần đảm bảo khách thực sự gõ không dấu, chứ không phải gõ chữ có dấu khác nhưng khi bỏ dấu thì lại giống keyword
+                        const origWords = msgLower.split(/\s+/).map(w => w.replace(/[^a-zA-Z\u00C0-\u024F\u1E00-\u1EFF\u0110\u0111]/g, ''));
+                        const kwWordCount = kwLower.split(/\s+/).length;
+                        const hasDiacritics = (str) => str.toLowerCase() !== normalize(str);
+                        
+                        let foundNoDiacritics = false;
+                        for (let i = 0; i <= origWords.length - kwWordCount; i++) {
+                            const segment = origWords.slice(i, i + kwWordCount).join(' ');
+                            if (normalize(segment) === normalizedKw && !hasDiacritics(segment)) {
+                                foundNoDiacritics = true;
+                                break;
+                            }
+                        }
+                        
+                        if (foundNoDiacritics) {
+                            matched = true;
+                            matchType = 'ko dấu';
                         }
                     }
-                    
-                    if (foundNoDiacritics) {
-                        console.log('[TOUR-AUTO] ✅ Strict Match (ko dấu) "' + keyword + '" -> Tour ' + tour.id + ' | msg: "' + messageText.substring(0, 60) + '"');
-                        return { tour_id: tour.id, bu_group: tour.bu_group };
+                }
+
+                if (matched) {
+                    // Điểm ưu tiên: độ dài từ khoá (ưu tiên từ khoá chi tiết hơn: "Nam Tân Cương" > "Tân Cương")
+                    // Cộng 1000 điểm nếu tour thuộc preferredBU đã xác định
+                    const isPreferred = preferredBU && tour.bu_group === preferredBU;
+                    const score = normalizedKw.length + (isPreferred ? 1000 : 0);
+
+                    matchedTourCandidates.push({ tour_id: tour.id, bu_group: tour.bu_group, score });
+
+                    if (!bestMatch || score > bestScore) {
+                        bestMatch = { tour_id: tour.id, bu_group: tour.bu_group };
+                        bestScore = score;
+                        console.log(`[TOUR-AUTO] Candidate (${matchType}) "${keyword}" (score ${score}) -> Tour ${tour.id} (${tour.bu_group})`);
                     }
                 }
             }
         }
-        
+
+        if (bestMatch) {
+            console.log(`[TOUR-AUTO] ✅ Best Match -> Tour ${bestMatch.tour_id} (${bestMatch.bu_group}) | msg: "${messageText.substring(0, 60)}"`);
+            return bestMatch;
+        }
+
         return null; // Không tìm thấy tour nào hợp lệ
     } catch (err) {
         console.error('[TOUR-AUTO] Loi classifyTour:', err.message);
@@ -248,20 +364,21 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                 notificationController.broadcastNewLead({ id: leadId, customer_name: senderName }, autoBU).catch(console.error);
             }
 
-            // Auto-classify Tour from first message
-            const autoTour = await classifyTourFromMessage(received_message.text, adContextText);
+            // Auto-classify Tour from first message (ưu tiên tìm trong autoBU nếu có)
+            const autoTour = await classifyTourFromMessage(received_message.text, adContextText, autoBU);
             if (autoTour && autoTour.tour_id) {
-                const q = autoBU ? 
-                    'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
-                    'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
-                const params = autoBU ? 
-                    [autoTour.tour_id, leadId] : 
-                    [autoTour.tour_id, autoTour.bu_group, leadId];
+                const targetBU = autoBU || autoTour.bu_group;
+                const q = targetBU ? 
+                    'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+                    'UPDATE leads SET tour_id = $1 WHERE id = $2';
+                const params = targetBU ? 
+                    [autoTour.tour_id, targetBU, leadId] : 
+                    [autoTour.tour_id, leadId];
                 await db.query(q, params);
-                console.log(`[TOUR-AUTO] Lead #${leadId} (${senderName}) → Auto Tour: ${autoTour.tour_id}`);
+                console.log(`[TOUR-AUTO] Lead #${leadId} (${senderName}) → Auto Tour: ${autoTour.tour_id} (BU: ${targetBU})`);
                 
-                if (!autoBU && autoTour.bu_group) {
-                    notificationController.broadcastNewLead({ id: leadId, customer_name: senderName }, autoTour.bu_group).catch(console.error);
+                if (targetBU && targetBU !== autoBU) {
+                    notificationController.broadcastNewLead({ id: leadId, customer_name: senderName }, targetBU).catch(console.error);
                 }
             }
 
@@ -314,17 +431,18 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                         await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU2, leadId]);
                     }
 
-                    // Auto-classify Tour for re-opened lead
-                    const autoTour2 = await classifyTourFromMessage(received_message.text, adContextText);
+                    // Auto-classify Tour for re-opened lead (ưu tiên tìm trong autoBU2 nếu có)
+                    const autoTour2 = await classifyTourFromMessage(received_message.text, adContextText, autoBU2);
                     if (autoTour2 && autoTour2.tour_id) {
-                        const q2 = autoBU2 ? 
-                            'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
-                            'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
-                        const params2 = autoBU2 ? 
-                            [autoTour2.tour_id, leadId] : 
-                            [autoTour2.tour_id, autoTour2.bu_group, leadId];
+                        const targetBU2 = autoBU2 || autoTour2.bu_group;
+                        const q2 = targetBU2 ? 
+                            'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+                            'UPDATE leads SET tour_id = $1 WHERE id = $2';
+                        const params2 = targetBU2 ? 
+                            [autoTour2.tour_id, targetBU2, leadId] : 
+                            [autoTour2.tour_id, leadId];
                         await db.query(q2, params2);
-                        console.log(`[TOUR-AUTO] Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour2.tour_id} (Re-opened)`);
+                        console.log(`[TOUR-AUTO] Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour2.tour_id} (BU: ${targetBU2}) (Re-opened)`);
                     }
                     
                     // Nối hội thoại cũ sang Lead mới tinh này
@@ -348,9 +466,9 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                             'SELECT sender_type, content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
                             [conversationId]
                         );
-                        // Gộp tin khách VÀ AI (trừ câu hỏi chung chung) để vớt từ khoá Quảng Cáo
+                        // Gộp tin khách VÀ AI (trừ câu hỏi chung chung và đoạn AI ví dụ hãng bay đa tour)
                         const allText = allMsgsResult.rows
-                            .filter(m => !isAutoGreeting(m.content) && !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)'))
+                            .filter(m => !isAutoGreeting(m.content) && !isAirlineExampleBoilerplate(m.content) && !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)'))
                             .map(m => m.content || '')
                             .join(' ') + ' ' + (received_message.text || '');
                         const autoBU3 = await classifyBUFromMessage(allText, adContextText);
@@ -364,29 +482,30 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                     if (!oldLead.tour_id) {
                         // Re-fetch oldLead.bu_group to get the most updated one if it was just assigned above
                         const updatedLead = await db.query('SELECT bu_group FROM leads WHERE id = $1', [leadId]);
-                        const currentBuGroup = updatedLead.rows[0].bu_group;
+                        const currentBuGroup = updatedLead.rows[0]?.bu_group;
 
                         const allMsgsResult = await db.query(
                             'SELECT sender_type, content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
                             [conversationId]
                         );
-                        // Gộp tin khách VÀ AI (trừ câu hỏi chung chung) để vớt từ khoá Quảng Cáo
+                        // Gộp tin khách VÀ AI (trừ câu hỏi chung chung và đoạn AI ví dụ hãng bay đa tour)
                         const allText = allMsgsResult.rows
-                            .filter(m => !isAutoGreeting(m.content) && !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)'))
+                            .filter(m => !isAutoGreeting(m.content) && !isAirlineExampleBoilerplate(m.content) && !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)'))
                             .map(m => m.content || '')
                             .join(' ') + ' ' + (received_message.text || '');
-                        const autoTour3 = await classifyTourFromMessage(allText, adContextText);
+                        const autoTour3 = await classifyTourFromMessage(allText, adContextText, currentBuGroup);
                         
                         if (autoTour3 && autoTour3.tour_id) {
-                            const q3 = currentBuGroup ? 
-                                'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
-                                'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
-                            const params3 = currentBuGroup ? 
-                                [autoTour3.tour_id, leadId] : 
-                                [autoTour3.tour_id, autoTour3.bu_group, leadId];
+                            const targetBU3 = currentBuGroup || autoTour3.bu_group;
+                            const q3 = targetBU3 ? 
+                                'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+                                'UPDATE leads SET tour_id = $1 WHERE id = $2';
+                            const params3 = targetBU3 ? 
+                                [autoTour3.tour_id, targetBU3, leadId] : 
+                                [autoTour3.tour_id, leadId];
                             
                             await db.query(q3, params3);
-                            console.log(`[TOUR-AUTO] Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (từ tin nhắn tiếp theo)`);
+                            console.log(`[TOUR-AUTO] Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (BU: ${targetBU3}) (từ tin nhắn tiếp theo)`);
                         }
                     }
                 }
@@ -415,6 +534,65 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                         [extractedPhone, leadId, extractedPhone]
                     );
                 }
+            }
+        }
+
+        // 6. REAL-TIME NOTIFICATION & SOUND ALERT CHO SALES ĐƯỢC GIAO (MESSENGER)
+        if (leadId) {
+            try {
+                const currentLeadRes = await db.query('SELECT id, name, assigned_to, bu_group FROM leads WHERE id = $1', [leadId]);
+                const currentLead = currentLeadRes.rows[0];
+
+                if (currentLead) {
+                    const customerDisplayName = currentLead.name || 'Khách hàng Messenger';
+                    const notifMessage = received_message.text || 'Khách đã gửi tin nhắn Messenger';
+                    const notifTitle = `💬 Tin nhắn Messenger từ ${customerDisplayName}`;
+                    const notifLink = `/inbox?psid=${leadId}`;
+
+                    // Gửi thông báo trực tiếp cho Sales phụ trách
+                    if (currentLead.assigned_to) {
+                        const notifRes = await db.query(
+                            `INSERT INTO user_notifications (user_id, title, message, link, type, reference_id) 
+                             VALUES ($1, $2, $3, $4, 'CUSTOMER_MESSAGE', $5) 
+                             RETURNING *`,
+                            [currentLead.assigned_to, notifTitle, notifMessage.substring(0, 200), notifLink, leadId]
+                        );
+
+                        if (global.io) {
+                            global.io.to(`user_${currentLead.assigned_to}`).emit('new_notification', {
+                                ...notifRes.rows[0],
+                                sound_type: 'message',
+                                play_sound: true,
+                                customer_name: customerDisplayName,
+                                source: 'messenger',
+                                lead_id: leadId,
+                                psid: sender_psid
+                            });
+                        }
+
+                        notificationController.sendPushToUser(currentLead.assigned_to, {
+                            title: notifTitle,
+                            body: notifMessage.substring(0, 150),
+                            url: notifLink
+                        }, 'CUSTOMER_MESSAGE').catch(console.error);
+                    }
+
+                    // Bắn socket toàn cục customer_new_message
+                    if (global.io) {
+                        global.io.emit('customer_new_message', {
+                            source: 'messenger',
+                            senderId: sender_psid,
+                            senderName: customerDisplayName,
+                            text: notifMessage,
+                            leadId: leadId,
+                            assigned_to: currentLead.assigned_to,
+                            bu_group: currentLead.bu_group,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('[FB WEBHOOK] Lỗi tạo thông báo tin nhắn:', err.message);
             }
         }
 
@@ -496,7 +674,10 @@ exports.callSendAPI = async (sender_psid, response) => {
 
         await axios.post(endpoint, {
             recipient: { id: sender_psid },
-            message: response
+            message: {
+                ...response,
+                metadata: 'CRM_SENT'
+            }
         });
         console.log('[FB] ✅ Message sent successfully!');
     } catch (error) {
@@ -734,25 +915,26 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         }
                     }
 
-                    // Auto-classify BU from ALL messages (fallback to shares ad_context)
-                    const allConvMsgs = messagesList.filter(m => !isAutoGreeting(m.message) && !(m.message || '').includes('(Trung Quốc, Himalayas, Quốc tế...)')).map(m => (m.message || '')).join(' ');
+                    // Auto-classify BU from ALL messages (fallback to shares ad_context, trừ đoạn AI ví dụ hãng bay đa tour)
+                    const allConvMsgs = messagesList.filter(m => !isAutoGreeting(m.message) && !isAirlineExampleBoilerplate(m.message) && !(m.message || '').includes('(Trung Quốc, Himalayas, Quốc tế...)')).map(m => (m.message || '')).join(' ');
                     const autoBUPoller = await classifyBUFromMessage(allConvMsgs + ' ' + (actualMessageText || ''), adContextText);
                     if (autoBUPoller) {
                         await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller, currentLeadId]);
                         console.log(`[BU-AUTO] Poller Lead #${currentLeadId} (${userName}) → Auto BU: ${autoBUPoller}`);
                     }
 
-                    // Auto-classify Tour from ALL messages (fallback to shares ad_context)
-                    const autoTourPoller = await classifyTourFromMessage(allConvMsgs + ' ' + (actualMessageText || ''), adContextText);
+                    // Auto-classify Tour from ALL messages (ưu tiên tìm trong autoBUPoller nếu có)
+                    const autoTourPoller = await classifyTourFromMessage(allConvMsgs + ' ' + (actualMessageText || ''), adContextText, autoBUPoller);
                     if (autoTourPoller && autoTourPoller.tour_id) {
-                        const q = autoBUPoller ? 
-                            'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
-                            'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
-                        const params = autoBUPoller ? 
-                            [autoTourPoller.tour_id, currentLeadId] : 
-                            [autoTourPoller.tour_id, autoTourPoller.bu_group, currentLeadId];
+                        const targetBUPoller = autoBUPoller || autoTourPoller.bu_group;
+                        const q = targetBUPoller ? 
+                            'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+                            'UPDATE leads SET tour_id = $1 WHERE id = $2';
+                        const params = targetBUPoller ? 
+                            [autoTourPoller.tour_id, targetBUPoller, currentLeadId] : 
+                            [autoTourPoller.tour_id, currentLeadId];
                         await db.query(q, params);
-                        console.log(`[TOUR-AUTO] Poller Lead #${currentLeadId} (${userName}) → Auto Tour: ${autoTourPoller.tour_id}`);
+                        console.log(`[TOUR-AUTO] Poller Lead #${currentLeadId} (${userName}) → Auto Tour: ${autoTourPoller.tour_id} (BU: ${targetBUPoller})`);
                     }
                     // --- LUÔN tạo Conversation để tránh tạo Lead trùng lặp mỗi lần poll ---
                     const messageForConv = actualMessageText || '(Khách mới nhắn tin)';
@@ -796,10 +978,13 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                     }
                     
                     const existingMsgsRes = await db.query('SELECT content, sender_type FROM messages WHERE conversation_id = $1 ORDER BY id DESC LIMIT 150', [oldConv.id]);
-                    const existingMsgSet = new Set(existingMsgsRes.rows.map(m => `${m.sender_type}|${m.content}`));
+                    const normalizeSenderType = (st) => (st === 'customer' ? 'customer' : 'staff');
+                    const existingMsgSet = new Set(existingMsgsRes.rows.map(m => `${normalizeSenderType(m.sender_type)}|${(m.content || '').trim()}`));
                     
                     let hasAnyNewMsg = false;
+                    let hasNewCustomerMsg = false;
                     let lastIteratedMessage = oldConv.last_message;
+                    let lastCustomerMessage = '';
                     
                     let adContextText = '';
 
@@ -817,7 +1002,7 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         if (!msg.message || msg.message.trim() === '') continue;
                         
                         const senderType = (msg.from && msg.from.id === psid) ? 'customer' : 'page';
-                        const matchKey = `${senderType}|${msg.message}`;
+                        const matchKey = `${normalizeSenderType(senderType)}|${msg.message.trim()}`;
                         
                         if (!existingMsgSet.has(matchKey)) {
                             const createdAt = msg.created_time ? new Date(msg.created_time) : new Date();
@@ -830,6 +1015,8 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                             existingMsgSet.add(matchKey); // To duplicate handles within same block
                             
                             if (senderType === 'customer') {
+                                hasNewCustomerMsg = true;
+                                lastCustomerMessage = msg.message;
                                 // Cập nhật Lead's last_contacted_at
                                 const leadRes = await db.query('SELECT status, name, phone, email FROM leads WHERE id = $1', [currentLeadId]);
                                 if (leadRes.rows.length > 0) {
@@ -859,12 +1046,65 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                     if (hasAnyNewMsg) {
                         await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [lastIteratedMessage, oldConv.id]);
                     }
+
+                    // Chỉ thông báo & phát chuông cho Sales nếu có tin nhắn MỚI từ KHÁCH HÀNG (Poller Sync)
+                    if (hasNewCustomerMsg) {
+                        try {
+                            const checkLeadNotif = await db.query('SELECT id, name, assigned_to, bu_group FROM leads WHERE id = $1', [currentLeadId]);
+                            const leadData = checkLeadNotif.rows[0];
+                            if (leadData && leadData.assigned_to) {
+                                const customerName = leadData.name || userName;
+                                const notifTitle = `💬 Tin nhắn Messenger từ ${customerName}`;
+                                const notifMessage = lastCustomerMessage || lastIteratedMessage || 'Tin nhắn mới từ khách hàng';
+                                const notifLink = `/inbox?psid=${currentLeadId}`;
+
+                                const notifRes = await db.query(
+                                    `INSERT INTO user_notifications (user_id, title, message, link, type, reference_id) 
+                                     VALUES ($1, $2, $3, $4, 'CUSTOMER_MESSAGE', $5) RETURNING *`,
+                                    [leadData.assigned_to, notifTitle, notifMessage.substring(0, 200), notifLink, currentLeadId]
+                                );
+
+                                if (global.io) {
+                                    global.io.to(`user_${leadData.assigned_to}`).emit('new_notification', {
+                                        ...notifRes.rows[0],
+                                        sound_type: 'message',
+                                        play_sound: true,
+                                        customer_name: customerName,
+                                        source: 'messenger',
+                                        lead_id: currentLeadId,
+                                        psid: psid
+                                    });
+                                }
+
+                                notificationController.sendPushToUser(leadData.assigned_to, {
+                                    title: notifTitle,
+                                    body: notifMessage.substring(0, 150),
+                                    url: notifLink
+                                }, 'CUSTOMER_MESSAGE').catch(console.error);
+                            }
+
+                            if (global.io) {
+                                global.io.emit('customer_new_message', {
+                                    source: 'messenger',
+                                    senderId: psid,
+                                    senderName: leadData?.name || userName,
+                                    text: lastCustomerMessage || lastIteratedMessage,
+                                    leadId: currentLeadId,
+                                    assigned_to: leadData?.assigned_to,
+                                    bu_group: leadData?.bu_group,
+                                    timestamp: new Date().toISOString()
+                                });
+                            }
+                        } catch (notifErr) {
+                            console.error('[FB POLLER] Lỗi gửi thông báo tin nhắn mới:', notifErr.message);
+                        }
+                    }
                     
                     // Classification for existing lead if BU missing (Luôn chạy nếu chưa có BU)
                     const leadCheckRe = await db.query('SELECT bu_group, tour_id, name FROM leads WHERE id = $1', [currentLeadId]);
                     if (leadCheckRe.rows.length > 0) {
                         const allPollerMsgs = await db.query('SELECT sender_type, content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC', [oldConv.id]);
-                        const allPollerText = allPollerMsgs.rows.filter(m => !isAutoGreeting(m.content) && !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)')).map(m => m.content || '').join(' ');
+                        const allPollerText = allPollerMsgs.rows.filter(m => !isAutoGreeting(m.content) && !isAirlineExampleBoilerplate(m.content) && !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)')).map(m => m.content || '').join(' ');
                         
                         if (!leadCheckRe.rows[0].bu_group) {
                             const autoBUPoller2 = await classifyBUFromMessage(allPollerText, adContextText);
@@ -877,15 +1117,17 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         if (!leadCheckRe.rows[0].tour_id) {
                             // Re-fetch BU to get the most up-to-date one
                             const checkBu = await db.query('SELECT bu_group FROM leads WHERE id = $1', [currentLeadId]);
-                            const autoTourPoller2 = await classifyTourFromMessage(allPollerText, adContextText);
+                            const currentPollerBu = checkBu.rows[0]?.bu_group;
+                            const autoTourPoller2 = await classifyTourFromMessage(allPollerText, adContextText, currentPollerBu);
                             
                             if (autoTourPoller2 && autoTourPoller2.tour_id) {
-                                const q3 = checkBu.rows[0].bu_group ? 
-                                    'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
-                                    'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
-                                const params3 = checkBu.rows[0].bu_group ? 
-                                    [autoTourPoller2.tour_id, currentLeadId] : 
-                                    [autoTourPoller2.tour_id, autoTourPoller2.bu_group, currentLeadId];
+                                const targetBUPoller2 = currentPollerBu || autoTourPoller2.bu_group;
+                                const q3 = targetBUPoller2 ? 
+                                    'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+                                    'UPDATE leads SET tour_id = $1 WHERE id = $2';
+                                const params3 = targetBUPoller2 ? 
+                                    [autoTourPoller2.tour_id, targetBUPoller2, currentLeadId] : 
+                                    [autoTourPoller2.tour_id, currentLeadId];
                                 
                                 await db.query(q3, params3);
                                 console.log(`[TOUR-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto Tour: ${autoTourPoller2.tour_id}`);

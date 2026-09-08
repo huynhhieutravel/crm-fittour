@@ -24,6 +24,7 @@ import SopMetaAdsInfographic from './SopMetaAdsInfographic';
 import RagDocViewer from '../components/Knowledge/RagDocViewer';
 import LadakhConsultingPage from './LadakhConsultingPage';
 import BhutanConsultingPage from './BhutanConsultingPage';
+import CuuTraiCauConsultingPage from './CuuTraiCauConsultingPage';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Static Document Index — TẤT CẢ tài liệu nội bộ đã biết
@@ -37,6 +38,9 @@ const STATIC_DOCS = [
   { title: 'Rule Meta Ads', description: 'Các quy tắc bắt buộc và khuyến nghị khi thiết lập chiến dịch Meta Ads.', category: 'Marketing', path: '/tai-lieu/rule-meta-ads', icon: '📜' },
   { title: 'Blueprint Meta Ads', description: 'Hướng dẫn chạy quảng cáo Meta (Facebook/IG) chuẩn FIT Tour - Quy tắc đặt tên, target, content và tối ưu.', category: 'Marketing', path: '/tai-lieu/blueprint-meta-ads', icon: '🎯' },
   { title: 'HUB Kinh Doanh (Sale)', description: 'Tài liệu dành cho phòng kinh doanh, quy trình bán hàng', category: 'Sale', path: '/tai-lieu/sale', icon: '💼' },
+  { title: 'Cẩm Nang Chốt Sale Cửu Trại Câu (BU1)', description: 'Kịch bản chat, FAQ thanh toán cọc 50/50, visa đoàn, SIM data và cẩm nang tư vấn', category: 'Sale', path: '/tai-lieu/tu-van-cuu-trai-cau', icon: '🍁' },
+  { title: 'Cẩm Nang Chốt Sale Ladakh (BU4)', description: 'Cẩm nang tư vấn và chốt sale tuyến tour Ladakh Ấn Độ', category: 'Sale', path: '/tai-lieu/tu-van-ladakh-bu4', icon: '🏔️' },
+  { title: 'Cẩm Nang Chốt Sale Bhutan (5N4Đ)', description: 'Cẩm nang tư vấn và chốt sale tuyến tour vương quốc hạnh phúc Bhutan', category: 'Sale', path: '/tai-lieu/tu-van-bhutan-5n4d', icon: '⛩️' },
   { title: 'SOP Sales & Workplace', description: 'Hướng dẫn Sales nhận Lead, cập nhật ERP và tối ưu Workplace', category: 'Sale', path: '/tai-lieu/sop-sales', icon: '💼' },
   { title: 'HUB Điều Hành (OP)', description: 'Quy trình điều hành tour, vận hành dịch vụ', category: 'Điều hành', path: '/tai-lieu/dieu-hanh', icon: '🔧' },
   { title: 'Tổng quan Quy trình Lead', description: 'Bức tranh toàn cảnh về quy trình xử lý Lead từ Điều phối đến Sales', category: 'Điều hành', path: '/tai-lieu/tong-quan-lead', icon: '🌐' },
@@ -55,6 +59,7 @@ const STATIC_DOCS = [
   { title: 'SOP Chuẩn Hóa Tên Tour', description: 'Quy chuẩn đặt tên tour trên ERP, Website và Social', category: 'Điều hành', path: '/tai-lieu/dat-ten-tour', icon: '📝' },
   { title: 'Hướng Dẫn Kết Nối Zoho Mail', description: 'Hướng dẫn cài đặt Zoho Mail với Outlook, Apple Mail, Spark (IMAP)', category: 'Hành chính', path: '/tai-lieu/zoho-email', icon: '📧' },
   { title: 'SOP Chính Sách Đánh Giá (Review)', description: 'Điều chỉnh và hướng dẫn chính sách đánh giá trên Google Review', category: 'Marketing', path: '/tai-lieu/chinh-sach-danh-gia', icon: '⭐' },
+  { title: 'Hướng Dẫn Đánh Giá FIT TOUR Trên Google Maps', description: 'Hướng dẫn từng bước cách đánh giá 5 sao kèm hình ảnh trên Google Maps FIT TOUR', category: 'HDV', path: 'https://fittour.vn/huong-dan-danh-gia-fit-tour', icon: '⭐', external: true },
   { title: 'Cơ Chế KPI', description: 'Quyết định ban hành cơ chế lương – KPI – thưởng và phúc lợi nhân sự', category: 'Hành chính', path: '/tai-lieu/co-che-kpi', icon: '💼' },
 ];
 
@@ -591,6 +596,12 @@ const DocumentsHome = () => {
               >
                 Xem chi tiết chính sách →
               </Link>
+              <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                <a href="https://fittour.vn/huong-dan-danh-gia-fit-tour" target="_blank" rel="noreferrer"
+                  style={{ fontSize: '0.85rem', color: '#e55e20', textDecoration: 'none', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span>📍</span> Hướng dẫn khách đánh giá Google Maps &rarr;
+                </a>
+              </div>
               <p style={{ margin: '14px 0 0', textAlign: 'center', fontSize: '0.78rem', color: '#94a3b8' }}>
                 Thông báo này chỉ hiện một lần
               </p>
@@ -610,8 +621,13 @@ const DocumentsHome = () => {
               <li style={{ marginBottom: '0.5rem' }}>
                 <Link to="/tai-lieu/quy-che-luong-hdv" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>💰</span> Quy chế lương Hướng Dẫn Viên</Link>
               </li>
-              <li style={{ marginBottom: 0 }}>
+              <li style={{ marginBottom: '0.5rem' }}>
                 <Link to="/tai-lieu/chinh-sach-danh-gia" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>⭐</span> Chính sách Review HDV</Link>
+              </li>
+              <li style={{ marginBottom: 0 }}>
+                <a href="https://fittour.vn/huong-dan-danh-gia-fit-tour" target="_blank" rel="noreferrer" style={{ fontSize: '0.85rem' }}>
+                  <span className="blog-list-icon" style={{ fontSize: '1rem' }}>📍</span> Hướng dẫn đánh giá Google Maps
+                </a>
               </li>
             </ul>
           </div>
@@ -628,6 +644,9 @@ const DocumentsHome = () => {
             <ul className="blog-list">
               <li style={{ marginBottom: '0.5rem' }}>
                 <Link to="/tai-lieu/tu-van-ladakh-bu4" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>🏔️</span> Cẩm nang chốt sale Ladakh (BU4)</Link>
+              </li>
+              <li style={{ marginBottom: '0.5rem' }}>
+                <Link to="/tai-lieu/tu-van-cuu-trai-cau" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>🍁</span> Cẩm nang chốt sale Cửu Trại Câu (BU1)</Link>
               </li>
               <li style={{ marginBottom: 0 }}>
                 <Link to="/tai-lieu/tu-van-bhutan-5n4d" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>⛩️</span> Cẩm nang chốt sale Bhutan (5N4Đ)</Link>
@@ -655,53 +674,6 @@ const DocumentsHome = () => {
             <span>HUB Kế Toán</span>
           </Link>
         </div>
-
-        {/* Banner Thông Báo Nghỉ Lễ Quốc Khánh */}
-        <div 
-          onClick={() => window.dispatchEvent(new Event('open-holiday-popup'))}
-          style={{
-            background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
-            border: '1.5px solid #fed7aa',
-            borderRadius: '16px',
-            padding: '14px 20px',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(234, 88, 12, 0.08)',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(234, 88, 12, 0.15)'; }}
-          onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(234, 88, 12, 0.08)'; }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span style={{ fontSize: '1.8rem' }}>🇻🇳</span>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#9a3412', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                Thông báo Lịch nghỉ lễ Quốc Khánh 2/9/2026
-                <span style={{ fontSize: '0.72rem', background: '#ea580c', color: 'white', padding: '2px 8px', borderRadius: '20px', fontWeight: 600 }}>Nghỉ 5 ngày (29/8 - 2/9)</span>
-              </div>
-              <div style={{ fontSize: '0.82rem', color: '#c2410c', marginTop: '2px' }}>
-                Bấm vào đây để xem chi tiết poster thông báo và lịch làm bù chính thức từ FIT TOUR.
-              </div>
-            </div>
-          </div>
-          <button style={{
-            background: '#ea580c',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '8px 16px',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            whiteSpace: 'nowrap'
-          }}>
-            Xem Poster →
-          </button>
-        </div>
-
         {/* Welcome Block */}
         <div className="blog-welcome">
           <p>👋 <span className="blog-text-orange">Chào mừng các chiến binh FIT TOUR!</span> Đây là <strong>không gian làm việc chung</strong> dành riêng cho đội ngũ Fit Tour – nơi <span className="blog-text-orange">lưu trữ thông tin, kết nối nội bộ</span> và <span className="blog-text-orange">hỗ trợ bạn chủ động trong công việc</span> mỗi ngày.</p>
@@ -755,6 +727,11 @@ const DocumentsHome = () => {
             <h3 className="blog-section-title" style={{ marginTop: '2rem' }}>Hướng dẫn Công cụ</h3>
             <ul className="blog-list">
               <li><Link to="/tai-lieu/zoho-email"><span className="blog-list-icon">📧</span> Hướng Dẫn Kết Nối Zoho Mail</Link></li>
+              <li>
+                <a href="https://fittour.vn/huong-dan-danh-gia-fit-tour" target="_blank" rel="noreferrer">
+                  <span className="blog-list-icon">⭐</span> Hướng Dẫn Đánh Giá Google Maps
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -1088,7 +1065,8 @@ const DocumentsPage = () => {
     { title: 'Blueprint Meta Ads', path: '/tai-lieu/blueprint-meta-ads', icon: '🎯' },
     { title: 'SOP Đặt Tên Ads', path: '/tai-lieu/sop-meta-ads', icon: '📝' },
     { title: 'Brand Identity', path: '/tai-lieu/brand-guideline', icon: '🎨' },
-    { title: 'Chính Sách Đánh Giá', path: '/tai-lieu/chinh-sach-danh-gia', icon: '⭐' }
+    { title: 'Chính Sách Đánh Giá', path: '/tai-lieu/chinh-sach-danh-gia', icon: '⭐' },
+    { title: 'HD Đánh Giá Maps', path: 'https://fittour.vn/huong-dan-danh-gia-fit-tour', icon: '📍', external: true }
   ];
 
   if (path === '/tai-lieu/quy-trinh-thanh-toan-ban-giao-quyet-toan-tour') return (
@@ -1180,6 +1158,10 @@ const DocumentsPage = () => {
   
   if (path === '/tai-lieu/tu-van-ladakh-bu4') {
     return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><LadakhConsultingPage /></BlogLayout>;
+  }
+  
+  if (path === '/tai-lieu/tu-van-cuu-trai-cau' || path === '/tai-lieu/tu-van-cuu-trai-cau-bu1' || path === '/tai-lieu/tu-van-cuu-trai-cau-6n5d') {
+    return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><CuuTraiCauConsultingPage /></BlogLayout>;
   }
   
   if (path === '/tai-lieu/tu-van-bhutan-5n4d') {

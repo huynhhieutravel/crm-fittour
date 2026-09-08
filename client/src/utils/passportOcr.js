@@ -7,38 +7,227 @@ import Tesseract from 'tesseract.js';
  *   - MRZ: Fixed Position + Anchor Fallback (hỗ trợ MỌI quốc tịch)
  *   - Smart Merge: gán DOB từ MRZ (chính xác hơn), DOI+DOE từ visual text
  */
-export async function scanPassportImage(imageSource, onProgress) {
+// ═══════════════════════════════════════════════════════════
+// HELPER: XOAY HÌNH ẢNH / CANVAS KHI QUÉT BỊ NGHIÊNG / NGƯỢC
+// ═══════════════════════════════════════════════════════════
+function rotateCanvas(sourceCanvas, degrees) {
+  if (!degrees || degrees === 0) return sourceCanvas;
+  const rad = (degrees * Math.PI) / 180;
+  const canvas = document.createElement('canvas');
+  if (degrees === 90 || degrees === 270) {
+    canvas.width = sourceCanvas.height;
+    canvas.height = sourceCanvas.width;
+  } else {
+    canvas.width = sourceCanvas.width;
+    canvas.height = sourceCanvas.height;
+  }
+  const ctx = canvas.getContext('2d');
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(rad);
+  ctx.drawImage(sourceCanvas, -sourceCanvas.width / 2, -sourceCanvas.height / 2);
+  return canvas;
+}
+
+async function ensureCanvas(source) {
+  if (typeof document === 'undefined') return null;
+  const MAX_DIMENSION = 1800; // Tối ưu hóa kích thước ảnh: sắc nét cho OCR nhưng không tốn RAM
+
+  if (source instanceof HTMLCanvasElement) {
+    const maxDim = Math.max(source.width, source.height);
+    if (maxDim > MAX_DIMENSION) {
+      const scale = MAX_DIMENSION / maxDim;
+      const scaledCanvas = document.createElement('canvas');
+      scaledCanvas.width = Math.round(source.width * scale);
+      scaledCanvas.height = Math.round(source.height * scale);
+      const ctx = scaledCanvas.getContext('2d');
+      ctx.drawImage(source, 0, 0, scaledCanvas.width, scaledCanvas.height);
+      return scaledCanvas;
+    }
+    return source;
+  }
+
+  if (source instanceof Blob || source instanceof File) {
+    if (typeof createImageBitmap === 'function') {
+      try {
+        const bmp = await createImageBitmap(source);
+        const maxDim = Math.max(bmp.width, bmp.height);
+        const scale = maxDim > MAX_DIMENSION ? MAX_DIMENSION / maxDim : 1;
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(bmp.width * scale);
+        canvas.height = Math.round(bmp.height * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+        return canvas;
+      } catch (e) {
+        // fallback to Image
+      }
+    }
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(source);
+      img.onload = () => {
+        const maxDim = Math.max(img.naturalWidth, img.naturalHeight);
+        const scale = maxDim > MAX_DIMENSION ? MAX_DIMENSION / maxDim : 1;
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.naturalWidth * scale);
+        canvas.height = Math.round(img.naturalHeight * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+      img.src = url;
+    });
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// TESSERACT REUSABLE WORKER SINGLETON (TỐI ƯU HIỆU SUẤT)
+// ═══════════════════════════════════════════════════════════
+let ocrWorker = null;
+let ocrWorkerPromise = null;
+let currentProgressCallback = null;
+
+async function getSharedWorker() {
+  if (ocrWorker) return ocrWorker;
+  if (!ocrWorkerPromise) {
+    ocrWorkerPromise = (async () => {
+      const worker = await Tesseract.createWorker('vie+eng', 1, {
+        logger: (m) => {
+          if (m.status === 'recognizing text' && m.progress !== undefined) {
+            currentProgressCallback?.(Math.round(m.progress * 100));
+          }
+        }
+      });
+      ocrWorker = worker;
+      return worker;
+    })();
+  }
+  return ocrWorkerPromise;
+}
+
+export async function terminateOcrWorker() {
+  if (ocrWorker) {
+    try {
+      await ocrWorker.terminate();
+    } catch (e) {}
+    ocrWorker = null;
+    ocrWorkerPromise = null;
+  }
+}
+
+async function executeOcr(source, onProgress) {
   try {
-    // vie+eng: tải thêm bộ nhận dạng tiếng Việt (~3MB, cache lần đầu)
-    const result = await Tesseract.recognize(imageSource, 'vie+eng', {
+    currentProgressCallback = onProgress;
+    const worker = await getSharedWorker();
+    const result = await worker.recognize(source);
+    return result.data.text;
+  } catch (err) {
+    console.warn('[OCR] Shared worker fallback to Tesseract.recognize:', err.message);
+    const result = await Tesseract.recognize(source, 'vie+eng', {
       logger: (m) => {
         if (m.status === 'recognizing text' && m.progress) {
           onProgress?.(Math.round(m.progress * 100));
         }
       },
     });
+    return result.data.text;
+  } finally {
+    currentProgressCallback = null;
+  }
+}
 
-    const rawText = result.data.text;
-    console.log('[OCR] Raw text:\n', rawText);
+async function recognizeAndParse(source, onProgress) {
+  const rawText = await executeOcr(source, onProgress);
+  console.log('[OCR] Raw text:\n', rawText);
 
-    const visual = extractVisual(rawText);
-    console.log('[OCR] Visual:', visual);
+  const visual = extractVisual(rawText);
+  console.log('[OCR] Visual:', visual);
 
-    const mrz = extractMrz(rawText);
-    console.log('[OCR] MRZ:', mrz);
+  const mrz = extractMrz(rawText);
+  console.log('[OCR] MRZ:', mrz);
 
-    const allDates = findAllDates(rawText);
-    console.log('[OCR] All dates found:', allDates);
+  const allDates = findAllDates(rawText);
+  console.log('[OCR] All dates found:', allDates);
 
-    const merged = smartMerge(visual, mrz, allDates);
-    console.log('[OCR] Merged:', merged);
+  const merged = smartMerge(visual, mrz, allDates);
+  console.log('[OCR] Merged:', merged);
 
-    const hasData = merged.docId || merged.surname || merged.givenName;
-    if (!hasData) {
-      return { valid: false, error: 'Không trích xuất được thông tin. Hãy chụp rõ nét hộ chiếu.', rawText };
+  const hasData = (merged.docId && (merged.surname || merged.givenName)) || (merged.surname && merged.givenName);
+  return { valid: Boolean(hasData), ...merged, rawText };
+}
+
+/**
+ * Quét ảnh Hộ chiếu — PHƯƠNG PHÁP KÉP + SMART MERGE + TỰ ĐỘNG XOAY HƯỚNG:
+ *   - OCR: Tesseract với vie+eng (Tiếng Việt + Tiếng Anh)
+ *   - Visual Text: đọc phần in rõ (tên + ngày cấp + ngày hết hạn)
+ *   - MRZ: Fixed Position + Anchor Fallback (hỗ trợ MỌI quốc tịch)
+ *   - Smart Merge: gán DOB từ MRZ (chính xác hơn), DOI+DOE từ visual text
+ *   - Auto-Rotation: Tự động thử các góc xoay (270°, 90°, 180°) nếu file scan bị nằm ngang/dọc
+ */
+export async function scanPassportImage(imageSource, onProgress, options = {}) {
+  try {
+    const preferredRotation = options.preferredRotation;
+    const canvas = await ensureCanvas(imageSource);
+
+    // Phát hiện hướng trang: nếu canvas dạng đứng (A4 flatbed scan: height > width * 1.15),
+    // máy scan luôn để hộ chiếu nằm ngang, do đó góc chuẩn là 270° (hoặc 90°).
+    const isPortrait = canvas && canvas.height > canvas.width * 1.15;
+    const defaultAngles = isPortrait ? [270, 90, 0, 180] : [0, 270, 90, 180];
+
+    const anglesToTry = [];
+    if (preferredRotation !== undefined && [0, 90, 180, 270].includes(preferredRotation)) {
+      anglesToTry.push(preferredRotation);
+    }
+    for (const a of defaultAngles) {
+      if (!anglesToTry.includes(a)) anglesToTry.push(a);
     }
 
-    return { valid: true, ...merged, rawText };
+    let bestParsed = null;
+    let successfulRotation = 0;
+
+    for (let i = 0; i < anglesToTry.length; i++) {
+      const angle = anglesToTry[i];
+      let currentSource = imageSource;
+      let rotCanvas = null;
+
+      if (angle !== 0) {
+        if (!canvas) break; // không thể xoay nếu không có canvas
+        rotCanvas = rotateCanvas(canvas, angle);
+        currentSource = rotCanvas;
+        console.log(`[OCR] Thử tự động xoay ảnh ${angle}°...`);
+      }
+
+      try {
+        const parsed = await recognizeAndParse(currentSource, onProgress);
+        if (parsed.valid && parsed.docId && (parsed.surname || parsed.givenName)) {
+          bestParsed = parsed;
+          successfulRotation = angle;
+          console.log(`[OCR] ✅ Nhận diện thành công tại góc xoay ${angle}°!`);
+          break; // Đã nhận diện trúng và đủ Passport No + Tên -> dừng ngay
+        }
+        if (!bestParsed || (parsed.valid && !bestParsed.valid) || (parsed.docId && !bestParsed.docId)) {
+          bestParsed = parsed;
+          successfulRotation = angle;
+        }
+      } finally {
+        if (rotCanvas) {
+          rotCanvas.width = 0;
+          rotCanvas.height = 0;
+        }
+      }
+    }
+
+    if (!bestParsed || !bestParsed.valid) {
+      return { valid: false, error: 'Không trích xuất được thông tin. Hãy chụp rõ nét hộ chiếu.', rawText: bestParsed?.rawText || '' };
+    }
+
+    return { ...bestParsed, rotationUsed: successfulRotation };
   } catch (err) {
     console.error('[OCR] Error:', err);
     return { valid: false, error: `Lỗi quét ảnh: ${err.message}` };
@@ -63,11 +252,13 @@ function extractVisual(rawText) {
   let givenName = '';
   let passportNo = '';
   let gender = '';
+  let personalId = '';
 
   // Helper: Chấp nhận từ IN HOA thuần túy hoặc Title Case (do Tesseract hay nhìn nhầm)
   const isNameWord = (w) => {
-    const letters = w.replace(/[^a-zA-Z]/g, '');
+    const letters = removeVietnameseTones(w).replace(/[^a-zA-Z]/g, '');
     if (letters.length < 2) return false;
+    if (/^(SURNAME|SUNAME|GIVEN|NAME|NAMES|PASSPORT|VIETNAM|VIETNAMESE|NATIONALITY|DATE|BIRTH|SEX|FEMALE|MALE|HO|TEN|CHU|DEM)$/i.test(letters)) return false;
     const isUpper = letters === letters.toUpperCase();
     const isTitle = letters[0] === letters[0].toUpperCase() && letters.slice(1) === letters.slice(1).toLowerCase();
     return isUpper || isTitle;
@@ -77,11 +268,11 @@ function extractVisual(rawText) {
     const line = lines[i];
 
     // ─── SURNAME ───
-    if ((/Surname/i.test(line) || /^H[oọ]\s*\//i.test(line)) && !surname) {
-      const after = line.split(/(?:Surname|H[oọ])/i).pop().trim();
-      const tokens = removeVietnameseTones(after).split(/\s+/).filter(isNameWord);
+    if ((/S[uư]r?name/i.test(line) || /[Hh][oọ]\s*[\/:]/i.test(line)) && !surname) {
+      const after = line.split(/(?:S[uư]r?name|[Hh][oọ])/i).pop().trim();
+      const tokens = after.split(/\s+/).filter(isNameWord);
       if (tokens.length >= 1) {
-        surname = tokens.map(t => t.replace(/[^a-zA-Z]/g, '').toUpperCase()).join(' ');
+        surname = tokens.map(t => t.replace(/[^a-zA-ZÀ-ỹ]/g, '').toUpperCase()).join(' ');
       } else {
         surname = findUppercaseWords(lines, i + 1, 3);
       }
@@ -90,9 +281,9 @@ function extractVisual(rawText) {
     // ─── GIVEN NAME ───
     if ((/Given\s*name/i.test(line) || /Ch[uữ]\s*[dđ][eệ]m/i.test(line)) && !givenName) {
       const after = line.split(/(?:name|t[eê]n)/i).pop().trim();
-      const tokens = removeVietnameseTones(after).split(/\s+/).filter(isNameWord);
+      const tokens = after.split(/\s+/).filter(isNameWord);
       if (tokens.length >= 1) {
-         givenName = tokens.map(t => t.replace(/[^a-zA-Z]/g, '').toUpperCase()).join(' ');
+         givenName = tokens.map(t => t.replace(/[^a-zA-ZÀ-ỹ]/g, '').toUpperCase()).join(' ');
       } else {
          givenName = findUppercaseWords(lines, i + 1, 3);
       }
@@ -100,10 +291,19 @@ function extractVisual(rawText) {
 
     // ─── PASSPORT NUMBER ─── 1 chữ + 7-8 số
     if (!passportNo) {
+      // Tìm candidate: [A-Z] hoặc ký hiệu £/€ bị nhận nhầm từ chữ E, theo sau bởi 7-8 chữ số
+      // Dùng (?:^|[^\w]) thay vì \b vì £/€ là ký tự non-word
       const lineForPP = line.replace(/O/ig, '0').replace(/o/g, '0');
-      const m = lineForPP.match(/\b([A-Z]\d{7,8})\b/);
+      const m = lineForPP.match(/(?:^|[^\w])([A-Z£€]\d{7,8})(?=[^\w]|$)/);
       if (m && !/Surname|Given|Date|Sex|Nationality|Họ|Chữ/i.test(line)) {
-        passportNo = m[1];
+        let candidate = m[1];
+        // Chỉ chữa lành cục bộ trên chuỗi candidate nếu bắt đầu bằng £ hoặc €
+        if (candidate.startsWith('£') || candidate.startsWith('€')) {
+          candidate = 'E' + candidate.slice(1);
+        }
+        if (/^[A-Z]\d{7,8}$/.test(candidate)) {
+          passportNo = candidate;
+        }
       }
     }
 
@@ -117,9 +317,26 @@ function extractVisual(rawText) {
         else if (/\bF\b|\bNỮ\b|\bNU\b|FEMALE/i.test(nextL)) gender = 'F';
       }
     }
+
+    // ─── PERSONAL ID (CCCD / ĐDCN) ───
+    if (!personalId && /(?:ĐDCN|CMND|ID\s*No|Định danh|Nơi sinh|Place of birth)/i.test(line)) {
+      for (let k = i; k <= Math.min(i + 2, lines.length - 1); k++) {
+        const pm = lines[k].match(/(?:^|[^\d])(\d{12})(?=[^\d]|$)/);
+        if (pm) { personalId = pm[1]; break; }
+      }
+    }
   }
 
-  return { surname, givenName, passportNo, gender };
+  // Quét cứu cánh cho CCCD nếu chưa tìm thấy ở trên (bỏ qua dòng MRZ)
+  if (!personalId) {
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('<<')) continue;
+      const pm = lines[i].match(/(?:^|[^\d])(\d{12})(?=[^\d]|$)/);
+      if (pm) { personalId = pm[1]; break; }
+    }
+  }
+
+  return { surname, givenName, passportNo, gender, personalId };
 }
 
 /**
@@ -130,19 +347,20 @@ function findUppercaseWords(lines, startIdx, count) {
     const raw = lines[j];
     
     // Nếu vô tình lướt trúng các label của dòng khác thì dừng ngay!
-    if (/Qu[oố]c t[iị]ch|Nationality|Ngày sinh|Date of birth|Gi[oớ]i t[ií]nh|Sex|Ch[uữ] đ[eệ]m|Given name/i.test(raw)) {
+    if (/Qu[oố]c t[iị]ch|Nationality|Ngày sinh|Date of birth|Gi[oớ]i t[ií]nh|Sex|Ch[uữ] đ[eệ]m|Given name|Passport|Hộ chiếu/i.test(raw)) {
       break;
     }
 
-    const words = removeVietnameseTones(raw).split(/\s+/)
+    const words = raw.split(/\s+/)
       .filter(w => {
-        const letters = w.replace(/[^a-zA-Z]/g, '');
+        const letters = removeVietnameseTones(w).replace(/[^a-zA-Z]/g, '');
         if (letters.length < 2) return false;
+        if (/^(SURNAME|SUNAME|GIVEN|NAME|NAMES|PASSPORT|VIETNAM|VIETNAMESE|NATIONALITY|DATE|BIRTH|SEX|FEMALE|MALE|HO|TEN|CHU|DEM)$/i.test(letters)) return false;
         const isUpper = letters === letters.toUpperCase();
         const isTitle = letters[0] === letters[0].toUpperCase() && letters.slice(1) === letters.slice(1).toLowerCase();
         return isUpper || isTitle;
       })
-      .map(w => w.replace(/[^a-zA-Z]/g, '').toUpperCase());
+      .map(w => w.replace(/[^a-zA-ZÀ-ỹ]/g, '').toUpperCase());
     if (words.length > 0) return words.join(' ');
   }
   return '';
@@ -192,8 +410,9 @@ function extractMrz(rawText) {
   let candidates = allLines.map(line => {
     let s = line.replace(/\s+/g, '');
     // Thay các ký tự ngoặc, dấu ngoằn ngoèo thường bị nhìn nhầm từ `<` thành chính dấu `<`
-    s = s.replace(/[(){}\[\]«»£€¥_\-~|!@#$%^&*+=]/g, '<');
-    s = s.replace(/[^A-Z0-9<]/g, '');
+    // Giữ lại £ và € để phục vụ nhận diện hộ chiếu gắn chip mới (E-Passport)
+    s = s.replace(/[(){}\[\]«»¥_\-~|!@#$%^&*+=]/g, '<');
+    s = s.replace(/[^A-Z0-9<£€]/g, '');
     return s;
   });
 
@@ -203,18 +422,19 @@ function extractMrz(rawText) {
   let rawLine1 = '';
   let rawLine2 = '';
 
-  // Về lại chuỗi neo chuẩn xác ICAO (9 chữ số) để KHÔNG BAO GIỜ bị ăn lẹm Index của MRZ
-  const line2Regex = /[A-Z0-9<]{9}[0-9OIZSBGCLE][A-Z<]{3}[0-9OIZSBGCLE]{6}[0-9OIZSBGCLE][MF<][0-9OIZSBGCLE]{6}/;
+  // Về lại chuỗi neo chuẩn xác ICAO (9 chữ số) để KHÔNG BAO GIỜ bị ăn lẹm Index của MRZ (chấp nhận cả £/€ ở đầu)
+  const line2Regex = /[A-Z0-9<£€]{9}[0-9OIZSBGCLE][A-Z<]{3}[0-9OIZSBGCLE]{6}[0-9OIZSBGCLE][MFENH<][0-9OIZSBGCLE]{6}/;
   const match2 = megaString.match(line2Regex);
 
   if (match2) {
     rawLine2 = megaString.substring(match2.index).padEnd(44, '<').substring(0, 44);
     
     const textBefore = megaString.substring(0, match2.index);
-    let pIndex = textBefore.lastIndexOf('P<');
-
+    const tailLen = Math.min(textBefore.length, 55);
+    const tail = textBefore.substring(textBefore.length - tailLen);
+    const pIndex = tail.search(/P[<0-9A-Z]{0,2}<|P[<0-9A-Z]{0,2}VNM/);
     if (pIndex !== -1) {
-      rawLine1 = textBefore.substring(pIndex).padEnd(44, '<').substring(0, 44);
+      rawLine1 = tail.substring(pIndex).padEnd(44, '<').substring(0, 44);
     } else {
       rawLine1 = textBefore.substring(Math.max(0, textBefore.length - 44)).padEnd(44, '<');
     }
@@ -240,27 +460,54 @@ function extractMrz(rawText) {
   };
 
   let line1 = fixLine1(rawLine1.padEnd(44, '<').substring(0, 44));
-  const nameSection = line1.substring(5);
+  let nameSection = line1.substring(5);
+
+  // 1. Chuẩn hóa các ký tự ngoặc, dấu thường bị nhìn nhầm thành <
+  nameSection = nameSection.replace(/[(){}\[\]«»¥_\-~|!@#$%^&*+=]/g, '<');
+
+  // 2. Chữa số đứng giữa 2 từ (như THAI0SON -> THAI<SON)
+  nameSection = nameSection.replace(/([A-Z]{2,})[0-9]+([A-Z]{2,})/g, '$1<$2');
+
+  // 3. Số 0 đứng cạnh dấu < trong MRZ luôn là dấu < (do OCR-B font góc nhọn < bị nhầm thành 0)
+  nameSection = nameSection.replace(/0+(?=<)/g, m => '<'.repeat(m.length));
+  nameSection = nameSection.replace(/(?<=<)0+/g, m => '<'.repeat(m.length));
+
+  // 4. Xử lý họ ngắn Việt Nam trước << bị Tesseract đọc < thành O, C, 0
+  nameSection = nameSection.replace(/^(VO|DO|HO|NGO|LE|VU|HA|TO|LA)[OC0]+(?=<)/i, (match, p1) => p1 + '<');
+  nameSection = nameSection.replace(/([A-Z]{2,})[0-9]+(?=<)/g, '$1<');
+
   const nameParts = nameSection.split('<<').filter(Boolean);
   let surname = '';
   let givenName = '';
 
   if (nameParts.length > 1) {
     surname = nameParts[0].replace(/</g, ' ').trim();
-    givenName = nameParts.slice(1).map(p => p.replace(/</g, ' ').trim()).filter(Boolean).join(' ');
+    givenName = nameParts.slice(1)
+      .map(p => p.replace(/</g, ' ').trim())
+      .filter(p => p.length >= 2 || (p.length === 1 && !'SKLC0O<'.includes(p)))
+      .join(' ');
     givenName = givenName.replace(/NSK/ig, 'N K').replace(/\s+/g, ' ').trim();
   } else if (nameParts.length === 1) {
     const singleParts = nameParts[0].split('<').filter(Boolean);
     if (singleParts.length > 1) {
       surname = singleParts[0].trim();
-      givenName = singleParts.slice(1).join(' ').trim();
+      givenName = singleParts.slice(1)
+        .filter(p => p.length >= 2 || (p.length === 1 && !'SKLC0O<'.includes(p)))
+        .join(' ').trim();
     } else {
       surname = singleParts[0] || '';
     }
   }
 
   surname = forceLetters(surname);
+  // Bỏ chữ O hoặc 0 thừa do Tesseract nhìn nhầm dấu < thành O ở đuôi các họ Việt Nam (như VOO, DOO, HOO, NGOO, LEO)
+  surname = surname.replace(/^(VO|DO|HO|NGO|LE|VU|HA|TO|LA)O+$/, '$1');
+  surname = surname.replace(/0+$/, '').replace(/<+$/, '').trim();
+
   givenName = forceLetters(givenName);
+  // Dọn dẹp Given Name: loại bỏ chữ S bị dính vào do đọc nhầm dấu < thành S (như THAIS SON -> THAI SON)
+  givenName = givenName.replace(/\b([A-Z]+)S\s+SON\b/g, '$1 SON');
+  givenName = givenName.replace(/<+/g, ' ').replace(/\s+/g, ' ').trim();
 
   console.log('[MRZ] Line1 parsed:', { rawLine1, surname, givenName });
 
@@ -297,7 +544,9 @@ function tryFixedPosition(rawLine2) {
   
   const validDob = tryHealNumericMrz(dobRawOriginal, dobCheckDigit);
   const validExpiry = tryHealNumericMrz(expiryRawOriginal, expiryCheckDigit);
-  const gender = line2.substring(20, 21);
+  let gender = line2.substring(20, 21);
+  if (gender === 'E') gender = 'F';
+  if (gender === 'N' || gender === 'H') gender = 'M';
 
   if (!'MF<'.includes(gender)) return null;
 
@@ -320,7 +569,10 @@ function tryAnchorBased(rawLine2) {
   if (!genderMatch) return null;
 
   const genderIdx = rawLine2.indexOf(genderMatch[0]) + 1;
-  const gender = genderMatch[2];
+  let gender = genderMatch[2];
+  if (gender === 'E') gender = 'F';
+  if (gender === 'N' || gender === 'H') gender = 'M';
+  if (gender === '<') gender = '';
 
   const beforeGender = rawLine2.substring(0, genderIdx);
   // Lọc chỉ giữ lại số và các chữ cái thường bị nhìn nhầm thành số
@@ -453,7 +705,9 @@ function tryHealDocId(docIdRaw, checkChar, nationality) {
     'I': ['1', 'L'], '1': ['I', 'L'], 'L': ['1', 'I'],
     'G': ['6'], '6': ['G'],
     'T': ['7'], '7': ['T'],
-    '<': ['C'] // Tesseract hay nhầm C thành <
+    '<': ['C', 'E'], // Tesseract hay nhầm C hoặc E thành <
+    '£': ['E'], // Tesseract hay nhầm E (hộ chiếu chip mới) thành £
+    '€': ['E']  // Tesseract hay nhầm E thành €
   };
 
   // Quét từng ký tự, nếu rơi vào diện dễ nhầm lẫn -> thử đổi và check lại Toán học
@@ -474,10 +728,33 @@ function tryHealDocId(docIdRaw, checkChar, nationality) {
     }
   }
 
-  // Nếu sai nhiều ký tự (vd: <98458T0 -> sai cả < và T)
+  // Nếu sai nhiều ký tự (vd: <98458T0 -> sai cả < và T, hoặc < bị nhầm từ C hoặc E)
   // Quét kết hợp (vét cạn 2 vòng) cho các chuỗi có chứa < ở đầu
   if (chars[0] === '<') {
-    chars[0] = 'C';
+    for (const firstChar of ['C', 'E']) {
+      const workingChars = [...chars];
+      workingChars[0] = firstChar;
+      for (let i = 1; i < workingChars.length; i++) {
+        const altArr = commonConfusions[workingChars[i]];
+        if (altArr) {
+          for (const alt of altArr) {
+            const tChars = [...workingChars];
+            tChars[i] = alt;
+            const tStr = tChars.join('');
+            if (verifyIcaoCheckDigit(tStr, checkChar) && isValidDocIdFormat(tStr, nationality)) {
+              return tStr;
+            }
+          }
+        }
+      }
+      const tStr = workingChars.join('');
+      if (verifyIcaoCheckDigit(tStr, checkChar) && isValidDocIdFormat(tStr, nationality)) return tStr;
+    }
+  }
+
+  // Quét kết hợp cho hộ chiếu chip mới bắt đầu bằng £ hoặc €
+  if (chars[0] === '£' || chars[0] === '€') {
+    chars[0] = 'E';
     for (let i = 1; i < chars.length; i++) {
       const altArr = commonConfusions[chars[i]];
       if (altArr) {
@@ -491,7 +768,6 @@ function tryHealDocId(docIdRaw, checkChar, nationality) {
         }
       }
     }
-    // Nếu chỉ đổi < thành C mà đúng luôn thì nhận
     const tStr = chars.join('');
     if (verifyIcaoCheckDigit(tStr, checkChar) && isValidDocIdFormat(tStr, nationality)) return tStr;
   }
@@ -566,13 +842,35 @@ function mergeNameStr(vis, mrz, isTruncated = false) {
 
 function smartMerge(visual, mrz, allDates) {
   const isNameTruncated = (mrz.surname + mrz.givenName).length >= 37;
-  const surname = mergeNameStr(visual.surname, mrz.surname);
-  const givenName = mergeNameStr(visual.givenName, mrz.givenName, isNameTruncated);
+  
+  // MRZ là chuẩn ICAO chống nhiễu watermark red seal (loại bỏ hoàn toàn rác "FO VÕ", "EE VÕ")
+  let cleanVisSurname = (visual.surname || '').replace(/^(FO|EE|II|FE|FF|FL|TT|XX|RI|RO)\s+/i, '').trim();
+  let surname = mrz.surname;
+  if (!surname || surname.length < 2) {
+    surname = cleanVisSurname;
+  }
+
+  // Với Given Name: Ưu tiên MRZ, chỉ dùng Visual nếu Visual rõ ràng và đầy đủ hơn (và không phải rác 1-2 chữ viết tắt như SE, GT)
+  let givenName = mrz.givenName;
+  if (!givenName || givenName.length < 2) {
+    givenName = visual.givenName;
+  } else if (visual.givenName && visual.givenName.split(/\s+/).length > givenName.split(/\s+/).length && !/^(SE|GT|MR|MS|MRS)$/i.test(visual.givenName)) {
+    givenName = mergeNameStr(visual.givenName, mrz.givenName, isNameTruncated);
+  }
   
   const docId = mrz.docId || visual.passportNo || '';
-  const gender = mrz.gender || visual.gender || '';
+  let gender = mrz.gender || visual.gender || '';
+  if (gender === 'E') gender = 'F';
+  if (gender === 'N' || gender === 'H') gender = 'M';
+  if (gender === '<') gender = '';
+
   const nationality = mrz.nationality || '';
-  const personalId = mrz.personalId || '';
+  
+  // CCCD: Ưu tiên visual text nếu có 12 số vì visual in rõ nét, không bị hoa văn nền
+  let personalId = visual.personalId || mrz.personalId || '';
+  if (visual.personalId && visual.personalId.length === 12) {
+    personalId = visual.personalId;
+  }
 
   const mrzDob = formatMrzDate(mrz.dobRaw, false);
   const mrzExpiry = formatMrzDate(mrz.expiryRaw, true);
@@ -636,18 +934,23 @@ function fixLine1(raw) {
   let country = '';
   let namesStartIdx = 0;
   
-  const vnmIndex = s.indexOf('VNM');
-  if (vnmIndex !== -1 && vnmIndex < 5) {
-     country = 'VNM';
-     namesStartIdx = vnmIndex + 3;
+  if (/^VN[M0OH<N]/i.test(s)) {
+    country = 'VNM';
+    namesStartIdx = 3;
   } else {
-    // Tìm đúng 3 ký tự (chấp nhận cả số vì Tesseract thỉnh thoảng nhìn chữ thành số VN0, V0M)
-    for (let i = 0; i < s.length; i++) {
-      if (/[A-Z0-9]/.test(s[i])) {
-        country += s[i];
-        if (country.length === 3) {
-          namesStartIdx = i + 1;
-          break;
+    const vnmIndex = s.indexOf('VNM');
+    if (vnmIndex !== -1 && vnmIndex < 5) {
+       country = 'VNM';
+       namesStartIdx = vnmIndex + 3;
+    } else {
+      // Tìm đúng 3 ký tự (chấp nhận cả số vì Tesseract thỉnh thoảng nhìn chữ thành số VN0, V0M)
+      for (let i = 0; i < s.length; i++) {
+        if (/[A-Z0-9]/.test(s[i])) {
+          country += s[i];
+          if (country.length === 3) {
+            namesStartIdx = i + 1;
+            break;
+          }
         }
       }
     }

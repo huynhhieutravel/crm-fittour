@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Email Preview] Báo Cáo Quản Trị Meta Ads Tháng 8/2026 — FIT TOUR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        .email-table th, .email-table td { padding: 10px 12px; }
+        @media print {
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased p-4 md:p-8 min-h-screen">
+
+    <!-- TOP TOOLBAR (QUICK ACTIONS) -->
+    <div class="max-w-3xl mx-auto mb-6 bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-4 no-print">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">✉️ EMAIL PREVIEW</span>
+                <span class="text-xs text-slate-500 font-medium">Sẵn sàng để gửi Ban Giám Đốc</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Đã chuẩn hóa 100% dữ liệu, P&L độc lập & tính mùa vụ du lịch</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="copySubject()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 border border-slate-300/70">
+                <span>📋 Copy Tiêu Đề</span>
+            </button>
+            <button onclick="copyPlainText()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                <span>📑 Copy Toàn Bộ Text</span>
+            </button>
+            <a href="index.html" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg transition-all border border-indigo-200">
+                📊 Mở Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN EMAIL CONTAINER (680px - 720px STANDARD) -->
+    <div id="email-content" class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+        
+        <!-- EMAIL HEADER METADATA -->
+        <div class="bg-slate-50 p-6 border-b border-slate-200 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="space-y-1">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Tiêu đề Email:</span>
+                    <h1 id="email-subject" class="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+                        [Báo Cáo Quản Trị] Hiệu Suất Meta Ads Tháng 8/2026: Đạt KPI Lead, Phân Tích Bước Ngoặt W2–W4 & Kế Hoạch T9
+                    </h1>
+                </div>
+            </div>
+            <div class="text-xs text-slate-500 flex flex-wrap items-center gap-x-6 gap-y-1 pt-1 border-t border-slate-200/60">
+                <div><strong>Người gửi:</strong> Bộ phận Marketing — FIT TOUR</div>
+                <div><strong>Người nhận:</strong> Ban Giám Đốc / Anh/Chị [Tên Sếp]</div>
+                <div><strong>Ngày lập:</strong> 03/09/2026</div>
+            </div>
+        </div>
+
+        <!-- EMAIL BODY CONTENT -->
+        <div class="p-6 md:p-8 space-y-7 text-sm text-slate-700 leading-relaxed">
+            
+            <p><strong>Kính gửi:</strong> Ban Giám Đốc / Anh/Chị [Tên Sếp],</p>
+
+            <p>
+                Bộ phận Marketing xin gửi báo cáo tổng kết và đánh giá chuyên sâu hiệu suất Meta Ads Tháng 8/2026 (dữ liệu đã đối soát 100%, chuẩn hóa theo cơ chế ngân sách độc lập và tính mùa vụ của từng Đơn vị Kinh doanh).
+            </p>
+
+            <!-- 1. EXECUTIVE SUMMARY -->
+            <div class="space-y-3 pt-2">
+                <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-1.5 flex items-center gap-2">
+                    <span>1. TÓM TẮT ĐIỀU HÀNH (EXECUTIVE SUMMARY)</span>
+                </h2>
+                <ul class="list-disc pl-5 space-y-2 text-slate-700">
+                    <li>
+                        <strong>Hoàn thành mục tiêu đầu ra:</strong> Toàn công ty thu về <strong>450 Leads</strong> (đạt đúng <strong>100.0% KPI</strong> kế hoạch 450 Lead).
+                    </li>
+                    <li>
+                        <strong>Ngân sách & Tình hình giải ngân:</strong> Tổng thực chi <strong>102,61 triệu VNĐ</strong>, tương đương <strong>78.9%</strong> hạn mức 130M của 4 BU có KPI ngân sách (BU1, BU2, BU4, BU5; BU3 đã ngừng chạy); <strong>phần ngân sách chưa giải ngân là 27,39 triệu VNĐ, chủ yếu tập trung ở BU2</strong>.
+                    </li>
+                    <li>
+                        <strong>Hiệu quả phễu toàn diện:</strong> Giá Lead bình quân (CPL) đạt <strong>228.026 đ/Lead</strong>, giá mỗi tin nhắn đạt <strong>63.224 đ/Msg</strong>, tỷ lệ chuyển đổi từ tin nhắn sang Lead đạt <strong>27.7%</strong> (tổng thu 1.623 tin nhắn).
+                    </li>
+                    <li>
+                        <strong>Chu kỳ thời gian:</strong> Tháng 8 gồm <strong>4 Tuần Hoàn Chỉnh (01–28/08) + Ngày 31/08 lẻ cuối tháng</strong>. Để đảm bảo tính so sánh tương đồng và không làm méo mó số liệu xu hướng, ngày 31/08 lẻ được tách riêng khỏi chu kỳ tuần tròn.
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 2. BU SUMMARY TABLE -->
+            <div class="space-y-3 pt-2">
+                <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-1.5 flex items-center gap-2">
+                    <span>2. BẢNG TỔNG HỢP THEO TỪNG ĐƠN VỊ KINH DOANH ĐỘC LẬP (BU)</span>
+                </h2>
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="email-table w-full text-xs text-left border-collapse">
+                        <thead class="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
+                            <tr>
+                                <th class="border-r border-slate-200">Chỉ Số Phễu Marketing</th>
+                                <th class="text-center border-r border-slate-200">BU1 (TQ)</th>
+                                <th class="text-center border-r border-slate-200">BU2 (Âu/Mỹ)</th>
+                                <th class="text-center border-r border-slate-200">BU4 (Ngách)</th>
+                                <th class="text-center border-r border-slate-200">BU5 (T.Đông)</th>
+                                <th class="text-right font-bold bg-slate-100/70">TỔNG CÔNG TY</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 text-slate-600">
+                            <tr>
+                                <td class="font-medium text-slate-800 border-r border-slate-200">Ngân sách Được Cấp</td>
+                                <td class="text-center border-r border-slate-200">40,00M</td>
+                                <td class="text-center border-r border-slate-200">20,00M</td>
+                                <td class="text-center border-r border-slate-200">30,00M</td>
+                                <td class="text-center border-r border-slate-200">40,00M</td>
+                                <td class="text-right font-bold text-slate-900 bg-slate-50/50">130,00M</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-800 border-r border-slate-200">Chi tiêu Thực tế</td>
+                                <td class="text-center border-r border-slate-200">30,26M</td>
+                                <td class="text-center border-r border-slate-200">8,96M</td>
+                                <td class="text-center border-r border-slate-200">29,00M</td>
+                                <td class="text-center border-r border-slate-200">34,40M</td>
+                                <td class="text-right font-bold text-slate-900 bg-slate-50/50">102,61M</td>
+                            </tr>
+                            <tr class="bg-slate-50/40">
+                                <td class="font-medium text-slate-800 border-r border-slate-200">↳ % Tiến độ Giải ngân</td>
+                                <td class="text-center border-r border-slate-200 text-blue-700 font-semibold">75.6%</td>
+                                <td class="text-center border-r border-slate-200 text-amber-700 font-bold bg-amber-50/50">44.8% (Chậm)</td>
+                                <td class="text-center border-r border-slate-200 text-emerald-700 font-semibold">96.7%</td>
+                                <td class="text-center border-r border-slate-200 text-purple-700 font-semibold">86.0%</td>
+                                <td class="text-right font-bold text-slate-900 bg-slate-100/50">78.9%</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-800 border-r border-slate-200">Mục tiêu Lead (KPI)</td>
+                                <td class="text-center border-r border-slate-200">150 Lead</td>
+                                <td class="text-center border-r border-slate-200">80 Lead</td>
+                                <td class="text-center border-r border-slate-200">100 Lead</td>
+                                <td class="text-center border-r border-slate-200">120 Lead</td>
+                                <td class="text-right font-bold text-slate-900 bg-slate-50/50">450 Lead</td>
+                            </tr>
+                            <tr class="bg-blue-50/30">
+                                <td class="font-bold text-slate-900 border-r border-slate-200">Lead Thực Tế Thu Về</td>
+                                <td class="text-center border-r border-slate-200 font-bold text-blue-700">150 Lead</td>
+                                <td class="text-center border-r border-slate-200 font-bold text-rose-600 bg-rose-50/60">26 Lead</td>
+                                <td class="text-center border-r border-slate-200 font-bold text-emerald-700">148 Lead</td>
+                                <td class="text-center border-r border-slate-200 font-bold text-purple-700">126 Lead</td>
+                                <td class="text-right font-black text-blue-900 bg-blue-100/50">450 Lead</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-800 border-r border-slate-200">↳ % Hoàn thành KPI</td>
+                                <td class="text-center border-r border-slate-200 font-bold text-emerald-600">100.0%</td>
+                                <td class="text-center border-r border-slate-200 font-bold text-rose-600">32.5%</td>
+                                <td class="text-center border-r border-slate-200 font-bold text-emerald-600">148.0%</td>
+                                <td class="text-center border-r border-slate-200 font-bold text-emerald-600">105.0%</td>
+                                <td class="text-right font-bold text-emerald-700 bg-slate-50/50">100.0%</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-800 border-r border-slate-200">Tin nhắn (Inbox)</td>
+                                <td class="text-center border-r border-slate-200">491 Msg</td>
+                                <td class="text-center border-r border-slate-200">98 Msg</td>
+                                <td class="text-center border-r border-slate-200">599 Msg</td>
+                                <td class="text-center border-r border-slate-200">435 Msg</td>
+                                <td class="text-right font-bold text-slate-900 bg-slate-50/50">1.623 Msg</td>
+                            </tr>
+                            <tr class="bg-amber-50/40">
+                                <td class="font-bold text-slate-900 border-r border-slate-200">Giá Mỗi Lead (CPL)</td>
+                                <td class="text-center border-r border-slate-200 font-bold text-blue-700">201.707 đ</td>
+                                <td class="text-center border-r border-slate-200 font-bold text-rose-700">344.518 đ</td>
+                                <td class="text-center border-r border-slate-200 font-bold text-emerald-700">195.959 đ</td>
+                                <td class="text-center border-r border-slate-200 font-bold text-purple-700">272.988 đ</td>
+                                <td class="text-right font-black text-amber-900 bg-amber-100/60">228.026 đ</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-800 border-r border-slate-200">Giá Mỗi Inbox</td>
+                                <td class="text-center border-r border-slate-200">61.621 đ</td>
+                                <td class="text-center border-r border-slate-200">91.403 đ</td>
+                                <td class="text-center border-r border-slate-200">48.417 đ</td>
+                                <td class="text-center border-r border-slate-200">79.072 đ</td>
+                                <td class="text-right font-bold text-slate-900 bg-slate-50/50">63.224 đ</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-slate-800 border-r border-slate-200">Tỷ Lệ Msg ➔ Lead</td>
+                                <td class="text-center border-r border-slate-200">30.5%</td>
+                                <td class="text-center border-r border-slate-200">26.5%</td>
+                                <td class="text-center border-r border-slate-200">24.7%</td>
+                                <td class="text-center border-r border-slate-200">29.0%</td>
+                                <td class="text-right font-bold text-slate-900 bg-slate-50/50">27.7%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. TOP BEST & WORST ADSETS (MONTH-WIDE) -->
+            <div class="space-y-4 pt-2">
+                <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-1.5 flex items-center gap-2">
+                    <span>3. BẢNG XẾP HẠNG ADSETS LŨY KẾ CẢ THÁNG (CÔNG BẰNG & KHÁCH QUAN)</span>
+                </h2>
+                <p class="text-xs text-slate-500 italic">
+                    * Được tính gộp trên phạm vi toàn bộ các tuần trong Tháng 8 để đánh giá đúng năng lực bền vững của chiến dịch thay vì nhìn vào một tuần may rủi.
+                </p>
+
+                <!-- Best Adsets -->
+                <div class="bg-emerald-50/40 p-4 rounded-xl border border-emerald-200/70 space-y-2">
+                    <h3 class="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <span>🏆 TOP ADSETS XUẤT SẮC NHẤT CẢ THÁNG (CORE WINNERS)</span>
+                    </h3>
+                    <ol class="list-decimal pl-5 text-xs text-slate-700 space-y-1.5">
+                        <li><strong>[BU4] Ladakh LEAD-MSG:</strong> Chi <strong>13.08M</strong> (chạy cả tháng), mang về <strong>73 Leads</strong>, CPL xuất sắc <strong>179.180 đ</strong> (Cỗ máy lead số 1 toàn công ty).</li>
+                        <li><strong>[BU1] Lệ Giang & Sa Khê Cổ Trấn:</strong> Chi <strong>3.71M</strong> (chạy cả tháng), mang về <strong>23 Leads</strong>, CPL <strong>161.371 đ</strong>.</li>
+                        <li><strong>[BU1] Trung Quốc COLD 500k:</strong> Chi <strong>3.08M</strong> (chạy cả tháng), mang về <strong>21 Leads</strong>, CPL <strong>146.645 đ</strong>.</li>
+                        <li><strong>[BU4] Bhutan LEAD-MSG:</strong> Chi <strong>7.07M</strong> (chạy 3 tuần), mang về <strong>37 Leads</strong>, CPL <strong>191.204 đ</strong> (đã hoàn thành tốt sứ mệnh trước khi hết mùa).</li>
+                        <li><strong>[BU5] Bắc Mông Cổ COLD:</strong> Chi <strong>1.15M</strong> (chạy 2 tuần đầu), mang về <strong>12 Leads</strong>, CPL kỷ lục <strong>95.842 đ</strong>.</li>
+                    </ol>
+                </div>
+
+                <!-- Worst Adsets -->
+                <div class="bg-rose-50/40 p-4 rounded-xl border border-rose-200/70 space-y-2">
+                    <h3 class="text-xs font-bold text-rose-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <span>🛑 TOP ADSETS KÉM HIỆU QUẢ NHẤT CẢ THÁNG (CẦN TỐI ƯU / THAY MỚI)</span>
+                    </h3>
+                    <ol class="list-decimal pl-5 text-xs text-slate-700 space-y-1.5">
+                        <li><strong>[BU2] Nhật Bản COLD 200k:</strong> Chi tới <strong>4.46M</strong> (chạy liên tục 4 tuần) nhưng chỉ thu <strong>9 Leads</strong> ➔ CPL chạm ngưỡng <strong>495.841 đ/Lead</strong>.</li>
+                        <li><strong>[BU5] MA RỐC COLD 350k:</strong> Chi <strong>7.37M</strong> (chạy 4 tuần) chỉ thu <strong>15 Leads</strong> ➔ CPL <strong>491.395 đ/Lead</strong>.</li>
+                        <li><strong>[BU5] AI CẬP COLD 200k:</strong> Chi <strong>8.29M</strong> (chạy cả tháng) chỉ thu <strong>18 Leads</strong> ➔ CPL <strong>460.305 đ/Lead</strong>.</li>
+                        <li><strong>[BU2] TỔNG HỢP - HÌNH ẢNH 400k:</strong> Chi <strong>2.73M</strong> chỉ thu <strong>7 Leads</strong> ➔ CPL <strong>389.488 đ/Lead</strong>.</li>
+                    </ol>
+                    <p class="text-[11px] text-rose-800 font-medium pt-1">
+                        * Riêng 2 nhóm Ai Cập & Ma Rốc đã tiêu tốn tới <strong>15,66 triệu VNĐ</strong> của BU5 với CPL đắt gấp 2,4 lần tuyến Pakistan.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 4. DEEP FORENSIC W2-W3-W4 -->
+            <div class="space-y-3 pt-2">
+                <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-1.5 flex items-center gap-2">
+                    <span>4. GIẢI PHẪU HAI BƯỚC NGOẶT TRỌNG YẾU (DEEP-DIVE W2–W3–W4)</span>
+                </h2>
+                
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+                    <h3 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                        <span>📉 Bước Ngoặt 1: W2 ➔ W3 (Sụt giảm sản lượng Lead toàn hệ thống)</span>
+                    </h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Chi tiêu toàn công ty tăng nhẹ +4.5% nhưng lượng Lead sụt giảm <strong>-21.2%</strong> (118 ➔ 93 Leads), đẩy CPL tăng +32.7% (203k ➔ 269k).<br>
+                        <strong>Phân tích nguồn gốc:</strong> <em>BU4 là nguồn đóng góp lớn nhất vào mức giảm Lead W2➔W3</em>, do đồng thời giảm ngân sách (-26.2%) và suy giảm CPL (mất 28 Leads); trong khi <em>BU5 cũng giảm 12 Leads</em> do thay đổi cơ cấu phân bổ. <em>BU1 đã bù một phần</em> bằng việc tăng thêm 13 Leads.
+                    </p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+                    <h3 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                        <span>🚨 Bước Ngoặt 2: W2 ➔ W4 (Sự suy giảm mạnh ở đầu phễu)</span>
+                    </h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Cùng mức chi tiêu tương đương <strong>~23.5 triệu VNĐ</strong>, nhưng Tuần 4 bị <strong>hụt mất 27 Leads (-22.9%)</strong> so với Tuần 2.<br>
+                        <strong>Bản chất thực tế:</strong> Mặc dù tỷ lệ Msg→Lead tăng từ 29.6% lên 36.0%, lợi thế này không bù được sự suy giảm mạnh ở đầu phễu: <strong>Inbox giảm 36.4%</strong> và <strong>Cost/Msg tăng 54.0%</strong> (từ 60.2k lên 92.8k đ/Msg), khiến CPL cuối cùng vẫn tăng 26.9%. Nguyên nhân khả dĩ gồm suy giảm hiệu quả creative, thay đổi delivery hoặc mức độ bão hòa tệp; cần kiểm chứng thêm bằng Frequency, Reach, CTR, CPM và tuổi creative.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 5. ACTION MATRIX FOR T9 -->
+            <div class="space-y-3 pt-2">
+                <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-1.5 flex items-center gap-2">
+                    <span>5. KẾ HOẠCH HÀNH ĐỘNG THÁNG 9 CHO TỪNG BU (TÔN TRỌNG ĐẶC THÙ MÙA VỤ & P&L ĐỘC LẬP)</span>
+                </h2>
+                <p class="text-xs text-slate-600">
+                    Vì mỗi BU tự chủ về ngân sách và tính chất tour du lịch phụ thuộc chặt chẽ vào mùa vụ cũng như lịch khởi hành cố định, Marketing đề xuất kế hoạch cụ thể cho từng BU:
+                </p>
+
+                <div class="space-y-2.5">
+                    <!-- BU4 -->
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
+                        <strong class="text-slate-900 font-bold text-[13px]">🏝️ BU4 (Tuyến Ngách): Cấp Bách Mở Tuyến Mới & Chốt Suất Cuối Ladakh</strong>
+                        <p class="text-slate-500">
+                            <em>Đặc thù sản phẩm:</em> <strong>Bhutan đã hết mùa chạy</strong>, và <strong>Ladakh cũng chỉ còn vài lịch khởi hành cố định cuối mùa</strong> (chuẩn bị đóng đèo mùa đông). BU4 không thể tiếp tục phụ thuộc vào 2 tuyến này trong Q4.
+                        </p>
+                        <p class="text-slate-700">
+                            <strong>Hành động T9:</strong> (1) Chạy chiến dịch Last-Call dồn ngân sách chốt sạch các chỗ trống còn lại cho các ngày khởi hành chót của Ladakh; (2) Marketing phối hợp với Sản Phẩm khẩn trương <strong>R&D & test mở ngay các tuyến ngách mới mùa Thu - Đông</strong> (như <em>Nepal, Trung Á - Con Đường Tơ Lụa, Kashmir, Nam Á...</em>) để gối đầu doanh thu.
+                        </p>
+                    </div>
+
+                    <!-- BU5 -->
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
+                        <strong class="text-slate-900 font-bold text-[13px]">🕌 BU5 (Trung Đông & Châu Phi): Tái Phân Bổ Ngân Sách Nội Bộ BU5</strong>
+                        <p class="text-slate-700">
+                            <strong>Hành động T9:</strong> Không chuyển tiền sang BU khác. <strong>Tạm dừng scale / giảm phân bổ các adset Ai Cập & Ma Rốc có CPL >450k</strong>; ưu tiên tái phân bổ ngân sách trong BU5 sang <strong>Pakistan</strong> và các nhóm đã chứng minh hiệu quả tốt hơn (tuyến Pakistan mang về 60 Leads với CPL 205k — hiện mùa thu thung lũng Hunza đang vào thời điểm đẹp nhất năm, nhu cầu khách rất cao).
+                        </p>
+                    </div>
+
+                    <!-- BU2 -->
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
+                        <strong class="text-slate-900 font-bold text-[13px]">🌍 BU2 (Âu, Mỹ, Úc, Nhật): Đặt Ngưỡng Thử Nghiệm CPL & Khơi Thông Giải Ngân 20M</strong>
+                        <p class="text-slate-700">
+                            <strong>Hành động T9:</strong> Giữ nguyên hạn mức 20M của BU2. <strong>Đặt ngưỡng thử nghiệm CPL mục tiêu <250k</strong> qua việc đổi mới định dạng nội dung (sản xuất video trải nghiệm thực tế, cẩm nang visa chuẩn VIP, chùm tour Mùa Thu Lá Đỏ Nhật Bản). Nếu creative/offer mới không đưa được CPL về vùng mục tiêu sau một chu kỳ đủ dữ liệu, đánh giá lại khả năng scale của BU2.
+                        </p>
+                    </div>
+
+                    <!-- BU1 -->
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
+                        <strong class="text-slate-900 font-bold text-[13px]">🇨🇳 BU1 (Trung Quốc): Tách Nhóm "Lịch Khởi Hành" & Giữ Vững Tốc Độ</strong>
+                        <p class="text-slate-700">
+                            <strong>Hành động T9:</strong> Tiếp tục đẩy mạnh các tuyến cội rễ (Bắc Kinh, Cửu Trại Câu, Nam Tân Cương). Tách nhỏ bài quảng cáo catalogue "Lịch Khởi Hành" thành các adset chuyên biệt theo từng tuyến riêng để tránh phân phối vào traffic click giá rẻ nhưng chuyển đổi loãng.
+                        </p>
+                    </div>
+
+                    <!-- Toàn Công Ty -->
+                    <div class="p-3.5 rounded-xl bg-indigo-50/50 border border-indigo-200/80 text-xs space-y-1">
+                        <strong class="text-indigo-950 font-bold text-[13px]">🎯 Toàn Công Ty: Đo Lường Đến Tầng Doanh Thu / Booking Trong CRM</strong>
+                        <p class="text-indigo-900">
+                            Vì CPL không đồng nhất với P&L (tour giá trị cao có thể chấp nhận CPL cao hơn nếu tỷ lệ chốt tốt), Marketing đề xuất liên kết chặt chẽ dữ liệu Meta Ads với tỷ lệ chốt cọc (Booking) và Doanh thu thực tế trên CRM để đo lường ROI thực chất của từng BU.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD LINK -->
+            <div class="pt-2 border-t border-slate-200 text-xs space-y-2">
+                <p>
+                    🔗 <strong>Báo cáo chi tiết & dashboard dữ liệu trực quan:</strong><br>
+                    Anh/Chị có thể truy cập dashboard trực quan của công ty tại: 
+                    <a href="https://erp.fittour.vn/t8-report/index.html" class="text-blue-600 font-semibold underline" target="_blank">https://erp.fittour.vn/t8-report/index.html</a>
+                </p>
+                <p>Kính trình Ban Giám Đốc xem xét và cho ý kiến chỉ đạo!</p>
+            </div>
+
+            <!-- SIGNATURE -->
+            <div class="pt-4 border-t border-slate-200 text-xs text-slate-500">
+                <p><strong>Trân trọng,</strong></p>
+                <p class="font-semibold text-slate-700 mt-0.5">Bộ phận Marketing — FIT TOUR</p>
+                <p class="text-[11px] text-slate-400">Hệ Thống Quản Trị Dữ Liệu Marketing & ERP FIT TOUR</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-50">
+        Đã copy vào bộ nhớ tạm!
+    </div>
+
+    <script>
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        function copySubject() {
+            const subject = document.getElementById('email-subject').innerText.trim();
+            navigator.clipboard.writeText(subject).then(() => {
+                showToast('Đã copy tiêu đề email!');
+            });
+        }
+
+        function copyPlainText() {
+            const subject = document.getElementById('email-subject').innerText.trim();
+            const textContent = `Tiêu đề: ${subject}
+
+Kính gửi: Ban Giám Đốc / Anh/Chị [Tên Sếp],
+
+Bộ phận Marketing xin gửi báo cáo tổng kết và đánh giá chuyên sâu hiệu suất Meta Ads Tháng 8/2026 (dữ liệu đã đối soát 100%, chuẩn hóa cơ chế ngân sách độc lập và tính mùa vụ của từng Đơn vị Kinh doanh).
+
+1. TÓM TẮT ĐIỀU HÀNH (EXECUTIVE SUMMARY)
+- Hoàn thành mục tiêu đầu ra: Toàn công ty thu về 450 Leads (đạt đúng 100.0% KPI kế hoạch 450 Lead).
+- Ngân sách & Tình hình giải ngân: Tổng thực chi 102,61 triệu VNĐ, tương đương 78.9% hạn mức 130M của 4 BU có KPI ngân sách (BU1, BU2, BU4, BU5; BU3 đã ngừng chạy); phần ngân sách chưa giải ngân là 27,39 triệu VNĐ, chủ yếu tập trung ở BU2.
+- Hiệu quả phễu toàn diện: Giá Lead bình quân (CPL) đạt 228.026 đ/Lead, giá mỗi tin nhắn đạt 63.224 đ/Msg, tỷ lệ chuyển đổi từ tin nhắn sang Lead đạt 27.7% (tổng thu 1.623 tin nhắn).
+- Chu kỳ thời gian: Tháng 8 gồm 4 Tuần Hoàn Chỉnh (01–28/08) + Ngày 31/08 lẻ cuối tháng. Để đảm bảo tính so sánh tương đồng và không làm méo mó số liệu xu hướng, ngày 31/08 lẻ được tách riêng khỏi chu kỳ tuần tròn.
+
+2. BẢNG TỔNG HỢP THEO TỪNG ĐƠN VỊ KINH DOANH ĐỘC LẬP (BU)
+- BU1 (Trung Quốc): Chi 30.26M/40M (75.6%) | 150 Lead (100% KPI) | 491 Msg | CPL: 201.707 đ | Msg->Lead: 30.5%
+- BU2 (Âu/Mỹ/Nhật): Chi 8.96M/20M (44.8% Chậm) | 26 Lead (32.5% Báo động) | 98 Msg | CPL: 344.518 đ | Msg->Lead: 26.5%
+- BU4 (Tuyến Ngách): Chi 29.00M/30M (96.7%) | 148 Lead (148.0% Vượt) | 599 Msg | CPL: 195.959 đ | Msg->Lead: 24.7%
+- BU5 (Trung Đông): Chi 34.40M/40M (86.0%) | 126 Lead (105.0% Đạt) | 435 Msg | CPL: 272.988 đ | Msg->Lead: 29.0%
+=> TỔNG CÔNG TY: Chi 102.61M/130M (78.9%) | 450 Lead (100.0%) | 1.623 Msg | CPL: 228.026 đ | Msg->Lead: 27.7%
+
+3. BẢNG XẾP HẠNG ADSETS LŨY KẾ CẢ THÁNG (CÔNG BẰNG & KHÁCH QUAN)
+* Top Adsets Xuất Sắc Nhất Cả Tháng (Core Winners):
+1. [BU4] Ladakh LEAD-MSG: Chi 13.08M (chạy cả tháng), mang về 73 Leads, CPL xuất sắc 179.180 đ (Cỗ máy lead số 1 toàn công ty).
+2. [BU1] Lệ Giang & Sa Khê Cổ Trấn: Chi 3.71M (chạy cả tháng), mang về 23 Leads, CPL 161.371 đ.
+3. [BU1] Trung Quốc COLD 500k: Chi 3.08M (chạy cả tháng), mang về 21 Leads, CPL 146.645 đ.
+4. [BU4] Bhutan LEAD-MSG: Chi 7.07M (chạy 3 tuần), mang về 37 Leads, CPL 191.204 đ (đã hoàn thành tốt sứ mệnh trước khi hết mùa).
+5. [BU5] Bắc Mông Cổ COLD: Chi 1.15M (chạy 2 tuần đầu), mang về 12 Leads, CPL kỷ lục 95.842 đ.
+
+* Top Adsets Kém Hiệu Quả Nhất Cả Tháng (Cần Tối Ưu / Thay Mới):
+1. [BU2] Nhật Bản COLD 200k: Chi 4.46M (chạy 4 tuần) chỉ thu 9 Leads -> CPL: 495.841 đ/Lead.
+2. [BU5] MA RỐC COLD 350k: Chi 7.37M (chạy 4 tuần) chỉ thu 15 Leads -> CPL: 491.395 đ/Lead.
+3. [BU5] AI CẬP COLD 200k: Chi 8.29M (chạy cả tháng) chỉ thu 18 Leads -> CPL: 460.305 đ/Lead.
+(Riêng 2 nhóm Ai Cập & Ma Rốc tiêu tốn 15,66 triệu VNĐ của BU5 với CPL đắt gấp 2,4 lần tuyến Pakistan).
+4. [BU2] TỔNG HỢP - HÌNH ẢNH 400k: Chi 2.73M chỉ thu 7 Leads -> CPL: 389.488 đ/Lead.
+
+4. GIẢI PHẪU HAI BƯỚC NGOẶT TRỌNG YẾU (DEEP-DIVE W2-W3-W4)
+- Bước Ngoặt 1: W2 -> W3 (Sụt giảm sản lượng Lead toàn hệ thống): Chi tiêu toàn công ty tăng nhẹ +4.5% nhưng lượng Lead sụt giảm -21.2% (118 -> 93 Leads), CPL tăng +32.7% (203k -> 269k). Phân tích nguồn gốc: BU4 là nguồn đóng góp lớn nhất vào mức giảm Lead W2->W3 do đồng thời giảm ngân sách (-26.2%) và suy giảm CPL (mất 28 Leads); trong khi BU5 cũng giảm 12 Leads do thay đổi cơ cấu phân bổ. BU1 đã bù một phần bằng việc tăng thêm 13 Leads.
+- Bước Ngoặt 2: W2 -> W4 (Sự suy giảm mạnh ở đầu phễu): Cùng mức chi tiêu ~23.5M, Tuần 4 bị hụt mất 27 Leads (-22.9%) so với Tuần 2. Bản chất thực tế: Mặc dù tỷ lệ Msg->Lead tăng từ 29.6% lên 36.0%, lợi thế này không bù được sự suy giảm mạnh ở đầu phễu: Inbox giảm 36.4% và Cost/Msg tăng 54.0% (60.2k lên 92.8k đ/Msg), khiến CPL cuối cùng vẫn tăng 26.9%. Nguyên nhân khả dĩ gồm suy giảm hiệu quả creative, thay đổi delivery hoặc mức độ bão hòa tệp; cần kiểm chứng thêm bằng Frequency, Reach, CTR, CPM và tuổi creative.
+
+5. KẾ HOẠCH HÀNH ĐỘNG THÁNG 9 CHO TỪNG BU
+- BU4 (Tuyến Ngách): Bhutan đã hết mùa chạy, Ladakh cũng chỉ còn vài lịch cố định cuối mùa (sắp đóng đèo). BU4 cần: (1) Chạy chiến dịch Last-Call dồn ngân sách chốt sạch chỗ trống còn lại cho các ngày khởi hành chót của Ladakh; (2) Marketing phối hợp với Sản Phẩm khẩn trương R&D & test mở ngay các tuyến ngách mới mùa Thu - Đông (Nepal, Trung Á, Kashmir, Nam Á...) để gối đầu doanh thu.
+- BU5 (Trung Đông): Tạm dừng scale / giảm phân bổ các adset Ai Cập & Ma Rốc có CPL >450k; ưu tiên tái phân bổ ngân sách trong BU5 sang Pakistan và các nhóm đã chứng minh hiệu quả tốt hơn (tuyến Pakistan mang về 60 Leads với CPL 205k - mùa thu Hunza đang vào vụ đẹp nhất).
+- BU2 (Âu/Mỹ/Nhật): Giữ nguyên hạn mức 20M. Đặt ngưỡng thử nghiệm CPL mục tiêu <250k qua việc đổi mới định dạng nội dung (video trải nghiệm thực tế, tư vấn visa chuẩn VIP, chùm tour Mùa Thu Lá Đỏ Nhật Bản). Nếu creative/offer mới không đưa được CPL về vùng mục tiêu sau một chu kỳ đủ dữ liệu, đánh giá lại khả năng scale của BU2.
+- BU1 (Trung Quốc): Duy trì các tuyến cội rễ (Bắc Kinh, Cửu Trại Câu, Nam Tân Cương). Tách nhỏ bài quảng cáo catalogue "Lịch Khởi Hành" thành các adset chuyên biệt theo từng tuyến riêng để tránh phân phối vào traffic click giá rẻ nhưng chuyển đổi loãng.
+- Toàn Công Ty: Liên kết chặt chẽ dữ liệu Meta Ads với tỷ lệ chốt cọc (Booking) và Doanh thu thực tế trên CRM để đo lường ROI thực chất của từng BU (vì CPL không đồng nhất với P&L).
+
+Link Dashboard trực quan: https://erp.fittour.vn/t8-report/index.html
+
+Kính trình Ban Giám Đốc xem xét và cho ý kiến chỉ đạo!
+
+Trân trọng,
+Bộ phận Marketing — FIT TOUR`;
+
+            navigator.clipboard.writeText(textContent).then(() => {
+                showToast('Đã copy toàn bộ nội dung email!');
+            });
+        }
+    </script>
+</body>
+</html>

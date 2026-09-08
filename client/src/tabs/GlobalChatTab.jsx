@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, CheckCircle2, UserPlus, Info, Bell, Send, Search, MoreVertical, ShieldAlert, MessageCircle, Phone, Copy, BarChart3, Users, UserCheck, Menu } from 'lucide-react';
+import { Bot, CheckCircle2, UserPlus, Info, Bell, Send, Search, MoreVertical, ShieldAlert, MessageCircle, Phone, Copy, BarChart3, Users, UserCheck, Menu, Globe } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import usePushNotifications from '../hooks/usePushNotifications';
@@ -15,15 +15,104 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
     const [notifications, setNotifications] = useState([]);
     const [inputValue, setInputValue] = useState("");
     const [timeRange, setTimeRange] = useState("today");
-    const [category, setCategory] = useState("all");
+    const [filterBU, setFilterBU] = useState("all");
+    const [filterAssignment, setFilterAssignment] = useState("all");
+    const [filterHasPhone, setFilterHasPhone] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const messagesEndRef = useRef(null);
     const isScrolledUpRef = useRef(false);
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-    const myBU = (currentUser.bus && currentUser.bus.length > 0) ? currentUser.bus[0] : 'BU1';
+    const myBU = Array.isArray(currentUser?.bus) 
+        ? (currentUser.bus[0] || 'BU1') 
+        : (typeof currentUser?.bus === 'string' && currentUser.bus 
+            ? currentUser.bus.split(',')[0].trim() 
+            : 'BU1');
 
     const [claimingId, setClaimingId] = useState(null);
     const [claimTimer, setClaimTimer] = useState(null);
+
+    const getSourceBadgeConfig = (source, notif) => {
+        let s = (source || '').toLowerCase().trim();
+        if (!s) {
+            if (notif?.facebook_psid) s = 'messenger';
+            else if (notif?.zalo_uid) s = 'zalo';
+        }
+
+        if (s.includes('tiktok')) {
+            return {
+                label: 'TikTok',
+                bg: '#0f172a',
+                color: '#ffffff',
+                border: '#1e293b',
+                icon: (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ display: 'inline-block' }}>
+                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.86 4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-2.04-.52 4.77 4.77 0 0 1-2-2.31 4.75 4.75 0 0 1-.36-2.09V6.69h5.36z"/>
+                    </svg>
+                )
+            };
+        }
+        if (s.includes('zalo')) {
+            return {
+                label: 'Zalo',
+                bg: '#eff6ff',
+                color: '#0068ff',
+                border: '#93c5fd',
+                icon: <span style={{ fontSize: '9px', fontWeight: 900, color: '#0068ff', lineHeight: 1 }}>Z</span>
+            };
+        }
+        if (s.includes('messenger') || s.includes('fb') || s.includes('facebook')) {
+            return {
+                label: 'Messenger',
+                bg: '#f0f9ff',
+                color: '#0284c7',
+                border: '#bae6fd',
+                icon: <MessageCircle size={10} />
+            };
+        }
+        if (s.includes('hotline') || s.includes('phone') || s.includes('điện thoại')) {
+            return {
+                label: 'Hotline',
+                bg: '#f0fdf4',
+                color: '#16a34a',
+                border: '#bbf7d0',
+                icon: <Phone size={10} />
+            };
+        }
+        if (s.includes('giới thiệu') || s.includes('referral')) {
+            return {
+                label: 'Khách giới thiệu',
+                bg: '#faf5ff',
+                color: '#9333ea',
+                border: '#e9d5ff',
+                icon: <UserCheck size={10} />
+            };
+        }
+        if (s.includes('web') || s.includes('landing')) {
+            return {
+                label: 'Website',
+                bg: '#fff7ed',
+                color: '#ea580c',
+                border: '#fed7aa',
+                icon: <Globe size={10} />
+            };
+        }
+        return {
+            label: source || 'Khác',
+            bg: '#f8fafc',
+            color: '#64748b',
+            border: '#e2e8f0',
+            icon: null
+        };
+    };
+
+    const formatLeadMessage = (msg, bu, name) => {
+        if (name && typeof name === 'string' && name.trim()) return name.trim();
+        if (!msg) return 'Khách hàng';
+        let clean = msg.replace(/^(Có\s+Lead\s+mới\s+vào|Lead\s+Mới)\s*/i, '');
+        clean = clean.replace(/^(BU\d+|Hệ\s*thống)\s*:\s*/i, '');
+        clean = clean.replace(/^:\s*/, '');
+        return clean.trim() || 'Khách hàng';
+    };
 
     const scrollToBottom = () => {
         if (!isScrolledUpRef.current) {
@@ -34,14 +123,14 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
     useEffect(() => {
         const token = localStorage.getItem('token');
         const fetchNotifs = () => {
-            axios.get(`/api/notifications/global-center?timeRange=${timeRange}&category=${category}`, { headers: { Authorization: `Bearer ${token}` } })
+            axios.get(`/api/notifications/global-center?timeRange=${timeRange}&bu=${filterBU}&assignment=${filterAssignment}&hasPhone=${filterHasPhone}`, { headers: { Authorization: `Bearer ${token}` } })
                 .then(res => setNotifications((res.data.notifications || []).reverse()))
                 .catch(err => console.error(err));
         };
         fetchNotifs();
         const interval = setInterval(fetchNotifs, 10000);
         return () => clearInterval(interval);
-    }, [timeRange, category]);
+    }, [timeRange, filterBU, filterAssignment, filterHasPhone]);
 
     useEffect(() => {
         scrollToBottom();
@@ -72,7 +161,7 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
             });
             toast.success('Tiếp nhận thành công!');
             
-            axios.get(`/api/notifications/global-center?timeRange=${timeRange}&category=${category}`, { headers: { Authorization: `Bearer ${token}` } })
+            axios.get(`/api/notifications/global-center?timeRange=${timeRange}&bu=${filterBU}&assignment=${filterAssignment}&hasPhone=${filterHasPhone}`, { headers: { Authorization: `Bearer ${token}` } })
                 .then(res => setNotifications((res.data.notifications || []).reverse()));
         } catch (error) {
             toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
@@ -189,35 +278,111 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                 </div>
             ) : (
                 <>
-                    <div className="filter-options-container" style={{ marginTop: 0, padding: '10px 20px', background: '#fff', borderBottom: '1px solid #e0e0e0', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
-                <div className="filter-options-group" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    
-                    {[
-                        { id: 'all', label: 'All' },
-                        { id: 'my_leads', label: 'Tôi' },
-                        { id: 'unassigned', label: 'Chưa phân Sale' },
-                        { id: 'unassigned_bu', label: 'Chưa phân BU' },
-                        { id: 'BU1', label: 'BU1' },
-                        { id: 'BU2', label: 'BU2' },
-                        { id: 'BU3', label: 'BU3' },
-                        { id: 'BU4', label: 'BU4' },
-                        { id: 'BU5', label: 'BU5' }
-                    ].map(p => (
-                        <button key={p.id} className={category === p.id ? 'active' : ''} onClick={() => setCategory(p.id)} style={{ padding: '4px 12px', borderRadius: '20px', border: '1px solid #e2e8f0', background: category === p.id ? '#8b5cf6' : '#fff', color: category === p.id ? '#fff' : '#475569', fontSize: '12px', cursor: 'pointer', outline: 'none' }}>{p.label}</button>
-                    ))}
-                </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', position: 'relative', marginLeft: 'auto' }}>
-                    <Search size={14} style={{ position: 'absolute', left: '10px', color: '#94a3b8' }} />
-                    <input 
-                        type="text" 
-                        placeholder="Tìm theo tên, SĐT, BU..." 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{ padding: '6px 10px 6px 28px', borderRadius: '20px', border: '1px solid #e2e8f0', fontSize: '12px', width: '200px', outline: 'none' }}
-                    />
-                </div>
-            </div>
+                    <div className="filter-options-container" style={{ marginTop: 0, padding: '12px 20px', background: '#fff', borderBottom: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {/* Hàng 1: Lọc Đơn vị BU & Tìm kiếm */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>Đơn vị BU:</span>
+                                {[
+                                    { id: 'all', label: 'Tất cả BU' },
+                                    { id: 'unassigned_bu', label: 'Chưa phân BU' },
+                                    { id: 'BU1', label: 'BU1' },
+                                    { id: 'BU2', label: 'BU2' },
+                                    { id: 'BU3', label: 'BU3' },
+                                    { id: 'BU4', label: 'BU4' },
+                                    { id: 'BU5', label: 'BU5' }
+                                ].map(p => (
+                                    <button 
+                                        key={p.id} 
+                                        className={filterBU === p.id ? 'active' : ''} 
+                                        onClick={() => setFilterBU(p.id)} 
+                                        style={{ 
+                                            padding: '4px 12px', 
+                                            borderRadius: '20px', 
+                                            border: '1px solid',
+                                            borderColor: filterBU === p.id ? '#8b5cf6' : '#e2e8f0', 
+                                            background: filterBU === p.id ? '#8b5cf6' : '#fff', 
+                                            color: filterBU === p.id ? '#fff' : '#475569', 
+                                            fontSize: '12px', 
+                                            fontWeight: filterBU === p.id ? '600' : '500',
+                                            cursor: 'pointer', 
+                                            outline: 'none',
+                                            transition: 'all 0.15s'
+                                        }}
+                                    >
+                                        {p.label}
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                                <Search size={14} style={{ position: 'absolute', left: '10px', color: '#94a3b8' }} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Tìm theo tên, SĐT, BU..." 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    style={{ padding: '6px 10px 6px 28px', borderRadius: '20px', border: '1px solid #e2e8f0', fontSize: '12px', width: '220px', outline: 'none' }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Hàng 2: Lọc Phân bổ Sale */}
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '6px', borderTop: '1px dashed #f1f5f9' }}>
+                            <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>Phân bổ Sale:</span>
+                            {[
+                                { id: 'all', label: 'Tất cả trạng thái' },
+                                { id: 'has_phone', label: '📞 Đã có SĐT' },
+                                { id: 'unassigned', label: '⚡ Chưa phân Sale (Chờ nhận)' },
+                                { id: 'my_leads', label: '👤 Lead của tôi' },
+                                { id: 'assigned', label: '✓ Đã có Sale tiếp nhận' }
+                            ].map(p => {
+                                const isHasPhone = p.id === 'has_phone';
+                                const isActive = isHasPhone 
+                                    ? filterHasPhone 
+                                    : (p.id === 'all' ? (filterAssignment === 'all' && !filterHasPhone) : filterAssignment === p.id);
+                                const isUnassigned = p.id === 'unassigned';
+                                const activeBg = isUnassigned ? '#ea580c' : (isHasPhone ? '#059669' : '#3b82f6');
+                                const activeBorder = isUnassigned ? '#c2410c' : (isHasPhone ? '#047857' : '#2563eb');
+                                const inactiveColor = isUnassigned ? '#c2410c' : (isHasPhone ? '#059669' : '#475569');
+
+                                const handleFilterClick = () => {
+                                    if (isHasPhone) {
+                                        setFilterHasPhone(prev => !prev);
+                                    } else if (p.id === 'all') {
+                                        setFilterAssignment('all');
+                                        setFilterHasPhone(false);
+                                    } else {
+                                        setFilterAssignment(prev => prev === p.id ? 'all' : p.id);
+                                    }
+                                };
+
+                                return (
+                                    <button 
+                                        key={p.id} 
+                                        className={isActive ? 'active' : ''} 
+                                        onClick={handleFilterClick} 
+                                        style={{ 
+                                            padding: '4px 12px', 
+                                            borderRadius: '20px', 
+                                            border: '1px solid',
+                                            borderColor: isActive ? activeBorder : '#e2e8f0', 
+                                            background: isActive ? activeBg : '#fff', 
+                                            color: isActive ? '#fff' : inactiveColor, 
+                                            fontSize: '12px', 
+                                            fontWeight: isActive ? '600' : ((isUnassigned || isHasPhone) ? '600' : '500'),
+                                            cursor: 'pointer', 
+                                            outline: 'none',
+                                            transition: 'all 0.15s',
+                                            boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                                        }}
+                                    >
+                                        {p.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
 
             <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}
                  onScroll={(e) => {
@@ -235,11 +400,16 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                 {notifications.filter(n => {
                     if (!searchQuery) return true;
                     const q = searchQuery.toLowerCase();
+                    const currentLead = leads.find(l => l.id === n.reference_id);
+                    const phoneDisplay = n.phone || currentLead?.phone;
+                    const sourceDisplay = n.source || currentLead?.source;
                     return (
                         n.title?.toLowerCase().includes(q) ||
+                        n.name?.toLowerCase().includes(q) ||
                         n.message?.toLowerCase().includes(q) ||
                         n.bu_group?.toLowerCase().includes(q) ||
-                        n.phone?.toLowerCase().includes(q) ||
+                        phoneDisplay?.toLowerCase().includes(q) ||
+                        sourceDisplay?.toLowerCase().includes(q) ||
                         n.assigned_to_name?.toLowerCase().includes(q)
                     );
                 }).length === 0 ? (
@@ -250,20 +420,50 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                 ) : notifications.filter(n => {
                     if (!searchQuery) return true;
                     const q = searchQuery.toLowerCase();
+                    const currentLead = leads.find(l => l.id === n.reference_id);
+                    const phoneDisplay = n.phone || currentLead?.phone;
+                    const sourceDisplay = n.source || currentLead?.source;
                     return (
                         n.title?.toLowerCase().includes(q) ||
+                        n.name?.toLowerCase().includes(q) ||
                         n.message?.toLowerCase().includes(q) ||
                         n.bu_group?.toLowerCase().includes(q) ||
-                        n.phone?.toLowerCase().includes(q) ||
+                        phoneDisplay?.toLowerCase().includes(q) ||
+                        sourceDisplay?.toLowerCase().includes(q) ||
                         n.assigned_to_name?.toLowerCase().includes(q)
                     );
-                }).map((notif, index) => (
+                }).map((notif, index) => {
+                    const currentLead = leads.find(l => l.id === notif.reference_id);
+                    const sourceDisplay = notif.source || currentLead?.source;
+                    const badgeConfig = getSourceBadgeConfig(sourceDisplay, notif);
+                    return (
                     <div key={notif.id} className="chat-message-wrapper" style={{ maxWidth: '100%' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '4px' }}>
                                 <span style={{ fontSize: '11px', color: '#94a3b8' }}>
                                     {new Date(notif.created_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </span>
+                                {badgeConfig && (
+                                    <span 
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            fontSize: '10px',
+                                            fontWeight: '700',
+                                            padding: '1px 6px',
+                                            borderRadius: '6px',
+                                            background: badgeConfig.bg,
+                                            color: badgeConfig.color,
+                                            border: `1px solid ${badgeConfig.border}`,
+                                            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                                            lineHeight: 1.2
+                                        }}
+                                        title={`Kênh nguồn: ${badgeConfig.label}`}
+                                    >
+                                        {badgeConfig.icon}
+                                        {badgeConfig.label}
+                                    </span>
+                                )}
                                 {notif.last_contacted_at && new Date(notif.last_contacted_at).toDateString() !== new Date(notif.created_at).toDateString() && (
                                     <span style={{ fontSize: '10px', background: '#fee2e2', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
                                         🔥 Khách cũ nhắn lại: {new Date(notif.last_contacted_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -282,33 +482,20 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                                 flexDirection: 'column',
                                 gap: '10px'
                             }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <div 
                                             onClick={() => window.dispatchEvent(new CustomEvent('open-edit-lead-modal-from-chat', { detail: notif.reference_id }))}
-                                            style={{ fontSize: '15px', color: '#2563eb', cursor: 'pointer', fontWeight: '600', paddingRight: '50px' }}
+                                            style={{ fontSize: '15px', color: '#2563eb', cursor: 'pointer', fontWeight: '600' }}
                                             title="Nhấn để xem chi tiết Lead"
                                         >
-                                            {notif.message}
+                                            {formatLeadMessage(notif.message, notif.bu_group, notif.name || notif.customer_name)}
                                         </div>
                                         {notif.is_returning_customer && (
-                                            <span style={{ fontSize: '0.65rem', background: '#f3e8ff', color: '#9333ea', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap', marginLeft: '6px' }} title="Khách VVIP đã từng booking.">
+                                            <span style={{ fontSize: '0.65rem', background: '#f3e8ff', color: '#9333ea', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }} title="Khách VVIP đã từng booking.">
                                                 🎖️ KHÁCH QUEN {notif.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(notif.total_spent)}đ)` : ''}
                                             </span>
                                         )}
-                                        <span style={{ 
-                                            position: 'absolute',
-                                            top: '-6px',
-                                            right: '0',
-                                            fontSize: '9px', 
-                                            background: notif.is_read ? '#f3f4f6' : '#e0e7ff', 
-                                            color: notif.is_read ? '#6b7280' : '#4338ca', 
-                                            padding: '1px 4px', 
-                                            borderRadius: '8px', 
-                                            fontWeight: '600' 
-                                        }}>
-                                            {notif.title}
-                                        </span>
                                     </div>
                                     
                                     {notif.type === 'NEW_LEAD' && (() => {
@@ -388,13 +575,18 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                                         );
                                     })()}
 
-                                    {notif.phone && (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f8fafc', padding: '2px 8px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                                            <Phone size={12} color="#64748b" /> 
-                                            <span style={{ fontSize: '12px', color: '#475569', fontWeight: '500' }}>{notif.phone}</span>
-                                            <Copy size={12} color="#94a3b8" style={{ cursor: 'pointer' }} onClick={() => { navigator.clipboard.writeText(notif.phone); toast.success('Đã copy!'); }} />
-                                        </div>
-                                    )}
+                                    {(() => {
+                                        const currentLead = leads.find(l => l.id === notif.reference_id);
+                                        const phoneDisplay = notif.phone || currentLead?.phone;
+                                        if (!phoneDisplay) return null;
+                                        return (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f8fafc', padding: '2px 8px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                                <Phone size={12} color="#64748b" /> 
+                                                <span style={{ fontSize: '12px', color: '#475569', fontWeight: '500' }}>{phoneDisplay}</span>
+                                                <Copy size={12} color="#94a3b8" style={{ cursor: 'pointer' }} onClick={() => { navigator.clipboard.writeText(phoneDisplay); toast.success('Đã copy SĐT!'); }} />
+                                            </div>
+                                        );
+                                    })()}
                                     
                                     {notif.type === 'NEW_LEAD' && (
                                         <div className="chat-actions-wrapper">
@@ -518,7 +710,8 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                             </div>
                         </div>
                     </div>
-                ))}
+                );
+            })}
                 <div ref={messagesEndRef} />
             </div>
             </>
@@ -527,25 +720,25 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
             {/* Mobile Bottom Navigation Bar */}
             <div className="mobile-bottom-nav">
                 <div 
-                    className={`mobile-bottom-nav-item ${activeMainTab === 'chat' && category === 'all' ? 'active' : ''}`}
-                    onClick={() => { setActiveMainTab('chat'); setCategory('all'); }}
+                    className={`mobile-bottom-nav-item ${activeMainTab === 'chat' && filterBU === 'all' && filterAssignment === 'all' ? 'active' : ''}`}
+                    onClick={() => { setActiveMainTab('chat'); setFilterBU('all'); setFilterAssignment('all'); }}
                 >
                     <Bell size={20} />
-                    <span>Điều Phối</span>
+                    <span>Tất cả</span>
                 </div>
                 <div 
-                    className={`mobile-bottom-nav-item ${activeMainTab === 'chat' && category === 'my_leads' ? 'active' : ''}`}
-                    onClick={() => { setActiveMainTab('chat'); setCategory('my_leads'); }}
+                    className={`mobile-bottom-nav-item ${activeMainTab === 'chat' && filterAssignment === 'my_leads' ? 'active' : ''}`}
+                    onClick={() => { setActiveMainTab('chat'); setFilterAssignment('my_leads'); }}
                 >
                     <UserCheck size={20} />
                     <span>Của Tôi</span>
                 </div>
                 <div 
-                    className={`mobile-bottom-nav-item ${activeMainTab === 'chat' && category === myBU ? 'active' : ''}`}
-                    onClick={() => { setActiveMainTab('chat'); setCategory(myBU); }}
+                    className={`mobile-bottom-nav-item ${activeMainTab === 'chat' && filterBU === myBU ? 'active' : ''}`}
+                    onClick={() => { setActiveMainTab('chat'); setFilterBU(myBU); }}
                 >
                     <Users size={20} />
-                    <span>Nhóm BU</span>
+                    <span>{myBU}</span>
                 </div>
                 <div 
                     className={`mobile-bottom-nav-item ${activeMainTab === 'stats' ? 'active' : ''}`}

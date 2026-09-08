@@ -354,10 +354,13 @@ const DispatcherCenterTab = ({
                 const leadFB = lead.facebook_psid ? String(lead.facebook_psid).trim() : '';
                 const lEmail = l.email ? String(l.email).trim() : '';
                 const leadEmail = lead.email ? String(lead.email).trim() : '';
+                const lZalo = l.zalo_uid ? String(l.zalo_uid).trim() : '';
+                const leadZalo = lead.zalo_uid ? String(lead.zalo_uid).trim() : '';
 
                 if (lPhone !== '' && lPhone === leadPhone) return true;
                 if (lFB !== '' && lFB === leadFB) return true;
                 if (lEmail !== '' && lEmail === leadEmail) return true;
+                if (lZalo !== '' && lZalo === leadZalo) return true;
                 
                 return false;
               });

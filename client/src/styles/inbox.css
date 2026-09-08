@@ -50,17 +50,24 @@
         .chat-input-form {
           display: flex;
           gap: 10px;
-          align-items: center;
+          align-items: flex-end;
         }
         
         .chat-input-field {
           flex: 1;
-          padding: 12px 15px;
+          padding: 10px 16px;
           border: 1px solid #e2e8f0;
           border-radius: 20px;
           outline: none;
           font-size: 0.95rem;
-          transition: all 0.2s;
+          line-height: 1.4;
+          font-family: inherit;
+          resize: none;
+          min-height: 42px;
+          max-height: 130px;
+          overflow-y: auto;
+          box-sizing: border-box;
+          transition: border-color 0.2s, box-shadow 0.2s;
         }
         
         .chat-input-field:focus {
@@ -74,12 +81,15 @@
           border: none;
           width: 42px;
           height: 42px;
+          min-width: 42px;
+          min-height: 42px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           transition: all 0.2s;
+          flex-shrink: 0;
         }
         
         .chat-send-btn:hover:not(:disabled) {

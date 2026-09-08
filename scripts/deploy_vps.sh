@@ -21,6 +21,12 @@ rsync -avz --exclude '.env' --exclude '.env.*' --exclude 'node_modules' --exclud
 # 2. Deploy Frontend (Thư mục client)
 # Nếu có thư mục client thì mới rsync
 if [ -d "client" ]; then
+    echo "🔨 Đang build Frontend..."
+    (cd client && npm run build)
+    if [ $? -ne 0 ]; then
+        echo "❌ Build frontend thất bại! Dừng deploy."
+        exit 1
+    fi
     echo "📦 Đang đẩy thư mục 'client'..."
     rsync -avz --exclude '.env' --exclude '.env.*' --exclude 'node_modules' --exclude '.DS_Store' client/ ${VPS_USER}@${VPS_IP}:${VPS_PATH}/client/
 fi

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
-import { Upload, CloudUpload, Trash2, Filter, X, Save, Edit2, Lock, Unlock, Star, FileText } from 'lucide-react';
+import { Upload, CloudUpload, Trash2, Filter, X, Save, Edit2, Lock, Unlock, Star, FileText, ChevronDown, BarChart2 } from 'lucide-react';
 
 const THANG_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
 const TUAN_OPTIONS = [1, 2, 3, 4, 5];
@@ -73,6 +73,18 @@ const getWeekRanges = (year, month) => {
 const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showReportDropdown, setShowReportDropdown] = useState(false);
+  const reportDropdownRef = React.useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (reportDropdownRef.current && !reportDropdownRef.current.contains(event.target)) {
+        setShowReportDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   
   const [activeSubTab, setActiveSubTab] = useState('monthly'); // 'monthly', 'weekly', or 'progress'
   const [kpiData, setKpiData] = useState({ aggregates: [], kpis: [] });
@@ -593,19 +605,128 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
         >
           <FileText size={14} /> Rule Meta Ads
         </a>
-        <a
-          href="/q2-report/index.html"
-          target="_blank" rel="noopener noreferrer"
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: '6px',
-            padding: '8px 16px', borderRadius: '8px',
-            background: '#fdf2f8', color: '#be185d', 
-            fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none',
-            border: '1px solid #fbcfe8', transition: 'all 0.2s'
-          }}
-        >
-          <Star size={14} /> Báo cáo Q2/2026
-        </a>
+        <div style={{ position: 'relative' }} ref={reportDropdownRef}>
+          <button
+            type="button"
+            onClick={() => setShowReportDropdown(!showReportDropdown)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '8px 16px', borderRadius: '8px',
+              background: showReportDropdown ? '#fce7f3' : '#fdf2f8', 
+              color: '#be185d', 
+              fontWeight: 700, fontSize: '0.82rem',
+              border: '1px solid #fbcfe8', cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: showReportDropdown ? '0 0 0 2px rgba(190, 24, 93, 0.2)' : 'none'
+            }}
+          >
+            <BarChart2 size={14} /> Báo Cáo Ads <ChevronDown size={14} style={{ transform: showReportDropdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+          </button>
+          
+          {showReportDropdown && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: '6px',
+                width: '300px',
+                background: '#ffffff',
+                borderRadius: '12px',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)',
+                border: '1px solid #e2e8f0',
+                zIndex: 100,
+                overflow: 'hidden'
+              }}
+            >
+              <div style={{ padding: '10px 14px', background: '#f8fafc', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b' }}>
+                  DANH SÁCH BÁO CÁO ADS
+                </span>
+                <span style={{ fontSize: '10px', background: '#e0e7ff', color: '#3730a3', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                  Live
+                </span>
+              </div>
+
+              <div style={{ padding: '6px 0', maxHeight: '380px', overflowY: 'auto' }}>
+                
+                {/* NHÓM BÁO CÁO THEO THÁNG */}
+                <div style={{ padding: '6px 14px 2px 14px', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8' }}>
+                  📅 Báo Cáo Theo Tháng
+                </div>
+
+                <a
+                  href="/t8-report/index.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setShowReportDropdown(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '10px',
+                    padding: '8px 14px',
+                    textDecoration: 'none',
+                    color: '#1e293b',
+                    transition: 'background 0.15s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                    <BarChart2 size={15} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>Báo Cáo Tháng 8/2026</span>
+                      <span style={{ fontSize: '10px', fontWeight: 700, background: '#dcfce7', color: '#15803d', padding: '1px 6px', borderRadius: '4px' }}>Mới nhất</span>
+                    </div>
+                    <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0 0' }}>
+                      Đạt 100% KPI (450 Leads) • Deep-dive W2-W4
+                    </p>
+                  </div>
+                </a>
+
+                <div style={{ height: '1px', background: '#f1f5f9', margin: '6px 0' }}></div>
+
+                {/* NHÓM BÁO CÁO THEO QUÝ */}
+                <div style={{ padding: '6px 14px 2px 14px', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8' }}>
+                  📈 Báo Cáo Theo Quý
+                </div>
+
+                <a
+                  href="/q2-report/index.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setShowReportDropdown(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '10px',
+                    padding: '8px 14px',
+                    textDecoration: 'none',
+                    color: '#1e293b',
+                    transition: 'background 0.15s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#fdf2f8', color: '#db2777', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                    <Star size={15} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>Báo Cáo Quý 2/2026</span>
+                    </div>
+                    <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0 0' }}>
+                      Tổng kết hiệu suất Q2 (Tháng 4, 5, 6)
+                    </p>
+                  </div>
+                </a>
+
+              </div>
+            </div>
+          )}
+        </div>
         <a
           href="/tai-lieu/quy-tac-dat-ten-quang-cao-meta"
           target="_blank" rel="noopener noreferrer"

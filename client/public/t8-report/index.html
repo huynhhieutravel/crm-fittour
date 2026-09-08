@@ -1,0 +1,2040 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo Phân Tích Ads Tháng 8/2026 | FIT TOUR CRM</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .tab-content { display: none; }
+        .tab-content.block { display: block; }
+        .tab-btn.active { border-bottom-color: #2563eb; color: #2563eb; font-weight: 700; }
+        .top-nav-btn.active { border-bottom-color: #2563eb; color: #2563eb; font-weight: 700; background-color: #eff6ff; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased p-3 md:p-6 lg:p-8">
+
+<div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- HEADER & META BRAND -->
+    <header class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="space-y-1">
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-blue-600 text-white">FIT TOUR MARKETING</span>
+                <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-emerald-100 text-emerald-800">Dữ Liệu Đã Xác Thực 100%</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Báo Cáo Phân Tích Hiệu Suất Meta Ads — Tháng 8/2026
+            </h1>
+            <p class="text-sm text-slate-500 flex items-center gap-2">
+                <span>📅 Thời gian: 01/08/2026 – 31/08/2026 (4 Tuần Tròn + Ngày 31/8 Lẻ)</span>
+                <span>•</span>
+                <span>🎯 Phạm vi: 4 BU có KPI ngân sách (BU1, BU2, BU4, BU5)</span>
+            </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <a href="https://erp.fittour.vn/marketing-ads" class="px-4 py-2 text-sm font-semibold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all border border-slate-300 inline-flex items-center gap-2">
+                ← Về ERP Live Ads
+            </a>
+            <button onclick="window.print()" class="px-4 py-2 text-sm font-semibold rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all border border-blue-200 inline-flex items-center gap-2">
+                🖨️ In Báo Cáo
+            </button>
+        </div>
+    </header>
+
+    <!-- TOP LEVEL NAVIGATION TABS -->
+    <nav class="flex space-x-2 border-b border-slate-200 bg-white rounded-xl shadow-sm p-1.5 sticky top-2 z-30 overflow-x-auto whitespace-nowrap scrollbar-hide" id="top-nav">
+        <button class="top-nav-btn active px-5 py-3 text-sm font-medium text-slate-600 rounded-lg border-b-2 border-transparent transition-all" data-page="page-overview">
+            📊 Tổng Quan
+        </button>
+        <button class="top-nav-btn px-5 py-3 text-sm font-medium text-slate-600 rounded-lg border-b-2 border-transparent transition-all" data-page="page-warnings">
+            ⚠️ Cảnh Báo
+        </button>
+        <button class="top-nav-btn px-5 py-3 text-sm font-semibold text-rose-700 hover:bg-rose-50 rounded-lg border-b-2 border-transparent transition-all" data-page="page-deep-w2-w3">
+            🔬 Deep-Dive W2-W3-W4
+        </button>
+        <button class="top-nav-btn px-5 py-3 text-sm font-medium text-slate-600 rounded-lg border-b-2 border-transparent transition-all" data-page="page-bu1">
+            🇨🇳 BU1
+        </button>
+        <button class="top-nav-btn px-5 py-3 text-sm font-medium text-slate-600 rounded-lg border-b-2 border-transparent transition-all" data-page="page-bu2">
+            🌍 BU2
+        </button>
+        <button class="top-nav-btn px-5 py-3 text-sm font-medium text-slate-600 rounded-lg border-b-2 border-transparent transition-all" data-page="page-bu4">
+            🏝️ BU4
+        </button>
+        <button class="top-nav-btn px-5 py-3 text-sm font-medium text-slate-600 rounded-lg border-b-2 border-transparent transition-all" data-page="page-bu5">
+            🕌 BU5
+        </button>
+        <button class="top-nav-btn px-5 py-3 text-sm font-medium text-slate-600 rounded-lg border-b-2 border-transparent transition-all" data-page="page-action-plans">
+            🚀 Action Plan T9
+        </button>
+        <button class="top-nav-btn px-5 py-3 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 rounded-lg border-b-2 border-transparent transition-all" data-page="page-full-audit">
+            📑 Master Audit
+        </button>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- PAGE 1: OVERVIEW & SYSTEM KPIS -->
+    <!-- ========================================== -->
+    <div id="page-overview" class="page-content block space-y-6">
+
+        <!-- 4 TOP KPI CARDS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Spend -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tổng Chi Tiêu Thực Tế</span>
+                    <span class="p-2 rounded-lg bg-orange-50 text-orange-600 text-lg">💳</span>
+                </div>
+                <div class="mt-3">
+                    <div class="text-2xl lg:text-3xl font-extrabold text-orange-600 tracking-tight">102.611.845 đ</div>
+                    <div class="text-xs font-semibold text-slate-500 mt-1 flex items-center gap-1">
+                        <span>Tiến độ ngân sách:</span>
+                        <span class="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">78.9% / 130M</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leads -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tổng Lead Thu Thập</span>
+                    <span class="p-2 rounded-lg bg-blue-50 text-blue-600 text-lg">🎯</span>
+                </div>
+                <div class="mt-3">
+                    <div class="text-2xl lg:text-3xl font-extrabold text-blue-600 tracking-tight">450 Lead</div>
+                    <div class="text-xs font-semibold text-slate-500 mt-1 flex items-center gap-1">
+                        <span>Đạt chỉ tiêu Lead:</span>
+                        <span class="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">100.0% / 450 Target</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tin Nhắn (Inbox)</span>
+                    <span class="p-2 rounded-lg bg-indigo-50 text-indigo-600 text-lg">💬</span>
+                </div>
+                <div class="mt-3">
+                    <div class="text-2xl lg:text-3xl font-extrabold text-indigo-600 tracking-tight">1.623 Msg</div>
+                    <div class="text-xs font-semibold text-slate-500 mt-1 flex items-center gap-1">
+                        <span>Giá TB / Inbox:</span>
+                        <span class="text-slate-800 font-bold bg-slate-100 px-1.5 py-0.5 rounded">63.224 đ/Msg</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avg CPL -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Giá Lead Trung Bình (CPL)</span>
+                    <span class="p-2 rounded-lg bg-emerald-50 text-emerald-600 text-lg">⚡</span>
+                </div>
+                <div class="mt-3">
+                    <div class="text-2xl lg:text-3xl font-extrabold text-emerald-600 tracking-tight">228.026 đ</div>
+                    <div class="text-xs font-semibold text-slate-500 mt-1 flex items-center gap-1">
+                        <span>Tỷ lệ Msg ➔ Lead:</span>
+                        <span class="text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded">27.7%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RAW KPI & SUMMARY MATRIX TABLE -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <h2 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <span>📋 Bảng Tổng Hợp Chỉ Số KPI & Thực Tế Tháng 8/2026 Theo Từng BU</span>
+                </h2>
+                <span class="text-xs text-slate-500 italic">Đơn vị tiền: VNĐ</span>
+            </div>
+                        <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-slate-600">
+                    <thead class="text-xs text-slate-700 uppercase bg-slate-100/70">
+                        <tr>
+                            <th class="px-5 py-3.5 font-bold">Chỉ Số Phễu Marketing</th>
+                            <th class="px-5 py-3.5 font-bold text-center">BU1 (TQ)</th>
+                            <th class="px-5 py-3.5 font-bold text-center">BU2 (Âu/Mỹ/Nhật)</th>
+                            <th class="px-5 py-3.5 font-bold text-center">BU4 (Ngách)</th>
+                            <th class="px-5 py-3.5 font-bold text-center">BU5 (Trung Đông)</th>
+                            <th class="px-5 py-3.5 font-bold text-center text-blue-900 bg-blue-100/60">TỔNG CỘNG</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-slate-700">
+                        <!-- Budget Target -->
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="px-5 py-3 font-semibold text-slate-900">1. Ngân sách Kế hoạch</td>
+                            <td class="px-5 py-3 text-center">40.000.000</td>
+                            <td class="px-5 py-3 text-center">20.000.000</td>
+                            <td class="px-5 py-3 text-center">30.000.000</td>
+                            <td class="px-5 py-3 text-center">40.000.000</td>
+                            <td class="px-5 py-3 text-center font-bold text-slate-900 bg-blue-50/30">130.000.000</td>
+                        </tr>
+                        <!-- Actual Spend -->
+                        <tr class="hover:bg-slate-50/50 bg-orange-50/30 font-medium">
+                            <td class="px-5 py-3 text-orange-900 font-bold">2. Chi tiêu Thực tế</td>
+                            <td class="px-5 py-3 text-center text-orange-700 font-bold">30.255.991</td>
+                            <td class="px-5 py-3 text-center text-orange-700 font-bold">8.957.476</td>
+                            <td class="px-5 py-3 text-center text-orange-700 font-bold">29.001.924</td>
+                            <td class="px-5 py-3 text-center text-orange-700 font-bold">34.396.454</td>
+                            <td class="px-5 py-3 text-center font-extrabold text-orange-900 bg-orange-100/40">102.611.845</td>
+                        </tr>
+                        <!-- Budget Progress -->
+                        <tr class="hover:bg-slate-50/50 text-xs">
+                            <td class="px-5 py-2.5 italic text-slate-500 font-medium">↳ % Tiến độ giải ngân</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-emerald-600">75.6%</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-rose-600">44.8% (Quá chậm)</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-emerald-600">96.7% (Đạt)</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-emerald-600">86.0% (Đạt)</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-blue-900 bg-blue-50/30">78.9%</td>
+                        </tr>
+                        <!-- Target Leads -->
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="px-5 py-3 font-semibold text-slate-900">3. Mục tiêu Lead (KPI)</td>
+                            <td class="px-5 py-3 text-center">150</td>
+                            <td class="px-5 py-3 text-center">80</td>
+                            <td class="px-5 py-3 text-center">100</td>
+                            <td class="px-5 py-3 text-center">120</td>
+                            <td class="px-5 py-3 text-center font-bold text-slate-900 bg-blue-50/30">450</td>
+                        </tr>
+                        <!-- Actual Leads -->
+                        <tr class="hover:bg-slate-50/50 bg-blue-50/30 font-medium">
+                            <td class="px-5 py-3 text-blue-900 font-bold">4. Lead Thu Thập Thực Tế</td>
+                            <td class="px-5 py-3 text-center text-blue-700 font-extrabold">150 Lead</td>
+                            <td class="px-5 py-3 text-center text-rose-600 font-extrabold">26 Lead</td>
+                            <td class="px-5 py-3 text-center text-emerald-700 font-extrabold">148 Lead</td>
+                            <td class="px-5 py-3 text-center text-emerald-700 font-extrabold">126 Lead</td>
+                            <td class="px-5 py-3 text-center font-extrabold text-blue-900 bg-blue-100/50">450 Lead</td>
+                        </tr>
+                        <!-- Lead Progress -->
+                        <tr class="hover:bg-slate-50/50 text-xs">
+                            <td class="px-5 py-2.5 italic text-slate-500 font-medium">↳ % Hoàn thành KPI Lead</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-emerald-600">100.0% (Đạt)</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-rose-600">32.5% (Báo động)</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-emerald-600">148.0% (Vượt 48%)</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-emerald-600">105.0% (Đạt)</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-emerald-700 bg-blue-50/30">100.0% (Đạt)</td>
+                        </tr>
+                        <!-- Messages -->
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="px-5 py-3 font-semibold text-slate-900">5. Tin nhắn (Inbox)</td>
+                            <td class="px-5 py-3 text-center font-semibold">491 Msg</td>
+                            <td class="px-5 py-3 text-center font-semibold">98 Msg</td>
+                            <td class="px-5 py-3 text-center font-semibold">599 Msg</td>
+                            <td class="px-5 py-3 text-center font-semibold">435 Msg</td>
+                            <td class="px-5 py-3 text-center font-bold text-slate-900 bg-blue-50/30">1.623 Msg</td>
+                        </tr>
+                        <!-- Cost per Lead -->
+                        <tr class="hover:bg-slate-50/50 font-bold bg-slate-50/80">
+                            <td class="px-5 py-3.5 text-slate-900">6. Giá mỗi Lead (Avg CPL)</td>
+                            <td class="px-5 py-3.5 text-center text-emerald-700">201.707 đ</td>
+                            <td class="px-5 py-3.5 text-center text-rose-700">344.518 đ</td>
+                            <td class="px-5 py-3.5 text-center text-emerald-700">195.959 đ</td>
+                            <td class="px-5 py-3.5 text-center text-orange-700">272.988 đ</td>
+                            <td class="px-5 py-3.5 text-center text-blue-900 bg-blue-100/60 font-extrabold">228.026 đ</td>
+                        </tr>
+                        <!-- Cost per Msg -->
+                        <tr class="hover:bg-slate-50/50 text-xs">
+                            <td class="px-5 py-2.5 text-slate-600 font-medium">7. Giá mỗi Inbox (Avg CPL Msg)</td>
+                            <td class="px-5 py-2.5 text-center font-semibold">61.621 đ</td>
+                            <td class="px-5 py-2.5 text-center font-semibold text-rose-600">91.403 đ</td>
+                            <td class="px-5 py-2.5 text-center font-semibold text-emerald-600 font-bold">48.417 đ</td>
+                            <td class="px-5 py-2.5 text-center font-semibold">79.072 đ</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-slate-900 bg-blue-50/30">63.224 đ</td>
+                        </tr>
+                        <!-- Msg to Lead Rate -->
+                        <tr class="hover:bg-slate-50/50 text-xs">
+                            <td class="px-5 py-2.5 text-slate-600 font-medium">8. Tỷ lệ chuyển đổi Inbox ➔ Lead</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-blue-700">30.5%</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-slate-700">26.5%</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-emerald-700">24.7%</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-purple-700">29.0%</td>
+                            <td class="px-5 py-2.5 text-center font-bold text-slate-900 bg-blue-50/30">27.7%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- CHARTS ROW 1: BUDGET vs SPEND & LEAD SHARE -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Budget vs Spend Bar Chart -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">So Sánh Ngân Sách Kế Hoạch vs Chi Tiêu Thực Tế</h3>
+                        <p class="text-xs text-slate-500">Phân tích mức độ giải ngân của từng BU</p>
+                    </div>
+                </div>
+                <div class="relative h-[290px] w-full">
+                    <canvas id="chartBudgetSpend"></canvas>
+                </div>
+            </div>
+
+            <!-- Lead Share Donut Chart -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="mb-4">
+                    <h3 class="text-base font-bold text-slate-900">Tỷ Trọng Lead Theo BU</h3>
+                    <p class="text-xs text-slate-500">Tổng 450 Leads trong tháng</p>
+                </div>
+                <div class="relative h-[260px] w-full flex items-center justify-center">
+                    <canvas id="chartLeadShare"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHARTS ROW 2: WEEKLY TRENDS & TOUR BREAKDOWN -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 5-Week Trend Multi-Axis Chart -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="mb-4">
+                    <h3 class="text-base font-bold text-slate-900">Diễn Biến 5 Tuần: Chi Tiêu & Giá Lead (CPL)</h3>
+                    <p class="text-xs text-slate-500">Nhận diện điểm bão hòa quảng cáo (Ad Fatigue)</p>
+                </div>
+                <div class="relative h-[300px] w-full">
+                    <canvas id="chartWeeklyTrend"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Routes Performance Horizontal Bar -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="mb-4">
+                    <h3 class="text-base font-bold text-slate-900">Top Tuyến Tour Chi Tiêu & Lead Thu Thập</h3>
+                    <p class="text-xs text-slate-500">Xếp hạng theo tổng ngân sách phân bổ</p>
+                </div>
+                <div class="relative h-[300px] w-full">
+                    <canvas id="chartTopRoutes"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 2: STRATEGIC WARNINGS & DEEP AUDIT -->
+    <!-- ========================================== -->
+    <div id="page-warnings" class="page-content hidden space-y-6">
+
+        <!-- ALERT BANNER -->
+        <div class="p-5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-4">
+            <span class="text-2xl">⚠️</span>
+            <div>
+                <h3 class="text-base font-bold">Tổng Hợp Cảnh Báo Chiến Lược Dành Cho Ban Lãnh Đạo & Media Buyers</h3>
+                <p class="text-sm mt-1 text-amber-800 leading-relaxed">
+                    Dữ liệu tháng 8/2026 cho thấy 2 cực đối lập rất rõ: <strong>BU1 & BU4 vận hành ổn định, vượt KPI</strong>, trong khi <strong>BU2 giải ngân chậm (44.8%)</strong> và <strong>BU5 gặp rủi ro CPL cao ở các tuyến Ma Rốc, Ai Cập</strong>.
+                </p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- CRITICAL WARNING 1: BU5 CPL SPIKE -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-rose-500 border-t border-r border-b border-slate-200 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-rose-100 text-rose-800">Báo Động Đỏ: Chi Phí Quá Cao</span>
+                    <span class="text-xs font-bold text-slate-400">BU5 • Ai Cập & Ma Rốc</span>
+                </div>
+                <h4 class="text-base font-bold text-slate-900">Ai Cập & Ma Rốc: Chi Tiêu 15,6 Triệu Kém Hiệu Quả, CPL Gần 500.000 đ/Lead</h4>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    - <strong>Tuyến Ai Cập:</strong> Chi 8.285.492 đ ➔ Thu 18 leads ➔ <strong>CPL: 460.305 đ/lead</strong> (Tỷ lệ Msg ➔ Lead chỉ 15.4%).<br>
+                    - <strong>Tuyến Ma Rốc:</strong> Chi 7.370.924 đ ➔ Thu 15 leads ➔ <strong>CPL: 491.395 đ/lead</strong> (Tỷ lệ Msg ➔ Lead chỉ 20.0%).
+                </p>
+                <div class="p-3 bg-rose-50 rounded-xl text-xs text-rose-900 font-medium">
+                    🔍 <strong>Nguyên nhân:</strong> Content chạy bài tổng chung chung [MÙA THU - BÀI TỔNG], đối tượng tệp rộng COLD HN+SG bị loãng, khách hỏi inbox nhưng không để lại thông tin đặt tour hoặc tò mò giá rẻ.
+                </div>
+            </div>
+
+            <!-- CRITICAL WARNING 2: BU2 UNDERSPENDING -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-amber-500 border-t border-r border-b border-slate-200 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-amber-100 text-amber-800">Cảnh Báo Vàng: Tắc Nghẽn Phân Phối</span>
+                    <span class="text-xs font-bold text-slate-400">BU2 • Nhật Bản & Tổng Hợp</span>
+                </div>
+                <h4 class="text-base font-bold text-slate-900">BU2 Tắc Phễu: Mới Tiêu 44.8% Ngân Sách, Lead Đạt 32.5%</h4>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    - Ngân sách cấp: <strong>20.000.000 đ</strong> ➔ Thực tế mới chi <strong>8.957.476 đ</strong>.<br>
+                    - Mục tiêu Lead: <strong>80 Lead</strong> ➔ Thực tế chỉ đạt <strong>26 Lead</strong> (CPL lên tới <strong>344.518 đ/Lead</strong>).
+                </p>
+                <div class="p-3 bg-amber-50 rounded-xl text-xs text-amber-900 font-medium">
+                    🔍 <strong>Nguyên nhân:</strong> Chiến dịch chạy cầm chừng (chỉ có 2 nhóm quảng cáo duy trì suốt tháng), thiếu nội dung mới về Mùa Thu Lá Đỏ Nhật Bản, không mở rộng sang các tuyến Âu - Mỹ - Úc.
+                </div>
+            </div>
+
+            <!-- CRITICAL WARNING 3: AD FATIGUE TREND -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-indigo-500 border-t border-r border-b border-slate-200 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-indigo-100 text-indigo-800">Dấu hiệu suy giảm hiệu suất — cần kiểm chứng Ad Fatigue</span>
+                    <span class="text-xs font-bold text-slate-400">Toàn Hệ Thống • Chu Kỳ 4 Tuần</span>
+                </div>
+                <h4 class="text-base font-bold text-slate-900">Chi Phí Lead Tăng Cao Sau Nửa Đầu Tháng (W1: 182k ➔ W3: 270k ➔ W4: 258k)</h4>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    <strong>[FACT] CPL tăng đáng kể sau tuần 2:</strong> Tuần 1 chi 26.7M thu 147 leads (CPL 182k). Sang Tuần 4, cùng mức chi ~23.5M nhưng chỉ thu 91 leads (CPL 258k, tăng +41.7% so với T1).<br>
+                    <em>* Lưu ý: Tuần 5 chỉ có 1 ngày lẻ (31/08) nên được tách ra khỏi chu kỳ tuần tròn để bảo đảm tính so sánh tương đồng.</em>
+                </p>
+                <div class="p-3 bg-indigo-50 rounded-xl text-xs text-indigo-900 font-medium">
+                    <strong>[HYPOTHESIS] Creative fatigue / audience saturation:</strong> Cùng một nhóm quảng cáo chạy liên tục không thay creative dẫn đến tệp khách hàng nhìn thấy nhiều lần nhưng giảm tương tác.<br><br><strong>[CHECK] Cần xác minh dữ liệu:</strong> Yêu cầu trích xuất bổ sung <em>Frequency, Reach, CTR, CPM theo tuần</em> để có quyết định đổi mới creative chuẩn xác.
+                </div>
+            </div>
+
+            <!-- BRIGHT SPOT: STAR PERFORMERS -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500 border-t border-r border-b border-slate-200 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-emerald-100 text-emerald-800">Hiệu Suất Tốt</span>
+                    <span class="text-xs font-bold text-slate-400">BU4 (Ladakh) & BU5 (Pakistan) & BU1</span>
+                </div>
+                <h4 class="text-base font-bold text-slate-900">Ladakh, Pakistan & Trung Quốc Đóng Góp Hiệu Suất Chính</h4>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    - <strong>Ladakh (BU4):</strong> Thu 73 leads với CPL chỉ <strong>179.180 đ</strong> (Giá Inbox 64k, tỷ lệ gom lead 36%).<br>
+                    - <strong>Pakistan (BU5):</strong> Thu 60 leads với CPL <strong>205.494 đ</strong> (Tỷ lệ Msg ➔ Lead lên tới <strong>42.9%</strong>).<br>
+                    - <strong>Trung Quốc (BU1):</strong> Hoàn thành 100% KPI (150 leads) với CPL đẹp <strong>201.707 đ</strong>, ngân sách chưa giải ngân là 9.74M.
+                </p>
+                <div class="p-3 bg-emerald-50 rounded-xl text-xs text-emerald-900 font-medium">
+                    ✨ <strong>Bí quyết thành công:</strong> Định vị tour ngách rõ nét, video tư liệu thực tế (KOP Dinh Ladakh, mùa thu Pakistan) đánh trúng insight khách mê trải nghiệm độc lạ.
+                </div>
+            </div>
+
+        </div>
+
+        <!-- WORST & BEST ADSETS TABLES (LŨY KẾ CẢ THÁNG) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Worst Adsets -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="mb-4">
+                    <h4 class="text-sm font-extrabold text-rose-800 uppercase tracking-wider flex items-center gap-2">
+                        <span>🛑 Top Nhóm Quảng Cáo Kém Hiệu Quả Nhất Cả Tháng (Cần Tắt / Đổi Creative)</span>
+                    </h4>
+                    <p class="text-[11px] text-slate-500 mt-1">Lũy kế trọn vẹn cả Tháng 8 (Chi tiêu ≥ 1.5M, CPL > 250k) — Đánh giá công bằng theo quy mô cả tháng</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left text-slate-600">
+                        <thead class="text-slate-700 uppercase bg-rose-50/60 font-semibold">
+                            <tr>
+                                <th class="p-2.5">Tên Nhóm Quảng Cáo (Adset)</th>
+                                <th class="p-2.5 text-center">BU</th>
+                                <th class="p-2.5 text-center">Thời Gian</th>
+                                <th class="p-2.5 text-right">Chi Tiêu Tháng</th>
+                                <th class="p-2.5 text-center">Tổng Lead</th>
+                                <th class="p-2.5 text-right">Avg CPL</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100" id="tbl-worst-adsets">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Best Adsets -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="mb-4">
+                    <h4 class="text-sm font-extrabold text-emerald-800 uppercase tracking-wider flex items-center gap-2">
+                        <span>🏆 Top Nhóm Quảng Cáo Xuất Sắc Nhất Cả Tháng (Core Winners Cả Tháng)</span>
+                    </h4>
+                    <p class="text-[11px] text-slate-500 mt-1">Lũy kế trọn vẹn cả Tháng 8 (Thu ≥ 10 Leads, CPL thấp nhất) — Đánh giá công bằng theo quy mô cả tháng</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left text-slate-600">
+                        <thead class="text-slate-700 uppercase bg-emerald-50/60 font-semibold">
+                            <tr>
+                                <th class="p-2.5">Tên Nhóm Quảng Cáo (Adset)</th>
+                                <th class="p-2.5 text-center">BU</th>
+                                <th class="p-2.5 text-center">Thời Gian</th>
+                                <th class="p-2.5 text-right">Chi Tiêu Tháng</th>
+                                <th class="p-2.5 text-center">Tổng Lead</th>
+                                <th class="p-2.5 text-right">Avg CPL</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100" id="tbl-best-adsets">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 2.5: DEEP FORENSIC AUDIT: WEEK 2 VS WEEK 3 -->
+    <!-- ========================================== -->
+    <div id="page-deep-w2-w3" class="page-content hidden space-y-6">
+
+        <!-- HEADER BANNER -->
+        <div class="p-6 rounded-2xl bg-gradient-to-r from-rose-950 via-slate-900 to-indigo-950 text-white shadow-md space-y-3">
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-rose-600 text-white">FORENSIC COMPARISON</span>
+                <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-white/20 text-white">HAI BƯỚC NGOẶT: W2 ➔ W3 & W2 ➔ W4</span>
+            </div>
+            <h2 class="text-xl md:text-2xl font-extrabold tracking-tight">
+                Giải Phẫu Hai Bước Ngoặt Trọng Yếu: Tuần 2 ➔ Tuần 3 và Tuần 2 ➔ Tuần 4
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs leading-relaxed pt-1">
+                <div class="p-3 bg-white/10 rounded-xl border border-white/10 space-y-1">
+                    <strong class="text-rose-300 block font-bold">📉 Bước Ngoặt 1: W2 ➔ W3 (Sụt Giảm Sản Lượng)</strong>
+                    <span>Chi tiêu tăng <strong>+4.5%</strong> (23.98M ➔ 25.08M) nhưng lượng Lead giảm <strong>-21.2%</strong> (118 ➔ 93 Lead), đẩy CPL tăng <strong>+32.7%</strong> (203k ➔ 269k) do cắt giảm ngân sách BU4 và hiệu suất chuyển đổi tạm co hẹp.</span>
+                </div>
+                <div class="p-3 bg-white/10 rounded-xl border border-white/10 space-y-1">
+                    <strong class="text-amber-300 block font-bold">🚨 Bước Ngoặt 2: W2 ➔ W4 (Đứt Gãy Đầu Phễu & Đội Chi Phí)</strong>
+                    <span>Cùng mức chi <strong>~23.5M</strong> (-2.1%) nhưng lượng Lead hụt mất <strong>27 Leads (-22.9%)</strong>, giá tin nhắn đội lên <strong>+54.0%</strong> (60k ➔ 92.8k) và CPL đắt hơn <strong>+26.9%</strong> do cạn kiệt tệp cũ.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY COMPARISON TABLE -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80">
+                <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
+                    📊 Bảng So Sánh Chỉ Số Phễu Giữa Tuần 2 và Tuần 3 Theo Từng BU
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left text-slate-700">
+                    <thead class="text-slate-700 uppercase bg-slate-100 font-bold">
+                        <tr>
+                            <th class="p-3">Đơn Vị (BU)</th>
+                            <th class="p-3 text-right">Chi Tiêu T2</th>
+                            <th class="p-3 text-right">Chi Tiêu T3</th>
+                            <th class="p-3 text-center">Δ Chi Tiêu</th>
+                            <th class="p-3 text-center">Lead T2</th>
+                            <th class="p-3 text-center">Lead T3</th>
+                            <th class="p-3 text-center">Δ Lead</th>
+                            <th class="p-3 text-right">CPL T2</th>
+                            <th class="p-3 text-right">CPL T3</th>
+                            <th class="p-3 text-center font-extrabold text-rose-700">Δ CPL (Lạm Phát Lead)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr class="hover:bg-slate-50/50 bg-emerald-50/20">
+                            <td class="p-3 font-bold text-slate-900">🇨🇳 BU1</td>
+                            <td class="p-3 text-right">6.000.474 đ</td>
+                            <td class="p-3 text-right">8.360.276 đ</td>
+                            <td class="p-3 text-center font-bold text-blue-600">+39.3%</td>
+                            <td class="p-3 text-center font-bold">32</td>
+                            <td class="p-3 text-center font-bold text-emerald-700">45</td>
+                            <td class="p-3 text-center font-bold text-emerald-600">+40.6% 🟢</td>
+                            <td class="p-3 text-right">187.515 đ</td>
+                            <td class="p-3 text-right text-emerald-700 font-bold">185.784 đ</td>
+                            <td class="p-3 text-center font-bold text-emerald-600">-0.9% (Cực Tốt)</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-3 font-bold text-slate-900">🌍 BU2 (Âu, Mỹ, Nhật)</td>
+                            <td class="p-3 text-right">1.445.504 đ</td>
+                            <td class="p-3 text-right">1.381.274 đ</td>
+                            <td class="p-3 text-center text-slate-500">-4.4%</td>
+                            <td class="p-3 text-center font-bold">3</td>
+                            <td class="p-3 text-center font-bold text-slate-700">3</td>
+                            <td class="p-3 text-center text-slate-500">0.0% ⚪</td>
+                            <td class="p-3 text-right text-rose-600 font-bold">481.835 đ</td>
+                            <td class="p-3 text-right text-rose-600 font-bold">460.425 đ</td>
+                            <td class="p-3 text-center font-bold text-slate-600">-4.4% (Quá Đắt)</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50 bg-rose-50/30">
+                            <td class="p-3 font-bold text-rose-900">🏝️ BU4 (Ngách - Ladakh/Sri Lanka)</td>
+                            <td class="p-3 text-right">7.948.897 đ</td>
+                            <td class="p-3 text-right">5.862.587 đ</td>
+                            <td class="p-3 text-center font-bold text-slate-600">-26.2%</td>
+                            <td class="p-3 text-center font-bold text-blue-700">47</td>
+                            <td class="p-3 text-center font-bold text-rose-700">19</td>
+                            <td class="p-3 text-center font-bold text-rose-600">-59.6% 🔴 (Sụt Giảm Đột Ngột)</td>
+                            <td class="p-3 text-right text-emerald-700 font-bold">169.125 đ</td>
+                            <td class="p-3 text-right text-rose-700 font-bold">308.557 đ</td>
+                            <td class="p-3 text-center font-bold text-rose-600">+82.4% 🔴 (Tăng Vọt)</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50 bg-purple-50/20">
+                            <td class="p-3 font-bold text-purple-900">🕌 BU5 (Trung Đông & Phi)</td>
+                            <td class="p-3 text-right">8.593.294 đ</td>
+                            <td class="p-3 text-right">8.212.987 đ</td>
+                            <td class="p-3 text-center font-bold text-slate-600">-4.4%</td>
+                            <td class="p-3 text-center font-bold text-blue-700">36</td>
+                            <td class="p-3 text-center font-bold text-purple-700">24</td>
+                            <td class="p-3 text-center font-bold text-rose-600">-33.3% 🔴</td>
+                            <td class="p-3 text-right">238.703 đ</td>
+                            <td class="p-3 text-right text-rose-700 font-bold">342.208 đ</td>
+                            <td class="p-3 text-center font-bold text-rose-600">+43.4% 🔴</td>
+                        </tr>
+                        <tr class="bg-slate-100 font-bold text-slate-900">
+                            <td class="p-3">TỔNG TOÀN HỆ THỐNG</td>
+                            <td class="p-3 text-right">23.988.169 đ</td>
+                            <td class="p-3 text-right">25.083.230 đ</td>
+                            <td class="p-3 text-center font-bold text-blue-700">+4.5%</td>
+                            <td class="p-3 text-center text-blue-800">118</td>
+                            <td class="p-3 text-center text-rose-700">93</td>
+                            <td class="p-3 text-center font-bold text-rose-600">-21.2% 🔴</td>
+                            <td class="p-3 text-right text-slate-800">203.290 đ</td>
+                            <td class="p-3 text-right text-rose-800 font-extrabold">269.712 đ</td>
+                            <td class="p-3 text-center font-extrabold text-rose-700">+32.7% 🔴</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 4 ROOT CAUSES DEEP DIVE -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- CAUSE 1: BU4 DECOMPOSITION -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-rose-100 text-rose-800">ĐÓNG GÓP SỤT GIẢM LỚN NHẤT</span>
+                    <span class="text-xs font-bold text-rose-600">BU4: Giảm 28 Leads (-59.6%)</span>
+                </div>
+                <h4 class="text-base font-bold text-slate-900">BU4: Tác Động Kép Từ Giảm Ngân Sách (-26.2%) & Hiệu Suất Chuyển Đổi Suy Giảm</h4>
+                
+                <!-- Mathematical Decomposition Box -->
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-700 space-y-1.5">
+                    <strong class="text-slate-900 block font-bold">📊 Bóc Tách 2 Tầng Hiệu Ứng Toán Học (Decomposition):</strong>
+                    <div class="grid grid-cols-2 gap-2 text-[11px]">
+                        <div class="p-2 bg-white rounded border border-slate-200">
+                            <span class="text-slate-500 font-semibold block">1. Hiệu Ứng Ngân Sách:</span>
+                            Spend giảm 26.2% ➔ Kỳ vọng số học còn <strong>~34.7 (~35 Lead)</strong> (Hụt ~12.3 Lead do giảm tiền).
+                        </div>
+                        <div class="p-2 bg-white rounded border border-slate-200">
+                            <span class="text-slate-500 font-semibold block">2. Hiệu Ứng Hiệu Suất:</span>
+                            Thực tế đạt <strong>19 Lead</strong> ➔ Hụt thêm <strong>~15.7 Lead</strong> do CPL tăng từ 169k lên 308k (+82.4%).
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs text-slate-600 space-y-2 leading-relaxed">
+                    <p>
+                        • <strong>Tuyến Bhutan (FACT):</strong> Chi tiêu giảm từ 2.10M về 36k (hụt 8 leads so với W2 do chủ động/bị động giảm phân bổ).<br>
+                        • <strong>Tuyến Sri Lanka (FACT & HYPOTHESIS):</strong> Chi tiêu giữ nguyên ~2.89M nhưng Lead giảm từ 19 xuống 6 (CPL tăng x3.2 lần từ 151k ➔ 481k) [FACT]. <em>Giả thuyết cần kiểm chứng:</em> Ad Fatigue / Saturation (cần đo thêm Frequency, CTR, CPM theo tuần), thay đổi Delivery hoặc Offer [HYPOTHESIS].<br>
+                        • <strong>Tuyến Ladakh (FACT & HYPOTHESIS):</strong> CPL tăng từ 149k lên 308k [FACT], cần kiểm chứng chu kỳ làm mới Creative.
+                    </p>
+                </div>
+                <div class="p-3 rounded-xl bg-rose-50 text-xs text-rose-900 font-medium">
+                    📌 <strong>Kết luận chuẩn quản trị:</strong> BU4 là nguồn đóng góp lớn nhất vào mức giảm Lead toàn hệ thống W2➔W3. Trong 28 Lead giảm: ~12 Lead giảm tự nhiên theo ngân sách, và ~16 Lead thiếu hụt do hiệu suất chuyển đổi trên từng đồng chi tiêu suy giảm.
+                </div>
+            </div>
+
+            <!-- CAUSE 2: BU5 MISALLOCATION -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-purple-100 text-purple-800">NGUỒN ĐÓNG GÓP THỨ 2</span>
+                    <span class="text-xs font-bold text-purple-700">BU5: Giảm 12 Leads (-33.3%)</span>
+                </div>
+                <h4 class="text-base font-bold text-slate-900">BU5: Hết Mùa Tuyến Trợ Giá & Tăng Phân Bổ Vào Tuyến High-CPL</h4>
+                <div class="text-xs text-slate-600 space-y-2 leading-relaxed">
+                    <p>
+                        • <strong>Tuyến Bắc Mông Cổ dừng phân bổ (FACT):</strong> W2 chi 1.15M thu 12 leads (CPL 95.8k). Sang W3 tour dừng chạy (chi 0đ), làm mất 12 leads có CPL thấp nhất BU5.<br>
+                        • <strong>Tăng chi tiêu vào Ai Cập & Ma Rốc (FACT):</strong> Media Buyer tăng phân bổ cho Ai Cập (2.03M ➔ 2.54M) và Ma Rốc (2.02M ➔ 2.56M). Hai nhóm này chi 5.1M nhưng chỉ mang về 10 leads (CPL ~510.000 đ/Lead).<br>
+                        • <em>Nhận định:</em> Việc mất đi nhóm tạo lead rẻ cùng lúc với tăng tiền vào nhóm có CPL cao đã đẩy CPL bình quân BU5 từ 238k lên 342k (+43.4%).
+                    </p>
+                </div>
+                <div class="p-3 rounded-xl bg-purple-50 text-xs text-purple-900 font-medium">
+                    📌 <strong>Kết luận:</strong> Cơ cấu phân bổ ngân sách thay đổi là nguyên nhân chính khiến BU5 giảm 12 Lead và tăng CPL trong tuần 3.
+                </div>
+            </div>
+
+            <!-- CAUSE 4: BU1 PERFORMANCE DRIVER -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-emerald-100 text-emerald-800">ĐÓNG GÓP TÍCH CỰC</span>
+                    <span class="text-xs font-bold text-emerald-700">BU1 Tăng +40.6% Leads</span>
+                </div>
+                <h4 class="text-base font-bold text-slate-900">BU1 — Scale Ngân Sách +39.3% Với CPL Duy Trì Ổn Định, Tăng Thêm 13 Leads</h4>
+                <div class="text-xs text-slate-600 space-y-2 leading-relaxed">
+                    <p>
+                        • BU1 tăng chi tiêu từ 6.00M lên <strong>8.36M (+39.3%)</strong>.<br>
+                        • Số lượng Lead tăng tỷ lệ thuận từ 32 lên <strong>45 Leads (+40.6%)</strong>.<br>
+                        • CPL duy trì ổn định ở mức <strong>185.784 đ/Lead</strong>.<br>
+                        • Các tuyến tăng trưởng: <strong>Bắc Kinh</strong> (tăng từ 3 lên 9 leads, CPL giảm từ 257k xuống 160k), <strong>Thanh Tạng</strong> (tăng từ 2 lên 6 leads, CPL giảm từ 418k xuống 138k), <strong>Cửu Trại Câu</strong> (tăng từ 2 lên 11 leads).
+                    </p>
+                </div>
+                <div class="p-3 rounded-xl bg-emerald-50 text-xs text-emerald-900 font-medium">
+                    ✨ <strong>Kết luận:</strong> Nếu không có phần tăng thêm 13 Lead của BU1, tổng Lead W3 sẽ chỉ còn khoảng 80 Lead — thấp hơn đáng kể so với W2 (118 Lead).
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: COMPARISON WEEK 2 VS WEEK 4 (EFFICIENCY EROSION) -->
+        <div class="pt-6 border-t border-slate-200 space-y-6">
+            <div class="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-rose-950 to-slate-900 text-white shadow-md space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-rose-600 text-white">CẢNH BÁO SUY GIẢM HIỆU SUẤT</span>
+                    <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-white/20 text-white">SO SÁNH ĐỐI ỨNG TUẦN 2 VS TUẦN 4</span>
+                </div>
+                <h3 class="text-xl md:text-2xl font-extrabold tracking-tight">
+                    So Sánh W2 vs W4: Cùng Chi ~23.5M Nhưng Mất -27 Leads (-22.9%), CPL Đắt Hơn +26.9%
+                </h3>
+                <p class="text-xs md:text-sm text-rose-200 leading-relaxed max-w-4xl">
+                    Chi tiêu hai tuần gần như bằng nhau (23.98M vs 23.48M, chênh lệch -2.1%). Tuy nhiên, <strong>hiệu suất thực tế Tuần 4 kém hơn rõ rệt</strong>: Lượng Tin nhắn giảm sâu <strong>-36.4%</strong> (398 ➔ 253 Msg), đẩy <strong>giá mỗi tin nhắn tăng vọt +54.0%</strong> (60k ➔ 92.8k). Hậu quả là tổng sản lượng Lead sụt mất <strong>27 Leads</strong> (118 ➔ 91 Leads) và CPL bị đội từ 203k lên 258k (+26.9%). Tỷ lệ chuyển đổi 36% chỉ là hệ quả số học khi mẫu số tin nhắn co lại, không bù đắp được sự thiếu hụt quy mô.
+                </p>
+            </div>
+
+            <!-- T2 vs T4 Matrix Table -->
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80">
+                    <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
+                        📋 Bảng Đối Chiếu Phễu Tuần 2 vs Tuần 4 Theo Từng BU
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left text-slate-700">
+                        <thead class="text-slate-700 uppercase bg-slate-100 font-bold">
+                            <tr>
+                                <th class="p-3">Đơn Vị (BU)</th>
+                                <th class="p-3 text-right">Chi Tiêu T2</th>
+                                <th class="p-3 text-right">Chi Tiêu T4</th>
+                                <th class="p-3 text-center">Inbox T2</th>
+                                <th class="p-3 text-center">Inbox T4</th>
+                                <th class="p-3 text-right">Giá/Msg T2</th>
+                                <th class="p-3 text-right">Giá/Msg T4</th>
+                                <th class="p-3 text-center">Lead T2</th>
+                                <th class="p-3 text-center">Lead T4</th>
+                                <th class="p-3 text-center">Tỷ Lệ T2 (Msg➔Lead)</th>
+                                <th class="p-3 text-center font-extrabold text-emerald-700">Tỷ Lệ T4 (Msg➔Lead)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <!-- BU1 -->
+                            <tr class="hover:bg-slate-50/50">
+                                <td class="p-3 font-bold text-slate-900">🇨🇳 BU1</td>
+                                <td class="p-3 text-right">6.000.474 đ</td>
+                                <td class="p-3 text-right">8.151.260 đ</td>
+                                <td class="p-3 text-center font-bold">98</td>
+                                <td class="p-3 text-center font-bold text-blue-700">104</td>
+                                <td class="p-3 text-right">61.229 đ</td>
+                                <td class="p-3 text-right">78.378 đ</td>
+                                <td class="p-3 text-center font-bold">32</td>
+                                <td class="p-3 text-center font-bold text-blue-700">34</td>
+                                <td class="p-3 text-center font-bold">32.7%</td>
+                                <td class="p-3 text-center font-bold text-blue-700">32.7% (Ổn định)</td>
+                            </tr>
+                            <!-- BU2 -->
+                            <tr class="hover:bg-slate-50/50 bg-blue-50/20">
+                                <td class="p-3 font-bold text-slate-900">🌍 BU2 (Âu, Mỹ, Nhật)</td>
+                                <td class="p-3 text-right">1.445.504 đ</td>
+                                <td class="p-3 text-right">3.479.859 đ</td>
+                                <td class="p-3 text-center font-bold">18</td>
+                                <td class="p-3 text-center font-bold text-blue-700">29</td>
+                                <td class="p-3 text-right">80.306 đ</td>
+                                <td class="p-3 text-right">119.995 đ</td>
+                                <td class="p-3 text-center font-bold">3</td>
+                                <td class="p-3 text-center font-bold text-emerald-700">10</td>
+                                <td class="p-3 text-center font-bold text-slate-500">16.7%</td>
+                                <td class="p-3 text-center font-bold text-emerald-700">34.5% 🟢 (+17.8%)</td>
+                            </tr>
+                            <!-- BU4 -->
+                            <tr class="hover:bg-slate-50/50 bg-emerald-50/20">
+                                <td class="p-3 font-bold text-emerald-900">🏝️ BU4 (Ngách - Ladakh/Sri Lanka)</td>
+                                <td class="p-3 text-right">7.948.897 đ</td>
+                                <td class="p-3 text-right">4.765.517 đ</td>
+                                <td class="p-3 text-center font-bold">180</td>
+                                <td class="p-3 text-center font-bold text-slate-700">52 (-71%)</td>
+                                <td class="p-3 text-right">44.161 đ</td>
+                                <td class="p-3 text-right text-rose-600 font-bold">91.645 đ</td>
+                                <td class="p-3 text-center font-bold">47</td>
+                                <td class="p-3 text-center font-bold text-emerald-700">24</td>
+                                <td class="p-3 text-center font-bold">26.1%</td>
+                                <td class="p-3 text-center font-bold text-emerald-700">46.2% 🟢 (+20.1%)</td>
+                            </tr>
+                            <!-- BU5 -->
+                            <tr class="hover:bg-slate-50/50">
+                                <td class="p-3 font-bold text-slate-900">🕌 BU5 (Trung Đông & Phi)</td>
+                                <td class="p-3 text-right">8.593.294 đ</td>
+                                <td class="p-3 text-right">6.544.248 đ</td>
+                                <td class="p-3 text-center font-bold">102</td>
+                                <td class="p-3 text-center font-bold text-slate-700">67</td>
+                                <td class="p-3 text-right">84.248 đ</td>
+                                <td class="p-3 text-right">97.675 đ</td>
+                                <td class="p-3 text-center font-bold">36</td>
+                                <td class="p-3 text-center font-bold text-slate-700">19</td>
+                                <td class="p-3 text-center font-bold">35.3%</td>
+                                <td class="p-3 text-center font-bold text-slate-700">28.4%</td>
+                            </tr>
+                            <!-- TOTAL -->
+                            <tr class="bg-slate-100 font-bold text-slate-900">
+                                <td class="p-3">TỔNG TOÀN CÔNG TY</td>
+                                <td class="p-3 text-right">23.988.169 đ</td>
+                                <td class="p-3 text-right">23.486.326 đ</td>
+                                <td class="p-3 text-center text-blue-800 font-extrabold">398 Msg</td>
+                                <td class="p-3 text-center text-rose-700 font-extrabold">253 Msg (-36.4%)</td>
+                                <td class="p-3 text-right">60.272 đ</td>
+                                <td class="p-3 text-right text-rose-700 font-extrabold">92.831 đ (+54.0%)</td>
+                                <td class="p-3 text-center font-extrabold">118 Lead</td>
+                                <td class="p-3 text-center font-extrabold text-blue-900">91 Lead</td>
+                                <td class="p-3 text-center font-bold">29.6%</td>
+                                <td class="p-3 text-center font-bold text-slate-700 bg-slate-200/70">36.0% (Co cụm mẫu số)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 3 KEY INSIGHTS EXPLAINING T2 VS T4 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Insight 1 -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="p-2 rounded-lg bg-rose-100 text-rose-700 text-sm">📉</span>
+                        <h4 class="text-sm font-bold text-slate-900">1. Đứt Gãy Đầu Phễu: Giá Tin Nhắn Tăng +54%</h4>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Đầu vào ở Tuần 4 bị co hẹp mạnh: Giá tin nhắn tăng vọt từ 60.2k lên <strong>92.8k đ/Msg (+54.0%)</strong>, lượng inbox sụt từ 398 xuống 253. Đây là nguyên nhân cốt lõi làm sản lượng Lead bị hụt mất <strong>27 Leads</strong> dù mức chi tiêu tương đương.
+                    </p>
+                </div>
+
+                <!-- Insight 2 -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="p-2 rounded-lg bg-amber-100 text-amber-700 text-sm">⚠️</span>
+                        <h4 class="text-sm font-bold text-slate-900">2. Bản Chất Tỷ Lệ Msg➔Lead: Không Bù Đắp Được Đầu Phễu Suy Giảm</h4>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Mặc dù tỷ lệ Msg→Lead tăng từ 29.6% lên 36.0%, lợi thế này không bù được sự suy giảm mạnh ở đầu phễu: Inbox giảm 36.4% và Cost/Msg tăng 54.0%, khiến CPL cuối cùng vẫn tăng 26.9%. Nguyên nhân khả dĩ gồm suy giảm hiệu quả creative, thay đổi delivery hoặc mức độ bão hòa tệp; cần kiểm chứng thêm bằng Frequency, Reach, CTR, CPM và tuổi creative.
+                    </p>
+                </div>
+
+                <!-- Insight 3 -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="p-2 rounded-lg bg-slate-100 text-slate-700 text-sm">🎯</span>
+                        <h4 class="text-sm font-bold text-slate-900">3. Kết Luận Quản Trị: W4 Kém Hơn W2 Về Cả Sản Lượng Lẫn Chi Phí</h4>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        So với Tuần 2, Tuần 4 suy giảm hiệu suất rõ rệt (CPL tăng từ 203k lên 258k). Marketing cần kiểm chứng các giả thuyết về creative/delivery và thử nghiệm các hướng nội dung mới để đưa chi phí mỗi tin nhắn về vùng mục tiêu 50k–60k nhằm khôi phục sản lượng Lead.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 3: BU1 DETAIL -->
+    <!-- ========================================== -->
+    <div id="page-bu1" class="page-content hidden space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-4 gap-4">
+                <div>
+                    <span class="px-3 py-1 text-xs font-bold rounded-md bg-red-100 text-red-800">ĐƠN VỊ KINH DOANH 1</span>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-slate-900 mt-2">🇨🇳 BU1: Thị Trường Trung Quốc & Tuyến Khởi Hành Định Kỳ</h2>
+                    <p class="text-sm text-slate-500 mt-1">Phụ trách: Các tuyến Lệ Giang, Bắc Kinh, Nam Tân Cương, Cửu Trại Câu, Thanh Tạng, Giang Nam, Lịch khởi hành tổng hợp.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block font-semibold">TỔNG LEAD</span>
+                        <span class="text-2xl font-extrabold text-blue-600">150 Lead</span>
+                    </div>
+                    <div class="text-right pl-4 border-l border-slate-200">
+                        <span class="text-xs text-slate-400 block font-semibold">TỔNG CHI TIÊU</span>
+                        <span class="text-2xl font-extrabold text-orange-600">30.25M</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BU1 Metric Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Ngân Sách vs Thực Chi</span>
+                    <div class="text-lg font-bold text-slate-900 mt-1">30.25M / 40M</div>
+                    <span class="text-xs text-emerald-600 font-bold">Tiết kiệm ~9.75M</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Mục Tiêu vs Thực Tế Lead</span>
+                    <div class="text-lg font-bold text-slate-900 mt-1">150 / 150 Lead</div>
+                    <span class="text-xs text-emerald-600 font-bold">Đạt 100% KPI</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Avg CPL (Giá / Lead)</span>
+                    <div class="text-lg font-bold text-emerald-600 mt-1">201.707 đ</div>
+                    <span class="text-xs text-slate-500">Mục tiêu: 150.000 đ</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Chuyển Đổi Msg ➔ Lead</span>
+                    <div class="text-lg font-bold text-blue-600 mt-1">30.5%</div>
+                    <span class="text-xs text-slate-500">491 Msg ➔ 150 Lead</span>
+                </div>
+            </div>
+
+            <!-- BU1 DEEP AD SET & CREATIVE FORENSIC AUDIT (W1 vs W2) -->
+            <div class="pt-6 border-t border-slate-200 space-y-6">
+                <div class="p-5 rounded-2xl bg-gradient-to-r from-red-900 via-rose-900 to-slate-900 text-white space-y-2">
+                    <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-rose-500 text-white">PHÂN TÍCH CHI TIẾT</span>
+                    <h3 class="text-lg md:text-xl font-extrabold tracking-tight">
+                        🔬 BU1: Phân Tích Chi Tiết Ad Set ➔ Ad (W1 vs W2)
+                    </h3>
+                    <p class="text-xs md:text-sm text-rose-200 leading-relaxed">
+                        So sánh 01–07/08 với 08–14/08: Spend tăng +3.5%, Clicks tăng +22.6%, CPC giảm -15.5% nhưng Leads giảm -15.6% (32 ➔ 27). Vấn đề nằm ở <strong>khả năng biến Click thành Lead sau tương tác</strong> và <strong>sự thay đổi cơ cấu Ad Set/Ad</strong>.
+                    </p>
+                </div>
+
+                <!-- 1. Macro Summary BU1 W1 vs W2 -->
+                <div class="overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-xs text-left text-slate-700">
+                        <thead class="bg-slate-100 uppercase font-bold text-slate-700">
+                            <tr>
+                                <th class="p-3">Chỉ Số Toàn BU1</th>
+                                <th class="p-3 text-right">Tuần 1 (01-07/8)</th>
+                                <th class="p-3 text-right">Tuần 2 (08-14/8)</th>
+                                <th class="p-3 text-right font-extrabold text-blue-800">Biến Động (Δ)</th>
+                                <th class="p-3">Bản Chất / Ý Nghĩa</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr>
+                                <td class="p-3 font-semibold text-slate-900">Chi tiêu (Spend)</td>
+                                <td class="p-3 text-right">4.820.000 đ</td>
+                                <td class="p-3 text-right">4.990.000 đ</td>
+                                <td class="p-3 text-right font-bold text-slate-800">+3.5%</td>
+                                <td class="p-3 text-slate-600">Ngân sách gần như giữ nguyên</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-slate-900">Lượt Click (Clicks)</td>
+                                <td class="p-3 text-right">3.751 clicks</td>
+                                <td class="p-3 text-right">4.600 clicks</td>
+                                <td class="p-3 text-right font-bold text-emerald-700">+22.6% 🟢</td>
+                                <td class="p-3 text-emerald-700 font-medium">Lực kéo traffic từ Creative vẫn cực mạnh</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-slate-900">Giá mỗi Click (CPC)</td>
+                                <td class="p-3 text-right">1.284 đ</td>
+                                <td class="p-3 text-right">1.085 đ</td>
+                                <td class="p-3 text-right font-bold text-emerald-700">-15.5% 🟢</td>
+                                <td class="p-3 text-slate-600">Giá traffic rẻ hơn đáng kể</td>
+                            </tr>
+                            <tr class="bg-rose-50/40">
+                                <td class="p-3 font-bold text-rose-900">Số lượng Lead (Meta)</td>
+                                <td class="p-3 text-right font-bold">32 Lead</td>
+                                <td class="p-3 text-right font-bold text-rose-700">27 Lead</td>
+                                <td class="p-3 text-right font-extrabold text-rose-700">-15.6% 🔴</td>
+                                <td class="p-3 text-rose-700 font-bold">Mất 5 Lead dù click tăng</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-slate-900">Chi phí / Lead (CPL)</td>
+                                <td class="p-3 text-right">150.600 đ</td>
+                                <td class="p-3 text-right">184.800 đ</td>
+                                <td class="p-3 text-right font-bold text-rose-700">+22.7% 🔴</td>
+                                <td class="p-3 text-slate-600">Lạm phát giá mỗi Lead do giảm chuyển đổi</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 2. CHANGE LOG TABLE: AI LÀM BU1 XẤU ĐI? -->
+                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80">
+                        <h4 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
+                            📋 Bảng Change Log Chi Tiết: Nhóm Nào Làm BU1 Giảm Lead?
+                        </h4>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-slate-700">
+                            <thead class="bg-slate-100 uppercase font-bold text-slate-700">
+                                <tr>
+                                    <th class="p-3">Nhóm Quảng Cáo (Ad Set)</th>
+                                    <th class="p-3 text-center">W1 Lead</th>
+                                    <th class="p-3 text-center">W2 Lead</th>
+                                    <th class="p-3 text-center font-bold text-rose-700">Δ Lead</th>
+                                    <th class="p-3 text-right">CPL W1</th>
+                                    <th class="p-3 text-right">CPL W2</th>
+                                    <th class="p-3">Đánh Giá Bản Chất Kỹ Thuật</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr class="bg-rose-50/30">
+                                    <td class="p-3 font-bold text-slate-900">🔴 Lệ Giang - Sa Khê Cổ Trấn</td>
+                                    <td class="p-3 text-center font-bold">9</td>
+                                    <td class="p-3 text-center font-bold text-rose-700">6</td>
+                                    <td class="p-3 text-center font-extrabold text-rose-700">-3</td>
+                                    <td class="p-3 text-right font-bold text-emerald-700">91.5k</td>
+                                    <td class="p-3 text-right font-bold text-rose-700">142.5k (+55%)</td>
+                                    <td class="p-3 text-slate-600">CTR tăng (6.24% ➔ 6.51%), nhưng CVR (Click➔Lead) giảm từ 2.58% xuống 1.80%. Vấn đề xảy ra sau click.</td>
+                                </tr>
+                                <tr class="bg-rose-50/30">
+                                    <td class="p-3 font-bold text-slate-900">🔴 Chuyến tàu Thanh Tạng VID</td>
+                                    <td class="p-3 text-center font-bold">5</td>
+                                    <td class="p-3 text-center font-bold text-rose-700">3</td>
+                                    <td class="p-3 text-center font-extrabold text-rose-700">-2</td>
+                                    <td class="p-3 text-right">159.1k</td>
+                                    <td class="p-3 text-right font-bold text-rose-700">276.6k (+73%)</td>
+                                    <td class="p-3 text-slate-600">CTR y nguyên 7.39%. Cùng ad nhưng CVR rớt. Attention tốt nhưng conversion yếu đi.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold text-slate-900">🟢 Trung Quốc 500K</td>
+                                    <td class="p-3 text-center font-bold">5</td>
+                                    <td class="p-3 text-center font-bold">5</td>
+                                    <td class="p-3 text-center font-bold text-emerald-700">0</td>
+                                    <td class="p-3 text-right">132.5k</td>
+                                    <td class="p-3 text-right">140.2k</td>
+                                    <td class="p-3 text-emerald-700 font-medium">Giữ vững phong độ, cho thấy BU1 duy trì hiệu suất ổn định.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold text-slate-900">🟢 Giang Nam | COLD</td>
+                                    <td class="p-3 text-center font-bold">3</td>
+                                    <td class="p-3 text-center font-bold text-emerald-700">5</td>
+                                    <td class="p-3 text-center font-extrabold text-emerald-700">+2 🟢</td>
+                                    <td class="p-3 text-right">231.4k</td>
+                                    <td class="p-3 text-right font-bold text-emerald-700">140.9k (-39%)</td>
+                                    <td class="p-3 text-emerald-700 font-medium">Cải thiện xuất sắc, bù đắp 2 leads cho BU1.</td>
+                                </tr>
+                                <tr class="bg-amber-50/40">
+                                    <td class="p-3 font-bold text-amber-900">🔴 Tour 2/9 (Bị Tắt Đột Ngột)</td>
+                                    <td class="p-3 text-center font-bold">5</td>
+                                    <td class="p-3 text-center font-bold text-slate-400">0</td>
+                                    <td class="p-3 text-center font-extrabold text-rose-700">-5 🔴</td>
+                                    <td class="p-3 text-right font-bold text-emerald-700">174.0k</td>
+                                    <td class="p-3 text-right text-slate-400">-</td>
+                                    <td class="p-3 text-rose-700 font-bold">Trạng thái <code>single_all_ad_off</code>. Mất trọn vẹn 5 Leads giá rẻ.</td>
+                                </tr>
+                                <tr class="bg-amber-50/40">
+                                    <td class="p-3 font-bold text-amber-900">🔴 Thiên Tây (Bị Tắt Đột Ngột)</td>
+                                    <td class="p-3 text-center font-bold">4</td>
+                                    <td class="p-3 text-center font-bold text-slate-400">0</td>
+                                    <td class="p-3 text-center font-extrabold text-rose-700">-4 🔴</td>
+                                    <td class="p-3 text-right font-bold text-emerald-700">193.0k</td>
+                                    <td class="p-3 text-right text-slate-400">-</td>
+                                    <td class="p-3 text-rose-700 font-bold">Trạng thái <code>single_all_ad_off</code>. Mất trọn vẹn 4 Leads giá rẻ.</td>
+                                </tr>
+                                <tr class="bg-blue-50/30">
+                                    <td class="p-3 font-bold text-blue-900">🟡 Lịch Khởi Hành (Nhóm Mới)</td>
+                                    <td class="p-3 text-center text-slate-400">0</td>
+                                    <td class="p-3 text-center font-bold text-blue-700">6</td>
+                                    <td class="p-3 text-center font-extrabold text-blue-700">+6 🟡</td>
+                                    <td class="p-3 text-right text-slate-400">-</td>
+                                    <td class="p-3 text-right font-bold text-amber-700">200.9k</td>
+                                    <td class="p-3 text-slate-600">Chi 1.205M (24% ngân sách BU1), CPC siêu rẻ 925đ, nhưng CPL 201k do catalogue loãng.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold text-slate-900">🟡 Bắc Kinh (Nhóm Mới)</td>
+                                    <td class="p-3 text-center text-slate-400">0</td>
+                                    <td class="p-3 text-center font-bold">1</td>
+                                    <td class="p-3 text-center font-bold text-slate-700">+1</td>
+                                    <td class="p-3 text-right text-slate-400">-</td>
+                                    <td class="p-3 text-right font-bold text-rose-700">347.9k</td>
+                                    <td class="p-3 text-slate-600">303 clicks, CPC rẻ 1.148đ nhưng chỉ 1 Lead. Kéo CPC đẹp nhưng CPL xấu.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold text-slate-900">🟡 Cửu Trại Câu (Nhóm Mới)</td>
+                                    <td class="p-3 text-center text-slate-400">0</td>
+                                    <td class="p-3 text-center font-bold">2</td>
+                                    <td class="p-3 text-center font-bold text-slate-700">+2</td>
+                                    <td class="p-3 text-right text-slate-400">-</td>
+                                    <td class="p-3 text-right">173.6k</td>
+                                    <td class="p-3 text-slate-600">Chi 347k, 236 clicks, gom 2 leads tạm ổn.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 3. DEEP CREATIVE LEVEL & META DELIVERY PARADOX -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="p-2 rounded-lg bg-red-100 text-red-700 text-sm">🎯</span>
+                            <h4 class="text-sm font-bold text-slate-900">Tầng Creative: Cùng Video Winner Nhưng CVR Giảm</h4>
+                        </div>
+                        <div class="text-xs text-slate-600 leading-relaxed space-y-2">
+                            <p>
+                                • <strong>Lệ Giang VID (Creative ID: 1583381296462701):</strong> Ở W1 chi 784k thu 9 leads (87.2k CPL). Sang W2, chính video này chi 855k nhưng chỉ thu 6 leads (142.5k CPL). CTR vẫn tăng nhưng chuyển đổi thành số điện thoại giảm 30%.<br>
+                                • <strong>Thanh Tạng VID (Creative ID: 1443683270849394):</strong> W1 chi 795k thu 5 leads (159k CPL), W2 chi 829k thu 3 leads (276.6k CPL). CTR giữ nguyên 7.39%.
+                            </p>
+                            <div class="p-2.5 rounded-lg bg-slate-50 text-slate-800 font-medium">
+                                📌 <strong>Kết luận Creative:</strong> Không phải do Video mất khả năng kéo click (Attention vẫn rất cao), mà do người dùng sau khi click vào xem tin nhắn chưa được chốt ngay ưu đãi hoặc lời mời lịch khởi hành.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="p-2 rounded-lg bg-amber-100 text-amber-700 text-sm">⚠️</span>
+                            <h4 class="text-sm font-bold text-slate-900">Vấn Đề Phân Phối: Meta Tối Ưu Cho "Traffic Rẻ" Thay Vì "Lead Rẻ"</h4>
+                        </div>
+                        <div class="text-xs text-slate-600 leading-relaxed space-y-2">
+                            <p>
+                                • <strong>Lịch Khởi Hành:</strong> CPC chỉ <strong>925đ/click</strong> (cực kỳ rẻ) ➔ Meta dồn tới 1.205tr (24% ngân sách BU1), nhưng CPL lên tới <strong>200.9k</strong>.<br>
+                                • <strong>Lệ Giang W1:</strong> CPC đắt hơn <strong>2.360đ/click</strong> ➔ Nhưng CPL siêu rẻ chỉ <strong>91.5k</strong>.<br>
+                                • <strong>Nguyên lý:</strong> Thuật toán tự động tìm click giá rẻ nhất, làm ngập tài khoản bằng traffic tò mò xem catalogue nhưng không có ý định đặt tour sâu.
+                            </p>
+                            <div class="p-2.5 rounded-lg bg-amber-50 text-amber-900 font-medium">
+                                💡 <strong>Giải pháp BU1:</strong> Tách nhỏ ad catalogue "Lịch Khởi Hành" thành từng creative chuyên biệt (Lệ Giang Mùa Thu, Cửu Trại Câu, Tây Tạng) và khôi phục các ad winner bị tắt nhầm!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 4: BU2 DETAIL -->
+    <!-- ========================================== -->
+    <div id="page-bu2" class="page-content hidden space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-4 gap-4">
+                <div>
+                    <span class="px-3 py-1 text-xs font-bold rounded-md bg-blue-100 text-blue-800">ĐƠN VỊ KINH DOANH 2</span>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-slate-900 mt-2">🌍 BU2: Thị Trường Nhật Bản & Tuyến Đường Xa (Âu, Mỹ, Úc)</h2>
+                    <p class="text-sm text-slate-500 mt-1">Phụ trách: Nhật Bản, Tour Tổng Hợp cao cấp, các thị trường đường xa Âu - Mỹ - Úc.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block font-semibold">TỔNG LEAD</span>
+                        <span class="text-2xl font-extrabold text-rose-600">26 Lead</span>
+                    </div>
+                    <div class="text-right pl-4 border-l border-slate-200">
+                        <span class="text-xs text-slate-400 block font-semibold">TỔNG CHI TIÊU</span>
+                        <span class="text-2xl font-extrabold text-orange-600">8.95M</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BU2 Metric Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Ngân Sách vs Thực Chi</span>
+                    <div class="text-lg font-bold text-slate-900 mt-1">8.95M / 20M</div>
+                    <span class="text-xs text-rose-600 font-bold">Mới giải ngân 44.8%</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Mục Tiêu vs Thực Tế Lead</span>
+                    <div class="text-lg font-bold text-slate-900 mt-1">26 / 80 Lead</div>
+                    <span class="text-xs text-rose-600 font-bold">Chỉ đạt 32.5% KPI</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Avg CPL (Giá / Lead)</span>
+                    <div class="text-lg font-bold text-rose-600 mt-1">344.518 đ</div>
+                    <span class="text-xs text-rose-600">Cao hơn +129% KPI</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Số Adsets Duy Trì</span>
+                    <div class="text-lg font-bold text-slate-900 mt-1">7 Adsets / 5 Tuần</div>
+                    <span class="text-xs text-slate-500">Quá ít chiến dịch</span>
+                </div>
+            </div>
+
+            <!-- BU2 COMPREHENSIVE FORENSIC AUDIT & SCALE DIAGNOSIS -->
+            <div class="pt-6 border-t border-slate-200 space-y-6">
+                <div class="p-5 rounded-2xl bg-gradient-to-r from-blue-900 via-slate-900 to-indigo-950 text-white space-y-2">
+                    <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-blue-500 text-white">SCALE BOTTLENECK DIAGNOSIS</span>
+                    <h3 class="text-lg md:text-xl font-extrabold tracking-tight">
+                        🇯🇵 BU2: Chẩn Đoán Thắt Nút Cổ Chai (Scale Bottleneck) & Lộ Trình Tái Cấu Trúc
+                    </h3>
+                    <p class="text-xs md:text-sm text-blue-200 leading-relaxed">
+                        Vấn đề cốt lõi của BU2 khác hoàn toàn BU1: <strong>Không phải "đang tốt bị suy giảm", mà là "chưa đạt được quy mô và hiệu suất hiện tại chưa đủ tốt để scale"</strong>.
+                    </p>
+                </div>
+
+                <!-- 3 GAPS & FUNNEL METRICS TABLE -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <div class="p-4 rounded-xl bg-white border border-slate-200 shadow-sm space-y-1.5">
+                        <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold uppercase">Khoảng Cách 1: Budget</span>
+                        <h4 class="text-sm font-bold text-slate-900">Giải Ngân Mới 44.8% (Thiếu 11.04M)</h4>
+                        <p class="text-slate-600">Kế hoạch 20M nhưng chỉ tiêu 8.96M. Không phải do Media Buyer lười tiêu tiền, mà do Meta không tìm được tệp chuyển đổi rẻ để cắn tiền.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-white border border-slate-200 shadow-sm space-y-1.5">
+                        <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold uppercase">Khoảng Cách 2: Lead Target</span>
+                        <h4 class="text-sm font-bold text-slate-900">Đạt 26 / 80 Lead (Hụt 54 Lead)</h4>
+                        <p class="text-slate-600">Mới hoàn thành 32.5% KPI Lead của tháng. Thiếu hụt nghiêm trọng nguồn khách hàng cho đội Sales.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-white border border-slate-200 shadow-sm space-y-1.5">
+                        <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold uppercase">Khoảng Cách 3: Efficiency</span>
+                        <h4 class="text-sm font-bold text-slate-900">CPL 344.5k (+71% vs BU1)</h4>
+                        <p class="text-slate-600">Đắt hơn BU1 (+71%), đắt hơn BU4 (+76%), và đắt hơn trung bình toàn tài khoản (+50%).</p>
+                    </div>
+                </div>
+
+                <!-- FUNNEL COMPARISON TABLE: BU2 VS OTHER BUS -->
+                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80">
+                        <h4 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
+                            📊 Đối Chiếu Phễu: BU2 Bị Tắc Ngay Từ Đầu Phễu (Top of Funnel)
+                        </h4>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-slate-700">
+                            <thead class="bg-slate-100 uppercase font-bold text-slate-700">
+                                <tr>
+                                    <th class="p-3">Đơn Vị (BU)</th>
+                                    <th class="p-3 text-right">Chi Phí / Inbox (Cost/Msg)</th>
+                                    <th class="p-3 text-center">Tỷ Lệ Chuyển Đổi (Msg ➔ Lead)</th>
+                                    <th class="p-3 text-right">Chi Phí / Lead (CPL)</th>
+                                    <th class="p-3">Chẩn Đoán Nút Thắt (Diagnosis)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr>
+                                    <td class="p-3 font-bold text-slate-900">🏝️ BU4</td>
+                                    <td class="p-3 text-right font-bold text-emerald-700">48.400 đ</td>
+                                    <td class="p-3 text-center font-bold">24.7%</td>
+                                    <td class="p-3 text-right font-bold text-emerald-700">196.000 đ</td>
+                                    <td class="p-3 text-slate-600">Đầu phễu rẻ, scale tốt</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold text-slate-900">🇨🇳 BU1</td>
+                                    <td class="p-3 text-right font-bold text-blue-700">61.600 đ</td>
+                                    <td class="p-3 text-center font-bold text-blue-700">30.5%</td>
+                                    <td class="p-3 text-right font-bold text-blue-700">201.700 đ</td>
+                                    <td class="p-3 text-slate-600">Cân bằng tốt cả phễu</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold text-slate-900">🕌 BU5</td>
+                                    <td class="p-3 text-right">79.100 đ</td>
+                                    <td class="p-3 text-center font-bold">29.0%</td>
+                                    <td class="p-3 text-right">273.000 đ</td>
+                                    <td class="p-3 text-slate-600">Chi phí trung bình</td>
+                                </tr>
+                                <tr class="bg-rose-50/50">
+                                    <td class="p-3 font-bold text-rose-900">🇯🇵 BU2 (Âu / Mỹ / Nhật)</td>
+                                    <td class="p-3 text-right font-extrabold text-rose-700 bg-rose-100/60">91.400 đ 🔴 (Đắt nhất)</td>
+                                    <td class="p-3 text-center font-bold text-slate-800">26.5% (Tạm ổn)</td>
+                                    <td class="p-3 text-right font-extrabold text-rose-700">344.500 đ 🔴</td>
+                                    <td class="p-3 text-rose-800 font-bold">Yếu ngay từ khâu tạo Inbox! Khó mua hội thoại rẻ.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 2 MAIN CAMPAIGNS & THE TESTING BREADTH GAP -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Campaign 1: Nhật Bản -->
+                    <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-sm font-bold text-slate-900">🌸 1. Campaign Nhật Bản (Chính)</h4>
+                            <span class="px-2 py-0.5 text-xs bg-rose-100 text-rose-800 rounded font-bold">CTR Thấp 2.0%</span>
+                        </div>
+                        <div class="text-xs text-slate-600 space-y-1.5 leading-relaxed">
+                            <p>• <strong>Số liệu:</strong> Spend 5.94M • 19 Lead • <strong>CPL 312.6k</strong> • CPC 2.177đ • <strong>CTR 2.00%</strong>.</p>
+                            <p>• <strong>Bản chất:</strong> CTR 2.00% cho thấy creative chưa tạo được sự chú ý và khao khát (Attention & Desire). Đi Nhật là thị trường cạnh tranh khốc liệt, hình ảnh chung chung sẽ bị lướt qua ngay.</p>
+                        </div>
+                    </div>
+
+                    <!-- Campaign 2: Tổng Hợp -->
+                    <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-sm font-bold text-slate-900">🌍 2. Campaign Tổng Hợp (Phụ)</h4>
+                            <span class="px-2 py-0.5 text-xs bg-amber-100 text-amber-800 rounded font-bold">CTR 3.49% nhưng CPL 305k</span>
+                        </div>
+                        <div class="text-xs text-slate-600 space-y-1.5 leading-relaxed">
+                            <p>• <strong>Số liệu:</strong> Spend 2.14M • 7 Lead • <strong>CPL 305.1k</strong> • CPC 1.762đ • <strong>CTR 3.49%</strong>.</p>
+                            <p>• <strong>Bài học:</strong> CTR tốt hơn nhưng CPL vẫn đứng ở mức 305k. Điều này chứng minh: <em>Chỉ tăng CTR chưa đủ, phải test Creative có Buying Intent (Ý định mua thực tế)</em>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BRIGHT SPOT: W2 vs W4 CONVERSION SPIKE -->
+                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded bg-emerald-200 text-emerald-800 font-bold text-xs uppercase">Tín Hiệu Tích Cực</span>
+                        <h4 class="text-sm font-bold text-emerald-900">Khi Vào Đúng Tệp, BU2 Chốt Lead Cực Tốt (W2 ➔ W4: 16.7% ➔ 34.5%)</h4>
+                    </div>
+                    <p class="text-xs text-emerald-800 leading-relaxed">
+                        Từ Tuần 2 sang Tuần 4, khi lượng Inbox tăng từ 18 lên 29 (+61%), số Lead đã bứt phá từ <strong>3 lên 10 Lead (+233%)</strong>. Tỷ lệ chuyển đổi vọt lên <strong>34.5%</strong>. Điều này khẳng định đội ngũ Sales không chốt kém; nút thắt 100% nằm ở <strong>khâu Acquisition (quảng cáo mồi tin nhắn chưa đủ mạnh và tệp bị bó hẹp)</strong>.
+                    </p>
+                </div>
+
+                <!-- 4 PRIORITIES ROADMAP & 5 CREATIVE ANGLES -->
+                <div class="bg-slate-900 text-white p-6 rounded-2xl space-y-4">
+                    <h4 class="text-sm font-bold text-amber-400 uppercase tracking-wider">
+                        🚀 Lộ Trình 4 Bước Tái Cấu Trúc BU2 (Chuyển Giai Đoạn Từ "Testing" Sang "Scale")
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div class="space-y-2 p-3.5 rounded-xl bg-slate-800/80 border border-slate-700">
+                            <strong class="text-emerald-400 block text-sm">1. Không Tăng Ngân Sách Vội Vàng</strong>
+                            <p class="text-slate-300">Giữ ngân sách ở mức kiểm chứng (~200k - 300k/ngày/nhóm). Mục tiêu số 1 là đưa CPL từ 344k về <strong>dưới 280k</strong> trước khi rót thêm tiền.</p>
+                        </div>
+                        <div class="space-y-2 p-3.5 rounded-xl bg-slate-800/80 border border-slate-700">
+                            <strong class="text-emerald-400 block text-sm">2. Mở Rộng Thử Nghiệm (Testing Breadth)</strong>
+                            <p class="text-slate-300">Tách riêng biệt các sản phẩm: <strong>Nhật Lá Đỏ</strong> • <strong>Châu Âu Thu Đông/Tết</strong> • <strong>Úc Mùa Xuân</strong> • <strong>Mỹ</strong>. Tuyệt đối không gộp chung vào 1 adset.</p>
+                        </div>
+                        <div class="space-y-2 p-3.5 rounded-xl bg-slate-800/80 border border-slate-700">
+                            <strong class="text-emerald-400 block text-sm">3. Thử Nghiệm 5 Góc Tiếp Cận (Creative Angles)</strong>
+                            <p class="text-slate-300">
+                                <strong>A. Emotional Hook</strong> (Mùa lá đỏ ngắm núi Phú Sĩ)<br>
+                                <strong>B. Itinerary/Product</strong> (Cung đường vàng không shopping)<br>
+                                <strong>C. Price/Offer</strong> (Ưu đãi đăng ký sớm giảm 2 triệu)<br>
+                                <strong>D. Social Proof</strong> (Hình ảnh đoàn khách VIP FIT Tour)<br>
+                                <strong>E. Urgency</strong> (Lịch khởi hành giới hạn 15 chỗ).
+                            </p>
+                        </div>
+                        <div class="space-y-2 p-3.5 rounded-xl bg-slate-800/80 border border-slate-700">
+                            <strong class="text-emerald-400 block text-sm">4. Lộ Trình Đo Lường 3 Giai Đoạn (KPIs)</strong>
+                            <p class="text-slate-300">
+                                <strong>Giai đoạn 1:</strong> Kéo Cost/Inbox từ 91.4k về <strong>&lt;75.000 đ</strong><br>
+                                <strong>Giai đoạn 2:</strong> Kéo CPL về <strong>&lt;280.000 đ</strong><br>
+                                <strong>Giai đoạn 3:</strong> Kéo CPL về <strong>&lt;250.000 đ</strong> ➔ Bắt đầu nâng ngân sách lên 20M - 30M/tháng.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 5: BU4 DETAIL -->
+    <!-- ========================================== -->
+    <div id="page-bu4" class="page-content hidden space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-4 gap-4">
+                <div>
+                    <span class="px-3 py-1 text-xs font-bold rounded-md bg-amber-100 text-amber-800">ĐƠN VỊ KINH DOANH 4</span>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-slate-900 mt-2">🏝️ BU4: Thị Trường Khám Phá & Tuyến Ngách (Ladakh, Sri Lanka)</h2>
+                    <p class="text-sm text-slate-500 mt-1">Phụ trách: Tuyến hành hương & trekking Ladakh (Ấn Độ), Sri Lanka, Bhutan.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block font-semibold">TỔNG LEAD</span>
+                        <span class="text-2xl font-extrabold text-emerald-600">148 Lead</span>
+                    </div>
+                    <div class="text-right pl-4 border-l border-slate-200">
+                        <span class="text-xs text-slate-400 block font-semibold">TỔNG CHI TIÊU</span>
+                        <span class="text-2xl font-extrabold text-orange-600">29.00M</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BU4 Metric Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Ngân Sách vs Thực Chi</span>
+                    <div class="text-lg font-bold text-slate-900 mt-1">29.00M / 30M</div>
+                    <span class="text-xs text-emerald-600 font-bold">Giải ngân 96.7% (Rất chuẩn)</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Mục Tiêu vs Thực Tế Lead</span>
+                    <div class="text-lg font-bold text-slate-900 mt-1">148 / 100 Lead</div>
+                    <span class="text-xs text-emerald-600 font-bold">Vượt +48.0% KPI</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Avg CPL (Giá / Lead)</span>
+                    <div class="text-lg font-bold text-emerald-600 mt-1">195.959 đ</div>
+                    <span class="text-xs text-emerald-600 font-bold">Rẻ nhất toàn công ty</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Avg CPL Msg (Giá / Inbox)</span>
+                    <div class="text-lg font-bold text-emerald-600 mt-1">48.417 đ</div>
+                    <span class="text-xs text-emerald-600 font-bold">Hút 599 Tin nhắn</span>
+                </div>
+            </div>
+
+            <!-- BU4 COMPREHENSIVE FORENSIC AUDIT (MID-MONTH DECLINE & PRODUCT DRILL-DOWN) -->
+            <div class="pt-6 border-t border-slate-200 space-y-6">
+                <div class="p-5 rounded-2xl bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white space-y-2">
+                    <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-emerald-500 text-white">CORE WINNER AUDIT</span>
+                    <h3 class="text-lg md:text-xl font-extrabold tracking-tight">
+                        🏝️ BU4: Phân Tích Suy Giảm Giữa Tháng (W2 ➔ W3) & Chiến Lược Quản Trị Tệp Ngách
+                    </h3>
+                    <p class="text-xs md:text-sm text-emerald-200 leading-relaxed">
+                        BU4 đóng góp <strong>32.5% tổng Lead</strong> toàn hệ thống với chỉ <strong>27.8% ngân sách</strong>. Đây là BU có hiệu suất tốt nhất, nhưng có một <strong>cú sụt giảm rất mạnh W2 ➔ W3 (mất 28 Leads chỉ trong 7 ngày)</strong> cần được giải mã tường tận.
+                    </p>
+                </div>
+
+                <!-- 1. MACRO EFFICIENCY & W2 vs W3 SHOCK -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+                        <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-xs uppercase">Bức Tranh Tổng Thể</span>
+                        <h4 class="text-sm font-bold text-slate-900">Vượt 148% KPI Lead Với Chi Phí Rẻ Nhất Hệ Thống</h4>
+                        <div class="text-xs text-slate-600 space-y-1 leading-relaxed">
+                            <p>• <strong>Chi tiêu:</strong> 29.00M / 30M kế hoạch (Giải ngân đạt chuẩn 96.7%).</p>
+                            <p>• <strong>Lead:</strong> 148 / 100 Lead (Vượt +48% KPI, CPL siêu rẻ 196.000 đ).</p>
+                            <p>• <strong>Inbox:</strong> 599 Tin nhắn, Cost/Inbox chỉ <strong>48.400 đ</strong> (Rẻ nhất toàn công ty).</p>
+                            <p>• <strong>Ý nghĩa:</strong> Các điểm đến độc lạ (Niche destinations) có sức hút tự nhiên rất lớn, chứng minh thế mạnh cốt lõi của FIT TOUR.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+                        <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-xs uppercase">Bóc Tách W2 ➔ W3</span>
+                        <h4 class="text-sm font-bold text-rose-900">Nguồn Đóng Góp Giảm Lớn Nhất (Tách 2 Hiệu Ứng)</h4>
+                        <div class="text-xs text-slate-600 space-y-1.5 leading-relaxed">
+                            <p>• <strong>1. Hiệu Ứng Ngân Sách (Budget Effect):</strong> Spend giảm 26.2% (7.95M ➔ 5.86M), theo kỳ vọng số học ở CPL cũ (169k) thì Lead giảm từ 47 xuống <strong>~35 Lead</strong> (~12 Lead giảm do giảm tiền).</p>
+                            <p>• <strong>2. Hiệu Ứng Hiệu Suất (Efficiency Effect):</strong> Thực tế đạt <strong>19 Lead</strong> ➔ Hụt thêm <strong>~16 Lead</strong> do CPL tăng +82.4% (169k ➔ 308.6k).</p>
+                            <p>• <strong>Kết luận:</strong> Không quy chụp toàn bộ 28 Lead là lỗi hiệu suất; cần phân định rõ phần giảm do điều chỉnh vốn và phần giảm do suy giảm chuyển đổi.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. PRODUCT LEVEL FORENSIC AUDIT: 3 TUYẾN 3 HÀNH VI KHÁC BIỆT -->
+                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80">
+                        <h4 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
+                            🔍 Phân Tích 3 Tuyến Trọng Điểm (Tách Bạch FACT & HYPOTHESIS)
+                        </h4>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-slate-700">
+                            <thead class="bg-slate-100 uppercase font-bold text-slate-700">
+                                <tr>
+                                    <th class="p-3">Tuyến Sản Phẩm</th>
+                                    <th class="p-3 text-right">Tổng Chi Tiêu</th>
+                                    <th class="p-3 text-center">Tổng Lead</th>
+                                    <th class="p-3 text-right">Avg CPL</th>
+                                    <th class="p-3 text-center">Tỷ Lệ Msg ➔ Lead</th>
+                                    <th class="p-3">Dữ Liệu Thực Tế (FACT) & Giả Thuyết Kỹ Thuật (HYPOTHESIS)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr>
+                                    <td class="p-3 font-bold text-slate-900">🏔️ Ladakh (Core Winner)</td>
+                                    <td class="p-3 text-right">12.49M</td>
+                                    <td class="p-3 text-center font-bold text-emerald-700">73 Lead</td>
+                                    <td class="p-3 text-right font-bold text-emerald-700">178.6k</td>
+                                    <td class="p-3 text-center font-bold text-emerald-700">36.0%</td>
+                                    <td class="p-3 text-slate-600"><strong>[FACT]:</strong> Cỗ máy tạo lead tốt nhất tháng. W2➔W3 CPL tăng từ 149k lên 308k. <em>[HYPOTHESIS]:</em> Cần kiểm chứng độ bão hòa tệp hoặc chu kỳ làm mới Creative.</td>
+                                </tr>
+                                <tr class="bg-amber-50/30">
+                                    <td class="p-3 font-bold text-slate-900">🛕 Bhutan (High Volume / Low Intent)</td>
+                                    <td class="p-3 text-right">7.08M</td>
+                                    <td class="p-3 text-center font-bold">37 Lead</td>
+                                    <td class="p-3 text-right">191.4k</td>
+                                    <td class="p-3 text-center font-bold text-rose-700">11.8% (W2)</td>
+                                    <td class="p-3 text-slate-600"><strong>[FACT]:</strong> W2 chi 2.10M thu 76 inbox giá rẻ 27.6k nhưng chỉ 11.8% ra lead. W3 giảm ngân sách về 36k, mất nguồn hội thoại. <em>[HYPOTHESIS]:</em> Cần đưa thông điệp giá/lịch để lọc intent khách.</td>
+                                </tr>
+                                <tr class="bg-rose-50/40">
+                                    <td class="p-3 font-bold text-rose-900">🇱🇰 Sri Lanka (Dấu Hiệu Suy Giảm Hiệu Suất)</td>
+                                    <td class="p-3 text-right">8.41M</td>
+                                    <td class="p-3 text-center font-bold">38 Lead</td>
+                                    <td class="p-3 text-right font-bold text-amber-700">221.3k</td>
+                                    <td class="p-3 text-center font-bold">28.4%</td>
+                                    <td class="p-3 text-rose-800"><strong>[FACT]:</strong> CPL tăng mạnh, W2➔W3 spend giữ nguyên ~2.89M nhưng Lead giảm từ 19 xuống 6 và CPL tăng x3.2 lần. <em>[HYPOTHESIS]:</em> Creative fatigue / audience saturation. <em>[CHECK]:</em> Cần kiểm tra thêm bằng Frequency, CTR, CPM theo tuần.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 3. FUNNEL QUALITY PARADOX: TẠI SAO BU4 CUỐI THÁNG KHÔNG HỀ XẤU -->
+                <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="p-2 rounded-lg bg-blue-100 text-blue-700 text-sm">⚖️</span>
+                        <h4 class="text-sm font-bold text-slate-900">Phễu BU4 (W2 ➔ W4): Inbox Giảm 71% Nhưng Tỷ Lệ Msg→Lead Tăng +20.1%</h4>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600">
+                        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
+                            <strong class="text-slate-800 block">Tuần 2 (Phễu Rộng / Nhiều Khách Tò Mò):</strong>
+                            <p>180 Inbox (44.2k/Msg) ➔ 47 Lead ➔ <strong>Tỷ lệ chuyển đổi = 26.1%</strong>.<br>Nhiều tin nhắn giá rẻ từ Bhutan nhưng tỷ lệ rụng tại khâu tư vấn cao.</p>
+                        </div>
+                        <div class="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200/80 space-y-1">
+                            <strong class="text-emerald-900 block">Tuần 4 (Phễu Tinh Lọc / Khách Có Nhu Cầu Thực):</strong>
+                            <p>52 Inbox (91.6k/Msg) ➔ 24 Lead ➔ <strong>Tỷ lệ chuyển đổi = 46.2% 🟢</strong>.<br>Khách nhắn tin cuối tháng đều là khách sát nhu cầu đặt tour (Sri Lanka đạt 68.4% gom lead, n=19 — cần thêm dữ liệu xác nhận).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. ACTION PLAN & SATURATION PLAYBOOK -->
+                <div class="bg-slate-900 text-white p-6 rounded-2xl space-y-4">
+                    <h4 class="text-sm font-bold text-amber-400 uppercase tracking-wider">
+                        🚀 Chiến Lược Quản Trị BU4: Duy Trì Hiệu Suất & Làm Mới Creative
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div class="space-y-2 p-3.5 rounded-xl bg-slate-800/80 border border-slate-700">
+                            <strong class="text-emerald-400 block text-sm">🏔️ Ladakh (50 - 60% Ngân Sách)</strong>
+                            <p class="text-slate-300">
+                                • <strong>Giữ concept winner:</strong> Trải nghiệm đèo Khardung La, tu viện Phật giáo, hồ Pangong.<br>
+                                • <strong>Làm Creative Variations:</strong> Thay đổi hook 3s đầu (Trải nghiệm văn hóa Tây Tạng thu nhỏ / Trekking ngắm sao), thêm review khách VIP để chống chai tệp.
+                            </p>
+                        </div>
+                        <div class="space-y-2 p-3.5 rounded-xl bg-slate-800/80 border border-slate-700">
+                            <strong class="text-amber-400 block text-sm">🛕 Bhutan (20 - 30% Ngân Sách)</strong>
+                            <p class="text-slate-300">
+                                • <strong>Kiểm soát Lead Quality:</strong> Không chỉ chạy ảnh "Bhutan đẹp/hạnh phúc" kéo tin nhắn rác.<br>
+                                • <strong>Đổi Offer & Messaging:</strong> Đưa rõ "Tour Bhutan 5N4Đ - Bay thẳng - Giá từ X triệu" để sàng lọc người có ngân sách ngay từ quảng cáo.
+                            </p>
+                        </div>
+                        <div class="space-y-2 p-3.5 rounded-xl bg-slate-800/80 border border-slate-700">
+                            <strong class="text-rose-400 block text-sm">🇱🇰 Sri Lanka (10 - 20% Ngân Sách Test)</strong>
+                            <p class="text-slate-300">
+                                • <strong>Ưu tiên số 1:</strong> Dừng ngay các mẫu quảng cáo cũ đã chạy quá 3 tuần.<br>
+                                • <strong>Tung 3 - 5 Creative mới:</strong> Góc Trà Ceylon, Pháo đài đá Sigiriya, Nghỉ dưỡng biển hoang sơ, Lịch trình riêng cho gia đình.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-800 rounded-xl text-xs text-slate-300 font-medium">
+                        💬 <strong>Thông điệp chốt cho Sếp:</strong> <em>“BU4 không phải BU cần 'cứu' — đây là BU cần 'bảo vệ khỏi mất hiệu suất'! Vì tệp khách hàng ngách hẹp hơn đại trà, vòng đời sáng tạo (Creative Lifecycle) ngắn hơn, bắt buộc phải thay đổi mẫu quảng cáo định kỳ 14 ngày/lần.”</em>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 6: BU5 DETAIL -->
+    <!-- ========================================== -->
+    <div id="page-bu5" class="page-content hidden space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-4 gap-4">
+                <div>
+                    <span class="px-3 py-1 text-xs font-bold rounded-md bg-purple-100 text-purple-800">ĐƠN VỊ KINH DOANH 5</span>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-slate-900 mt-2">🕌 BU5: Thị Trường Trung Đông, Châu Phi & Nam Á</h2>
+                    <p class="text-sm text-slate-500 mt-1">Phụ trách: Pakistan, Ai Cập, Ma Rốc, Bắc Mông Cổ.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block font-semibold">TỔNG LEAD</span>
+                        <span class="text-2xl font-extrabold text-purple-600">126 Lead</span>
+                    </div>
+                    <div class="text-right pl-4 border-l border-slate-200">
+                        <span class="text-xs text-slate-400 block font-semibold">TỔNG CHI TIÊU</span>
+                        <span class="text-2xl font-extrabold text-orange-600">34.40M</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BU5 Metric Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Ngân Sách vs Thực Chi</span>
+                    <div class="text-lg font-bold text-slate-900 mt-1">34.40M / 40M</div>
+                    <span class="text-xs text-emerald-600 font-bold">Giải ngân 86.0%</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Mục Tiêu vs Thực Tế Lead</span>
+                    <div class="text-lg font-bold text-slate-900 mt-1">126 / 120 Lead</div>
+                    <span class="text-xs text-emerald-600 font-bold">Vượt nhẹ 105% KPI</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Avg CPL (Giá / Lead)</span>
+                    <div class="text-lg font-bold text-orange-600 mt-1">272.988 đ</div>
+                    <span class="text-xs text-orange-600 font-semibold">Mức cao thứ 2 hệ thống</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <span class="text-xs text-slate-500 font-semibold">Tuyến Pakistan — Đóng Góp Hiệu Suất Chính</span>
+                    <div class="text-lg font-bold text-emerald-600 mt-1">60 Lead (47.6%)</div>
+                    <span class="text-xs text-emerald-600 font-bold">CPL Pakistan: 205k</span>
+                </div>
+            </div>
+
+            <!-- BU5 COMPREHENSIVE FORENSIC AUDIT (INTERNAL POLARIZATION & CAMPAIGN LEVEL) -->
+            <div class="pt-6 border-t border-slate-200 space-y-6">
+                <div class="p-5 rounded-2xl bg-gradient-to-r from-purple-900 via-indigo-950 to-slate-900 text-white space-y-2">
+                    <span class="px-2.5 py-1 text-xs font-bold uppercase rounded-md bg-purple-500 text-white">PORTFOLIO POLARIZATION AUDIT</span>
+                    <h3 class="text-lg md:text-xl font-extrabold tracking-tight">
+                        🕌 BU5: Phân Hóa Hiệu Suất Giữa Winner (Pakistan/Mông Cổ) & High-CPL (Ai Cập/Ma Rốc)
+                    </h3>
+                    <p class="text-xs md:text-sm text-purple-200 leading-relaxed">
+                        BU5 đạt <strong>105% KPI Lead (126 Lead)</strong>, nhưng 126 Lead này được tạo ra với sự chênh lệch chi phí cực lớn: <strong>Pakistan (~205k) vs Ai Cập (~460k) chênh nhau tới 2.2 lần</strong>.
+                    </p>
+                </div>
+
+                <!-- 1. CAMPAIGN LEVEL BREAKDOWN MATRIX -->
+                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80">
+                        <h4 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
+                            📊 Top Campaigns Chính Thuộc BU5 (chiếm 90% ngân sách)
+                        </h4>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-slate-700">
+                            <thead class="bg-slate-100 uppercase font-bold text-slate-700">
+                                <tr>
+                                    <th class="p-3">Thị Trường / Campaign</th>
+                                    <th class="p-3 text-right">Chi Tiêu (Spend)</th>
+                                    <th class="p-3 text-center">Số Lead</th>
+                                    <th class="p-3 text-right">Chi Phí / Lead (CPL)</th>
+                                    <th class="p-3 text-right">CPC</th>
+                                    <th class="p-3 text-center">CTR</th>
+                                    <th class="p-3">Đánh Giá Hiệu Suất</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr class="bg-emerald-50/40">
+                                    <td class="p-3 font-bold text-slate-900">🇵🇰 Pakistan (Core Winner)</td>
+                                    <td class="p-3 text-right">8.50M</td>
+                                    <td class="p-3 text-center font-bold text-emerald-700">60 Lead</td>
+                                    <td class="p-3 text-right font-extrabold text-emerald-700 bg-emerald-100/60">205.494 đ</td>
+                                    <td class="p-3 text-right">1.327 đ</td>
+                                    <td class="p-3 text-center font-bold">2.80%</td>
+                                    <td class="p-3 text-emerald-700 font-bold">🟢 CPL thấp nhất BU5</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold text-slate-900">🇲🇳 Mông Cổ (Bắc Mông Cổ)</td>
+                                    <td class="p-3 text-right">4.33M</td>
+                                    <td class="p-3 text-center font-bold text-blue-700">19 Lead</td>
+                                    <td class="p-3 text-right font-bold text-blue-700">227.600 đ</td>
+                                    <td class="p-3 text-right">1.352 đ</td>
+                                    <td class="p-3 text-center font-bold text-emerald-700">4.41% 🟢</td>
+                                    <td class="p-3 text-slate-600">🟢 Khá tốt, CTR cao nhất BU5</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold text-slate-900">🇵🇰 Pakistan (Nhóm Phụ)</td>
+                                    <td class="p-3 text-right">3.41M</td>
+                                    <td class="p-3 text-center font-bold">14 Lead</td>
+                                    <td class="p-3 text-right">243.900 đ</td>
+                                    <td class="p-3 text-right text-rose-600">4.558 đ</td>
+                                    <td class="p-3 text-center">1.53%</td>
+                                    <td class="p-3 text-slate-600">🟡 Cần optimize CPC để về mức 185k</td>
+                                </tr>
+                                <tr class="bg-rose-50/40">
+                                    <td class="p-3 font-bold text-rose-900">🇲🇦 Ma Rốc (Morocco)</td>
+                                    <td class="p-3 text-right">6.86M</td>
+                                    <td class="p-3 text-center font-bold text-rose-700">15 Lead</td>
+                                    <td class="p-3 text-right font-extrabold text-rose-700">457.000 đ</td>
+                                    <td class="p-3 text-right">-</td>
+                                    <td class="p-3 text-center">-</td>
+                                    <td class="p-3 text-rose-700 font-bold">🔴 CPL gấp 2.2 lần Pakistan</td>
+                                </tr>
+                                <tr class="bg-rose-50/40">
+                                    <td class="p-3 font-bold text-rose-900">🇪🇬 Ai Cập (Egypt)</td>
+                                    <td class="p-3 text-right">7.78M</td>
+                                    <td class="p-3 text-center font-bold text-rose-700">16 Lead</td>
+                                    <td class="p-3 text-right font-extrabold text-rose-700">486.000 đ</td>
+                                    <td class="p-3 text-right">-</td>
+                                    <td class="p-3 text-center">-</td>
+                                    <td class="p-3 text-rose-700 font-bold">🔴 Đắt gấp 2.4 lần Pakistan</td>
+                                </tr>
+                                <tr class="bg-slate-50 border-t-2 border-slate-300">
+                                    <td class="p-3 font-bold text-slate-500 italic">📎 Các campaign nhỏ lẻ khác</td>
+                                    <td class="p-3 text-right text-slate-500">3.52M</td>
+                                    <td class="p-3 text-center text-slate-500">2 Lead</td>
+                                    <td class="p-3 text-right text-slate-500">—</td>
+                                    <td class="p-3 text-right text-slate-500">—</td>
+                                    <td class="p-3 text-center text-slate-500">—</td>
+                                    <td class="p-3 text-slate-400 italic">Spend phân tán, không đủ mẫu để đánh giá</td>
+                                </tr>
+                                <tr class="bg-slate-100 border-t-2 border-slate-400">
+                                    <td class="p-3 font-extrabold text-slate-900">TỔNG BU5</td>
+                                    <td class="p-3 text-right font-extrabold text-slate-900">34.40M</td>
+                                    <td class="p-3 text-center font-extrabold text-slate-900">126 Lead</td>
+                                    <td class="p-3 text-right font-extrabold text-slate-900">273.000 đ</td>
+                                    <td class="p-3 text-right">—</td>
+                                    <td class="p-3 text-center">—</td>
+                                    <td class="p-3 font-bold text-slate-700">Đạt 105% KPI Lead</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 2. THE OPPORTUNITY COST OF HIGH-CPL CAMPAIGNS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+                        <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-xs uppercase">Chi Phí Cơ Hội (Opportunity Cost)</span>
+                        <h4 class="text-sm font-bold text-slate-900">15.66M Chi Tiêu Kém Hiệu Quả Tại Ai Cập & Ma Rốc</h4>
+                        <div class="text-xs text-slate-600 space-y-1.5 leading-relaxed">
+                            <p>• Ai Cập & Ma Rốc sử dụng <strong>15.66M (chiếm 45.5% ngân sách BU5)</strong> nhưng chỉ đem về <strong>33 Leads</strong>.</p>
+                            <p>• Nếu 15.66M này được phân bổ sang nhóm Pakistan (CPL 205k), hệ thống có thể tạo ra tới <strong>~76 Leads</strong> (tăng thêm 43 Leads giá tốt cho công ty).</p>
+                        </div>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+                        <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-xs uppercase">Diễn Biến Tuần (W2 ➔ W4)</span>
+                        <h4 class="text-sm font-bold text-rose-900">BU5 Bị Suy Giảm Cả Về Lượng Inbox Lẫn Tỷ Lệ Chốt Lead</h4>
+                        <div class="text-xs text-slate-600 space-y-1.5 leading-relaxed">
+                            <p>• <strong>W2 ➔ W3:</strong> Spend -4.4% nhưng Lead giảm sâu -33.3% (36 ➔ 24) và CPL tăng +43.4% (238k ➔ 342k).</p>
+                            <p>• <strong>W2 ➔ W4:</strong> Inbox giảm -34.3% (102 ➔ 67) và tỷ lệ Msg ➔ Lead giảm từ <strong>35.3% xuống 28.4%</strong>.</p>
+                            <p>• Khác với BU4 (Inbox giảm nhưng chất lượng tăng), BU5 bị giảm ở cả 2 tầng phễu do mất tuyến Bắc Mông Cổ giá rẻ.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. ACTION PLAN & REALLOCATION PLAYBOOK -->
+                <div class="bg-slate-900 text-white p-6 rounded-2xl space-y-4">
+                    <h4 class="text-sm font-bold text-amber-400 uppercase tracking-wider">
+                        🚀 Kế Hoạch Tái Phân Bổ Ngân Sách & Hành Động Cho BU5
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div class="space-y-2 p-3.5 rounded-xl bg-slate-800/80 border border-slate-700">
+                            <strong class="text-emerald-400 block text-sm">🟢 Nhóm SCALE (Pakistan & Mông Cổ)</strong>
+                            <p class="text-slate-300">
+                                • Tăng ngân sách từng bước (+15% - 20% mỗi chu kỳ 3-5 ngày).<br>
+                                • Nhân bản công thức thành công của nhóm Pakistan 60 Lead (creative góc nhìn văn hóa Hunza Valley, cảnh sắc mùa thu).
+                            </p>
+                        </div>
+                        <div class="space-y-2 p-3.5 rounded-xl bg-slate-800/80 border border-slate-700">
+                            <strong class="text-amber-400 block text-sm">🟡 Nhóm OPTIMIZE (Pakistan 244k)</strong>
+                            <p class="text-slate-300">
+                                • Tìm nguyên nhân vì sao CPC nhóm này lên tới 4.558đ (gấp 3.4 lần nhóm chính).<br>
+                                • Rà soát tệp target và đổi creative để đưa CPL về vùng 185k.
+                            </p>
+                        </div>
+                        <div class="space-y-2 p-3.5 rounded-xl bg-slate-800/80 border border-slate-700">
+                            <strong class="text-rose-400 block text-sm">🔴 Nhóm REBUILD (Ai Cập & Ma Rốc)</strong>
+                            <p class="text-slate-300">
+                                • Giảm 50% ngân sách 2 nhóm này ngay lập tức.<br>
+                                • Thay toàn bộ Creative sang định dạng Video Trải Nghiệm sông Nile / Sa mạc Sahara / Khách sạn 5 sao.<br>
+                                • Nối dữ liệu CRM xem 31 lead này có tỷ lệ chốt booking cao không trước khi quyết định tắt hẳn.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-800 rounded-xl text-xs text-slate-300 font-medium">
+                        💬 <strong>Thông điệp chốt cho Sếp:</strong> <em>“BU5 = 'Có volume lớn, nhưng tiền đang phân bổ chưa tối ưu!' Ưu tiên: SCALE winner (Pakistan) ➔ REBUILD high-CPL (Ai Cập, Ma Rốc) ➔ Dùng CRM/Booking để đo lường giá trị thực tế của từng Lead.”</em>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 7: EXECUTIVE & STAFF ACTION PLANS -->
+    <!-- ========================================== -->
+    <div id="page-action-plans" class="page-content hidden space-y-6">
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- EXECUTIVE CHECKLIST (DÀNH CHO SẾP) -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+                    <span class="p-2.5 rounded-xl bg-blue-100 text-blue-700 text-xl">👔</span>
+                    <div>
+                        <h3 class="text-base font-extrabold text-slate-900">Khuyến Nghị Dành Cho Ban Giám Đốc (Sếp)</h3>
+                        <p class="text-xs text-slate-500">Quyết định tái phân bổ ngân sách & chiến lược H2/2026</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3 text-sm text-slate-700">
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 flex items-start gap-3">
+                        <span class="text-blue-600 font-bold">1.</span>
+                        <div>
+                            <strong>BU4: Cấp bách mở tuyến điểm mới & Chốt suất cuối Ladakh:</strong>
+                            <p class="text-xs text-slate-500 mt-0.5">Đặc thù mỗi điểm đến chỉ có vài lịch khởi hành cố định. Bhutan đã hết mùa chạy, và Ladakh cũng sắp đóng đèo khép lại mùa chạy. BU4 cần: (1) Chạy chiến dịch Last-Call lấp đầy các chỗ cuối cho lịch khởi hành chót của Ladakh; (2) Khẩn trương R&D và chạy thử nghiệm tuyến điểm ngách mới mùa Thu - Đông (như Nepal, Trung Á, Kashmir...) để gối đầu doanh thu.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 flex items-start gap-3">
+                        <span class="text-blue-600 font-bold">2.</span>
+                        <div>
+                            <strong>BU5: Tái phân bổ nội bộ — Tạm dừng scale Ai Cập/Ma Rốc, ưu tiên Pakistan:</strong>
+                            <p class="text-xs text-slate-500 mt-0.5">Tạm dừng scale / giảm phân bổ các adset Ai Cập & Ma Rốc có CPL >450k; ưu tiên tái phân bổ ngân sách trong BU5 sang Pakistan và các nhóm đã chứng minh hiệu quả tốt hơn (mùa thu thung lũng Hunza đang vào vụ đẹp nhất, CPL ~205k).</p>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 flex items-start gap-3">
+                        <span class="text-blue-600 font-bold">3.</span>
+                        <div>
+                            <strong>BU2: Đặt ngưỡng thử nghiệm CPL & Khơi thông giải ngân nội bộ 20M:</strong>
+                            <p class="text-xs text-slate-500 mt-0.5">Không điều chuyển ngân sách giữa các BU. Đặt ngưỡng thử nghiệm CPL mục tiêu <250k qua việc đổi mới định dạng (video trải nghiệm thực tế, tư vấn visa chuẩn VIP, chùm tour Mùa Thu Lá Đỏ Nhật Bản). Nếu creative/offer mới không đưa được CPL về vùng mục tiêu sau một chu kỳ đủ dữ liệu, đánh giá lại khả năng scale của BU2.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 flex items-start gap-3">
+                        <span class="text-blue-600 font-bold">4.</span>
+                        <div>
+                            <strong>BU1 & Toàn Hệ Thống: Đo lường ROI tới tầng Booking trên CRM:</strong>
+                            <p class="text-xs text-slate-500 mt-0.5">BU1 duy trì đà thắng của Bắc Kinh, Cửu Trại Câu, Tân Cương và tách lẻ catalogue "Lịch Khởi Hành". Toàn hệ thống liên kết dữ liệu Meta Ads với tỷ lệ chốt Booking và Doanh thu trên CRM để đánh giá P&L độc lập từng BU chuẩn xác.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STAFF CHECKLIST (DÀNH CHO NHÂN VIÊN / MEDIA BUYER) -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+                    <span class="p-2.5 rounded-xl bg-emerald-100 text-emerald-700 text-xl">🛠️</span>
+                    <div>
+                        <h3 class="text-base font-extrabold text-slate-900">Checklist Thực Thi Dành Cho Media Buyers & Sales</h3>
+                        <p class="text-xs text-slate-500">Thao tác tối ưu tài khoản quảng cáo & kịch bản chốt tin nhắn</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3 text-sm text-slate-700">
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 flex items-start gap-3">
+                        <span class="text-emerald-600 font-bold">1.</span>
+                        <div>
+                            <strong>Đổi mới Creative (Anti-Fatigue) ngay trong tuần đầu tháng 9:</strong>
+                            <p class="text-xs text-slate-500 mt-0.5">Tất cả các Adsets đã chạy trên 3 tuần bắt buộc phải thay ít nhất 2 video ngắn (Reel/Story) và 1 bộ Carousel lịch trình chi tiết.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 flex items-start gap-3">
+                        <span class="text-emerald-600 font-bold">2.</span>
+                        <div>
+                            <strong>Tối ưu kịch bản Auto-Chatbot / Lời chào ban đầu:</strong>
+                            <p class="text-xs text-slate-500 mt-0.5">Nâng tỷ lệ chuyển đổi từ Tin nhắn ➔ Lead ở tuyến Ai Cập (từ 15% lên trên 30%) bằng cách gài câu hỏi xin số Zalo để gửi "Lịch trình & Bảng giá chi tiết kèm ưu đãi".</p>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 flex items-start gap-3">
+                        <span class="text-emerald-600 font-bold">3.</span>
+                        <div>
+                            <strong>Bật tệp Lookalike 1% - 3% từ tập khách hàng đã đi tour:</strong>
+                            <p class="text-xs text-slate-500 mt-0.5">Export danh sách khách VIP từ CRM FIT Tour để tạo tệp LAL chạy cho BU2 (Nhật Bản, Châu Âu) nhằm thoát khỏi cảnh cạn tệp.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 8: FULL 35-CHAPTER AUDIT REPORT -->
+    <!-- ========================================== -->
+    <div id="page-full-audit" class="page-content hidden space-y-6">
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 space-y-8">
+
+            <div class="border-b border-slate-200 pb-6">
+                <span class="px-3 py-1 text-xs font-bold uppercase rounded-md bg-indigo-100 text-indigo-800">MASTER MARKETING AUDIT</span>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-2">Báo Cáo Toàn Diện Hiệu Quả Meta Ads — FIT TOUR</h2>
+                <p class="text-sm text-slate-500 mt-1">Phân tích toàn tài khoản • Theo tuần • Theo BU • Campaign • Ad set • Creative (35 Chuyên Đề)</p>
+            </div>
+
+            <!-- CHƯƠNG I & II -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs">I</span>
+                    I. Bức Tranh Tổng Thể & Xu Hướng 4 Tuần
+                </h3>
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-xs md:text-sm text-slate-700 leading-relaxed space-y-2">
+                    <p>Trong 4 tuần, tài khoản có một xu hướng rất rõ ràng: <strong>Chi phí quảng cáo không giảm tương ứng với lượng Lead và Inbox tạo ra.</strong></p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left bg-white rounded-lg border border-slate-200 mt-2">
+                            <thead class="bg-slate-100 font-bold">
+                                <tr>
+                                    <th class="p-2.5">Chỉ Số</th>
+                                    <th class="p-2.5 text-right">W1</th>
+                                    <th class="p-2.5 text-right">W2</th>
+                                    <th class="p-2.5 text-right">W3</th>
+                                    <th class="p-2.5 text-right">W4</th>
+                                    <th class="p-2.5 text-right font-bold text-rose-700">W1 ➔ W4</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr><td class="p-2 font-semibold">Spend</td><td class="p-2 text-right">26,77tr</td><td class="p-2 text-right">23,99tr</td><td class="p-2 text-right">25,08tr</td><td class="p-2 text-right">23,49tr</td><td class="p-2 text-right font-bold text-slate-700">-12,3%</td></tr>
+                                <tr><td class="p-2 font-semibold">Inbox</td><td class="p-2 text-right">580</td><td class="p-2 text-right">398</td><td class="p-2 text-right">339</td><td class="p-2 text-right">253</td><td class="p-2 text-right font-bold text-rose-600">-56,4% 🔴</td></tr>
+                                <tr><td class="p-2 font-semibold">Cost/Inbox</td><td class="p-2 text-right">46,2k</td><td class="p-2 text-right">60,3k</td><td class="p-2 text-right">74,0k</td><td class="p-2 text-right">92,8k</td><td class="p-2 text-right font-bold text-rose-600">+101,2% 🔴</td></tr>
+                                <tr><td class="p-2 font-semibold">Lead</td><td class="p-2 text-right">147</td><td class="p-2 text-right">118</td><td class="p-2 text-right">93</td><td class="p-2 text-right">91</td><td class="p-2 text-right font-bold text-rose-600">-38,1% 🔴</td></tr>
+                                <tr><td class="p-2 font-semibold">CPL</td><td class="p-2 text-right">182,1k</td><td class="p-2 text-right">203,3k</td><td class="p-2 text-right">269,7k</td><td class="p-2 text-right">258,1k</td><td class="p-2 text-right font-bold text-rose-600">+41,7% 🔴</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-3 bg-blue-50 rounded-lg text-blue-950 font-medium mt-2">
+                        💡 <strong>Kết luận quan trọng:</strong> Đây không đơn thuần là vấn đề giá thầu đấu giá (Auction CPM). Dữ liệu cho thấy vấn đề lớn nằm ở <strong>khả năng chuyển đổi sau tương tác</strong>, cộng với <strong>thay đổi campaign mix, creative mix và cấu trúc phân phối</strong>.
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHƯƠNG VI: SO SÁNH BU -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs">VI</span>
+                    VI. So Sánh Thứ Tự Hiệu Quả Giữa Các BU
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                    <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+                        <span class="font-bold text-emerald-800 text-sm">🥇 BU4 (Ngách/Ladakh)</span>
+                        <p class="mt-1 text-emerald-900">Spend: ~27.97M • Lead: 147 • <strong>CPL: ~190k</strong></p>
+                        <span class="mt-2 inline-block px-2 py-0.5 bg-emerald-200 text-emerald-800 rounded font-bold">🟢 Tốt Nhất</span>
+                    </div>
+                    <div class="p-4 rounded-xl bg-blue-50 border border-blue-200">
+                        <span class="font-bold text-blue-800 text-sm">🥈 BU1 (Trung Quốc)</span>
+                        <p class="mt-1 text-blue-900">Spend: ~28.53M • Lead: 146 • <strong>CPL: ~195k</strong></p>
+                        <span class="mt-2 inline-block px-2 py-0.5 bg-blue-200 text-blue-800 rounded font-bold">🟢 Tốt</span>
+                    </div>
+                    <div class="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                        <span class="font-bold text-amber-800 text-sm">🥉 BU5 (Trung Đông)</span>
+                        <p class="mt-1 text-amber-900">Spend: ~32.96M • Lead: 124 • <strong>CPL: ~266k</strong></p>
+                        <span class="mt-2 inline-block px-2 py-0.5 bg-amber-200 text-amber-800 rounded font-bold">🟡 Yếu</span>
+                    </div>
+                    <div class="p-4 rounded-xl bg-rose-50 border border-rose-200">
+                        <span class="font-bold text-rose-800 text-sm">⚠️ BU2 (Âu/Mỹ/Nhật)</span>
+                        <p class="mt-1 text-rose-900">Spend: ~8.08M • Lead: 26 • <strong>CPL: ~311k</strong></p>
+                        <span class="mt-2 inline-block px-2 py-0.5 bg-rose-200 text-rose-800 rounded font-bold">🔴 Yếu Nhất</span>
+                    </div>
+                </div>
+                <div class="p-3 bg-slate-100 rounded-lg text-xs font-semibold text-slate-800">
+                    🎯 <strong>Quy tắc phân bổ (Allocation Rule):</strong> <code>BU4 ≈ BU1 >> BU5 > BU2</code>. Không nên chia đều ngân sách cố định cho các BU nếu mục tiêu là tối đa hóa Lead.
+                </div>
+            </div>
+
+            <!-- CHƯƠNG VII: BU4 DEEP DIVE -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs">VII</span>
+                    VII. BU4 — Phân Tích Winner Tuyến Ngách
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-700">
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <strong class="text-emerald-700 block text-sm">🏔️ Ladakh (Core Winner)</strong>
+                        <p class="mt-1">Spend: 12.49M • 72 Lead • <strong>CPL ~173k</strong> • CPC: 1.874đ • CTR: 3.97%</p>
+                        <p class="mt-1 text-slate-500">Giữ creative đang thắng, tăng ngân sách từng bước, tránh reset learning liên tục.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <strong class="text-blue-700 block text-sm">🛕 Bhutan (Rất Tốt)</strong>
+                        <p class="mt-1">Spend: 7.08M • 37 Lead • <strong>CPL ~191k</strong></p>
+                        <p class="mt-1 text-slate-500">Hiệu quả rất tốt trong nửa đầu tháng. Cần tiếp tục duy trì và test scale.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <strong class="text-amber-700 block text-sm">🏝️ Sri Lanka (Trung Bình)</strong>
+                        <p class="mt-1">Spend: 8.41M • 38 Lead • <strong>CPL ~221k</strong></p>
+                        <p class="mt-1 text-slate-500">CPL cao hơn Ladakh và Bhutan. Nếu cần lấy ngân sách để scale, đây không phải nơi ưu tiên đầu.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHƯƠNG VIII - XIII: BU1 & CREATIVE LEVEL -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs">VIII</span>
+                    VIII - XIII. BU1 — Phân Tích Chuyển Đổi & Từng Nhóm Creative
+                </h3>
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-xs md:text-sm text-slate-700 leading-relaxed space-y-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
+                            <strong class="text-emerald-700 block">🟢 Đạo Thành Á Đinh (CPL ~140k):</strong>
+                            <p>Hiệu quả rất ổn định cả W1 và W2 (5 leads mỗi tuần). <strong>Đây là creative cần giữ vững.</strong></p>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
+                            <strong class="text-amber-700 block">🟡 Lệ Giang (CTR 6.24% ➔ 6.51%):</strong>
+                            <p>CTR không giảm nhưng CPL tăng từ 87k lên 142k. Người dùng vẫn click nhưng tỷ lệ chuyển đổi lead giảm (Attention tốt ➔ Conversion yếu đi).</p>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
+                            <strong class="text-rose-700 block">🔴 Thanh Tạng Video (CTR 7.37% ➔ 7.39%):</strong>
+                            <p>CPL tăng từ 159k lên 277k dù CTR cao. Cần thay offer, chỉnh sửa lịch khởi hành rõ ràng hoặc đổi CTA.</p>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
+                            <strong class="text-indigo-700 block">📑 Lịch Khởi Hành (Catalogue Ad):</strong>
+                            <p>CPC chỉ 925đ, 1.303 clicks, CTR 6.69% nhưng CPL 201k. Một ad nhồi quá nhiều tour làm loãng intent. <strong>Khuyến nghị tách thành từng creative chuyên biệt theo tuyến.</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHƯƠNG XIX & XX: ACCOUNT STRUCTURE & OPTIMIZATION GOAL -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-purple-600 text-white flex items-center justify-center text-xs">XIX</span>
+                    XIX - XX. Vấn Đề Cấu Trúc Tài Khoản & Optimization Goal
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-700">
+                    <div class="p-4 rounded-xl bg-purple-50/60 border border-purple-200 space-y-2">
+                        <strong class="text-purple-900 text-sm block">⚙️ Vấn Đề Learning Phase & Budget Fragmentation:</strong>
+                        <p class="leading-relaxed">
+                            Nhiều ad set rơi vào trạng thái <code>learning_exit_unsuccessfully</code> hoặc <code>budget_limited_learning_fail</code> do ngân sách bị chia nhỏ (200k - 500k/ngày) cho quá nhiều nhóm nhỏ. Meta không nhận đủ 50 conversions/tuần để tối ưu hóa phân phối.
+                        </p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-indigo-50/60 border border-indigo-200 space-y-2">
+                        <strong class="text-indigo-900 text-sm block">🎯 Lệch Pha Optimization Goal:</strong>
+                        <p class="leading-relaxed">
+                            Nhiều ad set cài đặt <code>Optimization Goal = LEAD_GENERATION</code> nhưng tên campaign là <code>MSG/LEAD-MSG</code>. Event Meta đang ghi nhận là <code>onsite_conversion.messaging_event_optimization_lead</code>. Cần đồng bộ chính xác giữa mục tiêu tạo tin nhắn và thu thập lead để thuật toán tối ưu đúng đối tượng.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHƯƠNG XXXII & XXXIII: KPI FRAMEWORK -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs">XXXIII</span>
+                    XXXIII. Khung Quản Trị KPI 3 Tầng (Media ➔ Conversion ➔ Business)
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <strong class="text-slate-800 text-sm block">TẦNG 1: MEDIA METRICS</strong>
+                        <ul class="mt-2 space-y-1 text-slate-600 list-disc list-inside">
+                            <li>Spend (Chi tiêu)</li>
+                            <li>CPM (Chi phí / 1.000 hiển thị)</li>
+                            <li>CTR (Tỷ lệ nhấp chuột)</li>
+                            <li>CPC (Chi phí / nhấp chuột)</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 rounded-xl bg-blue-50 border border-blue-200">
+                        <strong class="text-blue-800 text-sm block">TẦNG 2: CONVERSION METRICS</strong>
+                        <ul class="mt-2 space-y-1 text-blue-700 list-disc list-inside">
+                            <li>Inbox & Cost / Inbox</li>
+                            <li>Lead & CPL (Chi phí / Lead)</li>
+                            <li>Click ➔ Lead Rate</li>
+                            <li>Inbox ➔ Lead Rate</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+                        <strong class="text-emerald-800 text-sm block">TẦNG 3: BUSINESS VALUE</strong>
+                        <ul class="mt-2 space-y-1 text-emerald-700 list-disc list-inside">
+                            <li>Qualified Lead (Lead chất lượng)</li>
+                            <li>Contact Rate (Tỷ lệ liên hệ)</li>
+                            <li>Booking & Won Deals</li>
+                            <li>Doanh Thu & ROAS Thực Tế</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHƯƠNG XXXIV & XXXV: SUMMARY & ACTION PLAN -->
+            <div class="p-5 rounded-xl bg-slate-900 text-white space-y-3 text-xs md:text-sm">
+                <h4 class="text-base font-bold text-amber-400">🚀 Thông Điệp Báo Cáo Ban Lãnh Đạo (1-Minute Pitch):</h4>
+                <p class="text-slate-300 leading-relaxed">
+                    “Hiệu quả Meta Ads tháng này giảm không phải chủ yếu do giá traffic tăng. Spend chỉ giảm 12% nhưng Inbox giảm hơn 56%, Lead giảm 38% và CPL tăng hơn 40%. Vấn đề nằm ở conversion, campaign mix và cấu trúc phân phối. BU4 và BU1 vẫn là nền tảng tốt nhất (CPL ~190k), trong khi BU5 và BU2 đang kéo hiệu quả xuống. Giải pháp 7 ngày tới là: <strong>#1 Tái cơ cấu nội bộ BU5 (cắt Ai Cập/Ma Rốc dồn Pakistan Mùa Thu), #2 BU4 chốt chỗ cuối Ladakh & khẩn trương mở tuyến ngách mới thay Bhutan/Ladakh hết mùa, #3 BU2 đổi mới creative/nội dung tự khơi thông giải ngân nội bộ 20M, #4 BU1 tách lẻ Lịch khởi hành thành product-specific, #5 Đo lường tới tầng Doanh Thu/Booking trong CRM.</strong>”
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- FULL GRANULAR DATA TABLE ACCORDION -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/80 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <span>📑 Chi Tiết Từng Nhóm Quảng Cáo Tháng 8/2026</span>
+                    <span id="table-count-badge" class="px-2 py-0.5 text-xs font-bold rounded-md bg-blue-100 text-blue-800">Đang tải...</span>
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">Tự động đồng bộ theo Tab BU đang chọn, hoặc lọc tùy ý bên dưới</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+                <input type="text" id="table-search" placeholder="🔍 Tìm tên tour, chiến dịch..." class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-48">
+                <select id="table-bu-filter" class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    <option value="ALL">Tất cả BU</option>
+                    <option value="BU1">BU1 (Trung Quốc)</option>
+                    <option value="BU2">BU2 (Âu/Mỹ/Nhật)</option>
+                    <option value="BU4">BU4 (Ngách)</option>
+                    <option value="BU5">BU5 (Trung Đông)</option>
+                </select>
+                <select id="table-week-filter" class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    <option value="ALL">Tất cả Tuần</option>
+                    <option value="1">Tuần 1</option>
+                    <option value="2">Tuần 2</option>
+                    <option value="3">Tuần 3</option>
+                    <option value="4">Tuần 4</option>
+                    <option value="5">Tuần 5 (31/08 lẻ)</option>
+                </select>
+            </div>
+        </div>
+        <div class="overflow-x-auto max-h-[500px]">
+            <table class="w-full text-xs text-left text-slate-600">
+                <thead class="text-slate-700 uppercase bg-slate-100 sticky top-0 z-10 font-bold border-b border-slate-200">
+                    <tr>
+                        <th class="p-3">Tuần</th>
+                        <th class="p-3">BU</th>
+                        <th class="p-3">Chiến Dịch (Campaign)</th>
+                        <th class="p-3">Nhóm Quảng Cáo (Ad Set)</th>
+                        <th class="p-3 text-right">Chi Tiêu (đ)</th>
+                        <th class="p-3 text-center">Inbox (Msg)</th>
+                        <th class="p-3 text-center">Lead MKT</th>
+                        <th class="p-3 text-right">Giá / Msg</th>
+                        <th class="p-3 text-right">Giá / Lead</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100" id="tbl-full-adsets">
+                    <!-- Loaded by JS -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="text-center text-xs text-slate-400 py-6 border-t border-slate-200/80">
+        <p>© 2026 FIT TOUR CRM & Marketing Intelligence System • Báo cáo tự động từ dữ liệu chuẩn xác.</p>
+    </footer>
+
+</div>
+
+<!-- SCRIPT -->
+<script src="script.js?v=20260903_0705"></script>
+</body>
+</html>

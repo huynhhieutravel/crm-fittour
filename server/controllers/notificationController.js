@@ -1,11 +1,13 @@
 const db = require('../db');
 const webpush = require('web-push');
 
-webpush.setVapidDetails(
-  'mailto:it@fittour.vn',
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    'mailto:it@fittour.vn',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
 
 const getDLQ = async (req, res) => {
   try {
@@ -213,11 +215,16 @@ const subscribe = async (req, res) => {
 const sendPushToUser = async (user_id, payload, pushType = null) => {
   try {
       if (pushType) {
-          const userRes = await db.query('SELECT notification_preferences FROM users WHERE id = $1', [user_id]);
-          const prefs = userRes.rows[0]?.notification_preferences || {};
-          
-          if (pushType === 'BU_LEAD' && prefs.push_bu_message === false) return;
-          if (pushType === 'PERSONAL_ASSIGNMENT' && prefs.push_personal_assignment === false) return;
+          try {
+              const userRes = await db.query('SELECT notification_preferences FROM users WHERE id = $1', [user_id]);
+              const prefs = userRes.rows[0]?.notification_preferences || {};
+              
+              if (pushType === 'BU_LEAD' && prefs.push_bu_message === false) return;
+              if (pushType === 'PERSONAL_ASSIGNMENT' && prefs.push_personal_assignment === false) return;
+              if (pushType === 'CUSTOMER_MESSAGE' && prefs.push_customer_message === false) return;
+          } catch(prefErr) {
+              console.warn('[Push] Warning checking user preferences:', prefErr.message);
+          }
       }
 
       const result = await db.query(`SELECT subscription_json FROM device_subscriptions WHERE user_id = $1`, [user_id]);
@@ -262,7 +269,7 @@ const broadcastNewLead = async (lead, bu_group) => {
         const promises = users.map(async (u) => {
             const userId = u.id;
             const message = `Lead ${customerName}, nhu cầu ${tourName}, thuộc ${bu_group} của bạn.`;
-            const title = 'Lead mới cần tiếp nhận';
+            const title = `Lead Mới ${bu_group}`;
             
             // Insert vào user_notifications
             const notifRes = await db.query(
@@ -290,15 +297,17 @@ const broadcastNewLead = async (lead, bu_group) => {
 
 const getGlobalCenterLeads = async (req, res) => {
   try {
-    const { timeRange, category } = req.query;
+    const { timeRange, category, bu, assignment, hasPhone, has_phone } = req.query;
+
     let query = `
-      SELECT l.id, l.name, l.phone, l.email, l.source, l.status, l.assigned_to, l.bu_group, l.tour_id, l.created_at, l.last_contacted_at, 
-             COALESCE(l.facebook_psid, l.zalo_uid) as source_id, l.facebook_psid, l.zalo_uid, u.full_name as assigned_to_name,
+      SELECT l.id, l.name, l.phone, l.email, l.source, l.status, l.assigned_to, l.bu_group, l.tour_id, l.created_at, l.last_contacted_at,
+             COALESCE(l.facebook_psid, l.zalo_uid) as source_id, l.facebook_psid, l.zalo_uid,
+             COALESCE(u.full_name, u.username) as assigned_to_name,
              (SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED'))::numeric as total_spent,
              CASE WHEN c.id IS NOT NULL THEN true ELSE false END as is_returning_customer
       FROM leads l
       LEFT JOIN users u ON l.assigned_to = u.id
-      LEFT JOIN customers c ON l.customer_id = c.id
+      LEFT JOIN customers c ON (l.customer_id = c.id OR (l.phone IS NOT NULL AND l.phone != '' AND c.phone = l.phone))
       WHERE 1=1
     `;
     const params = [];
@@ -314,21 +323,33 @@ const getGlobalCenterLeads = async (req, res) => {
       query += ` AND (l.created_at >= date_trunc('month', CURRENT_DATE) OR l.last_contacted_at >= date_trunc('month', CURRENT_DATE))`;
     }
 
-    if (category) {
-      if (category === 'my_leads') {
-        query += ` AND l.assigned_to = $${paramIndex++}`;
-        params.push(req.user.id);
-      } else if (category === 'unassigned') {
-        query += ` AND l.assigned_to IS NULL`;
-      } else if (category === 'unassigned_bu') {
-        query += ` AND l.bu_group IS NULL`;
-      } else if (category !== 'all' && category.startsWith('BU')) {
-        query += ` AND l.bu_group = $${paramIndex++}`;
-        params.push(category);
-      }
+    // 1. Filter BU (from bu or legacy category)
+    const effectiveBu = bu || (category && (category === 'unassigned_bu' || category.startsWith('BU')) ? category : 'all');
+    if (effectiveBu === 'unassigned_bu') {
+      query += ` AND (l.bu_group IS NULL OR l.bu_group = '')`;
+    } else if (effectiveBu && effectiveBu !== 'all' && effectiveBu.startsWith('BU')) {
+      query += ` AND l.bu_group = $${paramIndex++}`;
+      params.push(effectiveBu);
     }
 
-    query += ` ORDER BY l.created_at DESC LIMIT 100`;
+    // 2. Filter Assignment (from assignment or legacy category)
+    const effectiveAssignment = assignment || (category && (category === 'my_leads' || category === 'unassigned' || category === 'assigned' || category === 'has_phone') ? category : 'all');
+    if (effectiveAssignment === 'my_leads') {
+      query += ` AND l.assigned_to = $${paramIndex++}`;
+      params.push(req.user.id);
+    } else if (effectiveAssignment === 'unassigned') {
+      query += ` AND l.assigned_to IS NULL`;
+    } else if (effectiveAssignment === 'assigned') {
+      query += ` AND l.assigned_to IS NOT NULL`;
+    }
+
+    // 3. Filter Phone (can be combined with unassigned, my_leads, assigned, etc.)
+    const shouldFilterPhone = hasPhone === 'true' || has_phone === 'true' || effectiveAssignment === 'has_phone';
+    if (shouldFilterPhone) {
+      query += ` AND (l.phone IS NOT NULL AND TRIM(l.phone) != '')`;
+    }
+
+    query += ` ORDER BY GREATEST(l.created_at, COALESCE(l.last_contacted_at, l.created_at)) DESC LIMIT 100`;
 
     const result = await db.query(query, params);
 
@@ -337,7 +358,9 @@ const getGlobalCenterLeads = async (req, res) => {
         id: 'lead_' + l.id,
         reference_id: l.id,
         type: 'NEW_LEAD',
-        title: l.assigned_to_name ? `Đã tiếp nhận` : `Lead mới`,
+        title: l.assigned_to_name ? `Đã nhận` : `Chờ nhận`,
+        name: l.name || 'Khách hàng',
+        customer_name: l.name || 'Khách hàng',
         message: l.name || 'Khách hàng',
         link: `/leads/${l.id}`,
         is_read: !!l.assigned_to_name,
@@ -348,7 +371,7 @@ const getGlobalCenterLeads = async (req, res) => {
         bu_group: l.bu_group,
         tour_id: l.tour_id,
         phone: l.phone,
-        source: l.source,
+        source: l.source || (l.facebook_psid ? 'Messenger' : (l.zalo_uid ? 'Zalo' : 'Khác')),
         source_id: l.source_id,
         zalo_uid: l.zalo_uid,
         facebook_psid: l.facebook_psid,
