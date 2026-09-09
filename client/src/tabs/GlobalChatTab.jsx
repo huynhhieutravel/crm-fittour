@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, CheckCircle2, UserPlus, Info, Bell, Send, Search, MoreVertical, ShieldAlert, MessageCircle, Phone, Copy, BarChart3, Users, UserCheck, Menu, Globe } from 'lucide-react';
+import { Bot, CheckCircle2, UserPlus, Info, Bell, Send, Search, MoreVertical, ShieldAlert, MessageCircle, Phone, Copy, BarChart3, Users, UserCheck, Menu, Globe, FileText, ChevronDown, Edit3, Plus } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import usePushNotifications from '../hooks/usePushNotifications';
@@ -30,6 +30,32 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
 
     const [claimingId, setClaimingId] = useState(null);
     const [claimTimer, setClaimTimer] = useState(null);
+    const [activeNoteLeadId, setActiveNoteLeadId] = useState(null);
+    const [noteInputText, setNoteInputText] = useState('');
+    const [isSavingNote, setIsSavingNote] = useState(false);
+
+    const LEAD_STATUSES = [
+        'Mới',
+        'Chưa chăm sóc',
+        'Đang liên hệ',
+        'Liên hệ lần 2',
+        'Chốt đơn',
+        'Thất bại',
+        'Không phản hồi'
+    ];
+
+    const getLeadStatusStyle = (status) => {
+        switch (status) {
+            case 'Mới': return { bg: '#e0f2fe', color: '#0369a1', border: '#7dd3fc' };
+            case 'Chưa chăm sóc': return { bg: '#fef3c7', color: '#d97706', border: '#fde68a' };
+            case 'Đang liên hệ': return { bg: '#fef9c3', color: '#a16207', border: '#fde047' };
+            case 'Liên hệ lần 2': return { bg: '#ede9fe', color: '#6d28d9', border: '#c4b5fd' };
+            case 'Chốt đơn': return { bg: '#dcfce7', color: '#15803d', border: '#86efac' };
+            case 'Thất bại': return { bg: '#fee2e2', color: '#b91c1c', border: '#fca5a5' };
+            case 'Không phản hồi': return { bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' };
+            default: return { bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' };
+        }
+    };
 
     const getSourceBadgeConfig = (source, notif) => {
         let s = (source || '').toLowerCase().trim();
@@ -207,6 +233,64 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
             if (typeof fetchLeads === 'function') fetchLeads();
         } catch (error) {
             toast.error('Lỗi phân công nhân viên');
+        }
+    };
+
+    const handleStatusChange = async (leadId, newStatus) => {
+        const token = localStorage.getItem('token');
+        try {
+            await axios.put(`/api/leads/${leadId}`, { status: newStatus }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success(`Đã đổi trạng thái sang "${newStatus}"`);
+            setNotifications(prev => prev.map(n => n.reference_id === leadId ? { ...n, status: newStatus } : n));
+            if (typeof fetchLeads === 'function') fetchLeads();
+        } catch (error) {
+            toast.error('Lỗi cập nhật trạng thái tư vấn');
+        }
+    };
+
+    const handleSaveNote = async (leadId) => {
+        if (!noteInputText || !noteInputText.trim()) {
+            toast.error('Vui lòng nhập nội dung ghi chú');
+            return;
+        }
+        const token = localStorage.getItem('token');
+        setIsSavingNote(true);
+        const content = noteInputText.trim();
+        try {
+            await axios.post('/api/notes', { lead_id: leadId, content }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            axios.put(`/api/leads/${leadId}`, { consultation_note: content }, {
+                headers: { Authorization: `Bearer ${token}` }
+            }).catch(e => console.error('Error syncing consultation_note:', e));
+
+            toast.success('Đã lưu ghi chú thành công!');
+            
+            const authorName = currentUser?.full_name || currentUser?.username || 'Tôi';
+            setNotifications(prev => prev.map(n => {
+                if (n.reference_id === leadId) {
+                    return {
+                        ...n,
+                        latest_note: content,
+                        latest_note_author: authorName,
+                        latest_note_at: new Date().toISOString(),
+                        notes_count: (n.notes_count || 0) + 1
+                    };
+                }
+                return n;
+            }));
+
+            setActiveNoteLeadId(null);
+            setNoteInputText('');
+            if (typeof fetchLeads === 'function') fetchLeads();
+        } catch (error) {
+            console.error('Save Note Error:', error);
+            toast.error('Lỗi khi lưu ghi chú');
+        } finally {
+            setIsSavingNote(false);
         }
     };
 
@@ -403,11 +487,14 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                     const currentLead = leads.find(l => l.id === n.reference_id);
                     const phoneDisplay = n.phone || currentLead?.phone;
                     const sourceDisplay = n.source || currentLead?.source;
+                    const statusDisplay = n.status || currentLead?.status;
                     return (
                         n.title?.toLowerCase().includes(q) ||
                         n.name?.toLowerCase().includes(q) ||
                         n.message?.toLowerCase().includes(q) ||
                         n.bu_group?.toLowerCase().includes(q) ||
+                        statusDisplay?.toLowerCase().includes(q) ||
+                        n.latest_note?.toLowerCase().includes(q) ||
                         phoneDisplay?.toLowerCase().includes(q) ||
                         sourceDisplay?.toLowerCase().includes(q) ||
                         n.assigned_to_name?.toLowerCase().includes(q)
@@ -423,11 +510,14 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                     const currentLead = leads.find(l => l.id === n.reference_id);
                     const phoneDisplay = n.phone || currentLead?.phone;
                     const sourceDisplay = n.source || currentLead?.source;
+                    const statusDisplay = n.status || currentLead?.status;
                     return (
                         n.title?.toLowerCase().includes(q) ||
                         n.name?.toLowerCase().includes(q) ||
                         n.message?.toLowerCase().includes(q) ||
                         n.bu_group?.toLowerCase().includes(q) ||
+                        statusDisplay?.toLowerCase().includes(q) ||
+                        n.latest_note?.toLowerCase().includes(q) ||
                         phoneDisplay?.toLowerCase().includes(q) ||
                         sourceDisplay?.toLowerCase().includes(q) ||
                         n.assigned_to_name?.toLowerCase().includes(q)
@@ -439,7 +529,7 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                     return (
                     <div key={notif.id} className="chat-message-wrapper" style={{ maxWidth: '100%' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '4px', flexWrap: 'wrap' }}>
                                 <span style={{ fontSize: '11px', color: '#94a3b8' }}>
                                     {new Date(notif.created_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </span>
@@ -468,6 +558,41 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                                     <span style={{ fontSize: '10px', background: '#fee2e2', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
                                         🔥 Khách cũ nhắn lại: {new Date(notif.last_contacted_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                     </span>
+                                )}
+
+                                {notif.type === 'NEW_LEAD' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (activeNoteLeadId === notif.reference_id) {
+                                                setActiveNoteLeadId(null);
+                                                setNoteInputText('');
+                                            } else {
+                                                setActiveNoteLeadId(notif.reference_id);
+                                                setNoteInputText('');
+                                            }
+                                        }}
+                                        className="chat-add-note-btn"
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '4px',
+                                            padding: '1px 8px',
+                                            borderRadius: '6px',
+                                            border: `1px solid ${activeNoteLeadId === notif.reference_id ? '#93c5fd' : '#cbd5e1'}`,
+                                            background: activeNoteLeadId === notif.reference_id ? '#eff6ff' : '#f8fafc',
+                                            color: activeNoteLeadId === notif.reference_id ? '#2563eb' : '#475569',
+                                            fontSize: '11px',
+                                            fontWeight: '600',
+                                            cursor: 'pointer',
+                                            outline: 'none',
+                                            transition: 'all 0.15s ease'
+                                        }}
+                                        title="Thêm ghi chú tư vấn nhanh cho Lead"
+                                    >
+                                        <FileText size={11} color={activeNoteLeadId === notif.reference_id ? '#2563eb' : '#64748b'} />
+                                        <span>+ Thêm ghi chú</span>
+                                    </button>
                                 )}
                             </div>
                             
@@ -626,32 +751,49 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                                                 );
                                             })()}
                                             
+                                            {/* Trạng thái tư vấn (thay cho Chuyển Khách Hàng) */}
                                             {(() => {
                                                 const currentLead = leads.find(l => l.id === notif.reference_id);
-                                                if (currentLead && !currentLead.is_locked && !currentLead.won_at) {
-                                                    return (
-                                                        <button
-                                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); if(typeof handleConvertLead === 'function') handleConvertLead(currentLead.id); }}
+                                                const currentStatus = notif.status || currentLead?.status || 'Mới';
+                                                const statusStyle = getLeadStatusStyle(currentStatus);
+                                                return (
+                                                    <div className="chat-status-select-wrap" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                                                        <select
+                                                            value={currentStatus}
+                                                            onChange={(e) => handleStatusChange(notif.reference_id, e.target.value)}
                                                             style={{
-                                                                padding: '4px 10px',
-                                                                background: '#dcfce7',
-                                                                color: '#10b981',
-                                                                border: '1px solid #bbf7d0',
-                                                                borderRadius: '6px',
-                                                                cursor: 'pointer',
+                                                                padding: '4px 22px 4px 10px',
+                                                                fontSize: '12px',
                                                                 fontWeight: '600',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                gap: '4px',
-                                                                fontSize: '12px'
+                                                                borderRadius: '6px',
+                                                                border: `1px solid ${statusStyle.border || statusStyle.color}`,
+                                                                background: statusStyle.bg,
+                                                                color: statusStyle.color,
+                                                                cursor: 'pointer',
+                                                                outline: 'none',
+                                                                appearance: 'none',
+                                                                WebkitAppearance: 'none',
+                                                                height: '28px',
+                                                                lineHeight: '18px',
+                                                                boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                                                                transition: 'all 0.15s ease',
+                                                                width: '100%'
                                                             }}
+                                                            title="Thay đổi Trạng thái tư vấn"
                                                         >
-                                                            <UserCheck size={14} /> Chuyển Khách Hàng
-                                                        </button>
-                                                    );
-                                                }
-                                                return null;
+                                                            {LEAD_STATUSES.map(s => (
+                                                                <option key={s} value={s} style={{ background: '#fff', color: '#1e293b' }}>
+                                                                    {s}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <ChevronDown 
+                                                            size={12} 
+                                                            color={statusStyle.color} 
+                                                            style={{ position: 'absolute', right: '6px', pointerEvents: 'none', opacity: 0.8 }} 
+                                                        />
+                                                    </div>
+                                                );
                                             })()}
 
                                             {!notif.assigned_to_name && (
@@ -701,10 +843,174 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Khung nhập ghi chú nhanh (mở khi bấm + Thêm ghi chú) */}
+                                {activeNoteLeadId === notif.reference_id && (
+                                    <div style={{
+                                        marginTop: '4px',
+                                        padding: '10px 12px',
+                                        background: '#f8fafc',
+                                        border: '1px solid #93c5fd',
+                                        borderRadius: '8px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '8px',
+                                        boxShadow: '0 2px 4px rgba(37,99,235,0.05)'
+                                    }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '11px', fontWeight: '700', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                <FileText size={12} color="#2563eb" /> THÊM GHI CHÚ TƯ VẤN CHO LEAD
+                                            </span>
+                                            <span style={{ fontSize: '11px', color: '#94a3b8' }}>Nhấn Enter để lưu nhanh, Esc để hủy</span>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                            <input
+                                                type="text"
+                                                autoFocus
+                                                placeholder="VD: Khách cần tư vấn tour tháng 10, đoàn 4 người..."
+                                                value={noteInputText}
+                                                onChange={(e) => setNoteInputText(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                                        e.preventDefault();
+                                                        handleSaveNote(notif.reference_id);
+                                                    } else if (e.key === 'Escape') {
+                                                        setActiveNoteLeadId(null);
+                                                        setNoteInputText('');
+                                                    }
+                                                }}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '6px 10px',
+                                                    fontSize: '12px',
+                                                    border: '1px solid #cbd5e1',
+                                                    borderRadius: '6px',
+                                                    outline: 'none',
+                                                    background: '#fff'
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => handleSaveNote(notif.reference_id)}
+                                                disabled={isSavingNote}
+                                                style={{
+                                                    padding: '6px 14px',
+                                                    background: '#2563eb',
+                                                    color: '#fff',
+                                                    border: 'none',
+                                                    borderRadius: '6px',
+                                                    fontSize: '12px',
+                                                    fontWeight: '600',
+                                                    cursor: isSavingNote ? 'not-allowed' : 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px',
+                                                    whiteSpace: 'nowrap'
+                                                }}
+                                            >
+                                                <Send size={12} /> {isSavingNote ? 'Đang lưu...' : 'Lưu'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => { setActiveNoteLeadId(null); setNoteInputText(''); }}
+                                                style={{
+                                                    padding: '6px 10px',
+                                                    background: '#e2e8f0',
+                                                    color: '#475569',
+                                                    border: 'none',
+                                                    borderRadius: '6px',
+                                                    fontSize: '12px',
+                                                    cursor: 'pointer',
+                                                    whiteSpace: 'nowrap'
+                                                }}
+                                            >
+                                                Hủy
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                                 
-                                {notif.type === 'NEW_LEAD' && notif.assigned_to_name && (
-                                    <div style={{ marginTop: '5px', paddingTop: '10px', borderTop: '1px dashed #e5e7eb', fontSize: '13px', color: '#16a34a', fontWeight: '500' }}>
-                                        ✓ Đã tiếp nhận bởi: {notif.assigned_to_name}
+                                {notif.type === 'NEW_LEAD' && (notif.assigned_to_name || notif.latest_note) && (
+                                    <div className="chat-card-footer" style={{ 
+                                        marginTop: '5px', 
+                                        paddingTop: '10px', 
+                                        borderTop: '1px dashed #e5e7eb', 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'space-between', 
+                                        flexWrap: 'wrap', 
+                                        gap: '8px', 
+                                        fontSize: '13px' 
+                                    }}>
+                                        <div>
+                                            {notif.assigned_to_name ? (
+                                                <span style={{ color: '#16a34a', fontWeight: '500' }}>
+                                                    ✓ Đã tiếp nhận bởi: {notif.assigned_to_name}
+                                                </span>
+                                            ) : (
+                                                <span style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '12px' }}>
+                                                    ⚡ Chưa có nhân viên tiếp nhận
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {notif.latest_note && (
+                                            <div 
+                                                className="chat-card-note-badge"
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px',
+                                                    maxWidth: '550px',
+                                                    background: '#fffbeb',
+                                                    padding: '3px 8px',
+                                                    borderRadius: '6px',
+                                                    border: '1px solid #fde68a',
+                                                    color: '#92400e',
+                                                    fontSize: '12px',
+                                                    marginLeft: 'auto'
+                                                }}
+                                                title={`Ghi chú: ${notif.latest_note}${notif.latest_note_author ? ` (bởi ${notif.latest_note_author})` : ''}`}
+                                            >
+                                                <span style={{ fontWeight: '700', color: '#b45309', display: 'flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
+                                                    📝 Ghi chú:
+                                                </span>
+                                                <span style={{
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
+                                                    color: '#1e293b',
+                                                    fontWeight: '500'
+                                                }}>
+                                                    {notif.latest_note}
+                                                </span>
+                                                {notif.latest_note_author && (
+                                                    <span style={{ fontSize: '11px', color: '#64748b', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                                        • {notif.latest_note_author}
+                                                    </span>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setActiveNoteLeadId(notif.reference_id);
+                                                        setNoteInputText(notif.latest_note || '');
+                                                    }}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        padding: '0 2px',
+                                                        cursor: 'pointer',
+                                                        color: '#2563eb',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        marginLeft: '2px'
+                                                    }}
+                                                    title="Chỉnh sửa hoặc thêm ghi chú mới"
+                                                >
+                                                    <Edit3 size={11} />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

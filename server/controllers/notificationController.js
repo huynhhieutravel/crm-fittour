@@ -304,7 +304,12 @@ const getGlobalCenterLeads = async (req, res) => {
              COALESCE(l.facebook_psid, l.zalo_uid) as source_id, l.facebook_psid, l.zalo_uid,
              COALESCE(u.full_name, u.username) as assigned_to_name,
              (SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED'))::numeric as total_spent,
-             CASE WHEN c.id IS NOT NULL THEN true ELSE false END as is_returning_customer
+             CASE WHEN c.id IS NOT NULL THEN true ELSE false END as is_returning_customer,
+             (SELECT content FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note,
+             (SELECT created_at FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note_at,
+             (SELECT COALESCE(u2.full_name, u2.username) FROM lead_notes ln2 LEFT JOIN users u2 ON ln2.created_by = u2.id WHERE ln2.lead_id = l.id ORDER BY ln2.created_at DESC LIMIT 1) as latest_note_author,
+             (SELECT COUNT(*)::int FROM lead_notes WHERE lead_id = l.id) as notes_count,
+             l.consultation_note
       FROM leads l
       LEFT JOIN users u ON l.assigned_to = u.id
       LEFT JOIN customers c ON (l.customer_id = c.id OR (l.phone IS NOT NULL AND l.phone != '' AND c.phone = l.phone))
@@ -370,6 +375,12 @@ const getGlobalCenterLeads = async (req, res) => {
         assigned_to_name: l.assigned_to_name,
         bu_group: l.bu_group,
         tour_id: l.tour_id,
+        status: l.status || 'Mới',
+        latest_note: l.latest_note || (l.consultation_note && !l.consultation_note.startsWith('Facebook Message:') ? l.consultation_note : null),
+        latest_note_at: l.latest_note_at,
+        latest_note_author: l.latest_note_author,
+        notes_count: l.notes_count || (l.latest_note ? 1 : 0),
+        consultation_note: l.consultation_note,
         phone: l.phone,
         source: l.source || (l.facebook_psid ? 'Messenger' : (l.zalo_uid ? 'Zalo' : 'Khác')),
         source_id: l.source_id,

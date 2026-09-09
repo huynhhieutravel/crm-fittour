@@ -97,7 +97,14 @@
 .chat-actions-wrapper {
     display: flex;
     gap: 6px;
+    align-items: center;
     margin-left: auto;
+}
+
+.chat-add-note-btn:hover {
+    background: #eff6ff !important;
+    border-color: #93c5fd !important;
+    color: #2563eb !important;
 }
 
 @media (max-width: 768px) {
@@ -110,10 +117,29 @@
         margin-left: 0;
         margin-top: 8px;
         width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
     }
     
-    .chat-actions-wrapper button {
-        flex: 1;
+    .chat-actions-wrapper button,
+    .chat-actions-wrapper select,
+    .chat-actions-wrapper > div {
+        flex: 1 1 calc(50% - 6px);
+        min-width: 110px;
+    }
+
+    .chat-card-footer {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+
+    .chat-card-note-badge {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        box-sizing: border-box !important;
     }
 }
 
