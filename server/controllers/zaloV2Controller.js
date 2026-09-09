@@ -384,7 +384,7 @@ const zaloV2Controller = {
           // Auto-classify Tour (ưu tiên tìm trong autoBU nếu có)
           const autoTour = await facebookService.classifyTourFromMessage(messageText, '', autoBU);
           if (autoTour && autoTour.tour_id) {
-            const targetBU = autoBU || autoTour.bu_group;
+            const targetBU = autoTour.bu_group || autoBU;
             const q = targetBU ? 
               'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
               'UPDATE leads SET tour_id = $1 WHERE id = $2';
@@ -430,7 +430,7 @@ const zaloV2Controller = {
             }
             const autoTour2 = await facebookService.classifyTourFromMessage(messageText, '', autoBU2);
             if (autoTour2 && autoTour2.tour_id) {
-              const targetBU2 = autoBU2 || autoTour2.bu_group;
+              const targetBU2 = autoTour2.bu_group || autoBU2;
               const q2 = targetBU2 ? 
                 'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
                 'UPDATE leads SET tour_id = $1 WHERE id = $2';
@@ -468,7 +468,7 @@ const zaloV2Controller = {
               const currentBuGroup = updatedLead.rows[0]?.bu_group;
               const autoTour3 = await facebookService.classifyTourFromMessage(messageText, '', currentBuGroup);
               if (autoTour3 && autoTour3.tour_id) {
-                const targetBU3 = currentBuGroup || autoTour3.bu_group;
+                const targetBU3 = autoTour3.bu_group || currentBuGroup;
                 const q3 = targetBU3 ? 
                   'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
                   'UPDATE leads SET tour_id = $1 WHERE id = $2';

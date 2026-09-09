@@ -92,6 +92,7 @@ const _classifyBU = async (messageText) => {
         'cho',        // cho
         'ay',         // ấy
         'an',         // ăn/an
+        'my',         // mỹ → my (BỎ HẲN từ đơn "Mỹ" nằm riêng vì dễ nhầm tên người "Mỹ Duyên", "Mỹ Linh",... Chỉ nhận "tour mỹ", "du lịch mỹ", "hoa kỳ", "đi mỹ")
         'himalaya',   // Địa danh dãy núi quá rộng (trải dài nhiều BU), không dùng để map BU
         'himalayas',
     ]);
@@ -114,6 +115,9 @@ const _classifyBU = async (messageText) => {
                 const normalizedKw = normalize(keyword);
                 if (normalizedKw.length < 1) continue;
                 
+                // Bỏ qua từ khóa "Mỹ" nếu nằm riêng lẻ (chỉ chấp nhận "tour mỹ", "du lịch mỹ", "bắc mỹ", "nam mỹ", "hoa kỳ",...)
+                if (normalizedKw === 'my') continue;
+
                 // Skip absolute stopwords (quá ngắn, không thể phân biệt)
                 if (normalizedKw.length <= 4 && STOPWORDS.has(normalizedKw)) continue;
                 
@@ -254,6 +258,7 @@ const _classifyTour = async (messageText, preferredBU = null) => {
             for (const keyword of keywordsList) {
                 const normalizedKw = normalize(keyword);
                 if (normalizedKw.length < 2) continue; // skip very short keywords to be safe
+                if (normalizedKw === 'my') continue; // Bỏ qua từ đơn "Mỹ" nằm riêng
                 if (GENERIC_TOUR_STOPWORDS.has(normalizedKw)) continue; // skip generic tour format keywords
                 
                 let matched = false;
@@ -367,7 +372,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
             // Auto-classify Tour from first message (ưu tiên tìm trong autoBU nếu có)
             const autoTour = await classifyTourFromMessage(received_message.text, adContextText, autoBU);
             if (autoTour && autoTour.tour_id) {
-                const targetBU = autoBU || autoTour.bu_group;
+                const targetBU = autoTour.bu_group || autoBU;
                 const q = targetBU ? 
                     'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
                     'UPDATE leads SET tour_id = $1 WHERE id = $2';
@@ -434,7 +439,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                     // Auto-classify Tour for re-opened lead (ưu tiên tìm trong autoBU2 nếu có)
                     const autoTour2 = await classifyTourFromMessage(received_message.text, adContextText, autoBU2);
                     if (autoTour2 && autoTour2.tour_id) {
-                        const targetBU2 = autoBU2 || autoTour2.bu_group;
+                        const targetBU2 = autoTour2.bu_group || autoBU2;
                         const q2 = targetBU2 ? 
                             'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
                             'UPDATE leads SET tour_id = $1 WHERE id = $2';
@@ -496,7 +501,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                         const autoTour3 = await classifyTourFromMessage(allText, adContextText, currentBuGroup);
                         
                         if (autoTour3 && autoTour3.tour_id) {
-                            const targetBU3 = currentBuGroup || autoTour3.bu_group;
+                            const targetBU3 = autoTour3.bu_group || currentBuGroup;
                             const q3 = targetBU3 ? 
                                 'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
                                 'UPDATE leads SET tour_id = $1 WHERE id = $2';
@@ -926,7 +931,7 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                     // Auto-classify Tour from ALL messages (ưu tiên tìm trong autoBUPoller nếu có)
                     const autoTourPoller = await classifyTourFromMessage(allConvMsgs + ' ' + (actualMessageText || ''), adContextText, autoBUPoller);
                     if (autoTourPoller && autoTourPoller.tour_id) {
-                        const targetBUPoller = autoBUPoller || autoTourPoller.bu_group;
+                        const targetBUPoller = autoTourPoller.bu_group || autoBUPoller;
                         const q = targetBUPoller ? 
                             'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
                             'UPDATE leads SET tour_id = $1 WHERE id = $2';
@@ -1121,7 +1126,7 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                             const autoTourPoller2 = await classifyTourFromMessage(allPollerText, adContextText, currentPollerBu);
                             
                             if (autoTourPoller2 && autoTourPoller2.tour_id) {
-                                const targetBUPoller2 = currentPollerBu || autoTourPoller2.bu_group;
+                                const targetBUPoller2 = autoTourPoller2.bu_group || currentPollerBu;
                                 const q3 = targetBUPoller2 ? 
                                     'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
                                     'UPDATE leads SET tour_id = $1 WHERE id = $2';
@@ -1130,7 +1135,7 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                                     [autoTourPoller2.tour_id, currentLeadId];
                                 
                                 await db.query(q3, params3);
-                                console.log(`[TOUR-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto Tour: ${autoTourPoller2.tour_id}`);
+                                console.log(`[TOUR-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto Tour: ${autoTourPoller2.tour_id} (BU: ${targetBUPoller2})`);
                             }
                         }
                     }

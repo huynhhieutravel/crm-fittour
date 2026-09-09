@@ -140,16 +140,17 @@ exports.handleWebhookEvent = async (req, res) => {
                                             if (!leadCheck.rows[0].tour_id) {
                                                 const autoTour = await facebookService.classifyTourFromMessage(allText, '', leadCheck.rows[0].bu_group);
                                                 if (autoTour && autoTour.tour_id) {
-                                                    // Chỉ update tour_id (không đè BU nếu đã có, nếu chưa có thì gán BU luôn vì Tour thuộc BU)
-                                                    const q = leadCheck.rows[0].bu_group ? 
-                                                        'UPDATE leads SET tour_id = $1 WHERE id = $2' : 
-                                                        'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3';
-                                                    const params = leadCheck.rows[0].bu_group ? 
-                                                        [autoTour.tour_id, leadId] : 
-                                                        [autoTour.tour_id, autoTour.bu_group, leadId];
+                                                    // Ưu tiên BU của chính Tour cụ thể, fallback về lead BU
+                                                    const targetBU = autoTour.bu_group || leadCheck.rows[0].bu_group;
+                                                    const q = targetBU ? 
+                                                        'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+                                                        'UPDATE leads SET tour_id = $1 WHERE id = $2';
+                                                    const params = targetBU ? 
+                                                        [autoTour.tour_id, targetBU, leadId] : 
+                                                        [autoTour.tour_id, leadId];
                                                     
                                                     await db.query(q, params);
-                                                    console.log(`[TOUR-AUTO] Echo Webhook Lead #${leadId} (${leadCheck.rows[0].name}) → Auto Tour: ${autoTour.tour_id}`);
+                                                    console.log(`[TOUR-AUTO] Echo Webhook Lead #${leadId} (${leadCheck.rows[0].name}) → Auto Tour: ${autoTour.tour_id} (BU: ${targetBU})`);
                                                     
                                                     if (!leadCheck.rows[0].bu_group && autoTour.bu_group) {
                                                         notificationController.broadcastNewLead({ id: leadId, customer_name: leadCheck.rows[0].name }, autoTour.bu_group).catch(console.error);
