@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Search, Plus, MapPin, Plane, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle , Star, ExternalLink } from 'lucide-react';
 import Select from 'react-select';
 import AirlineDetailDrawer from '../components/modals/AirlineDetailDrawer';
+import SupplierFilesCell from '../components/common/SupplierFilesCell';
 import { useMarkets } from '../hooks/useMarkets';
 
 const AIRLINE_CLASS_OPTIONS = [
@@ -191,12 +192,11 @@ export default function AirlinesTab({ currentUser, checkPerm, addToast, handleDe
                     <thead style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
                         <tr style={{ color: '#475569', fontSize: '0.8rem' }}>
                             <th style={{ padding: '16px 20px', textAlign: 'center', width: '50px' }}>
-                                <input type="checkbox" checked={airlines.length > 0 && selectedIds.length === airlines.length} onChange={(e) => setSelectedIds(e.target.checked ? airlines.map(item => item.id) : [])} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                                <input type="checkbox" checked={airlines.length > 0 && selectedIds.length === airlines.length} onChange={(e) => setSelectedIds(e.target.checked ? airlines.map(item => item.id) : [])} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#2563eb' }} />
                             </th>
-                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '80px' }}>MÃ NCC</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'left' }}>TÊN HÃNG BAY</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '160px' }}>LOẠI HÌNH</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '100px' }}>DRIVE</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'left' }}>HÃNG BAY</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '180px' }}>LOẠI HÌNH</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '120px' }}>TÀI LIỆU</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '150px' }}>THỊ TRƯỜNG</th>
                             <th style={{ padding: '16px 20px', textAlign: 'center', width: '140px' }}>THAO TÁC</th>
                         </tr>
@@ -204,57 +204,62 @@ export default function AirlinesTab({ currentUser, checkPerm, addToast, handleDe
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td>
+                                <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td>
                             </tr>
                         ) : airlines.length === 0 ? (
                             <tr>
-                                <td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                                <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
                                     Không có hãng bay nào khớp với tìm kiếm.
                                 </td>
                             </tr>
                         ) : (
                             airlines.map(h => (
-                                <tr key={h.id} className="table-row-hover" style={{ transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#f8fafc'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                                <tr key={h.id} className="table-row-hover" style={{ transition: 'background 0.2s', cursor: 'pointer' }} onClick={() => handleOpenAirline(h.id)} onMouseOver={e=>e.currentTarget.style.background='#f8fafc'} onMouseOut={e=>e.currentTarget.style.background='white'}>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
-                                        <input type="checkbox" checked={selectedIds.includes(h.id)} onChange={() => setSelectedIds(prev => prev.includes(h.id) ? prev.filter(i => i !== h.id) : [...prev, h.id])} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                                        <input type="checkbox" checked={selectedIds.includes(h.id)} onChange={() => setSelectedIds(prev => prev.includes(h.id) ? prev.filter(i => i !== h.id) : [...prev, h.id])} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#2563eb' }} />
                                     </td>
-                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#3b82f6' }}>{h.code}</td>
-                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <div style={{ gap: '8px', color: '#0f172a' }}>
-                                            {h.logo_url ? <img src={h.logo_url.startsWith('http') ? h.logo_url : `/airline-logos/${h.logo_url}`} alt={h.name} style={{ width: '28px', height: '28px', objectFit: 'contain', borderRadius: '4px' }} /> : <Plane size={16} color="#ea580c" />}
-                                            {h.name}
+                                    <td style={{ padding: '14px 20px', borderBottom: '1px solid #f1f5f9' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#fff7ed', border: '1px solid #ffedd5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                {h.logo_url ? <img src={h.logo_url.startsWith('http') ? h.logo_url : `/airline-logos/${h.logo_url}`} alt={h.name} style={{ width: '24px', height: '24px', objectFit: 'contain', borderRadius: '4px' }} /> : <Plane size={18} color="#ea580c" />}
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                                <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.9rem', lineHeight: '1.3' }}>
+                                                    {h.name}
+                                                </div>
+                                                <div>
+                                                    <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', background: '#eff6ff', border: '1px solid #dbeafe', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                                                        {h.code}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <span style={{ background: '#fff7ed', color: '#c2410c', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                        <span style={{ background: '#fff7ed', color: '#c2410c', border: '1px solid #ffedd5', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
                                             {h.airline_class === 'domestic' ? 'Hãng bay Nội Địa' : 
                                              h.airline_class === 'international' ? 'Hãng bay Nước Ngoài' : 
                                              h.airline_class === 'charter' ? 'Charter / Chuyên Cơ' : 'Khác'}
                                         </span>
                                     </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
-                                        {h.drive_link ? (
-                                            <a href={h.drive_link} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ display: 'inline-flex', gap: '4px', padding: '6px 12px', background: '#2563eb', color: 'white', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, textDecoration: 'none', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#1d4ed8'} onMouseOut={e=>e.currentTarget.style.background='#2563eb'}>
-                                                <ExternalLink size={13} /> Mở
-                                            </a>
-                                        ) : (
-                                            <span style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>—</span>
-                                        )}
+                                        <SupplierFilesCell mediaFiles={h.media_files} driveLink={h.drive_link} title={h.name} />
                                     </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <span className="badge" style={{ background: '#f1f5f9', color: '#475569', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569', padding: '4px 10px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600 }}>
+                                            <MapPin size={11} color="#64748b" />
                                             {h.market || 'Chưa phân loại'}
                                         </span>
                                     </td>
                                     
-                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
-                                        <div style={{ gap: '8px', justifyContent: 'center' }}>
-                                            <button className="btn-icon" title="Xem / Sửa" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6', padding: '4px' }} onClick={() => handleOpenAirline(h.id)}>
-                                                <Edit2 size={16} />
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }}>
+                                            <button className="btn-action btn-edit-pro" title="Xem / Sửa" onClick={() => handleOpenAirline(h.id)}>
+                                                <Edit2 size={15} />
                                             </button>
                                             {(checkPerm ? checkPerm('airlines', 'delete') : canDelete(currentUser?.role, 'suppliers')) && (
-                                                <button className="btn-icon" title="Xoá" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }} onClick={() => handleDeleteAirline(h.id)}>
-                                                    <Trash2 size={16} />
+                                                <button className="btn-action btn-delete-pro" title="Xoá" onClick={() => handleDeleteAirline(h.id)}>
+                                                    <Trash2 size={15} />
                                                 </button>
                                             )}
                                         </div>
@@ -268,11 +273,11 @@ export default function AirlinesTab({ currentUser, checkPerm, addToast, handleDe
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-                <div style={{ justifyContent: 'space-between', marginTop: '1.5rem', background: 'white', padding: '1rem', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', background: 'white', padding: '1rem', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                     <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
                         Hiển thị trang <span style={{ fontWeight: 600, color: '#1e293b' }}>{currentPage}</span> trên <span style={{ fontWeight: 600, color: '#1e293b' }}>{totalPages}</span> (Tổng {totalItems} Hãng)
                     </div>
-                    <div style={{ gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button 
                             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                             disabled={currentPage === 1}

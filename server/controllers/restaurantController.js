@@ -1,6 +1,8 @@
 const db = require('../db');
 const { generateSupplierCode } = require('../utils/supplierHelper');
 const { logActivity } = require('../utils/logger');
+const fs = require('fs');
+const path = require('path');
 
 // === RESTAURANTS ===
 exports.getRestaurants = async (req, res) => {
@@ -8,8 +10,22 @@ exports.getRestaurants = async (req, res) => {
         const { search, province, restaurant_class, market, market_group, page = 1, limit = 30 } = req.query;
         const offset = (page - 1) * limit;
 
-        let query = 'SELECT * FROM restaurants WHERE 1=1';
-        let countQuery = 'SELECT COUNT(*) as total FROM restaurants WHERE 1=1';
+        let query = `
+            SELECT r.*,
+                COALESCE(
+                    (SELECT json_agg(
+                        json_build_object(
+                            'id', m.id,
+                            'file_url', m.file_url,
+                            'file_name', m.file_name,
+                            'file_type', m.file_type,
+                            'file_size', m.file_size
+                        ) ORDER BY m.sort_order ASC, m.id ASC
+                    ) FROM restaurant_media m WHERE m.restaurant_id = r.id),
+                    '[]'::json
+                ) as media_files
+            FROM restaurants r WHERE 1=1`;
+        let countQuery = 'SELECT COUNT(*) as total FROM restaurants r WHERE 1=1';
         let params = [];
         let paramIndex = 1;
 
@@ -60,8 +76,25 @@ exports.getRestaurants = async (req, res) => {
 
         const total = parseInt(countResult.rows[0].total, 10);
 
+        const verifiedData = dataResult.rows.map(row => {
+            let files = row.media_files || [];
+            if (Array.isArray(files)) {
+                files = files.filter(f => {
+                    if (!f || !f.file_url) return false;
+                    if (f.file_url.startsWith('http://') || f.file_url.startsWith('https://')) return true;
+                    try {
+                        const fullPath = path.join(__dirname, '../public', f.file_url);
+                        return fs.existsSync(fullPath);
+                    } catch (e) {
+                        return false;
+                    }
+                });
+            }
+            return { ...row, media_files: files };
+        });
+
         res.json({
-            data: dataResult.rows,
+            data: verifiedData,
             total,
             page: parseInt(page, 10),
             limit: parseInt(limit, 10),
@@ -520,8 +553,6 @@ exports.addRestaurantNote = async (req, res) => {
 
 // === MEDIA GALLERY ===
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
 const mediaUploadDir = path.join(__dirname, '../public/uploads/restaurants');
 if (!fs.existsSync(mediaUploadDir)) {

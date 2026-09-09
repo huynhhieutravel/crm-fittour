@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Search, Plus, MapPin, UtensilsCrossed, Building, CheckCircle, XCircle, Eye, Edit2, Trash2, AlertTriangle, Star, ExternalLink } from 'lucide-react';
 import Select from 'react-select';
 import RestaurantDetailDrawer from '../components/modals/RestaurantDetailDrawer';
+import SupplierFilesCell from '../components/common/SupplierFilesCell';
 import { useMarkets } from '../hooks/useMarkets';
 
 const RESTAURANT_CLASS_OPTIONS = [
@@ -194,18 +195,11 @@ export default function RestaurantsTab({ currentUser, checkPerm, addToast, handl
                     <thead style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
                         <tr style={{ color: '#475569', fontSize: '0.8rem' }}>
                             <th style={{ padding: '16px 20px', textAlign: 'center', width: '50px' }}>
-                                <input type="checkbox" checked={restaurants.length > 0 && selectedIds.length === restaurants.length} onChange={(e) => setSelectedIds(e.target.checked ? restaurants.map(item => item.id) : [])} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                                <input type="checkbox" checked={restaurants.length > 0 && selectedIds.length === restaurants.length} onChange={(e) => setSelectedIds(e.target.checked ? restaurants.map(item => item.id) : [])} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#2563eb' }} />
                             </th>
-                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '50px' }}>
-                                <input type="checkbox" checked={restaurants.length > 0 && selectedIds.length === restaurants.length} onChange={(e) => setSelectedIds(e.target.checked ? restaurants.map(item => item.id) : [])} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
-                            </th>
-                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '50px' }}>
-                                <input type="checkbox" checked={restaurants.length > 0 && selectedIds.length === restaurants.length} onChange={(e) => setSelectedIds(e.target.checked ? restaurants.map(item => item.id) : [])} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
-                            </th>
-                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '120px' }}>MÃ NCC</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'left' }}>TÊN NHÀ HÀNG</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'left' }}>NHÀ HÀNG</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '160px' }}>LOẠI HÌNH</th>
-                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '100px' }}>DRIVE</th>
+                            <th style={{ padding: '16px 20px', textAlign: 'center', width: '130px' }}>MENU / TÀI LIỆU</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '180px' }}>PHONE / EMAIL</th>
                             <th style={{ padding: '16px 20px', textAlign: 'left', width: '150px' }}>THỊ TRƯỜNG</th>
                             <th style={{ padding: '16px 20px', textAlign: 'center', width: '120px' }}>ĐÁNH GIÁ</th>
@@ -215,29 +209,39 @@ export default function RestaurantsTab({ currentUser, checkPerm, addToast, handl
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td>
+                                <td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Đang tải dữ liệu...</td>
                             </tr>
                         ) : restaurants.length === 0 ? (
                             <tr>
-                                <td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                                <td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
                                     Không có nhà hàng nào khớp với tìm kiếm.
                                 </td>
                             </tr>
                         ) : (
                             restaurants.map(h => (
-                                <tr key={h.id} className="table-row-hover" style={{ transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#f8fafc'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                                <tr key={h.id} className="table-row-hover" style={{ transition: 'background 0.2s', cursor: 'pointer' }} onClick={() => handleOpenRestaurant(h.id)} onMouseOver={e=>e.currentTarget.style.background='#f8fafc'} onMouseOut={e=>e.currentTarget.style.background='white'}>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
-                                        <input type="checkbox" checked={selectedIds.includes(h.id)} onChange={() => setSelectedIds(prev => prev.includes(h.id) ? prev.filter(i => i !== h.id) : [...prev, h.id])} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                                        <input type="checkbox" checked={selectedIds.includes(h.id)} onChange={() => setSelectedIds(prev => prev.includes(h.id) ? prev.filter(i => i !== h.id) : [...prev, h.id])} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#2563eb' }} />
                                     </td>
-                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#3b82f6' }}>{h.code}</td>
-                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}>
-                                            <UtensilsCrossed size={16} color="#ea580c" />
-                                            {h.name}
+                                    <td style={{ padding: '14px 20px', borderBottom: '1px solid #f1f5f9' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#fff7ed', border: '1px solid #ffedd5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <UtensilsCrossed size={18} color="#ea580c" />
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                                <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.9rem', lineHeight: '1.3' }}>
+                                                    {h.name}
+                                                </div>
+                                                <div>
+                                                    <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', background: '#eff6ff', border: '1px solid #dbeafe', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                                                        {h.code}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <span style={{ background: '#fff7ed', color: '#c2410c', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600 }}>
+                                        <span style={{ background: '#fff7ed', color: '#c2410c', border: '1px solid #ffedd5', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600 }}>
                                             {h.restaurant_class === 'fine_dining' ? 'Fine Dining' : 
                                              h.restaurant_class === 'casual_dining' ? 'Casual Dining' : 
                                              h.restaurant_class === 'buffet' ? 'Buffet / Tiệc' : 
@@ -247,43 +251,38 @@ export default function RestaurantsTab({ currentUser, checkPerm, addToast, handl
                                         </span>
                                     </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
-                                        {h.drive_link ? (
-                                            <a href={h.drive_link} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', background: '#2563eb', color: 'white', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, textDecoration: 'none', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#1d4ed8'} onMouseOut={e=>e.currentTarget.style.background='#2563eb'}>
-                                                <ExternalLink size={13} /> Mở
-                                            </a>
-                                        ) : (
-                                            <span style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>—</span>
-                                        )}
+                                        <SupplierFilesCell mediaFiles={h.media_files} driveLink={h.drive_link} title={h.name} customSingleLabel="Menu (PDF)" />
                                     </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
                                         <div style={{ fontSize: '0.85rem' }}>
-                                            <div style={{ fontWeight: 500, color: '#1e293b' }}>{h.phone || '-'}</div>
-                                            <div style={{ color: '#64748b' }}>{h.email || '-'}</div>
+                                            <div style={{ fontWeight: 600, color: '#1e293b' }}>{h.phone || '—'}</div>
+                                            {h.email && <div style={{ color: '#64748b', fontSize: '0.78rem' }}>{h.email}</div>}
                                         </div>
                                     </td>
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <span className="badge" style={{ background: '#f1f5f9', color: '#475569', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569', padding: '4px 10px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600 }}>
+                                            <MapPin size={11} color="#64748b" />
                                             {h.market || 'Chưa phân loại'}
                                         </span>
                                     </td>
                                     
                                     <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
                                         {Number(h.rating) > 0 ? (
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', color: '#f59e0b', fontWeight: 600 }}>
-                                                {Number(h.rating).toFixed(1)} <Star size={16} fill="#f59e0b" />
+                                            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '4px', color: '#b45309', background: '#fefce8', border: '1px solid #fef08a', padding: '3px 8px', borderRadius: '6px', fontWeight: 700, fontSize: '0.8rem' }}>
+                                                {Number(h.rating).toFixed(1)} <Star size={13} fill="#f59e0b" color="#f59e0b" />
                                             </div>
                                         ) : (
-                                            <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>-</span>
+                                            <span style={{ color: '#cbd5e1', fontSize: '0.85rem' }}>—</span>
                                         )}
                                     </td>
-                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
-                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                                            <button className="btn-icon" title="Xem / Sửa" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6', padding: '4px' }} onClick={() => handleOpenRestaurant(h.id)}>
-                                                <Edit2 size={16} />
+                                    <td style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }}>
+                                            <button className="btn-action btn-edit-pro" title="Xem / Sửa" onClick={() => handleOpenRestaurant(h.id)}>
+                                                <Edit2 size={15} />
                                             </button>
                                             {(checkPerm ? checkPerm('restaurants', 'delete') : canDelete(currentUser?.role, 'suppliers')) && (
-                                                <button className="btn-icon" title="Xoá" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }} onClick={() => handleDeleteRestaurant(h.id)}>
-                                                    <Trash2 size={16} />
+                                                <button className="btn-action btn-delete-pro" title="Xoá" onClick={() => handleDeleteRestaurant(h.id)}>
+                                                    <Trash2 size={15} />
                                                 </button>
                                             )}
                                         </div>

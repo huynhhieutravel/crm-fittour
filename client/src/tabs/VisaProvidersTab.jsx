@@ -125,26 +125,34 @@ const VisaProvidersTab = ({ checkPerm, checkView, currentUser, setVisaProviderTo
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
                             <tr style={{ background: '#0f172a', color: 'white', fontSize: '0.8rem', textTransform: 'uppercase' }}>
-                                <th style={{ padding: '16px', fontWeight: 600, width: '15%' }}>MÃ NCC</th>
-                                <th style={{ padding: '16px', fontWeight: 600, width: '30%' }}>TÊN NHÀ CUNG CẤP</th>
+                                <th style={{ padding: '16px', fontWeight: 600, width: '45%' }}>NHÀ CUNG CẤP</th>
                                 <th style={{ padding: '16px', fontWeight: 600, width: '25%' }}>PHONE / EMAIL</th>
-                                <th style={{ padding: '16px', fontWeight: 600, width: '20%' }}>QUỐC GIA</th>
-                                <th style={{ padding: '16px', fontWeight: 600, width: '10%', textAlign: 'center' }}>THAO TÁC</th>
+                                <th style={{ padding: '16px', fontWeight: 600, width: '18%' }}>QUỐC GIA</th>
+                                <th style={{ padding: '16px', fontWeight: 600, width: '12%', textAlign: 'center' }}>THAO TÁC</th>
                             </tr>
                         </thead>
                         <tbody>
                             {providers.map((p, idx) => (
                                 <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#f8fafc', transition: 'background 0.2s', ':hover': { background: '#f1f5f9' } }}>
-                                    <td 
-                                        style={{ padding: '16px', fontWeight: 600, color: '#3b82f6', cursor: 'pointer' }}
-                                        onClick={() => handleOpenDrawer(p, 'view')}
-                                        title="Click để xem chi tiết"
-                                    >
-                                        <span style={{ borderBottom: '1px dashed #3b82f6' }}>{p.code}</span>
-                                    </td>
-                                    <td style={{ padding: '16px' }}>
-                                        <div style={{ fontWeight: 600, color: '#0f172a' }}>{p.name}</div>
-                                        <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>TGXL: {p.processing_time || 'Chưa cập nhật'}</div>
+                                    <td style={{ padding: '14px 16px', cursor: 'pointer' }} onClick={() => handleOpenDrawer(p, 'view')}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#f0f9ff', border: '1px solid #e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <Stamp size={18} color="#0284c7" />
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                                <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.92rem', lineHeight: '1.3' }}>
+                                                    {p.name}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', background: '#eff6ff', border: '1px solid #dbeafe', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                                                        {p.code}
+                                                    </span>
+                                                    {p.processing_time && (
+                                                        <span style={{ fontSize: '0.78rem', color: '#64748b' }}>TGXL: {p.processing_time}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td style={{ padding: '16px' }}>
                                         <div style={{ fontWeight: 500, color: '#334155' }}>{p.phone || '-'}</div>
