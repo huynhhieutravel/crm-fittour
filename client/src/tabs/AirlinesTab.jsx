@@ -219,19 +219,14 @@ export default function AirlinesTab({ currentUser, checkPerm, addToast, handleDe
                                         <input type="checkbox" checked={selectedIds.includes(h.id)} onChange={() => setSelectedIds(prev => prev.includes(h.id) ? prev.filter(i => i !== h.id) : [...prev, h.id])} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#2563eb' }} />
                                     </td>
                                     <td style={{ padding: '14px 20px', borderBottom: '1px solid #f1f5f9' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#fff7ed', border: '1px solid #ffedd5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                {h.logo_url ? <img src={h.logo_url.startsWith('http') ? h.logo_url : `/airline-logos/${h.logo_url}`} alt={h.name} style={{ width: '24px', height: '24px', objectFit: 'contain', borderRadius: '4px' }} /> : <Plane size={18} color="#ea580c" />}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                            <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.9rem', lineHeight: '1.3' }}>
+                                                {h.name}
                                             </div>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                                                <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.9rem', lineHeight: '1.3' }}>
-                                                    {h.name}
-                                                </div>
-                                                <div>
-                                                    <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', background: '#eff6ff', border: '1px solid #dbeafe', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
-                                                        {h.code}
-                                                    </span>
-                                                </div>
+                                            <div>
+                                                <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', background: '#eff6ff', border: '1px solid #dbeafe', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                                                    {h.code}
+                                                </span>
                                             </div>
                                         </div>
                                     </td>

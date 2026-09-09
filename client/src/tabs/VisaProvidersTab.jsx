@@ -135,22 +135,17 @@ const VisaProvidersTab = ({ checkPerm, checkView, currentUser, setVisaProviderTo
                             {providers.map((p, idx) => (
                                 <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#f8fafc', transition: 'background 0.2s', ':hover': { background: '#f1f5f9' } }}>
                                     <td style={{ padding: '14px 16px', cursor: 'pointer' }} onClick={() => handleOpenDrawer(p, 'view')}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#f0f9ff', border: '1px solid #e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                <Stamp size={18} color="#0284c7" />
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                            <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.92rem', lineHeight: '1.3' }}>
+                                                {p.name}
                                             </div>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                                                <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.92rem', lineHeight: '1.3' }}>
-                                                    {p.name}
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', background: '#eff6ff', border: '1px solid #dbeafe', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
-                                                        {p.code}
-                                                    </span>
-                                                    {p.processing_time && (
-                                                        <span style={{ fontSize: '0.78rem', color: '#64748b' }}>TGXL: {p.processing_time}</span>
-                                                    )}
-                                                </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', background: '#eff6ff', border: '1px solid #dbeafe', padding: '1px 6px', borderRadius: '4px', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                                                    {p.code}
+                                                </span>
+                                                {p.processing_time && (
+                                                    <span style={{ fontSize: '0.78rem', color: '#64748b' }}>TGXL: {p.processing_time}</span>
+                                                )}
                                             </div>
                                         </div>
                                     </td>
