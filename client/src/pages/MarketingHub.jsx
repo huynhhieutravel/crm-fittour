@@ -3,11 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, Bell, Plus, Home, BookOpen, BarChart2, FileText, 
   LayoutTemplate, Star, Image as ImageIcon, MessageSquare, 
-  ChevronDown, ArrowRight, ArrowLeft, TrendingUp, ClipboardList
+  ChevronDown, ArrowRight, ArrowLeft, TrendingUp, ClipboardList,
+  Calendar, Clock, ExternalLink, Copy, Check, FileSpreadsheet, Share2, Video
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const MarketingHub = () => {
   const [activeMenu, setActiveMenu] = useState('Tài liệu Marketing');
+  const [copiedId, setCopiedId] = useState(null);
   const navigate = useNavigate();
 
   // Lấy thông tin user thật từ localStorage
@@ -20,6 +23,42 @@ const MarketingHub = () => {
   // Lấy chữ cái đầu của tên
   const initial = userName.charAt(0).toUpperCase();
 
+  // Danh sách Báo Cáo & Lịch Biểu Bắt Buộc
+  const recurringReports = [
+    {
+      id: 'fb-fanpage-reach',
+      title: 'Báo cáo Facebook Fanpage Reach Tự Nhiên',
+      platform: 'Facebook Fanpage',
+      platformIcon: <Share2 size={14} color="#1877f2" />,
+      platformColor: '#1877f2',
+      platformBg: '#eff6ff',
+      platformBorder: '#dbeafe',
+      deadline: 'Sáng ngày 1 đầu tháng',
+      cycle: 'Hàng tháng',
+      cycleColor: '#b45309',
+      cycleBg: '#fef3c7',
+      cycleBorder: '#fde68a',
+      desc: 'Báo cáo tổng hợp số liệu tiếp cận tự nhiên (Organic Reach), tương tác Fanpage và đo lường hiệu quả bài viết định kỳ tháng.',
+      url: 'https://docs.google.com/spreadsheets/d/1F7FX-2AtT89U4W4uCoq-fcpILDHYUtbvIW9SLenBCOg/edit?usp=sharing'
+    },
+    {
+      id: 'tiktok-schedule',
+      title: 'Lịch đăng Tiktok phân bổ',
+      platform: 'TikTok Channel',
+      platformIcon: <Video size={14} color="#0f172a" />,
+      platformColor: '#0f172a',
+      platformBg: '#f1f5f9',
+      platformBorder: '#e2e8f0',
+      deadline: 'Daily (Cập nhật hàng ngày)',
+      cycle: 'Hàng ngày (Daily)',
+      cycleColor: '#047857',
+      cycleBg: '#ecfdf5',
+      cycleBorder: '#a7f3d0',
+      desc: 'Kế hoạch phân bổ khung giờ phát sóng, chủ đề kịch bản và theo dõi tiến độ đăng video TikTok cho toàn bộ các kênh.',
+      url: 'https://docs.google.com/spreadsheets/d/1i7ERk50GH4Yr_wnbvp3pqlYd0J9FOvTUzlY_TZ0A6fc/edit?usp=sharing'
+    }
+  ];
+
   // Dữ liệu mẫu (Mock Data)
   const menuItems = [
     { section: 'TỔNG QUAN', items: [{ name: 'Tổng quan', icon: <Home size={18} /> }] },
@@ -27,6 +66,7 @@ const MarketingHub = () => {
       section: 'NHIỆM VỤ & CÔNG VIỆC', 
       items: [
         { name: 'Tasks & SOP', icon: <ClipboardList size={18} />, url: '/tai-lieu/marketing/tasks' },
+        { name: 'Báo cáo định kỳ', icon: <FileSpreadsheet size={18} />, url: '#bao-cao-dinh-ky' },
       ] 
     },
     { 
@@ -62,6 +102,8 @@ const MarketingHub = () => {
   ];
 
   const quickLinks = [
+    { name: 'Báo cáo Fanpage Reach', url: 'https://docs.google.com/spreadsheets/d/1F7FX-2AtT89U4W4uCoq-fcpILDHYUtbvIW9SLenBCOg/edit?usp=sharing', external: true, icon: <Share2 size={16} color="#1877f2" /> },
+    { name: 'Lịch đăng TikTok Daily', url: 'https://docs.google.com/spreadsheets/d/1i7ERk50GH4Yr_wnbvp3pqlYd0J9FOvTUzlY_TZ0A6fc/edit?usp=sharing', external: true, icon: <Video size={16} color="#0f172a" /> },
     { name: 'Brand Guidelines', url: '/cam-nang-thuong-hieu', icon: <BookOpen size={16} /> },
     { name: 'Giọng văn & Tone of voice (chưa có)', icon: <MessageSquare size={16} /> },
     { name: 'Quy chuẩn hình ảnh (chưa có)', icon: <ImageIcon size={16} /> },
@@ -108,6 +150,10 @@ const MarketingHub = () => {
                 const handleClick = () => {
                   if (item.external && item.url && item.url !== '#') {
                     window.open(item.url, '_blank', 'noopener,noreferrer');
+                  } else if (item.url && item.url.startsWith('#')) {
+                    const el = document.getElementById(item.url.substring(1));
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    setActiveMenu(item.name);
                   } else if (item.url && item.url !== '#') {
                     navigate(item.url);
                   } else if (!item.submenu) {
@@ -223,10 +269,219 @@ const MarketingHub = () => {
           <div style={{ maxWidth: 1200, margin: '0 auto' }}>
             
             {/* Title & Action */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
               <div>
                 <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#0f172a', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Tài liệu Marketing</h1>
                 <p style={{ margin: 0, fontSize: '15px', color: '#64748b' }}>Kho tài liệu, guideline và template giúp team Marketing làm việc hiệu quả và thống nhất.</p>
+              </div>
+            </div>
+
+            {/* =========================================================
+                KHUNG TÀI LIỆU BÁO CÁO & LỊCH BIỂU CẦN LÀM
+                ========================================================= */}
+            <div 
+              id="bao-cao-dinh-ky"
+              style={{ 
+                backgroundColor: '#ffffff', 
+                borderRadius: 16, 
+                border: '1px solid #e2e8f0', 
+                padding: '24px', 
+                marginBottom: 32,
+                boxShadow: '0 4px 20px -4px rgba(15, 23, 42, 0.04)',
+                position: 'relative'
+              }}
+            >
+              {/* Header của Khung */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ 
+                    width: 44, 
+                    height: 44, 
+                    borderRadius: 12, 
+                    backgroundColor: '#eff6ff', 
+                    border: '1px solid #dbeafe',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    color: '#2563eb' 
+                  }}>
+                    <FileSpreadsheet size={24} />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                      <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: 0, letterSpacing: '-0.3px' }}>
+                        Tài liệu Báo Cáo & Lịch Biểu Cần Làm
+                      </h2>
+                      <span style={{ 
+                        backgroundColor: '#eff6ff', 
+                        color: '#2563eb', 
+                        border: '1px solid #dbeafe',
+                        fontSize: '11px', 
+                        fontWeight: 700, 
+                        padding: '2px 8px', 
+                        borderRadius: 12,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.4px'
+                      }}>
+                        Định kỳ & Deadline
+                      </span>
+                    </div>
+                    <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>
+                      Nơi tổng hợp các bảng tính Google Sheets báo cáo số liệu và lịch phân bổ nội dung bắt buộc của team Marketing.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '12px', color: '#475569', backgroundColor: '#f8fafc', padding: '6px 12px', borderRadius: 20, border: '1px solid #e2e8f0', fontWeight: 500 }}>
+                  <Clock size={14} color="#f59e0b" />
+                  <span>Tuân thủ hạn nộp báo cáo</span>
+                </div>
+              </div>
+
+              {/* Cards Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 18 }}>
+                {recurringReports.map((report) => (
+                  <div 
+                    key={report.id}
+                    style={{ 
+                      backgroundColor: '#f8fafc', 
+                      borderRadius: 14, 
+                      border: '1px solid #e2e8f0', 
+                      padding: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                    }}
+                    className="hover:border-blue-300 hover:shadow-md hover:bg-white"
+                  >
+                    <div>
+                      {/* Top Badges: Platform + Deadline */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+                        {/* Platform Badge */}
+                        <div style={{ 
+                          display: 'inline-flex', 
+                          alignItems: 'center', 
+                          gap: 6, 
+                          backgroundColor: report.platformBg, 
+                          border: `1px solid ${report.platformBorder}`, 
+                          borderRadius: 8, 
+                          padding: '4px 10px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          color: report.platformColor
+                        }}>
+                          {report.platformIcon}
+                          <span>{report.platform}</span>
+                        </div>
+
+                        {/* Deadline Pill */}
+                        <div style={{ 
+                          display: 'inline-flex', 
+                          alignItems: 'center', 
+                          gap: 5, 
+                          backgroundColor: report.cycleBg, 
+                          border: `1px solid ${report.cycleBorder}`, 
+                          borderRadius: 8, 
+                          padding: '4px 10px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          color: report.cycleColor
+                        }}>
+                          <Clock size={13} />
+                          <span>Hạn: {report.deadline}</span>
+                        </div>
+                      </div>
+
+                      {/* Title */}
+                      <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', margin: '0 0 8px', lineHeight: 1.4 }}>
+                        {report.title}
+                      </h3>
+
+                      {/* Description */}
+                      <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5, margin: '0 0 18px' }}>
+                        {report.desc}
+                      </p>
+                    </div>
+
+                    {/* Bottom Actions */}
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between', 
+                      paddingTop: 14, 
+                      borderTop: '1px solid #e2e8f0',
+                      flexWrap: 'wrap',
+                      gap: 10
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '12px', color: '#059669', fontWeight: 600 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#10b981' }} />
+                        Google Sheets trực tuyến
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {/* Copy Link Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(report.url);
+                            setCopiedId(report.id);
+                            toast.success('Đã chép link Google Sheets!', { id: `copied-${report.id}` });
+                            setTimeout(() => setCopiedId(null), 2000);
+                          }}
+                          title="Sao chép liên kết"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 5,
+                            backgroundColor: '#ffffff',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: 8,
+                            padding: '6px 12px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            color: copiedId === report.id ? '#16a34a' : '#475569',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s'
+                          }}
+                          className="hover:bg-slate-50"
+                        >
+                          {copiedId === report.id ? <Check size={14} color="#16a34a" /> : <Copy size={14} />}
+                          <span>{copiedId === report.id ? 'Đã chép' : 'Sao chép link'}</span>
+                        </button>
+
+                        {/* Open Sheet Button */}
+                        <a
+                          href={report.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            backgroundColor: '#2563eb',
+                            border: 'none',
+                            borderRadius: 8,
+                            padding: '6px 14px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            color: '#ffffff',
+                            textDecoration: 'none',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.15s',
+                            boxShadow: '0 1px 2px rgba(37, 99, 235, 0.2)'
+                          }}
+                          className="hover:bg-blue-700"
+                        >
+                          <span>Mở Trang Tính</span>
+                          <ExternalLink size={13} />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -345,6 +600,22 @@ const MarketingHub = () => {
                   <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', margin: '0 0 16px' }}>Truy cập nhanh</h2>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {quickLinks.map((link, idx) => {
+                      if (link.external && link.url) {
+                        return (
+                          <a 
+                            href={link.url} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            key={idx} 
+                            style={{ display: 'flex', alignItems: 'center', gap: 12, color: '#475569', textDecoration: 'none', fontSize: '14px', fontWeight: 500, padding: '8px', borderRadius: 8 }} 
+                            className="hover:bg-slate-50 hover:text-blue-600"
+                          >
+                            <span style={{ color: '#94a3b8' }}>{link.icon}</span> 
+                            <span style={{ flex: 1 }}>{link.name}</span>
+                            <ExternalLink size={13} style={{ color: '#94a3b8' }} />
+                          </a>
+                        );
+                      }
                       if (link.url) {
                         return (
                           <Link to={link.url} key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, color: '#475569', textDecoration: 'none', fontSize: '14px', fontWeight: 500, padding: '8px', borderRadius: 8 }} className="hover:bg-slate-50 hover:text-blue-600">

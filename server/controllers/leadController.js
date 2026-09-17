@@ -693,17 +693,27 @@ exports.getLeadStats = async (req, res) => {
         const sourceStats = await db.query(`SELECT source, COUNT(*)::int as count FROM leads ${leadWhere} GROUP BY source`, params);
         
         // 3. Stats by Staff (Performance)
+        const staffHaving = buGroup ? 'COUNT(l.id) > 0' : '(COUNT(l.id) > 0 OR r.name = \'sales\')';
         const staffStats = await db.query(`
             SELECT 
+                u.id as staff_id,
                 u.full_name as name,
+                u.username,
+                u.bus,
                 COUNT(l.id)::int as total_leads,
-                COUNT(CASE WHEN l.status = 'Chốt đơn' THEN 1 END)::int as won_leads
+                COUNT(CASE WHEN l.phone IS NOT NULL AND TRIM(l.phone) != '' THEN 1 END)::int as has_phone,
+                COUNT(CASE WHEN l.status IN ('Đang liên hệ', 'Liên hệ lần 2') THEN 1 END)::int as in_contact,
+                COUNT(CASE WHEN l.status = 'Mới' THEN 1 END)::int as is_new,
+                COUNT(CASE WHEN l.status IN ('Không phản hồi', 'Thất bại') THEN 1 END)::int as unresponsive,
+                COUNT(CASE WHEN l.status = 'Chốt đơn' THEN 1 END)::int as won_leads,
+                ROUND(COUNT(CASE WHEN l.phone IS NOT NULL AND TRIM(l.phone) != '' THEN 1 END) * 100.0 / NULLIF(COUNT(l.id), 0), 1)::float as phone_rate,
+                ROUND((COUNT(l.id) - COUNT(CASE WHEN l.status = 'Mới' THEN 1 END)) * 100.0 / NULLIF(COUNT(l.id), 0), 1)::float as contact_rate
             FROM users u
             JOIN roles r ON u.role_id = r.id
             LEFT JOIN leads l ON u.id = l.assigned_to AND ${joinLeadWhere}
             WHERE r.name IN ('sales', 'manager', 'admin', 'marketing', 'operations')
-            GROUP BY u.id, u.full_name, r.name
-            HAVING COUNT(l.id) > 0 OR r.name = 'sales'
+            GROUP BY u.id, u.full_name, u.username, u.bus, r.name
+            HAVING ${staffHaving}
             ORDER BY total_leads DESC
         `, params);
 
@@ -712,10 +722,18 @@ exports.getLeadStats = async (req, res) => {
             SELECT 
                 COALESCE(bu_group, 'Chưa phân loại') as name,
                 COUNT(*)::int as count,
-                COUNT(CASE WHEN status = 'Chốt đơn' THEN 1 END)::int as won_leads
+                COUNT(CASE WHEN phone IS NOT NULL AND TRIM(phone) != '' THEN 1 END)::int as has_phone,
+                COUNT(CASE WHEN status IN ('Đang liên hệ', 'Liên hệ lần 2') THEN 1 END)::int as in_contact,
+                COUNT(CASE WHEN status = 'Mới' THEN 1 END)::int as is_new,
+                COUNT(CASE WHEN status IN ('Không phản hồi', 'Thất bại') THEN 1 END)::int as unresponsive,
+                COUNT(CASE WHEN status = 'Chốt đơn' THEN 1 END)::int as won_leads,
+                COUNT(DISTINCT assigned_to)::int as staff_count,
+                ROUND(COUNT(CASE WHEN phone IS NOT NULL AND TRIM(phone) != '' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1)::float as phone_rate,
+                ROUND((COUNT(*) - COUNT(CASE WHEN status = 'Mới' THEN 1 END)) * 100.0 / NULLIF(COUNT(*), 0), 1)::float as contact_rate
             FROM leads 
             ${leadWhere}
             GROUP BY bu_group
+            ORDER BY count DESC
         `, params);
 
         // 5. Lead Distribution by Country/Destination

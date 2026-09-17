@@ -729,6 +729,7 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                           placeholder="Chưa chọn Tour"
                           emptyText="Không tìm thấy tour"
                           shortLabel={true}
+                          excludePrivate={true}
                           style={{ color: localLeadData?.tour_id ? '#0f172a' : '#ef4444', fontWeight: 700 }}
                         />
                       </div>

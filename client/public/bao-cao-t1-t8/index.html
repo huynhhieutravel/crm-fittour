@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Báo Cáo Phân Tích Ads Toàn Cảnh (Tháng 1 - Tháng 8/2026) | FIT TOUR ERP</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .tab-content { display: none; }
+        .tab-content.block { display: block; }
+        .top-nav-btn.active { 
+            border-bottom-color: #2563eb; 
+            color: #1d4ed8; 
+            font-weight: 700; 
+            background-color: #eff6ff; 
+        }
+        /* Mobile Horizontal Scroll Indicator */
+        .scroll-hint {
+            background: linear-gradient(90deg, rgba(241,245,249,0) 0%, rgba(241,245,249,0.9) 100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased p-2.5 sm:p-5 md:p-6 lg:p-8">
+
+<div class="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+
+    <!-- HEADER & META BRAND -->
+    <header class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="space-y-1.5">
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <span class="px-2 py-0.5 text-[11px] sm:text-xs font-black uppercase tracking-wider rounded bg-blue-600 text-white">FIT TOUR MARKETING</span>
+                <span class="px-2 py-0.5 text-[11px] sm:text-xs font-bold rounded bg-emerald-100 text-emerald-800">Dữ Liệu Đã Xác Thực 100%</span>
+                <span class="px-2 py-0.5 text-[11px] sm:text-xs font-bold rounded bg-purple-100 text-purple-800">Toàn Cảnh T1 - T8</span>
+            </div>
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                Báo Cáo Phân Tích Marketing Ads (T1 – T8/2026)
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-500 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <span>📅 <b>01/01 – 31/08/2026 (8 Tháng)</b></span>
+                <span class="hidden sm:inline">•</span>
+                <span>🎯 <b>3 BU Cốt Lõi: BU1, BU2, BU4</b></span>
+                <span class="hidden sm:inline">•</span>
+                <span class="text-blue-600 font-semibold">(BU5 gộp vào BU2)</span>
+            </p>
+        </div>
+        <div class="flex items-center gap-2 w-full md:w-auto">
+            <a href="https://erp.fittour.vn/marketing-ads" class="flex-1 md:flex-initial text-center px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all border border-slate-300">
+                ← Về Live Ads
+            </a>
+            <button onclick="window.print()" class="flex-1 md:flex-initial text-center px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all border border-blue-200">
+                🖨️ In Báo Cáo
+            </button>
+        </div>
+    </header>
+
+    <!-- TOP LEVEL NAVIGATION TABS (TOUCH OPTIMIZED) -->
+    <div class="relative">
+        <nav class="flex space-x-1.5 sm:space-x-2 border-b border-slate-200 bg-white rounded-xl shadow-sm p-1.5 sticky top-2 z-30 overflow-x-auto whitespace-nowrap scrollbar-hide" id="top-nav" style="-webkit-overflow-scrolling: touch;">
+            <button class="top-nav-btn active px-3.5 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold text-slate-600 rounded-lg border-b-2 border-transparent transition-all flex items-center gap-1.5" data-page="page-overview">
+                <span>📊</span> <span>Tổng Quan</span>
+            </button>
+            <button class="top-nav-btn px-3.5 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold text-slate-600 rounded-lg border-b-2 border-transparent transition-all flex items-center gap-1.5" data-page="page-charts">
+                <span>📈</span> <span>Biểu Đồ So Sánh</span>
+            </button>
+            <button class="top-nav-btn px-3.5 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold text-slate-600 rounded-lg border-b-2 border-transparent transition-all flex items-center gap-1.5" data-page="page-bu1">
+                <span>🇨🇳</span> <span>BU1 Trung Quốc</span>
+            </button>
+            <button class="top-nav-btn px-3.5 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold text-slate-600 rounded-lg border-b-2 border-transparent transition-all flex items-center gap-1.5" data-page="page-bu2">
+                <span>🇯🇵</span> <span>BU2 Nhật & Viễn Chinh</span>
+            </button>
+            <button class="top-nav-btn px-3.5 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold text-slate-600 rounded-lg border-b-2 border-transparent transition-all flex items-center gap-1.5" data-page="page-bu4">
+                <span>🇱🇰</span> <span>BU4 Nam Á & Đảo</span>
+            </button>
+            <button class="top-nav-btn px-3.5 py-2.5 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold text-indigo-700 hover:bg-indigo-50 rounded-lg border-b-2 border-transparent transition-all flex items-center gap-1.5" data-page="page-master-audit">
+                <span>📑</span> <span>Tra Cứu Chi Tiết</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 1: OVERVIEW CHUNG -->
+    <!-- ========================================== -->
+    <div id="page-overview" class="page-content block space-y-4 sm:space-y-6">
+
+        <!-- 4 TOP KPI CARDS (2 CỘT TRÊN MOBILE, 4 CỘT TRÊN DESKTOP) -->
+        <div class="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
+            <!-- Tổng Chi Phí -->
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="flex justify-between items-start">
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Tổng Ngân Sách</span>
+                    <span class="text-base sm:text-lg">💳</span>
+                </div>
+                <div class="mt-2 sm:mt-3">
+                    <div class="text-lg sm:text-2xl lg:text-3xl font-black text-orange-600 tracking-tight" id="kpi-spend">654.2 Tr</div>
+                    <div class="text-[10.5px] sm:text-xs font-semibold text-slate-500 mt-0.5">
+                        TB: <b class="text-slate-800">~81.7M/tháng</b>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tổng Tin Nhắn (Inbox) -->
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="flex justify-between items-start">
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Lượt Inbox</span>
+                    <span class="text-base sm:text-lg">💬</span>
+                </div>
+                <div class="mt-2 sm:mt-3">
+                    <div class="text-lg sm:text-2xl lg:text-3xl font-black text-indigo-600 tracking-tight" id="kpi-messages">12.105 Msg</div>
+                    <div class="text-[10.5px] sm:text-xs font-semibold text-slate-500 mt-0.5">
+                        Giá TB: <b class="text-emerald-700">54k/Msg</b>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tổng Leads -->
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="flex justify-between items-start">
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Lead Thu Thập</span>
+                    <span class="text-base sm:text-lg">🎯</span>
+                </div>
+                <div class="mt-2 sm:mt-3">
+                    <div class="text-lg sm:text-2xl lg:text-3xl font-black text-blue-600 tracking-tight" id="kpi-leads">3.969 Lead</div>
+                    <div class="text-[10.5px] sm:text-xs font-semibold text-slate-500 mt-0.5">
+                        CVR: <b class="text-blue-700">32.8% (3 msg/lead)</b>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avg CPL -->
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="flex justify-between items-start">
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Giá Lead (CPL)</span>
+                    <span class="text-base sm:text-lg">⚡</span>
+                </div>
+                <div class="mt-2 sm:mt-3">
+                    <div class="text-lg sm:text-2xl lg:text-3xl font-black text-emerald-600 tracking-tight" id="kpi-cpl">164.834 đ</div>
+                    <div class="text-[10.5px] sm:text-xs font-semibold text-slate-500 mt-0.5">
+                        Hiệu quả: <b class="text-emerald-700">Rất tối ưu</b>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MA TRẬN SO SÁNH 3 BU TỔNG HỢP -->
+        <section class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-1">
+                <h2 class="text-xs sm:text-sm font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>📋 So Sánh Chỉ Số Tích Lũy 3 BU (T1 – T8)</span>
+                </h2>
+                <span class="text-[11px] text-slate-500 sm:hidden">👉 Vuốt ngang để xem đủ cột</span>
+            </div>
+            <div class="overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
+                <table class="w-full text-xs sm:text-sm text-left text-slate-600 min-w-[620px]">
+                    <thead class="text-[11px] sm:text-xs text-slate-700 uppercase bg-slate-100">
+                        <tr>
+                            <th class="px-3.5 py-2.5 sm:px-5 sm:py-3.5 font-bold">Business Unit</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3.5 font-bold text-right">Chi Phí</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3.5 font-bold text-center">Tỷ Trọng</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3.5 font-bold text-right">Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3.5 font-bold text-right">Giá/Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3.5 font-bold text-right">Lead</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3.5 font-bold text-right">CPL</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3.5 font-bold text-center">Lead/Msg</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-slate-700 font-medium">
+                        <tr class="hover:bg-slate-50/70">
+                            <td class="px-3.5 py-2.5 sm:px-5 sm:py-3.5 font-bold text-slate-900 flex items-center gap-1.5">
+                                <span>🇨🇳</span> <span>BU1 (Trung Quốc)</span>
+                            </td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right font-bold text-blue-700">279.5M</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-center font-bold text-slate-800 bg-blue-50/50">42.7%</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right">5.561</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right font-semibold">50.271 đ</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right font-bold text-emerald-700">1.797</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right font-bold text-emerald-700">155.570 đ</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-center font-bold text-blue-600">32.3%</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/70">
+                            <td class="px-3.5 py-2.5 sm:px-5 sm:py-3.5 font-bold text-slate-900 flex items-center gap-1.5">
+                                <span>🇯🇵</span> <span>BU2 (Nhật & Viễn Chinh)</span>
+                            </td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right font-bold text-purple-700">198.1M</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-center font-bold text-slate-800 bg-purple-50/50">30.3%</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right">3.002</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right font-semibold">65.987 đ</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right font-bold text-emerald-700">1.069</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right font-bold text-purple-700">185.308 đ</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-center font-extrabold text-purple-700 bg-purple-50">35.6%</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/70">
+                            <td class="px-3.5 py-2.5 sm:px-5 sm:py-3.5 font-bold text-slate-900 flex items-center gap-1.5">
+                                <span>🇱🇰</span> <span>BU4 (Nam Á & Đảo)</span>
+                            </td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right font-bold text-amber-700">176.6M</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-center font-bold text-slate-800 bg-amber-50/50">27.0%</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right">3.542</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right font-extrabold text-emerald-700 bg-emerald-50">49.851 đ</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right font-bold text-emerald-700">1.103</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right font-bold text-emerald-700">160.083 đ</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-center font-bold text-amber-600">31.1%</td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="bg-slate-50 border-t-2 border-slate-200 text-slate-900 font-extrabold">
+                        <tr>
+                            <td class="px-3.5 py-2.5 sm:px-5 sm:py-3.5">TỔNG CỘNG 3 BU</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right text-orange-600">654.2M</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-center">100.0%</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right">12.105</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right">54.046 đ</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right text-blue-700">3.969</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-right text-emerald-700">164.834 đ</td>
+                            <td class="px-3 py-2.5 sm:px-5 sm:py-3.5 text-center text-blue-800">32.8%</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <!-- DIỄN BIẾN THEO THÁNG TOÀN HỆ THỐNG -->
+        <section class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-1">
+                <h2 class="text-xs sm:text-sm font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>📅 Diễn Biến Ngân Sách 8 Tháng (T1 -> T8/2026)</span>
+                </h2>
+                <span class="text-[11px] text-slate-500 sm:hidden">👉 Vuốt ngang để xem đủ cột</span>
+            </div>
+            <div class="overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
+                <table class="w-full text-xs sm:text-sm text-left text-slate-600 min-w-[700px]">
+                    <thead class="text-[11px] sm:text-xs text-slate-700 uppercase bg-slate-100">
+                        <tr>
+                            <th class="px-3.5 py-2.5 sm:px-4 sm:py-3 font-bold">Tháng</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Chi Phí</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Giá / Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Lead</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">CPL</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-center">Lead/Msg</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold">Giai Đoạn Chiến Dịch</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-slate-700" id="monthly-summary-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- HỘP ĐÁNH GIÁ CHUYÊN GIA -->
+        <div class="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-900 to-indigo-950 text-white shadow-lg space-y-3 sm:space-y-4">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <span class="p-1.5 sm:p-2 rounded-lg bg-blue-500/20 text-blue-300 text-base sm:text-xl">💡</span>
+                <h3 class="text-sm sm:text-base font-bold tracking-tight">NHẬN ĐỊNH TỔNG QUAN TỪ CHUYÊN GIA DỮ LIỆU ADS</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5 text-xs sm:text-sm text-blue-100 leading-relaxed">
+                <div class="p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10">
+                    <h4 class="font-bold text-white mb-1 flex items-center gap-1.5">🇨🇳 BU1 — Thanh Khoản Vững Chắc</h4>
+                    <p>Động lực tăng trưởng chính (42.7% chi phí, 1.797 lead). Giá tin nhắn và lead luôn ổn định quanh 50k - 155k suốt 8 tháng.</p>
+                </div>
+                <div class="p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10">
+                    <h4 class="font-bold text-white mb-1 flex items-center gap-1.5">🇯🇵 BU2 — Chất Lượng Khách Hàng Cao</h4>
+                    <p>Tỷ lệ lead/inbox cao nhất (35.6%). Tệp khách hỏi Mông Cổ, Pakistan, Nhật Bản có tài chính mạnh và tỷ lệ chốt cọc cao.</p>
+                </div>
+                <div class="p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10">
+                    <h4 class="font-bold text-white mb-1 flex items-center gap-1.5">🇱🇰 BU4 — Phễu Tương Tác Cực Rẻ</h4>
+                    <p>Chi phí tin nhắn rẻ nhất hệ thống (~49.8k/msg). Cần bổ sung lọc giá/điều kiện trên content để nâng cao tỷ lệ ra SĐT.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 2: CHARTS TOÀN CẢNH -->
+    <!-- ========================================== -->
+    <div id="page-charts" class="page-content hidden space-y-4 sm:space-y-6">
+
+        <!-- BIỂU ĐỒ TRỌNG TÂM: 8 THÁNG X 3 CỘT (BU1, BU2, BU4) -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5 mb-3">
+                <div>
+                    <h3 class="text-xs sm:text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-1.5">
+                        <span>📊 So Sánh Chi Phí Từng Tháng Giữa Các BU (8 Tháng x 3 Cột)</span>
+                    </h3>
+                    <p class="text-[11px] sm:text-xs text-slate-500">
+                        Mỗi tháng có 3 cột: <span class="text-blue-600 font-bold">BU1</span>, <span class="text-purple-600 font-bold">BU2</span>, <span class="text-amber-600 font-bold">BU4</span> (Đơn vị: Triệu VNĐ)
+                    </p>
+                </div>
+                <span class="text-[11px] text-slate-400 sm:hidden">👉 Chạm vào cột để xem chi tiết</span>
+            </div>
+            <!-- Mobile Horizontal Scroll Container for 24 Bars -->
+            <div class="overflow-x-auto pb-1" style="-webkit-overflow-scrolling: touch;">
+                <div class="min-w-[540px] sm:min-w-full h-72 sm:h-96 relative">
+                    <canvas id="chartMonthly3BUs"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <!-- Chart: So sánh Chi phí & Lead -->
+            <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">📊 Tổng Chi Phí & Lead Thu Thập 3 BU</h3>
+                    <span class="text-[11px] text-slate-400">Triệu đ vs Lead</span>
+                </div>
+                <div class="relative h-64 sm:h-72">
+                    <canvas id="chartSpendLeads"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart: Tỷ Trọng Chi Phí -->
+            <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">🍩 Cơ Cấu Phân Bổ Ngân Sách 8 Tháng</h3>
+                    <span class="text-[11px] text-slate-400">Tỷ trọng %</span>
+                </div>
+                <div class="relative h-64 sm:h-72">
+                    <canvas id="chartBudgetShare"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart: Xu Hướng Chi Tiêu T1-T8 Line -->
+            <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">📈 Đường Xu Hướng Giải Ngân Từng Tháng Của 3 BU</h3>
+                    <span class="text-[11px] text-slate-400">Triệu VNĐ</span>
+                </div>
+                <div class="overflow-x-auto pb-1" style="-webkit-overflow-scrolling: touch;">
+                    <div class="min-w-[480px] sm:min-w-full h-64 sm:h-80 relative">
+                        <canvas id="chartMonthlyTrend"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart: CPL & Chi phí / Inbox -->
+            <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">⚡ So Sánh Giá Inbox vs Giá Lead (CPL)</h3>
+                    <span class="text-[11px] text-slate-400">Đơn vị: VNĐ</span>
+                </div>
+                <div class="relative h-64 sm:h-80">
+                    <canvas id="chartEfficiency"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 3: DEEP-DIVE BU1 (TOUR TRUNG QUỐC) -->
+    <!-- ========================================== -->
+    <div id="page-bu1" class="page-content hidden space-y-4 sm:space-y-6">
+
+        <!-- Top BU1 Cards -->
+        <div class="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-blue-200">
+                <span class="text-[10px] sm:text-xs font-bold text-blue-600 uppercase">Chi Phí BU1</span>
+                <div class="text-lg sm:text-2xl lg:text-3xl font-black text-blue-900 mt-1 sm:mt-2">279.5 Tr</div>
+                <div class="text-[10.5px] sm:text-xs text-slate-500 mt-0.5">Chiếm 42.7% ngân sách</div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-blue-200">
+                <span class="text-[10px] sm:text-xs font-bold text-blue-600 uppercase">Inbox BU1</span>
+                <div class="text-lg sm:text-2xl lg:text-3xl font-black text-blue-900 mt-1 sm:mt-2">5.561 Msg</div>
+                <div class="text-[10.5px] sm:text-xs text-slate-500 mt-0.5">Giá TB: <b>50.271 đ/Msg</b></div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-blue-200">
+                <span class="text-[10px] sm:text-xs font-bold text-blue-600 uppercase">Lead Thu Thập</span>
+                <div class="text-lg sm:text-2xl lg:text-3xl font-black text-emerald-600 mt-1 sm:mt-2">1.797 Lead</div>
+                <div class="text-[10.5px] sm:text-xs text-slate-500 mt-0.5">Tỷ lệ: <b>32.3%</b></div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-blue-200">
+                <span class="text-[10px] sm:text-xs font-bold text-blue-600 uppercase">Giá Lead (CPL)</span>
+                <div class="text-lg sm:text-2xl lg:text-3xl font-black text-emerald-600 mt-1 sm:mt-2">155.570 đ</div>
+                <div class="text-[10.5px] sm:text-xs text-slate-500 mt-0.5">Ổn định: 126k – 201k</div>
+            </div>
+        </div>
+
+        <!-- BIỂU ĐỒ RIÊNG CHO BU1 TỪ THÁNG 1 -> 8 -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>📊 Biểu Đồ Chi Phí Ads BU1 (Tháng 1 -> Tháng 8/2026)</span>
+                </h3>
+                <span class="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">Tour Trung Quốc</span>
+            </div>
+            <div class="relative h-64 sm:h-72 w-full">
+                <canvas id="chartBu1Monthly"></canvas>
+            </div>
+        </div>
+
+        <!-- Bảng Tuyến Tour Chủ Lực BU1 -->
+        <section class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">🇨🇳 Tuyến Tour Trọng Điểm BU1 (T1 – T8)</h3>
+                <span class="text-[11px] text-slate-500 sm:hidden">👉 Vuốt ngang</span>
+            </div>
+            <div class="overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
+                <table class="w-full text-xs sm:text-sm text-left text-slate-600 min-w-[580px]">
+                    <thead class="text-[11px] sm:text-xs text-slate-700 uppercase bg-slate-100">
+                        <tr>
+                            <th class="px-3.5 py-2.5 sm:px-5 sm:py-3 font-bold">Tuyến Tour</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">Chi Phí</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">Giá/Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">Lead</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">CPL</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-medium" id="bu1-routes-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Bảng Diễn Biến Tháng BU1 -->
+        <section class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">📅 Diễn Biến BU1 Từng Tháng (T1 - T8)</h3>
+                <span class="text-[11px] text-slate-500 sm:hidden">👉 Vuốt ngang</span>
+            </div>
+            <div class="overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
+                <table class="w-full text-xs sm:text-sm text-left text-slate-600 min-w-[580px]">
+                    <thead class="text-[11px] sm:text-xs text-slate-700 uppercase bg-slate-100">
+                        <tr>
+                            <th class="px-3.5 py-2.5 sm:px-4 sm:py-3 font-bold">Tháng</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Chi Phí</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Giá/Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Lead</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">CPL</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-center">Lead/Msg</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100" id="bu1-months-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 4: DEEP-DIVE BU2 (NHẬT BẢN & VIỄN CHINH) -->
+    <!-- ========================================== -->
+    <div id="page-bu2" class="page-content hidden space-y-4 sm:space-y-6">
+
+        <!-- Top BU2 Cards -->
+        <div class="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-purple-200">
+                <span class="text-[10px] sm:text-xs font-bold text-purple-600 uppercase">Chi Phí BU2</span>
+                <div class="text-lg sm:text-2xl lg:text-3xl font-black text-purple-900 mt-1 sm:mt-2">198.1 Tr</div>
+                <div class="text-[10.5px] sm:text-xs text-slate-500 mt-0.5">Gồm cả tour Viễn Chinh</div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-purple-200">
+                <span class="text-[10px] sm:text-xs font-bold text-purple-600 uppercase">Inbox BU2</span>
+                <div class="text-lg sm:text-2xl lg:text-3xl font-black text-purple-900 mt-1 sm:mt-2">3.002 Msg</div>
+                <div class="text-[10.5px] sm:text-xs text-slate-500 mt-0.5">Giá TB: <b>65.987 đ/Msg</b></div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-purple-200">
+                <span class="text-[10px] sm:text-xs font-bold text-purple-600 uppercase">Lead Thu Thập</span>
+                <div class="text-lg sm:text-2xl lg:text-3xl font-black text-emerald-600 mt-1 sm:mt-2">1.069 Lead</div>
+                <div class="text-[10.5px] sm:text-xs text-purple-700 font-bold mt-0.5">Lead/Msg: 35.6% (Top 1)</div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-purple-200">
+                <span class="text-[10px] sm:text-xs font-bold text-purple-600 uppercase">Giá Lead (CPL)</span>
+                <div class="text-lg sm:text-2xl lg:text-3xl font-black text-purple-900 mt-1 sm:mt-2">185.308 đ</div>
+                <div class="text-[10.5px] sm:text-xs text-slate-500 mt-0.5">Tour cao cấp giá trị lớn</div>
+            </div>
+        </div>
+
+        <!-- BIỂU ĐỒ RIÊNG CHO BU2 TỪ THÁNG 1 -> 8 -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>📊 Biểu Đồ Chi Phí Ads BU2 (Tháng 1 -> Tháng 8/2026)</span>
+                </h3>
+                <span class="text-[11px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded">Nhật Bản & Viễn Chinh</span>
+            </div>
+            <div class="relative h-64 sm:h-72 w-full">
+                <canvas id="chartBu2Monthly"></canvas>
+            </div>
+        </div>
+
+        <!-- Bảng Tuyến Tour Chủ Lực BU2 -->
+        <section class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">🇯🇵 Tuyến Tour Trọng Điểm BU2 (T1 – T8)</h3>
+                <span class="text-[11px] text-slate-500 sm:hidden">👉 Vuốt ngang</span>
+            </div>
+            <div class="overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
+                <table class="w-full text-xs sm:text-sm text-left text-slate-600 min-w-[580px]">
+                    <thead class="text-[11px] sm:text-xs text-slate-700 uppercase bg-slate-100">
+                        <tr>
+                            <th class="px-3.5 py-2.5 sm:px-5 sm:py-3 font-bold">Tuyến Tour</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">Chi Phí</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">Giá/Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">Lead</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">CPL</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-medium" id="bu2-routes-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Bảng Diễn Biến Tháng BU2 -->
+        <section class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">📅 Diễn Biến BU2 Từng Tháng (T1 - T8)</h3>
+                <span class="text-[11px] text-slate-500 sm:hidden">👉 Vuốt ngang</span>
+            </div>
+            <div class="overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
+                <table class="w-full text-xs sm:text-sm text-left text-slate-600 min-w-[580px]">
+                    <thead class="text-[11px] sm:text-xs text-slate-700 uppercase bg-slate-100">
+                        <tr>
+                            <th class="px-3.5 py-2.5 sm:px-4 sm:py-3 font-bold">Tháng</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Chi Phí</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Giá/Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Lead</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">CPL</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-center">Lead/Msg</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100" id="bu2-months-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 5: DEEP-DIVE BU4 (NAM Á / HIMALAYAS / ĐẢO) -->
+    <!-- ========================================== -->
+    <div id="page-bu4" class="page-content hidden space-y-4 sm:space-y-6">
+
+        <!-- Top BU4 Cards -->
+        <div class="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-amber-200">
+                <span class="text-[10px] sm:text-xs font-bold text-amber-600 uppercase">Chi Phí BU4</span>
+                <div class="text-lg sm:text-2xl lg:text-3xl font-black text-amber-900 mt-1 sm:mt-2">176.6 Tr</div>
+                <div class="text-[10.5px] sm:text-xs text-slate-500 mt-0.5">Chiếm 27.0% ngân sách</div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-amber-200">
+                <span class="text-[10px] sm:text-xs font-bold text-amber-600 uppercase">Inbox BU4</span>
+                <div class="text-lg sm:text-2xl lg:text-3xl font-black text-amber-900 mt-1 sm:mt-2">3.542 Msg</div>
+                <div class="text-[10.5px] sm:text-xs text-emerald-700 font-bold mt-0.5">Giá: 49.851 đ (Rẻ nhất)</div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-amber-200">
+                <span class="text-[10px] sm:text-xs font-bold text-amber-600 uppercase">Lead Thu Thập</span>
+                <div class="text-lg sm:text-2xl lg:text-3xl font-black text-emerald-600 mt-1 sm:mt-2">1.103 Lead</div>
+                <div class="text-[10.5px] sm:text-xs text-slate-500 mt-0.5">Tỷ lệ: <b>31.1%</b></div>
+            </div>
+            <div class="bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-amber-200">
+                <span class="text-[10px] sm:text-xs font-bold text-amber-600 uppercase">Giá Lead (CPL)</span>
+                <div class="text-lg sm:text-2xl lg:text-3xl font-black text-emerald-600 mt-1 sm:mt-2">160.083 đ</div>
+                <div class="text-[10.5px] sm:text-xs text-slate-500 mt-0.5">Tối ưu cho tour ngách</div>
+            </div>
+        </div>
+
+        <!-- BIỂU ĐỒ RIÊNG CHO BU4 TỪ THÁNG 1 -> 8 -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>📊 Biểu Đồ Chi Phí Ads BU4 (Tháng 1 -> Tháng 8/2026)</span>
+                </h3>
+                <span class="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">Ladakh, Bhutan, Bali-Bromo</span>
+            </div>
+            <div class="relative h-64 sm:h-72 w-full">
+                <canvas id="chartBu4Monthly"></canvas>
+            </div>
+        </div>
+
+        <!-- Bảng Tuyến Tour Chủ Lực BU4 -->
+        <section class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">🇱🇰 Tuyến Tour Trọng Điểm BU4 (T1 – T8)</h3>
+                <span class="text-[11px] text-slate-500 sm:hidden">👉 Vuốt ngang</span>
+            </div>
+            <div class="overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
+                <table class="w-full text-xs sm:text-sm text-left text-slate-600 min-w-[580px]">
+                    <thead class="text-[11px] sm:text-xs text-slate-700 uppercase bg-slate-100">
+                        <tr>
+                            <th class="px-3.5 py-2.5 sm:px-5 sm:py-3 font-bold">Tuyến Tour</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">Chi Phí</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">Giá/Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">Lead</th>
+                            <th class="px-3 py-2.5 sm:px-5 sm:py-3 font-bold text-right">CPL</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-medium" id="bu4-routes-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Bảng Diễn Biến Tháng BU4 -->
+        <section class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">📅 Diễn Biến BU4 Từng Tháng (T1 - T8)</h3>
+                <span class="text-[11px] text-slate-500 sm:hidden">👉 Vuốt ngang</span>
+            </div>
+            <div class="overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
+                <table class="w-full text-xs sm:text-sm text-left text-slate-600 min-w-[580px]">
+                    <thead class="text-[11px] sm:text-xs text-slate-700 uppercase bg-slate-100">
+                        <tr>
+                            <th class="px-3.5 py-2.5 sm:px-4 sm:py-3 font-bold">Tháng</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Chi Phí</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Giá/Inbox</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">Lead</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-right">CPL</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 font-bold text-center">Lead/Msg</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100" id="bu4-months-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 6: MASTER AUDIT (TRA CỨU TOÀN BỘ) -->
+    <!-- ========================================== -->
+    <div id="page-master-audit" class="page-content hidden space-y-4 sm:space-y-6">
+
+        <section class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 space-y-3 sm:space-y-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                <div>
+                    <h3 class="text-sm sm:text-base font-extrabold text-slate-900 uppercase">📑 Tra Cứu Toàn Bộ 727 Chiến Dịch & Nhóm QC</h3>
+                    <p class="text-[11px] sm:text-xs text-slate-500">Tra cứu minh bạch từng dòng dữ liệu báo cáo quảng cáo từ T1 đến T8/2026</p>
+                </div>
+            </div>
+
+            <!-- Mobile Responsive Filter Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
+                <!-- Filter BU -->
+                <select id="audit-bu-filter" class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-slate-50 text-slate-700">
+                    <option value="ALL">Tất cả BU (BU1, BU2, BU4)</option>
+                    <option value="BU1">Chỉ BU1 (Tour Trung Quốc)</option>
+                    <option value="BU2">Chỉ BU2 (Nhật & Viễn Chinh)</option>
+                    <option value="BU4">Chỉ BU4 (Nam Á / Himalayas / Đảo)</option>
+                </select>
+                <!-- Filter Tháng -->
+                <select id="audit-month-filter" class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-slate-50 text-slate-700">
+                    <option value="ALL">Tất cả Tháng (T1 - T8)</option>
+                    <option value="1">Tháng 1</option>
+                    <option value="2">Tháng 2</option>
+                    <option value="3">Tháng 3</option>
+                    <option value="4">Tháng 4</option>
+                    <option value="5">Tháng 5</option>
+                    <option value="6">Tháng 6</option>
+                    <option value="7">Tháng 7</option>
+                    <option value="8">Tháng 8</option>
+                </select>
+                <!-- Search Input -->
+                <input type="text" id="audit-search-input" placeholder="Tìm tên chiến dịch, nhóm..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
+                <table class="w-full text-xs text-left text-slate-600 min-w-[650px]">
+                    <thead class="text-slate-700 uppercase bg-slate-100 font-bold">
+                        <tr>
+                            <th class="px-3 py-2.5">Tháng</th>
+                            <th class="px-3 py-2.5">BU</th>
+                            <th class="px-3 py-2.5">Tên Chiến Dịch</th>
+                            <th class="px-3 py-2.5">Tên Nhóm Quảng Cáo</th>
+                            <th class="px-3 py-2.5 text-right">Chi Phí</th>
+                            <th class="px-3 py-2.5 text-right">Inbox</th>
+                            <th class="px-3 py-2.5 text-right">Lead</th>
+                            <th class="px-3 py-2.5 text-right">CPL</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100" id="audit-table-body"></tbody>
+                </table>
+            </div>
+
+            <!-- Pagination info & buttons -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-2 pt-2 text-xs text-slate-500">
+                <span id="audit-page-info">Đang hiển thị 0 - 0 / 0 dòng</span>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                    <button id="audit-prev-btn" class="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-slate-300 bg-slate-50 hover:bg-slate-100 disabled:opacity-50 font-semibold">← Trước</button>
+                    <button id="audit-next-btn" class="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-slate-300 bg-slate-50 hover:bg-slate-100 disabled:opacity-50 font-semibold">Tiếp →</button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+</div>
+
+<!-- Application Script -->
+<script src="script.js?v=20260914_v3"></script>
+</body>
+</html>

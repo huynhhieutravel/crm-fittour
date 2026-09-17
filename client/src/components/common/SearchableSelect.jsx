@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, ChevronDown, Check, X } from 'lucide-react';
+import { isPrivateTour } from '../../utils/tourHelpers';
 
 const SearchableSelect = ({ 
   options = [], 
@@ -9,13 +10,14 @@ const SearchableSelect = ({
   style = {}, 
   className = "",
   shortLabel = false,
-  emptyText = "Không tìm thấy"
+  emptyText = "Không tìm thấy",
+  excludePrivate = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef(null);
 
-  const selectedOption = options.find(opt => opt.id.toString() === value?.toString());
+  const selectedOption = options.find(opt => opt?.id != null && value != null && String(opt.id) === String(value));
   
   let label = placeholder;
   if (selectedOption) {
@@ -37,10 +39,13 @@ const SearchableSelect = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredOptions = options.filter(opt => 
-    opt?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (opt?.code && opt.code.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredOptions = options.filter(opt => {
+    if (excludePrivate && isPrivateTour(opt) && (value == null || String(opt?.id) !== String(value))) {
+      return false;
+    }
+    return opt?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+           (opt?.code && opt.code.toLowerCase().includes(searchTerm.toLowerCase()));
+  });
 
   return (
     <div className={`searchable-select-container ${className}`} ref={dropdownRef} style={{ position: 'relative', width: '100%', ...style }}>

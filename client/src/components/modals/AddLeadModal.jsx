@@ -124,6 +124,7 @@ const AddLeadModal = ({
               value={newLead.tour_id}
               onChange={(val) => setNewLead({...newLead, tour_id: val})}
               placeholder="Chọn tour quan tâm..."
+              excludePrivate={true}
             />
           </div>
 

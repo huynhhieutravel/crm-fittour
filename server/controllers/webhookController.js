@@ -140,20 +140,25 @@ exports.handleWebhookEvent = async (req, res) => {
                                             if (!leadCheck.rows[0].tour_id) {
                                                 const autoTour = await facebookService.classifyTourFromMessage(allText, '', leadCheck.rows[0].bu_group);
                                                 if (autoTour && autoTour.tour_id) {
-                                                    // Ưu tiên BU của chính Tour cụ thể, fallback về lead BU
-                                                    const targetBU = autoTour.bu_group || leadCheck.rows[0].bu_group;
-                                                    const q = targetBU ? 
-                                                        'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
-                                                        'UPDATE leads SET tour_id = $1 WHERE id = $2';
-                                                    const params = targetBU ? 
-                                                        [autoTour.tour_id, targetBU, leadId] : 
-                                                        [autoTour.tour_id, leadId];
-                                                    
-                                                    await db.query(q, params);
-                                                    console.log(`[TOUR-AUTO] Echo Webhook Lead #${leadId} (${leadCheck.rows[0].name}) → Auto Tour: ${autoTour.tour_id} (BU: ${targetBU})`);
-                                                    
-                                                    if (!leadCheck.rows[0].bu_group && autoTour.bu_group) {
-                                                        notificationController.broadcastNewLead({ id: leadId, customer_name: leadCheck.rows[0].name }, autoTour.bu_group).catch(console.error);
+                                                    if (leadCheck.rows[0].bu_group) {
+                                                        // ĐÃ CÓ BU: KHÓA CỨNG BU, CHỈ CẬP NHẬT TOUR_ID
+                                                        await db.query('UPDATE leads SET tour_id = $1 WHERE id = $2', [autoTour.tour_id, leadId]);
+                                                        console.log(`[TOUR-AUTO] Echo Webhook Lead #${leadId} (${leadCheck.rows[0].name}) → Auto Tour: ${autoTour.tour_id} (BU giữ nguyên: ${leadCheck.rows[0].bu_group})`);
+                                                    } else {
+                                                        const targetBU = autoTour.bu_group;
+                                                        const q = targetBU ? 
+                                                            'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+                                                            'UPDATE leads SET tour_id = $1 WHERE id = $2';
+                                                        const params = targetBU ? 
+                                                            [autoTour.tour_id, targetBU, leadId] : 
+                                                            [autoTour.tour_id, leadId];
+                                                        
+                                                        await db.query(q, params);
+                                                        console.log(`[TOUR-AUTO] Echo Webhook Lead #${leadId} (${leadCheck.rows[0].name}) → Auto Tour: ${autoTour.tour_id} (BU mới: ${targetBU})`);
+                                                        
+                                                        if (targetBU) {
+                                                            notificationController.broadcastNewLead({ id: leadId, customer_name: leadCheck.rows[0].name }, targetBU).catch(console.error);
+                                                        }
                                                     }
                                                 }
                                             }

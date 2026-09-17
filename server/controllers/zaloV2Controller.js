@@ -407,15 +407,15 @@ const zaloV2Controller = {
           let isExpired = false;
           if (oldLead.last_contacted_at) {
             const daysSinceLastContact = (new Date() - new Date(oldLead.last_contacted_at)) / (1000 * 60 * 60 * 24);
-            if (daysSinceLastContact > 30) isExpired = true;
+            if (daysSinceLastContact > 14) isExpired = true;
           } else if (oldLead.created_at) {
             const daysSinceCreated = (new Date() - new Date(oldLead.created_at)) / (1000 * 60 * 60 * 24);
-            if (daysSinceCreated > 30) isExpired = true;
+            if (daysSinceCreated > 14) isExpired = true;
           }
 
-          // NẾU LUỒNG CŨ ĐÃ ĐÓNG HOẶC QUÁ 30 NGÀY -> TẠO LEAD MỚI (REOPEN DEAL)
+          // NẾU LUỒNG CŨ ĐÃ ĐÓNG HOẶC QUÁ 14 NGÀY (2 TUẦN) -> TẠO LEAD MỚI (REOPEN DEAL)
           if (['Chốt đơn', 'Thất bại'].includes(oldLead.status) || isExpired) {
-            console.log(`[ZALO WEBHOOK] Khách Zalo nhắn lại (Lead đã đóng hoặc quá 30 ngày): ${oldLead.name}. Đang tạo Lead mới...`);
+            console.log(`[ZALO WEBHOOK] Khách Zalo nhắn lại (Lead đã đóng hoặc quá 14 ngày): ${oldLead.name}. Đang tạo Lead mới...`);
             const newLeadResult = await db.query(
               `INSERT INTO leads (name, source, status, zalo_uid, last_contacted_at, customer_id, phone, email) 
                VALUES ($1, 'Zalo', 'Mới', $2, NOW(), (SELECT id FROM customers WHERE zalo_uid = $3 LIMIT 1), $4, $5) 
@@ -468,15 +468,21 @@ const zaloV2Controller = {
               const currentBuGroup = updatedLead.rows[0]?.bu_group;
               const autoTour3 = await facebookService.classifyTourFromMessage(messageText, '', currentBuGroup);
               if (autoTour3 && autoTour3.tour_id) {
-                const targetBU3 = autoTour3.bu_group || currentBuGroup;
-                const q3 = targetBU3 ? 
-                  'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
-                  'UPDATE leads SET tour_id = $1 WHERE id = $2';
-                const params3 = targetBU3 ? 
-                  [autoTour3.tour_id, targetBU3, leadId] : 
-                  [autoTour3.tour_id, leadId];
-                await db.query(q3, params3);
-                console.log(`[TOUR-AUTO] Zalo Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (BU: ${targetBU3})`);
+                if (currentBuGroup) {
+                  // ĐÃ CÓ BU: KHÓA CỨNG BU, CHỈ CẬP NHẬT TOUR_ID
+                  await db.query('UPDATE leads SET tour_id = $1 WHERE id = $2', [autoTour3.tour_id, leadId]);
+                  console.log(`[TOUR-AUTO] Zalo Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (BU giữ nguyên: ${currentBuGroup})`);
+                } else {
+                  const targetBU3 = autoTour3.bu_group;
+                  const q3 = targetBU3 ? 
+                    'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+                    'UPDATE leads SET tour_id = $1 WHERE id = $2';
+                  const params3 = targetBU3 ? 
+                    [autoTour3.tour_id, targetBU3, leadId] : 
+                    [autoTour3.tour_id, leadId];
+                  await db.query(q3, params3);
+                  console.log(`[TOUR-AUTO] Zalo Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (BU mới: ${targetBU3})`);
+                }
               }
             }
           }

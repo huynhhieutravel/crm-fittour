@@ -2,6 +2,7 @@ import { swalConfirm } from '../utils/swalHelpers';
 import React, { useState, useEffect, useRef } from 'react';
 import Select from 'react-select';
 import { 
+  Users,
   UserPlus, 
   MessageSquare, 
   MessageCircle,
@@ -21,6 +22,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
+import TourFilterDropdown from '../components/common/TourFilterDropdown';
 import axios from 'axios';
 import { canEdit, canDelete } from '../utils/permissions';
 
@@ -228,10 +230,10 @@ const LeadsTab = ({
     <>
       <div className="stats-grid custom-leads-stats">
         <div className="stat-card purple">
-          <div className="stat-icon-bg"><UserPlus size={24} /></div>
+          <div className="stat-icon-bg"><Users size={24} /></div>
           <div className="stat-content">
-            <span className="stat-label">HỒ SƠ MỚI</span>
-            <div className="stat-value">{filteredLeads.filter(l => l.status === 'Mới').length}</div>
+            <span className="stat-label">TỔNG LEAD</span>
+            <div className="stat-value">{filteredLeads.length}</div>
           </div>
         </div>
         <div className="stat-card blue">
@@ -271,7 +273,7 @@ const LeadsTab = ({
                />
             </div>
             <button className="mobile-filter-btn" onClick={() => setIsMobileFilterOpen(true)}>
-               <span style={{ fontSize: '1.1rem' }}>🎛️</span> Lọc {((leadFilters.status ? 1 : 0) + (leadFilters.bu_group ? 1 : 0) + (leadFilters.assigned_to ? 1 : 0) + (leadFilters.hasPhone ? 1 : 0) + ((leadFilters.tours && leadFilters.tours.length > 0) ? 1 : 0) + (leadFilters.timeRange === 'custom' ? 1 : 0)) > 0 && <span className="filter-badge">{(leadFilters.status ? 1 : 0) + (leadFilters.bu_group ? 1 : 0) + (leadFilters.assigned_to ? 1 : 0) + (leadFilters.hasPhone ? 1 : 0) + ((leadFilters.tours && leadFilters.tours.length > 0) ? 1 : 0) + (leadFilters.timeRange === 'custom' ? 1 : 0)}</span>}
+               <span style={{ fontSize: '1.1rem' }}>🎛️</span> Lọc {((leadFilters.status ? 1 : 0) + (leadFilters.source ? 1 : 0) + (leadFilters.bu_group ? 1 : 0) + (leadFilters.assigned_to ? 1 : 0) + (leadFilters.hasPhone ? 1 : 0) + ((leadFilters.tours && leadFilters.tours.length > 0) ? 1 : 0) + (leadFilters.timeRange === 'custom' ? 1 : 0)) > 0 && <span className="filter-badge">{(leadFilters.status ? 1 : 0) + (leadFilters.source ? 1 : 0) + (leadFilters.bu_group ? 1 : 0) + (leadFilters.assigned_to ? 1 : 0) + (leadFilters.hasPhone ? 1 : 0) + ((leadFilters.tours && leadFilters.tours.length > 0) ? 1 : 0) + (leadFilters.timeRange === 'custom' ? 1 : 0)}</span>}
             </button>
             <button 
               className="login-btn" 
@@ -298,6 +300,57 @@ const LeadsTab = ({
                 {p.label}
               </button>
             ))}
+            <select
+              className={`preset-btn ${leadFilters.timeRange?.startsWith('month_') ? 'active' : ''}`}
+              value={leadFilters.timeRange?.startsWith('month_') ? leadFilters.timeRange : ''}
+              onChange={(e) => {
+                if (e.target.value) {
+                  setLeadFilters({ ...leadFilters, timeRange: e.target.value, startDate: '', endDate: '' });
+                } else {
+                  setLeadFilters({ ...leadFilters, timeRange: 'all', startDate: '', endDate: '' });
+                }
+              }}
+              style={{
+                cursor: 'pointer',
+                outline: 'none',
+                fontWeight: leadFilters.timeRange?.startsWith('month_') ? 600 : 500,
+                background: leadFilters.timeRange?.startsWith('month_') ? '#6366f1' : 'white',
+                color: leadFilters.timeRange?.startsWith('month_') ? 'white' : '#64748b',
+                borderColor: leadFilters.timeRange?.startsWith('month_') ? '#6366f1' : '#e2e8f0',
+                padding: '6px 12px',
+                flexShrink: 0
+              }}
+            >
+              <option value="" style={{ color: '#64748b', background: 'white' }}>
+                {leadFilters.timeRange?.startsWith('month_') ? '— Bỏ chọn tháng —' : 'Tháng ▾'}
+              </option>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => (
+                <option key={m} value={`month_${m}`} style={{ color: '#1e293b', background: 'white' }}>
+                  Tháng {m}
+                </option>
+              ))}
+            </select>
+            <select
+              className={`preset-btn ${leadFilters.dateField && leadFilters.dateField !== 'created_at' ? 'active' : ''}`}
+              value={leadFilters.dateField || 'created_at'}
+              onChange={(e) => setLeadFilters({ ...leadFilters, dateField: e.target.value })}
+              style={{
+                cursor: 'pointer',
+                outline: 'none',
+                fontWeight: 600,
+                background: leadFilters.dateField && leadFilters.dateField !== 'created_at' ? '#6366f1' : 'white',
+                color: leadFilters.dateField && leadFilters.dateField !== 'created_at' ? 'white' : '#64748b',
+                borderColor: leadFilters.dateField && leadFilters.dateField !== 'created_at' ? '#6366f1' : '#e2e8f0',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                flexShrink: 0
+              }}
+              title="Tiêu chí thời gian"
+            >
+              <option value="created_at" style={{ color: '#1e293b', background: 'white' }}>📅 Theo Ngày tạo</option>
+              <option value="last_contacted_at" style={{ color: '#1e293b', background: 'white' }}>🔥 Theo Ngày nhắn lại</option>
+              <option value="both" style={{ color: '#1e293b', background: 'white' }}>✨ Cả Ngày tạo & Nhắn lại</option>
+            </select>
          </div>
       </div>
 
@@ -322,6 +375,18 @@ const LeadsTab = ({
             </div>
           </div>
           <div className="filter-group">
+            <label>TIÊU CHÍ THỜI GIAN</label>
+            <select 
+              className="filter-select" 
+              value={leadFilters.dateField || 'created_at'} 
+              onChange={e => setLeadFilters({ ...leadFilters, dateField: e.target.value })}
+            >
+              <option value="created_at">📅 Theo Ngày tạo</option>
+              <option value="last_contacted_at">🔥 Theo Ngày nhắn lại</option>
+              <option value="both">✨ Cả Ngày tạo & Nhắn lại</option>
+            </select>
+          </div>
+          <div className="filter-group">
             <label>TRẠNG THÁI</label>
             <select className="filter-select" value={leadFilters.status} onChange={e => setLeadFilters({...leadFilters, status: e.target.value})}>
               <option value="">-- Trạng thái --</option>
@@ -331,27 +396,12 @@ const LeadsTab = ({
 
           <div className="filter-group" style={{ position: 'relative' }}>
             <label>SẢN PHẨM / TOUR</label>
-            <div 
-              className="filter-select" 
-              style={{ cursor: 'pointer', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', background: 'white' }}
-              onClick={() => setIsTourDropdownOpen(!isTourDropdownOpen)}
-            >
-              {(leadFilters.tours && leadFilters.tours.length > 0) ? `Đã chọn: ${leadFilters.tours.length}` : '-- Tất cả Tour --'}
-            </div>
-            {isTourDropdownOpen && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', zIndex: 100, maxHeight: '250px', overflowY: 'auto', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-                <div style={{ padding: '8px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: '#fef2f2' }} onClick={() => toggleTour('NO_TOUR')}>
-                  <input type="checkbox" checked={leadFilters.tours?.includes('NO_TOUR') || false} readOnly />
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ef4444' }}>[Chưa chọn Tour]</span>
-                </div>
-                {tours.map(tour => (
-                  <div key={tour.id} style={{ padding: '8px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => toggleTour(String(tour.id))}>
-                    <input type="checkbox" checked={leadFilters.tours?.includes(String(tour.id)) || false} readOnly />
-                    <span style={{ fontSize: '0.85rem' }}>{tour.name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <TourFilterDropdown
+              tours={tours}
+              selectedTours={leadFilters.tours || []}
+              onChange={(updatedTours) => setLeadFilters({ ...leadFilters, tours: updatedTours })}
+              excludePrivate={true}
+            />
           </div>
           <div className="filter-group" style={{ minWidth: '220px' }}>
             <label>TƯ VẤN VIÊN</label>
@@ -422,6 +472,58 @@ const LeadsTab = ({
                 {p.label}
               </button>
             ))}
+
+            <select
+              className={`preset-btn ${leadFilters.timeRange?.startsWith('month_') ? 'active' : ''}`}
+              value={leadFilters.timeRange?.startsWith('month_') ? leadFilters.timeRange : ''}
+              onChange={(e) => {
+                if (e.target.value) {
+                  setLeadFilters({ ...leadFilters, timeRange: e.target.value, startDate: '', endDate: '' });
+                } else {
+                  setLeadFilters({ ...leadFilters, timeRange: 'all', startDate: '', endDate: '' });
+                }
+              }}
+              style={{
+                cursor: 'pointer',
+                outline: 'none',
+                fontWeight: leadFilters.timeRange?.startsWith('month_') ? 600 : 500,
+                background: leadFilters.timeRange?.startsWith('month_') ? '#6366f1' : 'white',
+                color: leadFilters.timeRange?.startsWith('month_') ? 'white' : '#64748b',
+                borderColor: leadFilters.timeRange?.startsWith('month_') ? '#6366f1' : '#e2e8f0',
+                padding: '6px 12px'
+              }}
+              title="Chọn tháng cụ thể"
+            >
+              <option value="" style={{ color: '#64748b', background: 'white' }}>
+                {leadFilters.timeRange?.startsWith('month_') ? '— Bỏ chọn tháng —' : 'Tháng ▾'}
+              </option>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => (
+                <option key={m} value={`month_${m}`} style={{ color: '#1e293b', background: 'white' }}>
+                  Tháng {m}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className={`preset-btn ${leadFilters.dateField && leadFilters.dateField !== 'created_at' ? 'active' : ''}`}
+              value={leadFilters.dateField || 'created_at'}
+              onChange={(e) => setLeadFilters({ ...leadFilters, dateField: e.target.value })}
+              style={{
+                cursor: 'pointer',
+                outline: 'none',
+                fontWeight: 600,
+                background: leadFilters.dateField && leadFilters.dateField !== 'created_at' ? '#6366f1' : 'white',
+                color: leadFilters.dateField && leadFilters.dateField !== 'created_at' ? 'white' : '#64748b',
+                borderColor: leadFilters.dateField && leadFilters.dateField !== 'created_at' ? '#6366f1' : '#e2e8f0',
+                padding: '6px 10px',
+                borderRadius: '6px'
+              }}
+              title="Tiêu chí thời gian"
+            >
+              <option value="created_at" style={{ color: '#1e293b', background: 'white' }}>📅 Theo Ngày tạo</option>
+              <option value="last_contacted_at" style={{ color: '#1e293b', background: 'white' }}>🔥 Theo Ngày nhắn lại</option>
+              <option value="both" style={{ color: '#1e293b', background: 'white' }}>✨ Cả Ngày tạo & Nhắn lại</option>
+            </select>
           </div>
 
           <div className="filter-options-group filter-divider">
@@ -433,6 +535,20 @@ const LeadsTab = ({
             ].map(p => (
               <button key={p.id} className={`preset-btn ${leadFilters.hasPhone === p.id ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, hasPhone: p.id})}>
                 {p.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="filter-options-group filter-divider">
+            <span style={{ color: '#64748b', fontWeight: 600 }}>KÊNH:</span>
+            {[
+              { id: '', label: 'Tất cả' },
+              { id: 'meta', label: '🔵 Meta' },
+              { id: 'zalo', label: '💬 Zalo' },
+              { id: 'tiktok', label: '🎵 TikTok' }
+            ].map(k => (
+              <button key={k.id} className={`preset-btn ${leadFilters.source === k.id ? 'active' : ''}`} onClick={() => setLeadFilters({...leadFilters, source: k.id})}>
+                {k.label}
               </button>
             ))}
           </div>
@@ -465,10 +581,10 @@ const LeadsTab = ({
           </div>
 
           <div className="filter-options-actions">
-            {(leadFilters.status || leadFilters.bu_group || leadFilters.assigned_to || leadFilters.search || leadFilters.hasPhone || (leadFilters.tours && leadFilters.tours.length > 0) || leadFilters.startDate || leadFilters.endDate) && (
+            {(leadFilters.status || leadFilters.source || leadFilters.bu_group || leadFilters.assigned_to || leadFilters.search || leadFilters.hasPhone || (leadFilters.tours && leadFilters.tours.length > 0) || leadFilters.startDate || leadFilters.endDate || leadFilters.timeRange?.startsWith('month_') || (leadFilters.dateField && leadFilters.dateField !== 'created_at')) && (
               <button 
                 type="button"
-                onClick={() => setLeadFilters({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'all', startDate: '', endDate: '', tours: [], hasPhone: '' })}
+                onClick={() => setLeadFilters({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'all', startDate: '', endDate: '', tours: [], hasPhone: '', dateField: 'created_at' })}
                 style={{ 
                   display: 'flex', alignItems: 'center', gap: '4px',
                   background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca', 
@@ -518,7 +634,7 @@ const LeadsTab = ({
                   style={{ cursor: 'pointer', width: '16px', height: '16px' }}
                 />
               </th>
-              <th className="col-date">NGÀY TẠO</th>
+              <th className="col-date">{leadFilters.dateField === 'last_contacted_at' ? 'NGÀY NHẮN LẠI' : (leadFilters.dateField === 'both' ? 'NGÀY TẠO / NHẮN' : 'NGÀY TẠO')}</th>
               <th className="col-info">THÔNG TIN LEAD</th>
               <th className="col-product">SẢN PHẨM QUAN TÂM</th>
               <th className="col-source">NGUỒN & NHÓM</th>
@@ -706,6 +822,11 @@ const LeadsTab = ({
                            ZALO
                         </div>
                       )}
+                      {(lead.source || '').toLowerCase().includes('tiktok') && (
+                        <div title="Đơn từ kênh TikTok" style={{ background: '#0f172a', color: '#ffffff', fontSize: '0.55rem', padding: '1px 4px', borderRadius: '4px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                           TIKTOK
+                        </div>
+                      )}
                     </div>
                   </div>
                 </td>
@@ -717,6 +838,7 @@ const LeadsTab = ({
                       onChange={(val) => !lead.is_locked && handleQuickUpdate(lead.id, 'tour_id', val)}
                       placeholder="Chọn tour..."
                       shortLabel={true}
+                      excludePrivate={true}
                       style={{ 
                         border: 'none', 
                         background: 'transparent',

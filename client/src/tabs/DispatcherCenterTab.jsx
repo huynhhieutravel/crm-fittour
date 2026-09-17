@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Send, Clock, Edit3, MessageSquare, MessageCircle, CheckCircle, Smartphone, Plus, X, UserPlus, Phone, List, Package, AlertTriangle } from 'lucide-react';
 import SearchableSelect from '../components/common/SearchableSelect';
+import TourFilterDropdown from '../components/common/TourFilterDropdown';
 import axios from 'axios';
 import { getLocalIsoString } from '../utils/dateUtils';
 
@@ -210,27 +211,12 @@ const DispatcherCenterTab = ({
           </div>
           <div className="filter-group" style={{ position: 'relative' }}>
             <label>SẢN PHẨM / TOUR</label>
-            <div 
-              className="filter-select" 
-              style={{ cursor: 'pointer', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', background: 'white' }}
-              onClick={() => setIsTourDropdownOpen(!isTourDropdownOpen)}
-            >
-              {(leadFilters.tours && leadFilters.tours.length > 0) ? `Đã chọn: ${leadFilters.tours.length}` : '-- Tất cả Tour --'}
-            </div>
-            {isTourDropdownOpen && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', zIndex: 100, maxHeight: '250px', overflowY: 'auto', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-                <div style={{ padding: '8px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: '#fef2f2' }} onClick={() => toggleTour('NO_TOUR')}>
-                  <input type="checkbox" checked={leadFilters.tours?.includes('NO_TOUR') || false} readOnly />
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ef4444' }}>[Chưa chọn Tour]</span>
-                </div>
-                {(tours || []).map(tour => (
-                  <div key={tour.id} style={{ padding: '8px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => toggleTour(String(tour.id))}>
-                    <input type="checkbox" checked={leadFilters.tours?.includes(String(tour.id)) || false} readOnly />
-                    <span style={{ fontSize: '0.85rem' }}>{tour.name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <TourFilterDropdown
+              tours={tours}
+              selectedTours={leadFilters.tours || []}
+              onChange={(updatedTours) => setLeadFilters({ ...leadFilters, tours: updatedTours })}
+              excludePrivate={true}
+            />
           </div>
           <div className="filter-group">
             <label>TƯ VẤN VIÊN</label>

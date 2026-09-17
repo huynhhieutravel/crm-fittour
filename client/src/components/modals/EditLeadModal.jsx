@@ -333,6 +333,7 @@ const EditLeadModal = ({
             value={editingLead.tour_id}
             onChange={(val) => !editingLead.is_locked && setEditingLead({...editingLead, tour_id: val})}
             placeholder="Chọn tour quan tâm..."
+            excludePrivate={true}
             style={{ opacity: editingLead.is_locked ? 0.7 : 1, pointerEvents: editingLead.is_locked ? 'none' : 'auto' }}
           />
         </div>

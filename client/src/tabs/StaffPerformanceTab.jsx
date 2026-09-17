@@ -1,15 +1,21 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import {
-  UserCheck,
+  Users,
+  Phone,
+  MessageSquare,
+  AlertCircle,
   TrendingUp,
-  Target,
   Filter,
   BarChart3,
-  Users,
-  Award,
-  Zap,
-  Calendar
+  Calendar,
+  Search,
+  ArrowUpDown,
+  Building2,
+  CheckCircle2,
+  Clock,
+  Layers,
+  ShieldAlert
 } from 'lucide-react';
 import {
   BarChart,
@@ -28,7 +34,7 @@ const StaffPerformanceTab = ({ bus = [] }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedBU, setSelectedBU] = useState('all');
-  const [viewMode, setViewMode] = useState('staff');
+  const [viewMode, setViewMode] = useState('staff'); // 'staff' | 'bu'
   const [dateFilter, setDateFilter] = useState('month');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedQuarter, setSelectedQuarter] = useState(Math.floor(new Date().getMonth() / 3) + 1);
@@ -37,8 +43,9 @@ const StaffPerformanceTab = ({ bus = [] }) => {
     startDate: '',
     endDate: ''
   });
-
-  const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('total_leads');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   const formatLocalDate = (date) => {
     if (!date || isNaN(new Date(date).getTime())) return "";
@@ -128,36 +135,77 @@ const StaffPerformanceTab = ({ bus = [] }) => {
     fetchStats();
   }, []);
 
-  if (loading || !stats) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px] text-slate-400 font-medium bg-slate-900/10 rounded-3xl m-8">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
-          <span className="text-indigo-500 font-bold tracking-wider uppercase">Đang tải hiệu suất nhân viên...</span>
-        </div>
-      </div>
-    );
-  }
+  // Helper BU badge
+  const getBUBadge = (buInput) => {
+    let name = '';
+    if (Array.isArray(buInput) && buInput.length > 0) name = buInput[0];
+    else if (typeof buInput === 'string') name = buInput;
+    else name = 'Chưa xếp BU';
 
-  const staffData = (stats?.staffStats || []).map(s => ({
-    ...s,
-    conversion: s.total_leads > 0 ? parseFloat(((s.won_leads / s.total_leads) * 100).toFixed(1)) : 0
-  })).sort((a, b) => {
-    if (b.won_leads !== a.won_leads) return b.won_leads - a.won_leads;
-    return b.total_leads - a.total_leads;
-  });
+    const b = name.toUpperCase();
+    if (b.includes('BU1')) return { bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe', label: 'BU1' };
+    if (b.includes('BU2')) return { bg: '#f5f3ff', color: '#6d28d9', border: '#ddd6fe', label: 'BU2' };
+    if (b.includes('BU3')) return { bg: '#fffbeb', color: '#b45309', border: '#fde68a', label: 'BU3' };
+    if (b.includes('BU4')) return { bg: '#ecfdf5', color: '#047857', border: '#a7f3d0', label: 'BU4' };
+    if (b.includes('BU5')) return { bg: '#fdf2f8', color: '#be185d', border: '#fbcfe8', label: 'BU5' };
+    return { bg: '#f1f5f9', color: '#475569', border: '#cbd5e1', label: name || 'Khác' };
+  };
 
-  const topPerformer = staffData[0];
-  const bestSellerName = topPerformer && topPerformer.won_leads > 0 ? topPerformer.name : 'Chưa có data';
+  // Staff data processing
+  const staffData = useMemo(() => {
+    const raw = (stats?.staffStats || []).map(s => {
+      const primaryBU = Array.isArray(s.bus) && s.bus.length > 0 ? s.bus[0] : (typeof s.bus === 'string' ? s.bus : 'Chưa xếp BU');
+      return {
+        ...s,
+        total_leads: Number(s.total_leads) || 0,
+        has_phone: Number(s.has_phone) || 0,
+        in_contact: Number(s.in_contact) || 0,
+        is_new: Number(s.is_new) || 0,
+        unresponsive: Number(s.unresponsive) || 0,
+        phone_rate: Number(s.phone_rate) || 0,
+        contact_rate: Number(s.contact_rate) || 0,
+        primary_bu: primaryBU
+      };
+    });
 
-  const buData = (stats?.buStats || []).map(b => ({
-    ...b,
-    total_leads: b.count,
-    won_leads: b.won_leads || 0,
-    conversion: b.count > 0 ? parseFloat((((b.won_leads || 0) / b.count) * 100).toFixed(1)) : 0
-  })).sort((a, b) => (b.won_leads || 0) - (a.won_leads || 0));
+    return raw.filter(s => {
+      if (!searchTerm) return true;
+      const term = searchTerm.toLowerCase();
+      return (
+        (s.name && s.name.toLowerCase().includes(term)) ||
+        (s.username && s.username.toLowerCase().includes(term)) ||
+        (s.primary_bu && s.primary_bu.toLowerCase().includes(term))
+      );
+    }).sort((a, b) => {
+      const valA = a[sortBy] ?? 0;
+      const valB = b[sortBy] ?? 0;
+      return sortOrder === 'desc' ? valB - valA : valA - valB;
+    });
+  }, [stats?.staffStats, searchTerm, sortBy, sortOrder]);
 
-  const bestBU = buData[0];
+  // BU data processing
+  const buData = useMemo(() => {
+    return (stats?.buStats || []).map(b => ({
+      ...b,
+      name: b.name || 'Chưa phân loại',
+      total_leads: Number(b.count) || 0,
+      has_phone: Number(b.has_phone) || 0,
+      in_contact: Number(b.in_contact) || 0,
+      is_new: Number(b.is_new) || 0,
+      unresponsive: Number(b.unresponsive) || 0,
+      staff_count: Number(b.staff_count) || 0,
+      phone_rate: Number(b.phone_rate) || 0,
+      contact_rate: Number(b.contact_rate) || 0
+    })).sort((a, b) => b.total_leads - a.total_leads);
+  }, [stats?.buStats]);
+
+  // Totals calculations
+  const totalAssignedLeads = useMemo(() => staffData.reduce((acc, s) => acc + s.total_leads, 0), [staffData]);
+  const totalHasPhone = useMemo(() => staffData.reduce((acc, s) => acc + s.has_phone, 0), [staffData]);
+  const totalInContact = useMemo(() => staffData.reduce((acc, s) => acc + s.in_contact, 0), [staffData]);
+  const totalIsNew = useMemo(() => staffData.reduce((acc, s) => acc + s.is_new, 0), [staffData]);
+  const overallPhoneRate = totalAssignedLeads > 0 ? ((totalHasPhone / totalAssignedLeads) * 100).toFixed(1) : 0;
+  const overallContactRate = totalAssignedLeads > 0 ? (((totalAssignedLeads - totalIsNew) / totalAssignedLeads) * 100).toFixed(1) : 0;
 
   const monthOptions = [
     "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
@@ -167,10 +215,30 @@ const StaffPerformanceTab = ({ bus = [] }) => {
   const quickFilters = ['today', 'week', 'month'];
   const advancedFilters = ['month-select', 'quarter', 'year', 'custom'];
 
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortBy(field);
+      setSortOrder('desc');
+    }
+  };
+
+  if (loading || !stats) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-slate-400 font-medium bg-slate-900/10 rounded-3xl m-8">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
+          <span className="text-indigo-500 font-bold tracking-wider uppercase">Đang tải hiệu suất nhân viên & BU...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="executive-dashboard p-8">
-      {/* Executive Single-Row Filter Bar */}
-      <div className="executive-filter-panel mb-12">
+    <div className="executive-dashboard p-6 md:p-8">
+      {/* 1. Header & Filter Bar */}
+      <div className="executive-filter-panel mb-8">
         <div className="filter-scroll-container">
           <div className="horizontal-filter-row">
             {/* Quick Filters Group */}
@@ -181,8 +249,7 @@ const StaffPerformanceTab = ({ bus = [] }) => {
                   onClick={() => setDateFilter(f)}
                   className={`segment-btn ${dateFilter === f ? 'active' : ''}`}
                 >
-                  {f === 'today' ? 'Hôm nay' :
-                    f === 'week' ? 'Tuần này' : 'Tháng này'}
+                  {f === 'today' ? 'Hôm nay' : f === 'week' ? 'Tuần này' : 'Tháng này'}
                 </button>
               ))}
             </div>
@@ -193,17 +260,16 @@ const StaffPerformanceTab = ({ bus = [] }) => {
                 onClick={() => setViewMode('staff')}
                 className={`segment-btn ${viewMode === 'staff' ? 'active' : ''}`}
               >
-                Cá nhân
+                👤 Nhân viên
               </button>
               <button
                 onClick={() => setViewMode('bu')}
                 className={`segment-btn ${viewMode === 'bu' ? 'active' : ''}`}
               >
-                Khối BU
+                🏢 Khối BU
               </button>
             </div>
 
-            {/* Visual Separator */}
             <div className="filter-divider"></div>
 
             {/* Advanced Filters Group */}
@@ -214,14 +280,12 @@ const StaffPerformanceTab = ({ bus = [] }) => {
                   onClick={() => setDateFilter(f)}
                   className={`segment-btn ${dateFilter === f ? 'active' : ''}`}
                 >
-                  {f === 'month-select' ? 'Tháng' :
-                    f === 'quarter' ? 'Quý' :
-                      f === 'year' ? 'Năm' : 'Tùy chọn'}
+                  {f === 'month-select' ? 'Tháng ▾' : f === 'quarter' ? 'Quý' : f === 'year' ? 'Năm' : 'Tùy chọn'}
                 </button>
               ))}
             </div>
 
-            {/* Dynamic Inputs (Flattened) */}
+            {/* Month Select */}
             {dateFilter === 'month-select' && (
               <div className="executive-select-wrapper">
                 <select
@@ -235,6 +299,7 @@ const StaffPerformanceTab = ({ bus = [] }) => {
               </div>
             )}
 
+            {/* Quarter Select */}
             {dateFilter === 'quarter' && (
               <div className="executive-select-wrapper">
                 <select
@@ -248,21 +313,23 @@ const StaffPerformanceTab = ({ bus = [] }) => {
               </div>
             )}
 
+            {/* Year Select */}
             {(dateFilter === 'month-select' || dateFilter === 'quarter' || dateFilter === 'year') && (
               <div className="executive-select-wrapper">
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(parseInt(e.target.value))}
                 >
-                  {[2023, 2024, 2025, 2026].map(y => (
+                  {[2024, 2025, 2026, 2027].map(y => (
                     <option key={y} value={y}>Năm {y}</option>
                   ))}
                 </select>
               </div>
             )}
 
+            {/* Custom Date Range */}
             {dateFilter === 'custom' && (
-              <div className="flex flex-row flex-nowrap items-center gap-3">
+              <div className="flex flex-row flex-nowrap items-center gap-2">
                 <div className="date-input-group premium">
                   <Calendar size={13} className="text-indigo-500" />
                   <input
@@ -271,7 +338,7 @@ const StaffPerformanceTab = ({ bus = [] }) => {
                     onChange={e => setCustomRange({ ...customRange, startDate: e.target.value })}
                   />
                 </div>
-                <span className="text-slate-300 font-bold">→</span>
+                <span className="text-slate-400 font-bold">→</span>
                 <div className="date-input-group premium">
                   <Calendar size={13} className="text-indigo-500" />
                   <input
@@ -283,201 +350,379 @@ const StaffPerformanceTab = ({ bus = [] }) => {
               </div>
             )}
 
-            {/* BU Filter (Only for staff view) */}
+            {/* BU Filter (For Staff View) */}
             {viewMode === 'staff' && (
               <div className="executive-select-wrapper">
                 <select
                   value={selectedBU}
                   onChange={(e) => setSelectedBU(e.target.value)}
                 >
-                  <option value="all">Tất cả Khối BU</option>
-                  <option value="NO_BU">Chưa xếp khối</option>
-                  {bus.filter(b => b.is_active !== false).map((bu) => (
+                  <option value="all">🏢 Tất cả Khối BU</option>
+                  {bus.filter(b => b.is_active !== false && !['khác', 'marketing', 'kế toán'].includes(b.label?.toLowerCase())).map((bu) => (
                     <option key={bu.id} value={bu.id}>{bu.label || bu.id}</option>
                   ))}
+                  <option value="NO_BU">Chưa xếp khối</option>
                 </select>
               </div>
             )}
 
-            {/* Final Action */}
+            {/* Submit Action for Advanced Filter */}
             {advancedFilters.includes(dateFilter) && (
-              <button
-                onClick={fetchStats}
-                className="confirm-btn-premium"
-              >
+              <button onClick={fetchStats} className="confirm-btn-premium">
                 <Filter size={14} />
-                <span>Xác nhận</span>
+                <span>Xem số liệu</span>
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Highlights - Premium Row */}
-      <div className="kpi-grid mb-16">
+      {/* 2. Top 4 Executive KPI Cards (Real Operational Metrics) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        {/* Card 1: Tổng Lead Phân Bổ */}
         <div className="stat-card premium blue">
           <div className="stat-content">
             <div className="stat-header">
-              <span className="stat-label">{viewMode === 'staff' ? 'BEST SELLER' : 'BEST BU'}</span>
-              <div className="stat-icon-glass"><Award size={20} /></div>
+              <span className="stat-label">TỔNG LEAD PHÂN BỔ</span>
+              <div className="stat-icon-glass"><Users size={22} /></div>
             </div>
-            <div className="stat-value" style={{ fontSize: '1.75rem' }}>
-              {viewMode === 'staff' ? bestSellerName : (bestBU && bestBU.won_leads > 0 ? bestBU.name : 'Chưa có data')}
-            </div>
+            <div className="stat-value">{totalAssignedLeads}</div>
             <div className="stat-footer">
-              <TrendingUp size={14} />
-              <span>{viewMode === 'staff' ? (topPerformer?.won_leads || 0) : (bestBU?.won_leads || 0)} chốt đơn thành công</span>
+              <span>{viewMode === 'staff' ? `${staffData.length} nhân sự đang xử lý` : `${buData.length} khối BU`}</span>
             </div>
           </div>
         </div>
 
+        {/* Card 2: Có SĐT */}
+        <div className="stat-card premium purple">
+          <div className="stat-content">
+            <div className="stat-header">
+              <span className="stat-label">LEAD CÓ SĐT</span>
+              <div className="stat-icon-glass"><Phone size={22} /></div>
+            </div>
+            <div className="stat-value">{totalHasPhone}</div>
+            <div className="stat-footer">
+              <TrendingUp size={14} />
+              <span>Tỷ lệ có SĐT: <strong>{overallPhoneRate}%</strong></span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Đang Chăm Sóc */}
         <div className="stat-card premium green">
           <div className="stat-content">
             <div className="stat-header">
-              <span className="stat-label">AVG CONVERSION</span>
-              <div className="stat-icon-glass"><Zap size={20} /></div>
+              <span className="stat-label">ĐANG CHĂM SÓC</span>
+              <div className="stat-icon-glass"><MessageSquare size={22} /></div>
             </div>
-            <div className="stat-value">
-              {viewMode === 'staff' 
-                ? (staffData.length > 0 ? (staffData.reduce((acc, curr) => acc + parseFloat(curr.conversion), 0) / staffData.length).toFixed(1) : 0)
-                : (buData.length > 0 ? (buData.reduce((acc, curr) => acc + parseFloat(curr.conversion), 0) / buData.length).toFixed(1) : 0)}%
-            </div>
+            <div className="stat-value">{totalInContact}</div>
             <div className="stat-footer">
-              <Zap size={14} />
-              <span>Tỷ lệ chốt trung bình toàn {viewMode === 'staff' ? 'đội' : 'công ty'}</span>
+              <CheckCircle2 size={14} />
+              <span>Tỷ lệ tiếp cận: <strong>{overallContactRate}%</strong></span>
             </div>
           </div>
         </div>
 
-        <div className="stat-card premium orange">
+        {/* Card 4: Tồn Đọng Chưa Gọi */}
+        <div className={`stat-card premium ${totalIsNew > 0 ? 'rose' : 'teal'}`}>
           <div className="stat-content">
             <div className="stat-header">
-              <span className="stat-label">{viewMode === 'staff' ? 'ACTIVE STAFF' : 'ACTIVE BU'}</span>
-              <div className="stat-icon-glass"><Users size={20} /></div>
+              <span className="stat-label">TỒN ĐỌNG (CHƯA XỬ LÝ)</span>
+              <div className="stat-icon-glass">
+                {totalIsNew > 0 ? <AlertCircle size={22} /> : <CheckCircle2 size={22} />}
+              </div>
             </div>
-            <div className="stat-value">{viewMode === 'staff' ? staffData.length : buData.length}</div>
+            <div className="stat-value">{totalIsNew}</div>
             <div className="stat-footer">
-              <Users size={14} />
-              <span>{viewMode === 'staff' ? 'Nhân sự đang hoạt động' : 'Khối đang hoạt động'}</span>
+              <Clock size={14} />
+              <span>{totalIsNew > 0 ? 'Lead ở trạng thái Mới chưa chăm sóc' : 'Đã tiếp cận 100% lead'}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Charts */}
-      <div className="grid grid-cols-1 gap-12 mb-16">
-        <div className="analytics-card professional p-8">
-          <div className="card-header border-0 mb-8">
-            <div>
-              <h3>So sánh Hiệu suất {viewMode === 'staff' ? 'Nhân viên' : 'Khối BU'}</h3>
-              <p className="card-subtitle">Dựa trên số lượng leads được giao và tỷ lệ chốt thành công</p>
-            </div>
-            <UserCheck size={24} className="text-emerald-500" />
+      {/* 3. Main Chart: Tải công việc & Tiến trình chăm sóc */}
+      <div className="analytics-card professional p-6 md:p-8 mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <BarChart3 size={20} className="text-indigo-600" />
+              So sánh Khối lượng & Năng suất {viewMode === 'staff' ? 'Nhân Viên' : 'Khối BU'}
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">
+              Phân bổ số lượng lead được giao, lead có SĐT, số lượng đang chăm sóc và tồn đọng
+            </p>
           </div>
-
-          <div style={{ height: '450px', width: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={viewMode === 'staff' ? staffData : buData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 11, fontWeight: 600, fill: '#64748b' }}
-                  interval={0}
-                  angle={-45}
-                  textAnchor="end"
-                />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                <Tooltip
-                  cursor={{ fill: '#f8fafc' }}
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}
-                />
-                <Legend verticalAlign="top" align="right" iconType="circle" />
-                <Bar dataKey="total_leads" name="Tổng Leads" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={32} isAnimationActive={false}>
-                  <LabelList dataKey="total_leads" position="top" style={{ fontSize: '10px', fontWeight: 'bold', fill: '#6366f1' }} />
-                </Bar>
-                <Bar dataKey="won_leads" name="Chốt đơn" fill="#10b981" radius={[6, 6, 0, 0]} barSize={32} isAnimationActive={false}>
-                  <LabelList dataKey="won_leads" position="top" style={{ fontSize: '10px', fontWeight: 'bold', fill: '#10b981' }} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+            {viewMode === 'staff' ? `Đang hiển thị ${staffData.length} nhân sự` : `Đang hiển thị ${buData.length} khối BU`}
           </div>
         </div>
 
-        <div className="analytics-row min-h-[400px]">
-          <div className="analytics-card professional p-6">
-            <div className="card-header border-0 mb-6">
-              <h3><TrendingUp size={20} color="#6366f1" /> Tỷ lệ Chốt (%)</h3>
-            </div>
-            <div style={{ height: '300px', width: '100%' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={viewMode === 'staff' ? staffData : buData} layout="vertical" margin={{ left: 30, right: 40 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
-                  <XAxis type="number" hide />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 11, fontWeight: 600 }}
-                    width={100}
-                  />
-                  <Tooltip
-                    cursor={{ fill: '#f8fafc' }}
-                    contentStyle={{ borderRadius: '12px', border: 'none' }}
-                  />
-                  <Bar dataKey="conversion" name="Tỷ lệ chốt %" fill="#8b5cf6" radius={[0, 4, 4, 0]} barSize={20} isAnimationActive={false}>
-                    {(viewMode === 'staff' ? staffData : buData).map((entry, index) => (
-                      <Cell key={`cell-rate-${index}`} fill={parseFloat(entry.conversion) > 20 ? '#10b981' : '#6366f1'} />
-                    ))}
-                    <LabelList dataKey="conversion" position="right" formatter={(v) => `${v}%`} style={{ fontSize: '10px', fontWeight: 'bold' }} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+        <div style={{ height: '380px', width: '100%' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart 
+              data={viewMode === 'staff' ? staffData.slice(0, 15) : buData} 
+              margin={{ top: 20, right: 30, left: 10, bottom: 60 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fontWeight: 700, fill: '#475569' }}
+                interval={0}
+                angle={-35}
+                textAnchor="end"
+              />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+              <Tooltip
+                cursor={{ fill: '#f8fafc' }}
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
+              />
+              <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '10px' }} />
+              <Bar dataKey="total_leads" name="Tổng Lead" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={20} isAnimationActive={false}>
+                <LabelList dataKey="total_leads" position="top" style={{ fontSize: '10px', fontWeight: 'bold', fill: '#6366f1' }} />
+              </Bar>
+              <Bar dataKey="has_phone" name="Có SĐT" fill="#0ea5e9" radius={[4, 4, 0, 0]} barSize={20} isAnimationActive={false}>
+                <LabelList dataKey="has_phone" position="top" style={{ fontSize: '10px', fontWeight: 'bold', fill: '#0ea5e9' }} />
+              </Bar>
+              <Bar dataKey="in_contact" name="Đang chăm sóc" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20} isAnimationActive={false} />
+              <Bar dataKey="is_new" name="Tồn (Mới)" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={20} isAnimationActive={false} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* 4. Detailed Data Table (Staff or BU) */}
+      <div className="analytics-card professional p-6 md:p-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <Layers size={20} className="text-indigo-600" />
+              {viewMode === 'staff' ? 'Bảng Thống Kê Chi Tiết Từng Nhân Viên' : 'Bảng Thống Kê Từng Khối BU'}
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">
+              Click vào tiêu đề cột để sắp xếp theo chỉ số tương ứng
+            </p>
           </div>
 
-          <div className="analytics-card professional p-6">
-            <div className="card-header border-0 mb-4">
-              <h3><BarChart3 size={20} color="#f59e0b" /> Bảng xếp hạng chi tiết</h3>
+          {/* Search Box */}
+          {viewMode === 'staff' && (
+            <div className="relative w-full sm:w-72">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Tìm tên nhân viên, BU..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium"
+              />
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-slate-400 border-b border-slate-50">
-                    <th className="text-left py-3 font-bold uppercase tracking-wider text-[10px]">{viewMode === 'staff' ? 'Nhân viên' : 'Khối BU'}</th>
-                    <th className="text-center py-3 font-bold uppercase tracking-wider text-[10px]">Tổng</th>
-                    <th className="text-center py-3 font-bold uppercase tracking-wider text-[10px]">Chốt</th>
-                    <th className="text-right py-3 font-bold uppercase tracking-wider text-[10px]">% Chốt</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(viewMode === 'staff' ? staffData : buData).map((s, idx) => (
-                    <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
-                      <td className="py-3">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${idx < 3 ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'}`}>
-                            {idx + 1}
+          )}
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-extrabold uppercase text-slate-600 tracking-wider">
+                <th className="py-3 px-4 w-12 text-center">#</th>
+                <th className="py-3 px-4">
+                  {viewMode === 'staff' ? 'Nhân Viên' : 'Khối BU'}
+                </th>
+                {viewMode === 'staff' && (
+                  <th className="py-3 px-4 text-center">Khối BU</th>
+                )}
+                <th 
+                  className="py-3 px-4 text-center cursor-pointer hover:text-indigo-600 transition-colors"
+                  onClick={() => handleSort('total_leads')}
+                >
+                  <div className="inline-flex items-center gap-1">
+                    <span>Tổng Lead</span>
+                    <ArrowUpDown size={12} />
+                  </div>
+                </th>
+                <th 
+                  className="py-3 px-4 text-center cursor-pointer hover:text-indigo-600 transition-colors"
+                  onClick={() => handleSort('has_phone')}
+                >
+                  <div className="inline-flex items-center gap-1">
+                    <span>Có SĐT</span>
+                    <ArrowUpDown size={12} />
+                  </div>
+                </th>
+                <th 
+                  className="py-3 px-4 text-center cursor-pointer hover:text-indigo-600 transition-colors"
+                  onClick={() => handleSort('in_contact')}
+                >
+                  <div className="inline-flex items-center gap-1">
+                    <span>Đang chăm sóc</span>
+                    <ArrowUpDown size={12} />
+                  </div>
+                </th>
+                <th 
+                  className="py-3 px-4 text-center cursor-pointer hover:text-indigo-600 transition-colors"
+                  onClick={() => handleSort('is_new')}
+                >
+                  <div className="inline-flex items-center gap-1 text-amber-600">
+                    <span>Tồn đọng (Mới)</span>
+                    <ArrowUpDown size={12} />
+                  </div>
+                </th>
+                <th className="py-3 px-4 text-center text-slate-400">
+                  Không phản hồi
+                </th>
+                <th 
+                  className="py-3 px-4 text-right cursor-pointer hover:text-indigo-600 transition-colors"
+                  onClick={() => handleSort('contact_rate')}
+                >
+                  <div className="inline-flex items-center justify-end gap-1">
+                    <span>Tỷ lệ tiếp cận</span>
+                    <ArrowUpDown size={12} />
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-xs">
+              {viewMode === 'staff' ? (
+                staffData.length > 0 ? (
+                  staffData.map((s, idx) => {
+                    const badge = getBUBadge(s.primary_bu);
+                    return (
+                      <tr key={s.staff_id || idx} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-3.5 px-4 text-center font-bold text-slate-400 text-xs">
+                          {idx + 1}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-700 font-extrabold text-xs flex items-center justify-center shrink-0 border border-indigo-100">
+                              {(s.name || s.username || '?').charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="font-bold text-slate-800 text-sm">{s.name || s.username}</div>
+                              <div className="text-[10px] text-slate-400">@{s.username}</div>
+                            </div>
                           </div>
-                          <div className="font-bold text-slate-700">{s.name}</div>
-                        </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          <span 
+                            style={{ 
+                              background: badge.bg, 
+                              color: badge.color, 
+                              border: `1px solid ${badge.border}` 
+                            }} 
+                            className="inline-block px-2.5 py-1 rounded-md text-[11px] font-extrabold tracking-wide"
+                          >
+                            {badge.label}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-center font-extrabold text-slate-700 text-sm">
+                          {s.total_leads}
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="font-bold text-sky-600 text-sm">{s.has_phone}</div>
+                          <div className="text-[10px] text-slate-400">{s.phone_rate}% SĐT</div>
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          <span className="font-bold text-emerald-600 text-sm">{s.in_contact}</span>
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          {s.is_new > 0 ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                              <AlertCircle size={11} /> {s.is_new}
+                            </span>
+                          ) : (
+                            <span className="text-slate-300 font-semibold">—</span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 text-center text-slate-400 font-medium">
+                          {s.unresponsive > 0 ? s.unresponsive : '—'}
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="font-extrabold text-slate-700 text-xs">{s.contact_rate}%</span>
+                            <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden shrink-0">
+                              <div 
+                                className="h-full rounded-full transition-all duration-300"
+                                style={{ 
+                                  width: `${Math.min(100, s.contact_rate)}%`,
+                                  background: s.contact_rate >= 90 ? '#10b981' : s.contact_rate >= 60 ? '#6366f1' : '#f59e0b'
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="9" className="text-center py-8 text-slate-400 font-medium">
+                      Không tìm thấy nhân viên phù hợp theo bộ lọc
+                    </td>
+                  </tr>
+                )
+              ) : (
+                buData.map((b, idx) => {
+                  const badge = getBUBadge(b.name);
+                  return (
+                    <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-3.5 px-4 text-center font-bold text-slate-400 text-xs">
+                        {idx + 1}
                       </td>
-                      <td className="py-3 text-center text-slate-500 font-medium">{s.total_leads}</td>
-                      <td className="py-3 text-center text-teal-600 font-bold">{s.won_leads}</td>
-                      <td className="py-3 text-right">
-                        <span className={`px-2 py-1.5 rounded-xl font-bold text-[11px] ${parseFloat(s.conversion) > 20 ? 'bg-emerald-100 text-emerald-700' :
-                            parseFloat(s.conversion) > 10 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'
-                          }`}>
-                          {s.conversion}%
+                      <td className="py-3.5 px-4">
+                        <span 
+                          style={{ 
+                            background: badge.bg, 
+                            color: badge.color, 
+                            border: `1px solid ${badge.border}` 
+                          }} 
+                          className="inline-block px-3 py-1.5 rounded-md text-xs font-extrabold tracking-wide"
+                        >
+                          {badge.label}
                         </span>
                       </td>
+                      <td className="py-3.5 px-4 text-center font-extrabold text-slate-700 text-sm">
+                        {b.total_leads}
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="font-bold text-sky-600 text-sm">{b.has_phone}</div>
+                        <div className="text-[10px] text-slate-400">{b.phone_rate}% SĐT</div>
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-bold text-emerald-600 text-sm">
+                        {b.in_contact}
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        {b.is_new > 0 ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                            <AlertCircle size={11} /> {b.is_new}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300 font-semibold">—</span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-center text-slate-400 font-medium">
+                        {b.unresponsive > 0 ? b.unresponsive : '—'}
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <span className="font-extrabold text-slate-700 text-xs">{b.contact_rate}%</span>
+                          <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden shrink-0">
+                            <div 
+                              className="h-full rounded-full transition-all duration-300"
+                              style={{ 
+                                width: `${Math.min(100, b.contact_rate)}%`,
+                                background: b.contact_rate >= 90 ? '#10b981' : b.contact_rate >= 60 ? '#6366f1' : '#f59e0b'
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -486,13 +731,12 @@ const StaffPerformanceTab = ({ bus = [] }) => {
           padding-bottom: 4rem;
         }
 
-        /* Fixed Single-Row Filter Panel */
         .executive-filter-panel {
           background: #ffffff;
-          padding: 1rem 1.5rem;
-          border-radius: 24px;
+          padding: 1rem 1.25rem;
+          border-radius: 20px;
           border: 1px solid #f1f5f9;
-          box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.04);
           position: sticky;
           top: 0;
           z-index: 40;
@@ -512,7 +756,7 @@ const StaffPerformanceTab = ({ bus = [] }) => {
           flex-direction: row !important;
           flex-wrap: nowrap !important;
           align-items: center !important;
-          gap: 2rem !important;
+          gap: 1.25rem !important;
           min-width: max-content;
           justify-content: flex-start;
           width: 100%;
@@ -521,18 +765,18 @@ const StaffPerformanceTab = ({ bus = [] }) => {
         .segmented-control.glass {
           display: flex;
           background: #f8fafc;
-          padding: 5px;
-          border-radius: 16px;
-          border: 1px solid #f1f5f9;
+          padding: 4px;
+          border-radius: 14px;
+          border: 1px solid #e2e8f0;
           flex-shrink: 0;
-          gap: 4px;
+          gap: 3px;
         }
         .segment-btn {
-          padding: 7px 15px;
+          padding: 6px 14px;
           font-size: 11px;
-          font-weight: 800;
+          font-weight: 700;
           color: #64748b;
-          border-radius: 10px;
+          border-radius: 9px;
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           border: none;
           background: transparent;
@@ -540,18 +784,18 @@ const StaffPerformanceTab = ({ bus = [] }) => {
           white-space: nowrap;
         }
         .segment-btn:hover {
-          color: #6366f1;
-          background: rgba(255, 255, 255, 0.6);
+          color: #4f46e5;
+          background: rgba(255, 255, 255, 0.8);
         }
         .segment-btn.active {
           background: #ffffff;
-          color: #6366f1;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+          color: #4f46e5;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.06);
         }
 
         .filter-divider {
           width: 1px;
-          height: 24px;
+          height: 22px;
           background: #e2e8f0;
           flex-shrink: 0;
         }
@@ -571,17 +815,17 @@ const StaffPerformanceTab = ({ bus = [] }) => {
           pointer-events: none;
         }
         .executive-select-wrapper select {
-          padding: 7px 30px 7px 14px;
+          padding: 6px 30px 6px 12px;
           background: #f8fafc;
           border: 1px solid #e2e8f0;
-          border-radius: 12px;
+          border-radius: 10px;
           font-size: 11px;
-          font-weight: 800;
+          font-weight: 700;
           color: #1e293b;
           outline: none;
           cursor: pointer;
           appearance: none;
-          min-width: 100px;
+          min-width: 110px;
         }
 
         .date-input-group.premium {
@@ -589,58 +833,57 @@ const StaffPerformanceTab = ({ bus = [] }) => {
           align-items: center; gap: 6px;
           background: #f8fafc;
           border: 1px solid #e2e8f0;
-          padding: 5px 12px;
-          border-radius: 12px;
+          padding: 5px 10px;
+          border-radius: 10px;
           flex-shrink: 0;
         }
         .date-input-group input {
           border: none;
           outline: none;
           background: transparent;
-          font-size: 10px;
-          font-weight: 800;
+          font-size: 11px;
+          font-weight: 700;
           color: #1e293b;
         }
 
         .confirm-btn-premium {
           display: flex;
           align-items: center;
-          gap: 8px;
-          padding: 8px 18px;
-          background: #6366f1;
+          gap: 6px;
+          padding: 6px 16px;
+          background: #4f46e5;
           color: white;
-          border-radius: 12px;
+          border-radius: 10px;
           font-size: 11px;
-          font-weight: 800;
+          font-weight: 700;
           border: none;
           cursor: pointer;
           transition: all 0.2s ease;
           flex-shrink: 0;
         }
         .confirm-btn-premium:hover {
-          background: #4f46e5;
-          transform: translateY(-1px);
+          background: #4338ca;
         }
 
         /* KPI Premium Cards */
-        .kpi-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1.5rem;
-          margin-bottom: 3.5rem;
-        }
         .stat-card.premium {
-          padding: 2rem;
-          border-radius: 32px;
+          padding: 1.5rem;
+          border-radius: 20px;
           border: none;
           color: white;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+          transition: transform 0.2s ease;
         }
-        .stat-card.blue { background: linear-gradient(135deg, #6366f1 0%, #4447e5 100%); }
-        .stat-card.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-        .stat-card.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .stat-card.premium:hover {
+          transform: translateY(-2px);
+        }
+        .stat-card.blue { background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); }
+        .stat-card.purple { background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%); }
+        .stat-card.green { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+        .stat-card.teal { background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); }
+        .stat-card.rose { background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%); }
 
         .stat-header {
           display: flex;
@@ -651,59 +894,42 @@ const StaffPerformanceTab = ({ bus = [] }) => {
         .stat-label {
           font-size: 11px;
           font-weight: 800;
-          letter-spacing: 1.5px;
+          letter-spacing: 1px;
           text-transform: uppercase;
+          opacity: 0.9;
         }
         .stat-icon-glass {
-          width: 42px;
-          height: 42px;
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(4px);
-          border-radius: 12px;
+          width: 38px;
+          height: 38px;
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(6px);
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
         .stat-value {
-          font-size: 2.25rem;
+          font-size: 2rem;
           font-weight: 900;
-          letter-spacing: -1px;
+          letter-spacing: -0.5px;
           color: white !important;
+          line-height: 1.1;
         }
         .stat-footer {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
           font-size: 11px;
-          font-weight: 700;
-          opacity: 0.8;
+          font-weight: 600;
+          opacity: 0.9;
           margin-top: 0.5rem;
         }
 
         .analytics-card.professional {
           background: white;
-          padding: 2.5rem;
-          border-radius: 36px;
+          border-radius: 24px;
           border: 1px solid #f1f5f9;
           box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-        }
-        .card-header h3 {
-          font-size: 1.25rem;
-          font-weight: 950;
-          color: #1e293b;
-        }
-        .analytics-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 2.5rem;
-          margin-bottom: 2.5rem;
-        }
-
-        @media (max-width: 1200px) {
-          .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 900px) {
-          .analytics-row { grid-template-columns: 1fr; }
         }
       `}</style>
     </div>

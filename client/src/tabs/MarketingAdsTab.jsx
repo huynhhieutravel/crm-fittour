@@ -169,6 +169,14 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
     return s.replace(/[^0-9]/g, '');
   };
 
+  const handlePreviewEmail = (type = 'weekly') => {
+    const selectedWeek = filters.week === 'all' ? 2 : filters.week;
+    const selectedMonth = filters.month || (new Date().getMonth() + 1);
+    const year = filters.year || new Date().getFullYear();
+    const token = localStorage.getItem('token') || '';
+    window.open(`/api/marketing-ads/preview-email?type=${type}&year=${year}&month=${selectedMonth}&week=${selectedWeek}&token=${token}`, '_blank');
+  };
+
   const handleSendEmail = async (type) => {
     if (!filters.month || !filters.year) {
       Swal.fire('Lỗi', 'Vui lòng chọn Tháng và Năm để gửi báo cáo', 'error');
@@ -478,7 +486,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
         if (!campaign && !adSet && !ad) return;
 
         let detectedBu = null;
-        const activeBUs = bus || [];
+        const activeBUs = (bus || []).filter(bu => !['Kế toán', 'Marketing', 'KETOAN', 'MARKETING', 'BU3'].includes(bu.id) && !['Kế toán', 'Marketing', 'KETOAN', 'MARKETING', 'BU3'].includes(bu.label));
 
         // 1. Exact ID match in campaign or adSet (e.g. BU1, BU2...)
         if (activeBUs.length > 0) {
@@ -494,7 +502,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
 
         // Fallback for ID matching if bus prop is not loaded
         if (!detectedBu && activeBUs.length === 0) {
-          const fallbackBUs = ['BU1', 'BU2', 'BU3', 'BU4', 'BU5'];
+          const fallbackBUs = ['BU1', 'BU2', 'BU4', 'BU5'];
           for (const bu of fallbackBUs) {
             if (campaign.includes(bu) || adSet.includes(bu)) {
               detectedBu = bu; break;
@@ -517,17 +525,14 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
               }
             }
           } else {
-            // Fallback keywords if bus is somehow not loaded
             if (allText.includes('TRUNG QUỐC') || allText.includes('BẮC KINH') || allText.includes('THƯỢNG HẢI') || allText.includes('Á ĐINH') || allText.includes('GIANG NAM') || allText.includes('LỆ GIANG') || allText.includes('GIANG TÂY')) detectedBu = 'BU1';
-            else if (allText.includes('CHÂU ÂU') || allText.includes('ÚC')) detectedBu = 'BU2';
-            else if (allText.includes('HÀN QUỐC') || allText.includes('NHẬT BẢN') || allText.includes('ĐÀI LOAN')) detectedBu = 'BU3';
-            else if (allText.includes('BALI') || allText.includes('BHUTAN') || allText.includes('LADAKH') || allText.includes('BROMO')) detectedBu = 'BU4';
+            else if (allText.includes('CHÂU ÂU') || allText.includes('ÚC') || allText.includes('HÀN QUỐC') || allText.includes('NHẬT BẢN') || allText.includes('ĐÀI LOAN')) detectedBu = 'BU2';
+            else if (allText.includes('BALI') || allText.includes('BHUTAN') || allText.includes('LADAKH') || allText.includes('BROMO') || allText.includes('SRI LANKA')) detectedBu = 'BU4';
             else if (allText.includes('ALASKA') || allText.includes('BẮC MỸ') || allText.includes('BẮC CỰC') || allText.includes('NAM MỸ') || allText.includes('MÔNG CỔ') || allText.includes('MONGOLIA') || allText.includes('SILKROAD') || allText.includes('CON ĐƯỜNG TƠ LỤA') || allText.includes('TRUNG Á') || allText.includes('THỔ NHĨ KỲ') || allText.includes('MA RỐC') || allText.includes('AFRICA') || allText.includes('CHÂU PHI') || allText.includes('CANADA') || allText.includes('MỸ') || allText.includes('PAKISTAN') || allText.includes('TÂY Á') || allText.includes('TRUNG ĐÔNG')) detectedBu = 'BU5';
           }
         }
 
-        if (!detectedBu) detectedBu = 'UNKNOWN';
-        if (detectedBu === 'UNKNOWN') return; // Skip unknown logic
+        if (!detectedBu || detectedBu === 'UNKNOWN' || detectedBu === 'BU3') return; // Skip unknown and BU3
 
         mappedData.push({
           bu_name: detectedBu,
@@ -815,7 +820,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
               >
                 Tất cả
               </button>
-              {bus?.filter(b => !['Kế toán', 'Marketing', 'KETOAN', 'MARKETING'].includes(b.id) && !['Kế toán', 'Marketing', 'KETOAN', 'MARKETING'].includes(b.label)).map(b => {
+              {bus?.filter(b => !['Kế toán', 'Marketing', 'KETOAN', 'MARKETING', 'BU3'].includes(b.id) && !['Kế toán', 'Marketing', 'KETOAN', 'MARKETING', 'BU3'].includes(b.label)).map(b => {
                 return (
                   <button
                     key={b.id}
@@ -978,6 +983,20 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
               </div>
               
               <button 
+                className="btn-preview-email" 
+                style={{ 
+                  background: '#f8fafc', color: '#1e293b', border: '1px solid #cbd5e1', padding: '8px 16px', borderRadius: '8px', 
+                  display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', cursor: 'pointer',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => handlePreviewEmail('weekly')}
+                title="Mở xem trước nội dung email báo cáo chuẩn bị gửi"
+              >
+                <i className="fa-regular fa-eye" style={{marginRight: '5px', color: '#0284c7'}}></i> 
+                Xem Trước Email
+              </button>
+              <button 
                 className="btn-send-email" 
                 style={{ 
                   background: '#0ea5e9', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', 
@@ -1008,9 +1027,63 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
         </>
       )}
 
-      {activeSubTab === 'weekly' && (
-      <>
-      <div className="data-table-container shadow-sm" style={{ border: '1px solid #f1f5f9', borderRadius: '12px', overflow: 'hidden' }}>
+      {activeSubTab === 'weekly' && (() => {
+        const weeklySpend = filteredData.reduce((acc, r) => acc + parseFloat(r.spend || 0), 0);
+        const weeklyCrmLeads = (kpiData.crmMetaLeads || []).filter(c => {
+          if (filters.bu_name !== 'All' && c.bu_name !== filters.bu_name) return false;
+          if (filters.month && parseInt(c.month) !== parseInt(filters.month)) return false;
+          if (filters.week_number && parseInt(c.week_number) !== parseInt(filters.week_number)) return false;
+          return true;
+        });
+        const weeklyPhoneCount = weeklyCrmLeads.reduce((s, c) => s + parseInt(c.meta_leads_phone || 0), 0);
+        const weeklyTrueCpl = (weeklySpend > 0 && weeklyPhoneCount > 0) ? Math.round(weeklySpend / weeklyPhoneCount) : 0;
+        const currentRanges = getWeekRanges(filters.year, filters.month);
+        const weekLabelText = filters.week_number && currentRanges && currentRanges[filters.week_number] 
+          ? `Tuần ${filters.week_number} (${currentRanges[filters.week_number]})` 
+          : filters.month ? `Tháng ${filters.month}/${filters.year}` : `Năm ${filters.year}`;
+
+        return (
+          <>
+            {/* Banner tóm tắt CPL Lead SĐT CRM theo tuần khớp đúng ngày */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px',
+              background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+              border: '1px solid #a7f3d0', borderRadius: '12px',
+              padding: '12px 20px', marginBottom: '16px', boxShadow: '0 1px 3px rgba(16, 185, 129, 0.1)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#059669', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', boxShadow: '0 2px 4px rgba(5, 150, 105, 0.2)' }}>
+                  🎯
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700, color: '#065f46', fontSize: '0.92rem' }}>
+                    Hiệu Quả Lead CRM SĐT Meta — {weekLabelText} {filters.bu_name !== 'All' ? `[${filters.bu_name}]` : '[Toàn bộ BU]'}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#047857', marginTop: '2px' }}>
+                    Số liệu khớp chính xác ngày tạo Lead với kỳ chi tiêu quảng cáo
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.72rem', color: '#047857', fontWeight: 600, textTransform: 'uppercase' }}>Chi tiêu QC</div>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#b45309' }}>{weeklySpend.toLocaleString()}đ</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.72rem', color: '#047857', fontWeight: 600, textTransform: 'uppercase' }}>Lead SĐT Meta (CRM)</div>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#047857' }}>{weeklyPhoneCount} Lead</div>
+                </div>
+                <div style={{ 
+                  textAlign: 'center', background: '#059669', color: '#fff', padding: '6px 16px', borderRadius: '8px',
+                  boxShadow: '0 2px 6px rgba(5, 150, 105, 0.25)' 
+                }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 600, opacity: 0.9, textTransform: 'uppercase' }}>CPL SĐT Thực Tế</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{weeklyTrueCpl > 0 ? weeklyTrueCpl.toLocaleString() + 'đ' : '-'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="data-table-container shadow-sm" style={{ border: '1px solid #f1f5f9', borderRadius: '12px', overflow: 'hidden' }}>
         <table className="data-table" style={{ fontSize: '0.85rem', tableLayout: 'fixed', width: '100%' }}>
           <thead style={{ background: '#f8fafc' }}>
             <tr>
@@ -1283,7 +1356,8 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
         document.body
       )}
       </>
-      )}
+        );
+      })()}
 
       {activeSubTab === 'monthly' && (
         <div className="monthly-dashboard animate-fade-in">
@@ -1350,6 +1424,20 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
               </button>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <button 
+                  className="btn-preview-email" 
+                  style={{ 
+                    background: '#f8fafc', color: '#1e293b', border: '1px solid #cbd5e1', padding: '8px 16px', borderRadius: '8px', 
+                    display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', cursor: 'pointer',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                    whiteSpace: 'nowrap', justifyContent: 'center'
+                  }}
+                  onClick={() => handlePreviewEmail('weekly')}
+                  title="Mở xem trước nội dung email báo cáo chuẩn bị gửi"
+                >
+                  <i className="fa-regular fa-eye" style={{marginRight: '5px', color: '#0284c7'}}></i> 
+                  Xem Trước Email
+                </button>
+                <button 
                   className="btn-send-email" 
                   style={{ 
                     background: '#0ea5e9', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', 
@@ -1386,7 +1474,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
             const isMonthlyZoom = !!filters.month;
             
             const activeBUs = (bus || []).filter(bu => {
-              if (['Kế toán', 'Marketing', 'KETOAN', 'MARKETING'].includes(bu.id) || ['Kế toán', 'Marketing', 'KETOAN', 'MARKETING'].includes(bu.label)) return false;
+              if (['Kế toán', 'Marketing', 'KETOAN', 'MARKETING', 'BU3'].includes(bu.id) || ['Kế toán', 'Marketing', 'KETOAN', 'MARKETING', 'BU3'].includes(bu.label)) return false;
               
               let kpiList, actualRecords;
               if (isQuarterMode) {
@@ -1438,13 +1526,84 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                 
               const uniqueWeeks = new Set(actualRecords.map(a => `${a.year}-${a.month}-${a.week_number}`)).size;
 
+              // Danh sách các tuần thực tế đã có chi tiêu QC được import cho BU này
+              const reportedWeeks = Array.from(new Set(actualRecords.map(a => parseInt(a.week_number)))).sort((a, b) => a - b);
+
+              // Lấy số lead có SĐT thực tế từ CRM (kênh Meta) KHỚP ĐÚNG KỲ CHI TIÊU
+              let crmPhone = 0;
+              let crmPhoneNew = 0;
+              let crmPhoneRecontact = 0;
+              let crmMetaTotal = 0;
+              let fullMonthPhone = 0;
+              let reportedWeeksLabel = '';
+
+              if (isQuarterMode) {
+                const matching = (kpiData.crmMetaLeads || []).filter(c => {
+                  if (c.bu_name !== bu.id || !quarterMonths.includes(parseInt(c.month))) return false;
+                  const mWeeks = Array.from(new Set(
+                    actualRecords.filter(a => parseInt(a.month) === parseInt(c.month)).map(a => parseInt(a.week_number))
+                  ));
+                  return mWeeks.length > 0 ? mWeeks.includes(parseInt(c.week_number)) : false;
+                });
+                crmPhone = matching.reduce((s, c) => s + parseInt(c.meta_leads_phone || 0), 0);
+                crmPhoneNew = matching.reduce((s, c) => s + parseInt(c.meta_leads_phone_new || 0), 0);
+                crmPhoneRecontact = matching.reduce((s, c) => s + parseInt(c.meta_leads_phone_recontact || 0), 0);
+                crmMetaTotal = matching.reduce((s, c) => s + parseInt(c.meta_leads_total || 0), 0);
+              } else if (isMonthlyZoom) {
+                // Khớp đúng các tuần đã có chi tiêu QC trong tháng
+                const matching = (kpiData.crmMetaLeads || []).filter(c => 
+                  c.bu_name === bu.id && 
+                  parseInt(c.month) === targetMonth && 
+                  (reportedWeeks.length > 0 ? reportedWeeks.includes(parseInt(c.week_number)) : false)
+                );
+                crmPhone = matching.reduce((s, c) => s + parseInt(c.meta_leads_phone || 0), 0);
+                crmPhoneNew = matching.reduce((s, c) => s + parseInt(c.meta_leads_phone_new || 0), 0);
+                crmPhoneRecontact = matching.reduce((s, c) => s + parseInt(c.meta_leads_phone_recontact || 0), 0);
+                crmMetaTotal = matching.reduce((s, c) => s + parseInt(c.meta_leads_total || 0), 0);
+
+                // Tổng lead cả tháng để hiển thị đối chiếu
+                const monthMatch = (kpiData.crmMetaLeadsMonthly || []).find(c => c.bu_name === bu.id && parseInt(c.month) === targetMonth);
+                fullMonthPhone = monthMatch ? parseInt(monthMatch.meta_leads_phone || 0) : crmPhone;
+
+                if (reportedWeeks.length > 0) {
+                  const currentRanges = getWeekRanges(filters.year, targetMonth);
+                  reportedWeeksLabel = reportedWeeks.map(w => `T${w} (${currentRanges[w] || ''})`).join(', ');
+                }
+              } else {
+                const matching = (kpiData.crmMetaLeads || []).filter(c => {
+                  if (c.bu_name !== bu.id) return false;
+                  const mWeeks = Array.from(new Set(
+                    actualRecords.filter(a => parseInt(a.month) === parseInt(c.month)).map(a => parseInt(a.week_number))
+                  ));
+                  return mWeeks.length > 0 ? mWeeks.includes(parseInt(c.week_number)) : false;
+                });
+                crmPhone = matching.reduce((s, c) => s + parseInt(c.meta_leads_phone || 0), 0);
+                crmPhoneNew = matching.reduce((s, c) => s + parseInt(c.meta_leads_phone_new || 0), 0);
+                crmPhoneRecontact = matching.reduce((s, c) => s + parseInt(c.meta_leads_phone_recontact || 0), 0);
+                crmMetaTotal = matching.reduce((s, c) => s + parseInt(c.meta_leads_total || 0), 0);
+              }
+
               const actual = actualRecords
                 .reduce((acc, curr) => ({
                   spend: acc.spend + parseFloat(curr.actual_spend || 0),
                   leads: acc.leads + parseInt(curr.actual_leads || 0),
                   messages: acc.messages + parseInt(curr.actual_messages || 0),
-                  crm_won: acc.crm_won + parseInt(curr.actual_crm_won || 0)
-                }), { spend: 0, leads: 0, messages: 0, crm_won: 0 });
+                  crm_won: acc.crm_won + parseInt(curr.actual_crm_won || 0),
+                  crm_phone: crmPhone,
+                  crm_phone_new: crmPhoneNew,
+                  crm_phone_recontact: crmPhoneRecontact,
+                  crm_meta_total: crmMetaTotal,
+                  full_month_phone: fullMonthPhone,
+                  reported_weeks_label: reportedWeeksLabel,
+                  reported_weeks: reportedWeeks
+                }), { 
+                  spend: 0, leads: 0, messages: 0, crm_won: 0, 
+                  crm_phone: crmPhone, crm_phone_new: crmPhoneNew, crm_phone_recontact: crmPhoneRecontact,
+                  crm_meta_total: crmMetaTotal, 
+                  full_month_phone: fullMonthPhone,
+                  reported_weeks_label: reportedWeeksLabel,
+                  reported_weeks: reportedWeeks
+                });
                 
               // Đánh giá Funnel trung bình theo tuần: Chia Target theo số ngày (chuẩn 1 tuần = 7 ngày)
               const totalTargetLeads = parseInt(kpi.target_leads || 0);
@@ -1502,9 +1661,17 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                 spend: acc.actual.spend + curr.actual.spend,
                 leads: acc.actual.leads + curr.actual.leads,
                 messages: acc.actual.messages + curr.actual.messages,
-                crm_won: acc.actual.crm_won + curr.actual.crm_won
+                crm_won: acc.actual.crm_won + curr.actual.crm_won,
+                crm_phone: acc.actual.crm_phone + curr.actual.crm_phone,
+                crm_phone_new: (acc.actual.crm_phone_new || 0) + (curr.actual.crm_phone_new || 0),
+                crm_phone_recontact: (acc.actual.crm_phone_recontact || 0) + (curr.actual.crm_phone_recontact || 0),
+                crm_meta_total: acc.actual.crm_meta_total + curr.actual.crm_meta_total,
+                full_month_phone: acc.actual.full_month_phone + (curr.actual.full_month_phone || 0)
               }
-            }), { kpi: { budget: 0, routes: 0, groups: 0, customers: 0, leads: 0 }, actual: { spend: 0, leads: 0, messages: 0, crm_won: 0 } });
+            }), { 
+              kpi: { budget: 0, routes: 0, groups: 0, customers: 0, leads: 0 }, 
+              actual: { spend: 0, leads: 0, messages: 0, crm_won: 0, crm_phone: 0, crm_phone_new: 0, crm_phone_recontact: 0, crm_meta_total: 0, full_month_phone: 0 } 
+            });
 
             return (
               <div className="data-table-container shadow-sm animate-fade-in" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflowX: 'auto' }}>
@@ -1575,7 +1742,40 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                       </td>
                     </tr>
 
-                    <tr style={{ height: '8px', background: '#f8fafc' }}><td colSpan={5}></td></tr>
+                    <tr style={{ height: '8px', background: '#f8fafc' }}><td colSpan={activeBUs.length + 2}></td></tr>
+
+                    {/* Tin nhắn (Inbox) */}
+                    <tr>
+                      <td style={{ position: 'sticky', left: 0, background: '#fff', zIndex: 1, borderRight: '2px solid #e2e8f0', fontWeight: 600, color: '#7c3aed' }}>
+                        <div>💬 » Tin nhắn (Inbox)</div>
+                        <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 400, marginTop: '2px' }}>
+                          Khách nhắn tin qua Ads
+                        </div>
+                      </td>
+                      {buData.map(b => {
+                        const costPerMsg = b.actual.messages ? Math.round(b.actual.spend / b.actual.messages) : 0;
+                        return (
+                          <td key={b.id} style={{ textAlign: 'center', fontWeight: 700, color: '#7c3aed' }}>
+                            <div>{b.actual.messages ? `${b.actual.messages.toLocaleString()} Msg` : '-'}</div>
+                            {costPerMsg > 0 && (
+                              <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 500, marginTop: '2px' }}>
+                                {costPerMsg.toLocaleString()}đ/Msg
+                              </div>
+                            )}
+                          </td>
+                        );
+                      })}
+                      <td style={{ textAlign: 'center', background: '#f5f3ff', fontWeight: 700, color: '#6d28d9' }}>
+                        <div>{total.actual.messages ? `${total.actual.messages.toLocaleString()} Msg` : '-'}</div>
+                        {total.actual.messages > 0 && total.actual.spend > 0 && (
+                          <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 500, marginTop: '2px' }}>
+                            {Math.round(total.actual.spend / total.actual.messages).toLocaleString()}đ/Msg
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+
+                    <tr style={{ height: '8px', background: '#f8fafc' }}><td colSpan={activeBUs.length + 2}></td></tr>
 
                     {/* Chỉ số Quảng Cáo (Facebook) */}
                     <tr style={{ background: '#eef2ff' }}>
@@ -1584,7 +1784,12 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                       <td style={{ textAlign: 'center', background: '#c7d2fe', fontWeight: 700, color: '#3730a3' }}>{total.kpi.leads || '-'}</td>
                     </tr>
                     <tr>
-                      <td style={{ position: 'sticky', left: 0, background: '#fff', zIndex: 1, borderRight: '2px solid #e2e8f0', fontWeight: 600, color: '#2563eb' }}>» Lead (Thực tế)</td>
+                      <td style={{ position: 'sticky', left: 0, background: '#fff', zIndex: 1, borderRight: '2px solid #e2e8f0', fontWeight: 600, color: '#2563eb' }}>
+                        <div>📊 » Lead Meta Ads (Báo Cáo)</div>
+                        <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 400, marginTop: '2px' }}>
+                          Từ file Excel Ads nhập vào
+                        </div>
+                      </td>
                       {buData.map(b => <td key={b.id} style={{ textAlign: 'center', fontWeight: 700, color: '#2563eb' }}>{b.actual.leads}</td>)}
                       <td style={{ textAlign: 'center', background: '#eff6ff', fontWeight: 700, color: '#1d4ed8' }}>{total.actual.leads}</td>
                     </tr>
@@ -1608,7 +1813,12 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                       </td>
                     </tr>
                     <tr>
-                      <td style={{ position: 'sticky', left: 0, background: '#fff', zIndex: 1, borderRight: '2px solid #e2e8f0', fontWeight: 600, color: '#d97706' }}>CPL Thực tế (đ)</td>
+                      <td style={{ position: 'sticky', left: 0, background: '#fff', zIndex: 1, borderRight: '2px solid #e2e8f0', fontWeight: 600, color: '#d97706' }}>
+                        <div>CPL Thực tế Meta Ads (đ)</div>
+                        <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 400, marginTop: '2px' }}>
+                          = Chi tiêu / Lead Meta Ads báo cáo
+                        </div>
+                      </td>
                       {buData.map(b => {
                         const cpl = b.actual.leads ? Math.round(b.actual.spend / b.actual.leads) : 0;
                         return <td key={b.id} style={{ textAlign: 'center', fontWeight: 'bold', color: cpl > (b.kpi.target_cpl || Infinity) ? '#ef4444' : '#10b981' }}>
@@ -1620,28 +1830,86 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                       </td>
                     </tr>
 
-                    <tr style={{ height: '8px', background: '#f8fafc' }}><td colSpan={5}></td></tr>
-                    
-                    {/* Tin nhắn */}
-                    <tr>
-                      <td style={{ position: 'sticky', left: 0, background: '#fff', zIndex: 1, borderRight: '2px solid #e2e8f0', fontWeight: 600, color: '#8b5cf6' }}>» Tin nhắn (Thực tế)</td>
-                      {buData.map(b => <td key={b.id} style={{ textAlign: 'center', fontWeight: 700, color: '#8b5cf6' }}>{b.actual.messages}</td>)}
-                      <td style={{ textAlign: 'center', background: '#f5f3ff', fontWeight: 700, color: '#7c3aed' }}>{total.actual.messages}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ position: 'sticky', left: 0, background: '#fff', zIndex: 1, borderRight: '2px solid #e2e8f0', fontWeight: 600, color: '#c026d3' }}>CPL Tin nhắn Thực tế (đ)</td>
-                      {buData.map(b => {
-                        const cplMsg = b.actual.messages ? Math.round(b.actual.spend / b.actual.messages) : 0;
-                        return <td key={b.id} style={{ textAlign: 'center', fontWeight: 'bold', color: '#c026d3' }}>
-                          {cplMsg.toLocaleString()}
+                    <tr style={{ height: '8px', background: '#f8fafc' }}><td colSpan={activeBUs.length + 2}></td></tr>
+
+                    {/* DÒNG MỚI: Lead Có SĐT Meta từ CRM & CPL SĐT Chuẩn Xác */}
+                    <tr style={{ background: '#ecfdf5' }}>
+                      <td style={{ position: 'sticky', left: 0, background: '#ecfdf5', zIndex: 1, borderRight: '2px solid #e2e8f0', fontWeight: 700, color: '#047857' }}>
+                        <div>🔥 » Lead Có SĐT Meta (CRM Đối Chiếu)</div>
+                        <div style={{ fontSize: '0.68rem', color: '#059669', fontWeight: 500, fontStyle: 'italic', marginTop: '2px' }}>
+                          Mới tinh + Khách cũ nhắn lại
+                        </div>
+                      </td>
+                      {buData.map(b => (
+                        <td key={b.id} style={{ textAlign: 'center', padding: '8px 6px' }}>
+                          <div style={{ fontWeight: 800, color: '#047857', fontSize: '0.95rem' }}>
+                            {b.actual.crm_phone}
+                          </div>
+                          {b.actual.crm_phone > 0 && (
+                            <div style={{ fontSize: '0.68rem', color: '#059669', marginTop: '2px', lineHeight: 1.2 }}>
+                              <span>{b.actual.crm_phone_new || 0} mới</span>
+                              {b.actual.crm_phone_recontact > 0 && (
+                                <span style={{ color: '#0d9488' }}> + {b.actual.crm_phone_recontact} cũ</span>
+                              )}
+                            </div>
+                          )}
+                          {b.actual.reported_weeks_label && (
+                            <div style={{ fontSize: '0.68rem', color: '#065f46', marginTop: '2px', opacity: 0.85 }} title={`Khớp đúng kỳ báo cáo chi tiêu QC: ${b.actual.reported_weeks_label}`}>
+                              {b.actual.reported_weeks_label}
+                            </div>
+                          )}
+                          {isMonthlyZoom && b.actual.full_month_phone > b.actual.crm_phone && (
+                            <div 
+                              style={{ fontSize: '0.68rem', color: '#64748b', fontStyle: 'italic', marginTop: '2px', cursor: 'help' }}
+                              title={`Đã có ${b.actual.full_month_phone} lead SĐT trong tháng ${filters.month} tới nay (trong đó ${b.actual.crm_phone} lead thuộc kỳ có chi tiêu QC)`}
+                            >
+                              (Toàn T{filters.month}: {b.actual.full_month_phone})
+                            </div>
+                          )}
                         </td>
-                      })}
-                      <td style={{ textAlign: 'center', background: '#fdf4ff', fontWeight: 'bold', color: '#a21caf' }}>
-                        {total.actual.messages ? Math.round(total.actual.spend / total.actual.messages).toLocaleString() : '-'}
+                      ))}
+                      <td style={{ textAlign: 'center', background: '#d1fae5', padding: '8px 6px' }}>
+                        <div style={{ fontWeight: 800, color: '#065f46', fontSize: '0.95rem' }}>
+                          {total.actual.crm_phone}
+                        </div>
+                        {total.actual.crm_phone > 0 && (
+                          <div style={{ fontSize: '0.7rem', color: '#047857', marginTop: '2px', fontWeight: 600 }}>
+                            <span>{total.actual.crm_phone_new || 0} mới</span>
+                            {total.actual.crm_phone_recontact > 0 && (
+                              <span style={{ color: '#0f766e' }}> + {total.actual.crm_phone_recontact} cũ</span>
+                            )}
+                          </div>
+                        )}
+                        {isMonthlyZoom && total.actual.full_month_phone > total.actual.crm_phone && (
+                          <div 
+                            style={{ fontSize: '0.68rem', color: '#047857', fontStyle: 'italic', marginTop: '2px', cursor: 'help' }}
+                            title={`Tổng cả tháng ${filters.month} tới nay: ${total.actual.full_month_phone} lead SĐT`}
+                          >
+                            (Toàn T{filters.month}: {total.actual.full_month_phone})
+                          </div>
+                        )}
                       </td>
                     </tr>
-
-                    <tr style={{ height: '8px', background: '#f8fafc' }}><td colSpan={5}></td></tr>
+                    <tr style={{ background: '#f0fdf4' }}>
+                      <td style={{ position: 'sticky', left: 0, background: '#f0fdf4', zIndex: 1, borderRight: '2px solid #e2e8f0', fontWeight: 700, color: '#15803d' }}>
+                        🎯 CPL SĐT Meta Thực Tế (đ)
+                        <div style={{ fontSize: '0.7rem', color: '#16a34a', fontWeight: 500, fontStyle: 'italic', marginTop: '2px' }}>
+                          = Chi tiêu / Lead SĐT (khớp đúng ngày)
+                        </div>
+                      </td>
+                      {buData.map(b => {
+                        const cplPhone = b.actual.crm_phone ? Math.round(b.actual.spend / b.actual.crm_phone) : 0;
+                        return (
+                          <td key={b.id} style={{ textAlign: 'center', fontWeight: 800, color: '#15803d' }}>
+                            {cplPhone > 0 ? cplPhone.toLocaleString() : '-'}
+                          </td>
+                        );
+                      })}
+                      <td style={{ textAlign: 'center', background: '#dcfce7', fontWeight: 800, color: '#166534' }}>
+                        {total.actual.crm_phone ? Math.round(total.actual.spend / total.actual.crm_phone).toLocaleString() : '-'}
+                      </td>
+                    </tr>
+                    <tr style={{ height: '8px', background: '#f8fafc' }}><td colSpan={activeBUs.length + 2}></td></tr>
 
                     {/* Chỉ số sản phẩm & Khách */}
                     <tr>
@@ -1715,7 +1983,55 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                 }), { actual_spend: 0, actual_messages: 0, actual_leads: 0, actual_crm_leads: 0, actual_crm_won: 0 });
             };
 
+            const getCrmMeta = (monthFilter, weekFilter) => {
+              return (kpiData.crmMetaLeads || [])
+                .filter(a => (filters.bu_name === 'All' ? true : a.bu_name === filters.bu_name) && 
+                            (monthFilter ? parseInt(a.month) === parseInt(monthFilter) : true) && 
+                            (weekFilter ? parseInt(a.week_number) === parseInt(weekFilter) : true))
+                .reduce((acc, curr) => ({
+                  meta_leads_phone: acc.meta_leads_phone + parseInt(curr.meta_leads_phone || 0),
+                  meta_leads_phone_new: acc.meta_leads_phone_new + parseInt(curr.meta_leads_phone_new || 0),
+                  meta_leads_phone_recontact: acc.meta_leads_phone_recontact + parseInt(curr.meta_leads_phone_recontact || 0),
+                  meta_leads_total: acc.meta_leads_total + parseInt(curr.meta_leads_total || 0),
+                  meta_leads_total_new: acc.meta_leads_total_new + parseInt(curr.meta_leads_total_new || 0),
+                  meta_leads_total_recontact: acc.meta_leads_total_recontact + parseInt(curr.meta_leads_total_recontact || 0)
+                }), { meta_leads_phone: 0, meta_leads_phone_new: 0, meta_leads_phone_recontact: 0, meta_leads_total: 0, meta_leads_total_new: 0, meta_leads_total_recontact: 0 });
+            };
+
             const grandTotal = getAgg(isMonthlyZoom ? filters.month : null, null);
+
+            // Tổng lead SĐT khớp các kỳ/tuần có chi tiêu thực tế
+            let grandTotalReportedPhone = 0;
+            let grandTotalReportedPhoneNew = 0;
+            let grandTotalReportedPhoneRecontact = 0;
+            if (isMonthlyZoom) {
+              const reportedWeeks = Array.from(new Set(
+                kpiData.aggregates
+                  .filter(a => (filters.bu_name === 'All' ? true : a.bu_name === filters.bu_name) && parseInt(a.month) === targetMonth)
+                  .map(a => parseInt(a.week_number))
+              ));
+              const matchingWeeks = (kpiData.crmMetaLeads || [])
+                .filter(a => (filters.bu_name === 'All' ? true : a.bu_name === filters.bu_name) && 
+                            parseInt(a.month) === targetMonth && 
+                            (reportedWeeks.length > 0 ? reportedWeeks.includes(parseInt(a.week_number)) : false));
+              grandTotalReportedPhone = matchingWeeks.reduce((s, c) => s + parseInt(c.meta_leads_phone || 0), 0);
+              grandTotalReportedPhoneNew = matchingWeeks.reduce((s, c) => s + parseInt(c.meta_leads_phone_new || 0), 0);
+              grandTotalReportedPhoneRecontact = matchingWeeks.reduce((s, c) => s + parseInt(c.meta_leads_phone_recontact || 0), 0);
+            } else {
+              const matchingYear = (kpiData.crmMetaLeads || [])
+                .filter(a => {
+                  if (filters.bu_name !== 'All' && a.bu_name !== filters.bu_name) return false;
+                  const mWeeks = Array.from(new Set(
+                    kpiData.aggregates
+                      .filter(x => (filters.bu_name === 'All' ? true : x.bu_name === a.bu_name) && parseInt(x.month) === parseInt(a.month))
+                      .map(x => parseInt(x.week_number))
+                  ));
+                  return mWeeks.length > 0 ? mWeeks.includes(parseInt(a.week_number)) : false;
+                });
+              grandTotalReportedPhone = matchingYear.reduce((s, c) => s + parseInt(c.meta_leads_phone || 0), 0);
+              grandTotalReportedPhoneNew = matchingYear.reduce((s, c) => s + parseInt(c.meta_leads_phone_new || 0), 0);
+              grandTotalReportedPhoneRecontact = matchingYear.reduce((s, c) => s + parseInt(c.meta_leads_phone_recontact || 0), 0);
+            }
 
             return (
             <div className="data-table-container shadow-sm" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflowX: 'auto' }}>
@@ -1787,7 +2103,10 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
 
                   {/* Row: Lead (Fb MKT) */}
                   <tr>
-                    <td style={{ position: 'sticky', left: 0, background: '#f0fdf4', zIndex: 1, borderRight: '2px solid #e2e8f0', fontWeight: 600 }}>Lead (MKT Facebook)</td>
+                    <td style={{ position: 'sticky', left: 0, background: '#f0fdf4', zIndex: 1, borderRight: '2px solid #e2e8f0', fontWeight: 600 }}>
+                      <div>📊 Lead Meta Ads (Báo Cáo)</div>
+                      <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 400 }}>Từ file Excel Ads nhập vào</div>
+                    </td>
                     <td style={{ textAlign: 'center', background: '#dcfce7', fontWeight: 700, color: '#16a34a' }}>
                       <div>{grandTotal.actual_leads.toLocaleString()} Lead</div>
                       {grandTotal.actual_leads > 0 && (
@@ -1804,6 +2123,82 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                           {agg.actual_leads > 0 && agg.actual_spend > 0 && (
                             <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
                               {Math.round(agg.actual_spend / agg.actual_leads).toLocaleString()}đ/Lead
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Row: Lead SĐT Meta (CRM) */}
+                  <tr>
+                    <td style={{ position: 'sticky', left: 0, background: '#ecfdf5', zIndex: 1, borderRight: '2px solid #e2e8f0', fontWeight: 700, color: '#047857' }}>
+                      <div>🔥 Lead Có SĐT Meta (CRM Đối Chiếu)</div>
+                      <div style={{ fontSize: '0.68rem', color: '#059669', fontWeight: 500, fontStyle: 'italic' }}>
+                        Mới tinh + Khách cũ tương tác lại
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'center', background: '#d1fae5', fontWeight: 800, color: '#065f46' }}>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 800 }}>{grandTotalReportedPhone.toLocaleString()} Lead</div>
+                      {grandTotalReportedPhone > 0 && (
+                        <div style={{ fontSize: '0.7rem', color: '#047857', marginTop: '2px', fontWeight: 600 }}>
+                          <span>{grandTotalReportedPhoneNew.toLocaleString()} mới</span>
+                          {grandTotalReportedPhoneRecontact > 0 && (
+                            <span style={{ color: '#0f766e' }}> + {grandTotalReportedPhoneRecontact.toLocaleString()} cũ</span>
+                          )}
+                        </div>
+                      )}
+                      {grandTotal.actual_spend > 0 && grandTotalReportedPhone > 0 && (
+                        <div style={{ fontSize: '0.75rem', color: '#047857', fontWeight: 'bold', marginTop: '3px' }}>
+                          CPL: {Math.round(grandTotal.actual_spend / grandTotalReportedPhone).toLocaleString()}đ
+                        </div>
+                      )}
+                    </td>
+                    {matrixCols.map(c => {
+                      let phoneCount = 0;
+                      let phoneNewCount = 0;
+                      let phoneRecontactCount = 0;
+                      let spendVal = 0;
+                      if (isMonthlyZoom) {
+                        const agg = getAgg(filters.month, c);
+                        const meta = getCrmMeta(filters.month, c);
+                        phoneCount = meta.meta_leads_phone;
+                        phoneNewCount = meta.meta_leads_phone_new;
+                        phoneRecontactCount = meta.meta_leads_phone_recontact;
+                        spendVal = agg.actual_spend;
+                      } else {
+                        const agg = getAgg(c, null);
+                        spendVal = agg.actual_spend;
+                        const mWeeks = Array.from(new Set(
+                          kpiData.aggregates
+                            .filter(x => (filters.bu_name === 'All' ? true : x.bu_name === filters.bu_name) && parseInt(x.month) === parseInt(c))
+                            .map(x => parseInt(x.week_number))
+                        ));
+                        const matching = (kpiData.crmMetaLeads || [])
+                          .filter(x => (filters.bu_name === 'All' ? true : x.bu_name === filters.bu_name) && 
+                                      parseInt(x.month) === parseInt(c) && 
+                                      (mWeeks.length > 0 ? mWeeks.includes(parseInt(x.week_number)) : false));
+                        phoneCount = matching.reduce((s, x) => s + parseInt(x.meta_leads_phone || 0), 0);
+                        phoneNewCount = matching.reduce((s, x) => s + parseInt(x.meta_leads_phone_new || 0), 0);
+                        phoneRecontactCount = matching.reduce((s, x) => s + parseInt(x.meta_leads_phone_recontact || 0), 0);
+                      }
+                      const cplVal = (spendVal > 0 && phoneCount > 0) ? Math.round(spendVal / phoneCount) : 0;
+                      return (
+                        <td key={c} style={{ textAlign: 'center', background: '#ecfdf5' }}>
+                          <div style={{ fontWeight: 700, color: '#047857' }}>
+                            {phoneCount > 0 ? `${phoneCount.toLocaleString()} Lead` : '-'}
+                          </div>
+                          {phoneCount > 0 && (
+                            <div style={{ fontSize: '0.68rem', color: '#059669', marginTop: '2px', lineHeight: 1.2 }}>
+                              <span>{phoneNewCount} mới</span>
+                              {phoneRecontactCount > 0 && (
+                                <span style={{ color: '#0d9488' }}> + {phoneRecontactCount} cũ</span>
+                              )}
+                            </div>
+                          )}
+                          {cplVal > 0 && (
+                            <div style={{ fontSize: '0.7rem', color: '#059669', fontWeight: 600, marginTop: '2px' }}>
+                              {cplVal.toLocaleString()}đ/Lead
                             </div>
                           )}
                         </td>

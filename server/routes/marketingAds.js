@@ -4,6 +4,7 @@ const db = require('../db');
 const gptAuth = require('../middleware/gptAuth');
 const { emitEvent } = require('../utils/eventBus');
 const { logActivity } = require('../utils/logger');
+const { getWeekRanges } = require('../services/marketingAdsEmailService');
 
 // Apply gptAuth to ALL routes — hỗ trợ cả JWT (user) và GPT_API_KEY (ChatGPT Bot read-only)
 router.use(gptAuth);
@@ -32,9 +33,135 @@ router.get('/kpis', async (req, res) => {
     const kpiQuery = `SELECT * FROM marketing_ads_kpis WHERE year = $1`;
     const kpiResult = await db.query(kpiQuery, [targetYear]);
 
+    // Lấy số lead Meta thực tế từ CRM theo từng BU và ngày:
+    // Tách bạch: Lead MỚI (created_at trong kỳ) và Khách cũ nhắn lại (last_contacted_at trong kỳ, tạo từ tháng khác)
+    const crmMetaQuery = `
+      WITH lead_events AS (
+        SELECT 
+          bu_group,
+          phone,
+          TO_CHAR(created_at AT TIME ZONE 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD') as lead_date,
+          (created_at AT TIME ZONE 'Asia/Ho_Chi_Minh') as event_time,
+          'new' as event_type
+        FROM leads
+        WHERE 
+          (source ILIKE '%meta%' OR source ILIKE '%mess%' OR source ILIKE '%fb%' OR facebook_psid IS NOT NULL OR meta_lead_id IS NOT NULL)
+
+        UNION ALL
+
+        SELECT 
+          bu_group,
+          phone,
+          TO_CHAR(last_contacted_at AT TIME ZONE 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD') as lead_date,
+          (last_contacted_at AT TIME ZONE 'Asia/Ho_Chi_Minh') as event_time,
+          'recontact' as event_type
+        FROM leads
+        WHERE 
+          (source ILIKE '%meta%' OR source ILIKE '%mess%' OR source ILIKE '%fb%' OR facebook_psid IS NOT NULL OR meta_lead_id IS NOT NULL)
+          AND last_contacted_at IS NOT NULL
+          AND (last_contacted_at - created_at) > INTERVAL '14 days'
+      )
+      SELECT 
+        COALESCE(bu_group, 'Chưa phân loại') as bu_name,
+        lead_date,
+        COUNT(*)::int as meta_leads_total,
+        COUNT(CASE WHEN phone IS NOT NULL AND TRIM(phone) != '' THEN 1 END)::int as meta_leads_phone,
+        COUNT(CASE WHEN event_type = 'new' THEN 1 END)::int as meta_leads_total_new,
+        COUNT(CASE WHEN event_type = 'new' AND phone IS NOT NULL AND TRIM(phone) != '' THEN 1 END)::int as meta_leads_phone_new,
+        COUNT(CASE WHEN event_type = 'recontact' THEN 1 END)::int as meta_leads_total_recontact,
+        COUNT(CASE WHEN event_type = 'recontact' AND phone IS NOT NULL AND TRIM(phone) != '' THEN 1 END)::int as meta_leads_phone_recontact
+      FROM lead_events
+      WHERE event_time >= $1 AND event_time < $2
+      GROUP BY bu_group, lead_date
+    `;
+    const startDate = `${targetYear}-01-01 00:00:00`;
+    const endDate = `${Number(targetYear) + 1}-01-01 00:00:00`;
+    const crmMetaResult = await db.query(crmMetaQuery, [startDate, endDate]);
+
+    // Build weekly and monthly lead maps theo chuẩn tuần getWeekRanges
+    const weekMap = {};
+    for (let m = 1; m <= 12; m++) {
+      weekMap[m] = getWeekRanges(targetYear, m);
+    }
+
+    const weeklyMap = {};
+    const monthlyMap = {};
+
+    for (const row of crmMetaResult.rows) {
+      const parts = String(row.lead_date).split('-');
+      const m = parseInt(parts[1], 10);
+      const d = parseInt(parts[2], 10);
+      const ranges = weekMap[m] || {};
+
+      let weekNum = 1;
+      for (let w = 1; w <= 5; w++) {
+        if (ranges[w] && d >= ranges[w].startDay && d <= ranges[w].endDay) {
+          weekNum = w;
+          break;
+        }
+      }
+
+      const bu = row.bu_name;
+      const total = parseInt(row.meta_leads_total || 0);
+      const phone = parseInt(row.meta_leads_phone || 0);
+      const phoneNew = parseInt(row.meta_leads_phone_new || 0);
+      const phoneRecontact = parseInt(row.meta_leads_phone_recontact || 0);
+      const totalNew = parseInt(row.meta_leads_total_new || 0);
+      const totalRecontact = parseInt(row.meta_leads_total_recontact || 0);
+
+      // Accumulate weekly
+      const wKey = `${bu}_${m}_${weekNum}`;
+      if (!weeklyMap[wKey]) {
+        weeklyMap[wKey] = {
+          bu_name: bu,
+          month: m,
+          week_number: weekNum,
+          start_day: ranges[weekNum]?.startDay || 1,
+          end_day: ranges[weekNum]?.endDay || 31,
+          date_label: ranges[weekNum]?.sub || '',
+          meta_leads_total: 0,
+          meta_leads_phone: 0,
+          meta_leads_phone_new: 0,
+          meta_leads_phone_recontact: 0,
+          meta_leads_total_new: 0,
+          meta_leads_total_recontact: 0
+        };
+      }
+      weeklyMap[wKey].meta_leads_total += total;
+      weeklyMap[wKey].meta_leads_phone += phone;
+      weeklyMap[wKey].meta_leads_phone_new += phoneNew;
+      weeklyMap[wKey].meta_leads_phone_recontact += phoneRecontact;
+      weeklyMap[wKey].meta_leads_total_new += totalNew;
+      weeklyMap[wKey].meta_leads_total_recontact += totalRecontact;
+
+      // Accumulate monthly
+      const mKey = `${bu}_${m}`;
+      if (!monthlyMap[mKey]) {
+        monthlyMap[mKey] = {
+          bu_name: bu,
+          month: m,
+          meta_leads_total: 0,
+          meta_leads_phone: 0,
+          meta_leads_phone_new: 0,
+          meta_leads_phone_recontact: 0,
+          meta_leads_total_new: 0,
+          meta_leads_total_recontact: 0
+        };
+      }
+      monthlyMap[mKey].meta_leads_total += total;
+      monthlyMap[mKey].meta_leads_phone += phone;
+      monthlyMap[mKey].meta_leads_phone_new += phoneNew;
+      monthlyMap[mKey].meta_leads_phone_recontact += phoneRecontact;
+      monthlyMap[mKey].meta_leads_total_new += totalNew;
+      monthlyMap[mKey].meta_leads_total_recontact += totalRecontact;
+    }
+
     res.json({
         aggregates: aggResult.rows,
-        kpis: kpiResult.rows
+        kpis: kpiResult.rows,
+        crmMetaLeads: Object.values(weeklyMap),
+        crmMetaLeadsMonthly: Object.values(monthlyMap),
+        weekRangesMap: weekMap
     });
   } catch (error) {
     console.error('Lỗi khi lấy KPI:', error);
@@ -322,6 +449,32 @@ router.put('/:id', async (req, res) => {
   } catch (error) {
     console.error('Lỗi khi update manual CRM ads:', error);
     res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+
+// Xem trước Email Báo cáo Marketing Ads
+router.get('/preview-email', async (req, res) => {
+  try {
+    let { type, month, year, week } = req.query;
+    if (type === 'week') type = 'weekly';
+    if (type === 'month') type = 'monthly';
+    const targetYear = parseInt(year) || new Date().getFullYear();
+    const targetMonth = parseInt(month) || new Date().getMonth() + 1;
+    const selectedWeek = parseInt(week) || 2;
+
+    const { generateMarketingAdsEmailReport } = require('../services/marketingAdsEmailService');
+    const { html } = await generateMarketingAdsEmailReport({
+      type,
+      targetYear,
+      targetMonth,
+      selectedWeek
+    });
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
+  } catch (error) {
+    console.error('Lỗi khi render email preview:', error);
+    res.status(500).send(`<h3>Lỗi tạo preview email: ${error.message}</h3>`);
   }
 });
 

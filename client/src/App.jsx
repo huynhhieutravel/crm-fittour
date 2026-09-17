@@ -316,7 +316,7 @@ function AppContent() {
     meta_page_access_token: '',
     meta_page_id: ''
   });
-  const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'today', startDate: '', endDate: '', tours: [], hasPhone: '' });
+  const [leadFilters, setLeadFilters] = useState({ status: '', source: '', search: '', bu_group: '', assigned_to: '', timeRange: 'today', startDate: '', endDate: '', tours: [], hasPhone: '', dateField: 'created_at' });
   const [tourFilters, setTourFilters] = useState({ search: '', tour_type: '', destination: '', has_departure: '', status: '', guide_id: '', timeRange: 'all', startDate: '', endDate: '' });
   const [bookingFilters, setBookingFilters] = useState({ search: '', status: '', bookingStatus: '', paymentStatus: '' });
   const [bookingCurrentPage, setBookingCurrentPage] = useState(1);
@@ -1674,7 +1674,30 @@ function AppContent() {
 
   const filteredLeads = leads.filter(lead => {
     const matchesStatus = !leadFilters.status || lead.status === leadFilters.status;
-    const matchesSource = !leadFilters.source || lead.source === leadFilters.source;
+    const matchesSource = (() => {
+      if (!leadFilters.source) return true;
+      const target = leadFilters.source.toLowerCase();
+      const s = (lead.source || '').toLowerCase();
+      const hasFb = !!lead.facebook_psid || !!lead.meta_lead_id;
+      const hasZalo = !!lead.zalo_uid;
+
+      if (target === 'meta' || target === 'messenger') {
+        return s.includes('messenger') || s.includes('meta') || s.includes('fb') || hasFb;
+      }
+      if (target === 'zalo') {
+        return s.includes('zalo') || hasZalo;
+      }
+      if (target === 'tiktok') {
+        return s.includes('tiktok');
+      }
+      if (target === 'hotline') {
+        return s.includes('hotline') || s.includes('phone') || s.includes('điện thoại');
+      }
+      if (target === 'other' || target === 'khác') {
+        return !s.includes('messenger') && !s.includes('meta') && !s.includes('fb') && !s.includes('zalo') && !s.includes('tiktok') && !s.includes('hotline') && !hasFb && !hasZalo;
+      }
+      return s === target;
+    })();
     const matchesBU = !leadFilters.bu_group || (leadFilters.bu_group === 'NO_BU' ? !lead.bu_group : (leadFilters.bu_group === 'MY_BU' ? (user?.bus || []).includes(lead.bu_group) : lead.bu_group === leadFilters.bu_group));
     const matchesStaff = !leadFilters.assigned_to || (leadFilters.assigned_to === 'NO_STAFF' ? !lead.assigned_to : lead.assigned_to === Number(leadFilters.assigned_to));
     const matchesSearch = !leadFilters.search || 
@@ -1683,43 +1706,67 @@ function AppContent() {
     
     // Time range filtering
     let matchesTime = true;
-    if (leadFilters.startDate || leadFilters.endDate) {
-      const leadDate = new Date(lead.created_at);
-      const leadContactDate = new Date(lead.last_contacted_at || lead.created_at);
-      
-      if (leadFilters.startDate) {
-        matchesTime = matchesTime && (leadDate >= new Date(leadFilters.startDate) || leadContactDate >= new Date(leadFilters.startDate));
+    const dateField = leadFilters.dateField || 'created_at';
+
+    const checkDateInRange = (rawDate) => {
+      if (!rawDate) return false;
+      const d = new Date(rawDate);
+      if (isNaN(d.getTime())) return false;
+
+      if (leadFilters.startDate || leadFilters.endDate) {
+        if (leadFilters.startDate) {
+          const [sy, sm, sd] = leadFilters.startDate.split('-').map(Number);
+          const start = new Date(sy, sm - 1, sd, 0, 0, 0, 0);
+          if (d < start) return false;
+        }
+        if (leadFilters.endDate) {
+          const [ey, em, ed] = leadFilters.endDate.split('-').map(Number);
+          const end = new Date(ey, em - 1, ed, 23, 59, 59, 999);
+          if (d > end) return false;
+        }
+        return true;
       }
-      if (leadFilters.endDate) {
-        const endDate = new Date(leadFilters.endDate);
-        endDate.setHours(23, 59, 59, 999);
-        matchesTime = matchesTime && (leadDate <= endDate || leadContactDate <= endDate);
+
+      if (leadFilters.timeRange && leadFilters.timeRange !== 'all') {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        if (leadFilters.timeRange === 'today') {
+          return d >= today;
+        } else if (leadFilters.timeRange === 'yesterday') {
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          return d >= yesterday && d < today;
+        } else if (leadFilters.timeRange === 'week') {
+          const firstDayOfWeek = new Date(today);
+          const day = firstDayOfWeek.getDay() || 7; 
+          if (day !== 1) firstDayOfWeek.setHours(-24 * (day - 1));
+          return d >= firstDayOfWeek;
+        } else if (leadFilters.timeRange === 'month') {
+          const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+          return d >= firstDayOfMonth;
+        } else if (leadFilters.timeRange === 'quarter') {
+          const quarter = Math.floor(now.getMonth() / 3);
+          const firstDayOfQuarter = new Date(now.getFullYear(), quarter * 3, 1);
+          return d >= firstDayOfQuarter;
+        } else if (leadFilters.timeRange?.startsWith('month_')) {
+          const monthNum = parseInt(leadFilters.timeRange.replace('month_', ''), 10);
+          const year = now.getFullYear();
+          const startOfMonth = new Date(year, monthNum - 1, 1, 0, 0, 0, 0);
+          const endOfMonth = new Date(year, monthNum, 0, 23, 59, 59, 999);
+          return d >= startOfMonth && d <= endOfMonth;
+        }
       }
-    } else if (leadFilters.timeRange !== 'all') {
-      const now = new Date();
-      const leadDate = new Date(lead.created_at);
-      const leadContactDate = new Date(lead.last_contacted_at || lead.created_at);
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      
-      if (leadFilters.timeRange === 'today') {
-        matchesTime = leadDate >= today || leadContactDate >= today;
-      } else if (leadFilters.timeRange === 'yesterday') {
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        matchesTime = (leadDate >= yesterday && leadDate < today) || (leadContactDate >= yesterday && leadContactDate < today);
-      } else if (leadFilters.timeRange === 'week') {
-        const firstDayOfWeek = new Date(today);
-        const day = firstDayOfWeek.getDay() || 7; 
-        if(day !== 1) firstDayOfWeek.setHours(-24 * (day - 1));
-        matchesTime = leadDate >= firstDayOfWeek || leadContactDate >= firstDayOfWeek;
-      } else if (leadFilters.timeRange === 'month') {
-        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        matchesTime = leadDate >= firstDayOfMonth || leadContactDate >= firstDayOfMonth;
-      } else if (leadFilters.timeRange === 'quarter') {
-        const quarter = Math.floor(now.getMonth() / 3);
-        const firstDayOfQuarter = new Date(now.getFullYear(), quarter * 3, 1);
-        matchesTime = leadDate >= firstDayOfQuarter || leadContactDate >= firstDayOfQuarter;
-      }
+
+      return true;
+    };
+
+    if (dateField === 'created_at') {
+      matchesTime = checkDateInRange(lead.created_at);
+    } else if (dateField === 'last_contacted_at') {
+      matchesTime = checkDateInRange(lead.last_contacted_at);
+    } else if (dateField === 'both') {
+      matchesTime = checkDateInRange(lead.created_at) || (lead.last_contacted_at && checkDateInRange(lead.last_contacted_at));
     }
 
     let matchesTours = true;

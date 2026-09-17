@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, CheckCircle2, UserPlus, Info, Bell, Send, Search, MoreVertical, ShieldAlert, MessageCircle, Phone, Copy, BarChart3, Users, UserCheck, Menu, Globe, FileText, ChevronDown, Edit3, Plus } from 'lucide-react';
+import { Bot, CheckCircle2, UserPlus, Info, Bell, Send, Search, MoreVertical, ShieldAlert, MessageCircle, Phone, Copy, BarChart3, Users, UserCheck, Menu, Globe, FileText, ChevronDown, ChevronUp, Edit3, Plus } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import usePushNotifications from '../hooks/usePushNotifications';
@@ -33,6 +33,17 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
     const [activeNoteLeadId, setActiveNoteLeadId] = useState(null);
     const [noteInputText, setNoteInputText] = useState('');
     const [isSavingNote, setIsSavingNote] = useState(false);
+    const [expandedNoteIds, setExpandedNoteIds] = useState(new Set());
+    const [hoveredNoteId, setHoveredNoteId] = useState(null);
+
+    const toggleExpandNote = (id) => {
+        setExpandedNoteIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
 
     const LEAD_STATUSES = [
         'Mới',
@@ -660,6 +671,7 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                                                         onChange={(val) => handleTourChange(notif.reference_id, val)}
                                                         placeholder="Chọn sản phẩm quan tâm..."
                                                         shortLabel={true}
+                                                        excludePrivate={true}
                                                     />
                                                 </div>
 
@@ -954,63 +966,169 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                                             )}
                                         </div>
 
-                                        {notif.latest_note && (
-                                            <div 
-                                                className="chat-card-note-badge"
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '6px',
-                                                    maxWidth: '550px',
-                                                    background: '#fffbeb',
-                                                    padding: '3px 8px',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #fde68a',
-                                                    color: '#92400e',
-                                                    fontSize: '12px',
-                                                    marginLeft: 'auto'
-                                                }}
-                                                title={`Ghi chú: ${notif.latest_note}${notif.latest_note_author ? ` (bởi ${notif.latest_note_author})` : ''}`}
-                                            >
-                                                <span style={{ fontWeight: '700', color: '#b45309', display: 'flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
-                                                    📝 Ghi chú:
-                                                </span>
-                                                <span style={{
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                    whiteSpace: 'nowrap',
-                                                    color: '#1e293b',
-                                                    fontWeight: '500'
-                                                }}>
-                                                    {notif.latest_note}
-                                                </span>
-                                                {notif.latest_note_author && (
-                                                    <span style={{ fontSize: '11px', color: '#64748b', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                                                        • {notif.latest_note_author}
-                                                    </span>
-                                                )}
-                                                <button
-                                                    type="button"
+                                        {notif.latest_note && (() => {
+                                            const noteKey = notif.reference_id || notif.id;
+                                            const isExpanded = expandedNoteIds.has(noteKey);
+                                            const isHovered = hoveredNoteId === noteKey && !isExpanded;
+
+                                            return (
+                                                <div 
+                                                    className="chat-card-note-badge"
+                                                    onMouseEnter={() => setHoveredNoteId(noteKey)}
+                                                    onMouseLeave={() => setHoveredNoteId(null)}
                                                     onClick={() => {
-                                                        setActiveNoteLeadId(notif.reference_id);
-                                                        setNoteInputText(notif.latest_note || '');
+                                                        if (window.getSelection && window.getSelection().toString().length > 0) return;
+                                                        toggleExpandNote(noteKey);
                                                     }}
                                                     style={{
-                                                        background: 'none',
-                                                        border: 'none',
-                                                        padding: '0 2px',
-                                                        cursor: 'pointer',
-                                                        color: '#2563eb',
+                                                        position: 'relative',
                                                         display: 'flex',
-                                                        alignItems: 'center',
-                                                        marginLeft: '2px'
+                                                        alignItems: isExpanded ? 'flex-start' : 'center',
+                                                        gap: '6px',
+                                                        maxWidth: isExpanded ? '100%' : '550px',
+                                                        width: isExpanded ? '100%' : 'auto',
+                                                        flexBasis: isExpanded ? '100%' : 'auto',
+                                                        background: isExpanded ? '#fefce8' : '#fffbeb',
+                                                        padding: isExpanded ? '6px 10px' : '3px 8px',
+                                                        borderRadius: '6px',
+                                                        border: `1px solid ${isExpanded ? '#f59e0b' : '#fde68a'}`,
+                                                        color: '#92400e',
+                                                        fontSize: '12px',
+                                                        marginLeft: isExpanded ? '0' : 'auto',
+                                                        marginTop: isExpanded ? '4px' : '0',
+                                                        cursor: 'pointer',
+                                                        boxShadow: isExpanded ? '0 2px 8px rgba(245, 158, 11, 0.15)' : 'none',
+                                                        transition: 'all 0.15s ease'
                                                     }}
-                                                    title="Chỉnh sửa hoặc thêm ghi chú mới"
+                                                    title={isExpanded ? '' : 'Nhấp để bung xem đầy đủ & copy / Rê chuột xem nhanh'}
                                                 >
-                                                    <Edit3 size={11} />
-                                                </button>
-                                            </div>
-                                        )}
+                                                    {/* Floating Quick Tooltip when Hovered & not expanded */}
+                                                    {isHovered && (
+                                                        <div 
+                                                            style={{
+                                                                position: 'absolute',
+                                                                bottom: 'calc(100% + 8px)',
+                                                                right: 0,
+                                                                minWidth: '260px',
+                                                                maxWidth: '480px',
+                                                                background: '#0f172a',
+                                                                color: '#f8fafc',
+                                                                padding: '10px 14px',
+                                                                borderRadius: '8px',
+                                                                fontSize: '12px',
+                                                                boxShadow: '0 12px 28px -4px rgba(15, 23, 42, 0.35), 0 4px 10px -2px rgba(15, 23, 42, 0.2)',
+                                                                zIndex: 100,
+                                                                whiteSpace: 'pre-wrap',
+                                                                wordBreak: 'break-word',
+                                                                lineHeight: '1.45',
+                                                                pointerEvents: 'none',
+                                                                border: '1px solid #334155'
+                                                            }}
+                                                        >
+                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', borderBottom: '1px solid #334155', paddingBottom: '4px', gap: '10px' }}>
+                                                                <span style={{ fontWeight: '700', color: '#fbbf24', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                                    📝 GHI CHÚ
+                                                                    {notif.latest_note_author && (
+                                                                        <span style={{ color: '#94a3b8', fontWeight: '500' }}>
+                                                                            • {notif.latest_note_author}
+                                                                        </span>
+                                                                    )}
+                                                                </span>
+                                                                <span style={{ fontSize: '10px', color: '#64748b' }}>
+                                                                    Click để bung cố định / copy
+                                                                </span>
+                                                            </div>
+                                                            <div style={{ color: '#e2e8f0', fontWeight: '400' }}>
+                                                                {notif.latest_note}
+                                                            </div>
+                                                            <div style={{
+                                                                position: 'absolute',
+                                                                bottom: '-5px',
+                                                                right: '20px',
+                                                                width: '10px',
+                                                                height: '10px',
+                                                                background: '#0f172a',
+                                                                borderRight: '1px solid #334155',
+                                                                borderBottom: '1px solid #334155',
+                                                                transform: 'rotate(45deg)'
+                                                            }} />
+                                                        </div>
+                                                    )}
+
+                                                    <span style={{ fontWeight: '700', color: '#b45309', display: 'flex', alignItems: 'center', gap: '3px', flexShrink: 0, marginTop: isExpanded ? '1px' : '0' }}>
+                                                        📝 Ghi chú:
+                                                    </span>
+                                                    <span style={{
+                                                        overflow: isExpanded ? 'visible' : 'hidden',
+                                                        textOverflow: isExpanded ? 'clip' : 'ellipsis',
+                                                        whiteSpace: isExpanded ? 'pre-wrap' : 'nowrap',
+                                                        wordBreak: isExpanded ? 'break-word' : 'normal',
+                                                        color: '#1e293b',
+                                                        fontWeight: '500',
+                                                        flex: 1,
+                                                        lineHeight: isExpanded ? '1.45' : 'inherit'
+                                                    }}>
+                                                        {notif.latest_note}
+                                                    </span>
+                                                    {notif.latest_note_author && (
+                                                        <span style={{ fontSize: '11px', color: '#64748b', whiteSpace: 'nowrap', flexShrink: 0, marginTop: isExpanded ? '1px' : '0' }}>
+                                                            • {notif.latest_note_author}
+                                                        </span>
+                                                    )}
+
+                                                    {isExpanded && (
+                                                        <span 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleExpandNote(noteKey);
+                                                            }}
+                                                            style={{
+                                                                fontSize: '11px',
+                                                                color: '#b45309',
+                                                                fontWeight: '600',
+                                                                cursor: 'pointer',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '2px',
+                                                                padding: '1px 6px',
+                                                                background: '#fef3c7',
+                                                                borderRadius: '4px',
+                                                                flexShrink: 0,
+                                                                border: '1px solid #fde68a',
+                                                                marginLeft: '4px'
+                                                            }}
+                                                            title="Thu gọn ghi chú"
+                                                        >
+                                                            <ChevronUp size={12} /> Thu gọn
+                                                        </span>
+                                                    )}
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setActiveNoteLeadId(notif.reference_id);
+                                                            setNoteInputText(notif.latest_note || '');
+                                                        }}
+                                                        style={{
+                                                            background: 'none',
+                                                            border: 'none',
+                                                            padding: '0 2px',
+                                                            cursor: 'pointer',
+                                                            color: '#2563eb',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            marginLeft: '2px',
+                                                            flexShrink: 0,
+                                                            marginTop: isExpanded ? '1px' : '0'
+                                                        }}
+                                                        title="Chỉnh sửa hoặc thêm ghi chú mới"
+                                                    >
+                                                        <Edit3 size={11} />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
                                 )}
                             </div>

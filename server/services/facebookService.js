@@ -239,10 +239,21 @@ const _classifyTour = async (messageText, preferredBU = null) => {
     try {
         const query = preferredBU ?
             `SELECT id, keywords, bu_group FROM tour_templates 
-             WHERE is_active = true AND keywords IS NOT NULL AND keywords != '' AND (tour_type IS NULL OR tour_type != 'Private Tour')
-             ORDER BY CASE WHEN bu_group = $1 THEN 0 ELSE 1 END, id ASC` :
+             WHERE is_active = true 
+               AND keywords IS NOT NULL 
+               AND keywords != '' 
+               AND (tour_type IS NULL OR LOWER(tour_type) NOT LIKE '%private%')
+               AND LOWER(COALESCE(code, '')) NOT LIKE '%private%'
+               AND LOWER(COALESCE(name, '')) NOT LIKE '%private%'
+               AND bu_group = $1
+             ORDER BY id ASC` :
             `SELECT id, keywords, bu_group FROM tour_templates 
-             WHERE is_active = true AND keywords IS NOT NULL AND keywords != '' AND (tour_type IS NULL OR tour_type != 'Private Tour')
+             WHERE is_active = true 
+               AND keywords IS NOT NULL 
+               AND keywords != '' 
+               AND (tour_type IS NULL OR LOWER(tour_type) NOT LIKE '%private%')
+               AND LOWER(COALESCE(code, '')) NOT LIKE '%private%'
+               AND LOWER(COALESCE(name, '')) NOT LIKE '%private%'
              ORDER BY id ASC`;
         const params = preferredBU ? [preferredBU] : [];
         const toursResult = await db.query(query, params);
@@ -415,15 +426,15 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                 let isExpired = false;
                 if (oldLead.last_contacted_at) {
                     const daysSinceLastContact = (new Date() - new Date(oldLead.last_contacted_at)) / (1000 * 60 * 60 * 24);
-                    if (daysSinceLastContact > 30) isExpired = true;
+                    if (daysSinceLastContact > 14) isExpired = true;
                 } else if (oldLead.created_at) {
                     const daysSinceCreated = (new Date() - new Date(oldLead.created_at)) / (1000 * 60 * 60 * 24);
-                    if (daysSinceCreated > 30) isExpired = true;
+                    if (daysSinceCreated > 14) isExpired = true;
                 }
 
-                // NẾU LUỒNG CŨ ĐÃ ĐÓNG (Chốt đơn/Thất bại) HOẶC QUÁ HẠN 30 NGÀY -> TẠO DEAL MỚI
+                // NẾU LUỒNG CŨ ĐÃ ĐÓNG (Chốt đơn/Thất bại) HOẶC QUÁ HẠN 14 NGÀY (2 TUẦN) -> TẠO DEAL MỚI
                 if (['Chốt đơn', 'Thất bại'].includes(oldLead.status) || isExpired) {
-                    console.log(`[WEBHOOK] Khách quen nhắn lại (Lead đã đóng hoặc quá 30 ngày): ${oldLead.name}. Đang tạo Lead mới...`);
+                    console.log(`[WEBHOOK] Khách quen nhắn lại (Lead đã đóng hoặc quá 14 ngày): ${oldLead.name}. Đang tạo Lead mới...`);
                     const newLeadResult = await db.query(
                         'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4 LIMIT 1), $5, $6) RETURNING *',
                         [oldLead.name, 'Messenger', 'Mới', sender_psid, oldLead.phone, oldLead.email]
@@ -501,16 +512,22 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                         const autoTour3 = await classifyTourFromMessage(allText, adContextText, currentBuGroup);
                         
                         if (autoTour3 && autoTour3.tour_id) {
-                            const targetBU3 = autoTour3.bu_group || currentBuGroup;
-                            const q3 = targetBU3 ? 
-                                'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
-                                'UPDATE leads SET tour_id = $1 WHERE id = $2';
-                            const params3 = targetBU3 ? 
-                                [autoTour3.tour_id, targetBU3, leadId] : 
-                                [autoTour3.tour_id, leadId];
-                            
-                            await db.query(q3, params3);
-                            console.log(`[TOUR-AUTO] Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (BU: ${targetBU3}) (từ tin nhắn tiếp theo)`);
+                            if (currentBuGroup) {
+                                // ĐÃ CÓ BU: KHÓA CỨNG BU, CHỈ CẬP NHẬT TOUR_ID
+                                await db.query('UPDATE leads SET tour_id = $1 WHERE id = $2', [autoTour3.tour_id, leadId]);
+                                console.log(`[TOUR-AUTO] Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (BU giữ nguyên: ${currentBuGroup}) (từ tin nhắn tiếp theo)`);
+                            } else {
+                                const targetBU3 = autoTour3.bu_group;
+                                const q3 = targetBU3 ? 
+                                    'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+                                    'UPDATE leads SET tour_id = $1 WHERE id = $2';
+                                const params3 = targetBU3 ? 
+                                    [autoTour3.tour_id, targetBU3, leadId] : 
+                                    [autoTour3.tour_id, leadId];
+                                
+                                await db.query(q3, params3);
+                                console.log(`[TOUR-AUTO] Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (BU mới: ${targetBU3}) (từ tin nhắn tiếp theo)`);
+                            }
                         }
                     }
                 }
@@ -1023,11 +1040,20 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                                 hasNewCustomerMsg = true;
                                 lastCustomerMessage = msg.message;
                                 // Cập nhật Lead's last_contacted_at
-                                const leadRes = await db.query('SELECT status, name, phone, email FROM leads WHERE id = $1', [currentLeadId]);
+                                const leadRes = await db.query('SELECT status, name, phone, email, last_contacted_at, created_at FROM leads WHERE id = $1', [currentLeadId]);
                                 if (leadRes.rows.length > 0) {
                                     const oldLead = leadRes.rows[0];
-                                    if (['Chốt đơn', 'Thất bại'].includes(oldLead.status)) {
-                                        console.log(`[FB POLLER] Khách Cũ (Đã Đóng) nhắn Fanpage: ${userName}. Tạo Lead mới...`);
+                                    let isExpired = false;
+                                    if (oldLead.last_contacted_at) {
+                                        const daysSinceLastContact = (new Date() - new Date(oldLead.last_contacted_at)) / (1000 * 60 * 60 * 24);
+                                        if (daysSinceLastContact > 14) isExpired = true;
+                                    } else if (oldLead.created_at) {
+                                        const daysSinceCreated = (new Date() - new Date(oldLead.created_at)) / (1000 * 60 * 60 * 24);
+                                        if (daysSinceCreated > 14) isExpired = true;
+                                    }
+
+                                    if (['Chốt đơn', 'Thất bại'].includes(oldLead.status) || isExpired) {
+                                        console.log(`[FB POLLER] Khách Cũ (Đã Đóng hoặc > 14 ngày) nhắn Fanpage: ${userName}. Tạo Lead mới...`);
                                         const newLeadResult = await db.query(
                                             'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email, fb_conversation_link, created_at) VALUES ($1, $2, $3, $4::text, $8, (SELECT id FROM customers WHERE facebook_psid = $4::text LIMIT 1), $5, $6, $7, $8) RETURNING *',
                                             [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email, fbLink, fbCreatedAt]
@@ -1126,16 +1152,22 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                             const autoTourPoller2 = await classifyTourFromMessage(allPollerText, adContextText, currentPollerBu);
                             
                             if (autoTourPoller2 && autoTourPoller2.tour_id) {
-                                const targetBUPoller2 = autoTourPoller2.bu_group || currentPollerBu;
-                                const q3 = targetBUPoller2 ? 
-                                    'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
-                                    'UPDATE leads SET tour_id = $1 WHERE id = $2';
-                                const params3 = targetBUPoller2 ? 
-                                    [autoTourPoller2.tour_id, targetBUPoller2, currentLeadId] : 
-                                    [autoTourPoller2.tour_id, currentLeadId];
-                                
-                                await db.query(q3, params3);
-                                console.log(`[TOUR-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto Tour: ${autoTourPoller2.tour_id} (BU: ${targetBUPoller2})`);
+                                if (currentPollerBu) {
+                                    // ĐÃ CÓ BU: KHÓA CỨNG BU, CHỈ CẬP NHẬT TOUR_ID
+                                    await db.query('UPDATE leads SET tour_id = $1 WHERE id = $2', [autoTourPoller2.tour_id, currentLeadId]);
+                                    console.log(`[TOUR-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto Tour: ${autoTourPoller2.tour_id} (BU giữ nguyên: ${currentPollerBu})`);
+                                } else {
+                                    const targetBUPoller2 = autoTourPoller2.bu_group;
+                                    const q3 = targetBUPoller2 ? 
+                                        'UPDATE leads SET tour_id = $1, bu_group = $2 WHERE id = $3' : 
+                                        'UPDATE leads SET tour_id = $1 WHERE id = $2';
+                                    const params3 = targetBUPoller2 ? 
+                                        [autoTourPoller2.tour_id, targetBUPoller2, currentLeadId] : 
+                                        [autoTourPoller2.tour_id, currentLeadId];
+                                    
+                                    await db.query(q3, params3);
+                                    console.log(`[TOUR-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto Tour: ${autoTourPoller2.tour_id} (BU mới: ${targetBUPoller2})`);
+                                }
                             }
                         }
                     }

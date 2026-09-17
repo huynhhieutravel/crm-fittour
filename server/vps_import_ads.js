@@ -6,8 +6,8 @@ require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 const YEAR = 2026;
 const MONTH = 9;
-const WEEK = 1;
-const FILE_NAME = 'qc-t1-t9-2026.xlsx';
+const WEEK = 2;
+const FILE_NAME = 'qc-t2-t9-2026.xlsx';
 
 async function run() {
   const pool = new Pool({
@@ -17,7 +17,8 @@ async function run() {
   const possiblePaths = [
     path.resolve(__dirname, `../data_import/bao-cao-facebook-ads/${FILE_NAME}`),
     path.resolve(__dirname, `data_import/bao-cao-facebook-ads/${FILE_NAME}`),
-    `/var/www/fittour-crm/data_import/bao-cao-facebook-ads/${FILE_NAME}`
+    `/var/www/fittour-crm/data_import/bao-cao-facebook-ads/${FILE_NAME}`,
+    `/var/www/fittour-crm/server/data_import/bao-cao-facebook-ads/${FILE_NAME}`
   ];
 
   const filePath = possiblePaths.find(p => fs.existsSync(p));
@@ -52,7 +53,7 @@ async function run() {
     const ad = (row['Tên quảng cáo'] || row['Quảng cáo'] || '').toString().trim();
     
     // Check if Total row or completely empty row
-    if (!campaign && !adSet && !ad) {
+    if (!campaign) {
       console.log(`ℹ️ Row ${idx}: Bỏ qua dòng Tổng cộng / Trống (Chi tiêu: ${row['Số tiền đã chi tiêu (VND)'] || 0})`);
       return;
     }
