@@ -92,8 +92,14 @@ scp "${VPS_USER}@${VPS_IP}:/etc/nginx/sites-available/crm-redirect.conf" "${BACK
 # Crontab & PM2
 ssh "${VPS_USER}@${VPS_IP}" "crontab -l" > "${BACKUP_PATH}/server_configs/crontab_root.txt" 2>/dev/null || true
 ssh "${VPS_USER}@${VPS_IP}" "pm2 show crm-fittour" > "${BACKUP_PATH}/server_configs/pm2_crm_info.txt" 2>/dev/null || true
+scp "${VPS_USER}@${VPS_IP}:/root/backup_crm.sh" "${BACKUP_PATH}/server_configs/backup_crm.sh" 2>/dev/null || true
 
-echo "   ✅ Cấu hình Server, Nginx, PM2, .env đã được lưu trữ an toàn."
+# SSL Certificates (LetsEncrypt)
+ssh "${VPS_USER}@${VPS_IP}" "tar -czf /tmp/letsencrypt_backup.tar.gz /etc/letsencrypt 2>/dev/null"
+scp "${VPS_USER}@${VPS_IP}:/tmp/letsencrypt_backup.tar.gz" "${BACKUP_PATH}/server_configs/letsencrypt.tar.gz" 2>/dev/null || true
+ssh "${VPS_USER}@${VPS_IP}" "rm -f /tmp/letsencrypt_backup.tar.gz"
+
+echo "   ✅ Cấu hình Server, Nginx, SSL Certs, PM2, .env đã được lưu trữ an toàn."
 
 # ------------------------------------------------------------------------------
 # BƯỚC 4: NÉN TOÀN BỘ SOURCE CODE CHUẨN
@@ -138,8 +144,10 @@ Tài liệu này hướng dẫn chi tiết cách khôi phục lại 100% hệ th
   - `server_public_uploads_*.tar.gz`: Toàn bộ hình ảnh, hộ chiếu, phiếu thu, ảnh phòng khách sạn, nhà xe, vé dịch vụ,...
 - `server_configs/`:
   - `server.env`: Cấu hình môi trường Production (Database URL, JWT Secret, Token Zalo/FB/Telegram, Port,...).
+  - `letsencrypt.tar.gz`: Toàn bộ chứng chỉ SSL Let's Encrypt của domain Production.
   - `nginx_erp.fittour.vn.conf`: Cấu hình máy chủ web Nginx cho tên miền `erp.fittour.vn`.
   - `nginx_crm-redirect.conf`: Cấu hình redirect domain cũ.
+  - `backup_crm.sh`: Script backup tự động hàng đêm tại /root/.
   - `crontab_root.txt`: Lịch chạy tác vụ tự động (Cronjob).
   - `pm2_crm_info.txt`: Thông tin tiến trình PM2.
 - `source_code/`:
@@ -279,9 +287,20 @@ UPLOADS_TAR=$(ls ${DIR}/server_uploads/*.tar.gz | head -n 1)
 mkdir -p "${TARGET_DIR}/server/public"
 tar -xzf "$UPLOADS_TAR" -C "${TARGET_DIR}/server/public"
 
-echo "4. Khôi phục file cấu hình .env..."
+echo "4. Khôi phục file cấu hình .env, Nginx và SSL..."
 cp ${DIR}/server_configs/server.env "${TARGET_DIR}/server/.env"
 cp ${DIR}/server_configs/zalo_*.json "${TARGET_DIR}/" 2>/dev/null || true
+if [ -f "${DIR}/server_configs/letsencrypt.tar.gz" ]; then
+  tar -xzf "${DIR}/server_configs/letsencrypt.tar.gz" -C /
+fi
+if [ -f "${DIR}/server_configs/nginx_erp.fittour.vn.conf" ]; then
+  cp "${DIR}/server_configs/nginx_erp.fittour.vn.conf" /etc/nginx/sites-available/erp.fittour.vn
+  ln -sf /etc/nginx/sites-available/erp.fittour.vn /etc/nginx/sites-enabled/
+fi
+if [ -f "${DIR}/server_configs/backup_crm.sh" ]; then
+  cp "${DIR}/server_configs/backup_crm.sh" /root/backup_crm.sh
+  chmod +x /root/backup_crm.sh
+fi
 
 echo "5. Cài đặt dependencies và Build..."
 cd "${TARGET_DIR}/server" && npm install --production
