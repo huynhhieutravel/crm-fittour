@@ -359,36 +359,42 @@ const getGlobalCenterLeads = async (req, res) => {
     const result = await db.query(query, params);
 
     // Map to notification format
-    const formatted = result.rows.map(l => ({
-        id: 'lead_' + l.id,
-        reference_id: l.id,
-        type: 'NEW_LEAD',
-        title: l.assigned_to_name ? `Đã nhận` : `Chờ nhận`,
-        name: l.name || 'Khách hàng',
-        customer_name: l.name || 'Khách hàng',
-        message: l.name || 'Khách hàng',
-        link: `/leads/${l.id}`,
-        is_read: !!l.assigned_to_name,
-        created_at: l.created_at,
-        last_contacted_at: l.last_contacted_at,
-        assigned_to: l.assigned_to,
-        assigned_to_name: l.assigned_to_name,
-        bu_group: l.bu_group,
-        tour_id: l.tour_id,
-        status: l.status || 'Mới',
-        latest_note: l.latest_note || (l.consultation_note && !l.consultation_note.startsWith('Facebook Message:') ? l.consultation_note : null),
-        latest_note_at: l.latest_note_at,
-        latest_note_author: l.latest_note_author,
-        notes_count: l.notes_count || (l.latest_note ? 1 : 0),
-        consultation_note: l.consultation_note,
-        phone: l.phone,
-        source: l.source || (l.facebook_psid ? 'Messenger' : (l.zalo_uid ? 'Zalo' : 'Khác')),
-        source_id: l.source_id,
-        zalo_uid: l.zalo_uid,
-        facebook_psid: l.facebook_psid,
-        is_returning_customer: l.is_returning_customer,
-        total_spent: l.total_spent
-    }));
+    const formatted = result.rows.map(l => {
+        const cleanedConsultationNote = l.consultation_note
+            ? l.consultation_note.replace(/\[AI Auto-Captured Phone:[^\]]*\]/g, '').trim()
+            : null;
+
+        return {
+            id: 'lead_' + l.id,
+            reference_id: l.id,
+            type: 'NEW_LEAD',
+            title: l.assigned_to_name ? `Đã nhận` : `Chờ nhận`,
+            name: l.name || 'Khách hàng',
+            customer_name: l.name || 'Khách hàng',
+            message: l.name || 'Khách hàng',
+            link: `/leads/${l.id}`,
+            is_read: !!l.assigned_to_name,
+            created_at: l.created_at,
+            last_contacted_at: l.last_contacted_at,
+            assigned_to: l.assigned_to,
+            assigned_to_name: l.assigned_to_name,
+            bu_group: l.bu_group,
+            tour_id: l.tour_id,
+            status: l.status || 'Mới',
+            latest_note: l.latest_note || (cleanedConsultationNote && !cleanedConsultationNote.startsWith('Facebook Message:') ? cleanedConsultationNote : null),
+            latest_note_at: l.latest_note_at,
+            latest_note_author: l.latest_note_author,
+            notes_count: l.notes_count || (l.latest_note ? 1 : 0),
+            consultation_note: cleanedConsultationNote || null,
+            phone: l.phone,
+            source: l.source || (l.facebook_psid ? 'Messenger' : (l.zalo_uid ? 'Zalo' : 'Khác')),
+            source_id: l.source_id,
+            zalo_uid: l.zalo_uid,
+            facebook_psid: l.facebook_psid,
+            is_returning_customer: l.is_returning_customer,
+            total_spent: l.total_spent
+        };
+    });
 
     res.json({
       notifications: formatted,

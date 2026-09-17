@@ -199,11 +199,10 @@ class ZaloAiService {
         const updateRes = await db.query(`
           UPDATE leads 
           SET phone = $1,
-              consultation_note = COALESCE(consultation_note, '') || E'\n[AI Auto-Captured Phone: ' || $2 || ' lúc ' || NOW() || ']',
               updated_at = NOW()
-          WHERE id = $3
+          WHERE id = $2
           RETURNING id, name, phone, bu_group, tour_id, zalo_uid
-        `, [cleanPhone, cleanPhone, leadId]);
+        `, [cleanPhone, leadId]);
         if (updateRes.rows.length > 0) {
           targetLead = updateRes.rows[0];
           targetZaloUid = targetLead.zalo_uid || targetZaloUid;
@@ -212,11 +211,10 @@ class ZaloAiService {
         const updateRes = await db.query(`
           UPDATE leads 
           SET phone = $1,
-              consultation_note = COALESCE(consultation_note, '') || E'\n[AI Auto-Captured Phone: ' || $2 || ' lúc ' || NOW() || ']',
               updated_at = NOW()
-          WHERE zalo_uid = $3
+          WHERE zalo_uid = $2
           RETURNING id, name, phone, bu_group, tour_id, zalo_uid
-        `, [cleanPhone, cleanPhone, String(zaloUid)]);
+        `, [cleanPhone, String(zaloUid)]);
         if (updateRes.rows.length > 0) {
           targetLead = updateRes.rows[0];
         }
