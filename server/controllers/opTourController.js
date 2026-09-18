@@ -1047,12 +1047,26 @@ exports.exportBU245Namelist = async (req, res) => {
       return clean;
     }
 
+    const PNR_STATUS_CODES = new Set(['HK', 'HL', 'HN', 'SS', 'SA', 'UC', 'UN', 'TK', 'GK', 'PK', 'DK', 'NN']);
+    const MONTHS = new Set(['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']);
+
+    function isFlightNumber(code, num) {
+      if (!code || !num) return false;
+      const upperCode = code.toUpperCase();
+      if (!/^[A-Z0-9]{2}$/.test(upperCode)) return false;
+      if (/^\d{2}$/.test(upperCode)) return false;
+      if (PNR_STATUS_CODES.has(upperCode)) return false;
+      if (MONTHS.has(upperCode)) return false;
+      if (!/^\d{1,4}[A-Z]?$/i.test(num)) return false;
+      return true;
+    }
+
     function parseFlightLine(line) {
       let str = String(line || '').trim();
       if (!str) return null;
       if (/^(quá cảnh|transit|chặng đi|chặng về|nơi đi|nơi đến|ghi chú)/i.test(str)) return null;
 
-      str = str.replace(/^\d+[\s.)/-]+\s*/, '').trim();
+      str = str.replace(/^\s*\d+[\s.)/-]+\s*/, '').trim();
       if (!str) return null;
 
       let flightNo = '';
@@ -1060,13 +1074,11 @@ exports.exportBU245Namelist = async (req, res) => {
       let depTime = '';
       let arrTime = '';
 
-      const headFlight = str.match(/^([A-Z0-9]{2})\s*(\d{2,4}[A-Z]?)\b/i);
-      if (headFlight) {
-        flightNo = `${headFlight[1].toUpperCase()} ${headFlight[2].toUpperCase()}`;
-      } else {
-        const anyFlight = str.match(/\b([A-Z0-9]{2})\s*(\d{2,4}[A-Z]?)\b/i);
-        if (anyFlight) {
-          flightNo = `${anyFlight[1].toUpperCase()} ${anyFlight[2].toUpperCase()}`;
+      const flightMatches = [...str.matchAll(/\b([A-Z0-9]{2})\s*(\d{1,4}[A-Z]?)\b/gi)];
+      for (const match of flightMatches) {
+        if (isFlightNumber(match[1], match[2])) {
+          flightNo = `${match[1].toUpperCase()} ${match[2].toUpperCase()}`;
+          break;
         }
       }
 
@@ -1078,7 +1090,12 @@ exports.exportBU245Namelist = async (req, res) => {
         depTime = formatFlightTime(timeColon[0]);
       } else {
         const fourDigitMatches = [...str.matchAll(/(?:^|[\s|(\[])(\d{4}(?:\s*(?:\(\s*)?\+\d+(?:\s*\))?)?)(?=[\s|)\],]|$)/g)].map(m => m[1]);
-        const timeCandidates = fourDigitMatches.filter(n => !n.startsWith('202'));
+        const flightDigits = flightNo ? flightNo.replace(/[^\d]/g, '') : '';
+        const timeCandidates = fourDigitMatches.filter(n => {
+          if (n.startsWith('202')) return false;
+          if (n === flightDigits) return false;
+          return true;
+        });
         if (timeCandidates.length >= 2) {
           depTime = formatFlightTime(timeCandidates[0]);
           arrTime = formatFlightTime(timeCandidates[1]);
@@ -1089,17 +1106,16 @@ exports.exportBU245Namelist = async (req, res) => {
 
       const joinedRoute = str.match(/\b([A-Z]{3})([A-Z]{3})\b/);
       if (joinedRoute) {
-        journey = (joinedRoute[1] + joinedRoute[2]).toUpperCase();
-      } else {
+        const origin = joinedRoute[1].toUpperCase();
+        const dest = joinedRoute[2].toUpperCase();
+        if (!MONTHS.has(origin) && !MONTHS.has(dest)) {
+          journey = origin + dest;
+        }
+      }
+      if (!journey) {
         const separatedRoute = str.match(/\b([A-Z]{3})\s*[-–—/]\s*([A-Z]{3})\b/i);
         if (separatedRoute) {
           journey = (separatedRoute[1] + separatedRoute[2]).toUpperCase();
-        } else {
-          const airportMatches = [...str.matchAll(/\b([A-Z]{3})\b/gi)].map(m => m[1].toUpperCase())
-            .filter(c => !['HK1', 'TU2', 'WE0', 'SU1', 'EUR', 'USD', 'VND', 'DEC', 'OCT', 'NOV', 'SEP', 'JUN', 'JUL', 'AUG', 'MAY', 'APR', 'MAR', 'FEB', 'JAN'].includes(c));
-          if (airportMatches.length >= 2) {
-            journey = airportMatches[0] + airportMatches[1];
-          }
         }
       }
 
@@ -1112,21 +1128,40 @@ exports.exportBU245Namelist = async (req, res) => {
 
     function extractFlightSegments(text) {
       if (!text) return [];
-      const lines = text.split(/[\r\n]+/);
+      const rawLines = text.split(/[\r\n]+/);
       const segments = [];
-      for (const line of lines) {
-        const trimmed = line.trim();
+      
+      for (const rawLine of rawLines) {
+        const trimmed = rawLine.trim();
         if (!trimmed) continue;
         
-        const subSegments = trimmed.split(/(?:\s{2,}|\s*\|\s*|\s*;\s*)(?=[A-Z0-9]{2}\s*\d{2,4})/i);
-        if (subSegments.length > 1) {
-          for (const sub of subSegments) {
-            const seg = parseFlightLine(sub);
-            if (seg && (seg.flightNo || seg.journey || seg.depTime)) segments.push(seg);
-          }
+        const flightMatches = [...trimmed.matchAll(/\b([A-Z0-9]{2})\s*(\d{1,4}[A-Z]?)\b/gi)]
+          .filter(m => isFlightNumber(m[1], m[2]));
+          
+        if (flightMatches.length > 1) {
+          const secondFlightIndex = flightMatches[1].index;
+          const part1 = trimmed.slice(0, secondFlightIndex).trim();
+          const part2 = trimmed.slice(secondFlightIndex).trim();
+          const seg1 = parseFlightLine(part1);
+          if (seg1 && seg1.flightNo) segments.push(seg1);
+          const seg2 = parseFlightLine(part2);
+          if (seg2 && seg2.flightNo) segments.push(seg2);
         } else {
           const seg = parseFlightLine(trimmed);
-          if (seg && (seg.flightNo || seg.journey || seg.depTime)) segments.push(seg);
+          if (seg) {
+            if (!seg.flightNo && (seg.depTime || seg.arrTime) && segments.length > 0) {
+              const prev = segments[segments.length - 1];
+              if (!prev.depTime && !prev.arrTime) {
+                prev.depTime = seg.depTime;
+                prev.arrTime = seg.arrTime;
+                if (seg.journey && !prev.journey) prev.journey = seg.journey;
+                continue;
+              }
+            }
+            if (seg.flightNo) {
+              segments.push(seg);
+            }
+          }
         }
       }
       return segments;
