@@ -1,5 +1,6 @@
 import { swalConfirm } from '../utils/swalHelpers';
-import { getLocalDateString } from '../utils/dateUtils';
+import { getLocalDateString, formatDateVN } from '../utils/dateUtils';
+import { formatGenderVN, formatGenderEN, formatGenderCode } from '../utils/tourHelpers';
 import Swal from 'sweetalert2';
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
@@ -10,6 +11,7 @@ import * as XLSX from 'xlsx-js-style';
 import OpTourDetailDrawer from '../components/modals/OpTourDetailDrawer';
 import OpTourAddCustomerModal from '../components/modals/OpTourAddCustomerModal';
 import OpTourBookingListModal from '../components/modals/OpTourBookingListModal';
+import { exportBU245MembersXlsx } from '../utils/bu245ExportHelper.js';
 
 const MarketFilterBar = ({ activeMarket, setActiveMarket, marketOptions, children }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -276,33 +278,59 @@ export default function OpToursTab({ currentUser }) {
       bookings.forEach(b => {
         const st = b.status || '';
         if (st.includes('uỷ') || st.includes('ủy') || st.includes('Huỷ') || st.includes('Hủy')) return;
-        const members = b.raw_details?.members || [];
-        const pricingRows = b.raw_details?.pricingRows || [];
+        const raw = b.raw_details || {};
+        const bInfo = raw.bookingInfo || {};
+        const bookerGender = bInfo.gender || b.gender || '';
+        const members = raw.members || [];
+        const pricingRows = raw.pricingRows || [];
         const totalQty = b.qty || pricingRows.reduce((s, r) => s + Number(r.qty || 0), 0) || members.length;
         const salesName = b.created_by_name || 'Sales';
-        const tourPrice = (pricingRows && pricingRows.length > 0) ? pricingRows[0].price : (b.raw_details?.price_adult || 0);
+        const tourPrice = (pricingRows && pricingRows.length > 0) ? pricingRows[0].price : (raw.price_adult || 0);
         const internalNote = pricingRows[0]?.internalNote || '';
         const custNote = pricingRows[0]?.note || '';
         const bNoteCombined = [internalNote, custNote].filter(Boolean).join(' | ');
 
-        members.forEach((m, mIdx) => {
-          allMembers.push({ 
-            ...m, 
-            bookerName: b.name || '---', 
+        if (members.length === 0) {
+          allMembers.push({
+            name: b.name || bInfo.name || 'Khách',
+            phone: b.phone || bInfo.phone || '',
+            gender: bookerGender,
+            bookerGender: bookerGender,
+            bookerName: b.name || '---',
             bookingId: b.id,
-            isBooker: mIdx === 0,
+            isBooker: true,
             numSlots: totalQty,
             salesPerson: salesName,
-            bTotal: mIdx === 0 ? (b.total || 0) : '',
-            bTourPrice: mIdx === 0 ? tourPrice : '',
-            bPaid: mIdx === 0 ? (b.paid || 0) : '',
-            bRemaining: mIdx === 0 ? ((Number(b.total) || 0) - (Number(b.paid) || 0)) : '',
+            bTotal: b.total || 0,
+            bTourPrice: tourPrice,
+            bPaid: b.paid || 0,
+            bRemaining: (Number(b.total) || 0) - (Number(b.paid) || 0),
             bStatus: b.status || 'Giữ chỗ',
-            bNote: (mIdx === 0 && bNoteCombined) 
-                    ? (bNoteCombined + (m.note ? ` - ${m.note}` : ''))
-                    : (m.note || ''),
+            bNote: bNoteCombined || ''
           });
-        });
+        } else {
+          members.forEach((m, mIdx) => {
+            const effGender = (m.gender && m.gender !== 'Chọn' && m.gender !== '---') ? m.gender : (mIdx === 0 ? bookerGender : '');
+            allMembers.push({ 
+              ...m, 
+              gender: effGender,
+              bookerGender: bookerGender,
+              bookerName: b.name || '---', 
+              bookingId: b.id,
+              isBooker: mIdx === 0,
+              numSlots: totalQty,
+              salesPerson: salesName,
+              bTotal: mIdx === 0 ? (b.total || 0) : '',
+              bTourPrice: mIdx === 0 ? tourPrice : '',
+              bPaid: mIdx === 0 ? (b.paid || 0) : '',
+              bRemaining: mIdx === 0 ? ((Number(b.total) || 0) - (Number(b.paid) || 0)) : '',
+              bStatus: b.status || 'Giữ chỗ',
+              bNote: (mIdx === 0 && bNoteCombined) 
+                      ? (bNoteCombined + (m.note ? ` - ${m.note}` : ''))
+                      : (m.note || ''),
+            });
+          });
+        }
       });
       setViewingAllMembers({ tour, allMembers });
     } catch(err) {
@@ -382,15 +410,15 @@ export default function OpToursTab({ currentUser }) {
       wsData.push([
         i + 1,
         formatName(m.name),
-        m.gender || '',
-        m.dob || '',
+        formatGenderEN((m.gender && m.gender !== 'Chọn' && m.gender !== '---') ? m.gender : (m.isBooker ? m.bookerGender : '')) || '',
+        formatDateVN(m.dob),
         m.docId || '',
-        m.expiryDate || '',
+        formatDateVN(m.expiryDate),
         m.nationality || '',
         m.phone || '',
         m.roomCode || '',
         m.ageType || '',
-        m.issueDate || '',
+        formatDateVN(m.issueDate),
         m.salesPerson || '',
         m.bTotal !== '' ? Number(m.bTotal) : '',
         m.bTourPrice !== '' ? Number(m.bTourPrice) : '',
@@ -568,12 +596,32 @@ export default function OpToursTab({ currentUser }) {
 
     const formatToYYYYMMDD = (dateStr) => {
        if (!dateStr) return '';
-       const parts = dateStr.includes('/') ? dateStr.split('/') : dateStr.includes('-') ? dateStr.split('-') : [];
-       if (parts.length === 3) {
-          if (parts[2].length === 4) return `${parts[2]}${parts[1]}${parts[0]}`; // DD/MM/YYYY
-          if (parts[0].length === 4) return `${parts[0]}${parts[1]}${parts[2]}`; // YYYY-MM-DD
+       const str = String(dateStr).trim();
+       if (!str || str === '---') return '';
+       
+       const ymd = str.match(/^(\d{4})[-/. ](\d{1,2})[-/. ](\d{1,2})/);
+       if (ymd) {
+         const [, y, m, d] = ymd;
+         return `${y}${m.padStart(2, '0')}${d.padStart(2, '0')}`;
        }
-       return dateStr.replace(/[-/]/g, '');
+       
+       const dmy = str.match(/^(\d{1,2})[-/. ](\d{1,2})[-/. ](\d{4})/);
+       if (dmy) {
+         const [, d, m, y] = dmy;
+         return `${y}${m.padStart(2, '0')}${d.padStart(2, '0')}`;
+       }
+       
+       try {
+         const dt = new Date(str);
+         if (!isNaN(dt.getTime())) {
+           const y = dt.getFullYear();
+           const m = String(dt.getMonth() + 1).padStart(2, '0');
+           const d = String(dt.getDate()).padStart(2, '0');
+           return `${y}${m}${d}`;
+         }
+       } catch(e) {}
+       
+       return str.replace(/[^\d]/g, '').slice(0, 8);
     };
 
     const formatName = (str) => {
@@ -596,7 +644,8 @@ export default function OpToursTab({ currentUser }) {
         }
       }
 
-      const gender = m.gender === 'Nam' ? 'M' : m.gender === 'Nữ' ? 'F' : '';
+      const rawGender = (m.gender && m.gender !== 'Chọn' && m.gender !== '---') ? m.gender : (m.isBooker ? m.bookerGender : '') || m.bookerGender || '';
+      const gender = formatGenderCode(rawGender);
       const dob = formatToYYYYMMDD(m.dob);
       const doe = formatToYYYYMMDD(m.expiryDate);
       const rooming = m.roomCode || '';
@@ -1654,10 +1703,11 @@ export default function OpToursTab({ currentUser }) {
                   <Download size={16} /> Tải DS Tour TQ
                 </button>
                 <button 
-                  onClick={exportAllMembersXlsx}
-                  style={{ background: '#ef4444', color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                  onClick={() => exportBU245MembersXlsx({ tour: viewingAllMembers.tour, members: viewingAllMembers.allMembers })}
+                  style={{ background: '#ea580c', color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                  title="Tải danh sách khách theo mẫu chuẩn quốc tế cho tour BU2, BU4, BU5"
                 >
-                  <Download size={16} /> Tải xuống danh sách
+                  <Download size={16} /> Tải Xuống DS (Tour BU2,4,5)
                 </button>
                 <button onClick={() => setViewingAllMembers(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
                   <X size={22} color="#64748b" />
@@ -1694,7 +1744,11 @@ export default function OpToursTab({ currentUser }) {
                          {(m.customerSegment || (m.tripCount > 0)) ? (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                                <span style={{
-                                  padding: '2px 6px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap',
+                                  padding: (m.customerSegment === 'New Customer' || !m.customerSegment) ? '1px 5px' : '2px 6px',
+                                  borderRadius: '10px',
+                                  fontSize: (m.customerSegment === 'New Customer' || !m.customerSegment) ? '9px' : '10px',
+                                  fontWeight: 700,
+                                  whiteSpace: 'nowrap',
                                   ...(m.customerSegment === 'VIP 1' ? { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' } : 
                                       m.customerSegment === 'VIP 2' ? { background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' } : 
                                       m.customerSegment === 'VIP 3' ? { background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' } : 
@@ -1706,21 +1760,23 @@ export default function OpToursTab({ currentUser }) {
                                    m.customerSegment === 'VIP 3' ? '⭐ VIP 3' :
                                    m.customerSegment || 'Khách Cũ'}
                                </span>
-                               {m.tripCount > 0 && <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>{m.tripCount} chuyến</span>}
+                               {m.tripCount > 0 && <span style={{ fontSize: '9px', color: '#64748b', fontWeight: 600 }}>{m.tripCount} chuyến</span>}
                             </div>
                          ) : m.phone ? (
-                            <span style={{ padding: '2px 6px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>Khách mới</span>
+                            <span style={{ padding: '1px 5px', borderRadius: '10px', fontSize: '9px', fontWeight: 700, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>Khách mới</span>
                          ) : null}
                       </td>
-                      <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{m.gender || ''}</td>
-                      <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{m.dob || ''}</td>
+                      <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>
+                        {formatGenderVN((m.gender && m.gender !== 'Chọn' && m.gender !== '---') ? m.gender : (m.isBooker ? m.bookerGender : ''), '---')}
+                      </td>
+                      <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{formatDateVN(m.dob)}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{m.docId || ''}</td>
-                      <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{m.expiryDate || ''}</td>
+                      <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{formatDateVN(m.expiryDate)}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{m.nationality || ''}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'center', color: '#6366f1', borderRight: '1px solid #f1f5f9' }}>{m.phone || ''}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{m.roomCode || ''}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', borderRight: '1px solid #f1f5f9' }}>{m.ageType || ''}</td>
-                      <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{m.issueDate || ''}</td>
+                      <td style={{ padding: '8px 6px', textAlign: 'center', borderRight: '1px solid #f1f5f9' }}>{formatDateVN(m.issueDate)}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', borderRight: '1px solid #f1f5f9' }}>{m.salesPerson || ''}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'right', fontWeight: m.bTotal !== '' ? 700 : 400, borderRight: '1px solid #f1f5f9' }}>{m.bTotal !== '' ? fmtMoney(m.bTotal) : ''}</td>
                       <td style={{ padding: '8px 6px', textAlign: 'right', borderRight: '1px solid #f1f5f9' }}>{m.bTourPrice ? fmtMoney(m.bTourPrice) : ''}</td>

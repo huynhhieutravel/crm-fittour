@@ -8,12 +8,14 @@ import { scanPassportImage } from '../../utils/passportOcr';
 import { loadPdfDocument, renderPdfPageToCanvas } from '../../utils/pdfToImages';
 import * as XLSX from 'xlsx';
 import { toast } from 'react-hot-toast';
+import { formatGenderVN } from '../../utils/tourHelpers';
 
 export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initialData, currentUser, tour }) {
   // Auto-generate B-XXXX (4-5 digits) for a new booking code
   const generateReservationCode = () => `B-${Math.floor(10000 + Math.random() * 90000)}`;
 
   const [bookingInfo, setBookingInfo] = useState({
+    customerId: null,
     search: '',
     name: '',
     phone: '',
@@ -134,7 +136,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
          }
 
          const rawGender = row[genderIdx] ? String(row[genderIdx]).trim().toUpperCase() : '';
-         const gender = rawGender === 'M' ? 'Nam' : (rawGender === 'F' ? 'Nữ' : 'Chọn');
+         const gender = rawGender === 'M' ? 'Nam' : (rawGender === 'F' ? 'Nữ' : (rawGender === 'NAM' ? 'Nam' : (rawGender === 'NỮ' || rawGender === 'NU' ? 'Nữ' : '')));
          const dob = parseDateFromExcel(row[dobIdx]);
          const docId = row[passIdx] ? String(row[passIdx]).trim() : '';
          const issueDate = parseDateFromExcel(row[doiIdx]);
@@ -184,7 +186,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                   issueDate: existing.issueDate || m.issueDate,
                   expiryDate: existing.expiryDate || m.expiryDate,
                   roomCode: existing.roomCode || m.roomCode,
-                  gender: (existing.gender === 'Chọn' || !existing.gender) ? m.gender : existing.gender,
+                  gender: formatGenderVN(existing.gender) || formatGenderVN(m.gender) || '',
                };
             } else {
                // Không trùng -> Tìm dòng trống từ dòng #2 trở đi (bảo vệ dòng #1 Booker)
@@ -275,7 +277,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                   if (targetIdx === -1) {
                     updated.push({
                       id: Date.now() + Math.floor(Math.random() * 1000),
-                      phone: '', name: '', email: '', ageType: 'Người lớn', gender: 'Chọn',
+                      phone: '', name: '', email: '', ageType: 'Người lớn', gender: '',
                       dob: '', docType: 'Hộ chiếu', docId: '', issueDate: '', expiryDate: '', passportUrl: '',
                       flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
                       note: '', roomType: '-Chọn-', hotel: '', roomCode: '', customerSegment: '', tripCount: 0, crmNote: ''
@@ -289,7 +291,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                   }
                   if (scanResult.gender) {
                     const g = scanResult.gender.toUpperCase();
-                    targetM.gender = g === 'M' ? 'Nam' : (g === 'F' ? 'Nữ' : 'Chọn');
+                    targetM.gender = g === 'M' ? 'Nam' : (g === 'F' ? 'Nữ' : '');
                   }
                   if (scanResult.dobDisplay) {
                     const [dd, mm, yyyy] = scanResult.dobDisplay.split('/');
@@ -345,7 +347,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
             if (targetIdx === -1) {
               updated.push({
                 id: Date.now(),
-                phone: '', name: '', email: '', ageType: 'Người lớn', gender: 'Chọn',
+                phone: '', name: '', email: '', ageType: 'Người lớn', gender: '',
                 dob: '', docType: 'Hộ chiếu', docId: '', issueDate: '', expiryDate: '', passportUrl: '',
                 flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
                 note: '', roomType: '-Chọn-', hotel: '', roomCode: '', customerSegment: '', tripCount: 0, crmNote: ''
@@ -360,7 +362,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
               }
               if (scanResult.gender) {
                 const g = scanResult.gender.toUpperCase();
-                targetM.gender = g === 'M' ? 'Nam' : (g === 'F' ? 'Nữ' : 'Chọn');
+                targetM.gender = g === 'M' ? 'Nam' : (g === 'F' ? 'Nữ' : '');
               }
               if (scanResult.dobDisplay) {
                 const [dd, mm, yyyy] = scanResult.dobDisplay.split('/');
@@ -522,6 +524,67 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
     }
   };
 
+  const selectCustomer = (cust) => {
+    if (!cust) return;
+    const parseJSON = (str) => {
+      try { return typeof str === 'string' ? JSON.parse(str || '[]') : (str || []); } catch(e) { return []; }
+    };
+
+    const custGender = formatGenderVN(cust.gender) || 'Nữ';
+
+    setBookingInfo(prev => ({
+      ...prev,
+      customerId: cust.id,
+      search: cust.phone || cust.name || '',
+      name: cust.name || '',
+      phone: cust.phone || '',
+      gender: custGender,
+      crmNote: cust.ghi_chu || cust.internal_notes || cust.latest_note || '',
+      customerSegment: cust.customer_segment || '',
+      tripCount: cust.total_trip_count || cust.crm_trip_count || 0,
+      insights: {
+        destinations: parseJSON(cust.destinations),
+        experiences: parseJSON(cust.experiences),
+        travelStyles: parseJSON(cust.travel_styles),
+        internalNotes: cust.internal_notes || '',
+        specialRequests: cust.special_requests || ''
+      }
+    }));
+    
+    // Auto fill first member without destroying other slots
+    setMembers(prev => {
+      const newMembers = [...prev];
+      const memberData = {
+        customerId: cust.id || null,
+        phone: cust.phone || '', 
+        name: cust.name || '', 
+        gender: custGender,
+        dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : '', 
+        docId: cust.id_card || '', 
+        expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : '',
+        passportUrl: cust.passport_url || '',
+        customerSegment: cust.customer_segment || '',
+        tripCount: cust.total_trip_count || cust.crm_trip_count || 0,
+        crmNote: cust.ghi_chu || cust.internal_notes || cust.latest_note || ''
+      };
+      
+      if (newMembers.length > 0) {
+        newMembers[0] = { ...newMembers[0], ...memberData };
+      } else {
+        newMembers.push({
+          id: Date.now(),
+          ageType: 'Người lớn', docType: 'CMTND', issueDate: '',
+          flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
+          note: '', roomType: '-Chọn-', hotel: '', roomCode: '',
+          ...memberData
+        });
+      }
+      return newMembers;
+    });
+  };
+
+  const handleSelectCustomer = selectCustomer;
+
   const handleCreateQuickCustomer = async () => {
     if (!quickAddName.trim()) {
       toast.error("Vui lòng nhập Tên hoặc Nick của khách hàng!");
@@ -548,74 +611,21 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   };
 
   const loadCustomerOptions = async (inputValue) => {
-     if (!inputValue || inputValue.trim().length < 2) return [];
+     if (!inputValue || inputValue.trim().length < 1) return [];
      try {
-       const res = await axios.get('/api/customers?search=' + encodeURIComponent(inputValue), {
+       const res = await axios.get('/api/customers?search=' + encodeURIComponent(inputValue.trim()), {
          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
        });
        const data = res.data?.data || res.data;
-       return data.map(c => ({
+       return Array.isArray(data) ? data.map(c => ({
          value: c.id,
          label: `${c.name}${c.phone ? ' - ' + c.phone : (c.id_card ? ' - HC:' + c.id_card : '')}`,
          customer: c
-       }));
+       })) : [];
      } catch (err) {
        console.error("Lỗi tải DS khách hàng:", err);
        return [];
      }
-  };
-
-
-  const selectCustomer = (cust) => {
-    const parseJSON = (str) => {
-      try { return typeof str === 'string' ? JSON.parse(str || '[]') : (str || []); } catch(e) { return []; }
-    };
-
-    setBookingInfo({
-      ...bookingInfo,
-      customerId: cust.id,
-      search: cust.phone || cust.name || '',
-      name: cust.name || '',
-      phone: cust.phone || '',
-      gender: cust.gender || 'Nữ',
-      crmNote: cust.ghi_chu || '',
-      customerSegment: cust.customer_segment || '',
-      tripCount: cust.total_trip_count || 0,
-      insights: {
-        destinations: parseJSON(cust.destinations),
-        experiences: parseJSON(cust.experiences),
-        travelStyles: parseJSON(cust.travel_styles),
-        internalNotes: cust.internal_notes || '',
-        specialRequests: cust.special_requests || ''
-      }
-    });
-    
-    // Auto fill first member without destroying other slots
-    setMembers(prev => {
-      const newMembers = [...prev];
-      const memberData = {
-        phone: cust.phone || '', name: cust.name || '', gender: cust.gender || 'Chọn',
-        dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '', docId: cust.id_card || '', 
-        expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
-        passportUrl: cust.passport_url || '',
-        customerSegment: cust.customer_segment || '',
-        tripCount: cust.total_trip_count || 0,
-        crmNote: cust.ghi_chu || ''
-      };
-      
-      if (newMembers.length > 0) {
-        newMembers[0] = { ...newMembers[0], ...memberData };
-      } else {
-        newMembers.push({
-          id: Date.now(),
-          ageType: 'Adult - Ngu...', docType: 'CMTND', issueDate: '',
-          flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
-          note: '', roomType: '-Chọn-', hotel: '', roomCode: '',
-          ...memberData
-        });
-      }
-      return newMembers;
-    });
   };
 
   const getDefaultPricingRows = () => {
@@ -644,13 +654,21 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
     if (isOpen) {
        if (initialData) {
           const raw = initialData.raw_details || {};
-          setBookingInfo(raw.bookingInfo || {
-            search: initialData.phone || initialData.name || '', 
-            name: initialData.name || '', 
-            phone: initialData.phone || '', 
-            agentTA: 'Chọn', agentCode: '',
-            gender: 'Nữ', reservationCode: generateReservationCode(), pickup: '', dropoff: '',
-            bank: 'Chọn', branch: 'Chi Nhánh'
+          const rawBookingInfo = raw.bookingInfo || {};
+          setBookingInfo({
+            ...rawBookingInfo,
+            customerId: rawBookingInfo.customerId || initialData.customer_id || null,
+            search: rawBookingInfo.search || initialData.phone || initialData.name || '', 
+            name: rawBookingInfo.name || initialData.name || '', 
+            phone: rawBookingInfo.phone || initialData.phone || '', 
+            agentTA: rawBookingInfo.agentTA || 'Chọn', 
+            agentCode: rawBookingInfo.agentCode || '',
+            gender: rawBookingInfo.gender || 'Nữ', 
+            reservationCode: rawBookingInfo.reservationCode || initialData.booking_code || generateReservationCode(), 
+            pickup: rawBookingInfo.pickup || '', 
+            dropoff: rawBookingInfo.dropoff || '',
+            bank: rawBookingInfo.bank || 'Chọn', 
+            branch: rawBookingInfo.branch || 'Chi Nhánh'
           });
           const initialRows = raw.pricingRows || [
             { id: 1, ageType: 'Người lớn', name: '', price: Number(initialData.base_price) || Number(tour?.tour_info?.price_adult) || 25490000, qty: Number(initialData.qty) || 1, surcharge: Number(initialData.surcharge) || 0, discount: Number(initialData.discount) || 0, comPerPax: 0, comCTV: 0, total: Number(initialData.total) || Number(tour?.tour_info?.price_adult) || 25490000, internalNote: '', customerNote: '', extraServices: [] },
@@ -659,10 +677,15 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
             { id: 4, ageType: 'Em bé (<2)', name: '', price: Number(tour?.tour_info?.price_infant) || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
           ];
           setPricingRows(initialRows.map(r => ({ ...r, extraServices: r.extraServices || [] })));
-          setMembers(raw.members || []);
+          const existingMembers = (raw.members || []).map((m, idx) => {
+            const effGender = (m.gender && m.gender !== 'Chọn' && m.gender !== '---') ? m.gender : (idx === 0 ? (rawBookingInfo.gender || 'Nữ') : '');
+            return { ...m, gender: effGender };
+          });
+          setMembers(existingMembers);
           setPaidAmount(Number(initialData.paid) || 0);
        } else {
           setBookingInfo({
+            customerId: null,
             search: '', name: '', phone: '', agentTA: 'Chọn', agentCode: '',
             gender: 'Nữ', reservationCode: generateReservationCode(), pickup: '', dropoff: '',
             bank: 'Chọn', branch: 'Chi Nhánh'
@@ -830,30 +853,36 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
     }));
   };
 
+  // Adjust member slots according to pricingRows counts (adults, children, infants)
   useEffect(() => {
-    // Generate required ageTypes array based on pricingRows
+    if (!pricingRows || pricingRows.length === 0) return;
+    
+    // Build required slots list based on quantities
     const requiredAgeTypes = [];
     pricingRows.forEach(row => {
-      const q = Number(row.qty || 0);
-      for (let i = 0; i < q; i++) {
+      const qty = parseInt(row.qty || 0);
+      for (let i = 0; i < qty; i++) {
         requiredAgeTypes.push(row.ageType);
       }
     });
-    
+
     const totalQty = requiredAgeTypes.length;
+    if (totalQty === 0) return;
 
     setMembers(prev => {
-      if (totalQty === 0) return [];
-      
       const newMembers = [...prev];
       
       for (let i = 0; i < totalQty; i++) {
         if (newMembers[i]) {
           newMembers[i].ageType = requiredAgeTypes[i];
+          if (i === 0 && (!newMembers[0].gender || newMembers[0].gender === 'Chọn')) {
+            newMembers[0].gender = bookingInfo.gender || 'Nữ';
+          }
         } else {
           newMembers.push({
             id: Date.now() + i,
-            phone: '', name: '', email: '', ageType: requiredAgeTypes[i], gender: 'Chọn',
+            phone: '', name: '', email: '', ageType: requiredAgeTypes[i], 
+            gender: i === 0 ? (bookingInfo.gender || 'Nữ') : '',
             dob: '', docType: 'CMTND', docId: '', issueDate: '', expiryDate: '',
             flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
             note: '', roomType: '-Chọn-', hotel: '', roomCode: ''
@@ -871,7 +900,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   const addMember = () => {
     setMembers(prev => [...prev, {
       id: Date.now(),
-      phone: '', name: '', email: '', ageType: 'Người lớn', gender: 'Chọn',
+      phone: '', name: '', email: '', ageType: 'Người lớn', gender: '',
       dob: '', docType: 'CMTND', docId: '', issueDate: '', expiryDate: '',
       flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
       note: '', roomType: '-Chọn-', hotel: '', roomCode: ''
@@ -883,27 +912,28 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   };
 
   const handleMemberPhoneBlur = async (id, phone) => {
-    if (!phone || phone.trim().length < 8) return;
+    if (!phone || phone.trim().length < 9) return;
     try {
-      const res = await axios.get('/api/customers?search=' + encodeURIComponent(phone.trim()), {
+      const res = await axios.get(`/api/customers?search=${encodeURIComponent(phone.trim())}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const data = res.data?.data || res.data;
-      if (data && data.length > 0) {
+      if (Array.isArray(data) && data.length > 0) {
         // Auto match the first customer exactly by phone
-        const cust = data.find(c => c.phone && c.phone.includes(phone.trim())) || data[0];
+        const cleanPhone = phone.replace(/[\s\-\.]/g, '');
+        const cust = data.find(c => c.phone && c.phone.replace(/[\s\-\.]/g, '').includes(cleanPhone)) || data[0];
         setMembers(prev => prev.map(m => {
           if (m.id === id && cust) {
              return {
                 ...m,
                 name: cust.name || m.name,
                 email: cust.email || m.email,
-                gender: cust.gender || m.gender,
-                dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : m.dob,
+                gender: formatGenderVN(cust.gender) || formatGenderVN(m.gender) || '',
+                dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : m.dob,
                 docType: cust.id_card ? 'CMTND' : m.docType,
                 docId: cust.id_card || m.docId,
-                expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : m.expiryDate,
-                crmNote: cust.ghi_chu || '',
+                expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : m.expiryDate,
+                crmNote: cust.ghi_chu || cust.internal_notes || cust.latest_note || '',
                 customerId: cust.id || null,
                 tripCount: parseInt(cust.total_trips || cust.crm_trip_count || 0),
                 customerSegment: cust.customer_segment || '',
@@ -946,6 +976,11 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
     const totalSurcharge = pricingRows.reduce((sum, r) => sum + Number(r.surcharge), 0);
     const totalDiscount = pricingRows.reduce((sum, r) => sum + Number(r.discount), 0);
 
+    const finalMembers = (members || []).map((m, idx) => {
+      const effGender = (m.gender && m.gender !== 'Chọn' && m.gender !== '---') ? m.gender : (idx === 0 ? (bookingInfo.gender || 'Nam') : '');
+      return { ...m, gender: effGender };
+    });
+
     const customerData = {
       id: initialData?.id, // ID is preserved if editing
       customer_id: bookingInfo.customerId || initialData?.customer_id,
@@ -961,7 +996,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       status: (paidAmount > 0 && paidAmount < totalPrice) ? 'Đã đặt cọc' : (paidAmount >= totalPrice && totalPrice > 0 ? 'Đã thanh toán' : (initialData?.status || 'HELD')),
       created_by: selectedSalesId,
       created_by_name: salesList.find(u => u.id == selectedSalesId)?.full_name || currentUser?.full_name || 'Sales',
-      raw_details: { bookingInfo, pricingRows, members } // Lưu tất cả data gốc dưới dạng JSONB
+      raw_details: { bookingInfo, pricingRows, members: finalMembers } // Lưu tất cả data gốc dưới dạng JSONB
     };
 
     onSave(customerData);
@@ -1040,13 +1075,28 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                 ) : (
                    <AsyncSelect
                       cacheOptions
+                      isClearable
                       loadOptions={loadCustomerOptions}
                       defaultOptions={false}
                       placeholder="Tìm khách hàng (Tên hoặc SĐT)..."
                       value={bookingInfo.customerId ? { value: bookingInfo.customerId, label: bookingInfo.name + (bookingInfo.phone ? ` - ${bookingInfo.phone}` : '') } : null}
-                      onChange={(selectedOption) => {
-                         if (selectedOption) selectCustomer(selectedOption.customer);
-                      }}
+                       onChange={(selectedOption) => {
+                          if (selectedOption && selectedOption.customer) {
+                             selectCustomer(selectedOption.customer);
+                          } else {
+                             setBookingInfo(prev => ({
+                                ...prev,
+                                customerId: null,
+                                name: '',
+                                phone: '',
+                                search: '',
+                                crmNote: '',
+                                customerSegment: '',
+                                tripCount: 0,
+                                insights: null
+                             }));
+                          }
+                       }}
                       noOptionsMessage={({ inputValue }) => {
                          if (!inputValue) return "Gõ để tìm kiếm...";
                          return (
@@ -1100,9 +1150,22 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
              </div>
              <div>
                 <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px' }}>Giới tính:</label>
-                <select value={bookingInfo.gender} onChange={e => setBookingInfo({...bookingInfo, gender: e.target.value})} style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }}>
-                   <option>Nữ</option>
-                   <option>Nam</option>
+                <select 
+                   value={formatGenderVN(bookingInfo.gender) || 'Nữ'} 
+                   onChange={e => {
+                     const newG = e.target.value;
+                     setBookingInfo(prev => ({ ...prev, gender: newG }));
+                     setMembers(prev => {
+                       if (!prev || prev.length === 0) return prev;
+                       const next = [...prev];
+                       next[0] = { ...next[0], gender: newG };
+                       return next;
+                     });
+                   }} 
+                   style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }}
+                >
+                   <option value="Nữ">Nữ</option>
+                   <option value="Nam">Nam</option>
                 </select>
              </div>
              <div>
@@ -1461,7 +1524,10 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                         {(m.customerSegment || (m.tripCount > 0)) ? (
                            <>
                               <span style={{
-                                 padding: '2px 6px', borderRadius: '10px', fontSize: '10px', fontWeight: 700,
+                                 padding: (m.customerSegment === 'New Customer' || !m.customerSegment) ? '1px 5px' : '2px 6px',
+                                 borderRadius: '10px',
+                                 fontSize: (m.customerSegment === 'New Customer' || !m.customerSegment) ? '9px' : '10px',
+                                 fontWeight: 700,
                                  ...(m.customerSegment === 'VIP 1' ? { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' } : 
                                      m.customerSegment === 'VIP 2' ? { background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a' } : 
                                      m.customerSegment === 'VIP 3' ? { background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe' } : 
@@ -1476,7 +1542,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                               {m.tripCount > 0 && <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>{m.tripCount} chuyến</span>}
                            </>
                         ) : (
-                           <span style={{ padding: '2px 6px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0' }}>Khách mới</span>
+                            <span style={{ padding: '1px 5px', borderRadius: '10px', fontSize: '9px', fontWeight: 700, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0' }}>Khách mới</span>
                         )}
 
                         {m.crmNote && (
@@ -1515,8 +1581,8 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                   </div>
                   <div style={{ width: '70px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Giới tính:</label>
-                     <select value={m.gender} onChange={e => handleMemberChange(m.id, 'gender', e.target.value)} disabled={scanningPassportId === m.id} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: scanningPassportId === m.id ? '#f8fafc' : 'white' }}>
-                        <option>Chọn</option><option>Nữ</option><option>Nam</option>
+                     <select value={formatGenderVN(m.gender)} onChange={e => handleMemberChange(m.id, 'gender', e.target.value)} disabled={scanningPassportId === m.id} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: scanningPassportId === m.id ? '#f8fafc' : 'white' }}>
+                        <option value="">-- Chọn --</option><option value="Nữ">Nữ</option><option value="Nam">Nam</option>
                      </select>
                   </div>
                   <div style={{ width: '120px', flexShrink: 0 }}>

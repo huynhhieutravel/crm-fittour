@@ -59,6 +59,9 @@ ssh ${VPS_USER}@${VPS_IP} << 'EOF'
 
     echo "✅ Phân quyền hoàn tất!"
     
+    echo "📦 Cập nhật dependencies cho server..."
+    (cd /var/www/fittour-crm/server && npm install --omit=dev)
+
     echo "🔄 Khởi động lại PM2..."
     # Không dùng --update-env mặc định trừ khi người dùng cố tình cập nhật env
     pm2 restart crm-fittour

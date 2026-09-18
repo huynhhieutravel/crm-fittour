@@ -45,3 +45,32 @@ export const getLocalDateString = (date = new Date()) => {
     const p = getVNTimeParts(date);
     return p ? `${p.year}-${p.month}-${p.day}` : '';
 };
+
+// 4. Trả về định dạng hiển thị cho người dùng: 'DD/MM/YYYY'
+export const formatDateVN = (dateStr) => {
+    if (!dateStr) return '';
+    const str = String(dateStr).trim();
+    if (!str || str === '---') return '';
+
+    // Khớp YYYY-MM-DD, YYYY/MM/DD, YYYY.MM.DD (kèm thời gian nếu có)
+    const ymdMatch = str.match(/^(\d{4})[-/. ](\d{1,2})[-/. ](\d{1,2})/);
+    if (ymdMatch) {
+        const [, y, m, d] = ymdMatch;
+        return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+    }
+
+    // Khớp DD-MM-YYYY, DD/MM/YYYY, DD.MM.YYYY
+    const dmyMatch = str.match(/^(\d{1,2})[-/. ](\d{1,2})[-/. ](\d{4})/);
+    if (dmyMatch) {
+        const [, d, m, y] = dmyMatch;
+        return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+    }
+
+    // Fallback nếu là chuỗi datetime khác parse được
+    try {
+        const p = getVNTimeParts(str);
+        if (p) return `${p.day}/${p.month}/${p.year}`;
+    } catch (e) {}
+
+    return str;
+};

@@ -385,7 +385,7 @@ exports.getDataIntegrityAudit = async (req, res) => {
                 FROM bookings b
                 LEFT JOIN customers c ON b.customer_id = c.id
                 LEFT JOIN tour_departures td ON b.tour_departure_id = td.id
-                LEFT JOIN tour_templates tt ON COALESCE(b.tour_template_id, td.tour_template_id, b.tour_id) = tt.id
+                LEFT JOIN tour_templates tt ON COALESCE(td.tour_template_id, b.tour_id) = tt.id
                 WHERE (b.customer_id IS NULL OR c.id IS NULL)
                   AND b.booking_status NOT IN ('Huỷ', 'CANCELLED')
                 ORDER BY b.created_at DESC

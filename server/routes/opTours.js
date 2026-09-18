@@ -25,4 +25,8 @@ router.put('/:id/bookings/:bookingId', authenticateToken, permCheckAny([['bookin
 router.put('/:id/bookings/:bookingId/transfer', authenticateToken, permCheckAny([['bookings','edit_all'], ['bookings','edit_own']]), controller.transferOpTourBooking);
 router.delete('/:id/bookings/:bookingId', authenticateToken, permCheck('bookings', 'delete'), controller.deleteOpTourBooking);
 
+// Export BU2,4,5 Namelist matching namelist-fittour.xlsx
+router.get('/:id/export-bu245', authenticateToken, permCheckAny([['op_tours','view_all'], ['op_tours','view_own']]), controller.exportBU245Namelist);
+router.post('/:id/export-bu245', authenticateToken, permCheckAny([['op_tours','view_all'], ['op_tours','view_own']]), controller.exportBU245Namelist);
+
 module.exports = router;

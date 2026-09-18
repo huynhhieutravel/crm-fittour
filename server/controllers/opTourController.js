@@ -1,5 +1,8 @@
 const db = require('../db');
 const { logActivity } = require('../utils/logger');
+const path = require('path');
+const fs = require('fs');
+const ExcelJS = require('exceljs');
 
 // ===================================================
 // OpTours REFACTORED — reads from tour_departures + bookings
@@ -861,6 +864,524 @@ exports.getB2COpTours = async (req, res) => {
       success: false,
       error: 'Lịch khởi hành đang được cập nhật. Vui lòng thử lại sau.'
     });
+  }
+};
+
+exports.exportBU245Namelist = async (req, res) => {
+  const { id } = req.params;
+  const { members: customMembers, bookingName } = req.body || {};
+  try {
+    const tourRes = await db.query(`
+      SELECT 
+        td.*, td.code as tour_code, COALESCE(tt.name, td.tour_info->>'tour_name') as tour_name, 
+        tt.code as template_code, tt.duration as template_duration, tt.bu_group,
+        g.name as guide_name,
+        u.full_name as operator_name
+      FROM tour_departures td
+      LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
+      LEFT JOIN guides g ON td.guide_id = g.id
+      LEFT JOIN users u ON td.operator_id = u.id
+      WHERE td.id = $1
+    `, [id]);
+
+    if (tourRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy tour' });
+    }
+    const tour = tourRes.rows[0];
+
+    let members = customMembers;
+    if (!members || !Array.isArray(members) || members.length === 0) {
+      const bRes = await db.query(`
+        SELECT b.*, c.name as customer_name, c.phone as customer_phone, u.full_name as created_by_name
+        FROM bookings b
+        LEFT JOIN customers c ON b.customer_id = c.id
+        LEFT JOIN users u ON b.created_by = u.id
+        WHERE b.tour_departure_id = $1
+        ORDER BY b.created_at ASC
+      `, [id]);
+      
+      members = [];
+      bRes.rows.forEach(b => {
+        const st = b.booking_status || '';
+        if (st.includes('uỷ') || st.includes('ủy') || st.includes('Huỷ') || st.includes('Hủy') || st === 'CANCELLED') return;
+        const raw = typeof b.raw_details === 'string' ? JSON.parse(b.raw_details) : (b.raw_details || {});
+        const bInfo = raw.bookingInfo || {};
+        const bookerGender = bInfo.gender || b.gender || '';
+        const bMembers = raw.members || [];
+        const pricingRows = raw.pricingRows || [];
+        const salesName = b.created_by_name || 'Sales';
+        const tourPrice = (pricingRows && pricingRows.length > 0) ? pricingRows[0].price : (raw.price_adult || 0);
+        const inNote = pricingRows[0]?.internalNote || '';
+        const cuNote = pricingRows[0]?.note || '';
+        const bNoteCombined = [inNote, cuNote].filter(Boolean).join(' | ');
+
+        if (bMembers.length === 0) {
+          members.push({
+            name: b.customer_name || b.name || bInfo.name || '',
+            phone: b.customer_phone || b.phone || bInfo.phone || '',
+            docId: b.cmnd || bInfo.cmnd || '',
+            gender: bookerGender,
+            bookerGender: bookerGender,
+            dob: bInfo.dob || b.birth_date || '',
+            salesPerson: salesName,
+            bTourPrice: tourPrice,
+            bTotal: b.total_price || 0,
+            bPaid: b.paid || 0,
+            bRemaining: (Number(b.total_price) || 0) - (Number(b.paid) || 0),
+            bNote: bNoteCombined || ''
+          });
+        } else {
+          bMembers.forEach((m, mIdx) => {
+            const rawG = (m.gender && m.gender !== 'Chọn' && m.gender !== '---') ? m.gender : (mIdx === 0 ? bookerGender : '');
+            members.push({
+              ...m,
+              gender: rawG,
+              bookerGender: bookerGender,
+              salesPerson: salesName,
+              bTourPrice: mIdx === 0 ? tourPrice : '',
+              bTotal: mIdx === 0 ? (b.total_price || 0) : '',
+              bPaid: mIdx === 0 ? (b.paid || 0) : '',
+              bRemaining: mIdx === 0 ? ((Number(b.total_price) || 0) - (Number(b.paid) || 0)) : '',
+              bNote: (mIdx === 0 && bNoteCombined) ? (bNoteCombined + (m.note ? ` - ${m.note}` : '')) : (m.note || '')
+            });
+          });
+        }
+      });
+    }
+
+    let templatePath = path.resolve(__dirname, '../../data_import/namelist-fittour.xlsx');
+    if (!fs.existsSync(templatePath)) {
+      templatePath = path.resolve(process.cwd(), '../data_import/namelist-fittour.xlsx');
+    }
+    if (!fs.existsSync(templatePath)) {
+      templatePath = path.resolve(process.cwd(), 'data_import/namelist-fittour.xlsx');
+    }
+    if (!fs.existsSync(templatePath)) {
+      return res.status(500).json({ error: 'Không tìm thấy file mẫu namelist-fittour.xlsx' });
+    }
+
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.readFile(templatePath);
+
+    // Sheet 2 là Egypt, chứa drawing1.xml có logo FIT TOUR
+    const ws = wb.worksheets[1] || wb.worksheets[0];
+    ws.name = (tour.tour_code || 'Namelist').replace(/[\\/*?:[\]]/g, '').slice(0, 30);
+    
+    // Xóa các sheet khác
+    wb.worksheets.forEach(w => {
+      if (w.id !== ws.id) wb.removeWorksheet(w.id);
+    });
+
+    const getCountryFlag = (tourName = '') => {
+      const t = (tourName || '').toLowerCase();
+      if (t.includes('ai cập') || t.includes('egypt')) return '🇪🇬 ';
+      if (t.includes('maroc') || t.includes('morocco')) return '🇲🇦 ';
+      if (t.includes('pakistan')) return '🇵🇰 ';
+      if (t.includes('mông cổ') || t.includes('mongolia')) return '🇲🇳 ';
+      if (t.includes('nhật bản') || t.includes('japan')) return '🇯🇵 ';
+      if (t.includes('hàn quốc') || t.includes('korea')) return '🇰🇷 ';
+      if (t.includes('ấn độ') || t.includes('india')) return '🇮🇳 ';
+      if (t.includes('tây ban nha') || t.includes('spain')) return '🇪🇸 ';
+      if (t.includes('bồ đào nha') || t.includes('portugal')) return '🇵🇹 ';
+      if (t.includes('thổ nhĩ kỳ') || t.includes('turkey')) return '🇹🇷 ';
+      if (t.includes('úc') || t.includes('australia')) return '🇦🇺 ';
+      if (t.includes('châu âu') || t.includes('europe')) return '🇪🇺 ';
+      if (t.includes('trung quốc') || t.includes('china')) return '🇨🇳 ';
+      return '';
+    };
+
+    function parseDateToUTC(dateStr) {
+      if (!dateStr) return null;
+      if (dateStr instanceof Date && !isNaN(dateStr.getTime())) {
+        return new Date(Date.UTC(dateStr.getFullYear(), dateStr.getMonth(), dateStr.getDate()));
+      }
+      const str = String(dateStr).trim();
+      const ymdMatch = str.match(/^(\d{4})[-/. ](\d{1,2})[-/. ](\d{1,2})/);
+      if (ymdMatch) {
+        return new Date(Date.UTC(Number(ymdMatch[1]), Number(ymdMatch[2]) - 1, Number(ymdMatch[3])));
+      }
+      const dmyMatch = str.match(/^(\d{1,2})[-/. ](\d{1,2})[-/. ](\d{4})/);
+      if (dmyMatch) {
+        return new Date(Date.UTC(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1])));
+      }
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) {
+        return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      }
+      return null;
+    }
+
+    function parseMoney(val) {
+      if (val === undefined || val === null || val === '') return '';
+      if (typeof val === 'number') return isNaN(val) ? '' : val;
+      const cleaned = String(val).replace(/[^\d.-]/g, '');
+      if (!cleaned) return '';
+      const num = Number(cleaned);
+      return isNaN(num) ? '' : num;
+    }
+
+    function splitName(fullName) {
+      const clean = (fullName || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').trim().toUpperCase();
+      const parts = clean.split(/\s+/);
+      if (parts.length > 1) {
+        return { surname: parts[0], givenName: parts.slice(1).join(' ') };
+      }
+      return { surname: clean, givenName: '' };
+    }
+
+    function formatFlightTime(t) {
+      if (!t) return '';
+      const clean = String(t).trim();
+      const plusMatch = clean.match(/\+(\d+)/);
+      const plusSuffix = plusMatch ? `+${plusMatch[1]}` : '';
+      const base = clean.replace(/\s*\(\s*\+\d+\s*\)/g, '').replace(/\+\d+/g, '').trim();
+      
+      if (base.includes(':')) {
+        const parts = base.replace(/[^\d:]/g, '').split(':');
+        return `${parts[0].padStart(2, '0')}:${parts[1].slice(0, 2)}${plusSuffix}`;
+      }
+      const digits = base.replace(/[^\d]/g, '');
+      if (digits.length === 4) {
+        return `${digits.slice(0, 2)}:${digits.slice(2, 4)}${plusSuffix}`;
+      }
+      return clean;
+    }
+
+    function parseFlightLine(line) {
+      let str = String(line || '').trim();
+      if (!str) return null;
+      if (/^(quá cảnh|transit|chặng đi|chặng về|nơi đi|nơi đến|ghi chú)/i.test(str)) return null;
+
+      str = str.replace(/^\d+[\s.)/-]+\s*/, '').trim();
+      if (!str) return null;
+
+      let flightNo = '';
+      let journey = '';
+      let depTime = '';
+      let arrTime = '';
+
+      const headFlight = str.match(/^([A-Z0-9]{2})\s*(\d{2,4}[A-Z]?)\b/i);
+      if (headFlight) {
+        flightNo = `${headFlight[1].toUpperCase()} ${headFlight[2].toUpperCase()}`;
+      } else {
+        const anyFlight = str.match(/\b([A-Z0-9]{2})\s*(\d{2,4}[A-Z]?)\b/i);
+        if (anyFlight) {
+          flightNo = `${anyFlight[1].toUpperCase()} ${anyFlight[2].toUpperCase()}`;
+        }
+      }
+
+      const timeColon = [...str.matchAll(/(\d{1,2}:\d{2}(?:\s*(?:\(\s*)?\+\d+(?:\s*\))?)?)/g)].map(m => m[1]);
+      if (timeColon.length >= 2) {
+        depTime = formatFlightTime(timeColon[0]);
+        arrTime = formatFlightTime(timeColon[1]);
+      } else if (timeColon.length === 1) {
+        depTime = formatFlightTime(timeColon[0]);
+      } else {
+        const fourDigitMatches = [...str.matchAll(/(?:^|[\s|(\[])(\d{4}(?:\s*(?:\(\s*)?\+\d+(?:\s*\))?)?)(?=[\s|)\],]|$)/g)].map(m => m[1]);
+        const timeCandidates = fourDigitMatches.filter(n => !n.startsWith('202'));
+        if (timeCandidates.length >= 2) {
+          depTime = formatFlightTime(timeCandidates[0]);
+          arrTime = formatFlightTime(timeCandidates[1]);
+        } else if (timeCandidates.length === 1) {
+          depTime = formatFlightTime(timeCandidates[0]);
+        }
+      }
+
+      const joinedRoute = str.match(/\b([A-Z]{3})([A-Z]{3})\b/);
+      if (joinedRoute) {
+        journey = (joinedRoute[1] + joinedRoute[2]).toUpperCase();
+      } else {
+        const separatedRoute = str.match(/\b([A-Z]{3})\s*[-–—/]\s*([A-Z]{3})\b/i);
+        if (separatedRoute) {
+          journey = (separatedRoute[1] + separatedRoute[2]).toUpperCase();
+        } else {
+          const airportMatches = [...str.matchAll(/\b([A-Z]{3})\b/gi)].map(m => m[1].toUpperCase())
+            .filter(c => !['HK1', 'TU2', 'WE0', 'SU1', 'EUR', 'USD', 'VND', 'DEC', 'OCT', 'NOV', 'SEP', 'JUN', 'JUL', 'AUG', 'MAY', 'APR', 'MAR', 'FEB', 'JAN'].includes(c));
+          if (airportMatches.length >= 2) {
+            journey = airportMatches[0] + airportMatches[1];
+          }
+        }
+      }
+
+      if (!flightNo && !journey && !depTime) {
+        flightNo = str;
+      }
+
+      return { flightNo, journey, depTime, arrTime, raw: str };
+    }
+
+    function extractFlightSegments(text) {
+      if (!text) return [];
+      const lines = text.split(/[\r\n]+/);
+      const segments = [];
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        
+        const subSegments = trimmed.split(/(?:\s{2,}|\s*\|\s*|\s*;\s*)(?=[A-Z0-9]{2}\s*\d{2,4})/i);
+        if (subSegments.length > 1) {
+          for (const sub of subSegments) {
+            const seg = parseFlightLine(sub);
+            if (seg && (seg.flightNo || seg.journey || seg.depTime)) segments.push(seg);
+          }
+        } else {
+          const seg = parseFlightLine(trimmed);
+          if (seg && (seg.flightNo || seg.journey || seg.depTime)) segments.push(seg);
+        }
+      }
+      return segments;
+    }
+
+    const flag = getCountryFlag(tour.tour_name || '');
+    let rawTourName = (tour.tour_name || tour.tour_code || 'TOUR').toUpperCase().trim();
+    if (flag && !rawTourName.includes(flag.trim())) {
+      rawTourName = `${flag}${rawTourName}`;
+    }
+
+    let dateRangeStr = '';
+    let durationStr = '';
+    if (tour.start_date && tour.end_date) {
+      const sDate = new Date(tour.start_date);
+      const eDate = new Date(tour.end_date);
+      const sDay = String(sDate.getDate()).padStart(2, '0');
+      const eDay = String(eDate.getDate()).padStart(2, '0');
+      const eMonth = eDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+      const eYear = eDate.getFullYear();
+      const days = Math.round((eDate - sDate) / (1000 * 60 * 60 * 24)) + 1;
+      const nights = Math.max(0, days - 1);
+      dateRangeStr = `${sDay}-${eDay}${eMonth} ${eYear}`;
+      durationStr = `(${days}D${nights}N)`;
+    }
+    const fullTourTitle = `${rawTourName} ${dateRangeStr} ${durationStr}`.trim();
+    const operatorName = tour.tour_info?.operators || tour.operator_name || 'FIT TOUR';
+    const leaderName = tour.guide_name || tour.guides?.[0]?.name || tour.tour_info?.tour_guide || 'Mr. LE THANH HA';
+
+    ws.getCell('F2').value = fullTourTitle;
+    ws.getCell('F3').value = 'FIT TOUR';
+    ws.getCell('H3').value = 'Operator';
+    ws.getCell('I3').value = operatorName;
+    ws.getCell('H4').value = leaderName;
+
+    // Chuyến bay nếu có
+    const flightDepDate = parseDateToUTC(tour.start_date);
+    const flightRetDate = parseDateToUTC(tour.end_date);
+
+    // 1. Xóa sạch dữ liệu mẫu (dummy Egypt Qatar Airways) ở các dòng 6 -> 13
+    for (let r = 6; r <= 13; r++) {
+      ['D', 'E', 'F', 'G', 'H', 'I', 'J'].forEach(col => {
+        ws.getCell(col + r).value = null;
+      });
+    }
+
+    // 2. Bóc tách các chặng bay (Chặng 1, Chặng 2) cho chiều đi và chiều về
+    const rawDep = tour.tour_info?.departure_flight || tour.departure_flight || '';
+    const rawRet = tour.tour_info?.return_flight || tour.return_flight || '';
+
+    let depSegments = extractFlightSegments(rawDep);
+    if (depSegments.length === 0 && rawDep.trim()) {
+      depSegments = [{ flightNo: rawDep.trim(), journey: '', depTime: '', arrTime: '' }];
+    }
+
+    let retSegments = extractFlightSegments(rawRet);
+    if (retSegments.length === 0 && rawRet.trim()) {
+      retSegments = [{ flightNo: rawRet.trim(), journey: '', depTime: '', arrTime: '' }];
+    }
+
+    const writeFlightRow = (rowNum, seg, dateVal) => {
+      if (!seg) return;
+      if (dateVal) {
+        const dCell = ws.getCell(`D${rowNum}`);
+        dCell.value = dateVal;
+        dCell.numFmt = 'dd/mm/yyyy;@';
+      }
+      if (seg.journey) {
+        const eCell = ws.getCell(`E${rowNum}`);
+        eCell.value = seg.journey;
+        eCell.numFmt = '@';
+      }
+      if (seg.flightNo) {
+        const fCell = ws.getCell(`F${rowNum}`);
+        fCell.value = seg.flightNo;
+        fCell.numFmt = '@';
+      }
+      if (seg.depTime) {
+        const gCell = ws.getCell(`G${rowNum}`);
+        gCell.value = seg.depTime;
+        gCell.numFmt = '@';
+      }
+      if (seg.arrTime) {
+        const hCell = ws.getCell(`H${rowNum}`);
+        hCell.value = seg.arrTime;
+        hCell.numFmt = '@';
+      }
+    };
+
+    // 3. Điền vào bảng chuyến bay: HAN (Hàng 6..9) và SGN (Hàng 10..13)
+    if (depSegments[0]) writeFlightRow(6, depSegments[0], flightDepDate);
+    if (depSegments[1]) writeFlightRow(7, depSegments[1], flightDepDate);
+    if (retSegments[0]) writeFlightRow(8, retSegments[0], flightRetDate);
+    if (retSegments[1]) writeFlightRow(9, retSegments[1], flightRetDate);
+
+    if (depSegments[0]) writeFlightRow(10, depSegments[0], flightDepDate);
+    if (depSegments[1]) writeFlightRow(11, depSegments[1], flightDepDate);
+    if (retSegments[0]) writeFlightRow(12, retSegments[0], flightRetDate);
+    if (retSegments[1]) writeFlightRow(13, retSegments[1], flightRetDate);
+
+    if (depSegments.length > 2) {
+      const extra = depSegments.slice(2).map(s => s.flightNo || s.raw).join(', ');
+      const fCell7 = ws.getCell('F7');
+      fCell7.value = `${fCell7.value || ''} / ${extra}`.trim();
+      const fCell11 = ws.getCell('F11');
+      fCell11.value = `${fCell11.value || ''} / ${extra}`.trim();
+    }
+    if (retSegments.length > 2) {
+      const extra = retSegments.slice(2).map(s => s.flightNo || s.raw).join(', ');
+      const fCell9 = ws.getCell('F9');
+      fCell9.value = `${fCell9.value || ''} / ${extra}`.trim();
+      const fCell13 = ws.getCell('F13');
+      fCell13.value = `${fCell13.value || ''} / ${extra}`.trim();
+    }
+
+    // Đếm số lượng phòng
+    let doubleCount = 0;
+    let twinCount = 0;
+    let singleCount = 0;
+    const countedDouble = new Set();
+    const countedTwin = new Set();
+    members.forEach(m => {
+      const rType = String(m.roomType || '').toLowerCase();
+      const rCode = String(m.roomCode || '').trim().toLowerCase();
+      const combinedRoom = `${rType} ${rCode}`;
+      if (combinedRoom.includes('single') || combinedRoom.includes('đơn') || combinedRoom.includes('sgl')) {
+        singleCount++;
+      } else if (combinedRoom.includes('twin') || combinedRoom.includes('twn')) {
+        if (rCode) {
+          if (!countedTwin.has(rCode)) { countedTwin.add(rCode); twinCount++; }
+        } else { twinCount += 0.5; }
+      } else if (combinedRoom.includes('double') || combinedRoom.includes('đôi') || combinedRoom.includes('dbl')) {
+        if (rCode) {
+          if (!countedDouble.has(rCode)) { countedDouble.add(rCode); doubleCount++; }
+        } else { doubleCount += 0.5; }
+      }
+    });
+    ws.getCell('D16').value = Math.ceil(doubleCount) || '';
+    ws.getCell('E16').value = Math.ceil(twinCount) || '';
+    ws.getCell('F16').value = singleCount || '';
+
+    // Fonts theo chuẩn mẫu Namelist BU2,4,5
+    const redFont = { name: 'Times New Roman', size: 14, color: { argb: 'FFFF0000' } };
+    const boldRedFont = { name: 'Times New Roman', size: 14, bold: true, color: { argb: 'FFFF0000' } };
+    const blackFont = { name: 'Times New Roman', size: 14, color: { argb: 'FF000000' } };
+
+    // Template có sẵn 11 hàng từ hàng 19 đến hàng 29 (không dùng dòng Team Leader mặc định)
+    const templateRows = 11;
+    if (members.length > templateRows) {
+      const extraCount = members.length - templateRows;
+      ws.duplicateRow(20, extraCount, true);
+    }
+
+    const dataCols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R'];
+
+    // Điền danh sách hành khách BẮT ĐẦU TỪ HÀNG 19 (STT 1, 2, 3...)
+    members.forEach((m, idx) => {
+      const rIdx = 19 + idx;
+      const { surname, givenName } = splitName(m.name);
+      const rawG = String(m.gender || (m.isBooker ? m.bookerGender : '') || m.bookerGender || '').trim().toLowerCase();
+      let gender = '';
+      if (rawG && rawG !== 'chọn' && rawG !== 'none' && rawG !== '---' && rawG !== 'chua_ro') {
+        if (rawG.includes('nữ') || rawG.includes('nu') || rawG === 'f' || rawG.includes('female') || rawG === 'w') {
+          gender = 'Female';
+        } else if (rawG.includes('nam') || rawG === 'm' || rawG.includes('male')) {
+          gender = 'Male';
+        }
+      }
+
+      ws.getCell(`A${rIdx}`).value = idx + 1;
+      ws.getCell(`A${rIdx}`).font = blackFont;
+
+      ws.getCell(`B${rIdx}`).value = surname;
+      ws.getCell(`B${rIdx}`).font = boldRedFont;
+
+      ws.getCell(`C${rIdx}`).value = givenName;
+      ws.getCell(`C${rIdx}`).font = boldRedFont;
+
+      ws.getCell(`D${rIdx}`).value = gender;
+      ws.getCell(`D${rIdx}`).font = redFont;
+
+      const dobDate = parseDateToUTC(m.dob);
+      if (dobDate) {
+        ws.getCell(`E${rIdx}`).value = dobDate;
+        ws.getCell(`E${rIdx}`).numFmt = 'd mmm yyyy;@';
+      } else {
+        ws.getCell(`E${rIdx}`).value = '';
+      }
+      ws.getCell(`E${rIdx}`).font = redFont;
+
+      ws.getCell(`F${rIdx}`).value = m.docId || '';
+      ws.getCell(`F${rIdx}`).font = redFont;
+
+      const doeDate = parseDateToUTC(m.expiryDate);
+      if (doeDate) {
+        ws.getCell(`G${rIdx}`).value = doeDate;
+        ws.getCell(`G${rIdx}`).numFmt = 'd mmm yyyy;@';
+      } else {
+        ws.getCell(`G${rIdx}`).value = '';
+      }
+      ws.getCell(`G${rIdx}`).font = redFont;
+
+      ws.getCell(`H${rIdx}`).value = (m.nationality && m.nationality !== 'Việt Nam' && m.nationality !== 'VN') ? m.nationality : 'VMN';
+      ws.getCell(`H${rIdx}`).font = redFont;
+
+      ws.getCell(`I${rIdx}`).value = m.phone || '';
+      ws.getCell(`I${rIdx}`).font = redFont;
+
+      ws.getCell(`J${rIdx}`).value = m.roomCode || m.roomType || '';
+      ws.getCell(`J${rIdx}`).font = redFont;
+
+      ws.getCell(`K${rIdx}`).value = m.salesPerson || '';
+      ws.getCell(`K${rIdx}`).font = redFont;
+
+      ws.getCell(`L${rIdx}`).value = m.bNote || m.note || '';
+      ws.getCell(`L${rIdx}`).font = blackFont;
+
+      ws.getCell(`M${rIdx}`).value = parseMoney(m.bTourPrice);
+      ws.getCell(`M${rIdx}`).font = blackFont;
+
+      ws.getCell(`N${rIdx}`).value = parseMoney(m.surcharge);
+      ws.getCell(`N${rIdx}`).font = blackFont;
+
+      ws.getCell(`O${rIdx}`).value = parseMoney(m.discount);
+      ws.getCell(`O${rIdx}`).font = blackFont;
+
+      ws.getCell(`P${rIdx}`).value = parseMoney(m.bTotal);
+      ws.getCell(`P${rIdx}`).font = blackFont;
+
+      ws.getCell(`Q${rIdx}`).value = parseMoney(m.bPaid);
+      ws.getCell(`Q${rIdx}`).font = blackFont;
+
+      ws.getCell(`R${rIdx}`).value = parseMoney(m.bRemaining);
+      ws.getCell(`R${rIdx}`).font = blackFont;
+    });
+
+    // Dọn dẹp các hàng mẫu còn thừa từ (19 + members.length) đến 29
+    for (let r = 19 + members.length; r <= 29; r++) {
+      dataCols.forEach(col => {
+        ws.getCell(`${col}${r}`).value = '';
+      });
+    }
+
+    const safeTourCode = (tour.tour_code || 'Tour').replace(/[\s\/\\]+/g, '_');
+    const safePrefix = bookingName ? `${bookingName.replace(/[\s\/\\]+/g, '_')}_` : '';
+    const nowStr = new Date().toISOString().slice(0, 10);
+    const finalFileName = `Namelist_BU245_${safePrefix}${safeTourCode}_${nowStr}.xlsx`;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(finalFileName)}"`);
+    await wb.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Error exporting BU245 namelist:', error);
+    res.status(500).json({ error: 'Lỗi khi xuất danh sách Namelist BU2,4,5' });
   }
 };
 
