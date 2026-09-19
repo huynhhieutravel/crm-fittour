@@ -58,6 +58,15 @@ const isAirlineExampleBoilerplate = (text) => {
 };
 
 
+// Chuẩn hóa từ ghép chứa "nhật" để tránh nhận nhầm Nhật Bản (BU2):
+// VD: "cập nhật", "chủ nhật", "sinh nhật", "nhật ký"
+const sanitizeNhatCompounds = (str) => {
+    if (!str) return '';
+    return str
+        .replace(/(cập|chủ|sinh)\s+(nhật|nhat)\b/gi, '$1_$2')
+        .replace(/\b(nhật|nhat)\s+(ký|ky)\b/gi, '$1_$2');
+};
+
 // Auto-classify BU from message keywords
 // v5: Smart Diacritic-Aware Matching
 // - Pass 1: So keyword GỐC (có dấu) với tin nhắn GỐC → phân biệt "nhật" vs "nhất"
@@ -77,22 +86,25 @@ const _classifyBU = async (messageText) => {
         return null;
     }
     
+    // Chuẩn hóa tránh nhầm "cập nhật", "chủ nhật", "sinh nhật", "nhật ký" thành đi Nhật
+    const sanitizedText = sanitizeNhatCompounds(messageText);
+
     // Normalize: lowercase + remove diacritics
     const normalize = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0111/g, 'd').replace(/\u0110/g, 'D');
     // Check if a string contains Vietnamese diacritics
     const hasDiacritics = (str) => str.toLowerCase() !== normalize(str);
     
-    const normalizedMsg = normalize(messageText);
-    const msgLower = messageText.toLowerCase();
+    const normalizedMsg = normalize(sanitizedText);
+    const msgLower = sanitizedText.toLowerCase();
     
     // Stopwords: CHỈ chặn những từ quá ngắn / 1 ký tự gây false positive tuyệt đối
-    // "nhat" KHÔNG còn ở đây → đã được xử lý bởi smart matching (nhật ≠ nhất)
     const STOPWORDS = new Set([
         'y',          // ý → y (1 ký tự, trùng tên người VD: "Ý Đặng Quốc")
         'cho',        // cho
         'ay',         // ấy
         'an',         // ăn/an
         'my',         // mỹ → my (BỎ HẲN từ đơn "Mỹ" nằm riêng vì dễ nhầm tên người "Mỹ Duyên", "Mỹ Linh",... Chỉ nhận "tour mỹ", "du lịch mỹ", "hoa kỳ", "đi mỹ")
+        'nhat',       // nhật → nhat (BỎ HẲN từ đơn "Nhật" nằm riêng vì dính "cập nhật", "chủ nhật", "sinh nhật", tên người "Minh Nhật",... Chỉ nhận "tour nhật", "đi nhật", "nhật bản", "japan")
         'himalaya',   // Địa danh dãy núi quá rộng (trải dài nhiều BU), không dùng để map BU
         'himalayas',
     ]);
@@ -117,6 +129,9 @@ const _classifyBU = async (messageText) => {
                 
                 // Bỏ qua từ khóa "Mỹ" nếu nằm riêng lẻ (chỉ chấp nhận "tour mỹ", "du lịch mỹ", "bắc mỹ", "nam mỹ", "hoa kỳ",...)
                 if (normalizedKw === 'my') continue;
+
+                // Bỏ qua từ khóa "Nhật" nếu nằm riêng lẻ (chỉ chấp nhận "tour nhật", "du lịch nhật", "nhật bản", "đi nhật", "japan",...)
+                if (normalizedKw === 'nhat') continue;
 
                 // Skip absolute stopwords (quá ngắn, không thể phân biệt)
                 if (normalizedKw.length <= 4 && STOPWORDS.has(normalizedKw)) continue;
@@ -230,11 +245,14 @@ const _classifyTour = async (messageText, preferredBU = null) => {
         return null;
     }
     
+    // Chuẩn hóa tránh nhầm "cập nhật", "chủ nhật", "sinh nhật", "nhật ký" thành đi Nhật
+    const sanitizedText = sanitizeNhatCompounds(messageText);
+
     // Normalize: lowercase + remove diacritics
     const normalize = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0111/g, 'd').replace(/\u0110/g, 'D');
     
-    const normalizedMsg = normalize(messageText);
-    const msgLower = messageText.toLowerCase();
+    const normalizedMsg = normalize(sanitizedText);
+    const msgLower = sanitizedText.toLowerCase();
     
     try {
         const query = preferredBU ?
@@ -270,6 +288,7 @@ const _classifyTour = async (messageText, preferredBU = null) => {
                 const normalizedKw = normalize(keyword);
                 if (normalizedKw.length < 2) continue; // skip very short keywords to be safe
                 if (normalizedKw === 'my') continue; // Bỏ qua từ đơn "Mỹ" nằm riêng
+                if (normalizedKw === 'nhat') continue; // Bỏ qua từ đơn "Nhật" nằm riêng
                 if (GENERIC_TOUR_STOPWORDS.has(normalizedKw)) continue; // skip generic tour format keywords
                 
                 let matched = false;
@@ -937,8 +956,9 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         }
                     }
 
-                    // Auto-classify BU from ALL messages (fallback to shares ad_context, trừ đoạn AI ví dụ hãng bay đa tour)
-                    const allConvMsgs = messagesList.filter(m => !isAutoGreeting(m.message) && !isAirlineExampleBoilerplate(m.message) && !(m.message || '').includes('(Trung Quốc, Himalayas, Quốc tế...)')).map(m => (m.message || '')).join(' ');
+                    // Auto-classify BU from ALL messages (đảo lại cũ -> mới để ưu tiên nhu cầu đầu tiên khách gửi)
+                    const chronologicalMsgs = [...messagesList].reverse();
+                    const allConvMsgs = chronologicalMsgs.filter(m => !isAutoGreeting(m.message) && !isAirlineExampleBoilerplate(m.message) && !(m.message || '').includes('(Trung Quốc, Himalayas, Quốc tế...)')).map(m => (m.message || '')).join(' ');
                     const autoBUPoller = await classifyBUFromMessage(allConvMsgs + ' ' + (actualMessageText || ''), adContextText);
                     if (autoBUPoller) {
                         await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller, currentLeadId]);
