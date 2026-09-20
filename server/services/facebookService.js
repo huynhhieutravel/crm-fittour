@@ -67,10 +67,33 @@ const sanitizeNhatCompounds = (str) => {
         .replace(/\b(nhật|nhat)\s+(ký|ky)\b/gi, '$1_$2');
 };
 
+// Normalize: lowercase + remove diacritics
+const normalize = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0111/g, 'd').replace(/\u0110/g, 'D');
+// Check if a string contains Vietnamese diacritics
+const hasDiacritics = (str) => str.toLowerCase() !== normalize(str);
+
+// Kiểm tra tính tương thích dấu tiếng Việt giữa đoạn text của khách (segment) và keyword:
+// - Chấp nhận khách gõ không dấu hoàn toàn (vd: "tan cuong" -> "tân cương")
+// - Chấp nhận khách gõ sót dấu nửa chừng (vd: "tân cuong" hoặc "tan cương" -> "tân cương")
+// - TUYỆT ĐỐI CHẶN nếu từ mang dấu KHÁC (vd: "nhất" vs "nhật", "thải" vs "thái")
+const isCompatibleDiacritics = (segment, keyword) => {
+    const segWords = segment.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const kwWords = keyword.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    if (segWords.length !== kwWords.length) return false;
+    for (let i = 0; i < segWords.length; i++) {
+        const segW = segWords[i];
+        const kwW = kwWords[i];
+        if (hasDiacritics(segW)) {
+            if (segW !== kwW) return false;
+        }
+    }
+    return true;
+};
+
 // Auto-classify BU from message keywords
-// v5: Smart Diacritic-Aware Matching
+// v6: Smart Diacritic-Aware Matching (hỗ trợ cả từ gõ sót dấu)
 // - Pass 1: So keyword GỐC (có dấu) với tin nhắn GỐC → phân biệt "nhật" vs "nhất"
-// - Pass 2: So keyword bỏ dấu, nhưng CHỈ chấp nhận nếu từ gốc KHÔNG có dấu (khách gõ không dấu)
+// - Pass 2: So keyword bỏ dấu + kiểm tra tính tương thích dấu (nhận diện cả khi khách gõ không dấu hoặc gõ sót dấu)
 const classifyBUFromMessage = async (messageText, adContextText = '') => {
     let result = await _classifyBU(messageText);
     if (!result && adContextText) {
@@ -89,11 +112,6 @@ const _classifyBU = async (messageText) => {
     // Chuẩn hóa tránh nhầm "cập nhật", "chủ nhật", "sinh nhật", "nhật ký" thành đi Nhật
     const sanitizedText = sanitizeNhatCompounds(messageText);
 
-    // Normalize: lowercase + remove diacritics
-    const normalize = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0111/g, 'd').replace(/\u0110/g, 'D');
-    // Check if a string contains Vietnamese diacritics
-    const hasDiacritics = (str) => str.toLowerCase() !== normalize(str);
-    
     const normalizedMsg = normalize(sanitizedText);
     const msgLower = sanitizedText.toLowerCase();
     
@@ -150,28 +168,28 @@ const _classifyBU = async (messageText) => {
                     break;
                 }
                 
-                // === PASS 2: So keyword BỎ DẤU, nhưng CHỈ chấp nhận nếu từ gốc KHÔNG CÓ DẤU ===
+                // === PASS 2: So keyword BỎ DẤU, kiểm tra tính tương thích dấu (nhận cả ko dấu và sót dấu) ===
                 // "nhat" match "nhat" (khách gõ ko dấu) ✅
-                // "nhat" KHÔNG match "nhất" (vì "nhất" có dấu → khác từ) ❌
+                // "tân cuong" match "tân cương" (khách gõ sót dấu 1 âm tiết) ✅
+                // "nhất" KHÔNG match "nhật" (vì "nhất" mang dấu khác hẳn) ❌
                 const escapedNorm = normalizedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const regexNorm = new RegExp('\\b' + escapedNorm + '\\b', 'i');
                 
                 if (regexNorm.test(normalizedMsg)) {
-                    // Tìm thấy trong bản bỏ dấu → kiểm tra bản gốc có dấu hay không
-                    const origWords = msgLower.split(/\s+/).map(w => w.replace(/[^a-zA-Z\u00C0-\u024F\u1E00-\u1EFF\u0110\u0111]/g, ''));
-                    const kwWordCount = kwLower.split(/\s+/).length;
+                    // Tìm thấy trong bản bỏ dấu → kiểm tra tính tương thích dấu
+                    const origWords = msgLower.split(/\s+/).map(w => w.replace(/[^a-zA-Z\u00C0-\u024F\u1E00-\u1EFF\u0110\u0111]/g, '')).filter(Boolean);
+                    const kwWordCount = kwLower.split(/\s+/).filter(Boolean).length;
                     
-                    let foundNoDiacritics = false;
+                    let foundCompatible = false;
                     for (let i = 0; i <= origWords.length - kwWordCount; i++) {
                         const segment = origWords.slice(i, i + kwWordCount).join(' ');
-                        // Từ gốc bỏ dấu = keyword bỏ dấu VÀ từ gốc KHÔNG có dấu → khách gõ không dấu
-                        if (normalize(segment) === normalizedKw && !hasDiacritics(segment)) {
-                            foundNoDiacritics = true;
+                        if (normalize(segment) === normalizedKw && isCompatibleDiacritics(segment, kwLower)) {
+                            foundCompatible = true;
                             break;
                         }
                     }
                     
-                    if (foundNoDiacritics) {
+                    if (foundCompatible) {
                         const normIndex = normalizedMsg.indexOf(normalizedKw);
                         if (!matchedBUs.has(bu.id)) matchedBUs.set(bu.id, []);
                         matchedBUs.get(bu.id).push({ keyword, index: normIndex >= 0 ? normIndex : 0 });
@@ -247,9 +265,6 @@ const _classifyTour = async (messageText, preferredBU = null) => {
     
     // Chuẩn hóa tránh nhầm "cập nhật", "chủ nhật", "sinh nhật", "nhật ký" thành đi Nhật
     const sanitizedText = sanitizeNhatCompounds(messageText);
-
-    // Normalize: lowercase + remove diacritics
-    const normalize = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u0111/g, 'd').replace(/\u0110/g, 'D');
     
     const normalizedMsg = normalize(sanitizedText);
     const msgLower = sanitizedText.toLowerCase();
@@ -303,28 +318,27 @@ const _classifyTour = async (messageText, preferredBU = null) => {
                     matched = true;
                     matchType = 'dấu';
                 } else {
-                    // 2. Exact match (without diacritics - ONLY if the original message text was typed without diacritics for that word)
+                    // 2. Exact match (without diacritics / partial diacritics - ONLY if the original message text was compatible)
                     const escapedNorm = normalizedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                     const regexNorm = new RegExp('\\b' + escapedNorm + '\\b', 'i');
                     
                     if (regexNorm.test(normalizedMsg)) {
-                        // Cần đảm bảo khách thực sự gõ không dấu, chứ không phải gõ chữ có dấu khác nhưng khi bỏ dấu thì lại giống keyword
-                        const origWords = msgLower.split(/\s+/).map(w => w.replace(/[^a-zA-Z\u00C0-\u024F\u1E00-\u1EFF\u0110\u0111]/g, ''));
-                        const kwWordCount = kwLower.split(/\s+/).length;
-                        const hasDiacritics = (str) => str.toLowerCase() !== normalize(str);
+                        // Cần đảm bảo khách thực sự gõ không dấu hoặc sót dấu tương thích, chứ không phải gõ chữ có dấu khác
+                        const origWords = msgLower.split(/\s+/).map(w => w.replace(/[^a-zA-Z\u00C0-\u024F\u1E00-\u1EFF\u0110\u0111]/g, '')).filter(Boolean);
+                        const kwWordCount = kwLower.split(/\s+/).filter(Boolean).length;
                         
-                        let foundNoDiacritics = false;
+                        let foundCompatible = false;
                         for (let i = 0; i <= origWords.length - kwWordCount; i++) {
                             const segment = origWords.slice(i, i + kwWordCount).join(' ');
-                            if (normalize(segment) === normalizedKw && !hasDiacritics(segment)) {
-                                foundNoDiacritics = true;
+                            if (normalize(segment) === normalizedKw && isCompatibleDiacritics(segment, kwLower)) {
+                                foundCompatible = true;
                                 break;
                             }
                         }
                         
-                        if (foundNoDiacritics) {
+                        if (foundCompatible) {
                             matched = true;
-                            matchType = 'ko dấu';
+                            matchType = 'ko dấu/sót dấu';
                         }
                     }
                 }

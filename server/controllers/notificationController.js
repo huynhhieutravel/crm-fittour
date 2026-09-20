@@ -251,7 +251,10 @@ const broadcastNewLead = async (lead, bu_group) => {
     try {
         if (!bu_group) return;
         // Lấy tất cả user thuộc bu_group hoặc admin/manager
-        const usersRes = await db.query(`SELECT id FROM users WHERE (bus LIKE '%' || $1 || '%' OR role IN ('admin', 'manager')) AND is_active = true`, [bu_group]);
+        const usersRes = await db.query(
+            `SELECT id FROM users WHERE ($1 = ANY(bus) OR bus::text LIKE '%' || $1 || '%' OR role IN ('admin', 'manager')) AND is_active = true`,
+            [bu_group]
+        );
         const users = usersRes.rows;
         
         // Lấy thông tin chi tiết Lead (bao gồm tour/sản phẩm)
