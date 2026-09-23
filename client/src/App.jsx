@@ -285,6 +285,58 @@ function AppContent() {
     });
   };
 
+  // Mobile Smart Scroll Header: Hide on scroll down, show on scroll up (kéo lên)
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+  const lastScrollYRef = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop;
+      
+      // Near top of page or iOS rubber-banding: always show
+      if (currentScrollY <= 40) {
+        setIsHeaderHidden(false);
+        lastScrollYRef.current = Math.max(0, currentScrollY);
+        return;
+      }
+
+      const diff = currentScrollY - lastScrollYRef.current;
+
+      // Scrolling DOWN with noticeable motion -> hide header
+      if (diff > 8 && currentScrollY > 60) {
+        setIsHeaderHidden(true);
+      } 
+      // Scrolling UP ("kéo lên") -> show header
+      else if (diff < -8) {
+        setIsHeaderHidden(false);
+      }
+
+      lastScrollYRef.current = currentScrollY;
+    };
+
+    const handleCustomScroll = (e) => {
+      const { diff, scrollTop } = e.detail || {};
+      if (scrollTop <= 40) {
+        setIsHeaderHidden(false);
+      } else if (diff > 8) {
+        setIsHeaderHidden(true);
+      } else if (diff < -8) {
+        setIsHeaderHidden(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('app-scroll-direction', handleCustomScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('app-scroll-direction', handleCustomScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    setIsHeaderHidden(false);
+  }, [activeTab]);
+
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -644,6 +696,22 @@ function AppContent() {
     setIsMobileMenuOpen(false);
     setHoveredMenu(null);
   }, [location.pathname, location.search, user]);
+
+  // Click / touch outside to close hovered profile menu
+  useEffect(() => {
+    if (!hoveredMenu) return;
+    const handleGlobalClick = (e) => {
+      if (!e.target.closest('.user-profile') && !e.target.closest('.user-profile-dropdown')) {
+        setHoveredMenu(null);
+      }
+    };
+    document.addEventListener('mousedown', handleGlobalClick);
+    document.addEventListener('touchstart', handleGlobalClick);
+    return () => {
+      document.removeEventListener('mousedown', handleGlobalClick);
+      document.removeEventListener('touchstart', handleGlobalClick);
+    };
+  }, [hoveredMenu]);
 
   useEffect(() => {
     const reqInterceptor = axios.interceptors.request.use(
@@ -1434,15 +1502,17 @@ function AppContent() {
   };
 
   const handleAddLead = async (e) => {
-    e.preventDefault();
-    await createLead(newLead);
-    setShowAddLeadModal(false);
-    setNewLead({ 
-      name: '', phone: '', email: '', gender: '', birth_date: '', 
-      source: 'Messenger', tour_id: '', consultation_note: '', 
-      bu_group: '', assigned_to: '', classification: 'Mới',
-      last_contacted_at: ''
-    });
+    if (e && e.preventDefault) e.preventDefault();
+    const success = await createLead(newLead);
+    if (success) {
+      setShowAddLeadModal(false);
+      setNewLead({ 
+        name: '', phone: '', email: '', gender: '', birth_date: '', 
+        source: 'Messenger', tour_id: '', consultation_note: '', 
+        bu_group: '', assigned_to: '', classification: 'Mới',
+        last_contacted_at: ''
+      });
+    }
   };
 
 
@@ -1463,9 +1533,11 @@ function AppContent() {
       });
       addToast('Đã thêm Lead mới thành công!');
       fetchLeads();
+      return true;
     } catch (err) {
       console.error(err);
       addToast('Lỗi khi thêm Lead mới');
+      return false;
     } finally {
       setLoading(false);
     }
@@ -3378,13 +3450,14 @@ function AppContent() {
               activeTab === 'op-tours' ? 'LỊCH KHỞI HÀNH' : 
               activeTab === 'management-dashboard' ? 'TỔNG QUAN MARKETING' : 
               activeTab === 'marketing-google-ads' ? 'TOUR ĐOÀN / GOOGLE ADS BU3' : 
+              activeTab === 'notification-center' ? 'TRUNG TÂM ĐIỀU PHỐI' :
               activeTab.toUpperCase()
           }</div>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           </div>
         </div>
 
-        <header className={`header ${activeTab === 'notification-center' ? 'hide-on-mobile' : ''}`}>
+        <header className={`header ${isHeaderHidden ? 'header-scroll-hidden' : ''}`}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button className="mobile-header-menu-btn" onClick={() => setIsMobileMenuOpen(true)}>
               <Menu size={20} />
@@ -3404,6 +3477,7 @@ function AppContent() {
             activeTab === 'ceo-departures-dashboard' ? 'Dashboard Lịch Khởi Hành' :
             activeTab === 'team-directory' ? 'Nhân Sự FIT Tour' :
             activeTab === 'my-profile' ? 'Trang cá nhân' :
+            activeTab === 'notification-center' ? 'Trung tâm điều phối' :
             activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
           }</h1>
             {/* Global Search Dummy Input */}
@@ -3421,7 +3495,7 @@ function AppContent() {
               <kbd className="search-kbd" style={{ backgroundColor: '#ffffff', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', border: '1px solid #cbd5e1' }}>Cmd K</kbd>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="header-right-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <NotificationBell currentUser={user} />
             <div 
               className="user-profile" 
@@ -3446,7 +3520,7 @@ function AppContent() {
                   <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{user?.role?.toUpperCase() || 'NHÂN VIÊN'}</div>
                 </div>
                 {user?.avatar_url ? (
-                  <img src={user.avatar_url} alt="Avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #e2e8f0' }} />
+                  <img src={user.avatar_url} alt="Avatar" className="user-avatar-img" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #e2e8f0' }} />
                 ) : (
                   <div className="user-avatar" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: '#4f46e5', color: 'white', fontWeight: 'bold' }}>
                     {user?.full_name?.substring(0,1).toUpperCase() || user?.username?.substring(0,1).toUpperCase() || 'U'}
@@ -3456,10 +3530,10 @@ function AppContent() {
               
               {hoveredMenu === 'user-profile' && (
                 <div 
+                  className="user-profile-dropdown"
                   style={{ 
                     position: 'absolute', 
                     right: 0, 
-
                     display: 'flex', 
                     flexDirection: 'column',
                     opacity: 1, 
@@ -3467,7 +3541,7 @@ function AppContent() {
                     pointerEvents: 'auto',
                     zIndex: 9999,
                     top: 'calc(100% + 5px)',
-                    minWidth: '150px',
+                    minWidth: '170px',
                     background: '#fff',
                     boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
                     borderRadius: '8px',
@@ -3475,6 +3549,10 @@ function AppContent() {
                     overflow: 'hidden'
                   }}
                 >
+                  <div className="mobile-only-user-header" style={{ padding: '10px 14px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
+                    <div style={{ fontWeight: 700, fontSize: '13px', color: '#1e293b' }}>{user?.full_name || user?.username || 'Người dùng'}</div>
+                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{user?.role?.toUpperCase() || 'NHÂN VIÊN'}</div>
+                  </div>
                   <div 
                     className="header-dropdown-item" 
                     onClick={(e) => { e.stopPropagation(); navigate('/my-profile'); setHoveredMenu(null); }}
@@ -3541,6 +3619,44 @@ function AppContent() {
             </div>
           </div>
         </header>
+
+        {/* Mobile Push Notification Prompt Banner if permission not granted yet */}
+        {typeof Notification !== 'undefined' && Notification.permission === 'default' && (
+          <div style={{
+            background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+            border: '1px solid #bfdbfe',
+            borderRadius: '10px',
+            padding: '10px 14px',
+            margin: '0 16px 16px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            boxShadow: '0 2px 4px rgba(37, 99, 235, 0.06)'
+          }}>
+            <div style={{ fontSize: '13px', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+              <span style={{ fontSize: '18px' }}>🔔</span>
+              <span><strong>Bật thông báo ngay:</strong> Để nhận tin đẩy khi có Lead mới hoặc khách nhắn tin!</span>
+            </div>
+            <button 
+              onClick={requestSubscription}
+              style={{
+                background: '#2563eb',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '7px 14px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)'
+              }}
+            >
+              Bật ngay
+            </button>
+          </div>
+        )}
 
         <SystemAnnouncementPopup currentUser={user} />
 

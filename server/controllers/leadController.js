@@ -88,6 +88,22 @@ exports.createLead = async (req, res) => {
             }
         }
 
+        // SHORT-WINDOW DEDUPLICATION GUARD for manual lead creation (Phone double-click / network lag)
+        // If the same phone was created within 60 seconds, treat as duplicate submit and return existing lead
+        if (finalPhone) {
+            const recentDuplicateRes = await db.query(
+                `SELECT * FROM leads 
+                 WHERE phone = $1 
+                   AND created_at > NOW() - INTERVAL '60 seconds'
+                 ORDER BY created_at DESC LIMIT 1`,
+                [finalPhone]
+            );
+            if (recentDuplicateRes.rows.length > 0) {
+                console.log(`[Deduplication Guard] Blocked rapid duplicate submit for phone ${finalPhone} within 60s`);
+                return res.status(200).json(recentDuplicateRes.rows[0]);
+            }
+        }
+
         // DEDUPLICATION GUARD for social chat channels (Zalo OA / Facebook Messenger)
         // If an active lead exists for this zalo_uid or facebook_psid within 30 days, merge & update instead of inserting a duplicate
         let existingActiveLead = null;
@@ -363,7 +379,7 @@ exports.updateLead = async (req, res) => {
         const queryValues = [];
         const allowedFields = [
             'name', 'phone', 'email', 'source', 'tour_id', 'status', 
-            'assigned_to', 'consultation_note', 'bu_group', 'gender', 
+            'assigned_to', 'consultation_note', 'bu_group', 'is_bu_locked', 'gender', 
             'birth_date', 'classification', 'last_contacted_at', 'won_at',
             'facebook_psid', 'meta_lead_id', 'fbclid', 'zalo_uid',
             'dispatched_at', 'dispatched_by', 'dispatched_by_name', 'dispatcher_notes', 'market_collection'
@@ -381,6 +397,11 @@ exports.updateLead = async (req, res) => {
                 if (key === 'tour_id' && val === '') val = null;
                 if (key === 'assigned_to' && val === '') val = null;
                 if (key === 'bu_group' && val === '') val = null;
+
+                // Lock BU automatically if user explicitly changed/cleared bu_group
+                if (key === 'bu_group' && updates.is_bu_locked === undefined) {
+                    updateFields.push(`is_bu_locked = true`);
+                }
 
                 // Auto-update status to 'Đang liên hệ' if newly assigned and status is 'Mới'
                 if (key === 'assigned_to' && val !== null && oldLead.status === 'Mới' && updates.status === undefined) {

@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 const xlsx = require('xlsx');
 const path = require('path');
 const fs = require('fs');
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const YEAR = 2026;
 const MONTH = 9;
@@ -15,10 +15,10 @@ async function run() {
   });
 
   const possiblePaths = [
+    path.resolve(__dirname, `../../data_import/bao-cao-facebook-ads/${FILE_NAME}`),
     path.resolve(__dirname, `../data_import/bao-cao-facebook-ads/${FILE_NAME}`),
-    path.resolve(__dirname, `data_import/bao-cao-facebook-ads/${FILE_NAME}`),
-    `/var/www/fittour-crm/data_import/bao-cao-facebook-ads/${FILE_NAME}`,
-    `/var/www/fittour-crm/server/data_import/bao-cao-facebook-ads/${FILE_NAME}`
+    path.resolve(__dirname, `../../../data_import/bao-cao-facebook-ads/${FILE_NAME}`),
+    `/var/www/fittour-crm/data_import/bao-cao-facebook-ads/${FILE_NAME}`
   ];
 
   const filePath = possiblePaths.find(p => fs.existsSync(p));
@@ -53,7 +53,7 @@ async function run() {
     const ad = (row['Tên quảng cáo'] || row['Quảng cáo'] || '').toString().trim();
     
     // Check if Total row or completely empty row
-    if (!campaign) {
+    if (!campaign && !adSet && !ad) {
       console.log(`ℹ️ Row ${idx}: Bỏ qua dòng Tổng cộng / Trống (Chi tiêu: ${row['Số tiền đã chi tiêu (VND)'] || 0})`);
       return;
     }

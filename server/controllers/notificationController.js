@@ -198,6 +198,12 @@ const subscribe = async (req, res) => {
           return res.status(400).json({ error: "Invalid subscription" });
       }
 
+      // Xoá endpoint này nếu trước đây thuộc user khác (ví dụ đổi tài khoản trên cùng 1 điện thoại)
+      await db.query(
+          `DELETE FROM device_subscriptions WHERE subscription_json->>'endpoint' = $1 AND user_id != $2`,
+          [subscription.endpoint, user_id]
+      );
+
       await db.query(
           `INSERT INTO device_subscriptions (user_id, subscription_json) 
            VALUES ($1, $2) 

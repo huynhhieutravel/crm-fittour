@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
 
 const urlBase64ToUint8Array = (base64String) => {
@@ -18,6 +18,45 @@ const urlBase64ToUint8Array = (base64String) => {
 
 const usePushNotifications = (token) => {
     const [isSubscribing, setIsSubscribing] = useState(false);
+
+    // Auto-sync push subscription if permission was already granted (e.g. returning user or switched account on same phone)
+    useEffect(() => {
+        if (!token) return;
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+
+        (async () => {
+            try {
+                let registration = await navigator.serviceWorker.getRegistration();
+                if (!registration) {
+                    registration = await navigator.serviceWorker.register('/sw.js');
+                }
+                const activeRegistration = await navigator.serviceWorker.ready;
+                let pushSubscription = await activeRegistration.pushManager.getSubscription();
+
+                if (!pushSubscription && import.meta.env.VITE_VAPID_PUBLIC_KEY) {
+                    const subscribeOptions = {
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(import.meta.env.VITE_VAPID_PUBLIC_KEY)
+                    };
+                    pushSubscription = await activeRegistration.pushManager.subscribe(subscribeOptions);
+                }
+
+                if (pushSubscription) {
+                    await axios.post('/api/notifications/subscribe', {
+                        subscription: pushSubscription
+                    }, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+                    console.log('[Push] Auto-synced device subscription for current user');
+                }
+            } catch (err) {
+                console.warn('[Push] Auto-sync device subscription failed:', err.message);
+            }
+        })();
+    }, [token]);
 
     const requestSubscription = useCallback(async () => {
         if (!token) return alert('Vui lòng đăng nhập trước!');

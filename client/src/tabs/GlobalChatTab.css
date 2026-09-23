@@ -152,8 +152,8 @@
         padding-bottom: 60px !important;
         margin: 0 !important;
         border-radius: 0 !important;
-        height: 100vh !important;
-        height: 100dvh !important;
+        height: calc(100vh - 70px) !important;
+        height: calc(100dvh - 70px) !important;
     }
     
     .global-chat-header {

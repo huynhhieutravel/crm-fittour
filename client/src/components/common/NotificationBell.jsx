@@ -6,6 +6,7 @@ import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import NotificationSettingsModal from './NotificationSettingsModal';
 import { playMessageChime, playLeadChime, isSoundEnabled } from '../../utils/audioNotification';
+import usePushNotifications from '../../hooks/usePushNotifications';
 
 const NotificationBell = ({ currentUser }) => {
   const [notifications, setNotifications] = useState([]);
@@ -17,6 +18,7 @@ const NotificationBell = ({ currentUser }) => {
   );
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
 
   const fetchNotifications = async () => {
     try {
@@ -119,7 +121,7 @@ const NotificationBell = ({ currentUser }) => {
     }
   }, [currentUser, navigate]);
 
-  // Click ra ngoài để đóng dropdown
+  // Click / touch ra ngoài để đóng dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -127,7 +129,11 @@ const NotificationBell = ({ currentUser }) => {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   const handleMarkAsRead = async (id, e) => {
@@ -166,17 +172,10 @@ const NotificationBell = ({ currentUser }) => {
   };
 
   const requestNotificationPermission = async () => {
-    if (!('Notification' in window)) {
-      toast.error('Trình duyệt của bạn không hỗ trợ thông báo màn hình');
-      return;
-    }
     try {
-      const permission = await Notification.requestPermission();
-      setNotificationPermission(permission);
-      if (permission === 'granted') {
-        toast.success('Đã bật thông báo màn hình thành công!');
-      } else {
-        toast.error('Bạn đã từ chối nhận thông báo màn hình');
+      await requestSubscription();
+      if ('Notification' in window) {
+        setNotificationPermission(Notification.permission);
       }
     } catch (error) {
       console.error('Error requesting notification permission', error);
@@ -184,7 +183,7 @@ const NotificationBell = ({ currentUser }) => {
   };
 
   return (
-    <div className="notification-bell-container" ref={dropdownRef} style={{ position: 'relative', marginRight: '16px' }}>
+    <div className="notification-bell-container" ref={dropdownRef} style={{ position: 'relative' }}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
         style={{
@@ -219,20 +218,23 @@ const NotificationBell = ({ currentUser }) => {
       </button>
 
       {isOpen && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          right: '-10px',
-          width: '320px',
-          background: 'white',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-          borderRadius: '8px',
-          border: '1px solid #e2e8f0',
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column',
-          maxHeight: '400px'
-        }}>
+        <div 
+          className="notification-dropdown"
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            right: '0',
+            width: '340px',
+            background: 'white',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: '400px'
+          }}
+        >
           <div style={{
             padding: '12px 16px',
             borderBottom: '1px solid #e2e8f0',
@@ -245,14 +247,6 @@ const NotificationBell = ({ currentUser }) => {
           }}>
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>Thông báo</h3>
             <div style={{ display: 'flex', gap: '8px' }}>
-              {notificationPermission === 'default' && (
-                <button 
-                  onClick={requestNotificationPermission}
-                  style={{ background: '#e0e7ff', border: '1px solid #c7d2fe', color: '#4f46e5', fontSize: '11px', cursor: 'pointer', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}
-                >
-                  🔔 Bật thông báo
-                </button>
-              )}
               {unreadCount > 0 && (
                 <button 
                   onClick={handleMarkAllAsRead}
@@ -272,6 +266,91 @@ const NotificationBell = ({ currentUser }) => {
               </button>
             </div>
           </div>
+
+          {/* Banner Kích hoạt / Trạng thái Nhận thông báo đẩy */}
+          {notificationPermission !== 'granted' ? (
+            <div style={{
+              margin: '10px 12px 6px 12px',
+              padding: '10px 12px',
+              background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+              border: '1px solid #fde68a',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#fef08a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '14px' }}>
+                  🔔
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: '12px', color: '#92400e' }}>Nhận thông báo đẩy</div>
+                  <div style={{ fontSize: '11px', color: '#b45309', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Báo Lead mới ngay cả khi tắt màn hình</div>
+                </div>
+              </div>
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  await requestNotificationPermission();
+                }}
+                disabled={isSubscribing}
+                style={{
+                  background: '#f59e0b',
+                  color: 'white',
+                  border: 'none',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                }}
+              >
+                {isSubscribing ? 'Đang bật...' : 'Bật ngay'}
+              </button>
+            </div>
+          ) : (
+            <div style={{
+              margin: '8px 12px 4px 12px',
+              padding: '6px 10px',
+              background: '#ecfdf5',
+              border: '1px solid #a7f3d0',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '11px',
+              color: '#065f46'
+            }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+                <Check size={14} style={{ color: '#10b981' }} /> Đã bật thông báo đẩy trên máy này
+              </span>
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  await requestNotificationPermission();
+                }}
+                disabled={isSubscribing}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#059669',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  padding: 0
+                }}
+                title="Đồng bộ lại thiết bị"
+              >
+                {isSubscribing ? 'Đang đồng bộ...' : 'Đồng bộ lại'}
+              </button>
+            </div>
+          )}
 
           <div style={{ overflowY: 'auto', flex: 1 }}>
             {notifications.length === 0 ? (

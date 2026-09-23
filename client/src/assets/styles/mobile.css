@@ -164,6 +164,10 @@
     background: rgba(239, 68, 68, 0.8); /* Red on hover */
   }
 
+  .breadcrumb-container {
+    display: none !important;
+  }
+
   .main-content {
     width: 100%;
     padding: 1rem;
@@ -185,6 +189,13 @@
     margin-bottom: 0;
     flex-direction: row !important;
     border-bottom: 1px solid var(--glass-border);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease !important;
+  }
+
+  .header.header-scroll-hidden {
+    transform: translateY(-100%) !important;
+    box-shadow: none !important;
+    pointer-events: none !important;
   }
 
   .header h1 {

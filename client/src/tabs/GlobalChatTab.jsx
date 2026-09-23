@@ -21,6 +21,7 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
     const [searchQuery, setSearchQuery] = useState('');
     const messagesEndRef = useRef(null);
     const isScrolledUpRef = useRef(false);
+    const lastInnerScrollTopRef = useRef(0);
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
     const myBU = Array.isArray(currentUser?.bus) 
         ? (currentUser.bus[0] || 'BU1') 
@@ -484,6 +485,12 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                      const { scrollTop, scrollHeight, clientHeight } = e.target;
                      const isAtBottom = scrollHeight - scrollTop - clientHeight < 150;
                      isScrolledUpRef.current = !isAtBottom;
+
+                     const diff = scrollTop - (lastInnerScrollTopRef.current || 0);
+                     lastInnerScrollTopRef.current = scrollTop;
+                     window.dispatchEvent(new CustomEvent('app-scroll-direction', {
+                         detail: { diff, scrollTop }
+                     }));
                  }}
             >
                 <div style={{ textAlign: 'center', margin: '10px 0' }}>

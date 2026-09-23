@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getLocalIsoString, getLocalDateTimeLocal, getLocalDateString } from '../../utils/dateUtils';
-import { X, PlusCircle, LogOut, AlertTriangle, ExternalLink } from 'lucide-react';
+import { X, PlusCircle, LogOut, AlertTriangle, ExternalLink, Loader2 } from 'lucide-react';
 import SearchableSelect from '../common/SearchableSelect';
 import axios from 'axios';
 
@@ -18,6 +18,20 @@ const AddLeadModal = ({
   bus
 }) => {
   const [existingCustomer, setExistingCustomer] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await handleAddLead(e);
+    } catch (err) {
+      console.error('Error submitting new lead:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (!newLead.phone || newLead.phone.trim().length < 8) {
@@ -76,7 +90,7 @@ const AddLeadModal = ({
           </div>
         )}
 
-        <form onSubmit={handleAddLead} className="modal-grid-2">
+        <form onSubmit={onSubmit} className="modal-grid-2">
           <div className="modal-form-group" style={existingCustomer ? { opacity: 0.5 } : {}}>
             <label>TÊN KHÁCH HÀNG *</label>
             <input className="modal-input" required value={newLead.name} onChange={e => setNewLead({...newLead, name: e.target.value})} placeholder="Nguyễn Văn A..." />
@@ -175,10 +189,23 @@ const AddLeadModal = ({
           </div>
 
           <div className="modal-header-actions-group" style={{ gridColumn: '1 / -1', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
-            <button type="submit" className="btn-pro-save">
-              <PlusCircle size={18} strokeWidth={3} /> LƯU HỒ SƠ MỚI
+            <button 
+              type="submit" 
+              className="btn-pro-save"
+              disabled={isSubmitting}
+              style={isSubmitting ? { opacity: 0.65, cursor: 'not-allowed' } : {}}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" /> ĐANG LƯU HỒ SƠ...
+                </>
+              ) : (
+                <>
+                  <PlusCircle size={18} strokeWidth={3} /> LƯU HỒ SƠ MỚI
+                </>
+              )}
             </button>
-            <button type="button" className="btn-pro-cancel" onClick={() => setShowAddLeadModal(false)}>
+            <button type="button" className="btn-pro-cancel" disabled={isSubmitting} onClick={() => setShowAddLeadModal(false)}>
               <LogOut size={18} strokeWidth={2.5} style={{ transform: 'rotate(180deg)' }} /> HỦY BỎ
             </button>
           </div>

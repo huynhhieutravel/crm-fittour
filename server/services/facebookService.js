@@ -509,8 +509,8 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                     }
                     await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [received_message.text, conversationId]);
 
-                    // [BU-AUTO] Nếu lead chưa có BU → classify từ TẤT CẢ tin nhắn (lọc greeting template)
-                    if (!oldLead.bu_group) {
+                    // [BU-AUTO] Nếu lead chưa có BU VÀ chưa bị khóa thủ công → classify từ TẤT CẢ tin nhắn (lọc greeting template)
+                    if (!oldLead.bu_group && !oldLead.is_bu_locked) {
                         const allMsgsResult = await db.query(
                             'SELECT sender_type, content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
                             [conversationId]
@@ -1165,13 +1165,13 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         }
                     }
                     
-                    // Classification for existing lead if BU missing (Luôn chạy nếu chưa có BU)
-                    const leadCheckRe = await db.query('SELECT bu_group, tour_id, name FROM leads WHERE id = $1', [currentLeadId]);
+                    // Classification for existing lead if BU missing (Chỉ chạy nếu chưa có BU VÀ chưa bị khóa thủ công)
+                    const leadCheckRe = await db.query('SELECT bu_group, tour_id, name, is_bu_locked FROM leads WHERE id = $1', [currentLeadId]);
                     if (leadCheckRe.rows.length > 0) {
                         const allPollerMsgs = await db.query('SELECT sender_type, content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC', [oldConv.id]);
                         const allPollerText = allPollerMsgs.rows.filter(m => !isAutoGreeting(m.content) && !isAirlineExampleBoilerplate(m.content) && !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)')).map(m => m.content || '').join(' ');
                         
-                        if (!leadCheckRe.rows[0].bu_group) {
+                        if (!leadCheckRe.rows[0].bu_group && !leadCheckRe.rows[0].is_bu_locked) {
                             const autoBUPoller2 = await classifyBUFromMessage(allPollerText, adContextText);
                             if (autoBUPoller2) {
                                 await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBUPoller2, currentLeadId]);

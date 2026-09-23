@@ -453,8 +453,8 @@ const zaloV2Controller = {
               await db.query('UPDATE leads SET last_contacted_at = NOW() WHERE id = $1', [leadId]);
             }
 
-            // Phân loại BU nếu chưa có
-            if (!oldLead.bu_group && messageText) {
+            // Phân loại BU nếu chưa có và chưa bị khóa thủ công
+            if (!oldLead.bu_group && !oldLead.is_bu_locked && messageText) {
               const autoBU3 = await facebookService.classifyBUFromMessage(messageText);
               if (autoBU3) {
                 await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU3, leadId]);
