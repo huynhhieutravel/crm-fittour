@@ -200,7 +200,7 @@ function AppContent() {
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
   const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
-  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'marketing-google-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'announcements', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'visa-form-templates', 'dispatch-schedule', 'notification-center'];
+  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'marketing-google-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'announcements', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'visa-form-templates', 'dispatch-schedule', 'notification-center', 'zns-demo'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -2701,7 +2701,7 @@ function AppContent() {
           style={{ 
             position: 'fixed', 
             left: `${hoveredRect.right + 5}px`, 
-            top: `${hoveredRect.top}px`, 
+            top: `${Math.max(10, Math.min(hoveredRect.top, window.innerHeight - 350))}px`, 
             display: 'flex', 
             opacity: 1, 
             transform: 'none',
@@ -2897,9 +2897,12 @@ function AppContent() {
           }}
           onMouseEnter={() => {
             if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+            setHoveredMenu('visas');
           }}
           onMouseLeave={() => {
-            setHoveredMenu(null);
+            menuTimerRef.current = setTimeout(() => {
+              setHoveredMenu(null);
+            }, 150);
           }}
         >
           <div className="submenu-content" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -3040,7 +3043,7 @@ function AppContent() {
           style={{ 
             position: 'fixed', 
             left: `${hoveredRect.right + 5}px`, 
-            top: `${hoveredRect.top}px`, 
+            top: `${Math.max(10, Math.min(hoveredRect.top, window.innerHeight - 360))}px`, 
             display: 'flex', 
             opacity: 1, 
             transform: 'none',
@@ -3185,7 +3188,7 @@ function AppContent() {
           style={{ 
             position: 'fixed', 
             left: `${hoveredRect.right + 5}px`, 
-            top: `${hoveredRect.top}px`, 
+            top: `${Math.max(10, Math.min(hoveredRect.top, window.innerHeight - 360))}px`, 
             display: 'flex', 
             opacity: 1, 
             transform: 'none',
