@@ -697,11 +697,19 @@ function AppContent() {
     setHoveredMenu(null);
   }, [location.pathname, location.search, user]);
 
-  // Click / touch outside to close hovered profile menu
+  // Click / touch outside to close hovered profile menu or flyouts
   useEffect(() => {
     if (!hoveredMenu) return;
     const handleGlobalClick = (e) => {
-      if (!e.target.closest('.user-profile') && !e.target.closest('.user-profile-dropdown')) {
+      // Do not unmount on mousedown if clicking inside submenu items or sidebar navigation items
+      if (e.target.closest('.submenu-flyout') || e.target.closest('.nav-item')) {
+        return;
+      }
+      if (hoveredMenu === 'user-profile') {
+        if (!e.target.closest('.user-profile') && !e.target.closest('.user-profile-dropdown')) {
+          setHoveredMenu(null);
+        }
+      } else {
         setHoveredMenu(null);
       }
     };
@@ -3103,7 +3111,7 @@ function AppContent() {
           style={{ 
             position: 'fixed', 
             left: `${hoveredRect.right + 5}px`, 
-            top: `${hoveredRect.top}px`, 
+            top: `${Math.max(10, Math.min(hoveredRect.top, window.innerHeight - 380))}px`, 
             display: 'flex', 
             opacity: 1, 
             transform: 'none',
