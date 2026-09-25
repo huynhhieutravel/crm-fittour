@@ -39,6 +39,7 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
         isStaff &&
         isPrevStaff &&
         (msg.content || "").trim() === (prev.content || "").trim() &&
+        (msg.image_url || "") === (prev.image_url || "") &&
         Math.abs(new Date(msg.created_at).getTime() - new Date(prev.created_at).getTime()) < 60000
       ) {
         // Ưu tiên bản ghi có sender_id (nhân viên CRM thực tế gửi)
@@ -55,6 +56,7 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [converting, setConverting] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
 
   // Templates
   const [templates, setTemplates] = useState([]);
@@ -865,12 +867,52 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
                 <div className="messages-list">
                   {displayMessages.map((msg, idx) => {
                     const isStaff = msg.sender_type !== "customer";
+
+                    // Trích xuất link ảnh nếu có (từ image_url hoặc fallback URL trong content)
+                    let imgUrl = msg.image_url;
+                    if (!imgUrl && msg.content && typeof msg.content === 'string') {
+                      const trimmed = msg.content.trim();
+                      if ((trimmed.startsWith('http://') || trimmed.startsWith('https://')) && (
+                        trimmed.match(/\.(jpeg|jpg|gif|png|webp)($|\?)/i) || 
+                        trimmed.includes('fbcdn.net') || 
+                        trimmed.includes('fbsbx.com')
+                      )) {
+                        imgUrl = trimmed;
+                      }
+                    }
+
+                    const showContent = msg.content && msg.content !== '[Hình ảnh]' && msg.content !== imgUrl;
+
                     return (
                       <div
                         key={msg.id || idx}
                         className={`msg-wrapper ${isStaff ? "staff" : "customer"}`}
                       >
-                        <div className="msg-bubble">{msg.content}</div>
+                        <div className="msg-bubble">
+                          {imgUrl && (
+                            <div className="msg-image-wrap" style={{ marginBottom: showContent ? '8px' : '0' }}>
+                              <img
+                                src={imgUrl}
+                                alt="Ảnh đính kèm"
+                                onClick={() => setPreviewImage(imgUrl)}
+                                style={{
+                                  maxWidth: '100%',
+                                  maxHeight: '280px',
+                                  borderRadius: '10px',
+                                  display: 'block',
+                                  cursor: 'zoom-in',
+                                  objectFit: 'cover',
+                                  boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+                                }}
+                                onError={(e) => {
+                                  // Ẩn ảnh nếu lỗi link hoặc quá hạn
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
+                          {showContent && <div>{msg.content}</div>}
+                        </div>
                         <div className="msg-time">
                           <Clock size={10} /> {formatTime(msg.created_at)}
                         </div>
@@ -944,6 +986,63 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
           )}
         </div>
       </div>
+
+      {/* Lightbox Preview Modal */}
+      {previewImage && (
+        <div 
+          onClick={() => setPreviewImage(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            cursor: 'zoom-out'
+          }}
+        >
+          <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }} onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setPreviewImage(null)}
+              style={{
+                position: 'absolute',
+                top: '-40px',
+                right: '0',
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                borderRadius: '6px',
+                color: '#ffffff',
+                padding: '6px 12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '13px',
+                fontWeight: 600
+              }}
+            >
+              <X size={18} /> Đóng
+            </button>
+            <img
+              src={previewImage}
+              alt="Xem ảnh kích thước lớn"
+              style={{
+                maxWidth: '100%',
+                maxHeight: '85vh',
+                borderRadius: '8px',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                objectFit: 'contain'
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       <style>{`
         .inbox-wrapper {

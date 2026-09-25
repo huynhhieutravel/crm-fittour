@@ -175,6 +175,9 @@ export default function LeaveRequestModal({ currentUser, users = [], editData, o
                 </div>
             </div>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <a href="/huong-dan-erp/tao-nghi-phep" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }} title="Xem hướng dẫn từng bước">
+                    📖 Hướng dẫn
+                </a>
                 <a href="/leaves" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', background: '#eff6ff', color: '#3b82f6', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: '600' }}>
                     Quản lý nghỉ phép
                 </a>

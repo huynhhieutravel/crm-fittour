@@ -18,6 +18,19 @@ const RoomBookingTab = ({ currentUser }) => {
     const calendarRef = useRef(null);
     const [viewMode, setViewMode] = useState('day');
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [hoverTooltip, setHoverTooltip] = useState(null);
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+        const handleScroll = () => setHoverTooltip(null);
+        window.addEventListener('resize', checkMobile);
+        window.addEventListener('scroll', handleScroll, true);
+        return () => {
+            window.removeEventListener('resize', checkMobile);
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, []);
 
     // Modal State
     const [modal, setModal] = useState({
@@ -37,7 +50,6 @@ const RoomBookingTab = ({ currentUser }) => {
 
     const formatISODate = (d) => {
         const date = new Date(d);
-        const tzOffset = date.getTimezoneOffset() * 60000;
         return getLocalDateString(new Date(date));
     };
     const formatISOTime = (d) => {
@@ -52,6 +64,7 @@ const RoomBookingTab = ({ currentUser }) => {
         'BU3': 'green',
         'BU4': 'red',
         'BU5': 'orange',
+        'KHÁC': 'gray',
         'Khác': 'gray'
     };
 
@@ -64,8 +77,9 @@ const RoomBookingTab = ({ currentUser }) => {
             const data = res.data;
 
             const mappedEvents = data.map((b, index) => {
-                const bu = b.bu || 'Khác';
-                const colorClass = buColorMap[bu] || 'gray';
+                const bu = (b.bu || 'Khác').toString().trim();
+                const cleanBu = bu.toUpperCase().replace(/\s+/g, '');
+                const colorClass = buColorMap[cleanBu] || buColorMap[bu] || 'gray';
                 // Kiểm tra current meeting
                 const now = new Date();
                 const start = new Date(b.start_time);
@@ -109,6 +123,26 @@ const RoomBookingTab = ({ currentUser }) => {
     }, []);
 
     const handleSelect = (info) => {
+        let startTime = formatISOTime(info.start);
+        let endTime = formatISOTime(info.end);
+
+        // Nếu người dùng nhấp chọn ô ngày ở chế độ Tháng (Month view) hoặc chọn cả ngày (allDay)
+        // thì startTime và endTime sẽ đều là '00:00'. Mặc định tạo khung giờ làm việc hợp lệ.
+        if (info.allDay || startTime === endTime || (startTime === '00:00' && endTime === '00:00')) {
+            const now = new Date();
+            const selectedDate = new Date(info.start);
+            // Nếu ngày được chọn là hôm nay, lấy mốc giờ tiếp theo
+            if (selectedDate.toDateString() === now.toDateString()) {
+                const nextHour = Math.min(now.getHours() + 1, 21);
+                startTime = `${String(nextHour).padStart(2, '0')}:00`;
+                endTime = `${String(Math.min(nextHour + 1, 22)).padStart(2, '0')}:00`;
+            } else {
+                startTime = '09:00';
+                endTime = '10:00';
+            }
+        }
+
+        setHoverTooltip(null);
         setModal({
             isOpen: true,
             mode: 'create',
@@ -116,8 +150,8 @@ const RoomBookingTab = ({ currentUser }) => {
                 id: null,
                 title: '',
                 date: formatISODate(info.start),
-                startTime: formatISOTime(info.start),
-                endTime: formatISOTime(info.end),
+                startTime: startTime,
+                endTime: endTime,
                 bu: 'BU1',
                 description: '',
                 host: currentUser ? currentUser.full_name : 'Admin'
@@ -126,6 +160,8 @@ const RoomBookingTab = ({ currentUser }) => {
     };
 
     const handleEventClick = (infoOrEvent) => {
+        // Dismiss hover tooltip ngay khi nhấp vào sự kiện
+        setHoverTooltip(null);
         // Support both FullCalendar info object ({event: ...}) and plain event object from DayView
         const event = infoOrEvent.event ? infoOrEvent.event : infoOrEvent;
         const now = new Date();
@@ -140,7 +176,7 @@ const RoomBookingTab = ({ currentUser }) => {
                 date: formatISODate(event.start),
                 startTime: formatISOTime(event.start),
                 endTime: formatISOTime(event.end),
-                bu: event.extendedProps?.bu || event.extendedProps?.bu || 'Khác',
+                bu: event.extendedProps?.bu || 'Khác',
                 description: event.extendedProps?.description || '',
                 host: event.extendedProps?.host || 'Khách'
             }
@@ -238,14 +274,50 @@ const RoomBookingTab = ({ currentUser }) => {
     };
 
     const renderEventContent = (eventInfo) => {
-        const { host, description, bu } = eventInfo.event.extendedProps;
-        const tooltipText = description ? `📝 ${description}` : 'Không có ghi chú';
+        const { host, bu } = eventInfo.event.extendedProps;
         return (
-            <div className="event-inner" title={tooltipText}>
-                <div className="event-title">{eventInfo.event.title}</div>
-                <div className="event-host">{host}{bu ? ` · ${bu}` : ''}</div>
+            <div className="event-inner">
+                <div className="event-title">
+                    {eventInfo.event.title}
+                </div>
+                <div className="event-host">
+                    <span className="event-host-name">{host || 'Khách'}</span>
+                    {bu && <span className="event-bu-pill">{bu}</span>}
+                </div>
             </div>
         );
+    };
+
+    const handleEventMouseEnter = (info) => {
+        const rect = info.el.getBoundingClientRect();
+        const event = info.event;
+        const startStr = formatISOTime(event.start);
+        const endStr = formatISOTime(event.end);
+        
+        // Tránh bị thanh Thứ (Mon, Tue, Wed) ở trên che: nếu cách đỉnh màn hình < 270px thì hiện ở DƯỚI
+        const isNearTop = rect.top < 270;
+        const placement = isNearTop ? 'bottom' : 'top';
+        
+        const tooltipWidth = 260;
+        let left = rect.left + rect.width / 2 - tooltipWidth / 2;
+        left = Math.max(12, Math.min(window.innerWidth - tooltipWidth - 12, left));
+        
+        const y = isNearTop ? rect.bottom + 8 : rect.top - 8;
+
+        setHoverTooltip({
+            title: event.title,
+            time: `${startStr} - ${endStr}`,
+            host: event.extendedProps?.host || 'Khách',
+            bu: event.extendedProps?.bu || 'Khác',
+            description: event.extendedProps?.description || '',
+            x: left,
+            y: y,
+            placement: placement
+        });
+    };
+
+    const handleEventMouseLeave = () => {
+        setHoverTooltip(null);
     };
 
     // Calculate status
@@ -311,6 +383,28 @@ const RoomBookingTab = ({ currentUser }) => {
                         </div>
                     )}
                     <button className="soft-btn" style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #d2d2d7', background: 'white', cursor: 'pointer', fontWeight: '500' }} onClick={() => fetchBookings()}>Refresh</button>
+                    <a 
+                      href="/huong-dan-erp/dat-phong-hop" 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      style={{ 
+                        textDecoration: 'none', 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '6px', 
+                        padding: '8px 14px', 
+                        borderRadius: '8px', 
+                        border: '1px solid #3b82f6', 
+                        background: '#eff6ff', 
+                        color: '#1d4ed8', 
+                        fontWeight: '600', 
+                        fontSize: '13px',
+                        cursor: 'pointer' 
+                      }}
+                      title="Xem hướng dẫn sử dụng Đặt phòng họp"
+                    >
+                      📖 Hướng dẫn
+                    </a>
                     <button className="dark-btn" style={{ background: '#1d1d1f', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: '600', cursor: 'pointer' }} onClick={() => {
                         const start = new Date();
                         start.setMinutes(0, 0, 0);
@@ -331,6 +425,7 @@ const RoomBookingTab = ({ currentUser }) => {
             <main className="main" style={{ height: 'calc(100vh - 120px)', background: viewMode === 'day' ? 'transparent' : undefined, border: viewMode === 'day' ? 'none' : undefined, boxShadow: viewMode === 'day' ? 'none' : undefined }}>
 
                 <div className="calendar-wrap" style={{ display: viewMode === 'day' ? 'none' : 'flex', flexDirection: 'column', height: '100%' }}>
+                    <div className="mobile-scroll-hint">👈 Vuốt ngang để xem trọn vẹn 7 ngày 👉</div>
                     <FullCalendar
                         ref={calendarRef}
                         plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
@@ -340,7 +435,8 @@ const RoomBookingTab = ({ currentUser }) => {
                         selectable={true}
                         allDaySlot={false}
                         expandRows={true}
-                        height="100%"
+                        height={isMobile ? 'auto' : '100%'}
+                        contentHeight={isMobile ? 'auto' : undefined}
                         slotMinTime="07:00:00"
                         slotMaxTime="22:00:00"
                         slotDuration="00:30:00"
@@ -362,6 +458,8 @@ const RoomBookingTab = ({ currentUser }) => {
                         eventContent={renderEventContent}
                         select={handleSelect}
                         eventClick={handleEventClick}
+                        eventMouseEnter={handleEventMouseEnter}
+                        eventMouseLeave={handleEventMouseLeave}
                         eventDrop={handleEventDrop}
                         eventResize={handleEventDrop} // Tái sử dụng logic update
                     />
@@ -495,6 +593,34 @@ const RoomBookingTab = ({ currentUser }) => {
                             </div>
                         </form>
                     </div>
+                </div>
+            )}
+
+            {/* Global Floating Tooltip khi rê chuột vào cuộc họp (Không bao giờ bị tràn ô hay che bởi thanh Thứ) */}
+            {hoverTooltip && (
+                <div 
+                    className={`meeting-floating-tooltip placement-${hoverTooltip.placement}`}
+                    style={{
+                        position: 'fixed',
+                        left: `${hoverTooltip.x}px`,
+                        top: hoverTooltip.placement === 'bottom' ? `${hoverTooltip.y}px` : undefined,
+                        bottom: hoverTooltip.placement === 'top' ? `${window.innerHeight - hoverTooltip.y}px` : undefined,
+                        zIndex: 999999,
+                        pointerEvents: 'none'
+                    }}
+                >
+                    <div className="tooltip-header-row">
+                        <span className="tooltip-time">⏰ {hoverTooltip.time}</span>
+                        {hoverTooltip.bu && <span className="tooltip-bu-pill">{hoverTooltip.bu}</span>}
+                    </div>
+                    <div className="tooltip-title">{hoverTooltip.title}</div>
+                    <div className="tooltip-host">👤 Người đặt: <strong>{hoverTooltip.host}</strong></div>
+                    {hoverTooltip.description && (
+                        <div className="tooltip-desc">
+                            📝 {hoverTooltip.description}
+                        </div>
+                    )}
+                    <div className="tooltip-hint">💡 Nhấp vào cuộc họp để xem / sửa</div>
                 </div>
             )}
         </div>

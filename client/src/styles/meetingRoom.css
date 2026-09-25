@@ -196,11 +196,30 @@
 }
 
 .meeting-room-tab .fc-col-header-cell-cushion {
-  padding: 12px 0 !important;
-  color: #707078;
-  font-size: 14px;
-  font-weight: 650;
+  padding: 10px 0 !important;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
   text-decoration: none !important;
+  letter-spacing: 0.03em;
+}
+
+/* Day numbers in month grid */
+.meeting-room-tab .fc-daygrid-day-number {
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 8px !important;
+  text-decoration: none !important;
+}
+
+.meeting-room-tab .fc-day-today {
+  background: rgba(239, 246, 255, 0.5) !important;
+}
+
+.meeting-room-tab .fc-day-today .fc-daygrid-day-number {
+  color: #1d4ed8 !important;
+  font-weight: 700;
 }
 
 /* Time labels */
@@ -220,69 +239,212 @@
   border-width: 1.5px !important;
 }
 
-/* Event */
+/* Event Chip (Strict boundary, clean ellipsis, ZERO spillover) */
+.meeting-room-tab .fc-daygrid-event-harness {
+  position: relative;
+}
+
 .meeting-room-tab .fc-event {
+  background: linear-gradient(135deg, #334155, #475569) !important;
+  color: white !important;
   border: none !important;
-  border-radius: 16px !important;
-  padding: 6px !important;
-  overflow: hidden;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08) !important;
-  transition: 0.2s;
+  border-radius: 8px !important;
+  padding: 3px 6px !important;
+  margin: 2px 2px !important;
+  overflow: hidden !important; /* CRITICAL: Never spill text to neighboring cell */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
 }
 
 .meeting-room-tab .fc-event:hover {
-  transform: scale(1.015);
-  cursor: pointer;
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22) !important;
+  z-index: 10 !important;
 }
 
 /* Event Inner */
 .meeting-room-tab .event-inner {
-  padding: 4px;
+  padding: 1px 2px;
   color: white;
+  width: 100%;
+  overflow: hidden !important;
 }
 
+/* Title: 1 line with clean ellipsis, stays 100% inside card */
 .meeting-room-tab .event-title {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-size: 11.5px;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 100%;
+  display: block;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .meeting-room-tab .event-host {
-  margin-top: 4px;
-  font-size: 12px;
-  opacity: 0.92;
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-weight: 500;
+  opacity: 0.95;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 100%;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-/* ---------- COLORS ---------- */
+.meeting-room-tab .event-host-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.meeting-room-tab .event-bu-pill {
+  font-size: 9px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.24);
+  padding: 1px 4px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+/* ---------- GLOBAL FLOATING TOOLTIP (Never clipped by headers, auto above/below) ---------- */
+.meeting-floating-tooltip {
+  width: 260px;
+  background: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: white;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  text-align: left;
+  animation: tooltipFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.meeting-floating-tooltip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+}
+
+/* Khi ở hàng trên cùng (gần thứ), hiện ở DƯỚI -> mũi tên trỏ LÊN */
+.meeting-floating-tooltip.placement-bottom::after {
+  bottom: 100%;
+  border-color: transparent transparent #18181b transparent;
+}
+
+/* Khi ở hàng dưới, hiện ở TRÊN -> mũi tên trỏ XUỐNG */
+.meeting-floating-tooltip.placement-top::after {
+  top: 100%;
+  border-color: #18181b transparent transparent transparent;
+}
+
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.meeting-floating-tooltip .tooltip-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.meeting-floating-tooltip .tooltip-time {
+  font-size: 11px;
+  font-weight: 600;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.18);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.meeting-floating-tooltip .tooltip-bu-pill {
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.meeting-floating-tooltip .tooltip-title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #ffffff;
+  margin-bottom: 6px;
+  word-break: break-word;
+}
+
+.meeting-floating-tooltip .tooltip-host {
+  font-size: 11.5px;
+  color: #d1d5db;
+  margin-bottom: 4px;
+}
+
+.meeting-floating-tooltip .tooltip-desc {
+  font-size: 11px;
+  color: #9ca3af;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin-top: 6px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.meeting-floating-tooltip .tooltip-hint {
+  font-size: 10px;
+  color: #6b7280;
+  margin-top: 6px;
+  text-align: right;
+  font-style: italic;
+}
+
+/* ---------- COLORS (High Contrast & Legible) ---------- */
 .meeting-room-tab .blue {
-  background: linear-gradient(180deg, rgba(0, 122, 255, 0.96), rgba(0, 122, 255, 0.82)) !important;
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
   color: white !important;
 }
 
 .meeting-room-tab .purple {
-  background: linear-gradient(180deg, rgba(175, 82, 222, 0.96), rgba(175, 82, 222, 0.82)) !important;
+  background: linear-gradient(135deg, #7e22ce 0%, #9333ea 100%) !important;
   color: white !important;
 }
 
 .meeting-room-tab .green {
-  background: linear-gradient(180deg, rgba(52, 199, 89, 0.96), rgba(52, 199, 89, 0.82)) !important;
+  background: linear-gradient(135deg, #15803d 0%, #16a34a 100%) !important;
   color: white !important;
 }
 
 .meeting-room-tab .red {
-  background: linear-gradient(180deg, rgba(255, 59, 48, 0.96), rgba(255, 59, 48, 0.82)) !important;
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%) !important;
+  color: white !important;
+}
+
+.meeting-room-tab .orange {
+  background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%) !important;
   color: white !important;
 }
 
 .meeting-room-tab .gray {
-  background: linear-gradient(180deg, rgba(142, 142, 147, 0.96), rgba(142, 142, 147, 0.82)) !important;
+  background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
   color: white !important;
 }
 
@@ -522,20 +684,20 @@ textarea.booking-form-control {
 }
 
 /* Slots Pane */
-.slots-pane {
+.custom-day-view .slots-pane {
   background: white;
   border-radius: 24px;
   padding: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
-.slots-pane h3 {
+.custom-day-view .slots-pane h3 {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: #86868b;
   margin: 0 0 16px 0;
 }
-.slot-card {
+.custom-day-view .slot-card {
   background: #f5f5f7;
   border-radius: 16px;
   padding: 16px;
@@ -544,18 +706,18 @@ textarea.booking-form-control {
   align-items: center;
   margin-bottom: 12px;
 }
-.slot-info h4 {
+.custom-day-view .slot-info h4 {
   font-size: 16px;
   font-weight: 700;
   margin: 0 0 4px 0;
   color: #111;
 }
-.slot-info p {
+.custom-day-view .slot-info p {
   font-size: 13px;
   color: #86868b;
   margin: 0;
 }
-.quick-book-btn {
+.custom-day-view .quick-book-btn {
   background: #111;
   color: white;
   border: none;
@@ -566,37 +728,37 @@ textarea.booking-form-control {
   cursor: pointer;
   transition: all 0.2s;
 }
-.quick-book-btn:hover {
+.custom-day-view .quick-book-btn:hover {
   background: #000;
   transform: translateY(-1px);
 }
 
 /* Next Meeting Pane */
-.next-meeting-pane {
+.custom-day-view .next-meeting-pane {
   background: #1d1d1f;
   border-radius: 24px;
   padding: 24px;
   color: white;
 }
-.next-meeting-pane h3 {
+.custom-day-view .next-meeting-pane h3 {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: #86868b;
   margin: 0 0 16px 0;
 }
-.next-meeting-pane h2 {
+.custom-day-view .next-meeting-pane h2 {
   font-size: 24px;
   font-weight: 700;
   margin: 0 0 8px 0;
 }
-.next-meeting-pane p {
+.custom-day-view .next-meeting-pane p {
   font-size: 14px;
   color: #86868b;
   margin: 0;
 }
 
-.view-toggle-group {
+.meeting-room-tab .view-toggle-group {
   display: flex;
   background: #f5f5f7;
   border-radius: 8px;
@@ -604,7 +766,7 @@ textarea.booking-form-control {
   border: 1px solid #e5e5ea;
 }
 
-.view-toggle-btn {
+.meeting-room-tab .view-toggle-btn {
   background: transparent;
   border: none;
   padding: 6px 12px;
@@ -616,8 +778,184 @@ textarea.booking-form-control {
   transition: all 0.2s;
 }
 
-.view-toggle-btn.active {
+.meeting-room-tab .view-toggle-btn.active {
   background: white;
   color: #111;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* ---------------- MOBILE RESPONSIVE OPTIMIZATIONS ---------------- */
+.mobile-scroll-hint {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .meeting-room-tab {
+    padding: 10px 8px !important;
+    height: auto !important;
+    min-height: calc(100vh - 70px) !important;
+    gap: 10px !important;
+  }
+
+  .meeting-room-tab .top-navigation-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .meeting-room-tab .top-navigation-bar > div:first-child {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .meeting-room-tab .top-navigation-bar > div:last-child {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .meeting-room-tab .view-toggle-group {
+    flex: 1 1 100% !important;
+    display: flex !important;
+    margin-right: 0 !important;
+  }
+
+  .meeting-room-tab .view-toggle-btn {
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 8px 4px !important;
+  }
+
+  .meeting-room-tab .soft-btn,
+  .meeting-room-tab .dark-btn,
+  .meeting-room-tab a[href*="huong-dan-erp"] {
+    flex: 1 1 auto !important;
+    text-align: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+  }
+
+  .meeting-room-tab .main {
+    border-radius: 16px !important;
+    border: none !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+    height: auto !important;
+    min-height: 520px !important;
+  }
+
+  .meeting-room-tab .calendar-wrap {
+    padding: 6px 4px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    height: auto !important;
+    min-height: 520px !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Hint banner on mobile so users know they can swipe */
+  .mobile-scroll-hint {
+    display: block;
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #475569;
+    background: #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+
+  /* CRITICAL: Prevent 7-day grid from being crushed into 280px on phone */
+  .meeting-room-tab .fc {
+    min-width: 620px !important;
+    width: 620px !important;
+    height: auto !important;
+    min-height: 480px !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .meeting-room-tab .fc-view-harness {
+    min-height: 420px !important;
+    height: auto !important;
+    flex: 1 1 auto !important;
+  }
+
+  .meeting-room-tab .fc-daygrid-body {
+    min-height: 380px !important;
+    width: 100% !important;
+  }
+
+  .meeting-room-tab .fc-scrollgrid-sync-table {
+    min-height: 380px !important;
+    width: 100% !important;
+  }
+
+  .meeting-room-tab .fc-toolbar-title {
+    font-size: 18px !important;
+  }
+
+  .meeting-room-tab .fc-button {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
+
+  /* Custom Day View Responsive */
+  .custom-day-view {
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 0 !important;
+  }
+
+  .day-view-left {
+    padding: 16px !important;
+    border-radius: 16px !important;
+    flex: 1 1 auto !important;
+  }
+
+  .day-view-header h2 {
+    font-size: 22px !important;
+  }
+
+  .day-view-right {
+    padding: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  .day-event-card {
+    padding: 14px 16px !important;
+    border-radius: 14px !important;
+    gap: 12px !important;
+  }
+
+  .day-event-time {
+    flex: 0 0 65px !important;
+  }
+
+  .day-event-time h3 {
+    font-size: 16px !important;
+  }
+
+  .day-event-details h3 {
+    font-size: 15px !important;
+  }
+
+  /* Modal responsive on mobile */
+  .booking-modal-content {
+    padding: 20px 16px !important;
+    border-radius: 18px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+
+  .booking-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
 }

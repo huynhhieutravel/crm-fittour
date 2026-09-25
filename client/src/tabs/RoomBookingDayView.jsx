@@ -95,11 +95,12 @@ const RoomBookingDayView = ({ date, events, onEventClick, onQuickBook }) => {
                             // The color class is inside event.classNames array
                             const colorClass = event.classNames && event.classNames[0] ? event.classNames[0] : 'blue';
                             const bgColorMap = {
-                                blue: 'linear-gradient(135deg, #007aff, #0056b3)',
-                                purple: 'linear-gradient(135deg, #af52de, #7e2cb0)',
-                                green: 'linear-gradient(135deg, #34c759, #248a3d)',
-                                red: 'linear-gradient(135deg, #ff3b30, #c81d11)',
-                                gray: 'linear-gradient(135deg, #8e8e93, #636366)'
+                                blue: 'linear-gradient(135deg, #1d4ed8, #2563eb)',
+                                purple: 'linear-gradient(135deg, #7e22ce, #9333ea)',
+                                green: 'linear-gradient(135deg, #15803d, #16a34a)',
+                                red: 'linear-gradient(135deg, #b91c1c, #dc2626)',
+                                orange: 'linear-gradient(135deg, #c2410c, #ea580c)',
+                                gray: 'linear-gradient(135deg, #334155, #475569)'
                             };
                             
                             return (

@@ -73,7 +73,23 @@ exports.handleWebhookEvent = async (req, res) => {
                             // Kiểm tra nếu đây là echo (tin nhắn page gửi khách) → lưu vào messages
                             if (webhook_event.message.is_echo) {
                                 const recipientPsid = webhook_event.recipient?.id || sender_psid;
-                                const echoText = webhook_event.message.text || '(Hình ảnh/Đính kèm)';
+                                let echoText = webhook_event.message.text || '';
+                                let echoImageUrl = null;
+
+                                // Bóc tách ảnh đính kèm nếu Page gửi ảnh
+                                if (webhook_event.message.attachments && webhook_event.message.attachments.length > 0) {
+                                    const imgAtt = webhook_event.message.attachments.find(a => a.type === 'image' || (a.payload && a.payload.url));
+                                    if (imgAtt && imgAtt.payload && imgAtt.payload.url) {
+                                        echoImageUrl = imgAtt.payload.url;
+                                    }
+                                }
+
+                                if (!echoText && !echoImageUrl) {
+                                    echoText = '(Hình ảnh/Đính kèm)';
+                                } else if (!echoText && echoImageUrl) {
+                                    echoText = '[Hình ảnh]';
+                                }
+
                                 // Tìm conversation bằng PSID người nhận (khách)
                                 const echoConvRes = await db.query('SELECT id, lead_id FROM conversations WHERE external_id = $1', [recipientPsid]);
                                 if (echoConvRes.rows.length > 0) {
@@ -88,14 +104,17 @@ exports.handleWebhookEvent = async (req, res) => {
                                         const recentCheck = await db.query(
                                             `SELECT id FROM messages 
                                              WHERE conversation_id = $1 
-                                               AND content = $2 
+                                               AND (
+                                                 (content = $2 AND content IS NOT NULL AND content != '')
+                                                 OR ($3::text IS NOT NULL AND image_url = $3)
+                                               )
                                                AND (
                                                  (sender_type = 'user' AND created_at >= NOW() - INTERVAL '30 seconds')
                                                  OR 
                                                  (sender_type = 'page' AND created_at >= NOW() - INTERVAL '5 seconds')
                                                )
                                              LIMIT 1`,
-                                            [echoConvId, echoText]
+                                            [echoConvId, echoText, echoImageUrl]
                                         );
                                         if (recentCheck.rows.length > 0) {
                                             isDuplicate = true;
@@ -107,10 +126,10 @@ exports.handleWebhookEvent = async (req, res) => {
 
                                     if (!isDuplicate) {
                                         await db.query(
-                                            'INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)',
-                                            [echoConvId, 'page', echoText]
+                                            'INSERT INTO messages (conversation_id, sender_type, content, image_url) VALUES ($1, $2, $3, $4)',
+                                            [echoConvId, 'page', echoText, echoImageUrl]
                                         );
-                                        console.log(`[WEBHOOK] 📤 Echo (page reply from Meta) saved for PSID: ${recipientPsid}`);
+                                        console.log(`[WEBHOOK] 📤 Echo (page reply from Meta) saved for PSID: ${recipientPsid}${echoImageUrl ? ' (có ảnh đính kèm)' : ''}`);
                                     }
                                     // Nếu lead chưa có BU → check lại sau mỗi page reply
                                     const leadId = echoConvRes.rows[0].lead_id;
@@ -170,30 +189,56 @@ exports.handleWebhookEvent = async (req, res) => {
                                 console.log(`[WEBHOOK] Message text: "${webhook_event.message.text || '(attachment/other)'}"`);
                                 
                                 let adContextText = '';
-                                if (webhook_event.postback && webhook_event.postback.referral) {
-                                    if (webhook_event.postback.referral.ad_title) adContextText += webhook_event.postback.referral.ad_title + ' ';
-                                    if (webhook_event.postback.referral.ref) adContextText += webhook_event.postback.referral.ref + ' ';
+                                let adPhotoUrl = null;
+                                let adTitle = '';
+
+                                // Trích xuất thông tin Quảng cáo Click-to-Messenger từ referral hoặc postback
+                                const referralObj = webhook_event.message?.referral || webhook_event.referral || webhook_event.postback?.referral;
+                                if (referralObj) {
+                                    if (referralObj.ad_title) {
+                                        adContextText += referralObj.ad_title + ' ';
+                                        adTitle = referralObj.ad_title;
+                                    }
+                                    if (referralObj.ref) adContextText += referralObj.ref + ' ';
+                                    if (referralObj.ads_context_data) {
+                                        if (referralObj.ads_context_data.ad_title) {
+                                            adContextText += referralObj.ads_context_data.ad_title + ' ';
+                                            if (!adTitle) adTitle = referralObj.ads_context_data.ad_title;
+                                        }
+                                        if (referralObj.ads_context_data.photo_url) adPhotoUrl = referralObj.ads_context_data.photo_url;
+                                        else if (referralObj.ads_context_data.image_url) adPhotoUrl = referralObj.ads_context_data.image_url;
+                                        else if (referralObj.ads_context_data.video_url) adPhotoUrl = referralObj.ads_context_data.video_url;
+                                    }
                                 }
-                                if (webhook_event.referral) {
-                                    if (webhook_event.referral.ad_title) adContextText += webhook_event.referral.ad_title + ' ';
-                                    if (webhook_event.referral.ref) adContextText += webhook_event.referral.ref + ' ';
-                                }
-                                if (webhook_event.message && webhook_event.message.referral) {
-                                    if (webhook_event.message.referral.ad_title) adContextText += webhook_event.message.referral.ad_title + ' ';
-                                    if (webhook_event.message.referral.ref) adContextText += webhook_event.message.referral.ref + ' ';
-                                }
+
+                                // Trích xuất hình ảnh đính kèm (nếu khách gửi ảnh trực tiếp)
+                                let attachmentImageUrl = null;
                                 if (webhook_event.message && webhook_event.message.attachments) {
                                     webhook_event.message.attachments.forEach(att => {
                                         if (att.title) adContextText += att.title + ' ';
                                         if (att.url) adContextText += att.url + ' ';
                                         if (att.payload && att.payload.title) adContextText += att.payload.title + ' ';
                                         if (att.payload && att.payload.description) adContextText += att.payload.description + ' ';
+                                        
+                                        if (!attachmentImageUrl) {
+                                            if (att.type === 'image' && att.payload?.url) {
+                                                attachmentImageUrl = att.payload.url;
+                                            } else if (att.payload?.url && (att.url || '').match(/\.(jpg|jpeg|png|webp|gif)/i)) {
+                                                attachmentImageUrl = att.payload.url;
+                                            }
+                                        }
                                     });
                                 }
                                 if (adContextText) console.log(`[WEBHOOK] Extracted adContextText: "${adContextText.trim()}"`);
+                                if (adPhotoUrl) console.log(`[WEBHOOK] 🖼️ Extracted adPhotoUrl: "${adPhotoUrl.substring(0, 70)}..."`);
+                                if (attachmentImageUrl) console.log(`[WEBHOOK] 📎 Extracted attachmentImageUrl: "${attachmentImageUrl.substring(0, 70)}..."`);
 
                                 try {
-                                    await facebookService.handleMessage(sender_psid, webhook_event.message, isStandby, adContextText);
+                                    await facebookService.handleMessage(sender_psid, webhook_event.message, isStandby, adContextText, {
+                                        adPhotoUrl,
+                                        adTitle,
+                                        attachmentImageUrl
+                                    });
                                     console.log('[WEBHOOK] ✅ handleMessage completed');
                                 } catch (err) {
                                     console.error('[WEBHOOK] ❌ handleMessage error:', err.message, err.stack);

@@ -30,6 +30,8 @@ import CuuTraiCauConsultingPage from './CuuTraiCauConsultingPage';
    Static Document Index — TẤT CẢ tài liệu nội bộ đã biết
    ═══════════════════════════════════════════════════════════════════════════ */
 const STATIC_DOCS = [
+  { title: 'Hướng Dẫn ERP: Tạo Đơn Nghỉ Phép', description: 'Cẩm nang 3 bước gửi đơn xin nghỉ phép, kiểm tra phép dư, bàn giao việc và thông báo email', category: 'Hành chính', path: '/huong-dan-erp/tao-nghi-phep', icon: '🌴' },
+  { title: 'Cổng Hướng Dẫn Sử Dụng ERP', description: 'Trung tâm tổng hợp các bài viết và slider hướng dẫn thao tác hệ thống ERP FIT Tour', category: 'Hành chính', path: '/huong-dan-erp', icon: '📖' },
   { title: 'Brand Identity Guideline', description: 'Tài liệu hướng dẫn nhận diện thương hiệu FIT Tour, bao gồm logo, màu sắc, font chữ...', category: 'Marketing', path: '/tai-lieu/brand-guideline', icon: '🎨' },
   { title: 'HUB Hướng Dẫn Viên', description: 'Bàn làm việc của HDV — checklist, SOP, sự cố, case study', category: 'HDV', path: '/hdv', icon: '👨‍✈️' },
   { title: 'HUB Marketing', description: 'Tài liệu Marketing, chuẩn mực content, format bài đăng & Báo cáo hiệu suất team', category: 'Marketing', path: '/tai-lieu/marketing', icon: '📈' },

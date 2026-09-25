@@ -62,6 +62,9 @@ ssh ${VPS_USER}@${VPS_IP} << 'EOF'
     echo "📦 Cập nhật dependencies cho server..."
     (cd /var/www/fittour-crm/server && npm install --omit=dev)
 
+    echo "🗄️ Đang chạy migration database trên VPS..."
+    (cd /var/www/fittour-crm/server && node migrations/20260925_add_image_url_to_messages.js || true)
+
     echo "🔄 Khởi động lại PM2..."
     # Không dùng --update-env mặc định trừ khi người dùng cố tình cập nhật env
     pm2 restart crm-fittour

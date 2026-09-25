@@ -214,7 +214,7 @@ router.get('/:conversationId', auth, async (req, res) => {
 
 // 3. Gửi tin nhắn phản hồi
 router.post('/send', auth, async (req, res) => {
-    const { conversationId, content, attachment, templateName } = req.body;
+    const { conversationId, content, attachment, templateName, imageUrl } = req.body;
     try {
         // Lấy PSID từ hội thoại
         const conv = await db.query('SELECT external_id FROM conversations WHERE id = $1', [conversationId]);
@@ -223,18 +223,28 @@ router.post('/send', auth, async (req, res) => {
         const psid = conv.rows[0].external_id;
 
         // Gửi qua Facebook API
-        if (attachment) {
+        if (imageUrl) {
+            await facebookService.callSendAPI(psid, {
+                attachment: {
+                    type: "image",
+                    payload: {
+                        url: imageUrl,
+                        is_reusable: true
+                    }
+                }
+            });
+        } else if (attachment) {
             await facebookService.callSendAPI(psid, { attachment });
         } else {
             await facebookService.callSendAPI(psid, { text: content });
         }
 
-        const dbContent = attachment ? (content || `[Đã gửi thẻ: ${templateName || 'Template'}]`) : (content || '[Tin nhắn trống]');
+        const dbContent = content || (imageUrl ? '[Hình ảnh]' : (attachment ? `[Đã gửi thẻ: ${templateName || 'Template'}]` : '[Tin nhắn trống]'));
 
         // Lưu vào database
         const msgResult = await db.query(
-            'INSERT INTO messages (conversation_id, sender_type, sender_id, content) VALUES ($1, $2, $3, $4) RETURNING *',
-            [conversationId, 'user', req.user.id, dbContent]
+            'INSERT INTO messages (conversation_id, sender_type, sender_id, content, image_url) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [conversationId, 'user', req.user.id, dbContent, imageUrl || null]
         );
 
         // Cập nhật last_message trong hội thoại

@@ -373,11 +373,18 @@ const _classifyTour = async (messageText, preferredBU = null) => {
 };
 
 
-exports.handleMessage = async (sender_psid, received_message, isStandby = false, adContextText = '') => {
+exports.handleMessage = async (sender_psid, received_message, isStandby = false, adContextText = '', extraContext = {}) => {
     let response;
 
-    if (received_message.text) {
-        console.log(`Received ${isStandby ? 'standby' : 'primary'} message from ${sender_psid}: ${received_message.text}`);
+    const messageText = (received_message?.text || '').trim();
+    const { adPhotoUrl, adTitle, attachmentImageUrl } = extraContext || {};
+    const hasImage = Boolean(attachmentImageUrl || adPhotoUrl);
+
+    if (messageText || hasImage) {
+        console.log(`Received ${isStandby ? 'standby' : 'primary'} message from ${sender_psid}: "${messageText}"${hasImage ? ' (with image)' : ''}`);
+        
+        const previewLastMessage = messageText || (adPhotoUrl ? (adTitle ? `[Quảng cáo] ${adTitle}` : '[Ảnh quảng cáo]') : '[Hình ảnh]');
+        const textForClassification = messageText || adContextText || adTitle || '';
         
         // 1. Kiểm tra xem hội thoại đã tồn tại chưa
         let convResult = await db.query('SELECT * FROM conversations WHERE external_id = $1', [sender_psid]);
@@ -406,7 +413,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
             );
             leadId = leadResult.rows[0].id;
 
-            const autoBU = await classifyBUFromMessage(received_message.text, adContextText);
+            const autoBU = await classifyBUFromMessage(textForClassification, adContextText);
             if (autoBU) {
                 await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU, leadId]);
                 console.log(`[BU-AUTO] Lead #${leadId} (${senderName}) → Auto BU: ${autoBU}`);
@@ -414,7 +421,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
             }
 
             // Auto-classify Tour from first message (ưu tiên tìm trong autoBU nếu có)
-            const autoTour = await classifyTourFromMessage(received_message.text, adContextText, autoBU);
+            const autoTour = await classifyTourFromMessage(textForClassification, adContextText, autoBU);
             if (autoTour && autoTour.tour_id) {
                 const targetBU = autoTour.bu_group || autoBU;
                 const q = targetBU ? 
@@ -444,7 +451,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
             // 3. Tạo Hội thoại mới
             const newConv = await db.query(
                 'INSERT INTO conversations (source, external_id, lead_id, last_message) VALUES ($1, $2, $3, $4) RETURNING id',
-                ['messenger', sender_psid, leadId, received_message.text]
+                ['messenger', sender_psid, leadId, previewLastMessage]
             );
             conversationId = newConv.rows[0].id;
         } else {
@@ -475,13 +482,13 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                     leadId = newLeadResult.rows[0].id;
 
                     // Auto-classify BU for re-opened lead
-                    const autoBU2 = await classifyBUFromMessage(received_message.text, adContextText);
+                    const autoBU2 = await classifyBUFromMessage(textForClassification, adContextText);
                     if (autoBU2) {
                         await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU2, leadId]);
                     }
 
                     // Auto-classify Tour for re-opened lead (ưu tiên tìm trong autoBU2 nếu có)
-                    const autoTour2 = await classifyTourFromMessage(received_message.text, adContextText, autoBU2);
+                    const autoTour2 = await classifyTourFromMessage(textForClassification, adContextText, autoBU2);
                     if (autoTour2 && autoTour2.tour_id) {
                         const targetBU2 = autoTour2.bu_group || autoBU2;
                         const q2 = targetBU2 ? 
@@ -495,7 +502,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                     }
                     
                     // Nối hội thoại cũ sang Lead mới tinh này
-                    await db.query('UPDATE conversations SET lead_id = $1, last_message = $2, updated_at = NOW() WHERE id = $3', [leadId, received_message.text, conversationId]);
+                    await db.query('UPDATE conversations SET lead_id = $1, last_message = $2, updated_at = NOW() WHERE id = $3', [leadId, previewLastMessage, conversationId]);
 
                     metaCapi.sendLeadEvent(newLeadResult.rows[0]).catch(err => console.error(err));
                 } else {
@@ -507,7 +514,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                     } else {
                         await db.query('UPDATE leads SET last_contacted_at = NOW() WHERE id = $1', [leadId]);
                     }
-                    await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [received_message.text, conversationId]);
+                    await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [previewLastMessage, conversationId]);
 
                     // [BU-AUTO] Nếu lead chưa có BU VÀ chưa bị khóa thủ công → classify từ TẤT CẢ tin nhắn (lọc greeting template)
                     if (!oldLead.bu_group && !oldLead.is_bu_locked) {
@@ -519,7 +526,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                         const allText = allMsgsResult.rows
                             .filter(m => !isAutoGreeting(m.content) && !isAirlineExampleBoilerplate(m.content) && !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)'))
                             .map(m => m.content || '')
-                            .join(' ') + ' ' + (received_message.text || '');
+                            .join(' ') + ' ' + (textForClassification);
                         const autoBU3 = await classifyBUFromMessage(allText, adContextText);
                         if (autoBU3) {
                             await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU3, leadId]);
@@ -541,7 +548,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                         const allText = allMsgsResult.rows
                             .filter(m => !isAutoGreeting(m.content) && !isAirlineExampleBoilerplate(m.content) && !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)'))
                             .map(m => m.content || '')
-                            .join(' ') + ' ' + (received_message.text || '');
+                            .join(' ') + ' ' + (textForClassification);
                         const autoTour3 = await classifyTourFromMessage(allText, adContextText, currentBuGroup);
                         
                         if (autoTour3 && autoTour3.tour_id) {
@@ -565,18 +572,39 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                     }
                 }
             } else {
-                await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [received_message.text, conversationId]);
+                await db.query('UPDATE conversations SET last_message = $1, updated_at = NOW() WHERE id = $2', [previewLastMessage, conversationId]);
             }
         }
 
         // 4. Lưu tin nhắn vào bảng messages
-        await db.query(
-            'INSERT INTO messages (conversation_id, sender_type, content) VALUES ($1, $2, $3)',
-            [conversationId, 'customer', received_message.text]
-        );
+        // 4.1 Nếu có ảnh từ Quảng cáo Meta Ads, lưu ảnh quảng cáo trước (nếu chưa từng lưu)
+        if (adPhotoUrl) {
+            const checkAdMsg = await db.query(
+                'SELECT id FROM messages WHERE conversation_id = $1 AND image_url = $2 LIMIT 1',
+                [conversationId, adPhotoUrl]
+            );
+            if (checkAdMsg.rows.length === 0) {
+                await db.query(
+                    'INSERT INTO messages (conversation_id, sender_type, content, image_url) VALUES ($1, $2, $3, $4)',
+                    [conversationId, 'customer', adTitle ? `[Quảng cáo] ${adTitle}` : '[Ảnh quảng cáo]', adPhotoUrl]
+                );
+                console.log(`[FB WEBHOOK] 📸 Saved ad photo message for conv #${conversationId}`);
+            }
+        }
+
+        // 4.2 Lưu tin nhắn của khách (nội dung text và/hoặc ảnh đính kèm do khách gửi trực tiếp)
+        const customerImgUrl = attachmentImageUrl || null;
+        const customerMsgContent = messageText || (customerImgUrl ? '[Hình ảnh]' : '');
+
+        if (customerMsgContent || customerImgUrl) {
+            await db.query(
+                'INSERT INTO messages (conversation_id, sender_type, content, image_url) VALUES ($1, $2, $3, $4)',
+                [conversationId, 'customer', customerMsgContent, customerImgUrl]
+            );
+        }
 
         // 5. Cập nhật Số điện thoại (Tự động trích xuất)
-        const extractedPhone = extractVietnamPhone(received_message.text);
+        const extractedPhone = messageText ? extractVietnamPhone(messageText) : null;
         if (extractedPhone && leadId) {
             const checkPhone = await db.query('SELECT phone FROM leads WHERE id = $1', [leadId]);
             if (checkPhone.rows.length > 0) {
@@ -600,7 +628,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
 
                 if (currentLead) {
                     const customerDisplayName = currentLead.name || 'Khách hàng Messenger';
-                    const notifMessage = received_message.text || 'Khách đã gửi tin nhắn Messenger';
+                    const notifMessage = messageText || (adPhotoUrl ? (adTitle ? `Quảng cáo: ${adTitle}` : 'Khách bấm từ ảnh quảng cáo') : 'Khách đã gửi một hình ảnh');
                     const notifTitle = `💬 Tin nhắn Messenger từ ${customerDisplayName}`;
                     const notifLink = `/inbox?psid=${leadId}`;
 
@@ -639,6 +667,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                             senderId: sender_psid,
                             senderName: customerDisplayName,
                             text: notifMessage,
+                            imageUrl: customerImgUrl || adPhotoUrl || null,
                             leadId: leadId,
                             assigned_to: currentLead.assigned_to,
                             bu_group: currentLead.bu_group,
@@ -906,8 +935,8 @@ exports.syncRecentConversations = async (limitCount = 25) => {
         }
         if (!pageId) return;
 
-        // Kéo các cuộc trò chuyện gần nhất theo limitCount
-        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=link,participants{id,name},messages.limit(100){message,from,created_time,shares}&limit=${limitCount}&access_token=${token}`;
+        // Kéo các cuộc trò chuyện gần nhất theo limitCount (kèm attachments để lấy ảnh)
+        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=link,participants{id,name},messages.limit(100){message,from,created_time,shares,attachments{id,mime_type,name,image_data,file_url}}&limit=${limitCount}&access_token=${token}`;
         const res = await axios.get(endpoint);
         
         if (!res.data || !res.data.data) return;
@@ -927,7 +956,8 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                 const messagesList = conv.messages?.data || [];
                 const userMsgObj = messagesList.find(m => m.from && m.from.id === psid);
                 const rawMsgText = userMsgObj && userMsgObj.message ? userMsgObj.message : null;
-                const actualMessageText = (rawMsgText && rawMsgText.trim() !== '') ? rawMsgText : '(Hình ảnh/Đính kèm)';
+                const userImgUrl = userMsgObj?.attachments?.data?.[0]?.image_data?.url || userMsgObj?.attachments?.data?.[0]?.file_url || null;
+                const actualMessageText = (rawMsgText && rawMsgText.trim() !== '') ? rawMsgText : (userImgUrl ? '[Hình ảnh]' : '(Hình ảnh/Đính kèm)');
                 const firstMessageNote = userMsgObj ? `Facebook Message: "${actualMessageText}"` : null;
                 const fbCreatedAt = userMsgObj && userMsgObj.created_time ? new Date(userMsgObj.created_time) : new Date();
 
@@ -999,14 +1029,17 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         ['messenger', psid, currentLeadId, messageForConv]
                     );
                     const conversationId = newConv.rows[0].id;
-                    // Lưu TẤT CẢ messages từ cuộc hội thoại (cả customer + page)
+                    // Lưu TẤT CẢ messages từ cuộc hội thoại (cả customer + page, bao gồm cả ảnh)
                     for (const msg of messagesList) {
-                        if (!msg.message || msg.message.trim() === '') continue;
+                        const rawText = (msg.message || '').trim();
+                        const imgUrl = msg.attachments?.data?.[0]?.image_data?.url || msg.attachments?.data?.[0]?.file_url || null;
+                        if (!rawText && !imgUrl) continue;
+                        const content = rawText || '[Hình ảnh]';
                         const senderType = (msg.from && msg.from.id === psid) ? 'customer' : 'page';
                         const createdAt = msg.created_time ? new Date(msg.created_time) : new Date();
                         await db.query(
-                            'INSERT INTO messages (conversation_id, sender_type, content, created_at) VALUES ($1, $2, $3, $4)',
-                            [conversationId, senderType, msg.message, createdAt]
+                            'INSERT INTO messages (conversation_id, sender_type, content, image_url, created_at) VALUES ($1, $2, $3, $4, $5)',
+                            [conversationId, senderType, content, imgUrl, createdAt]
                         );
                     }
 
@@ -1033,14 +1066,16 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         await db.query('UPDATE leads SET fb_conversation_link = $1::text WHERE id = $2 AND (fb_conversation_link IS NULL OR fb_conversation_link != $1::text)', [fbLink, currentLeadId]);
                     }
                     
-                    const existingMsgsRes = await db.query('SELECT content, sender_type FROM messages WHERE conversation_id = $1 ORDER BY id DESC LIMIT 150', [oldConv.id]);
+                    const existingMsgsRes = await db.query('SELECT content, sender_type, image_url FROM messages WHERE conversation_id = $1 ORDER BY id DESC LIMIT 150', [oldConv.id]);
                     const normalizeSenderType = (st) => (st === 'customer' ? 'customer' : 'staff');
-                    const existingMsgSet = new Set(existingMsgsRes.rows.map(m => `${normalizeSenderType(m.sender_type)}|${(m.content || '').trim()}`));
+                    const cleanImgKey = (url) => url ? url.split('?')[0] : '';
+                    const existingMsgSet = new Set(existingMsgsRes.rows.map(m => `${normalizeSenderType(m.sender_type)}|${(m.content || '').trim()}|${cleanImgKey(m.image_url)}`));
                     
                     let hasAnyNewMsg = false;
                     let hasNewCustomerMsg = false;
                     let lastIteratedMessage = oldConv.last_message;
                     let lastCustomerMessage = '';
+                    let lastCustomerImageUrl = null;
                     
                     let adContextText = '';
 
@@ -1055,24 +1090,28 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                             }
                         }
                         
-                        if (!msg.message || msg.message.trim() === '') continue;
+                        const rawText = (msg.message || '').trim();
+                        const imgUrl = msg.attachments?.data?.[0]?.image_data?.url || msg.attachments?.data?.[0]?.file_url || null;
+                        if (!rawText && !imgUrl) continue;
                         
+                        const content = rawText || '[Hình ảnh]';
                         const senderType = (msg.from && msg.from.id === psid) ? 'customer' : 'page';
-                        const matchKey = `${normalizeSenderType(senderType)}|${msg.message.trim()}`;
+                        const matchKey = `${normalizeSenderType(senderType)}|${content}|${cleanImgKey(imgUrl)}`;
                         
                         if (!existingMsgSet.has(matchKey)) {
                             const createdAt = msg.created_time ? new Date(msg.created_time) : new Date();
                             await db.query(
-                                'INSERT INTO messages (conversation_id, sender_type, content, created_at) VALUES ($1, $2, $3, $4)',
-                                [oldConv.id, senderType, msg.message, createdAt]
+                                'INSERT INTO messages (conversation_id, sender_type, content, image_url, created_at) VALUES ($1, $2, $3, $4, $5)',
+                                [oldConv.id, senderType, content, imgUrl, createdAt]
                             );
                             hasAnyNewMsg = true;
-                            lastIteratedMessage = msg.message;
+                            lastIteratedMessage = content;
                             existingMsgSet.add(matchKey); // To duplicate handles within same block
                             
                             if (senderType === 'customer') {
                                 hasNewCustomerMsg = true;
-                                lastCustomerMessage = msg.message;
+                                lastCustomerMessage = content;
+                                if (imgUrl) lastCustomerImageUrl = imgUrl;
                                 // Cập nhật Lead's last_contacted_at
                                 const leadRes = await db.query('SELECT status, name, phone, email, last_contacted_at, created_at FROM leads WHERE id = $1', [currentLeadId]);
                                 if (leadRes.rows.length > 0) {
@@ -1154,6 +1193,7 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                                     senderId: psid,
                                     senderName: leadData?.name || userName,
                                     text: lastCustomerMessage || lastIteratedMessage,
+                                    imageUrl: lastCustomerImageUrl || null,
                                     leadId: currentLeadId,
                                     assigned_to: leadData?.assigned_to,
                                     bu_group: leadData?.bu_group,

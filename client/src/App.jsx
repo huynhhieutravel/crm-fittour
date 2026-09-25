@@ -105,6 +105,9 @@ import AdminTripDashboard from './pages/AdminTripDashboard';
 import PublicReceiptPage from './pages/PublicReceiptPage';
 import PublicAnnouncementPage from './pages/PublicAnnouncementPage';
 import ZnsDemoTab from './tabs/ZnsDemoTab';
+import HuongDanTaoNghiPhepPage from './pages/HuongDanTaoNghiPhepPage';
+import HuongDanDatPhongHopPage from './pages/HuongDanDatPhongHopPage';
+import HuongDanErpHub from './pages/HuongDanErpHub';
 
 import { 
   Menu,
@@ -2146,6 +2149,15 @@ function AppContent() {
   // ── Route Guard: /tai-lieu/* và /hdv phải render DocumentsPage riêng, KHÔNG dùng sidebar ──
   if (location.pathname.startsWith('/tai-lieu') || location.pathname.startsWith('/hdv')) {
     return <DocumentsPage />;
+  }
+  if (location.pathname.startsWith('/huong-dan-erp/tao-nghi-phep')) {
+    return <HuongDanTaoNghiPhepPage />;
+  }
+  if (location.pathname.startsWith('/huong-dan-erp/dat-phong-hop')) {
+    return <HuongDanDatPhongHopPage />;
+  }
+  if (location.pathname.startsWith('/huong-dan-erp')) {
+    return <HuongDanErpHub />;
   }
 
 
@@ -4388,6 +4400,10 @@ function AppContent() {
   return (
     <>
       <Routes>
+      <Route path="/huong-dan-erp/tao-nghi-phep" element={<HuongDanTaoNghiPhepPage />} />
+      <Route path="/huong-dan-erp/dat-phong-hop" element={<HuongDanDatPhongHopPage />} />
+      <Route path="/huong-dan-erp" element={<HuongDanErpHub />} />
+      <Route path="/huong-dan-erp/*" element={<HuongDanErpHub />} />
       <Route path="/tai-lieu/manager" element={isLoggedIn ? <RagDocsManager /> : <Navigate to="/login" />} />
       <Route path="/tai-lieu" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
       <Route path="/tai-lieu/sop-astro-tour" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
