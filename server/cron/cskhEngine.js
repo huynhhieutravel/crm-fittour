@@ -48,8 +48,8 @@ async function runCskhEngine() {
                             FROM bookings b
                             JOIN tour_departures td ON b.tour_departure_id = td.id
                             WHERE td.start_date::date = $1
-                              AND td.status NOT IN ('Huỷ')
-                              AND b.booking_status NOT IN ('Huỷ', 'Mới')
+                              AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
+                              AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')
                               AND NOT EXISTS (
                                   SELECT 1 FROM cskh_tasks t 
                                   WHERE t.rule_id = $2 
@@ -91,8 +91,8 @@ async function runCskhEngine() {
                             FROM bookings b
                             JOIN tour_departures td ON b.tour_departure_id = td.id
                             WHERE td.end_date::date = $1
-                              AND td.status NOT IN ('Huỷ')
-                              AND b.booking_status NOT IN ('Huỷ', 'Mới')
+                              AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
+                              AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')
                               AND NOT EXISTS (
                                   SELECT 1 FROM cskh_tasks t 
                                   WHERE t.rule_id = $2 
@@ -131,7 +131,7 @@ async function runCskhEngine() {
                             SELECT c.id as customer_id
                             FROM customers c
                             WHERE EXISTS (
-                                SELECT 1 FROM bookings b WHERE b.customer_id = c.id AND b.booking_status NOT IN ('Huỷ','Mới')
+                                SELECT 1 FROM bookings b WHERE b.customer_id = c.id AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')
                             )
                             AND NOT EXISTS (
                                 SELECT 1 FROM bookings b2 

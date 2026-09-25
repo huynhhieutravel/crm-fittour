@@ -22,7 +22,7 @@ exports.checkPhoneExists = async (req, res) => {
         const stripped = phone.replace(/[\s\-\.]/g, '');
         const result = await db.query(`
             SELECT id, name, customer_segment, past_trip_count,
-            COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count
+            COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count
             FROM customers 
             WHERE REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', '') = $1
                OR REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', '') = $2
@@ -72,8 +72,8 @@ exports.getAllCustomers = async (req, res) => {
 
         let queryStr = `
             SELECT c.*, 
-                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as total_spent,
-                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count,
+                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as total_spent,
+                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count,
                    (SELECT content FROM lead_notes WHERE customer_id = c.id ORDER BY created_at DESC LIMIT 1) as latest_note,
                    l.source as lead_source
             FROM customers c
@@ -219,8 +219,8 @@ exports.getCustomerById = async (req, res) => {
     try {
         const result = await db.query(`
             SELECT c.*, 
-                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0)::numeric as total_spent,
-                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count
+                   COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')), 0)::numeric as total_spent,
+                   COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count
             FROM customers c WHERE c.id = $1
         `, [req.params.id]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy khách hàng' });

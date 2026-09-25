@@ -316,8 +316,8 @@ export const EditTemplateModal = ({
                        <td style={{ padding: '12px', color: '#f59e0b', fontWeight: 'bold' }}>{new Intl.NumberFormat('vi-VN').format(dep.price || dep.actual_price || 0)}đ</td>
                        <td style={{ padding: '12px' }}>
                           <span style={{ 
-                            background: dep.status === 'Hoàn thành' ? '#dcfce7' : dep.status === 'Huỷ' ? '#fef2f2' : '#e0f2fe',
-                            color: dep.status === 'Hoàn thành' ? '#166534' : dep.status === 'Huỷ' ? '#991b1b' : '#0369a1',
+                            background: dep.status === 'Hoàn thành' ? '#dcfce7' : (dep.status === 'Huỷ' || dep.status === 'Hủy' || dep.status === 'CANCELLED') ? '#fef2f2' : '#e0f2fe',
+                            color: dep.status === 'Hoàn thành' ? '#166534' : (dep.status === 'Huỷ' || dep.status === 'Hủy' || dep.status === 'CANCELLED') ? '#991b1b' : '#0369a1',
                             padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600
                           }}>
                             {dep.status || 'Mở bán'}
@@ -866,7 +866,7 @@ export const EditDepartureModal = ({
           )}
         </div>
         <div style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#64748b', textAlign: 'right' }}>
-          Tổng cộng: <strong style={{color: '#1e293b'}}>{linkedBookings.reduce((sum, b) => sum + (b.pax_count || 0), 0)}</strong> / {editingDeparture.max_participants || 0} Pax đã đặt
+          Tổng cộng: <strong style={{color: '#1e293b'}}>{linkedBookings.filter(b => !['Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED'].includes(b.booking_status)).reduce((sum, b) => sum + (b.pax_count || 0), 0)}</strong> / {editingDeparture.max_participants || 0} Pax đã đặt
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>

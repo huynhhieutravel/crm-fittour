@@ -218,21 +218,20 @@ export default function OpToursTab({ currentUser }) {
   const [healthActiveBU, setHealthActiveBU] = useState('Tất cả');
   const [salesActiveMonth, setSalesActiveMonth] = useState('Tất cả');
   const [salesActiveBU, setSalesActiveBU] = useState('Tất cả');
+  const [salesMetricMode, setSalesMetricMode] = useState('cashflow'); // 'cashflow' (Thực Thu) or 'revenue' (Hợp Đồng)
 
   const openCeoModal = async (type) => {
     setActiveCeoModal(type);
-    if (!ceoDashboardData) {
-      setLoadingCeoData(true);
-      try {
-        const res = await axios.get(`/api/ceo-dashboard/departures?year=${new Date().getFullYear()}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        setCeoDashboardData(res.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingCeoData(false);
-      }
+    setLoadingCeoData(true);
+    try {
+      const res = await axios.get(`/api/ceo-dashboard/departures?year=${new Date().getFullYear()}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setCeoDashboardData(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingCeoData(false);
     }
   };
 
@@ -1841,33 +1840,69 @@ export default function OpToursTab({ currentUser }) {
                     // Aggregate by sale_name
                     const aggregatedSales = {};
                     let totalRevenue = 0;
+                    let totalCashflow = 0;
                     
                     filteredRaw.forEach(s => {
                       if (!aggregatedSales[s.sale_name]) {
-                        aggregatedSales[s.sale_name] = { sale_name: s.sale_name, booking_count: 0, total_pax: 0, revenue: 0 };
+                        aggregatedSales[s.sale_name] = { sale_name: s.sale_name, booking_count: 0, total_pax: 0, revenue: 0, cashflow: 0 };
                       }
                       aggregatedSales[s.sale_name].booking_count += Number(s.booking_count || 0);
                       aggregatedSales[s.sale_name].total_pax += Number(s.total_pax || 0);
                       aggregatedSales[s.sale_name].revenue += Number(s.revenue || 0);
+                      aggregatedSales[s.sale_name].cashflow += Number(s.cashflow || 0);
                       totalRevenue += Number(s.revenue || 0);
+                      totalCashflow += Number(s.cashflow || 0);
                     });
 
-                    const finalSales = Object.values(aggregatedSales).sort((a, b) => b.revenue - a.revenue);
+                    const finalSales = Object.values(aggregatedSales).sort((a, b) => 
+                      salesMetricMode === 'cashflow' ? (b.cashflow - a.cashflow) : (b.revenue - a.revenue)
+                    );
 
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {/* Filters */}
+                        {/* Filters & Mode Toggle */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginRight: '4px', whiteSpace: 'nowrap' }}>THÁNG:</div>
-                            {uniqueMonths.map(m => (
-                              <button key={m} onClick={() => setSalesActiveMonth(m)}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginRight: '4px', whiteSpace: 'nowrap' }}>THÁNG:</div>
+                              {uniqueMonths.map(m => (
+                                <button key={m} onClick={() => setSalesActiveMonth(m)}
+                                  style={{
+                                    padding: '4px 12px', borderRadius: '16px', fontSize: '0.8rem', fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                                    background: salesActiveMonth === m ? '#f59e0b' : '#f1f5f9', color: salesActiveMonth === m ? 'white' : '#64748b',
+                                  }}>{m}</button>
+                              ))}
+                            </div>
+                            
+                            {/* Toggle metric */}
+                            <div style={{ display: 'flex', background: '#f1f5f9', padding: '3px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                              <button 
+                                onClick={() => setSalesMetricMode('cashflow')}
                                 style={{
-                                  padding: '4px 12px', borderRadius: '16px', fontSize: '0.8rem', fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
-                                  background: salesActiveMonth === m ? '#f59e0b' : '#f1f5f9', color: salesActiveMonth === m ? 'white' : '#64748b',
-                                }}>{m}</button>
-                            ))}
+                                  padding: '4px 10px', borderRadius: '7px', border: 'none', fontSize: '0.75rem', fontWeight: 700,
+                                  background: salesMetricMode === 'cashflow' ? '#10b981' : 'transparent',
+                                  color: salesMetricMode === 'cashflow' ? '#fff' : '#64748b',
+                                  cursor: 'pointer', transition: 'all 0.2s',
+                                  boxShadow: salesMetricMode === 'cashflow' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                                }}
+                              >
+                                💰 Ưu tiên Thực Thu
+                              </button>
+                              <button 
+                                onClick={() => setSalesMetricMode('revenue')}
+                                style={{
+                                  padding: '4px 10px', borderRadius: '7px', border: 'none', fontSize: '0.75rem', fontWeight: 700,
+                                  background: salesMetricMode === 'revenue' ? '#3b82f6' : 'transparent',
+                                  color: salesMetricMode === 'revenue' ? '#fff' : '#64748b',
+                                  cursor: 'pointer', transition: 'all 0.2s',
+                                  boxShadow: salesMetricMode === 'revenue' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                                }}
+                              >
+                                📑 Theo Hợp Đồng
+                              </button>
+                            </div>
                           </div>
+
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                             <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginRight: '4px', whiteSpace: 'nowrap' }}>TEAM:</div>
                             {uniqueBUs.map(bu => (
@@ -1884,12 +1919,12 @@ export default function OpToursTab({ currentUser }) {
                           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
                             <thead style={{ position: 'sticky', top: 0, zIndex: 1, background: '#f8fafc', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                               <tr style={{ textAlign: 'left' }}>
-                                <th style={{ padding: '12px 16px', color: '#64748b', fontSize: '0.8rem', width: '60px' }}>#</th>
+                                <th style={{ padding: '12px 16px', color: '#64748b', fontSize: '0.8rem', width: '50px' }}>#</th>
                                 <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem' }}>NHÂN VIÊN</th>
-                                <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'center' }}>ĐƠN</th>
-                                <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'center' }}>KHÁCH</th>
-                                <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'right' }}>DOANH THU</th>
-                                <th style={{ padding: '12px 16px', color: '#64748b', fontSize: '0.8rem', width: '150px' }}>TỶ TRỌNG</th>
+                                <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'center' }}>ĐƠN / KHÁCH</th>
+                                <th style={{ padding: '12px', color: '#059669', fontSize: '0.8rem', textAlign: 'right', fontWeight: 700 }}>THỰC THU ⭐</th>
+                                <th style={{ padding: '12px', color: '#2563eb', fontSize: '0.8rem', textAlign: 'right', fontWeight: 600 }}>HỢP ĐỒNG</th>
+                                <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'center' }}>THU ĐẠT</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1897,27 +1932,37 @@ export default function OpToursTab({ currentUser }) {
                                 const isTop1 = idx === 0;
                                 const isTop2 = idx === 1;
                                 const isTop3 = idx === 2;
-                                const pct = totalRevenue > 0 ? (s.revenue / totalRevenue) * 100 : 0;
+                                const collectionRate = s.revenue > 0 ? Math.round((s.cashflow / s.revenue) * 100) : 0;
                                 
-                                let rankBadge = <span style={{ width: '28px', height: '28px', background: '#f1f5f9', color: '#64748b', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800 }}>{idx + 1}</span>;
-                                if (isTop1) rankBadge = <span style={{ fontSize: '1.4rem' }}>🏆</span>;
+                                let rankBadge = <span style={{ width: '26px', height: '26px', background: '#f1f5f9', color: '#64748b', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800 }}>{idx + 1}</span>;
+                                if (isTop1) rankBadge = <span style={{ fontSize: '1.3rem' }}>🏆</span>;
                                 else if (isTop2) rankBadge = <span style={{ fontSize: '1.2rem' }}>🥈</span>;
                                 else if (isTop3) rankBadge = <span style={{ fontSize: '1.1rem' }}>🥉</span>;
 
                                 return (
                                   <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', background: isTop1 ? '#fffbeb' : 'white', transition: 'all 0.2s' }}>
                                     <td style={{ padding: '12px 16px', textAlign: 'center' }}>{rankBadge}</td>
-                                    <td style={{ padding: '12px', fontWeight: 800, color: isTop1 ? '#d97706' : '#1e293b', fontSize: '0.95rem' }}>{s.sale_name}</td>
-                                    <td style={{ padding: '12px', textAlign: 'center', color: '#475569', fontWeight: 600, fontSize: '0.9rem' }}>{s.booking_count}</td>
-                                    <td style={{ padding: '12px', textAlign: 'center', color: '#10b981', fontWeight: 700, fontSize: '0.9rem' }}>{s.total_pax || 0}</td>
-                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 800, color: '#1d4ed8', fontSize: '0.95rem', whiteSpace: 'nowrap' }}>{Math.round(s.revenue).toLocaleString('vi-VN')} đ</td>
-                                    <td style={{ padding: '12px 16px' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <div style={{ flex: 1, height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
-                                          <div style={{ width: `${Math.min(pct, 100)}%`, height: '100%', background: isTop1 ? '#f59e0b' : '#3b82f6' }}></div>
-                                        </div>
-                                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', minWidth: '35px', textAlign: 'right' }}>{pct.toFixed(1)}%</span>
-                                      </div>
+                                    <td style={{ padding: '12px', fontWeight: 800, color: isTop1 ? '#d97706' : '#1e293b', fontSize: '0.9rem' }}>{s.sale_name}</td>
+                                    <td style={{ padding: '12px', textAlign: 'center', color: '#475569', fontWeight: 600, fontSize: '0.85rem' }}>
+                                      {s.booking_count} đơn / {s.total_pax || 0} khách
+                                    </td>
+                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 800, color: '#059669', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                                      {Math.round(s.cashflow).toLocaleString('vi-VN')} đ
+                                    </td>
+                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 600, color: '#2563eb', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                                      {Math.round(s.revenue).toLocaleString('vi-VN')} đ
+                                    </td>
+                                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                                      <span style={{ 
+                                        fontSize: '0.75rem', 
+                                        fontWeight: 700, 
+                                        padding: '2px 8px', 
+                                        borderRadius: '6px', 
+                                        background: collectionRate >= 50 ? '#dcfce7' : '#fef3c7', 
+                                        color: collectionRate >= 50 ? '#15803d' : '#b45309' 
+                                      }}>
+                                        {collectionRate}%
+                                      </span>
                                     </td>
                                   </tr>
                                 );

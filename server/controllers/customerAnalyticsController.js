@@ -123,7 +123,8 @@ exports.getOverviewStats = async (req, res) => {
             FROM bookings b
             LEFT JOIN customers c ON b.customer_id = c.id
             WHERE b.created_at >= $1 AND b.created_at <= $2
-              AND b.booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED')
+              AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED')
+              AND b.paid > 0
         `, [start, end]);
 
         const bookingsInPeriod = bookingsInPeriodRes.rows;
@@ -220,7 +221,7 @@ exports.getOverviewStats = async (req, res) => {
                 FROM bookings b 
                 LEFT JOIN customers c ON b.customer_id = c.id 
                 WHERE (b.customer_id IS NULL OR c.id IS NULL)
-                  AND b.booking_status NOT IN ('Huỷ', 'CANCELLED')
+                  AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED')
             `),
             // Leads chốt đơn nhưng chưa convert thành customer
             db.query(`
@@ -323,7 +324,8 @@ exports.getGrowthChart = async (req, res) => {
                 FROM bookings b
                 LEFT JOIN customers c ON b.customer_id = c.id
                 WHERE b.created_at >= $1 AND b.created_at <= $2
-                  AND b.booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED')
+                  AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED')
+                  AND b.paid > 0
             `, [mStart, mEnd]);
 
             const bookings = bookRes.rows;
@@ -387,7 +389,7 @@ exports.getDataIntegrityAudit = async (req, res) => {
                 LEFT JOIN tour_departures td ON b.tour_departure_id = td.id
                 LEFT JOIN tour_templates tt ON COALESCE(td.tour_template_id, b.tour_id) = tt.id
                 WHERE (b.customer_id IS NULL OR c.id IS NULL)
-                  AND b.booking_status NOT IN ('Huỷ', 'CANCELLED')
+                  AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED')
                 ORDER BY b.created_at DESC
                 LIMIT $1
             `, [limit]);
@@ -413,8 +415,8 @@ exports.getDataIntegrityAudit = async (req, res) => {
             const unassignedCust = await db.query(`
                 SELECT 
                     c.id, c.name, c.phone, c.customer_segment, c.created_at,
-                    COALESCE((SELECT COUNT(*)::int FROM bookings b WHERE b.customer_id = c.id AND b.booking_status NOT IN ('Huỷ', 'CANCELLED')), 0) as booking_count,
-                    COALESCE((SELECT SUM(total_price) FROM bookings b WHERE b.customer_id = c.id AND b.booking_status NOT IN ('Huỷ', 'CANCELLED')), 0) as total_spent
+                    COALESCE((SELECT COUNT(*)::int FROM bookings b WHERE b.customer_id = c.id AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED') AND b.paid > 0), 0) as booking_count,
+                    COALESCE((SELECT SUM(total_price) FROM bookings b WHERE b.customer_id = c.id AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED') AND b.paid > 0), 0) as total_spent
                 FROM customers c
                 WHERE c.assigned_to IS NULL
                 ORDER BY c.created_at DESC
@@ -428,7 +430,7 @@ exports.getDataIntegrityAudit = async (req, res) => {
                 SELECT 
                     c.id, c.name, c.email, c.customer_segment, c.created_at,
                     COALESCE(u.full_name, u.username, 'Chưa giao') as assigned_to_name,
-                    COALESCE((SELECT COUNT(*)::int FROM bookings b WHERE b.customer_id = c.id AND b.booking_status NOT IN ('Huỷ', 'CANCELLED')), 0) as booking_count
+                    COALESCE((SELECT COUNT(*)::int FROM bookings b WHERE b.customer_id = c.id AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED') AND b.paid > 0), 0) as booking_count
                 FROM customers c
                 LEFT JOIN users u ON c.assigned_to = u.id
                 WHERE c.phone IS NULL OR TRIM(c.phone) = ''
@@ -451,7 +453,7 @@ exports.getDataIntegrityAudit = async (req, res) => {
                 SELECT 
                     c.id, c.name, c.phone, c.customer_segment, c.created_at,
                     COALESCE(u.full_name, u.username, 'Chưa giao') as assigned_to_name,
-                    COALESCE((SELECT COUNT(*)::int FROM bookings b WHERE b.customer_id = c.id AND b.booking_status NOT IN ('Huỷ', 'CANCELLED')), 0) as booking_count
+                    COALESCE((SELECT COUNT(*)::int FROM bookings b WHERE b.customer_id = c.id AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED') AND b.paid > 0), 0) as booking_count
                 FROM customers c
                 JOIN dup ON c.phone = dup.phone
                 LEFT JOIN users u ON c.assigned_to = u.id

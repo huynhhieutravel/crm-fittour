@@ -43,8 +43,9 @@ exports.getCEODeparturesOverview = async (req, res) => {
             JOIN tour_departures td ON b.tour_departure_id = td.id
             JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN users u ON b.created_by = u.id
-            WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
+            WHERE b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED', 'Mới')
               AND b.paid > 0
+              AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               AND ${dateFilter}
               ${buFilter}
@@ -62,7 +63,9 @@ exports.getCEODeparturesOverview = async (req, res) => {
             FROM bookings b
             JOIN tour_departures td ON b.tour_departure_id = td.id
             JOIN tour_templates tt ON td.tour_template_id = tt.id
-            WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
+            WHERE b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED', 'Mới')
+              AND b.paid > 0
+              AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               AND ${dateFilter}
               ${buFilter}
@@ -79,7 +82,9 @@ exports.getCEODeparturesOverview = async (req, res) => {
             FROM bookings b
             JOIN tour_departures td ON b.tour_departure_id = td.id
             JOIN tour_templates tt ON td.tour_template_id = tt.id
-            WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
+            WHERE b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED', 'Mới')
+              AND b.paid > 0
+              AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               AND ${dateFilter}
               ${buFilter}
@@ -106,12 +111,12 @@ exports.getCEODeparturesOverview = async (req, res) => {
             SELECT 
                 td.id, td.start_date, td.status, tt.name as tour_name, 
                 td.max_participants, COALESCE(tt.bu_group, 'Chưa phân loại') as bu_group,
-                COALESCE((SELECT SUM(pax_count) FROM bookings WHERE tour_departure_id = td.id AND (booking_status IN ('CONFIRMED', 'COMPLETED', 'Xác nhận', 'Hoàn thành', 'Mới', 'pending') OR (booking_status IN ('HELD', 'Giữ chỗ') AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)))), 0) as current_pax,
-                COALESCE((SELECT SUM(total_price) FROM bookings WHERE tour_departure_id = td.id AND (booking_status IN ('CONFIRMED', 'COMPLETED', 'Xác nhận', 'Hoàn thành', 'Mới', 'pending') OR (booking_status IN ('HELD', 'Giữ chỗ') AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)))), 0) as total_revenue
+                COALESCE((SELECT SUM(b.pax_count) FROM bookings b WHERE b.tour_departure_id = td.id AND b.paid > 0 AND (b.booking_status IN ('CONFIRMED', 'COMPLETED', 'Xác nhận', 'Hoàn thành', 'Mới', 'pending') OR (b.booking_status IN ('HELD', 'Giữ chỗ') AND (b.expires_at IS NULL OR b.expires_at > CURRENT_TIMESTAMP)))), 0) as current_pax,
+                COALESCE((SELECT SUM(b.total_price) FROM bookings b WHERE b.tour_departure_id = td.id AND b.paid > 0 AND (b.booking_status IN ('CONFIRMED', 'COMPLETED', 'Xác nhận', 'Hoàn thành', 'Mới', 'pending') OR (b.booking_status IN ('HELD', 'Giữ chỗ') AND (b.expires_at IS NULL OR b.expires_at > CURRENT_TIMESTAMP)))), 0) as total_revenue
             FROM tour_departures td
             JOIN tour_templates tt ON td.tour_template_id = tt.id
             WHERE ${upcomingDateFilter}
-              AND td.status != 'Huỷ'
+              AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               ${upcomingBuFilter}
             ORDER BY td.start_date ASC;
@@ -121,14 +126,14 @@ exports.getCEODeparturesOverview = async (req, res) => {
         // 5. Total Stats — LEFT JOIN to count ALL departures (including ones without bookings)
         const totalQuery = `
             SELECT 
-                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED') THEN b.total_price END), 0) as total_revenue,
-                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED') THEN b.paid END), 0) as total_cashflow,
+                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') AND b.paid > 0 THEN b.total_price END), 0) as total_revenue,
+                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') THEN b.paid END), 0) as total_cashflow,
                 COUNT(DISTINCT td.id) as total_departures,
-                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED') THEN b.pax_count END), 0) as total_pax
+                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') AND b.paid > 0 THEN b.pax_count END), 0) as total_pax
             FROM tour_departures td
             JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN bookings b ON b.tour_departure_id = td.id
-            WHERE td.status != 'Huỷ'
+            WHERE td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               AND ${dateFilter}
               ${buFilter};
@@ -137,14 +142,14 @@ exports.getCEODeparturesOverview = async (req, res) => {
 
         const prevTotalQuery = `
             SELECT 
-                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED') THEN b.total_price END), 0) as total_revenue,
-                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED') THEN b.paid END), 0) as total_cashflow,
+                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') AND b.paid > 0 THEN b.total_price END), 0) as total_revenue,
+                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') THEN b.paid END), 0) as total_cashflow,
                 COUNT(DISTINCT td.id) as total_departures,
-                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED') THEN b.pax_count END), 0) as total_pax
+                COALESCE(SUM(CASE WHEN b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') AND b.paid > 0 THEN b.pax_count END), 0) as total_pax
             FROM tour_departures td
             JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN bookings b ON b.tour_departure_id = td.id
-            WHERE td.status != 'Huỷ'
+            WHERE td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               AND ${prevDateFilter}
               ${prevBuFilter};
@@ -159,14 +164,16 @@ exports.getCEODeparturesOverview = async (req, res) => {
                 EXTRACT(MONTH FROM td.start_date) as month,
                 EXTRACT(YEAR FROM td.start_date) as year,
                 COALESCE(SUM(b.total_price), 0) as revenue, 
+                COALESCE(SUM(b.paid), 0) as cashflow,
                 COUNT(b.id) as booking_count,
                 COALESCE(SUM(b.pax_count), 0) as total_pax
             FROM bookings b
             JOIN tour_departures td ON b.tour_departure_id = td.id
             JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN users u ON b.created_by = u.id
-            WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
+            WHERE b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED', 'Mới')
               AND b.paid > 0
+              AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               AND ${dateFilter}
               ${buFilter}
@@ -234,8 +241,9 @@ exports.getDrilldownData = async (req, res) => {
             JOIN tour_departures td ON b.tour_departure_id = td.id
             JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN users u ON b.created_by = u.id
-            WHERE b.booking_status != 'Huỷ' AND b.booking_status != 'Mới'
-              ${extraSaleFilter}
+            WHERE b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED', 'Mới')
+              AND b.paid > 0
+              AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
               AND tt.name NOT ILIKE '%[Tour Cũ]%'
               AND ${dateFilter}
               AND ${typeFilter}

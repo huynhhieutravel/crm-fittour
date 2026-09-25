@@ -36,7 +36,8 @@ exports.getOverviewStats = async (req, res) => {
             SELECT 
                 COALESCE(SUM(total_price), 0) as total_revenue
             FROM bookings 
-            WHERE 1=1 ${bookingFilter}
+            WHERE booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')
+              AND paid > 0 ${bookingFilter}
         `;
         const revenueRes = await pool.query(revenueQuery, params);
         const revenueData = revenueRes.rows[0];
@@ -46,7 +47,7 @@ exports.getOverviewStats = async (req, res) => {
             SELECT COUNT(*) as active_departures
             FROM tour_departures
             WHERE start_date >= CURRENT_DATE 
-            AND status != 'Huỷ'
+            AND status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
         `;
         const depsRes = await pool.query(depsQuery);
         const depsData = depsRes.rows[0];
@@ -137,7 +138,8 @@ exports.getLeaderOverview = async (req, res) => {
             `SELECT COALESCE(SUM(total_price), 0) as booking_value,
                     COALESCE(SUM(pax_count), 0) as total_pax_booked
              FROM bookings 
-             WHERE booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED') AND ${dateFilter}`,
+             WHERE booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') 
+               AND paid > 0 AND ${dateFilter}`,
             params
         );
         const totalBookingValue = parseFloat(bookingRes.rows[0].booking_value);
@@ -181,7 +183,8 @@ exports.getLeaderOverview = async (req, res) => {
         const wonRes = await pool.query(
             `SELECT COUNT(DISTINCT id) as won_leads 
              FROM bookings 
-             WHERE booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED') AND ${dateFilter}`,
+             WHERE booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') 
+               AND paid > 0 AND ${dateFilter}`,
             params
         );
         const wonLeads = parseInt(wonRes.rows[0].won_leads) + parseInt(leadsRes.rows[0].won_leads);
@@ -206,13 +209,13 @@ exports.getLeaderOverview = async (req, res) => {
                 td.code as tour_code,
                 td.start_date,
                 td.max_participants as max_pax,
-                (SELECT COALESCE(SUM(pax_count), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')) as sold_pax,
-                (SELECT COALESCE(SUM(total_price), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')) as revenue,
-                (SELECT COALESCE(SUM(paid), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')) as collected_revenue
+                (SELECT COALESCE(SUM(pax_count), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') AND paid > 0) as sold_pax,
+                (SELECT COALESCE(SUM(total_price), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') AND paid > 0) as revenue,
+                (SELECT COALESCE(SUM(paid), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')) as collected_revenue
              FROM tour_departures_raw td
              JOIN tour_templates tt ON td.tour_template_id = tt.id
              WHERE ${dateFilterBookings.replace(/start_date/g, 'td.start_date')}
-             AND td.status != 'Huỷ'
+             AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
              AND (td.is_deleted IS NULL OR td.is_deleted = false)
              ORDER BY tt.bu_group, td.start_date`,
             params
@@ -270,8 +273,9 @@ exports.getLeaderOverview = async (req, res) => {
             CROSS JOIN LATERAL unnest(COALESCE(u.bus, ARRAY['Chưa gán'])) as sale_bu_group
             WHERE ${dateFilter.replace(/created_at/g, 'b.created_at')}
             AND (td.is_deleted IS NULL OR td.is_deleted = false)
-            AND td.status != 'Huỷ'
-            AND b.booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')
+            AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
+            AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')
+            AND b.paid > 0
             GROUP BY sale_bu_group, COALESCE(u.full_name, b.created_by_name, 'Chưa gán')`, params);
 
         // Map sales performance to the respective BU
@@ -311,11 +315,12 @@ exports.getLeaderOverview = async (req, res) => {
         const prevToursRes = await pool.query(
             `SELECT 
                 tt.bu_group,
-                (SELECT COALESCE(SUM(total_price), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')) as revenue
+                (SELECT COALESCE(SUM(total_price), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') AND paid > 0) as revenue,
+                (SELECT COALESCE(SUM(paid), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')) as collected_revenue
              FROM tour_departures_raw td
              JOIN tour_templates tt ON td.tour_template_id = tt.id
              WHERE ${dateFilterBookingsPrev.replace(/start_date/g, 'td.start_date')}
-             AND td.status != 'Huỷ'
+             AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
              AND (td.is_deleted IS NULL OR td.is_deleted = false)`,
             prevParams
         );
@@ -323,7 +328,8 @@ exports.getLeaderOverview = async (req, res) => {
         const prevSalesRes = await pool.query(`
             SELECT 
                 sale_bu_group as bu_group,
-                SUM(b.total_price) as revenue
+                SUM(b.total_price) as revenue,
+                SUM(b.paid) as collected_revenue
             FROM tour_departures_raw td
             JOIN tour_templates tt ON td.tour_template_id = tt.id
             JOIN bookings b ON b.tour_departure_id = td.id
@@ -331,22 +337,25 @@ exports.getLeaderOverview = async (req, res) => {
             CROSS JOIN LATERAL unnest(COALESCE(u.bus, ARRAY['Chưa gán'])) as sale_bu_group
             WHERE ${dateFilterPrev.replace(/created_at/g, 'b.created_at')}
             AND (td.is_deleted IS NULL OR td.is_deleted = false)
-            AND td.status != 'Huỷ'
-            AND b.booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')
+            AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
+            AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')
+            AND b.paid > 0
             GROUP BY sale_bu_group`, prevParams);
 
         const prevBuData = {};
         
         prevToursRes.rows.forEach(t => {
             const bu = t.bu_group || 'Khác';
-            if (!prevBuData[bu]) prevBuData[bu] = { bu_name: bu, total_revenue: 0, sales_revenue: 0 };
+            if (!prevBuData[bu]) prevBuData[bu] = { bu_name: bu, total_revenue: 0, total_collected: 0, sales_revenue: 0, sales_collected: 0 };
             prevBuData[bu].total_revenue += parseFloat(t.revenue) || 0;
+            prevBuData[bu].total_collected = (prevBuData[bu].total_collected || 0) + (parseFloat(t.collected_revenue) || 0);
         });
 
         prevSalesRes.rows.forEach(s => {
             const bu = s.bu_group || 'Khác';
-            if (!prevBuData[bu]) prevBuData[bu] = { bu_name: bu, total_revenue: 0, sales_revenue: 0 };
+            if (!prevBuData[bu]) prevBuData[bu] = { bu_name: bu, total_revenue: 0, total_collected: 0, sales_revenue: 0, sales_collected: 0 };
             prevBuData[bu].sales_revenue += parseFloat(s.revenue) || 0;
+            prevBuData[bu].sales_collected = (prevBuData[bu].sales_collected || 0) + (parseFloat(s.collected_revenue) || 0);
         });
 
 
@@ -368,7 +377,7 @@ exports.getLeaderOverview = async (req, res) => {
              FROM tour_departures_raw td
              JOIN tour_templates tt ON td.tour_template_id = tt.id
              WHERE td.guide_id IS NULL
-             AND td.status != 'Huỷ'
+             AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
              AND (td.is_deleted IS NULL OR td.is_deleted = false)
              AND td.start_date >= CURRENT_DATE
              AND td.start_date <= CURRENT_DATE + INTERVAL '14 days'`
@@ -480,7 +489,7 @@ exports.getEmployeeProfile = async (req, res) => {
             SELECT COUNT(td.id) as count 
             FROM tour_departures_raw td
             WHERE td.operator_id = $1 
-            AND td.status != 'Huỷ'
+            AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
             AND (td.is_deleted IS NULL OR td.is_deleted = false)
             AND ${dateFilter.replace(/created_at/g, 'td.start_date')}
         `, params);
@@ -494,12 +503,12 @@ exports.getEmployeeProfile = async (req, res) => {
                 tt.name as template_name,
                 td.start_date, 
                 td.max_participants,
-                (SELECT COALESCE(SUM(pax_count), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')) as sold,
-                (SELECT COALESCE(SUM(total_price), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')) as revenue
+                (SELECT COALESCE(SUM(pax_count), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') AND paid > 0) as sold,
+                (SELECT COALESCE(SUM(total_price), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') AND paid > 0) as revenue
             FROM tour_departures_raw td
             LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
             WHERE td.operator_id = $1 
-            AND td.status != 'Huỷ'
+            AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
             AND (td.is_deleted IS NULL OR td.is_deleted = false)
             AND ${dateFilter.replace(/created_at/g, 'td.start_date')}
             ORDER BY td.start_date ASC
@@ -514,7 +523,8 @@ exports.getEmployeeProfile = async (req, res) => {
                 COALESCE(SUM(b.paid), 0) as collected_revenue
             FROM bookings b
             WHERE b.created_by = $1 
-            AND b.booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')
+            AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')
+            AND b.paid > 0
             AND ${dateFilter.replace(/created_at/g, 'b.created_at')}
         `, params);
 
@@ -536,7 +546,7 @@ exports.getEmployeeProfile = async (req, res) => {
             LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN customers c ON b.customer_id = c.id
             WHERE b.created_by = $1 
-            AND b.booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')
+            AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')
             AND ${dateFilter.replace(/created_at/g, 'b.created_at')}
             ORDER BY b.created_at DESC
         `, params);

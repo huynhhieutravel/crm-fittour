@@ -334,7 +334,7 @@ exports.updateBooking = async (req, res) => {
                         status: updatedBooking.booking_status,
                         updated_at: new Date().toISOString()
                     });
-                } else if (updates.booking_status === 'Huỷ' || updates.booking_status === 'CANCELLED') {
+                } else if (updates.booking_status === 'Huỷ' || updates.booking_status === 'Hủy' || updates.booking_status === 'CANCELLED') {
                     emitEvent(SystemEvents.find(e => e.code === 'BOOKING_CANCELLED').code, {
                         booking_code: updatedBooking.booking_code,
                         status: updatedBooking.booking_status,

@@ -51,7 +51,7 @@ router.get('/', async (req, res) => {
         (SELECT COALESCE(SUM(pax_count), 0) 
          FROM bookings 
          WHERE tour_departure_id = td.id 
-         AND booking_status NOT IN ('Huỷ')) as sold_pax
+         AND booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED')) as sold_pax
       FROM tour_departures td
       JOIN tour_templates tt ON td.tour_template_id = tt.id
       WHERE COALESCE(tt.is_active, true) = true

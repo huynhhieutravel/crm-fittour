@@ -22,6 +22,7 @@ const LeaderDashboardView = () => {
     const [activeTab, setActiveTab] = useState('BU1'); // Default to BU1
     const [activeSalesTab, setActiveSalesTab] = useState('BU1');
     const [activeScheduleTab, setActiveScheduleTab] = useState('BU1');
+    const [salesMetricMode, setSalesMetricMode] = useState('collected'); // 'collected' (Thực nhận) or 'contract' (Hợp đồng)
     const [mainTab, setMainTab] = useState('so-lieu'); // 'so-lieu' or 'nhan-su'
     const [isBookingListOpen, setIsBookingListOpen] = useState(false);
     const [selectedTourForModal, setSelectedTourForModal] = useState(null);
@@ -185,22 +186,24 @@ const LeaderDashboardView = () => {
                 <>
             {/* Khối 1: Bức Tranh Tài Chính & Hiệu Quả */}
             <div className="grid-cards-4 mb-8" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '40px' }}>
-                <div className="glass" style={{ display: 'flex', flexDirection: 'column', background: 'linear-gradient(135deg, #eff6ff 0%, #ffffff 100%)', borderLeft: '4px solid #3b82f6', padding: '24px', borderRadius: '16px', gap: '8px', boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59,130,246,0.1)' }}>
-                    <div className="stat-header" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div className="stat-icon-wrapper" style={{background: '#dbeafe', color: '#2563eb', padding: '10px', borderRadius: '10px'}}><DollarSign size={20} /></div>
-                        <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Doanh Số Sales</h3>
-                    </div>
-                    <div className="stat-value" style={{ fontSize: 'clamp(1rem, 1.2vw + 0.5rem, 1.35rem)', fontWeight: '800', color: '#1e293b', whiteSpace: 'nowrap', letterSpacing: '-0.5px', lineHeight: '1.2', marginTop: '4px' }}>{topMetrics.totalBookingValue.toLocaleString('vi-VN')}đ</div>
-                    <div className="stat-trend text-blue-600" style={{ fontSize: '0.85rem', color: '#3b82f6', fontWeight: 500 }}>Tổng giá trị booking mới</div>
-                </div>
-
+                {/* 1. Thực Thu (Tiền Mặt) - Ưu tiên hàng đầu số chính thức */}
                 <div className="glass" style={{ display: 'flex', flexDirection: 'column', background: 'linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%)', borderLeft: '4px solid #10b981', padding: '24px', borderRadius: '16px', gap: '8px', boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.1), 0 8px 10px -6px rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16,185,129,0.1)' }}>
                     <div className="stat-header" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div className="stat-icon-wrapper" style={{background: '#d1fae5', color: '#059669', padding: '10px', borderRadius: '10px'}}><Activity size={20} /></div>
-                        <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Thực Thu (Tiền Mặt)</h3>
+                        <div className="stat-icon-wrapper" style={{background: '#d1fae5', color: '#059669', padding: '10px', borderRadius: '10px'}}><DollarSign size={20} /></div>
+                        <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Thực Thu (Đã Nhận)</h3>
                     </div>
                     <div className="stat-value text-emerald-600" style={{ fontSize: 'clamp(1rem, 1.2vw + 0.5rem, 1.35rem)', fontWeight: '800', color: '#059669', whiteSpace: 'nowrap', letterSpacing: '-0.5px', lineHeight: '1.2', marginTop: '4px' }}>{topMetrics.actualRevenue.toLocaleString('vi-VN')}đ</div>
-                    <div className="stat-trend text-emerald-600" style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 500 }}>Dòng tiền đã vào TK</div>
+                    <div className="stat-trend text-emerald-600" style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 500 }}>Dòng tiền thực nhận vào TK (Chính thức)</div>
+                </div>
+
+                {/* 2. Doanh Số Hợp Đồng (Đã Chốt) */}
+                <div className="glass" style={{ display: 'flex', flexDirection: 'column', background: 'linear-gradient(135deg, #eff6ff 0%, #ffffff 100%)', borderLeft: '4px solid #3b82f6', padding: '24px', borderRadius: '16px', gap: '8px', boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59,130,246,0.1)' }}>
+                    <div className="stat-header" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div className="stat-icon-wrapper" style={{background: '#dbeafe', color: '#2563eb', padding: '10px', borderRadius: '10px'}}><Activity size={20} /></div>
+                        <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Doanh Số Hợp Đồng</h3>
+                    </div>
+                    <div className="stat-value" style={{ fontSize: 'clamp(1rem, 1.2vw + 0.5rem, 1.35rem)', fontWeight: '800', color: '#1e293b', whiteSpace: 'nowrap', letterSpacing: '-0.5px', lineHeight: '1.2', marginTop: '4px' }}>{topMetrics.totalBookingValue.toLocaleString('vi-VN')}đ</div>
+                    <div className="stat-trend text-blue-600" style={{ fontSize: '0.85rem', color: '#3b82f6', fontWeight: 500 }}>Tổng giá trị booking đã vào cọc</div>
                 </div>
 
                 <div className="glass" style={{ display: 'flex', flexDirection: 'column', borderLeft: '4px solid #f59e0b', padding: '24px', borderRadius: '16px', background: '#ffffff', gap: '8px', boxShadow: '0 10px 25px -5px rgba(245, 158, 11, 0.1), 0 8px 10px -6px rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245,158,11,0.1)' }}>
@@ -476,29 +479,28 @@ const LeaderDashboardView = () => {
                         {/* Sales Pie Chart */}
                         <div className="pie-chart-container" style={{ flex: '0 0 250px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                             <div style={{ width: '250px', height: '250px', position: 'relative' }}>
-                                {(!activeSalesBUData.sales || activeSalesBUData.sales.length === 0 || activeSalesBUData.sales.reduce((sum, s) => sum + s.revenue, 0) === 0) ? (
-                                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '0.9rem', border: '2px dashed #e2e8f0', borderRadius: '50%' }}>Chưa có doanh thu</div>
+                                {(!activeSalesBUData.sales || activeSalesBUData.sales.length === 0 || activeSalesBUData.sales.reduce((sum, s) => sum + (salesMetricMode === 'collected' ? (s.collected_revenue || 0) : (s.revenue || 0)), 0) === 0) ? (
+                                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '0.9rem', border: '2px dashed #e2e8f0', borderRadius: '50%' }}>Chưa có phát sinh</div>
                                 ) : (
                                     <PieChart width={300} height={250} style={{ marginLeft: '-25px' }}>
                                         <Pie
-                                            data={(activeSalesBUData.sales || []).filter(s => s.revenue > 0).map((s, i) => ({ name: s.sale_name, value: s.revenue, fill: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#14b8a6', '#84cc16', '#6366f1'][i % 10] }))}
+                                            data={(activeSalesBUData.sales || []).filter(s => (salesMetricMode === 'collected' ? (s.collected_revenue || 0) : (s.revenue || 0)) > 0).map((s, i) => ({ 
+                                                name: s.sale_name, 
+                                                value: salesMetricMode === 'collected' ? (s.collected_revenue || 0) : (s.revenue || 0), 
+                                                fill: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#14b8a6', '#84cc16', '#6366f1'][i % 10] 
+                                            }))}
                                             cx={150} cy={120}
                                             innerRadius={60} outerRadius={90}
                                             paddingAngle={2}
                                             dataKey="value"
                                             label={({ cx, cy, midAngle, innerRadius, outerRadius, value, index, name, percent }) => {
                                                 const RADIAN = Math.PI / 180;
-                                                
-                                                // Vị trí tên ở ngoài (gần hơn)
                                                 const radiusOut = outerRadius * 1.05;
                                                 const xOut = cx + radiusOut * Math.cos(-midAngle * RADIAN);
                                                 const yOut = cy + radiusOut * Math.sin(-midAngle * RADIAN);
-                                                
-                                                // Vị trí % ở trong thanh màu
                                                 const radiusIn = innerRadius + (outerRadius - innerRadius) * 0.5;
                                                 const xIn = cx + radiusIn * Math.cos(-midAngle * RADIAN);
                                                 const yIn = cy + radiusIn * Math.sin(-midAngle * RADIAN);
-
                                                 const nameShort = name.split(' ').pop(); 
                                                 
                                                 return (
@@ -520,56 +522,128 @@ const LeaderDashboardView = () => {
                                         <Tooltip formatter={(value) => value.toLocaleString('vi-VN') + 'đ'} />
                                     </PieChart>
                                 )}
-                                {activeSalesBUData.sales && activeSalesBUData.sales.reduce((sum, s) => sum + s.revenue, 0) > 0 && (
+                                {activeSalesBUData.sales && activeSalesBUData.sales.reduce((sum, s) => sum + (salesMetricMode === 'collected' ? (s.collected_revenue || 0) : (s.revenue || 0)), 0) > 0 && (
                                     <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', width: '100%', zIndex: -1 }}>
-                                        <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#1e293b' }}>Doanh Thu</div>
-                                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Sales Đóng Góp</div>
+                                        <div style={{ fontSize: '0.95rem', fontWeight: 'bold', color: salesMetricMode === 'collected' ? '#059669' : '#1d4ed8' }}>
+                                            {salesMetricMode === 'collected' ? 'Thực Nhận' : 'Hợp Đồng'}
+                                        </div>
+                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Tỷ Trọng Đóng Góp</div>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <div style={{ flex: 1, maxHeight: '350px', overflowY: 'auto', paddingRight: '8px' }}>
-                            <h4 style={{ fontWeight: 'bold', color: '#334155', marginBottom: '12px' }}>
-                                Tổng Doanh Thu Đã Chốt: <span style={{ color: '#059669' }}>{(activeSalesBUData.sales || []).reduce((sum, s) => sum + s.revenue, 0).toLocaleString('vi-VN')}đ</span>
-                                {(() => {
-                                    const totalCompanyRevenue = tourPerformance.reduce((acc, bu) => acc + (bu.sales || []).reduce((sum, s) => sum + s.revenue, 0), 0);
-                                    const currentBURevenue = (activeSalesBUData.sales || []).reduce((sum, s) => sum + s.revenue, 0);
-                                    const percentage = totalCompanyRevenue > 0 ? Math.round((currentBURevenue / totalCompanyRevenue) * 100) : 0;
-                                    return <span style={{ color: '#64748b', fontSize: '0.9rem', marginLeft: '8px', fontWeight: 'normal' }}>(Chiếm {percentage}% toàn công ty)</span>;
-                                })()}
-                            </h4>
+                        <div style={{ flex: 1, maxHeight: '380px', overflowY: 'auto', paddingRight: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '14px' }}>
+                                <div>
+                                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap' }}>
+                                        <div>
+                                            <span style={{ fontSize: '0.85rem', color: '#059669', fontWeight: 700 }}>ĐÃ THỰC NHẬN: </span>
+                                            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#059669' }}>
+                                                {(activeSalesBUData.sales || []).reduce((sum, s) => sum + (s.collected_revenue || 0), 0).toLocaleString('vi-VN')}đ
+                                            </span>
+                                        </div>
+                                        <span style={{ color: '#cbd5e1', fontWeight: 300 }}>|</span>
+                                        <div>
+                                            <span style={{ fontSize: '0.85rem', color: '#2563eb', fontWeight: 700 }}>HỢP ĐỒNG: </span>
+                                            <span style={{ fontSize: '1.05rem', fontWeight: 700, color: '#2563eb' }}>
+                                                {(activeSalesBUData.sales || []).reduce((sum, s) => sum + (s.revenue || 0), 0).toLocaleString('vi-VN')}đ
+                                            </span>
+                                            {(() => {
+                                                const totalCompanyRevenue = tourPerformance.reduce((acc, bu) => acc + (bu.sales || []).reduce((sum, s) => sum + s.revenue, 0), 0);
+                                                const currentBURevenue = (activeSalesBUData.sales || []).reduce((sum, s) => sum + s.revenue, 0);
+                                                const percentage = totalCompanyRevenue > 0 ? Math.round((currentBURevenue / totalCompanyRevenue) * 100) : 0;
+                                                return <span style={{ color: '#64748b', fontSize: '0.85rem', marginLeft: '6px', fontWeight: 'normal' }}>(Chiếm {percentage}% toàn công ty)</span>;
+                                            })()}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Toggle Button Group */}
+                                <div style={{ display: 'flex', background: '#f1f5f9', padding: '3px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                                    <button 
+                                        onClick={() => setSalesMetricMode('collected')}
+                                        style={{ 
+                                            padding: '4px 12px', 
+                                            borderRadius: '7px', 
+                                            border: 'none', 
+                                            fontSize: '0.8rem', 
+                                            fontWeight: 600, 
+                                            background: salesMetricMode === 'collected' ? '#10b981' : 'transparent', 
+                                            color: salesMetricMode === 'collected' ? '#fff' : '#64748b', 
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            boxShadow: salesMetricMode === 'collected' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                                        }}
+                                    >
+                                        💰 Ưu tiên Thực Nhận
+                                    </button>
+                                    <button 
+                                        onClick={() => setSalesMetricMode('contract')}
+                                        style={{ 
+                                            padding: '4px 12px', 
+                                            borderRadius: '7px', 
+                                            border: 'none', 
+                                            fontSize: '0.8rem', 
+                                            fontWeight: 600, 
+                                            background: salesMetricMode === 'contract' ? '#3b82f6' : 'transparent', 
+                                            color: salesMetricMode === 'contract' ? '#fff' : '#64748b', 
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            boxShadow: salesMetricMode === 'contract' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                                        }}
+                                    >
+                                        📑 Doanh Số Hợp Đồng
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className="table-container" style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
-                                <table style={{ width: '100%', textAlign: 'left', fontSize: '0.9rem', borderCollapse: 'collapse' }}>
+                                <table style={{ width: '100%', textAlign: 'left', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
                                     <thead style={{ background: '#f8fafc', position: 'sticky', top: 0, zIndex: 10 }}>
                                         <tr>
-                                            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Tên Nhân Viên</th>
-                                            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Tỷ trọng</th>
-                                            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Đơn/Khách</th>
-                                            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Doanh Thu Ghi Nhận</th>
-                                            <th style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Đã Thu Khách</th>
+                                            <th style={{ padding: '12px 14px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Tên Nhân Viên</th>
+                                            <th style={{ padding: '12px 14px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, textAlign: 'center' }}>Tỷ Trọng ({salesMetricMode === 'collected' ? 'Thu' : 'HĐ'})</th>
+                                            <th style={{ padding: '12px 14px', borderBottom: '1px solid #e2e8f0', fontWeight: 600 }}>Đơn / Khách</th>
+                                            <th style={{ padding: '12px 14px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#059669', textAlign: 'right' }}>Đã Thực Nhận ⭐</th>
+                                            <th style={{ padding: '12px 14px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#2563eb', textAlign: 'right' }}>Hợp Đồng Đã Chốt</th>
+                                            <th style={{ padding: '12px 14px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, textAlign: 'center' }}>Thu Đạt</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {(activeSalesBUData.sales || []).map((s, idx) => {
-                                            const totalRev = (activeSalesBUData.sales || []).reduce((sum, x) => sum + x.revenue, 0);
-                                            const percentage = totalRev > 0 ? Math.round((s.revenue / totalRev) * 100) : 0;
-                                            const color = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#14b8a6', '#84cc16', '#6366f1'][idx % 10];
+                                            const totalMetric = (activeSalesBUData.sales || []).reduce((sum, x) => sum + (salesMetricMode === 'collected' ? (x.collected_revenue || 0) : (x.revenue || 0)), 0);
+                                            const currentMetricVal = salesMetricMode === 'collected' ? (s.collected_revenue || 0) : (s.revenue || 0);
+                                            const percentage = totalMetric > 0 ? Math.round((currentMetricVal / totalMetric) * 100) : 0;
+                                            const collectionRate = s.revenue > 0 ? Math.round(((s.collected_revenue || 0) / s.revenue) * 100) : 0;
+                                            const color = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e', '#14b8a6', '#84cc16', '#6366f1'][idx % 10];
                                             return (
                                             <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#f1f5f9'} onMouseOut={e=>e.currentTarget.style.background='transparent'}>
-                                                <td style={{ padding: '12px 16px', fontWeight: 600, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: color }}></div>
+                                                <td style={{ padding: '12px 14px', fontWeight: 600, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <div style={{ width: '10px', height: '10px', borderRadius: '3px', background: color }}></div>
                                                     {s.sale_name}
                                                 </td>
-                                                <td style={{ padding: '12px 16px', fontWeight: 'bold', color: color }}>{percentage}%</td>
-                                                <td style={{ padding: '12px 16px', color: '#475569' }}>{s.bookings_count} đơn / {s.total_pax} khách</td>
-                                                <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#3b82f6' }}>{s.revenue.toLocaleString('vi-VN')}đ</td>
-                                                <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#10b981' }}>{s.collected_revenue.toLocaleString('vi-VN')}đ</td>
+                                                <td style={{ padding: '12px 14px', fontWeight: 'bold', color: color, textAlign: 'center' }}>{percentage}%</td>
+                                                <td style={{ padding: '12px 14px', color: '#475569' }}>{s.bookings_count} đơn / {s.total_pax} khách</td>
+                                                <td style={{ padding: '12px 14px', fontWeight: '800', color: '#059669', textAlign: 'right' }}>{(s.collected_revenue || 0).toLocaleString('vi-VN')}đ</td>
+                                                <td style={{ padding: '12px 14px', fontWeight: '600', color: '#2563eb', textAlign: 'right' }}>{s.revenue.toLocaleString('vi-VN')}đ</td>
+                                                <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                                                    <span style={{ 
+                                                        fontSize: '0.75rem', 
+                                                        fontWeight: 700, 
+                                                        padding: '3px 8px', 
+                                                        borderRadius: '6px', 
+                                                        background: collectionRate >= 50 ? '#dcfce7' : '#fef3c7', 
+                                                        color: collectionRate >= 50 ? '#15803d' : '#b45309' 
+                                                    }}>
+                                                        {collectionRate}%
+                                                    </span>
+                                                </td>
                                             </tr>
                                         )})}
                                         {(!activeSalesBUData.sales || activeSalesBUData.sales.length === 0) && (
                                             <tr>
-                                                <td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Không có dữ liệu sales trong kỳ này</td>
+                                                <td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Không có dữ liệu sales trong kỳ này</td>
                                             </tr>
                                         )}
                                     </tbody>

@@ -33,10 +33,10 @@ exports.getAllOpTours = async (req, res) => {
       LEFT JOIN (
         SELECT 
           tour_departure_id,
-          SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED') THEN pax_count ELSE 0 END) AS total_sold,
-          SUM(CASE WHEN booking_status IN ('Giữ chỗ', 'Mới', 'pending', 'HELD') THEN pax_count ELSE 0 END) AS total_reserved,
-          SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED') THEN COALESCE(paid, 0) ELSE 0 END) AS total_paid,
-          SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED') THEN COALESCE(total_price, 0) ELSE 0 END) AS total_booking_amount
+          SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED') AND COALESCE(paid, 0) > 0 THEN pax_count ELSE 0 END) AS total_sold,
+          SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED') AND COALESCE(paid, 0) = 0 THEN pax_count ELSE 0 END) AS total_reserved,
+          SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED') THEN COALESCE(paid, 0) ELSE 0 END) AS total_paid,
+          SUM(CASE WHEN booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED') AND COALESCE(paid, 0) > 0 THEN COALESCE(total_price, 0) ELSE 0 END) AS total_booking_amount
         FROM bookings
         GROUP BY tour_departure_id
       ) ba ON ba.tour_departure_id = td.id
@@ -64,7 +64,7 @@ exports.getPublicOpTours = async (req, res) => {
         (
           SELECT COALESCE(SUM(b.pax_count), 0)
           FROM bookings b
-          WHERE b.tour_departure_id = td.id AND b.booking_status NOT IN ('Huỷ', 'Mới', 'Giữ chỗ', 'CANCELLED', 'EXPIRED', 'HELD')
+          WHERE b.tour_departure_id = td.id AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'Giữ chỗ', 'CANCELLED', 'EXPIRED', 'HELD')
         ) AS total_sold,
         (
           SELECT COALESCE(SUM(b.pax_count), 0)
@@ -266,8 +266,8 @@ exports.updateOpTour = async (req, res) => {
 exports.deleteOpTour = async (req, res) => {
   const { id } = req.params;
   try {
-    // Check if there are active bookings tied to this departure (bỏ qua các booking đã Huỷ)
-    const bookingCheck = await db.query("SELECT COUNT(*) as cnt FROM bookings WHERE tour_departure_id = $1 AND booking_status != 'Huỷ'", [id]);
+    // Check if there are active bookings tied to this departure (bỏ qua các booking đã Huỷ/Hủy)
+    const bookingCheck = await db.query("SELECT COUNT(*) as cnt FROM bookings WHERE tour_departure_id = $1 AND booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED')", [id]);
     if (Number(bookingCheck.rows[0].cnt) > 0) {
       return res.status(409).json({ hasBookings: true, error: `Không thể xóa: Lịch khởi hành này đang có ${bookingCheck.rows[0].cnt} khách hàng đang hoạt động. Hãy chuyển khách sang tour khác trước khi đưa vào thùng rác.` });
     }
@@ -465,7 +465,7 @@ exports.addOpTourBooking = async (req, res) => {
                UPDATE customers 
                SET updated_at = CURRENT_TIMESTAMP
                WHERE id = $1 
-               RETURNING past_trip_count, COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count
+               RETURNING past_trip_count, COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = customers.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count
            `, [bookingData.customer_id]);
            
            if (updateRes.rows.length > 0) {
@@ -648,7 +648,7 @@ exports.updateOpTourBooking = async (req, res) => {
             const custId = custRes.rows[0].customer_id;
             const vipRes = await db.query(`
                 SELECT past_trip_count,
-                       COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = $1 AND booking_status NOT IN ('Huỷ', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count
+                       COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = $1 AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count
                 FROM customers WHERE id = $1
             `, [custId]);
             if (vipRes.rows.length > 0) {

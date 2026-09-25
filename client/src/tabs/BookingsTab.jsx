@@ -27,7 +27,10 @@ const BookingsTab = ({
       case 'Đã đặt cọc': return { bg: '#fef3c7', color: '#b45309', label: 'Đã đặt cọc' };
       case 'Đã thanh toán': return { bg: '#d1fae5', color: '#065f46', label: 'Đã thanh toán' };
       case 'Hoàn thành': return { bg: '#dcfce7', color: '#15803d', label: 'Hoàn thành' };
-      case 'Huỷ': return { bg: '#fee2e2', color: '#b91c1c', label: 'Huỷ' };
+      case 'Huỷ':
+      case 'Hủy':
+      case 'CANCELLED':
+      case 'EXPIRED': return { bg: '#fee2e2', color: '#b91c1c', label: 'Huỷ' };
       default: return { bg: '#f1f5f9', color: '#475569', label: status };
     }
   };

@@ -153,7 +153,7 @@ exports.getDepartureById = async (req, res) => {
         });
         
         departure.bookings = bookings;
-        departure.sold_pax = bookings.reduce((sum, b) => b.booking_status !== 'Huỷ' ? sum + Number(b.pax_count) : sum, 0);
+        departure.sold_pax = bookings.reduce((sum, b) => (!['Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED', 'Mới'].includes(b.booking_status)) ? sum + Number(b.pax_count) : sum, 0);
 
         res.json(departure);
     } catch (err) {
@@ -244,7 +244,7 @@ exports.updateDeparture = async (req, res) => {
 
             if (alertMessage) {
                 // Find all sales who have bookings on this departure
-                const salesRes = await db.query(`SELECT DISTINCT assigned_to FROM bookings WHERE tour_departure_id = $1 AND assigned_to IS NOT NULL AND booking_status != 'Huỷ'`, [id]);
+                const salesRes = await db.query(`SELECT DISTINCT assigned_to FROM bookings WHERE tour_departure_id = $1 AND assigned_to IS NOT NULL AND booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED')`, [id]);
                 if (salesRes.rows.length > 0) {
                     const systemAlertController = require('./systemAlertController');
                     for (const row of salesRes.rows) {
@@ -370,7 +370,7 @@ exports.getDepartureBookings = async (req, res) => {
             SELECT b.*, c.name as customer_name, c.phone as customer_phone, c.customer_segment, c.past_trip_count
             FROM bookings b
             JOIN customers c ON b.customer_id = c.id
-            WHERE b.tour_departure_id = $1
+            WHERE b.tour_departure_id = $1 AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED')
             ORDER BY b.created_at DESC
         `, [req.params.id]);
         res.json(result.rows);

@@ -240,14 +240,14 @@ const SalesDashboard = ({
 
   // --- BOOKINGS (Pending Deposits / Debts) ---
   const myBookings = workspaceBookings.length > 0 ? workspaceBookings : bookings.filter(b => b.assigned_to === currentUser?.id || b.created_by === currentUser?.id || b.sale_id === currentUser?.id);
-  const pendingBookings = myBookings.filter(b => b.booking_status !== 'Huỷ' && b.payment_status === 'Chưa thanh toán');
-  const partialBookings = myBookings.filter(b => b.booking_status !== 'Huỷ' && b.payment_status === 'Thanh toán 1 phần');
+  const pendingBookings = myBookings.filter(b => !['Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED'].includes(b.booking_status) && b.payment_status === 'Chưa thanh toán');
+  const partialBookings = myBookings.filter(b => !['Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED'].includes(b.booking_status) && b.payment_status === 'Thanh toán 1 phần');
   const totalDebtBookings = pendingBookings.length + partialBookings.length;
 
   // --- DEPARTURES (Hot Inventory) ---
   const todayStr = new Date().toISOString().split('T')[0];
   const upcomingDepartures = departures
-    .filter(d => d.start_date >= todayStr && d.status !== 'Huỷ')
+    .filter(d => d.start_date >= todayStr && !['Huỷ', 'Hủy', 'CANCELLED'].includes(d.status))
     .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
     .slice(0, 5); 
 
@@ -617,10 +617,11 @@ const SalesDashboard = ({
               </div>
             </div>
             <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Tổng: {myBookings.filter(b => {
+              const isCancelled = ['Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED'].includes(b.booking_status);
               const isClosed = ['Hoàn thành', 'Xác nhận', 'Đã đặt cọc', 'Đã thanh toán', 'Thành công'].includes(b.booking_status) || b.payment_status === 'paid' || b.payment_status === 'Thanh toán 1 phần' || b.payment_status === 'partial';
-              if (bookingFilterTab === 'CLOSED') return isClosed && b.booking_status !== 'Huỷ';
-              if (bookingFilterTab === 'PENDING') return !isClosed && b.booking_status !== 'Huỷ';
-              if (bookingFilterTab === 'CANCELLED') return b.booking_status === 'Huỷ';
+              if (bookingFilterTab === 'CLOSED') return isClosed && !isCancelled;
+              if (bookingFilterTab === 'PENDING') return !isClosed && !isCancelled;
+              if (bookingFilterTab === 'CANCELLED') return isCancelled;
               return true;
             }).length} Đơn hàng</span>
           </div>
@@ -639,10 +640,11 @@ const SalesDashboard = ({
               <tbody>
                 {(() => {
                   const displayBookings = myBookings.filter(b => {
+                    const isCancelled = ['Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED'].includes(b.booking_status);
                     const isClosed = ['Hoàn thành', 'Xác nhận', 'Đã đặt cọc', 'Đã thanh toán', 'Thành công'].includes(b.booking_status) || b.payment_status === 'paid' || b.payment_status === 'Thanh toán 1 phần' || b.payment_status === 'partial';
-                    if (bookingFilterTab === 'CLOSED') return isClosed && b.booking_status !== 'Huỷ';
-                    if (bookingFilterTab === 'PENDING') return !isClosed && b.booking_status !== 'Huỷ';
-                    if (bookingFilterTab === 'CANCELLED') return b.booking_status === 'Huỷ';
+                    if (bookingFilterTab === 'CLOSED') return isClosed && !isCancelled;
+                    if (bookingFilterTab === 'PENDING') return !isClosed && !isCancelled;
+                    if (bookingFilterTab === 'CANCELLED') return isCancelled;
                     return true;
                   });
 
@@ -659,7 +661,7 @@ const SalesDashboard = ({
                     const dep = departures.find(d => d.id === b.tour_departure_id);
                     const tourTemplate = dep ? tourTemplates.find(t => t.id === dep.tour_template_id) : null;
                     const tourName = tourTemplate?.name || dep?.tour_name || dep?.name || '';
-                    const isUrgent = b.payment_status === 'Chưa thanh toán' && b.booking_status !== 'Huỷ';
+                    const isUrgent = b.payment_status === 'Chưa thanh toán' && !['Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED'].includes(b.booking_status);
                     
                     const paidAmount = Number(b.paid) || Number(b.paid_amount) || 0;
                     const totalPrice = Number(b.total_price) || 0;
@@ -737,7 +739,7 @@ const SalesDashboard = ({
                           )}
                         </td>
                         <td>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: b.booking_status === 'Huỷ' ? '#94a3b8' : '#0ea5e9' }}>{b.booking_status}</span>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: ['Huỷ', 'Hủy', 'CANCELLED'].includes(b.booking_status) ? '#94a3b8' : '#0ea5e9' }}>{b.booking_status}</span>
                         </td>
                       </tr>
                     );

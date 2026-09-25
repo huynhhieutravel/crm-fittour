@@ -165,7 +165,9 @@ const ViewDeparturePage = ({ departureId, handleOpenCustomer, guides, handleEdit
        case 'Chắc chắn đi': return { label: '🔵 Chắc chắn đi', color: '#2563eb' };
        case 'Đã đầy': return { label: '🟠 Đã đầy', color: '#ea580c' };
        case 'Hoàn thành': return { label: '✅ Hoàn thành', color: '#475569' };
-       case 'Huỷ': return { label: '🔴 Huỷ', color: '#dc2626' };
+       case 'Huỷ':
+       case 'Hủy':
+       case 'CANCELLED': return { label: '🔴 Huỷ', color: '#dc2626' };
        default: return { label: st || '🟢 Mở bán', color: '#16a34a' };
     }
   };

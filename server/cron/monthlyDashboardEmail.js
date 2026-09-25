@@ -20,7 +20,8 @@ async function getDashboardStats(monthNum, yearNum) {
     `SELECT COALESCE(SUM(total_price), 0) as booking_value,
             COALESCE(SUM(pax_count), 0) as total_pax_booked
      FROM bookings 
-     WHERE booking_status NOT IN ('Huỷ', 'Mới') 
+     WHERE booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') 
+     AND paid > 0
      AND EXTRACT(YEAR FROM created_at) = $1 AND EXTRACT(MONTH FROM created_at) = $2`,
     params
   );
@@ -41,12 +42,12 @@ async function getDashboardStats(monthNum, yearNum) {
         tt.bu_group,
         td.id as departure_id,
         td.max_participants as max_pax,
-        (SELECT COALESCE(SUM(pax_count), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Mới')) as sold_pax,
-        (SELECT COALESCE(SUM(total_price), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Mới')) as revenue
+        (SELECT COALESCE(SUM(pax_count), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') AND paid > 0) as sold_pax,
+        (SELECT COALESCE(SUM(total_price), 0) FROM bookings WHERE tour_departure_id = td.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED') AND paid > 0) as revenue
      FROM tour_departures_raw td
      JOIN tour_templates tt ON td.tour_template_id = tt.id
      WHERE EXTRACT(YEAR FROM td.start_date) = $1 AND EXTRACT(MONTH FROM td.start_date) = $2
-     AND td.status != 'Huỷ'
+     AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
      AND (td.is_deleted IS NULL OR td.is_deleted = false)`,
     params
   );
@@ -90,8 +91,9 @@ async function getDashboardStats(monthNum, yearNum) {
     LEFT JOIN users u ON b.created_by = u.id
     WHERE EXTRACT(YEAR FROM b.created_at) = $1 AND EXTRACT(MONTH FROM b.created_at) = $2
     AND (td.is_deleted IS NULL OR td.is_deleted = false)
-    AND td.status != 'Huỷ'
-    AND b.booking_status NOT IN ('Huỷ', 'Mới')
+    AND td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
+    AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')
+    AND b.paid > 0
     GROUP BY sale_name
     ORDER BY revenue DESC
     LIMIT 10

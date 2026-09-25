@@ -78,6 +78,7 @@ const CEODepartureDashboardTab = ({ currentUser }) => {
 
   const [drilldownData, setDrilldownData] = useState([]);
   const [drilldownModal, setDrilldownModal] = useState({ isOpen: false, title: '', loading: false });
+  const [salesMetricMode, setSalesMetricMode] = useState('cashflow'); // 'cashflow' (Thực Thu) or 'revenue' (Hợp Đồng)
 
   // Fetch BUs on mount
   useEffect(() => {
@@ -200,7 +201,13 @@ const CEODepartureDashboardTab = ({ currentUser }) => {
 
   const { sales = [], bus = [], markets = [], upcoming = [], totals = {}, prev_totals = {} } = data || {};
 
-  const formattedSales = sales.map(s => ({ ...s, booking_count: Number(s.booking_count), revenue: Number(s.revenue), cashflow: Number(s.cashflow), total_pax: Number(s.total_pax||0) }));
+  const formattedSales = sales.map(s => ({ 
+    ...s, 
+    booking_count: Number(s.booking_count), 
+    revenue: Number(s.revenue), 
+    cashflow: Number(s.cashflow || 0), 
+    total_pax: Number(s.total_pax||0) 
+  })).sort((a, b) => salesMetricMode === 'cashflow' ? (b.cashflow - a.cashflow) : (b.revenue - a.revenue));
   const formattedBus = bus.map(b => ({ ...b, revenue: Number(b.revenue), cashflow: Number(b.cashflow) }));
   const formattedMarkets = markets.map(m => ({ ...m, revenue: Number(m.revenue) }));
 
@@ -321,65 +328,64 @@ const CEODepartureDashboardTab = ({ currentUser }) => {
           {/* TOP KPI CARDS */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '32px' }}>
             
-            {/* 1. Doanh Thu (Revenue) */}
-            <div className="ceo-card revenue" style={{
-              background: '#fff',
-              padding: '24px',
-              borderRadius: '24px',
-              border: '1px solid #e2e8f0',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              transition: 'all 0.3s ease'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Tổng Doanh Thu Đơn Hàng</span>
-                <div style={{ padding: '10px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px', color: '#2563eb' }}>
-                  <TrendingUp size={20} />
-                </div>
-              </div>
-              <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'baseline' }}>
-                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>
-                  {formatMoney(totals.total_revenue || 0)}
-                </div>
-                <GrowthIndicator current={totals.total_revenue || 0} previous={prev_totals.total_revenue || 0} />
-              </div>
-              <div style={{ height: '1px', background: '#f1f5f9', width: '100%', marginBottom: '16px' }}></div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#64748b' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f0fdf4', color: '#16a34a', padding: '4px 10px', borderRadius: '8px', fontWeight: 700 }}>
-                  <Users size={14} /> {totals.total_pax || 0} khách
-                </div>
-                <span>đã chốt thành công</span>
-              </div>
-            </div>
-
-            {/* 2. Thực Thu (Cashflow) */}
+            {/* 1. Dòng Tiền Thực Thu (Cashflow) - Ưu tiên hàng đầu */}
             <div className="ceo-card cashflow" style={{
-              background: '#fff',
+              background: 'linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%)',
               padding: '24px',
               borderRadius: '24px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid rgba(16,185,129,0.2)',
+              borderLeft: '5px solid #10b981',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+              boxShadow: '0 4px 20px rgba(16, 185, 129, 0.08)',
               transition: 'all 0.3s ease'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Dòng Tiền Thực Thu (Cash)</span>
-                <div style={{ padding: '10px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10b981' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#059669', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Dòng Tiền Thực Thu (Đã Nhận) ⭐</span>
+                <div style={{ padding: '10px', background: '#d1fae5', borderRadius: '12px', color: '#059669' }}>
                   <DollarSign size={20} />
                 </div>
               </div>
               <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'baseline' }}>
-                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px' }}>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#059669', letterSpacing: '-0.5px' }}>
                   {formatMoney(totals.total_cashflow || 0)}
                 </div>
                 <GrowthIndicator current={totals.total_cashflow || 0} previous={prev_totals.total_cashflow || 0} />
               </div>
+              <div style={{ height: '1px', background: '#f1f5f9', width: '100%', marginBottom: '16px' }}></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#059669', fontWeight: 600 }}>
+                <span>Tiền cọc / chuyển khoản thực tế vào tài khoản (Chính thức)</span>
+              </div>
+            </div>
+
+            {/* 2. Tổng Doanh Thu Hợp Đồng (Revenue) */}
+            <div className="ceo-card revenue" style={{
+              background: 'linear-gradient(135deg, #eff6ff 0%, #ffffff 100%)',
+              padding: '24px',
+              borderRadius: '24px',
+              border: '1px solid rgba(59,130,246,0.2)',
+              borderLeft: '5px solid #3b82f6',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              boxShadow: '0 4px 20px rgba(59, 130, 246, 0.08)',
+              transition: 'all 0.3s ease'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Doanh Thu Hợp Đồng (Đã Chốt)</span>
+                <div style={{ padding: '10px', background: '#dbeafe', borderRadius: '12px', color: '#2563eb' }}>
+                  <TrendingUp size={20} />
+                </div>
+              </div>
+              <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'baseline' }}>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1e293b', letterSpacing: '-0.5px' }}>
+                  {formatMoney(totals.total_revenue || 0)}
+                </div>
+                <GrowthIndicator current={totals.total_revenue || 0} previous={prev_totals.total_revenue || 0} />
+              </div>
               {/* Progress Bar */}
-              <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '3px', marginBottom: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '3px', marginBottom: '12px', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ 
                   width: `${totals.total_revenue > 0 ? Math.min((totals.total_cashflow / totals.total_revenue) * 100, 100) : 0}%`, 
                   height: '100%', 
@@ -388,8 +394,10 @@ const CEODepartureDashboardTab = ({ currentUser }) => {
                 }}></div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                 <span style={{ color: '#64748b' }}>Tỷ lệ Thu Tiền:</span>
-                 <span style={{ fontWeight: 700, color: '#10b981' }}>{totals.total_revenue > 0 ? Math.round((totals.total_cashflow / totals.total_revenue) * 100) : 0}%</span>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748b' }}>
+                   <Users size={14} /> <strong>{totals.total_pax || 0}</strong> khách chốt cọc
+                 </div>
+                 <span style={{ fontWeight: 700, color: '#10b981' }}>Đã thu {totals.total_revenue > 0 ? Math.round((totals.total_cashflow / totals.total_revenue) * 100) : 0}%</span>
               </div>
             </div>
 
@@ -493,33 +501,102 @@ const CEODepartureDashboardTab = ({ currentUser }) => {
 
             {/* 2. SALES LEADERBOARD */}
             <div className="analytics-card" style={{ gridColumn: 'span 6', background: '#fff', padding: '24px', borderRadius: '24px', border: '1px solid #e2e8f0' }}>
-               <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#1e293b', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Award size={20} color="#f59e0b" /> Bảng Vàng Sales (Top Revenue)
-              </h3>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                 <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                   <Award size={20} color="#f59e0b" /> Bảng Vàng Sales
+                 </h3>
+                 <div style={{ display: 'flex', background: '#f1f5f9', padding: '3px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                   <button 
+                     onClick={() => setSalesMetricMode('cashflow')}
+                     style={{
+                       padding: '4px 12px',
+                       borderRadius: '7px',
+                       border: 'none',
+                       fontSize: '0.75rem',
+                       fontWeight: 700,
+                       background: salesMetricMode === 'cashflow' ? '#10b981' : 'transparent',
+                       color: salesMetricMode === 'cashflow' ? '#fff' : '#64748b',
+                       cursor: 'pointer',
+                       transition: 'all 0.2s',
+                       boxShadow: salesMetricMode === 'cashflow' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                     }}
+                   >
+                     💰 Ưu tiên Thực Thu
+                   </button>
+                   <button 
+                     onClick={() => setSalesMetricMode('revenue')}
+                     style={{
+                       padding: '4px 12px',
+                       borderRadius: '7px',
+                       border: 'none',
+                       fontSize: '0.75rem',
+                       fontWeight: 700,
+                       background: salesMetricMode === 'revenue' ? '#3b82f6' : 'transparent',
+                       color: salesMetricMode === 'revenue' ? '#fff' : '#64748b',
+                       cursor: 'pointer',
+                       transition: 'all 0.2s',
+                       boxShadow: salesMetricMode === 'revenue' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                     }}
+                   >
+                     📑 Theo Hợp Đồng
+                   </button>
+                 </div>
+               </div>
+
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc', textAlign: 'left' }}>
                       <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem' }}>NHÂN VIÊN</th>
-                      <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'center' }}>ĐƠN</th>
-                      <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'center' }}>KHÁCH</th>
-                      <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'right' }}>DOANH THU</th>
+                      <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'center' }}>ĐƠN / KHÁCH</th>
+                      <th style={{ padding: '12px', color: '#059669', fontSize: '0.8rem', textAlign: 'right', fontWeight: 700 }}>THỰC THU ⭐</th>
+                      <th style={{ padding: '12px', color: '#2563eb', fontSize: '0.8rem', textAlign: 'right', fontWeight: 600 }}>HỢP ĐỒNG</th>
+                      <th style={{ padding: '12px', color: '#64748b', fontSize: '0.8rem', textAlign: 'center' }}>THU ĐẠT</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {formattedSales.map((s, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }} onClick={() => fetchDrilldown('sale', s.sale_name, s.sale_name)}>
-                        <td style={{ padding: '12px', fontWeight: 700, color: '#1e293b', fontSize: '0.85rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ width: '22px', height: '22px', background: idx === 0 ? '#fef3c7' : '#f1f5f9', color: idx === 0 ? '#d97706' : '#64748b', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>{idx+1}</span>
-                            {s.sale_name}
-                          </div>
-                        </td>
-                        <td style={{ padding: '12px', textAlign: 'center', color: '#475569', fontWeight: 600, fontSize: '0.85rem' }}>{s.booking_count}</td>
-                        <td style={{ padding: '12px', textAlign: 'center', color: '#10b981', fontWeight: 700, fontSize: '0.85rem' }}>{s.total_pax}</td>
-                        <td style={{ padding: '12px', textAlign: 'right', fontWeight: 800, color: '#1d4ed8', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{Math.round(s.revenue).toLocaleString('vi-VN')} đ</td>
-                      </tr>
-                    ))}
+                    {formattedSales.map((s, idx) => {
+                      const collectionRate = s.revenue > 0 ? Math.round((s.cashflow / s.revenue) * 100) : 0;
+                      let rankBadge = <span style={{ width: '22px', height: '22px', background: '#f1f5f9', color: '#64748b', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>{idx + 1}</span>;
+                      if (idx === 0) rankBadge = <span style={{ fontSize: '1.2rem' }}>🥇</span>;
+                      else if (idx === 1) rankBadge = <span style={{ fontSize: '1.1rem' }}>🥈</span>;
+                      else if (idx === 2) rankBadge = <span style={{ fontSize: '1rem' }}>🥉</span>;
+
+                      return (
+                        <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.2s' }} onClick={() => fetchDrilldown('sale', s.sale_name, s.sale_name)}>
+                          <td style={{ padding: '12px', fontWeight: 700, color: '#1e293b', fontSize: '0.85rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {rankBadge}
+                              {s.sale_name}
+                            </div>
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'center', color: '#475569', fontWeight: 600, fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                            {s.booking_count} đơn / {s.total_pax} khách
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'right', fontWeight: 800, color: '#059669', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                            {Math.round(s.cashflow).toLocaleString('vi-VN')} đ
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'right', fontWeight: 600, color: '#2563eb', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                            {Math.round(s.revenue).toLocaleString('vi-VN')} đ
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'center' }}>
+                            <span style={{ 
+                              fontSize: '0.75rem', 
+                              fontWeight: 700, 
+                              padding: '2px 8px', 
+                              borderRadius: '6px', 
+                              background: collectionRate >= 50 ? '#dcfce7' : '#fef3c7', 
+                              color: collectionRate >= 50 ? '#15803d' : '#b45309' 
+                            }}>
+                              {collectionRate}%
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {formattedSales.length === 0 && (
+                      <tr><td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>Chưa có phát sinh số liệu sales</td></tr>
+                    )}
                   </tbody>
                 </table>
               </div>

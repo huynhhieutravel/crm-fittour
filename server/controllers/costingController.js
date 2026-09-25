@@ -11,7 +11,7 @@ exports.getAllCostings = async (req, res) => {
                 tt.name as template_name,
                 td.status as departure_status,
                 COALESCE((SELECT SUM(pax_count) FROM bookings b WHERE b.tour_departure_id = td.id AND (b.booking_status IN ('CONFIRMED', 'COMPLETED', 'Xác nhận', 'Hoàn thành', 'Mới', 'pending') OR (b.booking_status IN ('HELD', 'Giữ chỗ') AND (b.expires_at IS NULL OR b.expires_at > CURRENT_TIMESTAMP)))), 0) as sold_pax,
-                COALESCE((SELECT SUM(total_price) FROM bookings b WHERE b.tour_departure_id = td.id AND b.booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED')), 0) as expected_revenue,
+                COALESCE((SELECT SUM(total_price) FROM bookings b WHERE b.tour_departure_id = td.id AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED')), 0) as expected_revenue,
                 tc.id as costing_id,
                 tc.costs,
                 tc.total_revenue as saved_revenue,
@@ -23,7 +23,7 @@ exports.getAllCostings = async (req, res) => {
             FROM tour_departures td
             LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
             LEFT JOIN tour_costings tc ON td.id = tc.tour_departure_id
-            WHERE td.status != 'Huỷ'
+            WHERE td.status NOT IN ('Huỷ', 'Hủy', 'CANCELLED')
             ORDER BY td.start_date DESC
         `);
         res.json(result.rows);
@@ -40,7 +40,7 @@ exports.getCostingByDeparture = async (req, res) => {
         const bookingStats = await db.query(`
             SELECT COALESCE(SUM(total_price), 0) as revenue, COALESCE(SUM(pax_count), 0) as sold_pax
             FROM bookings
-            WHERE tour_departure_id = $1 AND booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED')
+            WHERE tour_departure_id = $1 AND booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED')
         `, [tour_departure_id]);
 
         const currentRevenue = bookingStats.rows[0].revenue;
@@ -104,7 +104,7 @@ exports.saveCosting = async (req, res) => {
     }
 
     try {
-        const fetchRev = await db.query(`SELECT COALESCE(SUM(total_price), 0) as rev FROM bookings WHERE tour_departure_id = $1 AND booking_status NOT IN ('Huỷ', 'CANCELLED', 'EXPIRED')`, [tour_departure_id]);
+        const fetchRev = await db.query(`SELECT COALESCE(SUM(total_price), 0) as rev FROM bookings WHERE tour_departure_id = $1 AND booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED')`, [tour_departure_id]);
         const total_revenue = fetchRev.rows[0].rev;
 
         const check = await db.query('SELECT id FROM tour_costings WHERE tour_departure_id = $1', [tour_departure_id]);

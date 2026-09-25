@@ -58,7 +58,7 @@ router.get('/conversations', auth, async (req, res) => {
             SELECT c.*, l.name as lead_name, l.status as lead_status, l.tour_id as lead_tour_id,
                    l.bu_group as assigned_bu, l.assigned_to as assigned_to_id,
                    COALESCE(u.full_name, l.assigned_to::text) as assigned_to_name,
-                   (SELECT SUM(total_price) FROM bookings WHERE customer_id = cust.id AND booking_status NOT IN ('Huỷ', 'Mới'))::numeric as total_spent,
+                   (SELECT SUM(total_price) FROM bookings WHERE customer_id = cust.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED'))::numeric as total_spent,
                    CASE WHEN cust.id IS NOT NULL THEN true ELSE false END as is_returning_customer
             FROM conversations c
             LEFT JOIN leads l ON c.lead_id = l.id
