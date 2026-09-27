@@ -266,6 +266,9 @@ app.use('/api/audit-logs', auditLogRoutes);
 const marketingAdsRoutes = require('./routes/marketingAds');
 app.use('/api/marketing-ads', marketingAdsRoutes);
 
+const marketingBudgetPlanRoutes = require('./routes/marketingBudgetPlan');
+app.use('/api/marketing-budget-plan', marketingBudgetPlanRoutes);
+
 const googleAdsRoutes = require('./routes/googleAds');
 app.use('/api/google-ads', googleAdsRoutes);
 

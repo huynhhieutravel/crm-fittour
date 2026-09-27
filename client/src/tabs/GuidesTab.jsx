@@ -14,17 +14,32 @@ import {
   Calendar,
   MapPin,
   CheckCircle,
-  Star
+  Star,
+  X
 } from 'lucide-react';
 
+const removeVietnameseAccents = (str) => {
+  if (!str) return '';
+  return str
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
+    .trim();
+};
+
 const GuidesTab = ({ 
-  guides, 
+  guides = [], 
   guideFilters,
   setGuideFilters,
   guideActiveTab, 
   setGuideActiveTab, 
   fetchGuideTimeline, 
   setShowAddGuideModal, 
+  handleOpenAddGuide,
+  setEditingGuide,
   handleEditGuide, 
   handleDeleteGuide, 
   guideTimeFilter, 
@@ -137,20 +152,80 @@ const GuidesTab = ({
     <div className="animate-fade-in">
 
 
-      {guideActiveTab === 'list' ? (
+      {guideActiveTab === 'list' ? (() => {
+        const rawSearch = (guideFilters?.search || '').trim();
+        const searchLower = rawSearch.toLowerCase();
+        const searchNorm = removeVietnameseAccents(rawSearch);
+        const searchCompact = rawSearch.replace(/\s+/g, '');
+
+        const filteredGuides = (guides || []).filter(g => {
+          let matchesSearch = true;
+          if (rawSearch) {
+            const name = g.name || '';
+            const phone = g.phone || '';
+            const email = g.email || '';
+            const bio = g.bio || '';
+            const languages = g.languages || '';
+            const specialties = g.specialties || '';
+            const cardNum = g.guide_card_number || '';
+
+            const matchedName = name.toLowerCase().includes(searchLower) || removeVietnameseAccents(name).includes(searchNorm);
+            const matchedPhone = phone.includes(rawSearch) || (searchCompact && phone.replace(/\s+/g, '').includes(searchCompact));
+            const matchedEmail = email.toLowerCase().includes(searchLower);
+            const matchedBio = bio.toLowerCase().includes(searchLower) || removeVietnameseAccents(bio).includes(searchNorm) || (searchCompact.length >= 3 && bio.replace(/\s+/g, '').toLowerCase().includes(searchCompact.toLowerCase()));
+            const matchedLanguages = languages.toLowerCase().includes(searchLower) || removeVietnameseAccents(languages).includes(searchNorm);
+            const matchedSpecialties = specialties.toLowerCase().includes(searchLower) || removeVietnameseAccents(specialties).includes(searchNorm);
+            const matchedCard = cardNum.toLowerCase().includes(searchLower) || (searchCompact && cardNum.replace(/\s+/g, '').includes(searchCompact));
+
+            matchesSearch = matchedName || matchedPhone || matchedEmail || matchedBio || matchedLanguages || matchedSpecialties || matchedCard;
+          }
+
+          const matchesLang = !guideFilters?.language || (g.languages || '').includes(guideFilters.language);
+          const matchesStatus = !guideFilters?.status || g.status === guideFilters.status;
+
+          let matchesAssignment = true;
+          if (guideFilters?.assignment === 'has_tour') matchesAssignment = !!g.next_tour;
+          if (guideFilters?.assignment === 'no_tour') matchesAssignment = !g.next_tour;
+
+          return matchesSearch && matchesStatus && matchesLang && matchesAssignment;
+        });
+
+        return (
         <>
-          <div className="filter-bar mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 2fr) 150px 180px 150px auto', gap: '1.5rem', alignItems: 'end' }}>
+          <div className="filter-bar mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 2fr) 150px 180px 150px auto', gap: '1.25rem', alignItems: 'end' }}>
             <div className="filter-group">
-              <label>DANH SÁCH HƯỚNG DẪN VIÊN</label>
+              <label>DANH SÁCH HƯỚNG DẪN VIÊN {rawSearch ? `(${filteredGuides.length}/${guides.length})` : `(${guides.length})`}</label>
               <div style={{ position: 'relative' }}>
                 <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                 <input 
                   className="filter-input" 
-                  style={{ width: '100%', paddingLeft: '36px' }} 
-                  placeholder="Tìm tên, SĐT..." 
+                  style={{ width: '100%', paddingLeft: '36px', paddingRight: guideFilters.search ? '32px' : '12px' }} 
+                  placeholder="Tìm tên, SĐT, ghi chú, ngôn ngữ..." 
                   value={guideFilters.search || ''} 
                   onChange={e => setGuideFilters({...guideFilters, search: e.target.value})} 
                 />
+                {guideFilters.search && (
+                  <button
+                    type="button"
+                    onClick={() => setGuideFilters({...guideFilters, search: ''})}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      color: '#94a3b8',
+                      cursor: 'pointer',
+                      padding: '2px',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title="Xóa tìm kiếm"
+                  >
+                    <X size={15} />
+                  </button>
+                )}
               </div>
             </div>
             <div className="filter-group">
@@ -180,8 +255,19 @@ const GuidesTab = ({
                 <option value="Tiếng Trung">Tiếng Trung</option>
               </select>
             </div>
-            <button className="btn-pro-save" style={{ width: 'auto', padding: '0.75rem 1.5rem' }} onClick={() => setShowAddGuideModal(true)}>
-              <Plus size={18} strokeWidth={3} /> THÊM MỚI
+            <button 
+              className="guide-modal-btn-submit" 
+              style={{ height: '42px', padding: '0 1.25rem', fontSize: '0.875rem', flexShrink: 0 }} 
+              onClick={() => {
+                if (handleOpenAddGuide) {
+                  handleOpenAddGuide();
+                } else {
+                  if (setEditingGuide) setEditingGuide(null);
+                  setShowAddGuideModal(true);
+                }
+              }}
+            >
+              <Plus size={16} strokeWidth={3} /> THÊM MỚI
             </button>
           </div>
           <div className="data-table-container">
@@ -196,107 +282,172 @@ const GuidesTab = ({
                 </tr>
               </thead>
               <tbody>
-                {guides.filter(g => {
-                  const safeSearch = guideFilters.search || '';
-                  const matchesSearch = (g.name || '').toLowerCase().includes(safeSearch.toLowerCase()) || (g.phone || '').includes(safeSearch);
-                  const matchesLang = !guideFilters.language || (g.languages || '').includes(guideFilters.language);
-                  const matchesStatus = !guideFilters.status || g.status === guideFilters.status;
-
-                  let matchesAssignment = true;
-                  if (guideFilters.assignment === 'has_tour') matchesAssignment = !!g.next_tour;
-                  if (guideFilters.assignment === 'no_tour') matchesAssignment = !g.next_tour;
-
-                  return matchesSearch && matchesStatus && matchesLang && matchesAssignment;
-                }).map(guide => {
-                  const now = new Date();
-                  const isBusyWithTour = guide.next_tour && new Date(guide.next_tour.start_date) <= now && new Date(guide.next_tour.end_date) >= now;
-
-                  return (
-                  <tr key={guide.id} style={{ opacity: guide.status === 'Inactive' ? 0.6 : 1 }}>
-                    <td 
-                      style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1e293b', position: 'relative' }}
-                      onMouseEnter={() => setHoveredNote && setHoveredNote(guide.id)}
-                      onMouseLeave={() => setHoveredNote && setHoveredNote(null)}
-                    >
-                      {guide.name}
-                      {guide.bio && (
-                         <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#e2e8f0', color: '#64748b', borderRadius: '50%', width: '16px', height: '16px', fontSize: '10px', marginLeft: '6px', cursor: 'help' }}>i</div>
-                      )}
-                      {hoveredNote === guide.id && guide.bio && (
-                        <div className="hover-note" style={{
-                           position: 'absolute', top: '100%', left: 0, zIndex: 100,
-                           background: 'white', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px',
-                           boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', width: '250px',
-                           fontSize: '0.8rem', fontWeight: 500, color: '#475569'
-                        }}>
-                          <strong>📝 Ghi chú / Tiểu sử:</strong><br/>
-                          {guide.bio}
-                        </div>
-                      )}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                          {(guide.languages || '').split(',').map((l, i) => l.trim() && (
-                            <span key={i} style={{ background: '#f1f5f9', color: '#475569', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>{l.trim()}</span>
-                          ))}
-                        </div>
-                        <span style={{ fontWeight: 600, fontSize: '0.8rem' }}>{guide.phone}</span>
-                        <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{guide.email}</span>
-                      </div>
-                    </td>
-                    <td>
-                      {guide.next_tour ? (
-                        <div style={{ background: '#fdf4ff', border: '1px solid #fbcfe8', padding: '0.5rem', borderRadius: '8px', maxWidth: '280px' }}>
-                          <div style={{ fontWeight: 700, color: '#be185d', fontSize: '0.8rem', marginBottom: '4px', display: 'flex', alignItems: 'flex-start', gap: '4px' }}>
-                            <MapPin size={12} style={{ marginTop: '2px', flexShrink: 0 }} /> 
-                            <span style={{ lineHeight: '1.2' }}>{guide.next_tour.name}</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#831843', fontWeight: 600 }}>
-                            <Calendar size={12} /> 
-                            {new Date(guide.next_tour.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })} - {new Date(guide.next_tour.end_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
-                          </div>
-                        </div>
-                      ) : (
-                        <div style={{ color: '#94a3b8', fontSize: '0.8rem', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <CheckCircle size={14} /> Chưa nhận lịch mới
-                        </div>
-                      )}
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#e0e7ff', color: '#4f46e5', minWidth: '28px', padding: '0 8px', height: '28px', borderRadius: '8px', fontWeight: 800, fontSize: '0.8rem' }}>
-                        {guide.total_tours || 0}
-                      </div>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                        <button 
-                          className="icon-btn-small" 
-                          style={{ color: '#f59e0b', background: '#fef3c7' }} 
-                          onClick={() => {
-                            setGuideActiveTab('reviews');
-                            navigate('/guides/reviews', { state: { guideName: guide.name } });
-                          }} 
-                          title="Xem đánh giá"
-                        >
-                          <Star size={14} />
-                        </button>
-                        <button className="icon-btn-small btn-edit" onClick={() => handleEditGuide(guide)} title="Xem & Sửa thông tin">
-                          <Edit2 size={14} />
-                        </button>
-                        <button className="icon-btn-small btn-delete" onClick={() => handleDeleteGuide(guide.id)} title="Xóa">
-                          <Trash2 size={14} />
-                        </button>
+                {filteredGuides.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#94a3b8' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                        <Search size={32} strokeWidth={1.5} color="#cbd5e1" />
+                        <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#64748b' }}>
+                          Không tìm thấy hướng dẫn viên phù hợp
+                        </span>
+                        {(guideFilters.search || guideFilters.status || guideFilters.language || guideFilters.assignment) && (
+                          <button 
+                            type="button" 
+                            onClick={() => setGuideFilters({ search: '', status: '', language: '', assignment: '' })}
+                            style={{ 
+                              marginTop: '6px', 
+                              background: '#eff6ff', 
+                              border: '1px solid #bfdbfe', 
+                              color: '#2563eb', 
+                              borderRadius: '6px',
+                              padding: '6px 14px',
+                              cursor: 'pointer', 
+                              fontSize: '0.825rem', 
+                              fontWeight: 600 
+                            }}
+                          >
+                            Xóa bộ lọc
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
-                  );
-                })}
+                ) : (
+                  filteredGuides.map(guide => {
+                    const now = new Date();
+                    const isBusyWithTour = guide.next_tour && new Date(guide.next_tour.start_date) <= now && new Date(guide.next_tour.end_date) >= now;
+                    const isBioMatched = rawSearch && guide.bio && (
+                      guide.bio.toLowerCase().includes(searchLower) || 
+                      removeVietnameseAccents(guide.bio).includes(searchNorm) ||
+                      (searchCompact.length >= 3 && guide.bio.replace(/\s+/g, '').toLowerCase().includes(searchCompact.toLowerCase()))
+                    );
+
+                    return (
+                    <tr key={guide.id} style={{ opacity: guide.status === 'Inactive' ? 0.6 : 1 }}>
+                      <td 
+                        style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1e293b', position: 'relative' }}
+                        onMouseEnter={() => setHoveredNote && setHoveredNote(guide.id)}
+                        onMouseLeave={() => setHoveredNote && setHoveredNote(null)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <span>{guide.name}</span>
+                          {guide.bio && (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#e2e8f0', color: '#64748b', borderRadius: '50%', width: '16px', height: '16px', fontSize: '10px', marginLeft: '6px', cursor: 'help' }}>i</div>
+                          )}
+                        </div>
+                        {isBioMatched && (
+                          <div style={{ 
+                            fontSize: '0.72rem', 
+                            color: '#0369a1', 
+                            background: '#e0f2fe', 
+                            border: '1px solid #bae6fd',
+                            padding: '2px 8px', 
+                            borderRadius: '4px', 
+                            marginTop: '4px', 
+                            maxWidth: '280px', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            whiteSpace: 'nowrap',
+                            fontWeight: 500 
+                          }} title={guide.bio}>
+                            📝 Ghi chú: {guide.bio}
+                          </div>
+                        )}
+                        {hoveredNote === guide.id && guide.bio && (
+                          <div className="hover-note" style={{
+                             position: 'absolute', top: '100%', left: 0, zIndex: 100,
+                             background: 'white', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px',
+                             boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', width: '250px',
+                             fontSize: '0.8rem', fontWeight: 500, color: '#475569'
+                          }}>
+                            <strong>📝 Ghi chú / Tiểu sử:</strong><br/>
+                            {guide.bio}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                            {(guide.languages || '').split(',').map((l, i) => {
+                              const trimmed = l.trim();
+                              if (!trimmed) return null;
+                              const isLangMatched = rawSearch && (trimmed.toLowerCase().includes(searchLower) || removeVietnameseAccents(trimmed).includes(searchNorm));
+                              return (
+                                <span 
+                                  key={i} 
+                                  style={{ 
+                                    background: isLangMatched ? '#dbeafe' : '#f1f5f9', 
+                                    color: isLangMatched ? '#1d4ed8' : '#475569', 
+                                    border: isLangMatched ? '1px solid #93c5fd' : '1px solid transparent',
+                                    fontSize: '0.65rem', 
+                                    padding: '2px 6px', 
+                                    borderRadius: '4px', 
+                                    fontWeight: isLangMatched ? 700 : 600 
+                                  }}
+                                >
+                                  {trimmed}
+                                </span>
+                              );
+                            })}
+                          </div>
+                          <span style={{ fontWeight: 600, fontSize: '0.8rem' }}>{guide.phone}</span>
+                          <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{guide.email}</span>
+                        </div>
+                      </td>
+                      <td>
+                        {guide.next_tour ? (
+                          <div style={{ background: '#fdf4ff', border: '1px solid #fbcfe8', padding: '0.5rem', borderRadius: '8px', maxWidth: '280px' }}>
+                            <div style={{ fontWeight: 700, color: '#be185d', fontSize: '0.8rem', marginBottom: '4px', display: 'flex', alignItems: 'flex-start', gap: '4px' }}>
+                              <MapPin size={12} style={{ marginTop: '2px', flexShrink: 0 }} /> 
+                              <span style={{ lineHeight: '1.2' }}>{guide.next_tour.name}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#831843', fontWeight: 600 }}>
+                              <Calendar size={12} /> 
+                              {new Date(guide.next_tour.start_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })} - {new Date(guide.next_tour.end_date).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ color: '#94a3b8', fontSize: '0.8rem', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <CheckCircle size={14} /> Chưa nhận lịch mới
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#e0e7ff', color: '#4f46e5', minWidth: '28px', padding: '0 8px', height: '28px', borderRadius: '8px', fontWeight: 800, fontSize: '0.8rem' }}>
+                          {guide.total_tours || 0}
+                        </div>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                          <button 
+                            className="icon-btn-small" 
+                            style={{ color: '#f59e0b', background: '#fef3c7' }} 
+                            onClick={() => {
+                              setGuideActiveTab('reviews');
+                              navigate('/guides/reviews', { state: { guideName: guide.name } });
+                            }} 
+                            title="Xem đánh giá"
+                          >
+                            <Star size={14} />
+                          </button>
+                          <button className="icon-btn-small btn-edit" onClick={() => handleEditGuide(guide)} title="Xem & Sửa thông tin">
+                            <Edit2 size={14} />
+                          </button>
+                          <button className="icon-btn-small btn-delete" onClick={() => handleDeleteGuide(guide.id)} title="Xóa">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
         </>
-      ) : guideActiveTab === 'dashboard' ? (
+        );
+      })() : guideActiveTab === 'dashboard' ? (
         <div className="animate-fade-in">
           {/* Dashboard Timeline Controls Duplicate */}
           <div className="gantt-controls" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(255,255,255,0.7)', borderRadius: '12px', padding: '1.5rem', border: '1px solid rgba(255,255,255,0.3)', marginBottom: '1.5rem' }}>

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { X, MapPin, Calendar, Clock, CheckCircle, Activity, Upload, Image as ImageIcon } from 'lucide-react';
+import { X, MapPin, Calendar, Clock, CheckCircle, Activity, Upload, Image as ImageIcon, UserPlus, Check, Save } from 'lucide-react';
 
 const GuideModal = ({
   showAddGuideModal,
   setShowAddGuideModal,
   editingGuide,
+  setEditingGuide,
   handleUpdateGuide,
   handleAddGuide,
   newGuide,
@@ -14,6 +15,11 @@ const GuideModal = ({
   handleEditDeparture
 }) => {
   const [activeTab, setActiveTab] = useState('personal');
+
+  const handleClose = () => {
+    setShowAddGuideModal(false);
+    if (setEditingGuide) setEditingGuide(null);
+  };
 
   if (!showAddGuideModal) return null;
   
@@ -82,7 +88,7 @@ const GuideModal = ({
       <div className="modal-content animate-slide-up" style={{ maxWidth: '700px', width: '96%', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid #e2e8f0' }}>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>👤 {editingGuide ? 'HỒ SƠ HƯỚNG DẪN VIÊN' : 'THÊM HƯỚNG DẪN VIÊN MỚI'}</h2>
-          <button className="icon-btn" onClick={() => setShowAddGuideModal(false)}><X size={24} /></button>
+          <button className="icon-btn" onClick={handleClose}><X size={20} /></button>
         </div>
         
         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -323,9 +329,21 @@ const GuideModal = ({
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0', justifyContent: 'flex-end' }}>
-          <button type="button" className="btn-pro-cancel" style={{ width: 'auto', padding: '0 2rem' }} onClick={() => setShowAddGuideModal(false)}>HỦY</button>
-          <button type="submit" form="guide-form" className="btn-pro-save" style={{ width: 'auto', padding: '0 2rem' }}>{editingGuide ? 'LƯU HỒ SƠ CHỈNH SỬA' : 'TẠO MỚI HƯỚNG DẪN VIÊN'}</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '2rem', paddingTop: '1.25rem', borderTop: '1px solid #e2e8f0', justifyContent: 'flex-end' }}>
+          <button type="button" className="guide-modal-btn-cancel" onClick={handleClose}>
+            <X size={16} /> Hủy bỏ
+          </button>
+          <button type="submit" form="guide-form" className="guide-modal-btn-submit">
+            {editingGuide ? (
+              <>
+                <Check size={18} strokeWidth={2.5} /> Lưu hồ sơ chỉnh sửa
+              </>
+            ) : (
+              <>
+                <UserPlus size={18} strokeWidth={2.5} /> Tạo mới hướng dẫn viên
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

@@ -64,6 +64,7 @@ ssh ${VPS_USER}@${VPS_IP} << 'EOF'
 
     echo "🗄️ Đang chạy migration database trên VPS..."
     (cd /var/www/fittour-crm/server && node migrations/20260925_add_image_url_to_messages.js || true)
+    (cd /var/www/fittour-crm/server && node migrations/migration_marketing_budget_plans.js || true)
 
     echo "🔄 Khởi động lại PM2..."
     # Không dùng --update-env mặc định trừ khi người dùng cố tình cập nhật env

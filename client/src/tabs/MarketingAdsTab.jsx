@@ -598,6 +598,19 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
     <div className="animate-fade-in" style={{ padding: '0 24px 24px 24px' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginBottom: '1rem', marginTop: '0.5rem' }}>
         <a
+          href="/marketing-budget-plan"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            padding: '8px 16px', borderRadius: '8px',
+            background: '#eff6ff', color: '#1e3989', 
+            fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none',
+            border: '1px solid #bfdbfe', transition: 'all 0.2s',
+            boxShadow: '0 2px 4px rgba(30, 57, 137, 0.08)'
+          }}
+        >
+          <FileText size={14} /> 📋 Kế Hoạch & Ngân Sách MKT
+        </a>
+        <a
           href="/tai-lieu/rule-meta-ads"
           target="_blank" rel="noopener noreferrer"
           style={{

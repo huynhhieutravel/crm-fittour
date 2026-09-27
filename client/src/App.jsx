@@ -65,6 +65,7 @@ const LeadsDashboardTab = lazy(() => import('./tabs/LeadsDashboardTab'));
 const StaffPerformanceTab = lazy(() => import('./tabs/StaffPerformanceTab'));
 const GuidesTab = lazy(() => import('./tabs/GuidesTab'));
 const MarketingAdsTab = lazy(() => import('./tabs/MarketingAdsTab'));
+const MarketingBudgetPlanTab = lazy(() => import('./tabs/MarketingBudgetPlanTab'));
 const GoogleAdsTab = lazy(() => import('./tabs/GoogleAdsTab'));
 const UsersTab = lazy(() => import('./tabs/UsersTab'));
 import StaffCalendarView from './components/StaffCalendarView';
@@ -203,7 +204,7 @@ function AppContent() {
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
   const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
-  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'marketing-google-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'announcements', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'visa-form-templates', 'dispatch-schedule', 'notification-center', 'zns-demo'];
+  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'marketing-budget-plan', 'marketing-google-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'announcements', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'visa-form-templates', 'dispatch-schedule', 'notification-center', 'zns-demo'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -1007,6 +1008,17 @@ function AppContent() {
       addToast(err.response?.data?.message || err.message, 'error');
     }
   }, []);
+
+  const handleOpenAddGuide = () => {
+    setEditingGuide(null);
+    setNewGuide({
+      name: '', phone: '', email: '', languages: '', rating: 5, status: 'Active',
+      experience: 0, bio: '', specialties: '', avatar_url: '', dob: '', address: '',
+      gender: '', passport: '', passport_expiry: '', id_card: '', id_card_date: '',
+      guide_card_type: '', guide_card_number: '', guide_card_expiry: '', passport_url: '', guide_card_url: ''
+    });
+    setShowAddGuideModal(true);
+  };
 
   const handleEditGuide = (guide) => {
     setEditingGuide(guide);
@@ -2231,7 +2243,7 @@ function AppContent() {
                 <Briefcase /> Dịch vụ Hỗ trợ</Link>
               {checkView('leads') && (
                 <div title="Marketing Ads" 
-                  className={`nav-item ${(activeTab === 'marketing-ads' || activeTab === 'management-dashboard') ? 'active' : ''}`} 
+                  className={`nav-item ${(activeTab === 'marketing-ads' || activeTab === 'management-dashboard' || activeTab === 'marketing-budget-plan') ? 'active' : ''}`} 
                   onClick={() => navigate('/marketing-ads')}
                   onMouseEnter={(e) => {
                     if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
@@ -2808,9 +2820,28 @@ function AppContent() {
             Quản trị Meta Ads (Data/KPI)
           </div>
           <div 
+            className={`submenu-item ${activeTab === 'marketing-budget-plan' ? 'active' : ''}`} 
+            onClick={() => { navigate('/marketing-budget-plan'); setHoveredMenu(null); }} 
+            style={{ 
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)', 
+              marginTop: '4px', 
+              paddingTop: '8px', 
+              color: activeTab === 'marketing-budget-plan' ? '#38bdf8' : '#bae6fd', 
+              fontWeight: 700 
+            }}
+          >
+            📋 Kế Hoạch & Ngân Sách MKT
+          </div>
+          <div 
             className={`submenu-item ${activeTab === 'management-dashboard' ? 'active' : ''}`} 
             onClick={() => { navigate('/management-dashboard'); setHoveredMenu(null); }} 
-            style={{ borderTop: '1px solid #e2e8f0', marginTop: '4px', paddingTop: '8px', color: '#db2777', fontWeight: 'bold' }}
+            style={{ 
+              borderTop: '1px solid rgba(255, 255, 255, 0.08)', 
+              marginTop: '4px', 
+              paddingTop: '8px', 
+              color: '#f472b6', 
+              fontWeight: 700 
+            }}
           >
             📈 Tổng Quan Marketing
           </div>
@@ -3643,43 +3674,7 @@ function AppContent() {
           </div>
         </header>
 
-        {/* Mobile Push Notification Prompt Banner if permission not granted yet */}
-        {typeof Notification !== 'undefined' && Notification.permission === 'default' && (
-          <div style={{
-            background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-            border: '1px solid #bfdbfe',
-            borderRadius: '10px',
-            padding: '10px 14px',
-            margin: '0 16px 16px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '12px',
-            boxShadow: '0 2px 4px rgba(37, 99, 235, 0.06)'
-          }}>
-            <div style={{ fontSize: '13px', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-              <span style={{ fontSize: '18px' }}>🔔</span>
-              <span><strong>Bật thông báo ngay:</strong> Để nhận tin đẩy khi có Lead mới hoặc khách nhắn tin!</span>
-            </div>
-            <button 
-              onClick={requestSubscription}
-              style={{
-                background: '#2563eb',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '7px 14px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)'
-              }}
-            >
-              Bật ngay
-            </button>
-          </div>
-        )}
+
 
         <SystemAnnouncementPopup currentUser={user} />
 
@@ -3807,6 +3802,10 @@ function AppContent() {
               <MarketingAdsTab addToast={addToast} currentUser={user} bus={bus.filter(b => b.is_active !== false)} />
             )}
 
+            {activeTab === 'marketing-budget-plan' && (
+              <MarketingBudgetPlanTab addToast={addToast} currentUser={user} bus={bus.filter(b => b.is_active !== false)} />
+            )}
+
             {activeTab === 'marketing-google-ads' && (
               <GoogleAdsTab addToast={addToast} currentUser={user} />
             )}
@@ -3925,6 +3924,8 @@ function AppContent() {
                 setGuideActiveTab={setGuideActiveTab}
                 fetchGuideTimeline={fetchGuideTimeline}
                 setShowAddGuideModal={setShowAddGuideModal}
+                handleOpenAddGuide={handleOpenAddGuide}
+                setEditingGuide={setEditingGuide}
                 handleEditGuide={handleEditGuide}
                 handleDeleteGuide={handleDeleteGuide}
                 guideTimeFilter={guideTimeFilter}
@@ -4323,6 +4324,7 @@ function AppContent() {
         showAddGuideModal={showAddGuideModal}
         setShowAddGuideModal={setShowAddGuideModal}
         editingGuide={editingGuide}
+        setEditingGuide={setEditingGuide}
         handleUpdateGuide={handleUpdateGuide}
         handleAddGuide={handleAddGuide}
         newGuide={newGuide}
