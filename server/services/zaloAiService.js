@@ -309,7 +309,7 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
 
     // Gọi Gemini API (ưu tiên key được cấu hình trong Admin UI, fallback về .env)
     const apiKey = config.system_config?.gemini_api_key?.trim() || process.env.GEMINI_API_KEY;
-    const modelName = config.system_config?.gemini_model?.trim() || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const modelName = config.system_config?.gemini_model?.trim() || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
     if (!apiKey) {
       console.warn('[ZaloAiService] Thiếu GEMINI_API_KEY!');
       return {
@@ -417,16 +417,20 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
         }
       ];
 
+      const isThinkingSupported = modelName.includes('3.');
+      const generationConfig = {
+        temperature: 0.4,
+        maxOutputTokens: 2048,
+        ...(isThinkingSupported ? { thinkingConfig: { thinkingLevel: 'low' } } : {})
+      };
+
       const requestBody = {
         contents: mergedContents.length > 0 ? mergedContents : formattedContents,
         systemInstruction: {
           parts: [{ text: systemPrompt }]
         },
         tools: tools,
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 2048
-        }
+        generationConfig: generationConfig
       };
 
       const response = await axios.post(endpoint, requestBody, { timeout: 25000 });
@@ -457,23 +461,39 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
       let currentContents = mergedContents.length > 0 ? mergedContents : formattedContents;
       let iterations = 0;
       const MAX_ITERATIONS = 3;
+      const executedTools = [];
       let lastToolName = null;
       let lastToolArgs = null;
 
       while (currentCandidate?.content?.parts?.some(p => p.functionCall) && iterations < MAX_ITERATIONS) {
         iterations++;
-        const functionCallPart = currentCandidate.content.parts.find(p => p.functionCall);
-        const functionCall = functionCallPart.functionCall;
-        let toolResult = null;
-        lastToolName = functionCall.name;
-        lastToolArgs = functionCall.args;
+        const functionCallParts = currentCandidate.content.parts.filter(p => p.functionCall);
+        const responseParts = [];
 
-        if (functionCall.name === 'queryDepartures') {
-          toolResult = await this.queryDepartures(functionCall.args);
-        } else if (functionCall.name === 'searchKnowledgeBase') {
-          toolResult = await this.searchKnowledgeBase(functionCall.args);
-        } else if (functionCall.name === 'saveLeadPhone') {
-          toolResult = await this.saveLeadPhone(leadContext, functionCall.args.phone);
+        for (const fcp of functionCallParts) {
+          const functionCall = fcp.functionCall;
+          let toolResult = null;
+          lastToolName = functionCall.name;
+          lastToolArgs = functionCall.args;
+          executedTools.push(functionCall.name);
+
+          if (functionCall.name === 'queryDepartures') {
+            toolResult = await this.queryDepartures(functionCall.args);
+          } else if (functionCall.name === 'searchKnowledgeBase') {
+            toolResult = await this.searchKnowledgeBase(functionCall.args);
+          } else if (functionCall.name === 'saveLeadPhone') {
+            toolResult = await this.saveLeadPhone(leadContext, functionCall.args.phone);
+          }
+
+          responseParts.push({
+            functionResponse: {
+              name: functionCall.name,
+              response: {
+                name: functionCall.name,
+                content: toolResult
+              }
+            }
+          });
         }
 
         // Gửi kết quả Tool ngược lại cho Gemini để sinh câu trả lời hoàn chỉnh hoặc gọi tool tiếp theo
@@ -485,17 +505,7 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
           },
           {
             role: 'user',
-            parts: [
-              {
-                functionResponse: {
-                  name: functionCall.name,
-                  response: {
-                    name: functionCall.name,
-                    content: toolResult
-                  }
-                }
-              }
-            ]
+            parts: responseParts
           }
         ];
 
@@ -503,10 +513,7 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
           contents: currentContents,
           systemInstruction: { parts: [{ text: systemPrompt }] },
           tools: tools,
-          generationConfig: {
-            temperature: 0.4,
-            maxOutputTokens: 2048
-          }
+          generationConfig: generationConfig
         }, { timeout: 25000 });
 
         currentCandidate = followUpRes.data?.candidates?.[0];
@@ -531,7 +538,7 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
         }
       }
 
-      let finalReplyText = currentCandidate?.content?.parts?.filter(p => p.text).map(p => p.text).join('\n') || '';
+      let finalReplyText = currentCandidate?.content?.parts?.filter(p => p.text && !p.thought).map(p => p.text).join('\n') || '';
 
       if (!finalReplyText && iterations > 0) {
         finalReplyText = 'Dạ hiện tại em đang kiểm tra thông tin trên hệ thống. Anh/Chị có thể để lại số điện thoại để chuyên viên tư vấn bên em liên hệ hỗ trợ và gửi lịch trình cụ thể cho mình được không ạ?';
@@ -541,8 +548,9 @@ QUY TẮC PHẢN HỒI CHUNG & XỬ LÝ KIẾN THỨC RAG:
 
       return {
         reply: this.formatAiReply(finalReplyText),
-        tool_used: lastToolName,
+        tool_used: executedTools.includes('saveLeadPhone') ? 'saveLeadPhone' : (executedTools[0] || lastToolName),
         tool_args: lastToolArgs,
+        tools_executed: executedTools,
         meta: { model: modelName }
       };
 

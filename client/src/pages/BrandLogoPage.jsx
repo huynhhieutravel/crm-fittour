@@ -62,7 +62,22 @@ const BrandLogoPage = () => {
         </RevealText>
 
         <RevealText>
-          <div className="bp-logo-showcase" style={{ marginTop: 60, background: 'var(--bp-card-bg)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginTop: 40 }}>
+            <div style={{ background: '#ffffff', padding: '40px 24px', borderRadius: '24px', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+              <div style={{ fontSize: '11px', fontWeight: '700', color: '#64748b', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '1px' }}>Logo Mới 2026 (Nền Sáng)</div>
+              <img src="/logo-color.png" alt="FIT Tour Logo Mới - Nền Sáng" style={{ height: '80px', width: 'auto', margin: '0 auto', display: 'block' }} />
+              <div style={{ marginTop: '20px', fontSize: '12px', color: '#0f172a', fontWeight: '600' }}>Biểu tượng ngọn núi cam & Typography FIT TOUR</div>
+            </div>
+            <div style={{ background: '#090d16', padding: '40px 24px', borderRadius: '24px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+              <div style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '1px' }}>Hiển thị trên Nền Tối (CRM Sidebar)</div>
+              <img src="/logo.png" alt="FIT Tour Logo Mới - Nền Tối" style={{ height: '44px', width: 'auto', margin: '18px auto', display: 'block' }} />
+              <div style={{ marginTop: '20px', fontSize: '12px', color: '#f8fafc', fontWeight: '600' }}>Logo trắng ngang Beyond Ordinary Journeys</div>
+            </div>
+          </div>
+        </RevealText>
+
+        <RevealText>
+          <div className="bp-logo-showcase" style={{ marginTop: 40, background: 'var(--bp-card-bg)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
             <img 
               src="/logo-guideline.png" 
               alt="FIT Tour Logo Guidelines" 

@@ -2186,7 +2186,11 @@ function AppContent() {
           {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
         <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer', overflow: 'hidden' }}>
-          <img src="/logo.png" alt="FIT TOUR" style={{ height: '40px', width: isSidebarCollapsed ? '32px' : 'auto', objectFit: isSidebarCollapsed ? 'cover' : 'contain', objectPosition: 'left' }} />
+          {isSidebarCollapsed ? (
+            <img src="/favicon.png" alt="FIT TOUR" style={{ height: '34px', width: '34px', objectFit: 'contain', margin: '0 auto', display: 'block' }} />
+          ) : (
+            <img src="/logo.png" alt="FIT TOUR" style={{ height: '38px', width: 'auto', maxWidth: '200px', objectFit: 'contain', objectPosition: 'left' }} />
+          )}
         </div>
 
         <div className="sidebar-nav-scroll">
@@ -4441,7 +4445,7 @@ function AppContent() {
           <div className="login-page-wrapper">
             <div className="login-glass-card shadow-2xl">
               <div className="login-brand" style={{ display: 'flex', justifyContent: 'center' }}>
-                <img src="/logo.png" alt="FIT TOUR" style={{ height: '80px', marginBottom: '1rem', objectFit: 'contain' }} />
+                <img src="/logo.png" alt="FIT TOUR" style={{ height: '52px', maxWidth: '280px', marginBottom: '1.5rem', objectFit: 'contain' }} />
               </div>
 
               <h2>Đăng nhập hệ thống</h2>

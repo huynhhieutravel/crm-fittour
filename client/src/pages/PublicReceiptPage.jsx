@@ -77,10 +77,10 @@ const PublicReceiptPage = () => {
                 {/* Brand Header */}
                 <div style={{ background: '#fff', borderRadius: '20px 20px 0 0', padding: '2rem 2rem 1.5rem', textAlign: 'center', borderBottom: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
                     <img 
-                        src="/logo.png" 
+                        src="/logo-color.png" 
                         alt="FIT TOUR" 
-                        style={{ height: '44px', objectFit: 'contain', margin: '0 auto 1rem', display: 'block' }}
-                        onError={(e) => { e.target.style.display = 'none'; }}
+                        style={{ height: '48px', objectFit: 'contain', margin: '0 auto 1rem', display: 'block' }}
+                        onError={(e) => { e.target.src = '/logo.png'; }}
                     />
                     <div style={{ display: 'inline-block', background: '#fff7ed', border: '1px solid #ffedd5', color: '#c2410c', padding: '4px 14px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                         Phiếu Xác Nhận Đặt Chỗ & Hóa Đơn Dịch Vụ

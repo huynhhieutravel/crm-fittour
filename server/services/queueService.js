@@ -57,7 +57,7 @@ async function processSendEmail(job) {
         <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px;">
           <tr>
             <td style="width: 120px; vertical-align: top; padding-right: 15px;">
-              <img src="https://erp.fittour.vn/logo.png" alt="FIT Tour" style="width: 120px; height: auto; display: block;" />
+              <img src="https://erp.fittour.vn/logo-color.png" alt="FIT Tour" style="width: 120px; height: auto; display: block;" />
             </td>
             <td style="vertical-align: top;">
               <strong style="color: #0f172a; font-size: 14px; text-transform: uppercase;">Công ty TNHH Du lịch Quốc tế FIT Tour</strong><br>

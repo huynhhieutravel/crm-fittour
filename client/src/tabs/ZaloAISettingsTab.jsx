@@ -73,7 +73,7 @@ const ZaloAISettingsTab = ({ currentUser, addToast }) => {
     is_sandbox_bot_enabled: true,
     mute_on_sales_assigned: true,
     gemini_api_key: '',
-    gemini_model: 'gemini-3.7-flash'
+    gemini_model: 'gemini-3.8-flash'
   });
   const [showApiKey, setShowApiKey] = useState(false);
 
@@ -755,11 +755,12 @@ const ZaloAISettingsTab = ({ currentUser, addToast }) => {
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>Gemini Model</label>
                   <select
-                    value={systemConfig.gemini_model || 'gemini-3.7-flash'}
+                    value={systemConfig.gemini_model || 'gemini-3.8-flash'}
                     onChange={e => setSystemConfig({ ...systemConfig, gemini_model: e.target.value })}
                     style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', backgroundColor: '#f8fafc', color: '#0f172a', outline: 'none' }}
                   >
-                    <option value="gemini-3.7-flash">gemini-3.7-flash (Khuyên dùng - Nhanh, thông minh, giá rẻ nhất hiện nay)</option>
+                    <option value="gemini-3.8-flash">gemini-3.8-flash (Khuyên dùng - Tư duy suy luận sâu, chốt sale thông minh, tối ưu chi phí)</option>
+                    <option value="gemini-3.7-flash">gemini-3.7-flash (Nhanh, phản xạ trực diện)</option>
                     <option value="gemini-3.1-pro">gemini-3.1-pro (Tư duy siêu sâu, phân tích phức tạp, đắt hơn)</option>
                     <option value="gemini-2.5-flash">gemini-2.5-flash (Model cũ tốc độ cao)</option>
                     <option value="gemini-2.5-pro">gemini-2.5-pro (Model cũ tư duy sâu)</option>

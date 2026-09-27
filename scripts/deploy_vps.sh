@@ -67,8 +67,7 @@ ssh ${VPS_USER}@${VPS_IP} << 'EOF'
     (cd /var/www/fittour-crm/server && node migrations/migration_marketing_budget_plans.js || true)
 
     echo "🔄 Khởi động lại PM2..."
-    # Không dùng --update-env mặc định trừ khi người dùng cố tình cập nhật env
-    pm2 restart crm-fittour
+    pm2 restart crm-fittour --update-env
 EOF
 
 echo "🎉 DEPLOY THÀNH CÔNG!"

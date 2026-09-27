@@ -24,7 +24,7 @@ const createTransporter = () => {
  * @param {string} [options.inReplyTo] Message-ID của email gốc (Dành cho Reply)
  * @param {string} [options.references] Chuỗi Message-ID references (Dành cho Threading)
  */
-const sendMail = async ({ from, to, cc, bcc, subject, html, inReplyTo, references }) => {
+const sendMail = async ({ from, to, cc, bcc, subject, html, inReplyTo, references, attachments }) => {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
     throw new Error('Chưa cấu hình SMTP Credentials (SMTP_USER/SMTP_PASS).');
   }
@@ -40,6 +40,7 @@ const sendMail = async ({ from, to, cc, bcc, subject, html, inReplyTo, reference
     bcc,
     subject,
     html,
+    attachments
   };
 
   // Cấu hình headers để giữ luồng (Threading) khi Reply

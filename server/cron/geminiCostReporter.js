@@ -36,7 +36,7 @@ class GeminiCostReporter {
             
             // Lấy cấu hình model hiện tại
             const configRes = await db.query(`SELECT setting_value FROM ai_agent_settings WHERE setting_key = 'system_config'`);
-            let modelName = 'gemini-3.7-flash';
+            let modelName = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
             if (configRes.rows.length > 0 && configRes.rows[0].setting_value) {
                 modelName = configRes.rows[0].setting_value.gemini_model || modelName;
             }
