@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 const xlsx = require('xlsx');
 const path = require('path');
 const fs = require('fs');
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const YEAR = 2026;
 const MONTH = 9;
@@ -15,8 +15,10 @@ async function run() {
   });
 
   const possiblePaths = [
+    path.resolve(__dirname, `../../data_import/bao-cao-facebook-ads/${FILE_NAME}`),
     path.resolve(__dirname, `../data_import/bao-cao-facebook-ads/${FILE_NAME}`),
-    path.resolve(__dirname, `data_import/bao-cao-facebook-ads/${FILE_NAME}`),
+    path.resolve(__dirname, `../../../data_import/bao-cao-facebook-ads/${FILE_NAME}`),
+    path.resolve(__dirname, `../../client/public/thu-vien-input/${FILE_NAME}`),
     `/var/www/fittour-crm/data_import/bao-cao-facebook-ads/${FILE_NAME}`,
     `/var/www/fittour-crm/server/data_import/bao-cao-facebook-ads/${FILE_NAME}`
   ];
@@ -36,6 +38,7 @@ async function run() {
 
   console.log(`📄 Total raw rows in sheet "${sheetName}": ${jsonData.length}`);
 
+  // GUARDRAIL: Tuyệt đối không dùng keyword mapping địa danh. Bắt buộc regex trích xuất trực tiếp tag [BU...]
   function extractBU(adSet, campaign) {
     const buRegex = /\[(BU\d+)\]/i;
     let match = (adSet || '').match(buRegex);
@@ -52,8 +55,8 @@ async function run() {
     const adSet = (row['Tên nhóm quảng cáo'] || row['Nhóm quảng cáo'] || '').toString().trim();
     const ad = (row['Tên quảng cáo'] || row['Quảng cáo'] || '').toString().trim();
     
-    // Check if Total row or completely empty row
-    if (!campaign) {
+    // GUARDRAIL: Bỏ qua dòng Tổng cộng (Total row) hoặc dòng trống
+    if (!campaign && !adSet && !ad) {
       console.log(`ℹ️ Row ${idx}: Bỏ qua dòng Tổng cộng / Trống (Chi tiêu: ${row['Số tiền đã chi tiêu (VND)'] || 0})`);
       return;
     }
@@ -112,7 +115,7 @@ async function run() {
   try {
     await client.query('BEGIN');
 
-    // 1. Xoá dữ liệu cũ của Tuần 1 Tháng 9 Năm 2026 (Safety)
+    // 1. Xoá dữ liệu cũ của Tuần 4 Tháng 9 Năm 2026 (Safety idempotent)
     const delRes = await client.query(`
       DELETE FROM marketing_ads_reports 
       WHERE year = $1 AND month = $2 AND week_number = $3
