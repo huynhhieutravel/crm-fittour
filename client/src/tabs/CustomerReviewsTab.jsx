@@ -115,7 +115,8 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
     source: '',
     bu_id: '',
     status: '',
-    search: initialGuideName
+    search: initialGuideName,
+    guide_status: ''
   });
   
   const currentYear = new Date().getFullYear();
@@ -242,7 +243,9 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
       const res = await axios.get('/api/business-units', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      setBuList(res.data);
+      const allowedBUs = ['BU1', 'BU2', 'BU3', 'BU4', 'BU5'];
+      const filtered = (res.data || []).filter(b => allowedBUs.includes(b.id?.toUpperCase()));
+      setBuList(filtered);
     } catch (error) {
       console.error('Error fetching BUs', error);
     }
@@ -262,7 +265,7 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
   const fetchReviews = async () => {
     setLoading(true);
     try {
-      const { source, bu_id, status, search } = filters;
+      const { source, bu_id, status, search, guide_status } = filters;
       const { page, limit } = pagination;
       const bounds = getBounds();
       
@@ -270,6 +273,7 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
       if (source) url += `&source=${source}`;
       if (bu_id) url += `&bu_id=${bu_id}`;
       if (status) url += `&status=${status}`;
+      if (guide_status) url += `&guide_status=${guide_status}`;
       if (search) url += `&search=${search}`;
       if (bounds.startDate) url += `&start_date=${formatDateString(bounds.startDate)}`;
       if (bounds.endDate) url += `&end_date=${formatDateString(bounds.endDate)}`;
@@ -568,74 +572,70 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
 
             <div style={{ width: '100%', height: '1px', background: '#e2e8f0' }}></div>
 
-            {/* Row 2: Status, Source, BU Pills */}
-            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center', width: '100%' }}>
-              <div style={{ minWidth: '150px' }}>
-                 <select value={filters.status} onChange={e => setFilters({...filters, status: e.target.value})} style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', backgroundColor: 'white', outline: 'none', fontSize: '13px', fontWeight: '500', color: '#1e293b' }}>
-                    <option value="">-- Trạng thái duyệt --</option>
-                    <option value="pending">Chờ duyệt</option>
-                    <option value="approved">Đã duyệt</option>
-                    <option value="rejected">Từ chối</option>
-                 </select>
-              </div>
-
-              <div style={{ minWidth: '150px' }}>
-                 <select value={filters.source} onChange={e => setFilters({...filters, source: e.target.value})} style={{ width: '100%', padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', backgroundColor: 'white', outline: 'none', fontSize: '13px', fontWeight: '500', color: '#1e293b' }}>
-                    <option value="">-- Nguồn --</option>
-                    <option value="facebook">Facebook</option>
-                    <option value="google">Google</option>
-                    <option value="thread">Threads</option>
-                    <option value="khác">Khác</option>
-                 </select>
-              </div>
-              
-              <div className="filter-divider" style={{ minHeight: '30px', borderLeft: '1px solid #e2e8f0', margin: '0' }}></div>
-
-              {/* BU Filter: Pill Action Bar */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                 <button
-                    onClick={() => setFilters({...filters, bu_id: ''})}
+            {/* Row 2: BU Filter Pills & Chưa Phân HDV */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', width: '100%' }}>
+              <button
+                onClick={() => setFilters(prev => ({ ...prev, bu_id: '', guide_status: '' }))}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', textTransform: 'uppercase',
+                  padding: '6px 16px', borderRadius: '4px', fontWeight: '700', fontSize: '12px', whiteSpace: 'nowrap', border: '1px solid #e2e8f0',
+                  backgroundColor: (filters.bu_id === '' && !filters.guide_status) ? '#3b82f6' : 'white', 
+                  color: (filters.bu_id === '' && !filters.guide_status) ? 'white' : '#64748b',
+                  boxShadow: (filters.bu_id === '' && !filters.guide_status) ? '0 2px 4px rgba(59, 130, 246, 0.3)' : 'none',
+                  transition: 'all 0.2s'
+                }}
+              >
+                Tất cả BU
+              </button>
+              <button
+                onClick={() => setFilters(prev => ({ ...prev, bu_id: 'null' }))}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', textTransform: 'uppercase',
+                  padding: '6px 16px', borderRadius: '4px', fontWeight: '700', fontSize: '12px', whiteSpace: 'nowrap', border: '1px solid #e2e8f0',
+                  backgroundColor: filters.bu_id === 'null' ? '#f59e0b' : 'white', 
+                  color: filters.bu_id === 'null' ? 'white' : '#64748b',
+                  boxShadow: filters.bu_id === 'null' ? '0 2px 4px rgba(245, 158, 11, 0.3)' : 'none',
+                  transition: 'all 0.2s'
+                }}
+              >
+                Chưa có BU
+              </button>
+              <button
+                onClick={() => setFilters(prev => ({
+                  ...prev,
+                  guide_status: prev.guide_status === 'unassigned' ? '' : 'unassigned'
+                }))}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', textTransform: 'uppercase',
+                  padding: '6px 16px', borderRadius: '4px', fontWeight: '700', fontSize: '12px', whiteSpace: 'nowrap', border: '1px solid #e2e8f0',
+                  backgroundColor: filters.guide_status === 'unassigned' ? '#ea580c' : 'white', 
+                  color: filters.guide_status === 'unassigned' ? 'white' : '#64748b',
+                  boxShadow: filters.guide_status === 'unassigned' ? '0 2px 4px rgba(234, 88, 12, 0.3)' : 'none',
+                  transition: 'all 0.2s'
+                }}
+                title="Lọc các đánh giá chưa phân Hướng dẫn viên"
+              >
+                Chưa Phân HDV
+              </button>
+              {buList.filter(bu => ['BU1', 'BU2', 'BU3', 'BU4', 'BU5'].includes(bu.id?.toUpperCase())).map(bu => {
+                const isActive = filters.bu_id === bu.id;
+                return (
+                  <button
+                    key={bu.id}
+                    onClick={() => setFilters(prev => ({ ...prev, bu_id: bu.id }))}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', textTransform: 'uppercase',
                       padding: '6px 16px', borderRadius: '4px', fontWeight: '700', fontSize: '12px', whiteSpace: 'nowrap', border: '1px solid #e2e8f0',
-                      backgroundColor: filters.bu_id === '' ? '#3b82f6' : 'white', color: filters.bu_id === '' ? 'white' : '#64748b',
-                      boxShadow: filters.bu_id === '' ? '0 2px 4px rgba(59, 130, 246, 0.3)' : 'none',
+                      backgroundColor: isActive ? '#3b82f6' : 'white', 
+                      color: isActive ? 'white' : '#64748b',
+                      boxShadow: isActive ? '0 2px 4px rgba(59, 130, 246, 0.3)' : 'none',
                       transition: 'all 0.2s'
                     }}
-                 >
-                    Tất cả BU
-                 </button>
-                 <button
-                    onClick={() => setFilters({...filters, bu_id: 'null'})}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', textTransform: 'uppercase',
-                      padding: '6px 16px', borderRadius: '4px', fontWeight: '700', fontSize: '12px', whiteSpace: 'nowrap', border: '1px solid #e2e8f0',
-                      backgroundColor: filters.bu_id === 'null' ? '#f59e0b' : 'white', color: filters.bu_id === 'null' ? 'white' : '#64748b',
-                      boxShadow: filters.bu_id === 'null' ? '0 2px 4px rgba(245, 158, 11, 0.3)' : 'none',
-                      transition: 'all 0.2s'
-                    }}
-                 >
-                    Chưa có BU
-                 </button>
-                 {buList.filter(bu => !['MARKETING', 'KẾ TOÁN', 'KE TOAN'].includes(bu.id?.toUpperCase())).map(bu => {
-                    const isActive = filters.bu_id === bu.id;
-                    return (
-                       <button
-                          key={bu.id}
-                          onClick={() => setFilters({...filters, bu_id: bu.id})}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', textTransform: 'uppercase',
-                            padding: '6px 16px', borderRadius: '4px', fontWeight: '700', fontSize: '12px', whiteSpace: 'nowrap', border: '1px solid #e2e8f0',
-                            backgroundColor: isActive ? '#3b82f6' : 'white', color: isActive ? 'white' : '#64748b',
-                            boxShadow: isActive ? '0 2px 4px rgba(59, 130, 246, 0.3)' : 'none',
-                            transition: 'all 0.2s'
-                          }}
-                       >
-                          {bu.label}
-                       </button>
-                    );
-                 })}
-              </div>
+                  >
+                    {bu.label}
+                  </button>
+                );
+              })}
             </div>
 
           </div>

@@ -11,7 +11,7 @@ if (!fs.existsSync(uploadDir)) {
 
 exports.getReviews = async (req, res) => {
   try {
-    const { page = 1, limit = 50, source, bu_id, status, search } = req.query;
+    const { page = 1, limit = 50, source, bu_id, status, search, guide_status } = req.query;
     const offset = (page - 1) * limit;
 
     let whereClause = 'WHERE r.is_deleted = false';
@@ -39,6 +39,11 @@ exports.getReviews = async (req, res) => {
     if (status) {
       whereClause += ` AND r.approval_status = $${paramIndex++}`;
       values.push(status);
+    }
+    if (guide_status === 'unassigned' || req.query.no_guide === 'true' || req.query.has_guide === 'false') {
+      whereClause += ` AND (r.guide_name IS NULL OR TRIM(r.guide_name) = '')`;
+    } else if (guide_status === 'assigned' || req.query.has_guide === 'true') {
+      whereClause += ` AND (r.guide_name IS NOT NULL AND TRIM(r.guide_name) != '')`;
     }
     if (req.query.start_date) {
       whereClause += ` AND r.review_date >= $${paramIndex++}`;

@@ -56,7 +56,9 @@ export default function ManualReviewModal({ isOpen, onClose, onSuccess, initialD
       const res = await axios.get('/api/business-units', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      setBuList(res.data);
+      const allowedBUs = ['BU1', 'BU2', 'BU3', 'BU4', 'BU5'];
+      const filtered = (res.data || []).filter(b => allowedBUs.includes(b.id?.toUpperCase()));
+      setBuList(filtered);
     } catch (err) {
       console.error('Lỗi lấy danh sách BU:', err);
     }
