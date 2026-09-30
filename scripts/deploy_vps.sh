@@ -65,6 +65,9 @@ ssh ${VPS_USER}@${VPS_IP} << 'EOF'
     echo "🗄️ Đang chạy migration database trên VPS..."
     (cd /var/www/fittour-crm/server && node migrations/20260925_add_image_url_to_messages.js || true)
     (cd /var/www/fittour-crm/server && node migrations/migration_marketing_budget_plans.js || true)
+    (cd /var/www/fittour-crm/server && node migrations/20260930_add_booking_creator.js || true)
+    (cd /var/www/fittour-crm/server && node migrations/20260930_add_customer_insights_columns.js || true)
+    (cd /var/www/fittour-crm/server && node migrations/20260930_create_customer_events_table.js || true)
 
     echo "🔄 Khởi động lại PM2..."
     pm2 restart crm-fittour --update-env

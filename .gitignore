@@ -57,3 +57,4 @@ zalo_tokens.json
 scratch/
 server/logs/
 *.jsonl
+_dev/

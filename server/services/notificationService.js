@@ -158,6 +158,30 @@ const handleInAppChannel = async (notificationLogId, eventName, payload) => {
   }
 };
 
+/**
+ * Gửi thông báo trực tiếp In-App đến người dùng
+ */
+const sendInAppNotification = async ({ userId, title, message, link, type, referenceId }) => {
+  try {
+    if (!userId) return null;
+    const res = await db.query(`
+      INSERT INTO user_notifications (user_id, title, message, link, is_read, type, reference_id)
+      VALUES ($1, $2, $3, $4, false, $5, $6)
+      RETURNING *
+    `, [userId, title, message, link || '/op-tours', type || 'BOOKING', referenceId ? String(referenceId) : null]);
+
+    const notif = res.rows[0];
+    if (global.io && notif) {
+      global.io.to(`user_${userId}`).emit('new_notification', notif);
+    }
+    return notif;
+  } catch (err) {
+    console.error('[NotificationService] sendInAppNotification error:', err);
+    return null;
+  }
+};
+
 module.exports = {
-  emit
+  emit,
+  sendInAppNotification
 };

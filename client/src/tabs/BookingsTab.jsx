@@ -22,7 +22,7 @@ const BookingsTab = ({
   const getStatusBadge = (status) => {
     switch (status) {
       case 'Mới': return { bg: '#f1f5f9', color: '#475569', label: 'Mới' };
-      case 'HELD': return { bg: '#e0f2fe', color: '#0369a1', label: 'HELD (Giữ chỗ)' };
+      case 'HELD':
       case 'Giữ chỗ': return { bg: '#e0f2fe', color: '#0369a1', label: 'Giữ chỗ' };
       case 'Đã đặt cọc': return { bg: '#fef3c7', color: '#b45309', label: 'Đã đặt cọc' };
       case 'Đã thanh toán': return { bg: '#d1fae5', color: '#065f46', label: 'Đã thanh toán' };
@@ -71,7 +71,7 @@ const BookingsTab = ({
             >
               <option value="">Tất cả</option>
               <option value="Mới">Mới</option>
-              <option value="Giữ chỗ">Giữ chỗ (HELD)</option>
+              <option value="Giữ chỗ">Giữ chỗ</option>
               <option value="Đã đặt cọc">Đã đặt cọc</option>
               <option value="Đã thanh toán">Đã thanh toán</option>
               <option value="Hoàn thành">Hoàn thành</option>
@@ -145,6 +145,21 @@ const BookingsTab = ({
                     >
                       {booking.booking_code}
                     </button>
+                    {booking.creator_id && booking.creator_id != booking.created_by && (
+                      <div style={{ marginTop: '4px' }}>
+                        <span style={{ 
+                          fontSize: '0.7rem', 
+                          fontWeight: 700, 
+                          color: '#4338ca', 
+                          background: '#e0e7ff', 
+                          padding: '2px 6px', 
+                          borderRadius: '4px',
+                          display: 'inline-block'
+                        }}>
+                          Tạo hộ (Sale: {booking.created_by_name || 'Sale'})
+                        </span>
+                      </div>
+                    )}
                   </td>
                   <td style={{ fontSize: '0.9rem' }}>
                     <button 

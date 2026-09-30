@@ -25,6 +25,8 @@ import RagDocViewer from '../components/Knowledge/RagDocViewer';
 import LadakhConsultingPage from './LadakhConsultingPage';
 import BhutanConsultingPage from './BhutanConsultingPage';
 import CuuTraiCauConsultingPage from './CuuTraiCauConsultingPage';
+import BU1MarketPlanningPage from './BU1MarketPlanningPage';
+import BU4MarketPlanningPage from './BU4MarketPlanningPage';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Static Document Index — TẤT CẢ tài liệu nội bộ đã biết
@@ -43,6 +45,8 @@ const STATIC_DOCS = [
   { title: 'Cẩm Nang Chốt Sale Cửu Trại Câu (BU1)', description: 'Kịch bản chat, FAQ thanh toán cọc 50/50, visa đoàn, SIM data và cẩm nang tư vấn', category: 'Sale', path: '/tai-lieu/tu-van-cuu-trai-cau', icon: '🍁' },
   { title: 'Cẩm Nang Chốt Sale Ladakh (BU4)', description: 'Cẩm nang tư vấn và chốt sale tuyến tour Ladakh Ấn Độ', category: 'Sale', path: '/tai-lieu/tu-van-ladakh-bu4', icon: '🏔️' },
   { title: 'Cẩm Nang Chốt Sale Bhutan (5N4Đ)', description: 'Cẩm nang tư vấn và chốt sale tuyến tour vương quốc hạnh phúc Bhutan', category: 'Sale', path: '/tai-lieu/tu-van-bhutan-5n4d', icon: '⛩️' },
+  { title: 'Phân Tích Thị Trường & Dự Toán Ads BU1', description: 'Dữ liệu lịch sử 385 chiến dịch, CPL & Máy tính dự toán ngân sách Ads các tuyến BU1 (Giang Nam, Bắc Kinh, Á Đinh, Tân Cương, Thanh Tạng, Lệ Giang, Cáp Nhĩ Tân)', category: 'Marketing', path: '/tai-lieu/thi-truong-bu1', icon: '📊' },
+  { title: 'Phân Tích Thị Trường & Dự Toán Ads BU4', description: 'Obsidian Doc: Dữ liệu lịch sử, CPL & Máy tính dự toán ngân sách Ads các tuyến BU4 (Bhutan, Ladakh, Sri Lanka...)', category: 'Marketing', path: '/tai-lieu/thi-truong-bu4', icon: '📊' },
   { title: 'SOP Sales & Workplace', description: 'Hướng dẫn Sales nhận Lead, cập nhật ERP và tối ưu Workplace', category: 'Sale', path: '/tai-lieu/sop-sales', icon: '💼' },
   { title: 'HUB Điều Hành (OP)', description: 'Quy trình điều hành tour, vận hành dịch vụ', category: 'Điều hành', path: '/tai-lieu/dieu-hanh', icon: '🔧' },
   { title: 'Tổng quan Quy trình Lead', description: 'Bức tranh toàn cảnh về quy trình xử lý Lead từ Điều phối đến Sales', category: 'Điều hành', path: '/tai-lieu/tong-quan-lead', icon: '🌐' },
@@ -1168,6 +1172,14 @@ const DocumentsPage = () => {
   
   if (path === '/tai-lieu/tu-van-bhutan-5n4d') {
     return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><BhutanConsultingPage /></BlogLayout>;
+  }
+
+  if (path === '/tai-lieu/thi-truong-bu1' || path === '/tai-lieu/phan-tich-thi-truong-bu1') {
+    return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><BU1MarketPlanningPage /></BlogLayout>;
+  }
+
+  if (path === '/tai-lieu/thi-truong-bu4' || path === '/tai-lieu/phan-tich-thi-truong-bu4') {
+    return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><BU4MarketPlanningPage /></BlogLayout>;
   }
 
   // RAG Dynamic Documents

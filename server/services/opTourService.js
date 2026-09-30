@@ -83,16 +83,24 @@ function transformB2CTour(row) {
   const market = resolveMarket(row.market);
 
   // Build airline info
+  const sanitizeAirline = (val) => {
+    if (!val || typeof val !== 'string') return null;
+    return val.replace(/-\s*Cát Tường Airlines/gi, '').replace(/\s+/g, ' ').trim() || null;
+  };
+
   const airline = {};
-  if (safeTourInfo.dep_airline || safeTourInfo.departure_flight) {
-    airline.departure = [safeTourInfo.dep_airline, safeTourInfo.departure_flight]
+  const cleanDepAirline = sanitizeAirline(safeTourInfo.dep_airline);
+  const cleanRetAirline = sanitizeAirline(safeTourInfo.ret_airline);
+
+  if (cleanDepAirline || safeTourInfo.departure_flight) {
+    airline.departure = [cleanDepAirline, safeTourInfo.departure_flight]
       .filter(Boolean).join(' ').trim() || null;
-    airline.departureName = safeTourInfo.dep_airline || null;
+    airline.departureName = cleanDepAirline || null;
   }
-  if (safeTourInfo.ret_airline || safeTourInfo.return_flight) {
-    airline.return = [safeTourInfo.ret_airline, safeTourInfo.return_flight]
+  if (cleanRetAirline || safeTourInfo.return_flight) {
+    airline.return = [cleanRetAirline, safeTourInfo.return_flight]
       .filter(Boolean).join(' ').trim() || null;
-    airline.returnName = safeTourInfo.ret_airline || null;
+    airline.returnName = cleanRetAirline || null;
   }
 
   // Slugify tour code for URL

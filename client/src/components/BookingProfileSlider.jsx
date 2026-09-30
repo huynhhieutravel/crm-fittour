@@ -174,7 +174,7 @@ const BookingProfileSlider = ({ bookingId, onClose }) => {
                     backgroundColor: (booking.booking_status === 'Giữ chỗ' || booking.booking_status === 'HELD') ? '#e0f2fe' : booking.booking_status === 'Hoàn thành' ? '#dcfce7' : (booking.booking_status === 'Huỷ' || booking.booking_status === 'Hủy' || booking.booking_status === 'CANCELLED') ? '#fee2e2' : booking.booking_status === 'Đã thanh toán' ? '#d1fae5' : booking.booking_status === 'Đã đặt cọc' ? '#fef3c7' : '#f1f5f9',
                     color: (booking.booking_status === 'Giữ chỗ' || booking.booking_status === 'HELD') ? '#0369a1' : booking.booking_status === 'Hoàn thành' ? '#15803d' : (booking.booking_status === 'Huỷ' || booking.booking_status === 'Hủy' || booking.booking_status === 'CANCELLED') ? '#b91c1c' : booking.booking_status === 'Đã thanh toán' ? '#065f46' : booking.booking_status === 'Đã đặt cọc' ? '#b45309' : '#475569',
                   }}>
-                    {booking.booking_status}
+                    {booking.booking_status === 'HELD' ? 'Giữ chỗ' : booking.booking_status}
                   </span>
                   {booking.payment_status === 'paid' && (
                     <span style={{ padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 700, backgroundColor: '#dcfce7', color: '#166534', display: 'flex', alignItems: 'center', gap: '4px' }}>

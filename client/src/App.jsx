@@ -2824,6 +2824,20 @@ function AppContent() {
             Quản trị Meta Ads (Data/KPI)
           </div>
           <div 
+            className="submenu-item" 
+            onClick={() => { navigate('/marketing-ads?subtab=planning'); setHoveredMenu(null); }} 
+            style={{ 
+              color: '#38bdf8', 
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
+          >
+            <span>Kế Hoạch Thị Trường & Dự Toán BU4</span>
+            <span style={{ fontSize: '0.65rem', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '1px 5px', borderRadius: '4px' }}>Mới</span>
+          </div>
+          <div 
             className={`submenu-item ${activeTab === 'marketing-budget-plan' ? 'active' : ''}`} 
             onClick={() => { navigate('/marketing-budget-plan'); setHoveredMenu(null); }} 
             style={{ 
@@ -4411,15 +4425,15 @@ function AppContent() {
       <Route path="/huong-dan-erp" element={<HuongDanErpHub />} />
       <Route path="/huong-dan-erp/*" element={<HuongDanErpHub />} />
       <Route path="/tai-lieu/manager" element={isLoggedIn ? <RagDocsManager /> : <Navigate to="/login" />} />
-      <Route path="/tai-lieu" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
-      <Route path="/tai-lieu/sop-astro-tour" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
-      <Route path="/tai-lieu/rule-meta-ads" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
-      <Route path="/tai-lieu/blueprint-meta-ads" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
+      <Route path="/tai-lieu" element={<DocumentsPage />} />
+      <Route path="/tai-lieu/sop-astro-tour" element={<DocumentsPage />} />
+      <Route path="/tai-lieu/rule-meta-ads" element={<DocumentsPage />} />
+      <Route path="/tai-lieu/blueprint-meta-ads" element={<DocumentsPage />} />
 
-      <Route path="/tai-lieu/:subtab/:id/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
-      <Route path="/tai-lieu/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
-      <Route path="/hdv" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
-      <Route path="/hdv/*" element={isLoggedIn ? <DocumentsPage /> : <Navigate to="/login" />} />
+      <Route path="/tai-lieu/:subtab/:id/*" element={<DocumentsPage />} />
+      <Route path="/tai-lieu/*" element={<DocumentsPage />} />
+      <Route path="/hdv" element={<DocumentsPage />} />
+      <Route path="/hdv/*" element={<DocumentsPage />} />
       <Route path="/cam-nang-thuong-hieu/logo" element={isLoggedIn ? <BrandLayout><BrandLogoPage /></BrandLayout> : <Navigate to="/login" />} />
       <Route path="/cam-nang-thuong-hieu/mau-sac" element={isLoggedIn ? <BrandLayout><BrandColorPage /></BrandLayout> : <Navigate to="/login" />} />
       <Route path="/cam-nang-thuong-hieu/phong-chu" element={isLoggedIn ? <BrandLayout><BrandTypographyPage /></BrandLayout> : <Navigate to="/login" />} />

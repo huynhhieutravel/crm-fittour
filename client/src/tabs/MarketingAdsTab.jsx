@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { Upload, CloudUpload, Trash2, Filter, X, Save, Edit2, Lock, Unlock, Star, FileText, ChevronDown, BarChart2 } from 'lucide-react';
+import MarketPlanningSubTab from './MarketPlanningSubTab';
 
 const THANG_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
 const TUAN_OPTIONS = [1, 2, 3, 4, 5];
@@ -86,7 +87,43 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
   
-  const [activeSubTab, setActiveSubTab] = useState('monthly'); // 'monthly', 'weekly', or 'progress'
+  const [activeSubTab, setActiveSubTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      const sub = p.get('subtab') || p.get('tab');
+      if (['monthly', 'progress', 'weekly', 'planning'].includes(sub)) return sub;
+    }
+    return 'monthly';
+  });
+
+  const [selectedPlanId, setSelectedPlanId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      return p.get('plan') || null;
+    }
+    return null;
+  });
+
+  // Đồng bộ activeSubTab & selectedPlanId lên URL
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const p = new URLSearchParams(window.location.search);
+    if (activeSubTab === 'planning') {
+      p.set('subtab', 'planning');
+      if (selectedPlanId) {
+        p.set('plan', selectedPlanId);
+      } else {
+        p.delete('plan');
+      }
+    } else {
+      p.delete('subtab');
+      p.delete('plan');
+    }
+    const newSearch = p.toString();
+    const newUrl = `${window.location.pathname}${newSearch ? '?' + newSearch : ''}`;
+    window.history.replaceState(null, '', newUrl);
+  }, [activeSubTab, selectedPlanId]);
+
   const [kpiData, setKpiData] = useState({ aggregates: [], kpis: [] });
   const [editingRecord, setEditingRecord] = useState(null);
   const [kpiModal, setKpiModal] = useState(null);
@@ -808,9 +845,31 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
         >
           CHI TIẾT CHIẾN DỊCH (DATA)
         </button>
+        <button 
+          onClick={() => { setActiveSubTab('planning'); setSelectedPlanId(null); }}
+          style={{ 
+            background: 'none', 
+            border: 'none', 
+            borderBottom: activeSubTab === 'planning' ? '3px solid #0284c7' : '3px solid transparent', 
+            padding: '12px 0', 
+            fontSize: '15px', 
+            fontWeight: 600, 
+            color: activeSubTab === 'planning' ? '#0284c7' : '#64748b', 
+            cursor: 'pointer', 
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          <span>KẾ HOẠCH & DỰ TOÁN THỊ TRƯỜNG</span>
+          <span style={{ fontSize: '0.68rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 7px', borderRadius: '10px', fontWeight: 700 }}>
+            Mới
+          </span>
+        </button>
       </div>
 
-      {activeSubTab !== 'monthly' && (
+      {(activeSubTab === 'weekly' || activeSubTab === 'progress') && (
         <>
           {/* Filter Row 1: Dropdowns + Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -2255,6 +2314,14 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
             </div>
             );
           })()}
+
+      {/* ── KẾ HOẠCH & DỰ TOÁN THỊ TRƯỜNG THEO BU ── */}
+      {activeSubTab === 'planning' && (
+        <MarketPlanningSubTab 
+          selectedPlanId={selectedPlanId} 
+          onSelectPlan={setSelectedPlanId} 
+        />
+      )}
 
       {/* Edit Record Modal */}
       {editingRecord && (

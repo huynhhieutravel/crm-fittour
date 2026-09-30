@@ -43,6 +43,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   const [isQuickAdd, setIsQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState('');
   const [quickAddPhone, setQuickAddPhone] = useState('');
+  const [asyncSelectKey, setAsyncSelectKey] = useState(0);
 
   const [showProfileSlider, setShowProfileSlider] = useState(false);
   const [fullProfileData, setFullProfileData] = useState(null);
@@ -581,32 +582,38 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       }
       return newMembers;
     });
+
+    setIsQuickAdd(false);
+    setQuickAddName('');
+    setQuickAddPhone('');
   };
 
   const handleSelectCustomer = selectCustomer;
 
   const handleCreateQuickCustomer = async () => {
-    if (!quickAddName.trim()) {
+    const targetName = (quickAddName || bookingInfo.name || '').trim();
+    if (!targetName) {
       toast.error("Vui lòng nhập Tên hoặc Nick của khách hàng!");
       return;
     }
+    const targetPhone = (quickAddPhone || bookingInfo.phone || members[0]?.phone || '').trim();
     try {
       const res = await axios.post('/api/customers', {
-        name: quickAddName.trim(),
-        phone: quickAddPhone.trim() || null,
+        name: targetName,
+        phone: targetPhone || null,
         customer_segment: 'New Customer'
       }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const newCust = res.data;
       selectCustomer(newCust); // Set ID, search term, and UI instantly
-      setIsQuickAdd(false);
-      setQuickAddName('');
-      setQuickAddPhone('');
+      setAsyncSelectKey(prev => prev + 1); // Refresh AsyncSelect
       toast.success("Tạo Khách hàng mới thành công và đã tự động chọn!");
+      return newCust;
     } catch (err) {
       console.error(err);
       toast.error("Lỗi khi tạo mới khách hàng: " + (err.response?.data?.message || err.message));
+      return null;
     }
   };
 
@@ -655,9 +662,10 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
        if (initialData) {
           const raw = initialData.raw_details || {};
           const rawBookingInfo = raw.bookingInfo || {};
+          const custId = rawBookingInfo.customerId || initialData.customer_id || null;
           setBookingInfo({
             ...rawBookingInfo,
-            customerId: rawBookingInfo.customerId || initialData.customer_id || null,
+            customerId: custId,
             search: rawBookingInfo.search || initialData.phone || initialData.name || '', 
             name: rawBookingInfo.name || initialData.name || '', 
             phone: rawBookingInfo.phone || initialData.phone || '', 
@@ -670,6 +678,32 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
             bank: rawBookingInfo.bank || 'Chọn', 
             branch: rawBookingInfo.branch || 'Chi Nhánh'
           });
+
+          if (custId) {
+            axios.get(`/api/customers/${custId}`, {
+              headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            }).then(cRes => {
+              if (cRes.data) {
+                const c = cRes.data;
+                const parseJSON = (str) => {
+                  try { return typeof str === 'string' ? JSON.parse(str || '[]') : (str || []); } catch(e) { return []; }
+                };
+                setBookingInfo(prev => ({
+                  ...prev,
+                  crmNote: prev.crmNote || c.ghi_chu || c.internal_notes || c.latest_note || '',
+                  customerSegment: prev.customerSegment || c.customer_segment || '',
+                  tripCount: (typeof prev.tripCount !== 'undefined' && prev.tripCount !== null && prev.tripCount !== 0) ? prev.tripCount : (c.total_trip_count || c.crm_trip_count || 0),
+                  insights: prev.insights || {
+                    destinations: parseJSON(c.destinations),
+                    experiences: parseJSON(c.experiences),
+                    travelStyles: parseJSON(c.travel_styles),
+                    internalNotes: c.internal_notes || '',
+                    specialRequests: c.special_requests || ''
+                  }
+                }));
+              }
+            }).catch(e => console.warn('Could not auto-fetch customer info on edit:', e.message));
+          }
           const initialRows = raw.pricingRows || [
             { id: 1, ageType: 'Người lớn', name: '', price: Number(initialData.base_price) || Number(tour?.tour_info?.price_adult) || 25490000, qty: Number(initialData.qty) || 1, surcharge: Number(initialData.surcharge) || 0, discount: Number(initialData.discount) || 0, comPerPax: 0, comCTV: 0, total: Number(initialData.total) || Number(tour?.tour_info?.price_adult) || 25490000, internalNote: '', customerNote: '', extraServices: [] },
             { id: 2, ageType: 'Trẻ em', name: '', price: Number(tour?.tour_info?.price_child_2_5) || 0, qty: 0, surcharge: 0, discount: 0, comPerPax: 0, comCTV: 0, total: 0, internalNote: '', customerNote: '', extraServices: [] },
@@ -705,6 +739,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
        setIsQuickAdd(false);
        setQuickAddName('');
        setQuickAddPhone('');
+       setAsyncSelectKey(prev => prev + 1);
        setImportReport(null);
        setIsDraggingExcel(false);
     }
@@ -720,7 +755,17 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
           if (newMembers.length < totalQty) {
               const diff = totalQty - newMembers.length;
               for (let i = 0; i < diff; i++) {
-                 newMembers.push({ id: Date.now() + i, docType: 'CMTND' });
+                 newMembers.push({
+                   id: Date.now() + i,
+                   phone: '',
+                   name: '',
+                   email: '',
+                   ageType: 'Người lớn',
+                   gender: 'Chọn',
+                   dob: '', docType: 'CMTND', docId: '', issueDate: '', expiryDate: '',
+                   passportUrl: '', flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
+                   note: '', roomType: '-Chọn-', hotel: '', roomCode: '', customerSegment: '', tripCount: 0, crmNote: ''
+                 });
               }
           } else if (newMembers.length > totalQty) {
               // NGĂN CHẶN TRUNCATE TỰ ĐỘNG
@@ -734,10 +779,15 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       const newMembers = [...prev];
       if (totalQty > newMembers.length) {
         // Need to add empty slots
-        for (let i = newMembers.length; i < totalQty; i++) {
+        const startIdx = newMembers.length;
+        for (let i = startIdx; i < totalQty; i++) {
           newMembers.push({
             id: Date.now() + i,
-            phone: '', name: '', email: '', ageType: 'Chưa rõ', gender: 'Chọn',
+            phone: (i === 0 ? (bookingInfo.phone || '') : ''),
+            name: (i === 0 ? (bookingInfo.name || '') : ''),
+            email: '',
+            ageType: 'Người lớn',
+            gender: (i === 0 ? (formatGenderVN(bookingInfo.gender) || 'Nữ') : 'Chọn'),
             dob: '', docType: 'CMTND', docId: '', issueDate: '', expiryDate: '',
             flightOut: '', flightIn: '', visaStatus: '-Chọn-', visaSubmit: '', visaResult: '',
             note: '', roomType: '-Chọn-', hotel: '', roomCode: ''
@@ -908,7 +958,22 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   };
 
   const handleMemberChange = (id, field, value) => {
-    setMembers(prev => prev.map(m => m.id === id ? { ...m, [field]: value } : m));
+    setMembers(prev => {
+      const idx = prev.findIndex(m => m.id === id);
+      const updated = prev.map(m => m.id === id ? { ...m, [field]: value } : m);
+      if (idx === 0) {
+        if (field === 'name') {
+           setBookingInfo(b => ({ ...b, name: value }));
+           if (isQuickAdd) setQuickAddName(value);
+        } else if (field === 'phone') {
+           setBookingInfo(b => ({ ...b, phone: value }));
+           if (isQuickAdd) setQuickAddPhone(value);
+        } else if (field === 'gender') {
+           setBookingInfo(b => ({ ...b, gender: formatGenderVN(value) || value }));
+        }
+      }
+      return updated;
+    });
   };
 
   const handleMemberPhoneBlur = async (id, phone) => {
@@ -922,26 +987,33 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
         // Auto match the first customer exactly by phone
         const cleanPhone = phone.replace(/[\s\-\.]/g, '');
         const cust = data.find(c => c.phone && c.phone.replace(/[\s\-\.]/g, '').includes(cleanPhone)) || data[0];
-        setMembers(prev => prev.map(m => {
-          if (m.id === id && cust) {
-             return {
-                ...m,
-                name: cust.name || m.name,
-                email: cust.email || m.email,
-                gender: formatGenderVN(cust.gender) || formatGenderVN(m.gender) || '',
-                dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : m.dob,
-                docType: cust.id_card ? 'CMTND' : m.docType,
-                docId: cust.id_card || m.docId,
-                expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : m.expiryDate,
-                crmNote: cust.ghi_chu || cust.internal_notes || cust.latest_note || '',
-                customerId: cust.id || null,
-                tripCount: parseInt(cust.total_trips || cust.crm_trip_count || 0),
-                customerSegment: cust.customer_segment || '',
-                passportUrl: cust.passport_url || ''
-             };
-          }
-          return m;
-        }));
+        if (cust) {
+           const isBooker = members[0]?.id === id;
+           if (isBooker) {
+              selectCustomer(cust);
+           } else {
+              setMembers(prev => prev.map(m => {
+                if (m.id === id) {
+                   return {
+                      ...m,
+                      name: cust.name || m.name,
+                      email: cust.email || m.email,
+                      gender: formatGenderVN(cust.gender) || formatGenderVN(m.gender) || '',
+                      dob: cust.birth_date ? new Date(cust.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : m.dob,
+                      docType: cust.id_card ? 'CMTND' : m.docType,
+                      docId: cust.id_card || m.docId,
+                      expiryDate: cust.id_expiry ? new Date(cust.id_expiry).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : m.expiryDate,
+                      crmNote: cust.ghi_chu || cust.internal_notes || cust.latest_note || '',
+                      customerId: cust.id || null,
+                      tripCount: parseInt(cust.total_trips || cust.crm_trip_count || 0),
+                      customerSegment: cust.customer_segment || '',
+                      passportUrl: cust.passport_url || ''
+                   };
+                }
+                return m;
+              }));
+           }
+        }
       }
     } catch (err) {
       console.error("Lỗi fetch thông tin thành viên (Phone):", err);
@@ -949,14 +1021,45 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   };
 
   const handleSubmit = async () => {
-    if (!bookingInfo.customerId) {
-        toast.error("Vui lòng tìm kiếm Khách hàng từ thanh [Tìm kiếm khách hàng]. Nếu chưa có, hãy nhấn [+ Thêm mới nhanh]!");
+    let currentCustomerId = bookingInfo.customerId;
+
+    // Tự động tạo khách hàng mới nếu user đã nhập tên nhưng chưa bấm nút Lưu tạo nhanh
+    if (!currentCustomerId) {
+      const pendingName = (quickAddName || bookingInfo.name || members[0]?.name || '').trim();
+      if (pendingName) {
+        try {
+          const pendingPhone = (quickAddPhone || bookingInfo.phone || members[0]?.phone || '').trim();
+          const res = await axios.post('/api/customers', {
+            name: pendingName,
+            phone: pendingPhone || null,
+            customer_segment: 'New Customer'
+          }, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          });
+          const newCust = res.data;
+          currentCustomerId = newCust.id;
+          selectCustomer(newCust);
+          setAsyncSelectKey(prev => prev + 1);
+          toast.success(`Đã tự động lưu hồ sơ khách hàng [${newCust.name}] vào CRM!`);
+        } catch (createErr) {
+          console.error("Auto create customer failed:", createErr);
+          toast.error("Không thể tạo khách hàng: " + (createErr.response?.data?.message || createErr.message));
+          return;
+        }
+      } else {
+        toast.error("Vui lòng tìm kiếm Khách hàng từ thanh [Tìm kiếm khách hàng] hoặc nhập Tên Booker!");
         return;
+      }
     }
     
     // Tóm tắt dữ liệu thành 1 cục Khách hàng (Row) để đẩy ra bảng ngoài
     const totalQty = pricingRows.reduce((sum, r) => sum + Number(r.qty), 0);
     
+    // Đảm bảo member 0 có tên từ Booker
+    if (members.length > 0 && (!members[0].name || members[0].name.trim() === '')) {
+       members[0].name = bookingInfo.name || quickAddName || 'Khách chính';
+    }
+
     // Soft validation: Nhắc nhở nếu thiếu tên thành viên
     if (members.length > 0) {
         const hasInvalidMembers = members.some(m => !m.name || m.name.trim() === '');
@@ -983,8 +1086,8 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
 
     const customerData = {
       id: initialData?.id, // ID is preserved if editing
-      customer_id: bookingInfo.customerId || initialData?.customer_id,
-      name: bookingInfo.name || 'Khách Vãng Lai',
+      customer_id: currentCustomerId || initialData?.customer_id,
+      name: bookingInfo.name || members[0]?.name || 'Khách Vãng Lai',
       phone: members[0]?.phone || bookingInfo.phone || '',
       cmnd: members[0]?.docId || '',
       qty: totalQty,
@@ -993,10 +1096,16 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
       discount: totalDiscount,
       total: totalPrice,
       paid: paidAmount || 0,
-      status: (paidAmount > 0 && paidAmount < totalPrice) ? 'Đã đặt cọc' : (paidAmount >= totalPrice && totalPrice > 0 ? 'Đã thanh toán' : (initialData?.status || 'HELD')),
+      status: (paidAmount > 0 && paidAmount < totalPrice) ? 'Đã đặt cọc' : (paidAmount >= totalPrice && totalPrice > 0 ? 'Đã thanh toán' : (initialData?.status || 'Giữ chỗ')),
       created_by: selectedSalesId,
       created_by_name: salesList.find(u => u.id == selectedSalesId)?.full_name || currentUser?.full_name || 'Sales',
-      raw_details: { bookingInfo, pricingRows, members: finalMembers } // Lưu tất cả data gốc dưới dạng JSONB
+      creator_id: initialData?.creator_id,
+      creator_name: initialData?.creator_name,
+      raw_details: { 
+         bookingInfo: { ...bookingInfo, customerId: currentCustomerId }, 
+         pricingRows, 
+         members: finalMembers 
+      }
     };
 
     onSave(customerData);
@@ -1021,18 +1130,39 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
           
           <h4 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px' }}>#1 Thông tin chung</h4>
           
-             <div style={{ marginBottom: '20px', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#334155' }}>👤 Sale phụ trách (Quản lý):</label>
-                <select 
-                   value={selectedSalesId} 
-                   onChange={e => setSelectedSalesId(e.target.value)} 
-                   style={{ flex: 1, maxWidth: '300px', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', background: 'white' }}
-                >
-                   <option value="">-- Chọn Sale --</option>
-                   {salesList.map(u => (
-                      <option key={u.id} value={u.id}>{u.full_name || u.username}</option>
-                   ))}
-                </select>
+             <div style={{ marginBottom: '20px', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px dashed #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+                   <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#334155' }}>👤 Sale phụ trách (Quản lý):</label>
+                   <select 
+                      value={selectedSalesId} 
+                      onChange={e => setSelectedSalesId(e.target.value)} 
+                      disabled={!!(initialData && !isPrivileged)}
+                      style={{ 
+                         flex: 1, 
+                         maxWidth: '300px', 
+                         padding: '8px', 
+                         border: '1px solid #cbd5e1', 
+                         borderRadius: '4px', 
+                         background: (initialData && !isPrivileged) ? '#f1f5f9' : 'white',
+                         cursor: (initialData && !isPrivileged) ? 'not-allowed' : 'pointer'
+                      }}
+                   >
+                      <option value="">-- Chọn Sale --</option>
+                      {salesList.map(u => (
+                         <option key={u.id} value={u.id}>{u.full_name || u.username}</option>
+                      ))}
+                   </select>
+                   {initialData && initialData.creator_name && initialData.creator_id != initialData.created_by && (
+                      <span style={{ fontSize: '12px', color: '#64748b' }}>
+                         ✍️ Người tạo hộ: <b>{initialData.creator_name}</b>
+                      </span>
+                   )}
+                </div>
+                {initialData && !isPrivileged && (
+                   <div style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' }}>
+                      🔒 Chỉ Quản lý / Điều hành mới có quyền thay đổi Sale phụ trách của đơn đã tạo.
+                   </div>
+                )}
              </div>
 
           {/* Form row 1 */}
@@ -1041,7 +1171,15 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                    <label style={{ fontSize: '12px' }}>Tìm kiếm khách hàng*: <span style={{color:'red'}}>(*)</span></label>
                    <button 
-                      onClick={() => setIsQuickAdd(!isQuickAdd)}
+                      type="button"
+                      onClick={() => {
+                         const nextQuick = !isQuickAdd;
+                         setIsQuickAdd(nextQuick);
+                         if (nextQuick) {
+                            if (bookingInfo.name && !quickAddName) setQuickAddName(bookingInfo.name);
+                            if (bookingInfo.phone && !quickAddPhone) setQuickAddPhone(bookingInfo.phone);
+                         }
+                      }}
                       style={{ fontSize: '11px', color: '#2563eb', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontWeight: 'bold' }}
                    >
                       {isQuickAdd ? 'Quay lại tìm kiếm' : '+ Thêm mới nhanh'}
@@ -1054,7 +1192,23 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                          type="text" 
                          placeholder="Tên / Nick khách (*)..." 
                          value={quickAddName} 
-                         onChange={e => setQuickAddName(e.target.value)} 
+                         onChange={e => {
+                            const val = e.target.value;
+                            setQuickAddName(val);
+                            setBookingInfo(prev => ({ ...prev, name: val }));
+                            setMembers(prev => {
+                               if (!prev || prev.length === 0) return prev;
+                               const next = [...prev];
+                               next[0] = { ...next[0], name: val };
+                               return next;
+                            });
+                         }}
+                         onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                               e.preventDefault();
+                               handleCreateQuickCustomer();
+                            }
+                         }}
                          style={{ flex: 1.2, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', minWidth: 0 }}
                          autoFocus
                       />
@@ -1062,55 +1216,101 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                          type="text" 
                          placeholder="SĐT (tùy chọn)..." 
                          value={quickAddPhone} 
-                         onChange={e => setQuickAddPhone(e.target.value)} 
+                         onChange={e => {
+                            const val = e.target.value;
+                            setQuickAddPhone(val);
+                            setBookingInfo(prev => ({ ...prev, phone: val }));
+                            setMembers(prev => {
+                               if (!prev || prev.length === 0) return prev;
+                               const next = [...prev];
+                               next[0] = { ...next[0], phone: val };
+                               return next;
+                            });
+                         }}
+                         onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                               e.preventDefault();
+                               handleCreateQuickCustomer();
+                            }
+                         }}
                          style={{ flex: 0.8, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', minWidth: 0 }}
                       />
                       <button 
+                         type="button"
                          onClick={handleCreateQuickCustomer}
                          style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: '4px', padding: '0 10px', cursor: 'pointer', fontWeight: 'bold', whiteSpace: 'nowrap' }}
+                         title="Lưu khách hàng này vào CRM và chọn ngay"
                       >
                          Lưu
                       </button>
                    </div>
                 ) : (
                    <AsyncSelect
-                      cacheOptions
+                      key={asyncSelectKey}
                       isClearable
                       loadOptions={loadCustomerOptions}
                       defaultOptions={false}
                       placeholder="Tìm khách hàng (Tên hoặc SĐT)..."
                       value={bookingInfo.customerId ? { value: bookingInfo.customerId, label: bookingInfo.name + (bookingInfo.phone ? ` - ${bookingInfo.phone}` : '') } : null}
-                       onChange={(selectedOption) => {
-                          if (selectedOption && selectedOption.customer) {
-                             selectCustomer(selectedOption.customer);
-                          } else {
-                             setBookingInfo(prev => ({
-                                ...prev,
-                                customerId: null,
-                                name: '',
-                                phone: '',
-                                search: '',
-                                crmNote: '',
-                                customerSegment: '',
-                                tripCount: 0,
-                                insights: null
-                             }));
-                          }
-                       }}
+                      onChange={(selectedOption) => {
+                         if (selectedOption && selectedOption.customer) {
+                            selectCustomer(selectedOption.customer);
+                         } else {
+                            setBookingInfo(prev => ({
+                               ...prev,
+                               customerId: null,
+                               name: '',
+                               phone: '',
+                               search: '',
+                               crmNote: '',
+                               customerSegment: '',
+                               tripCount: 0,
+                               insights: null
+                            }));
+                            setMembers(prev => {
+                               if (!prev || prev.length === 0) return prev;
+                               const next = [...prev];
+                               next[0] = {
+                                  ...next[0],
+                                  customerId: null,
+                                  name: '',
+                                  phone: '',
+                                  customerSegment: '',
+                                  tripCount: 0,
+                                  crmNote: ''
+                               };
+                               return next;
+                            });
+                         }
+                      }}
                       noOptionsMessage={({ inputValue }) => {
                          if (!inputValue) return "Gõ để tìm kiếm...";
                          return (
                             <div style={{ padding: '8px' }}>
                                Không tìm thấy: <strong>{inputValue}</strong><br/>
                                <button 
+                                  type="button"
                                   onMouseDown={(e) => {
                                      e.preventDefault(); // Prevents select from blurring
                                      setIsQuickAdd(true);
-                                     // Phân tích thử nếu inputValue có vẻ là số thì gán vào Phone
                                      if (/^\d+$/.test(inputValue.replace(/\s/g, ''))) {
                                         setQuickAddPhone(inputValue);
+                                        setBookingInfo(prev => ({ ...prev, phone: inputValue }));
+                                        setMembers(prev => {
+                                           if (!prev || prev.length === 0) return prev;
+                                           const next = [...prev];
+                                           next[0] = { ...next[0], phone: inputValue };
+                                           return next;
+                                        });
                                      } else {
                                         setQuickAddName(inputValue);
+                                        setBookingInfo(prev => ({ ...prev, name: inputValue }));
+                                        setMembers(prev => {
+                                           if (!prev || prev.length === 0) return prev;
+                                           const next = [...prev];
+                                           next[0] = { ...next[0], name: inputValue };
+                                           return next;
+                                        });
                                      }
                                   }} 
                                   style={{ marginTop: '8px', background: '#3b82f6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
@@ -1146,7 +1346,22 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                       </button>
                    )}
                 </div>
-                <input type="text" value={bookingInfo.name} onChange={e => setBookingInfo({...bookingInfo, name: e.target.value})} style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
+                <input 
+                   type="text" 
+                   value={bookingInfo.name || ''} 
+                   onChange={e => {
+                      const val = e.target.value;
+                      setBookingInfo(prev => ({ ...prev, name: val }));
+                      if (isQuickAdd) setQuickAddName(val);
+                      setMembers(prev => {
+                         if (!prev || prev.length === 0) return prev;
+                         const next = [...prev];
+                         next[0] = { ...next[0], name: val };
+                         return next;
+                      });
+                   }} 
+                   style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }} 
+                />
              </div>
              <div>
                 <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px' }}>Giới tính:</label>
@@ -1510,7 +1725,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
 
                   <div style={{ width: '110px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Điện thoại:</label>
-                     <input type="text" value={m.phone} onChange={e => handleMemberChange(m.id, 'phone', e.target.value)} onBlur={e => handleMemberPhoneBlur(m.id, e.target.value)} placeholder="Nhập để tra cứu..." style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: idx === 0 ? '#f1f5f9' : 'white', cursor: idx === 0 ? 'not-allowed' : 'text', color: idx === 0 ? '#64748b' : 'inherit' }} disabled={idx === 0} title={idx === 0 ? "Số điện thoại người đặt (Booker) bị khóa mặc định" : ""} />
+                     <input type="text" value={m.phone || ''} onChange={e => handleMemberChange(m.id, 'phone', e.target.value)} onBlur={e => handleMemberPhoneBlur(m.id, e.target.value)} placeholder="Nhập để tra cứu..." style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: 'white', color: 'inherit' }} title={idx === 0 ? "SĐT của Booker / Trưởng đoàn" : "SĐT của thành viên"} />
                   </div>
                   <div style={{ width: '130px', flexShrink: 0 }}>
                      <label style={{ fontSize: '10px' }}>Tên:</label>

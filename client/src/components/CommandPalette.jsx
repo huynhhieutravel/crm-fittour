@@ -3,7 +3,7 @@ import {
     Search, FileText, LayoutTemplate, Briefcase, Users, Navigation, ExternalLink, 
     MessageSquare, MapPin, UserCheck, CheckCircle, Building, Calendar, Clock, 
     UserPlus, DollarSign, Activity, BookOpen, Settings, Shield, Star, Mail, Phone,
-    Sparkles, HelpCircle, Bot, Megaphone, Bell
+    Sparkles, HelpCircle, Bot, Megaphone, Bell, BarChart3
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -107,6 +107,7 @@ const globalSearchData = [
     { id: 'zalo-ai-settings', title: 'Cấu hình Zalo AI Bot', path: '/zalo-ai-settings', icon: Bot, keywords: 'zalo ai bot cau hinh chatgpt tro ly tu dong tin nhan' },
     { id: 'message-templates', title: 'Mẫu tin nhắn (Templates)', path: '/message-templates', icon: MessageSquare, keywords: 'mau tin nhan message templates tra loi nhanh sms zalo' },
     { id: 'marketing-ads', title: 'Quản trị Meta Ads (Data/KPI)', path: '/marketing-ads', icon: DollarSign, keywords: 'chi phi marketing ads bao cao quang cao facebook meta ngan sach cpa cpl' },
+    { id: 'marketing-planning', title: 'Kế Hoạch & Dự Toán Thị Trường BU4 (Marketing Ads)', path: '/marketing-ads?subtab=planning', icon: BarChart3, keywords: 'ke hoach thi truong du toan marketing ads bu4 bhutan ladakh sri lanka 30 trieu' },
     { id: 'travel-support', title: 'Hỗ trợ Khách (Travel Support)', path: '/travel-support', icon: Phone, keywords: 'ho tro khach travel support cskh hotline cap cuu 24/7' },
 
     // ── 8. NHÂN SỰ & HÀNH CHÍNH (HR & ADMIN) ──
@@ -335,6 +336,24 @@ const globalSearchData = [
         path: '/tai-lieu/tu-van-bhutan-5n4d',
         icon: BookOpen,
         keywords: 'cam nang chot sale bhutan 5n4d tu van tour'
+    },
+    {
+        id: 'doc-thi-truong-bu1',
+        title: 'Phân Tích Thị Trường & Dự Toán Ads BU1 (Tour Trung Quốc)',
+        subtitle: 'Dữ liệu lịch sử, CPL & Dự toán Ads Giang Nam, Bắc Kinh, Á Đinh, Tân Cương, Thanh Tạng, Lệ Giang, Cáp Nhĩ Tân',
+        type: 'doc',
+        path: '/tai-lieu/thi-truong-bu1',
+        icon: Activity,
+        keywords: 'thi truong bu1 tour trung quoc du toan ads giang nam bac kinh dao thanh a dinh tan cuong thanh tang le giang cap nhi tan cpl lead ngan sach'
+    },
+    {
+        id: 'doc-thi-truong-bu4',
+        title: 'Phân Tích Thị Trường & Dự Toán Ads BU4',
+        subtitle: 'Obsidian Doc: Dữ liệu lịch sử, CPL & Máy tính dự toán ngân sách Ads Bhutan, Ladakh, Sri Lanka',
+        type: 'doc',
+        path: '/tai-lieu/thi-truong-bu4',
+        icon: Activity,
+        keywords: 'thi truong bu4 du toan ads bhutan ladakh sri lanka may tinh cpl lead ngân sách'
     },
     {
         id: 'doc-hub-marketing',

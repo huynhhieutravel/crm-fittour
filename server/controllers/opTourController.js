@@ -1,5 +1,6 @@
 const db = require('../db');
 const { logActivity } = require('../utils/logger');
+const { sendInAppNotification } = require('../services/notificationService');
 const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
@@ -306,7 +307,7 @@ exports.addOpTourBooking = async (req, res) => {
     await client.query('BEGIN');
 
     // 1. Lấy thông tin tour departure — FOR UPDATE lock để chặn concurrent booking
-    const tourRes = await client.query('SELECT tour_info, max_participants FROM tour_departures WHERE id = $1 FOR UPDATE', [id]);
+    const tourRes = await client.query('SELECT code, tour_info, max_participants FROM tour_departures WHERE id = $1 FOR UPDATE', [id]);
     if (tourRes.rows.length === 0) {
       await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Không tìm thấy tour' });
@@ -355,7 +356,11 @@ exports.addOpTourBooking = async (req, res) => {
     const userRoleNameLower = userRoleName.toLowerCase();
     const isPrivileged = ['admin', 'manager', 'operations', 'operations_lead', 'operator', 'accountant'].includes(userRoleNameLower);
 
-    // Determine Assignment properties
+    // Determine Creator (Người trực tiếp tạo đơn)
+    const creatorId = req.user ? req.user.id : null;
+    const creatorName = req.user ? (req.user.full_name || req.user.username || 'Nhân viên') : 'Nhân viên';
+
+    // Determine Assignment properties (Sale phụ trách / Hưởng doanh số)
     let assignId = req.user ? req.user.id : null;
     let assignName = req.user ? (req.user.full_name || req.user.username || 'Sales') : 'Sales';
     
@@ -365,11 +370,12 @@ exports.addOpTourBooking = async (req, res) => {
     }
 
     if (!isNewBooking) {
-        // Permission check
+        // Permission check: Cho phép Admin/Manager/Operator HOẶC Sale phụ trách HOẶC Người tạo hộ
         const bCheck = await client.query('SELECT * FROM bookings WHERE id = $1', [bookingData.id]);
         if (bCheck.rows.length > 0) {
              const existingBooking = bCheck.rows[0];
-             if (!isPrivileged && existingBooking.created_by != req.user.id) {
+             const isOwner = (existingBooking.created_by == req.user.id) || (existingBooking.creator_id == req.user.id);
+             if (!isPrivileged && !isOwner) {
                   await client.query('ROLLBACK');
                   return res.status(403).json({ error: 'Lỗi phân quyền! Bạn không có quyền chỉnh sửa Booking của người khác.' });
              }
@@ -391,6 +397,7 @@ exports.addOpTourBooking = async (req, res) => {
         ];
 
         let paramCounter = 11;
+        // Chỉ Admin / Quản lý / Điều hành mới được đổi Sale phụ trách của đơn đã tạo
         if (isPrivileged && bookingData.created_by) {
              updateQuery += `, created_by = $${paramCounter++}, created_by_name = $${paramCounter++} `;
              updateParams.push(assignId, assignName);
@@ -414,6 +421,10 @@ exports.addOpTourBooking = async (req, res) => {
                 new_data: updatedRes.rows[0]
             });
         }
+
+        var shouldNotifyAssigneeOnUpdate = (oldBookingData && oldBookingData.created_by && oldBookingData.created_by != req.user?.id);
+        var updatedBookingCode = oldBookingData?.booking_code || bookingData.booking_code || bookingData.id;
+        var updateAssigneeId = oldBookingData?.created_by;
     } else {
         // Generate booking code
         const bookingCode = `BK-${Date.now().toString(36).toUpperCase()}`;
@@ -423,17 +434,17 @@ exports.addOpTourBooking = async (req, res) => {
                 booking_code, tour_departure_id, customer_id, pax_count,
                 base_price, surcharge, discount, total_price, paid, 
                 booking_status, payment_status, raw_details, notes,
-                created_by, created_by_name
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                created_by, created_by_name, creator_id, creator_name
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
             RETURNING *
         `, [
             bookingCode, id, bookingData.customer_id || null, paxCount,
             Number(bookingData.base_price) || 0, Number(bookingData.surcharge) || 0, Number(bookingData.discount) || 0, totalPrice, paidAmount,
             bookingStatus, paidAmount >= totalPrice && totalPrice > 0 ? 'paid' : (paidAmount > 0 ? 'partial' : 'unpaid'),
             JSON.stringify(rawDetails), bookingData.notes || null,
-            assignId, assignName
+            assignId, assignName, creatorId, creatorName
         ]);
-        newBooking = { ...bookingData, id: insertRes.rows[0].id, booking_code: bookingCode };
+        newBooking = { ...bookingData, id: insertRes.rows[0].id, booking_code: bookingCode, creator_id: creatorId, creator_name: creatorName };
 
         // LOG ACTIVITY cho CREATE BOOKING
         await logActivity({
@@ -441,13 +452,44 @@ exports.addOpTourBooking = async (req, res) => {
             action_type: 'CREATE',
             entity_type: 'BOOKING',
             entity_id: newBooking.id,
-            details: `Tạo mới Giữ chỗ: ${newBooking.booking_code}`,
+            details: `Tạo mới Giữ chỗ: ${newBooking.booking_code} ${assignId && assignId != creatorId ? `(Tạo hộ cho ${assignName})` : ''}`,
             new_data: insertRes.rows[0]
         });
+
+        // Ghi nhận biến để gửi thông báo sau COMMIT
+        var shouldNotifyAssignee = (assignId && assignId != req.user?.id);
+        var createdBookingCode = bookingCode;
+        var createdPaxCount = paxCount;
+        var createdBookingId = insertRes.rows[0].id;
     }
 
     // COMMIT the critical booking section
     await client.query('COMMIT');
+
+    // Bắn thông báo In-App cho Sale phụ trách nếu được tạo hộ (sau khi commit an toàn)
+    if (shouldNotifyAssignee) {
+        const tourCode = tourRes.rows[0]?.code || tourInfo.code || rawTourInfo.code || 'Tour';
+        await sendInAppNotification({
+            userId: assignId,
+            title: '🔔 [Đơn tạo hộ] Bạn có đơn giữ chỗ mới!',
+            message: `${creatorName} đã tạo hộ bạn đơn giữ chỗ ${createdBookingCode} (${createdPaxCount} khách) trên tour ${tourCode}.`,
+            link: '/op-tours',
+            type: 'BOOKING_CO_OWNER',
+            referenceId: createdBookingId
+        });
+    }
+
+    if (shouldNotifyAssigneeOnUpdate) {
+        const tourCode = tourRes.rows[0]?.code || tourInfo.code || rawTourInfo.code || 'Tour';
+        await sendInAppNotification({
+            userId: updateAssigneeId,
+            title: '🔔 [Cập nhật giữ chỗ] Đơn hàng của bạn vừa được cập nhật',
+            message: `${creatorName} vừa cập nhật thông tin đơn giữ chỗ ${updatedBookingCode} trên tour ${tourCode}.`,
+            link: '/op-tours',
+            type: 'BOOKING_UPDATE',
+            referenceId: bookingData.id
+        });
+    }
 
     // === AUTO-CONVERT ENGINE & VIP ENGINE (outside transaction — non-critical) ===
     function getVipLevel(totalTrips) {
@@ -622,7 +664,8 @@ exports.updateOpTourBooking = async (req, res) => {
     const userRoleName = req.user.role_name || req.user.role || '';
     const userRoleNameLower = userRoleName.toLowerCase();
     const isPrivileged = ['admin', 'manager', 'operations', 'operations_lead', 'operator', 'accountant'].includes(userRoleNameLower);
-    if (!isPrivileged && booking.created_by != req.user.id) {
+    const isOwner = (booking.created_by == req.user.id) || (booking.creator_id == req.user.id);
+    if (!isPrivileged && !isOwner) {
         return res.status(403).json({ error: 'Lỗi phân quyền! Bạn không có quyền thao tác trên Booking của người khác.' });
     }
 
@@ -772,7 +815,8 @@ exports.transferOpTourBooking = async (req, res) => {
     // Authorize
     const userRoleName = req.user.role_name || req.user.role || '';
     const isPrivileged = ['admin', 'manager', 'operator', 'accountant'].includes(userRoleName);
-    if (!isPrivileged && booking.created_by != req.user.id) {
+    const isOwner = (booking.created_by == req.user.id) || (booking.creator_id == req.user.id);
+    if (!isPrivileged && !isOwner) {
         await client.query('ROLLBACK');
         return res.status(403).json({ error: 'Lỗi phân quyền! Bạn không có quyền chuyển Booking của người khác.' });
     }

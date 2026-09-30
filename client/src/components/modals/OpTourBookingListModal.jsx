@@ -75,8 +75,9 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
   const isOwnerOrAdmin = (b) => {
       // If admin, manager, điều hành (operator)
       if (currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'group_manager' || currentUser?.role === 'operator' || String(currentUser?.role || '').includes('operations')) return true;
-      // If sales owner
+      // If sales owner OR creator (người tạo hộ)
       if (b?.created_by == currentUser?.id || b?.created_by_name === currentUser?.username) return true;
+      if (b?.creator_id == currentUser?.id || b?.creator_name === currentUser?.username) return true;
       return false;
   };
 
@@ -520,11 +521,16 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#ef4444' }}>{formatMoney(b.total - b.paid)}</div>
                         </td>
                         <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'middle' }}>
-                           {b.created_by_name || 'Sales'}
+                           <div style={{ fontWeight: 'bold', color: '#1e293b' }}>{b.created_by_name || 'Sales'}</div>
+                           {b.creator_id && b.creator_id != b.created_by && b.creator_name && (
+                              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '3px' }} title={`Được tạo hộ bởi: ${b.creator_name}`}>
+                                 (Tạo bởi: {b.creator_name})
+                              </div>
+                           )}
                         </td>
                         <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'middle' }}>
                            <select 
-                             value={b.status || 'Mới'} 
+                             value={(b.status === 'HELD' || b.status === 'Giữ chỗ') ? 'Giữ chỗ' : (b.status || 'Mới')} 
                              onChange={async (e) => {
                                const newStatus = e.target.value;
                                if (newStatus === 'Huỷ' || newStatus === 'Hủy') {
@@ -570,7 +576,6 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                            >
                              <option value="Mới" disabled={b.status !== 'Mới' && !!(b.paid > 0)}>⚪️ Mới (Chưa giữ chỗ)</option>
                              <option value="Giữ chỗ" disabled={!!(b.paid > 0)}>🟠 Giữ chỗ</option>
-                             {b.status === 'HELD' && <option value="HELD" disabled={!!(b.paid > 0)}>🟠 HELD (Giữ chỗ)</option>}
                              <option value="Đã đặt cọc" disabled={!(b.paid > 0 && b.paid < b.total)} title={!(b.paid > 0 && b.paid < b.total) ? 'Chỉ hệ thống Kế toán tự chọn lựa chọn này khi Số dư > 0' : 'Sẵn sàng phục hồi'}>🟡 Đã đặt cọc {!(b.paid > 0 && b.paid < b.total) ? '(Auto)' : ''}</option>
                              <option value="Đã thanh toán" disabled={!(b.paid > 0 && b.paid >= b.total)} title={!(b.paid > 0 && b.paid >= b.total) ? 'Hệ thống tự động cập nhật khi Kế toán báo Đã Tất Toán 100%' : 'Sẵn sàng phục hồi'}>🟢 Đã Tất Toán {!(b.paid > 0 && b.paid >= b.total) ? '(Auto)' : ''}</option>
                              <option value="Hoàn thành" disabled={currentUser?.role !== 'admin' && currentUser?.role !== 'manager' && currentUser?.role !== 'operator'}>✅ Hoàn thành</option>

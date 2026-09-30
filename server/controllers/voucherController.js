@@ -1,5 +1,6 @@
 const db = require('../db');
 const { logActivity } = require('../utils/logger');
+const { sendInAppNotification } = require('../services/notificationService');
 
 exports.createVoucher = async (req, res) => {
     try {
@@ -22,11 +23,12 @@ exports.createVoucher = async (req, res) => {
         const created_by_name = req.user.full_name || req.user.username || 'Hệ thống';
 
         // VALIDATION: Prevent Overcharging
+        let targetBooking = null;
         if (booking_id) {
-            const bookingCheck = await db.query('SELECT total_price, paid FROM bookings WHERE id = $1', [booking_id]);
+            const bookingCheck = await db.query('SELECT total_price, paid, created_by, creator_id, booking_code FROM bookings WHERE id = $1', [booking_id]);
             if (bookingCheck.rows.length > 0) {
-                const b = bookingCheck.rows[0];
-                const remaining = Number(b.total_price) - Number(b.paid);
+                targetBooking = bookingCheck.rows[0];
+                const remaining = Number(targetBooking.total_price) - Number(targetBooking.paid);
                 if (Number(amount) > remaining) {
                     return res.status(400).json({ message: `Bạn đang nhập số tiền thu là ${Number(amount).toLocaleString('vi-VN')}đ, VƯỢT QUÁ số tiền khách còn nợ (${remaining.toLocaleString('vi-VN')}đ)!\n\nVui lòng nhập số tiền nhỏ hơn hoặc bằng số nợ còn lại.` });
                 }
@@ -123,6 +125,18 @@ exports.createVoucher = async (req, res) => {
             new_data: r.rows[0]
         });
 
+        // Bắn thông báo In-App cho Sale phụ trách nếu người lập phiếu thu là người tạo hộ hoặc đồng nghiệp
+        if (targetBooking && targetBooking.created_by && targetBooking.created_by != req.user.id) {
+            await sendInAppNotification({
+                userId: targetBooking.created_by,
+                title: '💰 [Thu tiền hộ] Đã lập phiếu thu cho đơn của bạn',
+                message: `${created_by_name} vừa lập phiếu thu ${Number(amount).toLocaleString('vi-VN')}đ cho đơn ${targetBooking.booking_code || booking_code || booking_id}.`,
+                link: '/op-tours',
+                type: 'VOUCHER_CO_OWNER',
+                referenceId: booking_id
+            });
+        }
+
         res.status(201).json(r.rows[0]);
     } catch (err) {
         console.error(err);
@@ -209,7 +223,7 @@ exports.cancelVoucher = async (req, res) => {
                 
                 let autoStatus = bCheck.booking_status;
                 if (newPaid === 0 && (bCheck.booking_status === 'Đã đặt cọc' || bCheck.booking_status === 'Đã thanh toán')) {
-                    autoStatus = 'HELD';
+                    autoStatus = 'Giữ chỗ';
                 } else if (newPaid > 0 && newPaid < total) {
                     autoStatus = 'Đã đặt cọc';
                 }
@@ -281,7 +295,7 @@ exports.deleteVoucher = async (req, res) => {
                 
                 let autoStatus = bCheck.booking_status;
                 if (newPaid === 0 && (bCheck.booking_status === 'Đã đặt cọc' || bCheck.booking_status === 'Đã thanh toán')) {
-                    autoStatus = 'HELD';
+                    autoStatus = 'Giữ chỗ';
                 } else if (newPaid > 0 && newPaid < total) {
                     autoStatus = 'Đã đặt cọc';
                 }

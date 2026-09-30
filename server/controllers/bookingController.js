@@ -20,7 +20,7 @@ exports.getAllBookings = async (req, res) => {
             const scope = await getDataScope(req.user.id, 'bookings', perms);
             
             if (scope.scope === 'team' || scope.scope === 'own') {
-                whereClauses.push(`b.created_by = ANY($${paramCount})`);
+                whereClauses.push(`(b.created_by = ANY($${paramCount}) OR b.creator_id = ANY($${paramCount}))`);
                 params.push(scope.userIds);
                 paramCount++;
             } else if (scope.scope === 'none') {
@@ -140,7 +140,13 @@ exports.createBooking = async (req, res) => {
         await client.query('BEGIN');
         const { createBookingWithLock } = require('../services/bookingService');
         
-        const payload = { ...req.body, created_by: req.user ? req.user.id : null };
+        const payload = { 
+            ...req.body, 
+            created_by: req.body.created_by || (req.user ? req.user.id : null),
+            created_by_name: req.body.created_by_name || (req.user ? (req.user.full_name || req.user.username) : null),
+            creator_id: req.user ? req.user.id : null,
+            creator_name: req.user ? (req.user.full_name || req.user.username) : null
+        };
         const result = await createBookingWithLock(client, payload, idempotencyKey);
 
         if (!result.success) {

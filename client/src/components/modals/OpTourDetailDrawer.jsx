@@ -46,7 +46,12 @@ export default function OpTourDetailDrawer({ onClose, tour, onDelete }) {
             ]);
             setGuides(guidesRes.data.map(g => ({ label: `${g.name} - ${g.phone}`, value: g.id })));
             if (airlinesRes.data && airlinesRes.data.data) {
-                setAirlinesList(airlinesRes.data.data.map(a => ({ label: `${a.code} - ${a.name}`, value: a.name })));
+                setAirlinesList(airlinesRes.data.data.map(a => {
+                    const code = (a.code || '').trim();
+                    const name = (a.name || '').trim();
+                    const label = name.toLowerCase().startsWith(`${code.toLowerCase()} -`) ? name : `${code} - ${name}`;
+                    return { label, value: a.name };
+                }));
             }
             if (Array.isArray(templatesRes.data)) {
                 setTourTemplates(templatesRes.data);
@@ -417,7 +422,7 @@ export default function OpTourDetailDrawer({ onClose, tour, onDelete }) {
                    <div style={{ width: '160px' }}>
                        <Select 
                            options={airlinesList}
-                           value={airlinesList.find(a => a.value === formData.tour_info.dep_airline) || (formData.tour_info.dep_airline ? { label: formData.tour_info.dep_airline, value: formData.tour_info.dep_airline } : null)}
+                           value={airlinesList.find(a => a.value === formData.tour_info.dep_airline || a.label === formData.tour_info.dep_airline) || (formData.tour_info.dep_airline ? { label: formData.tour_info.dep_airline, value: formData.tour_info.dep_airline } : null)}
                            onChange={opt => handleChange('dep_airline', opt ? opt.value : '', true)}
                            isClearable
                            placeholder="Chọn Hãng bay..."
@@ -436,7 +441,7 @@ export default function OpTourDetailDrawer({ onClose, tour, onDelete }) {
                    <div style={{ width: '160px' }}>
                        <Select 
                            options={airlinesList}
-                           value={airlinesList.find(a => a.value === formData.tour_info.ret_airline) || (formData.tour_info.ret_airline ? { label: formData.tour_info.ret_airline, value: formData.tour_info.ret_airline } : null)}
+                           value={airlinesList.find(a => a.value === formData.tour_info.ret_airline || a.label === formData.tour_info.ret_airline) || (formData.tour_info.ret_airline ? { label: formData.tour_info.ret_airline, value: formData.tour_info.ret_airline } : null)}
                            onChange={opt => handleChange('ret_airline', opt ? opt.value : '', true)}
                            isClearable
                            placeholder="Chọn Hãng bay..."

@@ -125,10 +125,11 @@ async function createBookingWithLock(client, payload, idempotencyKey) {
                 pax_count, total_price, payment_status, booking_status, notes, 
                 pax_details, service_details, discount, 
                 reservation_id, expires_at, idempotency_key, request_hash,
-                raw_details, created_by, created_by_name, surcharge, base_price, paid
+                raw_details, created_by, created_by_name, surcharge, base_price, paid,
+                creator_id, creator_name
             ) VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
-                $18, $19, $20, $21, $22, $23
+                $18, $19, $20, $21, $22, $23, $24, $25
             ) RETURNING *`,
             [
                 finalCode, 
@@ -142,7 +143,7 @@ async function createBookingWithLock(client, payload, idempotencyKey) {
                 status, 
                 payload.notes || null, 
                 typeof payload.pax_details === 'object' ? JSON.stringify(payload.pax_details) : (payload.pax_details || '[]'), 
-                typeof payload.service_details === 'object' ? JSON.stringify(payload.service_details) : (payload.service_details || '[]'),
+                typeof payload.service_details === 'object' ? JSON.stringify(payload.service_details) : (payload.service_details || '[]'), 
                 payload.discount || 0,
                 reservation_id,
                 expires_at,
@@ -153,7 +154,9 @@ async function createBookingWithLock(client, payload, idempotencyKey) {
                 payload.created_by_name || null,
                 payload.surcharge || 0,
                 payload.base_price || 0,
-                payload.paid || 0
+                payload.paid || 0,
+                payload.creator_id || payload.created_by || null,
+                payload.creator_name || payload.created_by_name || null
             ]
         );
 
