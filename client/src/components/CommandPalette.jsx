@@ -347,6 +347,15 @@ const globalSearchData = [
         keywords: 'thi truong bu1 tour trung quoc du toan ads giang nam bac kinh dao thanh a dinh tan cuong thanh tang le giang cap nhi tan cpl lead ngan sach'
     },
     {
+        id: 'doc-thi-truong-bu3',
+        title: 'Phân Tích Thị Trường & Dự Toán Ads BU3 (B2B/MICE)',
+        subtitle: 'Kế hoạch 12 tháng, chạy đón đầu 2 tháng, phân bổ 150M & Máy tính phễu chuyển đổi đoàn',
+        type: 'doc',
+        path: '/tai-lieu/thi-truong-bu3',
+        icon: Activity,
+        keywords: 'thi truong bu3 du toan ads tour doan doanh nghiep mice teambuilding company trip year end party hoa anh dao cpl lead ngan sach 150 trieu'
+    },
+    {
         id: 'doc-thi-truong-bu4',
         title: 'Phân Tích Thị Trường & Dự Toán Ads BU4',
         subtitle: 'Obsidian Doc: Dữ liệu lịch sử, CPL & Máy tính dự toán ngân sách Ads Bhutan, Ladakh, Sri Lanka',

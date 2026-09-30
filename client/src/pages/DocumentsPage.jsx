@@ -26,6 +26,7 @@ import LadakhConsultingPage from './LadakhConsultingPage';
 import BhutanConsultingPage from './BhutanConsultingPage';
 import CuuTraiCauConsultingPage from './CuuTraiCauConsultingPage';
 import BU1MarketPlanningPage from './BU1MarketPlanningPage';
+import BU3MarketPlanningPage from './BU3MarketPlanningPage';
 import BU4MarketPlanningPage from './BU4MarketPlanningPage';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -46,6 +47,7 @@ const STATIC_DOCS = [
   { title: 'Cẩm Nang Chốt Sale Ladakh (BU4)', description: 'Cẩm nang tư vấn và chốt sale tuyến tour Ladakh Ấn Độ', category: 'Sale', path: '/tai-lieu/tu-van-ladakh-bu4', icon: '🏔️' },
   { title: 'Cẩm Nang Chốt Sale Bhutan (5N4Đ)', description: 'Cẩm nang tư vấn và chốt sale tuyến tour vương quốc hạnh phúc Bhutan', category: 'Sale', path: '/tai-lieu/tu-van-bhutan-5n4d', icon: '⛩️' },
   { title: 'Phân Tích Thị Trường & Dự Toán Ads BU1', description: 'Dữ liệu lịch sử 385 chiến dịch, CPL & Máy tính dự toán ngân sách Ads các tuyến BU1 (Giang Nam, Bắc Kinh, Á Đinh, Tân Cương, Thanh Tạng, Lệ Giang, Cáp Nhĩ Tân)', category: 'Marketing', path: '/tai-lieu/thi-truong-bu1', icon: '📊' },
+  { title: 'Phân Tích Thị Trường & Dự Toán Ads BU3 (B2B/MICE)', description: 'Kế hoạch 12 tháng, quy tắc chạy trước 2 tháng, phân bổ 150M & Máy tính phễu chuyển đổi đoàn doanh nghiệp', category: 'Marketing', path: '/tai-lieu/thi-truong-bu3', icon: '📊' },
   { title: 'Phân Tích Thị Trường & Dự Toán Ads BU4', description: 'Obsidian Doc: Dữ liệu lịch sử, CPL & Máy tính dự toán ngân sách Ads các tuyến BU4 (Bhutan, Ladakh, Sri Lanka...)', category: 'Marketing', path: '/tai-lieu/thi-truong-bu4', icon: '📊' },
   { title: 'SOP Sales & Workplace', description: 'Hướng dẫn Sales nhận Lead, cập nhật ERP và tối ưu Workplace', category: 'Sale', path: '/tai-lieu/sop-sales', icon: '💼' },
   { title: 'HUB Điều Hành (OP)', description: 'Quy trình điều hành tour, vận hành dịch vụ', category: 'Điều hành', path: '/tai-lieu/dieu-hanh', icon: '🔧' },
@@ -1176,6 +1178,10 @@ const DocumentsPage = () => {
 
   if (path === '/tai-lieu/thi-truong-bu1' || path === '/tai-lieu/phan-tich-thi-truong-bu1') {
     return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><BU1MarketPlanningPage /></BlogLayout>;
+  }
+
+  if (path === '/tai-lieu/thi-truong-bu3' || path === '/tai-lieu/phan-tich-thi-truong-bu3') {
+    return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><BU3MarketPlanningPage /></BlogLayout>;
   }
 
   if (path === '/tai-lieu/thi-truong-bu4' || path === '/tai-lieu/phan-tich-thi-truong-bu4') {

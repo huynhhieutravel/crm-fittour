@@ -35,7 +35,7 @@ const BU_TABS = [
   { id: 'ALL', name: 'Tất cả BU', hasPlan: true },
   { id: 'BU1', name: 'BU1', hasPlan: true },
   { id: 'BU2', name: 'BU2', hasPlan: false },
-  { id: 'BU3', name: 'BU3', hasPlan: false },
+  { id: 'BU3', name: 'BU3', hasPlan: true },
   { id: 'BU4', name: 'BU4', hasPlan: true },
   { id: 'BU5', name: 'BU5', hasPlan: false }
 ];
@@ -46,8 +46,8 @@ const Q4_PLANS = [
     id: 'bu1',
     bu: 'BU1',
     quarterId: 'Q4_2026',
-    title: 'Kế Hoạch & Dự Toán Ngân Sách BU1 — Quý 4/2026',
-    subtitle: 'Đề xuất phân bổ ngân sách Marketing 120 triệu Quý 4 cho thị trường Tour Trung Quốc (Giang Nam, Bắc Kinh, Lệ Giang, Cáp Nhĩ Tân, Á Đinh, Tân Cương, Thanh Tạng), đối soát 100% từ Database ERP.',
+    title: 'Kế Hoạch & Dự Toán Ngân Sách BU1 — Quý 4/2026 (20 Đoàn Khởi Hành)',
+    subtitle: 'Đề xuất phân bổ ngân sách Marketing 120 triệu Quý 4 cho thị trường Tour Trung Quốc khớp 100% với 20 đoàn khởi hành thực tế trong ERP (Tổng mục tiêu 281 pax, đã cọc 91 pax, doanh thu kế hoạch 11.01 tỷ).',
     quarter: 'Quý 4/2026',
     period: '01/10/2026 - 31/12/2026',
     status: 'active',
@@ -55,29 +55,33 @@ const Q4_PLANS = [
     badgeColor: '#dc2626',
     badgeBg: '#fee2e2',
     budget: 120000000,
-    expectedLeads: '812 - 822 Lead SĐT',
-    expectedMessages: '~2.580 Inbox',
-    expectedPaxAds: '162 - 163 Pax',
-    totalPaxOverall: '198 Pax',
-    adsRevenue: '~5.18 Tỷ',
-    fullRevenue: '6.320.000.000 đ',
-    costRatio: '1.90% - 2.32%',
+    expectedLeads: '673 - 720 Lead SĐT',
+    expectedMessages: '~2.450 Inbox',
+    expectedPaxAds: '147 Pax Ads',
+    totalPaxOverall: '281 Pax (Đã cọc 91p)',
+    adsRevenue: '~4.85 Tỷ',
+    fullRevenue: '11.007.040.000 đ',
+    costRatio: '1.09%',
     path: '/tai-lieu/thi-truong-bu1',
     hasPlan: true,
     routes: [
-      { name: 'Giang Nam (2 Đoàn)', budget: '30.000.000 đ', leads: '156 SĐT', pax: '33 Pax Ads', cpl: '192.528 đ', time: 'T10 - T11', tab: 'giangnam' },
-      { name: 'Bắc Kinh (2 Đoàn)', budget: '25.000.000 đ', leads: '168 SĐT', pax: '34 Pax Ads', cpl: '148.563 đ', time: 'T10 - T11', tab: 'backinh' },
-      { name: 'Lệ Giang (2 Đoàn)', budget: '20.000.000 đ', leads: '157 SĐT', pax: '31 Pax Ads', cpl: '127.295 đ', time: 'T10 - T12', tab: 'legian' },
-      { name: 'Cáp Nhĩ Tân (Series)', budget: '15.000.000 đ', leads: '147 SĐT', pax: '28 Pax Ads', cpl: '102.122 đ', time: 'T11 - T12', tab: 'capnhitan' },
-      { name: 'Đạo Thành Á Đinh (1 Đoàn)', budget: '12.000.000 đ', leads: '88 SĐT', pax: '17 Pax Ads', cpl: '136.081 đ', time: 'T10', tab: 'adinh' },
-      { name: 'Tân Cương (1 Đoàn)', budget: '10.000.000 đ', leads: '52 SĐT', pax: '11 Pax Ads', cpl: '193.796 đ', time: 'T10', tab: 'tancuong' },
-      { name: 'Thanh Tạng (1 Đoàn)', budget: '8.000.000 đ', leads: '54 SĐT', pax: '9 Pax Ads', cpl: '149.358 đ', time: 'T10', tab: 'thanhtang' }
+      { name: 'Giang Nam (6 Đoàn - 85p)', budget: '32.000.000 đ', leads: '166 SĐT', pax: '33 Pax Ads', cpl: '192.528 đ', time: 'T10, T11, T12', tab: 'giangnam' },
+      { name: 'Bắc Kinh (2 Đoàn - 28p)', budget: '22.000.000 đ', leads: '148 SĐT', pax: '28 Pax Ads', cpl: '148.563 đ', time: 'T11 (HAN/SGN)', tab: 'backinh' },
+      { name: 'Cáp Nhĩ Tân (2 Đoàn - 32p)', budget: '18.000.000 đ', leads: '176 SĐT', pax: '30 Pax Ads', cpl: '102.122 đ', time: 'T12 (Giáng Sinh/Tết)', tab: 'capnhitan' },
+      { name: 'Lệ Giang (2 Đoàn - 32p)', budget: '15.000.000 đ', leads: '118 SĐT', pax: '22 Pax Ads', cpl: '127.295 đ', time: 'T10 & T11', tab: 'legian' },
+      { name: 'Đạo Thành Á Đinh (3 Đoàn - 42p)', budget: '8.000.000 đ', leads: '59 SĐT', pax: '10 Pax Ads', cpl: '136.081 đ', time: 'T10 (Cọc 45p)', tab: 'adinh' },
+      { name: 'Cửu Trại Câu (1 Đoàn - 15p)', budget: '6.000.000 đ', leads: '18 SĐT', pax: '5 Pax Ads', cpl: '324.982 đ', time: 'T10 (Cọc 10p)', tab: 'cuutraicau' },
+      { name: 'Trương Gia Giới (1 Đoàn - 15p)', budget: '6.000.000 đ', leads: '29 SĐT', pax: '6 Pax Ads', cpl: '204.165 đ', time: 'T11', tab: 'phuonghoang' },
+      { name: 'Thanh Tạng (1 Đoàn - 11p)', budget: '5.000.000 đ', leads: '33 SĐT', pax: '5 Pax Ads', cpl: '149.358 đ', time: 'T10 (Cọc 6p)', tab: 'thanhtang' },
+      { name: 'Tây An - Lạc Dương (1 Đoàn - 11p)', budget: '5.000.000 đ', leads: '24 SĐT', pax: '4 Pax Ads', cpl: '204.165 đ', time: 'T11', tab: 'tayan' },
+      { name: 'Tân Cương (1 Đoàn - 10p)', budget: '3.000.000 đ', leads: '15 SĐT', pax: '3 Pax Ads', cpl: '193.796 đ', time: 'T10 (Cọc 14p)', tab: 'tancuong' }
     ],
     highlights: [
-      '100% đối soát từ 385 chiến dịch Meta Ads thực tế BU1 trong ERP',
-      'Tổng ngân sách 120 triệu chia đều 40 triệu/tháng (T10, T11, T12)',
-      'Chi phí Ads chỉ chiếm ~1.9% tổng doanh thu dự kiến 6.32 tỷ',
-      'Đầy đủ Máy tính dự toán 7 tuyến tour (tính xuôi theo đoàn & tính ngược theo ngân sách)'
+      'Đồng bộ 100% với 20 đoàn khởi hành thực tế trong module Marketing Budget Plan ERP',
+      'Tổng mục tiêu 281 khách (Đã cọc 91 pax - 32.4%, doanh thu đã cọc 4.39 tỷ)',
+      'Tổng doanh thu kế hoạch 11.007.040.000 đ (~11.01 Tỷ VNĐ) với 120M Marketing Ads',
+      'Tỷ lệ Chi phí Ads / Doanh thu cực kỳ an toàn: 1.09% (Dưới trần 2.5%)',
+      'Đầy đủ Máy tính dự toán độc lập 10 tour & Bảng 20 đoàn khởi hành có bộ lọc theo tháng'
     ]
   },
   {
@@ -94,11 +98,36 @@ const Q4_PLANS = [
     id: 'bu3',
     bu: 'BU3',
     quarterId: 'Q4_2026',
-    title: 'Kế Hoạch & Dự Toán BU3',
-    subtitle: 'Chưa có liên kết đề án cho BU3 trong Quý 4/2026. Tạm để trống link, sẽ cập nhật sau.',
-    status: 'empty',
-    statusLabel: 'Trống link (Thêm sau)',
-    hasPlan: false
+    title: 'Kế Hoạch & Dự Toán Ngân Sách BU3 — 150 Triệu / Năm (B2B & MICE)',
+    subtitle: 'Đề án 12 tháng chuyên biệt cho khối Tour Doanh Nghiệp / Teambuilding / Gala Dinner. Quy tắc chạy trước 2 tháng, duy trì GSA ổn định và quỹ Booking Báo Chí uy tín.',
+    quarter: 'Năm 2026 - 2027',
+    period: '12 Tháng (Chạy trước 2T)',
+    status: 'active',
+    statusLabel: 'Đang áp dụng',
+    badgeColor: '#86198f',
+    badgeBg: '#fae8ff',
+    budget: 150000000,
+    expectedLeads: '180 - 220 Lead DN',
+    expectedMessages: '~950 - 1.200 Inquiry',
+    expectedPaxAds: '36 - 45 Đoàn (~1.800 Pax)',
+    totalPaxOverall: '1.800 - 2.200 Pax',
+    adsRevenue: '~21.6 Tỷ',
+    fullRevenue: '21.600.000.000 đ',
+    costRatio: '0.69%',
+    path: '/tai-lieu/thi-truong-bu3',
+    hasPlan: true,
+    routes: [
+      { name: 'Mùa Hè & Teambuilding (90M)', budget: '90.000.000 đ', leads: '115 Lead DN', pax: '26 Đoàn (1.170p)', cpl: '780.000 đ', time: 'Chạy T3-T7 • Đi T5-T9', tab: 'summer' },
+      { name: 'Mùa Hoa Anh Đào (25M)', budget: '25.000.000 đ', leads: '32 Lead DN', pax: '5 Đoàn (225p)', cpl: '781.250 đ', time: 'Chạy T1-T2 • Đi T3-T4', tab: 'sakura' },
+      { name: 'Mùa Thu Lá Đỏ (30M)', budget: '30.000.000 đ', leads: '38 Lead DN', pax: '9 Đoàn (330p)', cpl: '789.473 đ', time: 'Chạy T7-T9 • Đi T9-T11', tab: 'autumn' },
+      { name: 'Year-End Party & Gala (20M)', budget: '20.000.000 đ', leads: '26 Lead DN', pax: '5 Đoàn (270p)', cpl: '769.230 đ', time: 'Chạy T10-T11 • Đi T12-T1', tab: 'yep' }
+    ],
+    highlights: [
+      'Quy tắc vàng: Chạy Ads đón sóng nhu cầu trước 02 tháng (Lead Time chuẩn B2B doanh nghiệp)',
+      'Tổng ngân sách 150.000.000 đ/năm phân bổ theo 3 làn sóng cao điểm, Tháng 12 cắt sạch 0đ',
+      'Chiến lược Hybrid: Duy trì Google Search Ads (GSA) ổn định + Quỹ Booking Báo chí/PR Profile đấu thầu',
+      'Đầy đủ Máy tính Phễu B2B tính toán Lead Doanh nghiệp → Hợp đồng đoàn → Doanh thu & Tỷ lệ chi phí'
+    ]
   },
   {
     id: 'bu4',
@@ -174,6 +203,69 @@ export default function MarketPlanningSubTab() {
     });
   }, [selectedQuarter, selectedBu, searchQuery]);
 
+  // Thống kê nhanh linh hoạt theo BU đang chọn (BU1, BU3, BU4 hoặc Tổng hợp các BU)
+  const headerStats = useMemo(() => {
+    if (selectedBu === 'BU1') {
+      return {
+        appliedLabel: 'BU1',
+        appliedSub: 'Tour Trung Quốc • 20 Đoàn Q4',
+        budgetLabel: 'Ngân Sách Marketing BU1',
+        budgetVal: '120.000.000 đ',
+        budgetSub: '10 Tuyến khởi hành Q4/2026',
+        paxLabel: 'Kỳ Vọng Pax Ads BU1',
+        paxVal: '147 Pax Ads',
+        paxSub: 'Tổng mục tiêu: 281 Pax (Đã cọc 91p)',
+        ratioLabel: 'Tỷ Lệ Ads / Doanh Thu Kế Hoạch',
+        ratioVal: '1.09%',
+        ratioSub: 'Doanh thu kế hoạch: 11.01 Tỷ'
+      };
+    }
+    if (selectedBu === 'BU3') {
+      return {
+        appliedLabel: 'BU3',
+        appliedSub: 'B2B • MICE • Tour Doanh Nghiệp',
+        budgetLabel: 'Ngân Sách Marketing BU3',
+        budgetVal: '150.000.000 đ',
+        budgetSub: '12 Tháng (Chạy trước 2T • T12 = 0đ)',
+        paxLabel: 'Mục Tiêu Đoàn Doanh Nghiệp',
+        paxVal: '36 - 45 Đoàn',
+        paxSub: 'Quy mô TB: ~1.800 Pax B2B',
+        ratioLabel: 'Tỷ Lệ Ads / Doanh Thu Kế Hoạch',
+        ratioVal: '0.69%',
+        ratioSub: 'Doanh thu kế hoạch: ~21.6 Tỷ'
+      };
+    }
+    if (selectedBu === 'BU4') {
+      return {
+        appliedLabel: 'BU4',
+        appliedSub: 'Quý 4/2026 • Đã duyệt',
+        budgetLabel: 'Ngân Sách Marketing BU4',
+        budgetVal: '30.000.000 đ',
+        budgetSub: 'Phân bổ 3 giai đoạn rõ ràng',
+        paxLabel: 'Kỳ Vọng Pax Ads BU4',
+        paxVal: '34 - 42 Pax',
+        paxSub: 'Tổng nguồn: 45 - 53 Pax',
+        ratioLabel: 'Tỷ Lệ Chi Phí Ads Mục Tiêu',
+        ratioVal: '1.24% - 1.54%',
+        ratioSub: 'Doanh thu Ads: ~1.95 - 2.42 Tỷ'
+      };
+    }
+    // ALL hoặc các BU khác
+    return {
+      appliedLabel: 'BU1 + BU3 + BU4',
+      appliedSub: '3 Đề án đang áp dụng',
+      budgetLabel: 'Tổng Ngân Sách Đã Duyệt',
+      budgetVal: '300.000.000 đ',
+      budgetSub: 'BU1: 120M • BU3: 150M • BU4: 30M',
+      paxLabel: 'Tổng Quy Mô Đoàn & Khách',
+      paxVal: '2.126 - 2.534 Pax',
+      paxSub: '20 đoàn BU1 + 45 đoàn BU3 + BU4',
+      ratioLabel: 'Tỷ Lệ Ads / Tổng DT Kế Hoạch',
+      ratioVal: '0.82%',
+      ratioSub: 'Tổng DT kế hoạch: ~36.57 Tỷ'
+    };
+  }, [selectedBu]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       
@@ -197,11 +289,11 @@ export default function MarketPlanningSubTab() {
             Danh Sách Kế Hoạch & Dự Toán Thị Trường
           </h2>
           <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.88rem', maxWidth: '820px', lineHeight: '1.5' }}>
-            Quản lý kế hoạch ngân sách Marketing và dự toán theo từng Business Unit (BU1 - BU5) phân theo chu kỳ thời gian. Dữ liệu kế hoạch BU4 đối soát trực tiếp với Database Production của hệ thống.
+            Quản lý kế hoạch ngân sách Marketing và dự toán theo từng Business Unit (BU1 - BU5) phân theo chu kỳ thời gian. Dữ liệu kế hoạch BU1, BU3 và BU4 đã được chuẩn hoá và đối soát trực tiếp với Database Production của hệ thống.
           </p>
         </div>
 
-        {/* 4 Thống kê nhanh toàn module BU4 Quý 4/2026 */}
+        {/* 4 Thống kê nhanh toàn module (Linh hoạt theo BU) */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
@@ -212,23 +304,30 @@ export default function MarketPlanningSubTab() {
         }}>
           <div>
             <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Kế Hoạch Áp Dụng</div>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#38bdf8', marginTop: '2px' }}>BU4</div>
-            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Quý 4/2026 • Đã duyệt</div>
+            <div style={{
+              fontSize: '1.35rem',
+              fontWeight: 800,
+              color: selectedBu === 'BU1' ? '#f87171' : selectedBu === 'BU3' ? '#f0abfc' : '#38bdf8',
+              marginTop: '2px'
+            }}>
+              {headerStats.appliedLabel}
+            </div>
+            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{headerStats.appliedSub}</div>
           </div>
           <div>
-            <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Ngân Sách Marketing BU4</div>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#10b981', marginTop: '2px' }}>30.000.000 đ</div>
-            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Phân bổ 3 giai đoạn rõ ràng</div>
+            <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>{headerStats.budgetLabel}</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#10b981', marginTop: '2px' }}>{headerStats.budgetVal}</div>
+            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{headerStats.budgetSub}</div>
           </div>
           <div>
-            <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Kỳ Vọng Pax Ads BU4</div>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f59e0b', marginTop: '2px' }}>34 - 42 Pax</div>
-            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Tổng nguồn: 45 - 53 Pax</div>
+            <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>{headerStats.paxLabel}</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f59e0b', marginTop: '2px' }}>{headerStats.paxVal}</div>
+            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{headerStats.paxSub}</div>
           </div>
           <div>
-            <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Tỷ Lệ Chi Phí Ads Mục Tiêu</div>
-            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f8fafc', marginTop: '2px' }}>1.24% - 1.54%</div>
-            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Doanh thu Ads: ~1.95 - 2.42 Tỷ</div>
+            <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>{headerStats.ratioLabel}</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f8fafc', marginTop: '2px' }}>{headerStats.ratioVal}</div>
+            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{headerStats.ratioSub}</div>
           </div>
         </div>
       </div>
@@ -326,7 +425,7 @@ export default function MarketPlanningSubTab() {
       }}>
         {BU_TABS.map((b) => {
           const isSelected = selectedBu === b.id;
-          const isBU4 = b.id === 'BU4';
+          const hasPlan = b.hasPlan && b.id !== 'ALL';
           return (
             <button
               key={b.id}
@@ -362,7 +461,7 @@ export default function MarketPlanningSubTab() {
                 }}>
                   Tất cả
                 </span>
-              ) : isBU4 ? (
+              ) : hasPlan ? (
                 <span style={{
                   fontSize: '0.68rem',
                   background: '#ecfdf5',
@@ -439,24 +538,26 @@ export default function MarketPlanningSubTab() {
             </div>
           ) : (
             filteredPlans.map((plan) => {
-              if (plan.id === 'bu4') {
-                // CARD CHI TIẾT BU4 (DUY NHẤT 1 BUTTON: XEM CHI TIẾT KẾ HOẠCH MỞ TAB RIÊNG)
+              if (plan.hasPlan) {
+                // CARD CHI TIẾT KẾ HOẠCH ĐÃ HOÀN TẤT & ĐANG ÁP DỤNG (BU1, BU3 & BU4)
+                const isBU1 = plan.bu === 'BU1';
+                const isBU3 = plan.bu === 'BU3';
                 return (
                   <div
                     key={plan.id}
                     style={{
                       background: '#ffffff',
-                      border: '2px solid #38bdf8',
+                      border: isBU3 ? '2px solid #d946ef' : isBU1 ? '2px solid #f87171' : '2px solid #38bdf8',
                       borderRadius: '8px',
                       padding: '20px',
-                      boxShadow: '0 2px 8px rgba(2, 132, 199, 0.08)',
+                      boxShadow: isBU3 ? '0 2px 8px rgba(217, 70, 239, 0.08)' : isBU1 ? '0 2px 8px rgba(220, 38, 38, 0.08)' : '0 2px 8px rgba(2, 132, 199, 0.08)',
                       transition: 'all 0.2s',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '14px'
                     }}
                   >
-                    {/* Header BU4 Card */}
+                    {/* Header Card */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -504,20 +605,20 @@ export default function MarketPlanningSubTab() {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '6px',
-                            background: '#f0f9ff',
-                            color: '#0284c7',
-                            border: '1px solid #7dd3fc',
+                            background: isBU3 ? '#fdf4ff' : isBU1 ? '#fef2f2' : '#f0f9ff',
+                            color: isBU3 ? '#86198f' : isBU1 ? '#dc2626' : '#0284c7',
+                            border: isBU3 ? '1px solid #f0abfc' : isBU1 ? '1px solid #fca5a5' : '1px solid #7dd3fc',
                             borderRadius: '6px',
                             padding: '9px 14px',
                             fontSize: '0.84rem',
                             fontWeight: 700,
                             cursor: 'pointer',
                             textDecoration: 'none',
-                            boxShadow: '0 1px 2px rgba(2, 132, 199, 0.08)',
+                            boxShadow: isBU3 ? '0 1px 2px rgba(134, 25, 143, 0.08)' : isBU1 ? '0 1px 2px rgba(220, 38, 38, 0.08)' : '0 1px 2px rgba(2, 132, 199, 0.08)',
                             transition: 'all 0.15s'
                           }}
                         >
-                          <Calculator size={15} color="#0284c7" />
+                          <Calculator size={15} color={isBU3 ? '#86198f' : isBU1 ? '#dc2626' : '#0284c7'} />
                           <span>Máy Tính & Data Cũ</span>
                         </a>
 
@@ -530,7 +631,7 @@ export default function MarketPlanningSubTab() {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '6px',
-                            background: '#0284c7',
+                            background: isBU3 ? '#86198f' : isBU1 ? '#dc2626' : '#0284c7',
                             color: '#ffffff',
                             border: 'none',
                             borderRadius: '6px',
@@ -539,7 +640,7 @@ export default function MarketPlanningSubTab() {
                             fontWeight: 700,
                             cursor: 'pointer',
                             textDecoration: 'none',
-                            boxShadow: '0 2px 4px rgba(2, 132, 199, 0.25)'
+                            boxShadow: isBU3 ? '0 2px 4px rgba(134, 25, 143, 0.25)' : isBU1 ? '0 2px 4px rgba(220, 38, 38, 0.25)' : '0 2px 4px rgba(2, 132, 199, 0.25)'
                           }}
                         >
                           <span>Xem Chi Tiết Kế Hoạch</span>
@@ -560,8 +661,11 @@ export default function MarketPlanningSubTab() {
                     }}>
                       <div>
                         <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Ngân Sách Kế Hoạch</div>
-                        <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0284c7', marginTop: '2px' }}>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 700, color: isBU3 ? '#86198f' : isBU1 ? '#dc2626' : '#0284c7', marginTop: '2px' }}>
                           {fmt(plan.budget)} đ
+                        </div>
+                        <div style={{ fontSize: '0.68rem', color: '#64748b' }}>
+                          {isBU3 ? '12 Tháng • Chạy trước 2T' : isBU1 ? '10 Tuyến khởi hành Q4' : 'Phân bổ 3 giai đoạn rõ ràng'}
                         </div>
                       </div>
                       <div>
@@ -579,24 +683,26 @@ export default function MarketPlanningSubTab() {
                         <div style={{ fontSize: '0.68rem', color: '#16a34a', fontWeight: 600 }}>Tổng nguồn: {plan.totalPaxOverall}</div>
                       </div>
                       <div>
-                        <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Doanh Thu Từ Ads</div>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Doanh Thu Dự Kiến</div>
                         <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#16a34a', marginTop: '2px' }}>
-                          {plan.adsRevenue}
+                          {plan.fullRevenue || plan.adsRevenue}
                         </div>
-                        <div style={{ fontSize: '0.68rem', color: '#64748b' }}>Chi phí Ads: {plan.costRatio}</div>
+                        <div style={{ fontSize: '0.68rem', color: '#64748b' }}>
+                          {isBU3 ? `Tỷ lệ Ads/DT: ${plan.costRatio} (B2B Đoàn)` : isBU1 ? `Ads: ${plan.adsRevenue} • Tỷ lệ: ${plan.costRatio}` : `Doanh thu Ads: ${plan.adsRevenue} (${plan.costRatio})`}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Các tuyến tour trọng điểm BU4 */}
+                    {/* Các tuyến tour trọng điểm */}
                     <div>
                       <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#475569', textTransform: 'uppercase', marginBottom: '6px' }}>
-                        Phân Bổ Tuyến Trọng Điểm:
+                        {isBU3 ? 'Phân Bổ Các Chiến Dịch Trọng Điểm:' : `Phân Bổ Tuyến Trọng Điểm (${plan.routes?.length || 0} Tuyến):`}
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '8px' }}>
                         {plan.routes.map((r, rIdx) => (
                           <a
                             key={rIdx}
-                            href={`${plan.path}?tab=${r.tab || 'bhutan'}`}
+                            href={`${plan.path}?tab=${r.tab || ''}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{
@@ -614,11 +720,11 @@ export default function MarketPlanningSubTab() {
                           >
                             <div style={{ fontWeight: 600, color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                               <span>{r.name}</span>
-                              <span style={{ fontSize: '0.7rem', color: '#0284c7', fontWeight: 600 }}>
+                              <span style={{ fontSize: '0.7rem', color: isBU3 ? '#86198f' : isBU1 ? '#dc2626' : '#0284c7', fontWeight: 600 }}>
                                 {r.time} • Xem data & tính →
                               </span>
                             </div>
-                            <div style={{ color: '#0284c7', fontWeight: 600, marginTop: '3px' }}>
+                            <div style={{ color: isBU3 ? '#86198f' : isBU1 ? '#dc2626' : '#0284c7', fontWeight: 600, marginTop: '3px' }}>
                               {r.budget}
                             </div>
                             <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
