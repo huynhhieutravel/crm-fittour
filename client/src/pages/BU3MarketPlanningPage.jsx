@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
-  Calculator, 
+  Calculator,
+  Zap, 
   TrendingUp, 
   DollarSign, 
   Users, 
@@ -27,6 +28,7 @@ import {
   Flame,
   Check,
   RotateCcw,
+  Database,
   Briefcase,
   ChevronDown,
   ChevronUp
@@ -392,6 +394,151 @@ const MONTHS_DATA = [
 // ══════════════════════════════════════════════════════════════════════════════
 // CẤU HÌNH BỘ LỌC MÙA VỤ
 // ══════════════════════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BỘ DỮ LIỆU KẾ HOẠCH NƯỚC RÚT BU3 — QUÝ 4/2026 (T10 - T12/2026)
+// TỔNG NGÂN SÁCH: 35.000.000 Đ (GSA: 25M • PR BÁO CHÍ: 10M)
+// TRỌNG TÂM: CHIẾN DỊCH YEAR-END PARTY & GALA DINNER DOANH NGHIỆP CUỐI NĂM
+// ══════════════════════════════════════════════════════════════════════════════
+const Q4_MONTHS_DATA = [
+  {
+    month: 10,
+    monthLabel: 'Tháng 10/2026',
+    executionMonth: 'Tháng 12/2026 & Tháng 1/2027 (Tiệc YEP & Gala)',
+    budget: 15000000,
+    status: 'peak',
+    seasonKey: 'yep',
+    seasonName: 'Đón Sóng Year-End Party (💥 Cú Hích PR 10M)',
+    seasonIcon: '🥂',
+    colorTheme: '#d97706',
+    bgTheme: '#fef3c7',
+    borderTheme: '#fde68a',
+    targetMarkets: ['Gala Dinner Doanh Nghiệp', 'Resort Hồ Tràm / Phan Thiết / Phú Quốc', 'Tour Tri Ân Đối Tác VIP'],
+    channels: [
+      { name: 'Google Search Ads (GSA)', budget: 5000000, pct: '33.3%', desc: 'Top từ khóa: tổ chức year end party trọn gói, gala dinner công ty, đặt tiệc tất niên' },
+      { name: '💥 Quỹ Dồn PR Báo Chí (Cú Hích B2B)', budget: 10000000, pct: '66.7%', desc: 'Bài PR Báo chí Kinh tế & B2B: "Xu hướng tổ chức Gala Dinner & Year-End Party độc bản cho Doanh Nghiệp cuối năm 2026"' }
+    ],
+    expectedInquiries: 18,
+    expectedDeals: 2,
+    expectedPax: 90,
+    expectedRevenue: 1080000000,
+    leadTimeNote: 'Thời điểm các tập đoàn lớn mở thầu địa điểm và concept tiệc Tất Niên cuối năm. Kích hoạt Cú Hích PR Báo 10M kết hợp 5M GSA đón sóng mở thầu ban đầu.',
+    actionChecklist: [
+      'Tuần 1: Hoàn thiện Profile năng lực "Bộ Sưu Tập Concept YEP 2026" (gửi trực tiếp 200 khách hàng doanh nghiệp cũ).',
+      'Tuần 2: Lên bài PR Báo chí B2B uy tín (VnExpress/CafeF/Doanh Nhân) làm bảo chứng tín nhiệm đấu thầu.',
+      'Tuần 3: Bật chiến dịch Google Search Ads ngân sách 5M đón truy vấn thầu YEP sớm.',
+      'Tuần 4: Họp chốt danh sách pitching với tối thiểu 10 tập đoàn và tổng công ty tiềm năng.'
+    ]
+  },
+  {
+    month: 11,
+    monthLabel: 'Tháng 11/2026',
+    executionMonth: 'Tháng 12/2026 & Tháng 1/2027 (Đại cao điểm chốt thầu)',
+    budget: 15000000,
+    status: 'peak',
+    seasonKey: 'yep',
+    seasonName: 'Đại Cao Điểm Chốt Thầu YEP (Hỏa Lực 15M GSA)',
+    seasonIcon: '🥂',
+    colorTheme: '#d97706',
+    bgTheme: '#fef3c7',
+    borderTheme: '#fde68a',
+    targetMarkets: ['Tiệc Tất Niên Doanh Nghiệp', 'Gala Dinner Trọn Gói Sân Khấu', 'Company Trip Biển Cận Tết'],
+    channels: [
+      { name: 'Google Search Ads (GSA)', budget: 15000000, pct: '100%', desc: 'Đấu thầu hỏa lực cao nhất toàn bộ từ khóa: đặt tiệc tất niên, công ty tổ chức YEP uy tín, tiệc công ty cuối năm' }
+    ],
+    expectedInquiries: 24,
+    expectedDeals: 4,
+    expectedPax: 160,
+    expectedRevenue: 1920000000,
+    leadTimeNote: 'Tháng chốt hợp đồng nước rút cho các tiệc YEP Tháng 12 và Tháng 1. Hỏa lực 15M GSA tập trung chuyển đổi các doanh nghiệp đang chốt phương án tiệc.',
+    actionChecklist: [
+      'Tuần 1: Đẩy mạnh ngân sách GSA lên tối đa, tập trung khung giờ 8h30 - 11h30 và 14h - 17h (giờ làm việc hành chính của HR/Admin).',
+      'Tuần 2: Khảo sát địa điểm (Site Inspection) trực tiếp cùng khách hàng tại các khách sạn/resort đối tác.',
+      'Tuần 3: Đàm phán và chốt ký hợp đồng ít nhất 3-4 đoàn trọng điểm (50 - 150 khách).',
+      'Tuần 4: Chốt hợp đồng các đoàn Company Trip kết hợp Gala khởi hành Tháng 12.'
+    ]
+  },
+  {
+    month: 12,
+    monthLabel: 'Tháng 12/2026',
+    executionMonth: 'Tháng 1/2027 (Chốt vét YEP trước Tết Âm)',
+    budget: 5000000,
+    status: 'normal',
+    seasonKey: 'yep',
+    seasonName: 'Chốt Vét YEP SME & Vận Hành Đợt 1',
+    seasonIcon: '🥂',
+    colorTheme: '#d97706',
+    bgTheme: '#fef3c7',
+    borderTheme: '#fde68a',
+    targetMarkets: ['Gala YEP phút chót (SME)', 'Tiệc Tất Niên Doanh Nghiệp Cận Tết', 'Tour Tri Ân Khách VIP Tháng 1'],
+    channels: [
+      { name: 'Google Search Ads (GSA)', budget: 5000000, pct: '100%', desc: 'Top từ khóa đặt tiệc tất niên gấp, gala dinner trọn gói tháng 1 cận Tết' }
+    ],
+    expectedInquiries: 8,
+    expectedDeals: 2,
+    expectedPax: 70,
+    expectedRevenue: 840000000,
+    leadTimeNote: 'Vừa vận hành các tiệc YEP Tháng 12, vừa giữ 5M GSA chốt vét các doanh nghiệp SME tìm địa điểm và concept tiệc muộn cho Tháng 1 cận Tết.',
+    actionChecklist: [
+      'Tuần 1 - 2: Vận hành trơn tru các tiệc Gala Dinner tổ chức trong Tháng 12 Dương lịch.',
+      'Tuần 2 - 3: Giữ GSA 5M chốt vét các công ty SME chốt tiệc cận Tết Âm (Tháng 1).',
+      'Tuần 4: Đóng toàn bộ chiến dịch Ads, tập trung dồn 100% nhân sự chuẩn bị vận hành các sự kiện cao điểm Tháng 1.'
+    ]
+  }
+];
+
+// 3 Trụ Cột Sản Phẩm Chiến Lược Của BU3 Trong Quý 4/2026
+const Q4_PRODUCTS = [
+  {
+    id: 'prod-yep-gala',
+    title: 'Gala Dinner & Year-End Party Concept Độc Bản',
+    icon: '🥂',
+    badge: 'Trọng Tâm Số 1 (70% Doanh Thu)',
+    themeColor: '#d97706',
+    targetClients: 'Doanh nghiệp 50 - 300 khách (Khối SME, Ngân hàng, Công nghệ, BĐS)',
+    description: 'Giải pháp tiệc tất niên trọn gói từ A-Z: Khảo sát địa điểm khách sạn/resort 4-5 sao, viết kịch bản cá nhân hóa theo văn hóa thương hiệu, âm thanh ánh sáng màn hình LED đỉnh cao, MC chuyên nghiệp và vũ đoàn.',
+    keySellingPoints: [
+      'Concept độc bản không trùng lặp (Game tương tác, Tri ân, Khởi sắc)',
+      'Quan hệ đối tác trực tiếp với các Trung tâm hội nghị & Resort giá tốt',
+      'Đội ngũ điều hành hiện trường 1:1, xử lý sự cố trong 5 phút'
+    ],
+    priceRange: '1.200.000 đ - 2.500.000 đ / khách',
+    targetDeals: '4 - 5 Đoàn (~160 - 200 khách)'
+  },
+  {
+    id: 'prod-trip-bien',
+    title: 'Company Trip Biển & Resort Cận Tết (2N1Đ / 3N2Đ)',
+    icon: '🏖️',
+    badge: 'Gói Kết Hợp Teambuilding',
+    themeColor: '#0284c7',
+    targetClients: 'Các công ty kết hợp nghỉ dưỡng thưởng Tết cho toàn thể nhân viên',
+    description: 'Chương trình du lịch ngắn ngày ven biển: Teambuilding bãi biển vui nhộn gắn kết buổi chiều, tiệc Gala Dinner ấm cúng tại khán phòng sang trọng buổi tối. Thời gian di chuyển nhanh dưới 2-3 giờ.',
+    keySellingPoints: [
+      'Tuyến điểm gần: Hồ Tràm, Phan Thiết, Vũng Tàu, Long Hải, Phú Quốc',
+      'Xe Limousine / Universe đời mới phục vụ suốt tuyến',
+      'Kịch bản Teambuilding bản quyền độc quyền của FIT Tour'
+    ],
+    priceRange: '2.800.000 đ - 5.500.000 đ / khách',
+    targetDeals: '2 - 3 Đoàn (~80 - 100 khách)'
+  },
+  {
+    id: 'prod-mice-vip',
+    title: 'Tour MICE & Tri Ân Khách Hàng VIP / Đối Tác',
+    icon: '✈️',
+    badge: 'Dòng Cao Cấp Thượng Lưu',
+    themeColor: '#86198f',
+    targetClients: 'Ban Lãnh đạo, Đại lý xuất sắc, Cổ đông và Khách hàng VIP',
+    description: 'Hành trình đẳng cấp quốc tế hoặc trong nước chuẩn 5 sao dành cho nhóm nhỏ lãnh đạo: Thái Lan nghỉ dưỡng riêng tư, Đài Loan mùa thu đông, Singapore kết hợp hội nghị, Trung Quốc mùa thu sang đông.',
+    keySellingPoints: [
+      'Dịch vụ VIP: Khách sạn 5 sao quốc tế, ẩm thực Michelin/Fine Dining',
+      'Quà tặng độc bản và xe sang đưa đón chuyên biệt',
+      'Hướng dẫn viên và Quản lý tour cao cấp kinh nghiệm trên 10 năm'
+    ],
+    priceRange: '15.000.000 đ - 35.000.000 đ / khách',
+    targetDeals: '1 Đoàn VIP (~20 - 30 khách)'
+  }
+];
+
 const SEASON_FILTERS = [
   { id: 'all', label: 'Tất Cả 12 Tháng', icon: '📅', countText: '12 Tháng • 150 Triệu' },
   { id: 'summer', label: '☀️ Mùa Hè & Teambuilding (T5-T9)', icon: '☀️', countText: 'Chạy T3-T6 • 80 Triệu' },
@@ -402,16 +549,48 @@ const SEASON_FILTERS = [
 
 export default function BU3MarketPlanningPage() {
   const [searchParams] = useSearchParams();
+  const [activeCycle, setActiveCycle] = useState(() => {
+    const c = searchParams.get('cycle');
+    if (c === '2027' || c === 'year_2027') return 'year_2027';
+    return 'q4_2026';
+  });
   const [selectedSeason, setSelectedSeason] = useState('all');
   const [expandedMonth, setExpandedMonth] = useState(null);
   const [isPrinciplesOpen, setIsPrinciplesOpen] = useState(false);
 
+  const isQ4 = activeCycle === 'q4_2026';
+
   // State Máy tính B2B Phễu Doanh Nghiệp
-  const [calcBudget, setCalcBudget] = useState(150000000);
-  const [calcCpl, setCalcCpl] = useState(800000); // 800.000đ / Lead doanh nghiệp
-  const [calcWinRate, setCalcWinRate] = useState(20); // 20% chốt thành công hợp đồng
-  const [calcPaxPerDeal, setCalcPaxPerDeal] = useState(45); // 45 khách/đoàn trung bình
-  const [calcTicketPrice, setCalcTicketPrice] = useState(12000000); // 12 triệu / khách TB
+  const [calcBudget, setCalcBudget] = useState(() => {
+    const c = searchParams.get('cycle');
+    return (c === '2027' || c === 'year_2027') ? 150000000 : 35000000;
+  });
+  const [calcCpl, setCalcCpl] = useState(() => {
+    const c = searchParams.get('cycle');
+    return (c === '2027' || c === 'year_2027') ? 800000 : 700000;
+  });
+  const [calcWinRate, setCalcWinRate] = useState(() => {
+    const c = searchParams.get('cycle');
+    return (c === '2027' || c === 'year_2027') ? 20 : 16;
+  });
+  const [calcPaxPerDeal, setCalcPaxPerDeal] = useState(45);
+  const [calcTicketPrice, setCalcTicketPrice] = useState(12000000);
+
+  const handleSwitchCycle = (newCycle) => {
+    setActiveCycle(newCycle);
+    if (newCycle === 'q4_2026') {
+      setCalcBudget(35000000);
+      setCalcCpl(700000);
+      setCalcWinRate(16);
+    } else {
+      setCalcBudget(150000000);
+      setCalcCpl(800000);
+      setCalcWinRate(20);
+    }
+    const url = new URL(window.location);
+    url.searchParams.set('cycle', newCycle === 'q4_2026' ? 'q4_2026' : '2027');
+    window.history.replaceState({}, '', url);
+  };
 
   // Scroll to calculator if query tab=calculator
   useEffect(() => {
@@ -426,14 +605,15 @@ export default function BU3MarketPlanningPage() {
     }
   }, [searchParams]);
 
-  // Lọc danh sách tháng
+  // Lọc danh sách tháng theo chu kỳ đang chọn
   const filteredMonths = useMemo(() => {
+    if (isQ4) return Q4_MONTHS_DATA;
     if (selectedSeason === 'all') return MONTHS_DATA;
     if (selectedSeason === 'autumn') {
       return MONTHS_DATA.filter(m => m.seasonKey === 'autumn' || m.month === 7);
     }
     return MONTHS_DATA.filter(m => m.seasonKey === selectedSeason);
-  }, [selectedSeason]);
+  }, [isQ4, selectedSeason]);
 
   // Tổng hợp số liệu theo bộ lọc
   const summaryMetrics = useMemo(() => {
@@ -484,6 +664,76 @@ export default function BU3MarketPlanningPage() {
         <span style={{ color: '#0f172a', fontWeight: 700 }}>BU3 • B2B / MICE / Tour Doanh Nghiệp</span>
       </div>
 
+      {/* ── SELECTOR CHUYỂN ĐỔI CHU KỲ: Q4/2026 vs CẢ NĂM 2027 ── */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: '#ffffff',
+        border: '1.5px solid #e9d5ff',
+        borderRadius: '12px',
+        padding: '10px 14px',
+        marginBottom: '18px',
+        boxShadow: '0 2px 8px rgba(134, 25, 143, 0.06)',
+        flexWrap: 'wrap',
+        gap: '10px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#86198f', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Chọn Chu Kỳ Kế Hoạch:
+          </span>
+          <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
+            (Chuyển đổi tức thời giữa Chiến dịch Nước Rút Q4/2026 và Đề Án Cả Năm 2027)
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => handleSwitchCycle('q4_2026')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '7px',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: isQ4 ? '2px solid #86198f' : '1px solid #cbd5e1',
+              background: isQ4 ? 'linear-gradient(135deg, #fae8ff 0%, #fdf4ff 100%)' : '#f8fafc',
+              color: isQ4 ? '#86198f' : '#475569',
+              fontSize: '0.84rem',
+              fontWeight: isQ4 ? 800 : 600,
+              cursor: 'pointer',
+              boxShadow: isQ4 ? '0 2px 6px rgba(134, 25, 143, 0.18)' : 'none',
+              transition: 'all 0.15s'
+            }}
+          >
+            <span>⚡ Quý 4/2026 — Nước Rút YEP (35 Triệu)</span>
+            {isQ4 && <span style={{ background: '#86198f', color: '#fff', fontSize: '0.66rem', padding: '1px 6px', borderRadius: '10px' }}>Đang xem</span>}
+          </button>
+
+          <button
+            onClick={() => handleSwitchCycle('year_2027')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '7px',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: !isQ4 ? '2px solid #86198f' : '1px solid #cbd5e1',
+              background: !isQ4 ? 'linear-gradient(135deg, #fae8ff 0%, #fdf4ff 100%)' : '#f8fafc',
+              color: !isQ4 ? '#86198f' : '#475569',
+              fontSize: '0.84rem',
+              fontWeight: !isQ4 ? 800 : 600,
+              cursor: 'pointer',
+              boxShadow: !isQ4 ? '0 2px 6px rgba(134, 25, 143, 0.18)' : 'none',
+              transition: 'all 0.15s'
+            }}
+          >
+            <span>📅 Cả Năm 2027 — Đề Án Chuẩn (150 Triệu)</span>
+            {!isQ4 && <span style={{ background: '#86198f', color: '#fff', fontSize: '0.66rem', padding: '1px 6px', borderRadius: '10px' }}>Đang xem</span>}
+          </button>
+        </div>
+      </div>
+
       {/* ── 2. HERO BANNER CHUYÊN BIỆT CHO BU3 ── */}
       <div style={{
         background: 'linear-gradient(135deg, #3b0764 0%, #701a75 50%, #86198f 100%)',
@@ -529,7 +779,7 @@ export default function BU3MarketPlanningPage() {
               padding: '3px 10px',
               borderRadius: '6px'
             }}>
-              Kế Hoạch Chuẩn Cả Năm 2027 (12 Tháng)
+              {isQ4 ? '⚡ Kế Hoạch Nước Rút Quý 4/2026 (T10 - T12/2026)' : '📅 Kế Hoạch Chuẩn Cả Năm 2027 (12 Tháng)'}
             </span>
             <span style={{
               background: '#ecfdf5',
@@ -545,11 +795,14 @@ export default function BU3MarketPlanningPage() {
           </div>
 
           <h1 style={{ fontSize: '1.85rem', fontWeight: 800, margin: '0 0 10px', color: '#ffffff', letterSpacing: '-0.02em', lineHeight: '1.25' }}>
-            Đề Án & Dự Toán Ngân Sách BU3 Năm 2027 — 150.000.000 đ
+            {isQ4 
+              ? 'Kế Hoạch Nước Rút & Dự Toán Ngân Sách BU3 Quý 4/2026 — 35.000.000 đ' 
+              : 'Đề Án & Dự Toán Ngân Sách BU3 Năm 2027 — 150.000.000 đ'}
           </h1>
           <p style={{ margin: '0 0 20px', fontSize: '0.94rem', color: '#f5d0fe', maxWidth: '920px', lineHeight: '1.6' }}>
-            Khung phân bổ ngân sách Marketing cả năm 2027 theo chu kỳ mùa vụ cho <strong>2 thị trường trọng tâm</strong>: (1) Nước ngoài theo mùa (Hoa anh đào, Hè, Thu) và (2) Teambuilding & Company Trip trong nước (Tháng 3-4, 6-9, và Year-End Party Tháng 12 - Tháng 01).
-            Tập trung duy trì Google Search Ads (GSA), Booking Báo Chí uy tín và cắt triệt để ngân sách vào Tháng 2 (Kỳ nghỉ Tết Âm lịch & Tháng Giêng) để tối ưu dòng tiền. <em>(Kế hoạch hành động Quý 4/2026 sẽ được bổ sung tiếp nối).</em>
+            {isQ4
+              ? 'Chiến dịch tập trung hỏa lực 3 tháng cuối năm (Tháng 10, 11, 12) đánh chiếm thị trường Year-End Party (YEP), Gala Dinner doanh nghiệp và Company Trip biển kết hợp tri ân đối tác VIP đón Tết Nguyên Đán. Tổng ngân sách 35 Triệu (25M Google Search Ads + 10M Cú Hích PR Báo Chí B2B uy tín trong Tháng 10).'
+              : 'Khung phân bổ ngân sách Marketing cả năm 2027 theo chu kỳ mùa vụ cho 2 thị trường trọng tâm: (1) Nước ngoài theo mùa (Hoa anh đào, Hè, Thu) và (2) Teambuilding & Company Trip trong nước (Tháng 3-4, 6-9, và Year-End Party Tháng 12 - Tháng 01). Tập trung duy trì Google Search Ads (GSA), Booking Báo Chí uy tín và cắt triệt để ngân sách vào Tháng 2 (Kỳ nghỉ Tết Âm lịch & Tháng Giêng) để tối ưu dòng tiền.'}
           </p>
 
           {/* 4 Thẻ KPI Năm Tổng Hợp */}
@@ -561,35 +814,45 @@ export default function BU3MarketPlanningPage() {
             borderTop: '1px solid rgba(255, 255, 255, 0.2)'
           }}>
             <div>
-              <div style={{ fontSize: '0.72rem', color: '#e9d5ff', textTransform: 'uppercase', fontWeight: 600 }}>Tổng Ngân Sách MKT Năm</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#38bdf8', marginTop: '3px' }}>
-                150.000.000 đ
+              <div style={{ fontSize: '0.72rem', color: '#e9d5ff', textTransform: 'uppercase', fontWeight: 600 }}>
+                {isQ4 ? 'Tổng Ngân Sách Q4' : 'Tổng Ngân Sách MKT Năm'}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#d8b4fe' }}>TB 12.5M/tháng • 3 Làn sóng cao điểm</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#38bdf8', marginTop: '3px' }}>
+                {isQ4 ? '35.000.000 đ' : '150.000.000 đ'}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#d8b4fe' }}>
+                {isQ4 ? 'T10: 15M • T11: 15M • T12: 5M' : 'TB 12.5M/tháng • 3 Làn sóng cao điểm'}
+              </div>
             </div>
 
             <div>
               <div style={{ fontSize: '0.72rem', color: '#e9d5ff', textTransform: 'uppercase', fontWeight: 600 }}>Kỳ Vọng Lead Doanh Nghiệp</div>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#facc15', marginTop: '3px' }}>
-                180 - 220 Lead DN
+                {isQ4 ? '48 - 50 Lead DN' : '180 - 220 Lead DN'}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#d8b4fe' }}>Inquiries / Yêu cầu báo giá đoàn</div>
+              <div style={{ fontSize: '0.72rem', color: '#d8b4fe' }}>
+                {isQ4 ? 'Yêu cầu báo giá YEP & Gala Đoàn' : 'Inquiries / Yêu cầu báo giá đoàn'}
+              </div>
             </div>
 
             <div>
               <div style={{ fontSize: '0.72rem', color: '#e9d5ff', textTransform: 'uppercase', fontWeight: 600 }}>Mục Tiêu Hợp Đồng Đoàn</div>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#4ade80', marginTop: '3px' }}>
-                36 - 45 Đoàn
+                {isQ4 ? '7 - 8 Đoàn' : '36 - 45 Đoàn'}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#d8b4fe' }}>Quy mô TB 40-50 Pax/Đoàn (~1.800 Pax)</div>
+              <div style={{ fontSize: '0.72rem', color: '#d8b4fe' }}>
+                {isQ4 ? 'Quy mô TB 40 Pax/Đoàn (~300 - 320 Pax)' : 'Quy mô TB 40-50 Pax/Đoàn (~1.800 Pax)'}
+              </div>
             </div>
 
             <div>
               <div style={{ fontSize: '0.72rem', color: '#e9d5ff', textTransform: 'uppercase', fontWeight: 600 }}>Doanh Thu Dự Kiến Đoàn</div>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', marginTop: '3px' }}>
-                ~21.6 Tỷ VNĐ
+                {isQ4 ? '~3.84 Tỷ VNĐ' : '~21.6 Tỷ VNĐ'}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#4ade80', fontWeight: 600 }}>Tỷ lệ Chi phí Ads / Doanh thu: ~0.69%</div>
+              <div style={{ fontSize: '0.72rem', color: '#4ade80', fontWeight: 600 }}>
+                {isQ4 ? 'Tỷ lệ Chi phí Ads / DT: ~0.91%' : 'Tỷ lệ Chi phí Ads / DT: ~0.69%'}
+              </div>
             </div>
           </div>
         </div>
@@ -683,7 +946,7 @@ export default function BU3MarketPlanningPage() {
                   <span>2. Cân Đối Dồn Tiền & Tháng 2 Cắt 0đ (Kỳ Nghỉ Tết)</span>
                 </div>
                 <p style={{ margin: 0, fontSize: '0.82rem', color: '#92400e', lineHeight: '1.5' }}>
-                  Không rải đều 12.5M mỗi tháng. Dồn ngân sách cao nhất vào <strong>Tháng 3 (25M)</strong>, <strong>Tháng 4-5 (20M/tháng)</strong> và <strong>Tháng 10 (15M)</strong>. <strong>Tháng 2 cắt sạch 0đ</strong> vì trùng kỳ nghỉ Tết Âm lịch & Tháng Giêng du xuân, doanh nghiệp chưa duyệt hè, toàn bộ đội ngũ tập trung dẫn tour Tết.
+                  Không rải đều 12.5M mỗi tháng. Dồn ngân sách cao nhất vào <strong>Tháng 3 (25M)</strong>, <strong>Tháng 4-5 (20M/tháng)</strong> và <strong>Tháng 10-11 (15M/tháng)</strong>. <strong>Tháng 2 cắt sạch 0đ</strong> vì trùng kỳ nghỉ Tết Âm lịch & Tháng Giêng du xuân.
                 </p>
               </div>
 
@@ -693,7 +956,7 @@ export default function BU3MarketPlanningPage() {
                   <span>3. Google Search Ads (Always-on)</span>
                 </div>
                 <p style={{ margin: 0, fontSize: '0.82rem', color: '#1e40af', lineHeight: '1.5' }}>
-                  Duy trì Google Search Ads liên tục 11 tháng (tổng 120 Triệu) để đón trúng khách hàng doanh nghiệp đang chủ động gõ tìm kiếm tour đoàn, teambuilding, Company Trip trên Google.
+                  Duy trì Google Search Ads liên tục để đón trúng khách hàng doanh nghiệp đang chủ động gõ tìm kiếm tour đoàn, teambuilding, Company Trip, Gala YEP trên Google.
                 </p>
               </div>
 
@@ -703,7 +966,7 @@ export default function BU3MarketPlanningPage() {
                   <span>4. Quỹ Dồn Bứt Tốc PR Theo Quý</span>
                 </div>
                 <p style={{ margin: 0, fontSize: '0.82rem', color: '#065f46', lineHeight: '1.5' }}>
-                  Không rải vụn 2-3M/tháng cho PR vì không đủ book báo uy tín. Gom ngân sách theo Quý thành <strong>3 Cú Hích PR Báo Chí B2B</strong> (T3: 10M, T7: 10M, T10: 10M - tổng 30 Triệu PR) làm Profile bảo chứng thầu cả năm!
+                  Không rải vụn 2-3M/tháng cho PR vì không đủ book báo uy tín. Gom ngân sách theo Quý thành các <strong>Cú Hích PR Báo Chí B2B</strong> (10M/đợt) làm Profile bảo chứng thầu phục vụ Sales chốt khách!
                 </p>
               </div>
             </div>
@@ -711,7 +974,7 @@ export default function BU3MarketPlanningPage() {
         )}
       </div>
 
-      {/* ── BẢN ĐỒ NHIỆT PHÂN BỔ NGÂN SÁCH 12 THÁNG (HEATMAP MATRIX) ── */}
+      {/* ── BẢN ĐỒ NHIỆT PHÂN BỔ NGÂN SÁCH (HEATMAP MATRIX) ── */}
       <div style={{
         background: '#ffffff',
         border: '1px solid #e2e8f0',
@@ -736,10 +999,14 @@ export default function BU3MarketPlanningPage() {
             </div>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: '#0f172a' }}>
-                Bản Đồ Nhiệt Phân Bổ Ngân Sách 12 Tháng Năm 2027 (Yearly Budget Heatmap)
+                {isQ4 
+                  ? 'Bản Đồ Nhiệt Phân Bổ Ngân Sách Quý 4/2026 (T10 - T12/2026) — 35 Triệu' 
+                  : 'Bản Đồ Nhiệt Phân Bổ Ngân Sách 12 Tháng Năm 2027 (Yearly Budget Heatmap)'}
               </h3>
               <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: '#64748b' }}>
-                Trực quan hóa mật độ dồn ngân sách cả năm — Bấm vào tháng bất kỳ để cuộn nhanh đến bảng kế hoạch chi tiết
+                {isQ4
+                  ? 'Trực quan hóa mật độ dồn ngân sách 3 tháng nước rút YEP cuối năm — Bấm vào tháng để cuộn nhanh'
+                  : 'Trực quan hóa mật độ dồn ngân sách cả năm — Bấm vào tháng bất kỳ để cuộn nhanh đến bảng kế hoạch chi tiết'}
               </p>
             </div>
           </div>
@@ -747,13 +1014,13 @@ export default function BU3MarketPlanningPage() {
           {/* Quick Summary Pill Tags */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '0.74rem', background: '#eff6ff', color: '#1d4ed8', fontWeight: 700, padding: '4px 10px', borderRadius: '16px', border: '1px solid #bfdbfe' }}>
-              🔍 Ads: 120.000.000 đ (80%)
+              🔍 Ads: {isQ4 ? '25.000.000 đ (71.4%)' : '120.000.000 đ (80%)'}
             </span>
             <span style={{ fontSize: '0.74rem', background: '#fdf4ff', color: '#86198f', fontWeight: 700, padding: '4px 10px', borderRadius: '16px', border: '1px solid #f0abfc' }}>
-              📰 PR Báo Chí: 30.000.000 đ (20%)
+              📰 PR Báo Chí: {isQ4 ? '10.000.000 đ (28.6%)' : '30.000.000 đ (20%)'}
             </span>
             <span style={{ fontSize: '0.74rem', background: '#f0fdf4', color: '#15803d', fontWeight: 800, padding: '4px 10px', borderRadius: '16px', border: '1px solid #bbf7d0' }}>
-              🎯 Tổng: 150.000.000 đ
+              🎯 Tổng: {isQ4 ? '35.000.000 đ' : '150.000.000 đ'}
             </span>
           </div>
         </div>
@@ -777,7 +1044,7 @@ export default function BU3MarketPlanningPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '0.74rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#f8fafc', border: '1px dashed #cbd5e1' }} />
-              <span style={{ color: '#64748b', fontWeight: 600 }}>0đ: Cắt 100% Ads (Tháng 2 - Nghỉ Tết)</span>
+              <span style={{ color: '#64748b', fontWeight: 600 }}>0đ: Cắt 100% Ads (Nghỉ Tết)</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#ecfdf5', border: '1px solid #86efac' }} />
@@ -798,13 +1065,13 @@ export default function BU3MarketPlanningPage() {
           </div>
         </div>
 
-        {/* 12 Ô Lưới Nhiệt (Heatmap Grid 12 Tháng) */}
+        {/* Ô Lưới Nhiệt (Heatmap Grid) */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))',
+          gridTemplateColumns: isQ4 ? 'repeat(auto-fit, minmax(200px, 1fr))' : 'repeat(auto-fit, minmax(88px, 1fr))',
           gap: '8px'
         }}>
-          {MONTHS_DATA.map((m) => {
+          {(isQ4 ? Q4_MONTHS_DATA : MONTHS_DATA).map((m) => {
             const heat = getHeatmapInfo(m.budget, m.channels);
             const isCut = m.budget === 0;
 
@@ -826,7 +1093,7 @@ export default function BU3MarketPlanningPage() {
                   background: heat.bg,
                   border: isCut ? '1.5px dashed #cbd5e1' : `1.5px solid ${heat.border}`,
                   borderRadius: '8px',
-                  padding: '10px 8px',
+                  padding: isQ4 ? '12px 14px' : '10px 8px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -848,23 +1115,23 @@ export default function BU3MarketPlanningPage() {
                 {/* Header Tháng + Mùa vụ icon */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <span style={{ fontSize: '0.82rem', fontWeight: 800, color: heat.text }}>
-                    T{m.month}
+                    {isQ4 ? m.monthLabel : `T${m.month}`}
                   </span>
                   <span style={{ fontSize: '0.9rem' }}>{m.seasonIcon}</span>
                 </div>
 
                 {/* Số tiền to nổi bật */}
-                <div style={{ margin: '4px 0 6px', textAlign: 'center' }}>
+                <div style={{ margin: '4px 0 6px', textAlign: isQ4 ? 'left' : 'center' }}>
                   <div style={{
-                    fontSize: '1.05rem',
+                    fontSize: isQ4 ? '1.25rem' : '1.05rem',
                     fontWeight: 800,
                     color: heat.text,
                     lineHeight: 1.1
                   }}>
                     {isCut ? '0 đ' : `${m.budget / 1000000} Tr`}
                   </div>
-                  <div style={{ fontSize: '0.62rem', color: isCut ? '#94a3b8' : heat.text, opacity: 0.85, marginTop: '2px' }}>
-                    {isCut ? 'Cắt sạch' : `${heat.pct}% hỏa lực`}
+                  <div style={{ fontSize: '0.66rem', color: isCut ? '#94a3b8' : heat.text, opacity: 0.85, marginTop: '2px' }}>
+                    {isCut ? 'Cắt sạch' : `${heat.pct}% hỏa lực ${isQ4 ? 'Quý 4' : 'Năm'}`}
                   </div>
                 </div>
 
@@ -887,7 +1154,7 @@ export default function BU3MarketPlanningPage() {
                 </div>
 
                 {/* Breakdown Mini Kênh: Ads & PR */}
-                <div style={{ fontSize: '0.66rem', lineHeight: 1.25, borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '4px' }}>
+                <div style={{ fontSize: '0.68rem', lineHeight: 1.35, borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '4px' }}>
                   {isCut ? (
                     <span style={{ color: '#94a3b8', fontStyle: 'italic', display: 'block', textAlign: 'center' }}>
                       Nghỉ Ads
@@ -895,17 +1162,17 @@ export default function BU3MarketPlanningPage() {
                   ) : (
                     <>
                       <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475569' }}>
-                        <span>Ads:</span>
-                        <strong style={{ color: '#1e293b' }}>{heat.gsaBudget / 1000000}tr</strong>
+                        <span>Google Search Ads:</span>
+                        <strong style={{ color: '#1e293b' }}>{heat.gsaBudget / 1000000} Tr</strong>
                       </div>
                       {heat.prBudget > 0 ? (
                         <div style={{ display: 'flex', justifyContent: 'space-between', color: '#86198f', fontWeight: 700 }}>
-                          <span>PR:</span>
-                          <span>+{heat.prBudget / 1000000}tr</span>
+                          <span>💥 PR Báo chí B2B:</span>
+                          <span>+{heat.prBudget / 1000000} Tr</span>
                         </div>
                       ) : (
                         <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
-                          <span>PR:</span>
+                          <span>PR Báo chí:</span>
                           <span>dồn</span>
                         </div>
                       )}
@@ -914,12 +1181,12 @@ export default function BU3MarketPlanningPage() {
                 </div>
 
                 {/* Badge trạng thái mức nhiệt */}
-                <div style={{ marginTop: '6px', textAlign: 'center' }}>
+                <div style={{ marginTop: '6px', textAlign: isQ4 ? 'left' : 'center' }}>
                   <span style={{
                     display: 'inline-block',
                     fontSize: '0.62rem',
                     fontWeight: 700,
-                    padding: '1px 5px',
+                    padding: '2px 6px',
                     borderRadius: '4px',
                     background: isCut ? '#e2e8f0' : 'rgba(255, 255, 255, 0.7)',
                     color: heat.text,
@@ -934,7 +1201,7 @@ export default function BU3MarketPlanningPage() {
         </div>
       </div>
 
-      {/* ── CARD TRỰC QUAN: QUỸ DỒN BÁO CHÍ PR THEO QUÝ (30.000.000 Đ) ── */}
+      {/* ── CARD TRỰC QUAN: QUỸ DỒN BÁO CHÍ PR THEO QUÝ ── */}
       <div style={{
         background: 'linear-gradient(135deg, #fdf4ff 0%, #f5f3ff 100%)',
         border: '1.5px solid #d946ef',
@@ -947,165 +1214,237 @@ export default function BU3MarketPlanningPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Newspaper size={20} color="#86198f" />
             <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#581c87' }}>
-              Cơ Chế "Quỹ Dồn Ngân Sách PR Theo Quý" — 3 Đòn Bẩy Báo Chí Uy Tín
+              {isQ4 
+                ? 'Cú Hích PR Báo Chí B2B Quý 4/2026 — 10.000.000 đ (Kích Hoạt Tháng 10)'
+                : 'Cơ Chế "Quỹ Dồn Ngân Sách PR Theo Quý" — 3 Đòn Bẩy Báo Chí Uy Tín (30 Triệu)'}
             </h3>
           </div>
           <span style={{ fontSize: '0.76rem', background: '#fae8ff', color: '#86198f', fontWeight: 700, padding: '3px 10px', borderRadius: '12px', border: '1px solid #f0abfc' }}>
-            Tổng Quỹ PR Báo Chí: 30.000.000 đ
+            {isQ4 ? 'Ngân Sách PR Q4: 10.000.000 đ' : 'Tổng Quỹ PR Báo Chí Năm: 30.000.000 đ'}
           </span>
         </div>
 
         <p style={{ margin: '0 0 14px', fontSize: '0.82rem', color: '#701a75', lineHeight: 1.5 }}>
-          Thay vì rải vụn 2 - 3 triệu mỗi tháng (không đủ ngân sách book bài uy tín), FIT Tour áp dụng chiến lược <strong>Quarterly Budget Pooling</strong>: Tiết kiệm ngân sách hàng tháng để gom thành <strong>3 Cú Hích PR Báo Chí B2B (mỗi đợt 10 triệu)</strong> tại 3 điểm rơi quyết định. Link bài báo làm bảo chứng tín nhiệm (Social Proof) nhúng vào hồ sơ năng lực thầu B2B phục vụ Sales chào khách cả năm.
+          {isQ4
+            ? 'Trong Quý 4/2026, toàn bộ 10 Triệu PR được kích hoạt ngay đầu Tháng 10 khi các tập đoàn mở thầu tiệc Tất niên & Year-End Party. Bài viết PR Báo chí B2B chuyên sâu làm bảo chứng tín nhiệm cho Sales chào khách và gửi kèm hồ sơ năng lực dự thầu suốt Tháng 10 và Tháng 11.'
+            : 'Thay vì rải vụn 2 - 3 triệu mỗi tháng (không đủ ngân sách book bài uy tín), FIT Tour áp dụng chiến lược Quarterly Budget Pooling: Tiết kiệm ngân sách hàng tháng để gom thành 3 Cú Hích PR Báo Chí B2B (mỗi đợt 10 triệu) tại 3 điểm rơi quyết định. Link bài báo làm bảo chứng tín nhiệm (Social Proof) nhúng vào hồ sơ năng lực thầu B2B phục vụ Sales chào khách cả năm.'}
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
-          {/* Cú hích 1 */}
-          <div style={{ background: '#ffffff', border: '1.5px solid #f0abfc', borderRadius: '8px', padding: '12px 14px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.72rem', background: '#fdf4ff', color: '#86198f', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
-                💥 CÚ HÍCH 1 • THÁNG 3
+        {isQ4 ? (
+          <div style={{ background: '#ffffff', border: '1.5px solid #f0abfc', borderRadius: '8px', padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <span style={{ fontSize: '0.74rem', background: '#fdf4ff', color: '#86198f', fontWeight: 800, padding: '3px 8px', borderRadius: '4px' }}>
+                💥 CÚ HÍCH PR BÁO CHÍ THÁNG 10/2026 — ĐÓN SÓNG MỞ THẦU YEAR-END PARTY
               </span>
-              <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#86198f' }}>10.000.000 đ</span>
+              <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#86198f' }}>10.000.000 đ</span>
             </div>
-            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>
-              Bài PR Báo Chí B2B (Đón Hè & Teambuilding)
+            <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>
+              Bài PR Chuyên Sâu B2B Trên VnExpress / CafeF / Diễn Đàn Doanh Nhân
             </div>
-            <p style={{ margin: 0, fontSize: '0.74rem', color: '#64748b', lineHeight: 1.35 }}>
-              Chủ đề: <em>"Xu hướng Doanh nghiệp đặt Tour Hè & Company Trip sớm 2026"</em>. Định vị FIT Tour là thương hiệu dẫn đầu lữ hành đoàn thể cao cấp.
+            <p style={{ margin: '0 0 8px', fontSize: '0.78rem', color: '#64748b', lineHeight: 1.45 }}>
+              Chủ đề: <em>"Xu hướng tổ chức Gala Dinner & Year-End Party độc bản cho Doanh Nghiệp cuối năm 2026"</em>. Phân tích sự chuyển dịch từ các bữa tiệc ăn uống đơn thuần sang chương trình nghệ thuật cá nhân hóa văn hóa doanh nghiệp.
             </p>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', fontSize: '0.72rem' }}>
+              <span style={{ background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '4px' }}>
+                📌 Nhúng trực tiếp vào Catalogue YEP 2026
+              </span>
+              <span style={{ background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '4px' }}>
+                📌 Gửi kèm báo giá Email Marketing tới 500 khách hàng cũ
+              </span>
+              <span style={{ background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '4px' }}>
+                📌 Làm Landing Page chuyển đổi cho Google Search Ads
+              </span>
+            </div>
           </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+            {/* Cú hích 1 */}
+            <div style={{ background: '#ffffff', border: '1.5px solid #f0abfc', borderRadius: '8px', padding: '12px 14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.72rem', background: '#fdf4ff', color: '#86198f', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                  💥 CÚ HÍCH 1 • THÁNG 3
+                </span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#86198f' }}>10.000.000 đ</span>
+              </div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>
+                Bài PR Báo Chí B2B (Đón Hè & Teambuilding)
+              </div>
+              <p style={{ margin: 0, fontSize: '0.74rem', color: '#64748b', lineHeight: 1.35 }}>
+                Chủ đề: <em>"Xu hướng Doanh nghiệp đặt Tour Hè & Company Trip sớm 2026"</em>. Định vị FIT Tour là thương hiệu dẫn đầu lữ hành đoàn thể cao cấp.
+              </p>
+            </div>
 
-          {/* Cú hích 2 */}
-          <div style={{ background: '#ffffff', border: '1.5px solid #fed7aa', borderRadius: '8px', padding: '12px 14px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.72rem', background: '#fff7ed', color: '#ea580c', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
-                💥 CÚ HÍCH 2 • THÁNG 7
-              </span>
-              <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ea580c' }}>10.000.000 đ</span>
+            {/* Cú hích 2 */}
+            <div style={{ background: '#ffffff', border: '1.5px solid #fed7aa', borderRadius: '8px', padding: '12px 14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.72rem', background: '#fff7ed', color: '#ea580c', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                  💥 CÚ HÍCH 2 • THÁNG 7
+                </span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ea580c' }}>10.000.000 đ</span>
+              </div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>
+                Bài PR Báo Chí B2B (Đón Mùa Thu & Thẩm Định Thầu)
+              </div>
+              <p style={{ margin: 0, fontSize: '0.74rem', color: '#64748b', lineHeight: 1.35 }}>
+                Chủ đề: <em>"Kinh nghiệm thẩm định hồ sơ thầu & chọn đơn vị lữ hành uy tín cho Company Trip Mùa Thu"</em>. Tăng điểm tín nhiệm khi đấu thầu.
+              </p>
             </div>
-            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>
-              Bài PR Báo Chí B2B (Đón Mùa Thu & Thẩm Định Thầu)
-            </div>
-            <p style={{ margin: 0, fontSize: '0.74rem', color: '#64748b', lineHeight: 1.35 }}>
-              Chủ đề: <em>"Kinh nghiệm thẩm định hồ sơ thầu & chọn đơn vị lữ hành uy tín cho Company Trip Mùa Thu"</em>. Tăng điểm tín nhiệm khi đấu thầu.
-            </p>
-          </div>
 
-          {/* Cú hích 3 */}
-          <div style={{ background: '#ffffff', border: '1.5px solid #fde68a', borderRadius: '8px', padding: '12px 14px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#b45309', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
-                💥 CÚ HÍCH 3 • THÁNG 10
-              </span>
-              <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#b45309' }}>10.000.000 đ</span>
+            {/* Cú hích 3 */}
+            <div style={{ background: '#ffffff', border: '1.5px solid #fde68a', borderRadius: '8px', padding: '12px 14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#b45309', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
+                  💥 CÚ HÍCH 3 • THÁNG 10
+                </span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#b45309' }}>10.000.000 đ</span>
+              </div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>
+                Bài PR Báo Chí B2B (Đón Sóng Year-End Party & Gala)
+              </div>
+              <p style={{ margin: 0, fontSize: '0.74rem', color: '#64748b', lineHeight: 1.35 }}>
+                Chủ đề: <em>"Giải pháp tổ chức Year-End Party & Gala Dinner tri ân khách hàng đỉnh cao cuối năm"</em>. Chốt các hợp đồng tiệc tất niên lớn.
+              </p>
             </div>
-            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>
-              Bài PR Báo Chí B2B (Đón Sóng Year-End Party & Gala)
-            </div>
-            <p style={{ margin: 0, fontSize: '0.74rem', color: '#64748b', lineHeight: 1.35 }}>
-              Chủ đề: <em>"Giải pháp tổ chức Year-End Party & Gala Dinner tri ân khách hàng đỉnh cao cuối năm"</em>. Chốt các hợp đồng tiệc tất niên lớn.
-            </p>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* ── 4. THANH ĐIỀU HƯỚNG BỘ LỌC THEO MÙA VỤ ── */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '10px',
-        padding: '14px 18px',
-        marginBottom: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '12px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
-            Mùa Vụ Trọng Điểm:
-          </span>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {SEASON_FILTERS.map((s) => {
-              const isActive = selectedSeason === s.id;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => setSelectedSeason(s.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '7px 14px',
-                    borderRadius: '8px',
-                    border: isActive ? '2px solid #86198f' : '1px solid #cbd5e1',
-                    background: isActive ? '#fdf4ff' : '#f8fafc',
-                    color: isActive ? '#86198f' : '#334155',
-                    fontSize: '0.82rem',
-                    fontWeight: isActive ? 700 : 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s'
-                  }}
-                >
-                  <span>{s.label}</span>
-                  <span style={{
-                    fontSize: '0.68rem',
-                    background: isActive ? '#86198f' : '#e2e8f0',
-                    color: isActive ? '#ffffff' : '#64748b',
-                    padding: '1px 6px',
-                    borderRadius: '10px',
-                    fontWeight: 600
-                  }}>
-                    {s.countText}
-                  </span>
-                </button>
-              );
-            })}
+      {/* ── 4. THANH BỘ LỌC (CHỈ DÀNH CHO CẢ NĂM 2027) HOẶC TÓM TẮT Q4 ── */}
+      {!isQ4 ? (
+        <div style={{
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          borderRadius: '10px',
+          padding: '14px 18px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
+              Mùa Vụ Trọng Điểm:
+            </span>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {SEASON_FILTERS.map((s) => {
+                const isActive = selectedSeason === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setSelectedSeason(s.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '7px 14px',
+                      borderRadius: '8px',
+                      border: isActive ? '2px solid #86198f' : '1px solid #cbd5e1',
+                      background: isActive ? '#fdf4ff' : '#f8fafc',
+                      color: isActive ? '#86198f' : '#334155',
+                      fontSize: '0.82rem',
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s'
+                    }}
+                  >
+                    <span>{s.label}</span>
+                    <span style={{
+                      fontSize: '0.68rem',
+                      background: isActive ? '#86198f' : '#e2e8f0',
+                      color: isActive ? '#ffffff' : '#64748b',
+                      padding: '1px 6px',
+                      borderRadius: '10px',
+                      fontWeight: 600
+                    }}>
+                      {s.countText}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          <a
+            href="#b2b-calculator-section"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#86198f',
+              color: '#ffffff',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              textDecoration: 'none',
+              boxShadow: '0 2px 4px rgba(134, 25, 143, 0.25)'
+            }}
+          >
+            <Calculator size={15} />
+            <span>Mở Máy Tính Phễu B2B</span>
+          </a>
         </div>
+      ) : (
+        <div style={{
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          borderRadius: '10px',
+          padding: '12px 18px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '10px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', color: '#64748b' }}>
+            <span style={{ fontWeight: 800, color: '#86198f' }}>⚡ Lộ Trình Quý 4/2026:</span>
+            <span>Tháng 10 (Mở thầu + PR Báo chí 10M) → Tháng 11 (Đại cao điểm chốt thầu 15M GSA) → Tháng 12 (Chốt vét SME & Vận hành 5M GSA).</span>
+          </div>
 
-        {/* Nút Nhảy Tới Máy Tính Dự Toán */}
-        <a
-          href="#b2b-calculator-section"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: '#86198f',
-            color: '#ffffff',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            fontSize: '0.82rem',
-            fontWeight: 700,
-            textDecoration: 'none',
-            boxShadow: '0 2px 4px rgba(134, 25, 143, 0.25)'
-          }}
-        >
-          <Calculator size={15} />
-          <span>Mở Máy Tính Phễu B2B</span>
-        </a>
-      </div>
+          <a
+            href="#b2b-calculator-section"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#86198f',
+              color: '#ffffff',
+              padding: '7px 14px',
+              borderRadius: '6px',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              textDecoration: 'none'
+            }}
+          >
+            <Calculator size={14} />
+            <span>Mở Máy Tính Phễu Q4</span>
+          </a>
+        </div>
+      )}
 
-      {/* ── 5. TRỤC TIMELINE 12 THÁNG "ĐÓN ĐẦU 02 THÁNG" (TRUNG TÂM KẾ HOẠCH) ── */}
+      {/* ── 5. TRỤC TIMELINE THÁNG "ĐÓN ĐẦU 02 THÁNG" ── */}
       <div style={{ marginBottom: '28px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 4px' }}>
-              Trục Kế Hoạch 12 Tháng & Ma Trận Phân Bổ Ngân Sách BU3 Năm 2027
+              {isQ4 
+                ? 'Trục Kế Hoạch 3 Tháng Nước Rút BU3 Quý 4/2026' 
+                : 'Trục Kế Hoạch 12 Tháng & Ma Trận Phân Bổ Ngân Sách BU3 Năm 2027'}
             </h2>
             <p style={{ margin: 0, fontSize: '0.84rem', color: '#64748b' }}>
-              Đang hiển thị {filteredMonths.length} tháng • Tổng ngân sách lọc: <strong>{fmt(summaryMetrics.totalBudget)} đ</strong> • Kỳ vọng thu hút: <strong>{summaryMetrics.totalInquiries} Lead Doanh Nghiệp (Inquiry)</strong>.
+              Đang hiển thị {filteredMonths.length} tháng • Tổng ngân sách: <strong>{fmt(summaryMetrics.totalBudget)} đ</strong> • Kỳ vọng thu hút: <strong>{summaryMetrics.totalInquiries} Lead Doanh Nghiệp (Inquiry)</strong>.
             </p>
           </div>
         </div>
 
-        {/* BẢNG TIMELINE CHI TIẾT 12 THÁNG — BỐ CỤC 2 THÁNG 1 HÀNG */}
+        {/* BẢNG TIMELINE CHI TIẾT CÁC THÁNG */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
-          gap: '12px',
+          gridTemplateColumns: isQ4 ? 'repeat(auto-fit, minmax(360px, 1fr))' : 'repeat(auto-fit, minmax(420px, 1fr))',
+          gap: '14px',
           alignItems: 'stretch'
         }}>
           {filteredMonths.map((m) => {
@@ -1120,7 +1459,7 @@ export default function BU3MarketPlanningPage() {
                   background: '#ffffff',
                   border: isCut ? '1px dashed #cbd5e1' : `1.5px solid ${m.borderTheme}`,
                   borderRadius: '10px',
-                  padding: '14px 16px',
+                  padding: '16px 18px',
                   boxShadow: isCut ? 'none' : '0 2px 6px rgba(0, 0, 0, 0.03)',
                   transition: 'all 0.15s',
                   display: 'flex',
@@ -1139,11 +1478,14 @@ export default function BU3MarketPlanningPage() {
                       borderRadius: '8px',
                       padding: '6px 12px',
                       textAlign: 'center',
-                      minWidth: '64px',
+                      minWidth: '68px',
                       flexShrink: 0
                     }}>
                       <div style={{ fontSize: '0.66rem', fontWeight: 600, textTransform: 'uppercase' }}>Chạy Ads</div>
-                      <div style={{ fontSize: '1.15rem', fontWeight: 800, lineHeight: 1.2 }}>T{m.month}</div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 800, lineHeight: 1.2 }}>
+                        {isQ4 ? `T${m.month}` : `T${m.month}`}
+                      </div>
+                      {isQ4 && <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#86198f' }}>2026</div>}
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -1179,7 +1521,7 @@ export default function BU3MarketPlanningPage() {
                   </div>
                 </div>
 
-                {/* Hàng chỉ số: NGÂN SÁCH + LEAD DN (ĐÃ BỎ HỢP ĐỒNG ĐOÀN VÀ DOANH THU) */}
+                {/* Hàng chỉ số: NGÂN SÁCH + LEAD DN */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1195,7 +1537,7 @@ export default function BU3MarketPlanningPage() {
                     <div>
                       <div style={{ fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Ngân Sách</div>
                       <div style={{
-                        fontSize: '1.05rem',
+                        fontSize: '1.08rem',
                         fontWeight: 800,
                         color: isCut ? '#64748b' : '#86198f'
                       }}>
@@ -1210,6 +1552,16 @@ export default function BU3MarketPlanningPage() {
                         {isCut ? '0 Lead' : `${m.expectedInquiries} Lead DN`}
                       </div>
                     </div>
+
+                    {/* Dự kiến chốt đoàn */}
+                    {isQ4 && (
+                      <div>
+                        <div style={{ fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Chốt Đoàn</div>
+                        <div style={{ fontSize: '0.98rem', fontWeight: 700, color: '#16a34a' }}>
+                          {m.expectedDeals} Đoàn (~{m.expectedPax}p)
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Nút Xem chi tiết phân bổ kênh */}
@@ -1231,15 +1583,15 @@ export default function BU3MarketPlanningPage() {
                   </button>
                 </div>
 
-                {/* Phần mở rộng chi tiết phân bổ kênh (Accordion) */}
+                {/* Phần mở rộng chi tiết phân bổ kênh & Action Checklist (Accordion) */}
                 {isExpanded && (
                   <div style={{
-                    marginTop: '10px',
-                    paddingTop: '10px',
+                    marginTop: '12px',
+                    paddingTop: '12px',
                     borderTop: '1px dashed #e2e8f0',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '8px'
+                    gap: '10px'
                   }}>
                     <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>
                       Thị Trường Mục Tiêu & Cơ Cấu Kênh Trong Tháng:
@@ -1288,6 +1640,30 @@ export default function BU3MarketPlanningPage() {
                         </div>
                       ))}
                     </div>
+
+                    {/* ACTION CHECKLIST TỪNG TUẦN (NẾU CÓ) */}
+                    {m.actionChecklist && m.actionChecklist.length > 0 && (
+                      <div style={{
+                        marginTop: '8px',
+                        background: '#fefce8',
+                        border: '1px solid #fde047',
+                        borderRadius: '6px',
+                        padding: '10px 12px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', fontWeight: 800, color: '#854d0e', textTransform: 'uppercase', marginBottom: '6px' }}>
+                          <CheckCircle2 size={14} color="#854d0e" />
+                          <span>Kế Hoạch Hành Động Chi Tiết Từng Tuần (Action Checklist):</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {m.actionChecklist.map((task, taskIdx) => (
+                            <div key={taskIdx} style={{ fontSize: '0.74rem', color: '#713f12', lineHeight: 1.4, display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                              <span style={{ color: '#b45309', fontWeight: 700 }}>•</span>
+                              <span>{task}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1296,106 +1672,209 @@ export default function BU3MarketPlanningPage() {
         </div>
       </div>
 
-      {/* ── 6. PHÂN TÍCH 2 PHÂN HỆ THỊ TRƯỜNG CỐT LÕI BU3 ── */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-        gap: '16px',
-        marginBottom: '28px'
-      }}>
-        {/* Module 1: Thị trường Nước Ngoài + Theo Mùa */}
+      {/* ── 6. KHỐI TRỌNG TÂM CHIẾN LƯỢC: 3 TRỤ CỘT SẢN PHẨM Q4 HOẶC 2 PHÂN HỆ CẢ NĂM ── */}
+      {isQ4 ? (
+        <div style={{ marginBottom: '28px' }}>
+          <div style={{ marginBottom: '14px' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0 0 4px' }}>
+              3 Trụ Cột Sản Phẩm Chiến Lược Của BU3 Trong Quý 4/2026
+            </h2>
+            <p style={{ margin: 0, fontSize: '0.84rem', color: '#64748b' }}>
+              Bộ sản phẩm chủ lực định vị phân khúc trung và cao cấp, phục vụ các đối tác doanh nghiệp trong dịp Year-End Party và đón Tết Nguyên Đán.
+            </p>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+            gap: '16px'
+          }}>
+            {Q4_PRODUCTS.map((prod) => (
+              <div
+                key={prod.id}
+                style={{
+                  background: '#ffffff',
+                  border: `1.5px solid ${prod.themeColor}`,
+                  borderRadius: '12px',
+                  padding: '18px 20px',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <div>
+                  {/* Header sản phẩm */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '1.6rem' }}>{prod.icon}</span>
+                    <span style={{
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      background: '#fdf4ff',
+                      color: prod.themeColor,
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid #f0abfc'
+                    }}>
+                      {prod.badge}
+                    </span>
+                  </div>
+
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', margin: '0 0 6px' }}>
+                    {prod.title}
+                  </h3>
+
+                  <div style={{ fontSize: '0.76rem', color: '#86198f', fontWeight: 600, marginBottom: '8px' }}>
+                    🎯 Khách mục tiêu: {prod.targetClients}
+                  </div>
+
+                  <p style={{ fontSize: '0.78rem', color: '#475569', lineHeight: 1.45, margin: '0 0 12px' }}>
+                    {prod.description}
+                  </p>
+
+                  {/* 3 Selling points */}
+                  <div style={{
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    padding: '8px 10px',
+                    marginBottom: '12px'
+                  }}>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginBottom: '4px' }}>
+                      Điểm Khác Biệt & Lợi Thế Cạnh Tranh:
+                    </div>
+                    {prod.keySellingPoints.map((usp, uIdx) => (
+                      <div key={uIdx} style={{ fontSize: '0.72rem', color: '#334155', lineHeight: 1.35, display: 'flex', alignItems: 'flex-start', gap: '5px' }}>
+                        <span style={{ color: '#059669', fontWeight: 700 }}>✓</span>
+                        <span>{usp}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Footer card sản phẩm: Giá & Target */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingTop: '10px',
+                  borderTop: '1px solid #f1f5f9',
+                  fontSize: '0.76rem'
+                }}>
+                  <div>
+                    <div style={{ fontSize: '0.66rem', color: '#64748b' }}>Đơn giá dự kiến:</div>
+                    <strong style={{ color: '#0f172a' }}>{prod.priceRange}</strong>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.66rem', color: '#64748b' }}>Chỉ tiêu chốt Q4:</div>
+                    <strong style={{ color: '#16a34a' }}>{prod.targetDeals}</strong>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
         <div style={{
-          background: '#ffffff',
-          border: '1.5px solid #d946ef',
-          borderRadius: '10px',
-          padding: '20px',
-          boxShadow: '0 2px 8px rgba(217, 70, 239, 0.08)'
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+          gap: '16px',
+          marginBottom: '28px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-            <span style={{ fontSize: '1.4rem' }}>✈️</span>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>
-                1. Thị Trường Nước Ngoài (Theo Mùa Vụ)
-              </h3>
-              <p style={{ margin: 0, fontSize: '0.76rem', color: '#64748b' }}>
-                Đoàn công ty, MICE khen thưởng, hội nghị khách hàng VIP
-              </p>
+          {/* Module 1: Thị trường Nước Ngoài + Theo Mùa */}
+          <div style={{
+            background: '#ffffff',
+            border: '1.5px solid #d946ef',
+            borderRadius: '10px',
+            padding: '20px',
+            boxShadow: '0 2px 8px rgba(217, 70, 239, 0.08)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+              <span style={{ fontSize: '1.4rem' }}>✈️</span>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>
+                  1. Thị Trường Nước Ngoài (Theo Mùa Vụ)
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.76rem', color: '#64748b' }}>
+                  Đoàn công ty, MICE khen thưởng, hội nghị khách hàng VIP
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.82rem' }}>
+              <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', borderRadius: '6px', padding: '10px' }}>
+                <div style={{ fontWeight: 700, color: '#e11d48' }}>🌸 Mùa Hoa Anh Đào (Tháng 3 + 4)</div>
+                <div style={{ color: '#475569', marginTop: '2px' }}>
+                  <strong>Thị trường:</strong> Trung Quốc, Hàn Quốc, Nhật Bản, Đài Loan.<br />
+                  <strong>Thời điểm chạy Ads:</strong> Tháng 1 + 2 (Chạy trước để hoàn tất Visa đoàn).
+                </div>
+              </div>
+
+              <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '6px', padding: '10px' }}>
+                <div style={{ fontWeight: 700, color: '#d97706' }}>☀️ Mùa Hè Cao Điểm (Tháng 5 - 9)</div>
+                <div style={{ color: '#475569', marginTop: '2px' }}>
+                  <strong>Thị trường:</strong> Trung / Hàn / Nhật / Đài / Đông Nam Á (Thái Lan, Sing-Mã).<br />
+                  <strong>Thời điểm chạy Ads:</strong> Tháng 3 đến Tháng 7 (Dồn ngân sách cao nhất năm: 90 triệu).
+                </div>
+              </div>
+
+              <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '6px', padding: '10px' }}>
+                <div style={{ fontWeight: 700, color: '#ea580c' }}>🍁 Mùa Thu Lá Đỏ (Tháng 9 - 11)</div>
+                <div style={{ color: '#475569', marginTop: '2px' }}>
+                  <strong>Thị trường:</strong> Cửu Trại Câu, Bắc Kinh, Nhật Bản, Hàn Quốc.<br />
+                  <strong>Thời điểm chạy Ads:</strong> Tháng 7, 8, 9 (Đón sóng hội thảo kết hợp ngắm sắc thu).
+                </div>
+              </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.82rem' }}>
-            <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', borderRadius: '6px', padding: '10px' }}>
-              <div style={{ fontWeight: 700, color: '#e11d48' }}>🌸 Mùa Hoa Anh Đào (Tháng 3 + 4)</div>
-              <div style={{ color: '#475569', marginTop: '2px' }}>
-                <strong>Thị trường:</strong> Trung Quốc, Hàn Quốc, Nhật Bản, Đài Loan.<br />
-                <strong>Thời điểm chạy Ads:</strong> Tháng 1 + 2 (Chạy trước để hoàn tất Visa đoàn).
+          {/* Module 2: Thị trường Trong Nước Teambuilding & YEP */}
+          <div style={{
+            background: '#ffffff',
+            border: '1.5px solid #0284c7',
+            borderRadius: '10px',
+            padding: '20px',
+            boxShadow: '0 2px 8px rgba(2, 132, 199, 0.08)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+              <span style={{ fontSize: '1.4rem' }}>🏖️</span>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>
+                  2. Thị Trường Trong Nước (Teambuilding & YEP)
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.76rem', color: '#64748b' }}>
+                  Company Trip, Teambuilding bãi biển & Gala Dinner tất niên
+                </p>
               </div>
             </div>
 
-            <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '6px', padding: '10px' }}>
-              <div style={{ fontWeight: 700, color: '#d97706' }}>☀️ Mùa Hè Cao Điểm (Tháng 5 - 9)</div>
-              <div style={{ color: '#475569', marginTop: '2px' }}>
-                <strong>Thị trường:</strong> Trung / Hàn / Nhật / Đài / Đông Nam Á (Thái Lan, Sing-Mã).<br />
-                <strong>Thời điểm chạy Ads:</strong> Tháng 3 đến Tháng 7 (Dồn ngân sách cao nhất năm: 90 triệu).
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.82rem' }}>
+              <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '6px', padding: '10px' }}>
+                <div style={{ fontWeight: 700, color: '#0284c7' }}>🏖️ Teambuilding & Company Trip (Tháng 3-4 & Tháng 6-9)</div>
+                <div style={{ color: '#475569', marginTop: '2px' }}>
+                  <strong>Địa điểm:</strong> Phú Quốc, Đà Nẵng, Nha Trang, Quy Nhơn, Hồ Tràm, Hạ Long.<br />
+                  <strong>Quy mô đoàn:</strong> 50 - 300 khách. Trọng tâm: Kịch bản Teambuilding độc quyền FIT Tour.
+                </div>
               </div>
-            </div>
 
-            <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '6px', padding: '10px' }}>
-              <div style={{ fontWeight: 700, color: '#ea580c' }}>🍁 Mùa Thu Lá Đỏ (Tháng 9 - 11)</div>
-              <div style={{ color: '#475569', marginTop: '2px' }}>
-                <strong>Thị trường:</strong> Cửu Trại Câu, Bắc Kinh, Nhật Bản, Hàn Quốc.<br />
-                <strong>Thời điểm chạy Ads:</strong> Tháng 7, 8, 9 (Đón sóng hội thảo kết hợp ngắm sắc thu).
+              <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '6px', padding: '10px' }}>
+                <div style={{ fontWeight: 700, color: '#b45309' }}>🥂 Year-End Party & Tri Ân Đối Tác (Tháng 12 - Tháng 01)</div>
+                <div style={{ color: '#475569', marginTop: '2px' }}>
+                  <strong>Dịch vụ:</strong> Gala Dinner trọn gói, Concept tiệc tất niên độc bản, Tour cao cấp tri ân VIP.<br />
+                  <strong>Thời điểm chạy Ads:</strong> Tháng 10, 11 (đại cao điểm chốt thầu) và Tháng 12 (chốt vét SME). Tháng 1 vận hành đại tiệc & Tháng 2 cắt sạch ads nghỉ Tết.
+                </div>
+              </div>
+
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '10px' }}>
+                <div style={{ fontWeight: 700, color: '#475569' }}>📰 Chiến Lược Booking Báo Chí & PR Profile</div>
+                <div style={{ color: '#64748b', marginTop: '2px' }}>
+                  Đăng các bài viết PR Báo chí B2B uy tín (30 triệu / năm gồm 3 cú hích 10 triệu) nhằm tạo uy tín đấu thầu hồ sơ năng lực B2B cho FIT Tour & Elite BU3 khi chào giá các tập đoàn lớn.
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Module 2: Thị trường Trong Nước Teambuilding & YEP */}
-        <div style={{
-          background: '#ffffff',
-          border: '1.5px solid #0284c7',
-          borderRadius: '10px',
-          padding: '20px',
-          boxShadow: '0 2px 8px rgba(2, 132, 199, 0.08)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-            <span style={{ fontSize: '1.4rem' }}>🏖️</span>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>
-                2. Thị Trường Trong Nước (Teambuilding & YEP)
-              </h3>
-              <p style={{ margin: 0, fontSize: '0.76rem', color: '#64748b' }}>
-                Company Trip, Teambuilding bãi biển & Gala Dinner tất niên
-              </p>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.82rem' }}>
-            <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '6px', padding: '10px' }}>
-              <div style={{ fontWeight: 700, color: '#0284c7' }}>🏖️ Teambuilding & Company Trip (Tháng 3-4 & Tháng 6-9)</div>
-              <div style={{ color: '#475569', marginTop: '2px' }}>
-                <strong>Địa điểm:</strong> Phú Quốc, Đà Nẵng, Nha Trang, Quy Nhơn, Hồ Tràm, Hạ Long.<br />
-                <strong>Quy mô đoàn:</strong> 50 - 300 khách. Trọng tâm: Kịch bản Teambuilding độc quyền FIT Tour.
-              </div>
-            </div>
-
-            <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '6px', padding: '10px' }}>
-              <div style={{ fontWeight: 700, color: '#b45309' }}>🥂 Year-End Party & Tri Ân Đối Tác (Tháng 12 - Tháng 01)</div>
-              <div style={{ color: '#475569', marginTop: '2px' }}>
-                <strong>Dịch vụ:</strong> Gala Dinner trọn gói, Concept tiệc tất niên độc bản, Tour cao cấp tri ân VIP.<br />
-                <strong>Thời điểm chạy Ads:</strong> Tháng 10, 11 (đại cao điểm chốt thầu) và Tháng 12 (chốt vét SME). Tháng 1 vận hành đại tiệc & Tháng 2 cắt sạch ads nghỉ Tết.
-              </div>
-            </div>
-
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '10px' }}>
-              <div style={{ fontWeight: 700, color: '#475569' }}>📰 Chiến Lược Booking Báo Chí & PR Profile</div>
-              <div style={{ color: '#64748b', marginTop: '2px' }}>
-                Đăng các bài viết PR Báo chí B2B uy tín (30 triệu / năm gồm 3 cú hích 10 triệu) nhằm tạo uy tín đấu thầu hồ sơ năng lực B2B cho FIT Tour & Elite BU3 khi chào giá các tập đoàn lớn.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* ── 7. MÁY TÍNH DỰ TOÁN B2B PHỄU CHUYỂN ĐỔI DOANH NGHIỆP ── */}
       <div
@@ -1414,7 +1893,9 @@ export default function BU3MarketPlanningPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Calculator size={22} color="#86198f" />
               <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>
-                Máy Tính Phễu B2B — Dự Toán Chuyển Đổi Hợp Đồng Đoàn
+                {isQ4 
+                  ? 'Máy Tính Phễu B2B Quý 4/2026 — Dự Toán Chuyển Đổi Hợp Đồng YEP & Gala' 
+                  : 'Máy Tính Phễu B2B — Dự Toán Chuyển Đổi Hợp Đồng Đoàn Năm 2027'}
               </h2>
             </div>
             <p style={{ margin: '4px 0 0', fontSize: '0.84rem', color: '#64748b' }}>
@@ -1424,11 +1905,19 @@ export default function BU3MarketPlanningPage() {
 
           <button
             onClick={() => {
-              setCalcBudget(150000000);
-              setCalcCpl(800000);
-              setCalcWinRate(20);
-              setCalcPaxPerDeal(45);
-              setCalcTicketPrice(12000000);
+              if (isQ4) {
+                setCalcBudget(35000000);
+                setCalcCpl(700000);
+                setCalcWinRate(16);
+                setCalcPaxPerDeal(45);
+                setCalcTicketPrice(12000000);
+              } else {
+                setCalcBudget(150000000);
+                setCalcCpl(800000);
+                setCalcWinRate(20);
+                setCalcPaxPerDeal(45);
+                setCalcTicketPrice(12000000);
+              }
             }}
             style={{
               display: 'inline-flex',
@@ -1445,7 +1934,7 @@ export default function BU3MarketPlanningPage() {
             }}
           >
             <RotateCcw size={14} />
-            <span>Khôi phục mặc định</span>
+            <span>Khôi phục mặc định {isQ4 ? 'Q4' : '2027'}</span>
           </button>
         </div>
 
@@ -1487,9 +1976,15 @@ export default function BU3MarketPlanningPage() {
               }}
             />
             <div style={{ fontSize: '0.7rem', color: '#7e22ce', marginTop: '6px' }}>
-              Mặc định: 150.000.000 đ/năm
+              {isQ4 ? 'Mặc định Q4: 35.000.000 đ' : 'Mặc định: 150.000.000 đ/năm'}
             </div>
             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+              <button
+                onClick={() => setCalcBudget(35000000)}
+                style={{ fontSize: '0.65rem', background: '#fae8ff', color: '#86198f', border: 'none', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', fontWeight: 700 }}
+              >
+                35M Q4/2026
+              </button>
               <button
                 onClick={() => setCalcBudget(150000000)}
                 style={{ fontSize: '0.65rem', background: '#f3e8ff', color: '#7e22ce', border: 'none', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', fontWeight: 600 }}
@@ -1501,12 +1996,6 @@ export default function BU3MarketPlanningPage() {
                 style={{ fontSize: '0.65rem', background: '#fef3c7', color: '#b45309', border: 'none', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', fontWeight: 600 }}
               >
                 90M Hè
-              </button>
-              <button
-                onClick={() => setCalcBudget(25000000)}
-                style={{ fontSize: '0.65rem', background: '#ffe4e6', color: '#e11d48', border: 'none', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', fontWeight: 600 }}
-              >
-                25M Anh đào
               </button>
             </div>
           </div>
@@ -1543,9 +2032,21 @@ export default function BU3MarketPlanningPage() {
             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
               <button
                 onClick={() => setCalcCpl(700000)}
+                style={{ fontSize: '0.65rem', background: '#fae8ff', color: '#86198f', border: 'none', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', fontWeight: 700 }}
+              >
+                700k (Q4 Vừa Sức)
+              </button>
+              <button
+                onClick={() => setCalcCpl(500000)}
                 style={{ fontSize: '0.65rem', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', fontWeight: 600 }}
               >
-                700k
+                500k
+              </button>
+              <button
+                onClick={() => setCalcCpl(800000)}
+                style={{ fontSize: '0.65rem', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', fontWeight: 600 }}
+              >
+                800k
               </button>
               <button
                 onClick={() => setCalcCpl(800000)}
@@ -1604,10 +2105,10 @@ export default function BU3MarketPlanningPage() {
                 20%
               </button>
               <button
-                onClick={() => setCalcWinRate(25)}
-                style={{ fontSize: '0.65rem', background: '#dcfce7', color: '#15803d', border: 'none', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', fontWeight: 600 }}
+                onClick={() => setCalcWinRate(22)}
+                style={{ fontSize: '0.65rem', background: '#dcfce7', color: '#15803d', border: 'none', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', fontWeight: 700 }}
               >
-                25%
+                22% (YEP)
               </button>
             </div>
           </div>
@@ -1778,7 +2279,7 @@ export default function BU3MarketPlanningPage() {
         borderRadius: '8px'
       }}>
         <div style={{ fontSize: '0.84rem', color: '#64748b' }}>
-          Đề án Kế Hoạch BU3 đã được thiết lập sẵn sàng trên hệ thống nội bộ FIT Tour CRM.
+          Đề án Kế Hoạch BU3 ({isQ4 ? 'Quý 4/2026' : 'Năm 2027'}) đã được thiết lập sẵn sàng trên hệ thống nội bộ FIT Tour CRM.
         </div>
         <Link
           to="/marketing-ads?subtab=planning"
