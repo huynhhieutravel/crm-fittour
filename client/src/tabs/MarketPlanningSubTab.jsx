@@ -34,10 +34,10 @@ const QUARTERS = [
 const BU_TABS = [
   { id: 'ALL', name: 'Tất cả BU', hasPlan: true },
   { id: 'BU1', name: 'BU1', hasPlan: true },
-  { id: 'BU2', name: 'BU2', hasPlan: false },
+  { id: 'BU2', name: 'BU2', hasPlan: true },
   { id: 'BU3', name: 'BU3', hasPlan: true },
   { id: 'BU4', name: 'BU4', hasPlan: true },
-  { id: 'BU5', name: 'BU5', hasPlan: false }
+  { id: 'BU5', name: 'BU5', hasPlan: true }
 ];
 
 // Dữ liệu kế hoạch Quý 4/2026
@@ -88,42 +88,68 @@ const Q4_PLANS = [
     id: 'bu2',
     bu: 'BU2',
     quarterId: 'Q4_2026',
-    title: 'Kế Hoạch & Dự Toán BU2',
-    subtitle: 'Chưa có liên kết đề án cho BU2 trong Quý 4/2026. Tạm để trống link, sẽ cập nhật sau.',
-    status: 'empty',
-    statusLabel: 'Trống link (Thêm sau)',
-    hasPlan: false
+    title: 'Kế Hoạch & Dự Toán Ngân Sách BU2 — Q4/2026 (45 Triệu / Quý • 15 Tr/Tháng)',
+    subtitle: 'Đề án do BU2 chủ động đề xuất theo đặc thù Tour Liên Minh Nhật - Hàn - Đài (MKT không nắm sâu thị trường liên minh). Kế thừa nhịp chạy thực tế ~16 triệu/tháng: Phân bổ 45 Triệu/quý (15M/tháng) cho 4 tuyến, bảo đảm trần an toàn vốn 0.75% Doanh thu ERP Q4.',
+    quarter: 'Quý 4/2026',
+    period: '01/10/2026 - 31/12/2026',
+    status: 'active',
+    statusLabel: 'Đang áp dụng',
+    badgeColor: '#0284c7',
+    badgeBg: '#e0f2fe',
+    budget: 45000000,
+    expectedLeads: '~248 Lead SĐT',
+    expectedMessages: '~554 Inbox',
+    expectedPaxAds: '~24 Pax Ads',
+    totalPaxOverall: '240 Pax (10 Đoàn Q4) • Mở rộng: 265 Pax (11 Đoàn)',
+    adsRevenue: '~847.4 Triệu Ads • Thực tế: ~2.62 Tỷ',
+    fullRevenue: '5.985.500.000 đ (ERP Q4) • Mở rộng: ~7.09 Tỷ',
+    costRatio: '0.75% Doanh thu ERP Q4 (45M / 5.98 Tỷ)',
+    path: '/tai-lieu/thi-truong-bu2',
+    hasPlan: true,
+    routes: [
+      { name: '❄️ Hokkaido Thu Đông (2 Đoàn - 40p)', budget: '18.000.000 đ (6 Tr/tháng)', leads: '86 SĐT', pax: '9 Pax Ads (+10 cọc = 19p)', cpl: '210.000 đ', time: '22/10 & 14/01/2027', tab: 'hokkaido' },
+      { name: '🗾 Cung Đường Vàng (3 Đoàn - 75p)', budget: '12.000.000 đ (4 Tr/tháng)', leads: '63 SĐT', pax: '6 Pax Ads (+19 cọc = 25p)', cpl: '190.000 đ', time: 'T10 & T11/2026', tab: 'cungduongvang' },
+      { name: '🍁 Hàn Quốc Mùa Thu (2 Đoàn - 50p)', budget: '7.500.000 đ (2.5 Tr/tháng)', leads: '45 SĐT', pax: '4 Pax Ads (+11 cọc = 15p)', cpl: '165.000 đ', time: 'T10 & T11/2026', tab: 'hanquoc' },
+      { name: '🧋 Đài Loan Thu Đông (4 Đoàn - 100p)', budget: '7.500.000 đ (2.5 Tr/tháng)', leads: '54 SĐT', pax: '5 Pax Ads (+27 cọc = 32p)', cpl: '140.000 đ', time: 'T10 & T11/2026', tab: 'dailoan' }
+    ],
+    highlights: [
+      'Đề xuất trực tiếp từ BU2: Phù hợp đặc thù Tour Liên Minh các thị trường Nhật - Hàn - Đài (team MKT không nắm rõ thị trường)',
+      'Kế thừa dữ liệu chi tiêu thực tế: BU2 đang duy trì nhịp chạy ~16 triệu mỗi tháng (Tháng 9/2026 chi 15.95M)',
+      'Phân bổ 45 Triệu / Quý (15 Triệu / Tháng) cân đối 2 trục: Hokkaido (18M — 40%) & 3 Tuyến liên minh (27M — 60%)',
+      'Tỷ lệ Ads / Doanh thu trên 10 đoàn Q4 chỉ 0.75% (dưới trần an toàn vốn 1.0%), Ads / Lãi gộp chỉ 3.76%',
+      'Kỳ vọng toàn phễu: ~248 Lead SĐT (~554 Inbox), chốt ~24 Pax Ads, kết hợp 67 khách cọc sẵn bảo chứng 91 Pax (34.3% tải)'
+    ]
   },
   {
     id: 'bu3',
     bu: 'BU3',
     quarterId: 'Q4_2026',
-    title: 'Kế Hoạch & Dự Toán Ngân Sách BU3 — Q4/2026 (35M) & Cả Năm 2027 (150M)',
-    subtitle: 'Chiến dịch Nước Rút Quý 4/2026 (35 Triệu: Year-End Party, Gala Dinner & Company Trip cận Tết) kết hợp Đề án chuẩn 12 tháng năm 2027 (150 Triệu: GSA + Quỹ PR Báo chí).',
+    title: 'Kế Hoạch & Dự Toán Ngân Sách BU3 — Q4/2026 (28M) & Cả Năm 2027 (150M)',
+    subtitle: 'Chiến dịch Nước Rút Quý 4/2026 (28 Triệu: Year-End Party, Gala Dinner & Company Trip cận Tết) kết hợp Đề án chuẩn 12 tháng năm 2027 (150 Triệu: GSA + Báo chí VTC News).',
     quarter: 'Q4/2026 & Năm 2027',
-    period: 'Q4/2026 (35M) • Cả Năm (150M)',
+    period: 'Q4/2026 (28M) • Cả Năm (150M)',
     status: 'active',
     statusLabel: 'Đang áp dụng',
     badgeColor: '#86198f',
     badgeBg: '#fae8ff',
-    budget: 35000000,
-    expectedLeads: '48 - 50 Lead Q4 • 220 Lead Năm',
-    expectedMessages: '~250 - 1.200 Inquiry',
-    expectedPaxAds: '7 - 8 Đoàn Q4 (~320p) • 45 Đoàn Năm (~1.800p)',
-    totalPaxOverall: '320 Pax Q4 • 2.200 Pax Năm',
-    adsRevenue: '~3.84 Tỷ Q4 • ~21.6 Tỷ Năm',
-    fullRevenue: '3.840.000.000 đ',
-    costRatio: '0.91%',
+    budget: 28000000,
+    expectedLeads: '38 - 40 Lead Q4 • 220 Lead Năm',
+    expectedMessages: '~200 - 1.200 Inquiry',
+    expectedPaxAds: '6 - 7 Đoàn Q4 (~270p) • 45 Đoàn Năm (~1.800p)',
+    totalPaxOverall: '270 Pax Q4 • 2.200 Pax Năm',
+    adsRevenue: '~3.24 Tỷ Q4 • ~21.6 Tỷ Năm',
+    fullRevenue: '3.240.000.000 đ',
+    costRatio: '0.86%',
     path: '/tai-lieu/thi-truong-bu3?cycle=q4_2026',
     hasPlan: true,
     routes: [
-      { name: '⚡ Quý 4/2026: YEP & Gala (35M)', budget: '35.000.000 đ', leads: '50 Lead DN', pax: '8 Đoàn (320p)', cpl: '700.000 đ', time: 'Chạy T10-T12/2026', tab: 'q4' },
+      { name: '⚡ Quý 4/2026: YEP & Gala (28M)', budget: '28.000.000 đ', leads: '40 Lead DN', pax: '7 Đoàn (270p)', cpl: '700.000 đ', time: 'Chạy T10-T12/2026', tab: 'q4' },
       { name: 'Mùa Hè & Teambuilding (90M)', budget: '90.000.000 đ', leads: '115 Lead DN', pax: '26 Đoàn (1.170p)', cpl: '780.000 đ', time: 'Chạy T3-T7 • Đi T5-T9', tab: 'summer' },
       { name: 'Mùa Hoa Anh Đào (25M)', budget: '25.000.000 đ', leads: '32 Lead DN', pax: '5 Đoàn (225p)', cpl: '781.250 đ', time: 'Chạy T1-T2 • Đi T3-T4', tab: 'sakura' },
       { name: 'Mùa Thu Lá Đỏ (30M)', budget: '30.000.000 đ', leads: '38 Lead DN', pax: '9 Đoàn (330p)', cpl: '789.473 đ', time: 'Chạy T7-T9 • Đi T9-T11', tab: 'autumn' }
     ],
     highlights: [
-      '⚡ Quý 4/2026 (Nước rút YEP): 35 Triệu (T10: 15M gồm 10M PR Báo, T11: 15M GSA, T12: 5M GSA chốt vét)',
+      '⚡ Quý 4/2026 (Nước rút YEP): 28 Triệu (T10: 12M gồm 5M PR thương hiệu FIT Tour VTC News + 7M GSA, T11: 10M GSA, T12: 6M GSA chốt vét)',
       '📅 Cả Năm 2027: 150 Triệu (120M Ads + 30M PR Báo chí theo Quý), Tháng 2 cắt sạch 0đ nghỉ Tết',
       'Đầy đủ 3 Trụ Cột Sản Phẩm Q4: Gala YEP Độc Bản (70%), Company Trip Biển Cận Tết, Tour MICE VIP',
       'Đầy đủ Máy tính Phễu B2B chuyển đổi cho cả 2 chu kỳ: Lead DN → Hợp đồng đoàn → Doanh thu'
@@ -167,11 +193,36 @@ const Q4_PLANS = [
     id: 'bu5',
     bu: 'BU5',
     quarterId: 'Q4_2026',
-    title: 'Kế Hoạch & Dự Toán BU5',
-    subtitle: 'Chưa có liên kết đề án cho BU5 trong Quý 4/2026. Tạm để trống link, sẽ cập nhật sau.',
-    status: 'empty',
-    statusLabel: 'Trống link (Thêm sau)',
-    hasPlan: false
+    title: 'Kế Hoạch & Dự Toán BU5 (Khám Phá & Độc Bản)',
+    subtitle: 'Đề án 5 tuyến độc bản: Murmansk Bắc Cực Quang (Nga), Ai Cập Sông Nile, Ma Rốc, Pakistan, Trung Á. Đối soát chuẩn xác 8 đoàn ERP trị giá 10.135 Tỷ.',
+    status: 'ready',
+    statusLabel: 'Sẵn sàng triển khai',
+    badgeText: '8 Đoàn ERP • 91 Pax',
+    badgeColor: '#b45309',
+    badgeBg: '#fef3c7',
+    budget: 100000000,
+    expectedLeads: '~397 Lead SĐT',
+    expectedMessages: '~1.480 Inbox',
+    expectedPaxAds: '~36 Pax',
+    totalPaxOverall: '58 Pax (+22 cọc)',
+    adsRevenue: '~6.34 Tỷ (Thực tế)',
+    fullRevenue: '10.134.900.000 đ',
+    costRatio: '0.99% (Chuẩn định mức 1%)',
+    path: '/tai-lieu/thi-truong-bu5',
+    hasPlan: true,
+    routes: [
+      { name: '❄️ Murmansk Nga (2 Đoàn)', budget: '28.000.000 đ', leads: '155 SĐT', pax: '~14 Pax (+3 cọc = 17p)', cpl: '180.000 đ', time: '09/12', tab: 'murmansk' },
+      { name: '☀️ Ai Cập Sông Nile (2 Đoàn)', budget: '28.000.000 đ', leads: '74 SĐT', pax: '~7 Pax', cpl: '380.000 đ', time: '22/11 & 20/12', tab: 'aicap' },
+      { name: '🏜️ Ma Rốc Bắc Phi (1 Đoàn)', budget: '20.000.000 đ', leads: '63 SĐT', pax: '~6 Pax', cpl: '320.000 đ', time: '19/11', tab: 'maroc' },
+      { name: '🏔️ Pakistan Hunza (2 Đoàn)', budget: '16.000.000 đ', leads: '73 SĐT', pax: '~6 Pax', cpl: '220.000 đ', time: '17/10 & 31/10', tab: 'pakistan' },
+      { name: '🏛️ Trung Á Tơ Lụa (1 Đoàn)', budget: '8.000.000 đ', leads: '32 SĐT', pax: '~3 Pax', cpl: '250.000 đ', time: '10/10', tab: 'trunga' }
+    ],
+    highlights: [
+      '100% đối soát số liệu chuẩn Database Production (8 đoàn ERP, 22 cọc đã thu 684.1M VNĐ)',
+      'Định mức ngân sách chuẩn xác 1% Doanh thu: 100.000.000 đ cho 3 tháng Q4',
+      'Chi phí Ads chỉ chiếm 0.99% doanh thu kế hoạch và 4.93% tổng lãi gộp',
+      'Tuyến săn Cực quang Nga Murmansk và Ai Cập Noel là 2 mũi nhọn bùng nổ doanh số'
+    ]
   }
 ];
 
@@ -220,6 +271,21 @@ export default function MarketPlanningSubTab() {
         ratioSub: 'Doanh thu kế hoạch: 11.01 Tỷ'
       };
     }
+    if (selectedBu === 'BU2') {
+      return {
+        appliedLabel: 'BU2',
+        appliedSub: 'Tour Liên Minh + Trọng Tâm Hokkaido',
+        budgetLabel: 'Ngân Sách Marketing BU2',
+        budgetVal: '45.000.000 đ',
+        budgetSub: '15 Tr/Tháng • Hokkaido: 18M • Liên Minh: 27M',
+        paxLabel: 'Quy Mô 11 Đoàn BU2',
+        paxVal: '265 Pax (91p Bảo Chứng)',
+        paxSub: 'Ads chốt: ~24p • Đã cọc: 67p (34.3% tải)',
+        ratioLabel: 'Tỷ Lệ Ads / Doanh Thu 10 Đoàn Q4',
+        ratioVal: '0.75%',
+        ratioSub: 'Doanh thu ERP Q4: 5.985 Tỷ (Trần ≤ 1.0%)'
+      };
+    }
     if (selectedBu === 'BU3') {
       return {
         appliedLabel: 'BU3',
@@ -250,19 +316,34 @@ export default function MarketPlanningSubTab() {
         ratioSub: 'Doanh thu Ads: ~1.95 - 2.42 Tỷ'
       };
     }
+    if (selectedBu === 'BU5') {
+      return {
+        appliedLabel: 'BU5',
+        appliedSub: 'Khám Phá & Độc Bản • 8 Đoàn Q4',
+        budgetLabel: 'Ngân Sách Marketing BU5',
+        budgetVal: '100.000.000 đ',
+        budgetSub: '5 Tuyến • Chuẩn định mức 1% Doanh thu',
+        paxLabel: 'Mục Tiêu Khách BU5',
+        paxVal: '91 Pax (56p Bảo Chứng)',
+        paxSub: 'Ads chốt: ~36p • Đã cọc: 20p (61.5% tải)',
+        ratioLabel: 'Tỷ Lệ Ads / Doanh Thu Kế Hoạch',
+        ratioVal: '0.99%',
+        ratioSub: 'Doanh thu kế hoạch: 10.135 Tỷ'
+      };
+    }
     // ALL hoặc các BU khác
     return {
-      appliedLabel: 'BU1 + BU3 + BU4',
-      appliedSub: '3 Đề án đang áp dụng',
+      appliedLabel: 'BU1 + BU2 + BU3 + BU4 + BU5',
+      appliedSub: '5 Đề án đang áp dụng',
       budgetLabel: 'Tổng Ngân Sách Đã Duyệt',
-      budgetVal: '300.000.000 đ',
-      budgetSub: 'BU1: 120M • BU3: 150M • BU4: 30M',
+      budgetVal: '445.000.000 đ',
+      budgetSub: 'BU1: 120M • BU2: 45M • BU3: 150M • BU4: 30M • BU5: 100M',
       paxLabel: 'Tổng Quy Mô Đoàn & Khách',
-      paxVal: '2.126 - 2.534 Pax',
-      paxSub: '20 đoàn BU1 + 45 đoàn BU3 + BU4',
+      paxVal: '2.482 - 2.890 Pax',
+      paxSub: '20 đoàn BU1 + 11 đoàn BU2 + 45 đoàn BU3 + BU4 + 8 đoàn BU5',
       ratioLabel: 'Tỷ Lệ Ads / Tổng DT Kế Hoạch',
-      ratioVal: '0.82%',
-      ratioSub: 'Tổng DT kế hoạch: ~36.57 Tỷ'
+      ratioVal: '0.83%',
+      ratioSub: 'Tổng DT kế hoạch: ~53.55 Tỷ'
     };
   }, [selectedBu]);
 
@@ -289,7 +370,7 @@ export default function MarketPlanningSubTab() {
             Danh Sách Kế Hoạch & Dự Toán Thị Trường
           </h2>
           <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.88rem', maxWidth: '820px', lineHeight: '1.5' }}>
-            Quản lý kế hoạch ngân sách Marketing và dự toán theo từng Business Unit (BU1 - BU5) phân theo chu kỳ thời gian. Dữ liệu kế hoạch BU1, BU3 và BU4 đã được chuẩn hoá và đối soát trực tiếp với Database Production của hệ thống.
+            Quản lý kế hoạch ngân sách Marketing và dự toán theo từng Business Unit (BU1 - BU5) phân theo chu kỳ thời gian. Dữ liệu kế hoạch BU1, BU2, BU3 và BU4 đã được chuẩn hoá và đối soát trực tiếp với Database Production của hệ thống.
           </p>
         </div>
 

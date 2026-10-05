@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo Cáo Hiệu Suất Mạng Xã Hội & Digital Tháng 09/2026 | FIT TOUR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent-blue: #0284c7;
+      --accent-green: #059669;
+      --accent-pink: #e11d48;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 32px 20px;
+    }
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+    .header-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+      color: white;
+      border-radius: 20px;
+      padding: 32px 38px;
+      box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.4);
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-blue {
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+    .kpi-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .kpi-summary-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .kpi-summary-card .label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kpi-summary-card .value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin: 6px 0 2px 0;
+    }
+    .kpi-summary-card .desc {
+      font-size: 0.74rem;
+      color: #cbd5e1;
+    }
+    .channel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 22px;
+      margin-bottom: 28px;
+    }
+    .channel-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      display: flex;
+      flex-direction: column;
+      justifyContent: space-between;
+      position: relative;
+    }
+    .channel-card.web { border-top: 4px solid #059669; }
+    .channel-card.fb { border-top: 4px solid #1877f2; }
+    .channel-card.tt { border-top: 4px solid #ec4899; }
+    
+    .channel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .channel-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .channel-stats {
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin: 12px 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-green { background: #059669; color: white; }
+    .btn-blue { background: #1877f2; color: white; }
+    .btn-pink { background: #0f172a; color: white; }
+
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .matrix-table th {
+      background: #f8fafc;
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--border);
+      text-align: left;
+      font-weight: 700;
+      color: #475569;
+    }
+    .matrix-table td {
+      padding: 14px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+    }
+    .section-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 28px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      margin-bottom: 28px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header Banner -->
+    <div class="header-banner">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <span class="badge badge-blue">Báo Cáo Tổng Hợp & Đối Soát KPI</span>
+          <h1 style="font-size: 1.95rem; font-weight: 800; margin: 10px 0 6px 0; letter-spacing: -0.02em;">
+            Hiệu Suất Mạng Xã Hội & Digital Tháng 09/2026
+          </h1>
+          <p style="color: #cbd5e1; font-size: 0.92rem; max-width: 760px;">
+            FIT TOUR – Du lịch có Guu • Đối soát chỉ tiêu KPI và kết quả thực tế trên 3 kênh: <strong>Website fittour.vn</strong>, 
+            <strong>Facebook Fanpage</strong> và <strong>TikTok Studio</strong>.
+          </p>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 6px;">
+          <a href="https://docs.google.com/spreadsheets/d/1dr95yLvqX_WfucYrruugkKXns8L0WDP5/edit?usp=sharing&ouid=107203445454776991915&rtpof=true&sd=true" target="_blank" class="btn" style="background: rgba(255,255,255,0.15); color: white;">
+            📊 Mở Trang Tính 125 Bài Viết ↗
+          </a>
+          <a href="/marketing-ads?subtab=social-overview" class="btn" style="background: #0284c7; color: white;">
+            📊 Vào CRM Marketing
+          </a>
+        </div>
+      </div>
+
+      <!-- 3 Distinct Channel KPI Summaries (No cross-channel fake totals) -->
+      <div class="kpi-summary-grid">
+        <div class="kpi-summary-card">
+          <div class="label" style="color: #86efac;">
+            <span>🌐 Website fittour.vn</span>
+            <span style="background: rgba(34,197,94,0.2); padding: 2px 6px; border-radius: 4px;">Đạt 416.7% KPI</span>
+          </div>
+          <div class="value" style="color: #ffffff;">125 <span style="font-size: 0.9rem; color: #94a3b8;">/ >30 bài T9</span></div>
+          <div class="desc" style="margin-bottom: 6px;">21 Tour • 63 Cẩm nang • 29 Showroom • 12 Page</div>
+          <div style="font-size: 0.7rem; font-weight: 700; color: #86efac; background: rgba(34,197,94,0.15); padding: 2px 6px; border-radius: 4px; display: inline-block;">
+            🎯 Đề xuất KPI T10: 40 bài viết mới
+          </div>
+        </div>
+
+        <div class="kpi-summary-card">
+          <div class="label" style="color: #93c5fd;">
+            <span>📱 Facebook Fanpage</span>
+            <span style="background: rgba(59,130,246,0.2); padding: 2px 6px; border-radius: 4px;">Vượt +38.6% View</span>
+          </div>
+          <div class="value" style="color: #ffffff;">138,580 <span style="font-size: 0.9rem; color: #94a3b8;">/ 100k view T9</span></div>
+          <div class="desc" style="margin-bottom: 6px;">43 bài Org (35 Ảnh • 6 Reels • 2 Text) • TB ~3,223 view/bài</div>
+          <div style="font-size: 0.7rem; font-weight: 700; color: #93c5fd; background: rgba(59,130,246,0.15); padding: 2px 6px; border-radius: 4px; display: inline-block;">
+            🎯 Đề xuất KPI T10: 40 bài • > 120k view (> 3k/bài)
+          </div>
+        </div>
+
+        <div class="kpi-summary-card">
+          <div class="label" style="color: #fbcfe8;">
+            <span>🎵 TikTok Studio</span>
+            <span style="background: rgba(244,63,94,0.2); padding: 2px 6px; border-radius: 4px; color: #fca5a5;">Vượt +13.5% View</span>
+          </div>
+          <div class="value" style="color: #ffffff;">22,700 <span style="font-size: 0.9rem; color: #fbcfe8;">/ 20k view T9</span></div>
+          <div class="desc" style="margin-bottom: 6px;">30 clip hoàn tất • 533 likes • 155 shares • Search 32.2%</div>
+          <div style="font-size: 0.7rem; font-weight: 700; color: #fbcfe8; background: rgba(244,63,94,0.15); padding: 2px 6px; border-radius: 4px; display: inline-block;">
+            🎯 Đề xuất KPI T10: 30 clip • > 25,000 views
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Centerpiece: Bảng Đối Soát KPI Tháng 9 & Đề Xuất Tháng 10 -->
+    <div class="section-box">
+      <h3 style="font-size: 1.18rem; font-weight: 800; color: #0f172a; margin-bottom: 4px;">
+        📊 Bảng Đối Soát Chỉ Tiêu KPI vs Thực Tế & Đề Xuất KPI Tháng 10/2026
+      </h3>
+      <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 16px;">
+        Phân loại cụ thể từng kiểu bài viết, đối soát thực tế minh bạch và đề xuất chỉ tiêu hành động tháng tiếp theo
+      </p>
+
+      <div style="overflow-x: auto;">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th style="width: 18%;">Kênh</th>
+              <th style="width: 28%;">Phân Loại Bài Viết Chi Tiết (T9)</th>
+              <th style="width: 26%;">Chỉ Số KPI, Thực Tế & % Đạt (T9)</th>
+              <th style="width: 16%;">Đề Xuất KPI Tháng 10</th>
+              <th style="width: 12%; text-align: center;">Đánh Giá</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="vertical-align: top;">
+                <div style="font-weight: 700; color: #059669; font-size: 0.95rem;">🌐 Website fittour.vn</div>
+                <div style="font-size: 0.72rem; color: #64748b;">Astro Native • Cloudflare</div>
+              </td>
+              <td style="vertical-align: top;">
+                <div style="font-weight: 800; color: #059669; margin-bottom: 4px;">Tổng: 125 trang/bài hoàn thành</div>
+                <div style="font-size: 0.78rem; color: #475569; line-height: 1.6;">
+                  • <strong>21</strong> Sản phẩm Tour độc bản<br>
+                  • <strong>63</strong> Cẩm nang & Bài viết SEO (Posts)<br>
+                  • <strong>29</strong> Showroom thư viện ảnh 16:9<br>
+                  • <strong>12</strong> Trang tĩnh hệ thống (Pages)
+                </div>
+              </td>
+              <td style="vertical-align: top;">
+                <div style="margin-bottom: 8px;">
+                  <div style="font-size: 0.72rem; color: #64748b; font-weight: 700;">SỐ BÀI VIẾT:</div>
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                    <span style="font-weight: 800; color: #0f172a; font-size: 0.92rem;">125</span>
+                    <span style="font-size: 0.78rem; color: #64748b;">/ KPI > 30</span>
+                    <span style="background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 0.72rem;">416.7%</span>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size: 0.72rem; color: #64748b; font-weight: 700;">LƯỢT TRUY CẬP (VIEWS):</div>
+                  <div style="font-size: 0.78rem; color: #059669; font-weight: 700; margin-top: 2px;">Đo lường GA4 / Organic Search</div>
+                  <div style="font-size: 0.7rem; color: #94a3b8;">Tốc độ tải cực nhanh &lt; 0.8s</div>
+                </div>
+              </td>
+              <td style="vertical-align: top;">
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px;">
+                  <div style="font-size: 0.72rem; font-weight: 700; color: #166534; text-transform: uppercase;">Chỉ tiêu T10</div>
+                  <div style="font-size: 1rem; font-weight: 800; color: #15803d; margin: 3px 0;">40 Bài viết</div>
+                  <div style="font-size: 0.72rem; color: #475569;">Cẩm nang SEO & Tour mùa Thu - Đông</div>
+                </div>
+              </td>
+              <td style="vertical-align: top; text-align: center;">
+                <span style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; display: inline-block;">
+                  VƯỢT TRỘI<br><span style="font-size: 0.68rem; font-weight: 500;">(Xong 100%)</span>
+                </span>
+                <div style="margin-top: 10px;">
+                  <a href="/tai-lieu/bao-cao-website-thang-9-2026" class="btn" style="background: #059669; color: white; padding: 5px 10px; font-size: 0.72rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; font-weight: 600;">
+                    Xem chi tiết →
+                  </a>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="vertical-align: top;">
+                <div style="font-weight: 700; color: #1877f2; font-size: 0.95rem;">📱 Facebook Fanpage</div>
+                <div style="font-size: 0.72rem; color: #64748b;">FIT TOUR – Du lịch có Guu</div>
+              </td>
+              <td style="vertical-align: top;">
+                <div style="font-weight: 800; color: #1877f2; margin-bottom: 4px;">Tổng: 43 bài Organic</div>
+                <div style="font-size: 0.78rem; color: #475569; line-height: 1.6;">
+                  • <strong>35</strong> Album & Ảnh hành trình (81.4%)<br>
+                  • <strong>6</strong> Thước phim (Reels du lịch)<br>
+                  • <strong>2</strong> Bài viết cảm xúc / Tin ngắn<br>
+                  <span style="font-size: 0.72rem; color: #64748b;">• Paid Ads: 6 bài quảng cáo (tách riêng)</span>
+                </div>
+              </td>
+              <td style="vertical-align: top;">
+                <div style="margin-bottom: 8px;">
+                  <div style="font-size: 0.72rem; color: #64748b; font-weight: 700;">SỐ BÀI VIẾT:</div>
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                    <span style="font-weight: 800; color: #0f172a; font-size: 0.92rem;">43 bài</span>
+                    <span style="font-size: 0.78rem; color: #64748b;">/ KPI 40</span>
+                    <span style="background: #dbeafe; color: #1e40af; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 0.72rem;">107.5%</span>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size: 0.72rem; color: #64748b; font-weight: 700;">LƯỢT XEM NỘI DUNG (VIEWS):</div>
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                    <span style="font-weight: 800; color: #1877f2; font-size: 0.92rem;">138,580</span>
+                    <span style="font-size: 0.78rem; color: #64748b;">/ > 100k</span>
+                    <span style="background: #dbeafe; color: #1e40af; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 0.72rem;">138.6%</span>
+                  </div>
+                  <div style="font-size: 0.75rem; color: #059669; font-weight: 700; margin-top: 2px;">TB ~3,223 view/bài organic</div>
+                  <div style="font-size: 0.7rem; color: #64748b; margin-top: 1px;">1,096 tương tác • 71,459 reach • Ads: 66.1k</div>
+                </div>
+              </td>
+              <td style="vertical-align: top;">
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px;">
+                  <div style="font-size: 0.72rem; font-weight: 700; color: #1e40af; text-transform: uppercase;">Chỉ tiêu T10</div>
+                  <div style="font-size: 1rem; font-weight: 800; color: #1d4ed8; margin: 3px 0;">40 Bài viết</div>
+                  <div style="font-size: 0.78rem; font-weight: 700; color: #1e40af;">&gt; 120,000 views</div>
+                  <div style="font-size: 0.75rem; font-weight: 700; color: #059669; margin-top: 2px;">&gt; 3,000 views TB/bài ⭐</div>
+                  <div style="font-size: 0.7rem; color: #64748b; margin-top: 2px;">(Tăng +20k view MoM)</div>
+                </div>
+              </td>
+              <td style="vertical-align: top; text-align: center;">
+                <span style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; display: inline-block;">
+                  ĐẠT VƯỢT<br><span style="font-size: 0.68rem; font-weight: 500;">CHỈ TIÊU</span>
+                </span>
+                <div style="margin-top: 10px;">
+                  <a href="/tai-lieu/bao-cao-facebook-thang-9-2026" class="btn" style="background: #1877f2; color: white; padding: 5px 10px; font-size: 0.72rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; font-weight: 600;">
+                    Xem chi tiết →
+                  </a>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="vertical-align: top;">
+                <div style="font-weight: 700; color: #e11d48; font-size: 0.95rem;">🎵 TikTok Studio</div>
+                <div style="font-size: 0.72rem; color: #64748b;">Kênh @fittour</div>
+              </td>
+              <td style="vertical-align: top;">
+                <div style="font-weight: 800; color: #e11d48; margin-bottom: 4px;">Tổng: 30 video hoàn tất</div>
+                <div style="font-size: 0.78rem; color: #475569; line-height: 1.6;">
+                  • Short-form cảnh đẹp, flycam ngách<br>
+                  • Trải nghiệm văn hóa & ẩm thực bản địa<br>
+                  • Review & tips du lịch thực tế<br>
+                  • FYP 56.2% • <strong style="color: #059669;">Search: 32.2% ⭐</strong>
+                </div>
+              </td>
+              <td style="vertical-align: top;">
+                <div style="margin-bottom: 8px;">
+                  <div style="font-size: 0.72rem; color: #64748b; font-weight: 700;">SỐ VIDEO CLIP:</div>
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                    <span style="font-weight: 800; color: #0f172a; font-size: 0.92rem;">30 clip</span>
+                    <span style="font-size: 0.78rem; color: #64748b;">/ KPI 30</span>
+                    <span style="background: #fce7f3; color: #9d174d; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 0.72rem;">100%</span>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size: 0.72rem; color: #64748b; font-weight: 700;">LƯỢT XEM VIDEO (VIEWS):</div>
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                    <span style="font-weight: 800; color: #e11d48; font-size: 0.92rem;">22,700</span>
+                    <span style="font-size: 0.78rem; color: #64748b;">/ > 20k</span>
+                    <span style="background: #fce7f3; color: #9d174d; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 0.72rem;">113.5%</span>
+                  </div>
+                  <div style="font-size: 0.7rem; color: #64748b; margin-top: 2px;">533 likes • 155 shares • 633 profile views</div>
+                </div>
+              </td>
+              <td style="vertical-align: top;">
+                <div style="background: #fdf2f8; border: 1px solid #fbcfe8; border-radius: 8px; padding: 10px;">
+                  <div style="font-size: 0.72rem; font-weight: 700; color: #9d174d; text-transform: uppercase;">Chỉ tiêu T10</div>
+                  <div style="font-size: 1rem; font-weight: 800; color: #be185d; margin: 3px 0;">30 Video</div>
+                  <div style="font-size: 0.78rem; font-weight: 700; color: #9d174d;">&gt; 25,000 views</div>
+                  <div style="font-size: 0.7rem; color: #64748b; margin-top: 2px;">(+10.1% • 1 clip/ngày)</div>
+                </div>
+              </td>
+              <td style="vertical-align: top; text-align: center;">
+                <span style="background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; display: inline-block;">
+                  VƯỢT KPI<br><span style="font-size: 0.68rem; font-weight: 500;">(Đạt 113.5%)</span>
+                </span>
+                <div style="margin-top: 10px;">
+                  <a href="/tai-lieu/bao-cao-tiktok-thang-9-2026" class="btn" style="background: #0f172a; color: white; padding: 5px 10px; font-size: 0.72rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; font-weight: 600;">
+                    Xem chi tiết →
+                  </a>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Sau đó đi xuống nói về các kênh -->
+    <h2 style="font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: 14px;">
+      Chi Tiết Triển Khai Từng Kênh Truyền Thông
+    </h2>
+
+    <div class="channel-grid">
+      <!-- Web -->
+      <div class="channel-card web">
+        <div>
+          <div class="channel-header">
+            <div>
+              <div class="channel-title">🌐 Website fittour.vn</div>
+              <span style="font-size: 0.75rem; color: #64748b;">Astro Native • Cloudflare Edge</span>
+            </div>
+            <span style="background: #dcfce7; color: #166534; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 6px;">125 Trang</span>
+          </div>
+          <p style="font-size: 0.85rem; color: #475569;">
+            <strong>KPI (>30 bài):</strong> Đạt 416.7%. Đã hoàn tất 125 trang/bài, dọn sạch Elementor, kiến trúc Astro Native SSR tải trang cực nhanh dưới 0.8 giây.
+          </p>
+          <div class="channel-stats">
+            <div>Sản phẩm Tour: <strong style="color: #059669;">21 Tour</strong></div>
+            <div>Cẩm nang/bài: <strong>63 Bài</strong></div>
+            <div>Showroom 16:9: <strong>29 Trang</strong></div>
+            <div>Trang hệ thống: <strong>12 Page</strong></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 14px;">
+          <a href="/tai-lieu/bao-cao-website-thang-9-2026" class="btn btn-green" style="flex: 1;">
+            📖 Xem Chi Tiết /tai-lieu/
+          </a>
+          <a href="/email_preview_bao_cao_website_t9_2026.html" class="btn" style="background: #f1f5f9; color: #334155;">
+            Preview
+          </a>
+        </div>
+      </div>
+
+      <!-- FB -->
+      <div class="channel-card fb">
+        <div>
+          <div class="channel-header">
+            <div>
+              <div class="channel-title">📱 Facebook Fanpage</div>
+              <span style="font-size: 0.75rem; color: #64748b;">FIT TOUR – Du lịch có Guu</span>
+            </div>
+            <span style="background: #dbeafe; color: #1e40af; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 6px;">43 Bài Organic</span>
+          </div>
+          <p style="font-size: 0.85rem; color: #475569;">
+            <strong>KPI (40 bài, 100k view):</strong> Đạt 43 bài (107.5%) và 138,580 lượt xem organic (138.6%), trung bình đạt ~3,223 view/bài. Mục tiêu T10 nâng lên > 3,000 views TB/bài.
+          </p>
+          <div class="channel-stats">
+            <div>Lượt xem Org: <strong style="color: #1877f2;">138,580</strong></div>
+            <div>TB xem/bài: <strong style="color: #059669;">~3,223</strong></div>
+            <div>Tương tác: <strong>1,096</strong></div>
+            <div>Reach người: <strong>71,459</strong></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 14px;">
+          <a href="/tai-lieu/bao-cao-facebook-thang-9-2026" class="btn btn-blue" style="flex: 1;">
+            📖 Xem Chi Tiết /tai-lieu/
+          </a>
+          <a href="/preview_bao_cao_fanpage_facebook_t9_2026.html" class="btn" style="background: #f1f5f9; color: #334155;">
+            Preview
+          </a>
+        </div>
+      </div>
+
+      <!-- TikTok -->
+      <div class="channel-card tt">
+        <div>
+          <div class="channel-header">
+            <div>
+              <div class="channel-title">🎵 TikTok Studio</div>
+              <span style="font-size: 0.75rem; color: #64748b;">Kênh @fittour • Video Ngắn</span>
+            </div>
+            <span style="background: #fce7f3; color: #9d174d; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 6px;">Đạt 113.5% KPI</span>
+          </div>
+          <p style="font-size: 0.85rem; color: #475569;">
+            <strong>KPI (30 video, 20k view):</strong> Hoàn tất 30 video, ghi nhận 22,700 views (vượt +13.5% KPI). Tỷ lệ tìm kiếm tự nhiên đạt 32.2%. Chỉ tiêu T10: > 25,000 views.
+          </p>
+          <div class="channel-stats">
+            <div>Tổng Views: <strong style="color: #be185d;">22,700</strong></div>
+            <div>Lượt Thích: <strong>533</strong></div>
+            <div>Lượt Chia Sẻ: <strong>155</strong></div>
+            <div>Tìm Kiếm (Search): <strong style="color: #059669;">32.2%</strong></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 14px;">
+          <a href="/tai-lieu/bao-cao-tiktok-thang-9-2026" class="btn btn-pink" style="flex: 1;">
+            📖 Xem Chi Tiết /tai-lieu/
+          </a>
+          <a href="/preview_bao_cao_tiktok_studio_t9_2026.html" class="btn" style="background: #f1f5f9; color: #334155;">
+            Preview
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

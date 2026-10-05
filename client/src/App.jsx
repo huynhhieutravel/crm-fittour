@@ -2183,13 +2183,13 @@ function AppContent() {
           <X size={20} />
         </button>
         <button className="sidebar-toggle-btn" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} title="Thu/Phóng Menu">
-          {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
         <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer', overflow: 'hidden' }}>
           {isSidebarCollapsed ? (
-            <img src="/favicon.png" alt="FIT TOUR" style={{ height: '34px', width: '34px', objectFit: 'contain', margin: '0 auto', display: 'block' }} />
+            <img src="/favicon.png" alt="FIT TOUR" style={{ height: '30px', width: '30px', objectFit: 'contain', margin: '0 auto', display: 'block' }} />
           ) : (
-            <img src="/logo.png" alt="FIT TOUR" style={{ height: '38px', width: 'auto', maxWidth: '200px', objectFit: 'contain', objectPosition: 'left' }} />
+            <img src="/logo.png" alt="FIT TOUR" style={{ height: '33px', width: 'auto', maxWidth: '175px', objectFit: 'contain', objectPosition: 'left' }} />
           )}
         </div>
 
@@ -2862,6 +2862,47 @@ function AppContent() {
             }}
           >
             📈 Tổng Quan Marketing
+          </div>
+          <div 
+            className={`submenu-item ${activeTab === 'marketing-ads' && (location.search.includes('social-overview') || !location.search.includes('subtab=')) ? 'active' : ''}`} 
+            onClick={() => { 
+              navigate('/marketing-ads?subtab=social-overview'); 
+              setActiveTab('marketing-ads'); 
+              setHoveredMenu(null); 
+            }} 
+            style={{ 
+              borderTop: '1px solid rgba(255, 255, 255, 0.08)', 
+              marginTop: '4px', 
+              paddingTop: '8px', 
+              color: '#38bdf8', 
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
+          >
+            <span>🌐📱 Tổng Hợp Hiệu Suất MXH (T9)</span>
+            <span style={{ fontSize: '0.65rem', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '1px 5px', borderRadius: '4px' }}>3 Kênh</span>
+          </div>
+          <div 
+            className="submenu-item" 
+            onClick={() => { 
+              navigate('/tai-lieu/marketing'); 
+              setHoveredMenu(null); 
+            }} 
+            style={{ 
+              borderTop: '1px solid rgba(255, 255, 255, 0.08)', 
+              marginTop: '4px', 
+              paddingTop: '8px', 
+              color: '#34d399', 
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
+          >
+            <span>📈 Kho Báo Cáo Marketing</span>
+            <span style={{ fontSize: '0.65rem', background: 'rgba(52, 211, 153, 0.2)', color: '#34d399', padding: '1px 5px', borderRadius: '4px' }}>/tai-lieu/</span>
           </div>
         </div>
       )}
@@ -3694,7 +3735,8 @@ function AppContent() {
 
 
 
-        <SystemAnnouncementPopup currentUser={user} />
+        {/* Đã ngừng popup thông báo tự động */}
+        {/* <SystemAnnouncementPopup currentUser={user} /> */}
 
         <CommandPalette onNavigate={(id) => {
             if (VALID_TABS.includes(id)) {
@@ -3817,7 +3859,7 @@ function AppContent() {
             )}
 
             {activeTab === 'marketing-ads' && (
-              <MarketingAdsTab addToast={addToast} currentUser={user} bus={bus.filter(b => b.is_active !== false)} />
+              <MarketingAdsTab key={location.search} addToast={addToast} currentUser={user} bus={bus.filter(b => b.is_active !== false)} />
             )}
 
             {activeTab === 'marketing-budget-plan' && (
@@ -3833,6 +3875,7 @@ function AppContent() {
             setEditingLead={setEditingLead}
             handleConvertLead={handleConvertLead}
             leads={leads}
+            fetchLeads={fetchLeads}
             users={users}
             tours={tourTemplates}
             currentUser={user}
@@ -4710,6 +4753,7 @@ function AppContent() {
                         clearInitialPsid={() => setDrawerInboxPsid(null)}
                         onGoBack={() => setIsInboxDrawerOpen(false)}
                         leads={leads}
+                        fetchLeads={fetchLeads}
                         users={users}
                         tours={tourTemplates}
                         handleConvertLead={handleConvertLead}

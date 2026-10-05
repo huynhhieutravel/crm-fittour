@@ -42,9 +42,9 @@ const fmt = (val) => {
 };
 
 // Helper tính toán mức độ nhiệt và màu sắc cho Bản Đồ Nhiệt 12 Tháng
-const getHeatmapInfo = (budget, channels) => {
+const getHeatmapInfo = (budget, channels, isQ4 = false) => {
   const gsaBudget = channels?.find(c => c.name.includes('Google Search Ads'))?.budget || 0;
-  const prBudget = channels?.find(c => c.name.includes('PR Báo') || c.name.includes('Quỹ Dồn PR'))?.budget || 0;
+  const prBudget = channels?.find(c => c.name.includes('PR Báo') || c.name.includes('Quỹ Dồn PR') || c.name.includes('Báo Chí'))?.budget || 0;
 
   if (budget === 0) {
     return {
@@ -60,7 +60,10 @@ const getHeatmapInfo = (budget, channels) => {
       prBudget
     };
   }
-  if (budget <= 5000000) {
+  const maxRef = isQ4 ? 28000000 : 25000000;
+  const pct = Math.round((budget / maxRef) * 100);
+
+  if (budget <= 6000000) {
     return {
       level: 1,
       label: 'Sàn Duy Trì',
@@ -69,7 +72,7 @@ const getHeatmapInfo = (budget, channels) => {
       border: '#86efac',
       text: '#047857',
       barColor: '#10b981',
-      pct: Math.round((budget / 25000000) * 100),
+      pct,
       gsaBudget,
       prBudget
     };
@@ -77,13 +80,13 @@ const getHeatmapInfo = (budget, channels) => {
   if (budget <= 10000000) {
     return {
       level: 2,
-      label: 'Khởi Động Đón Đầu',
-      badge: '⚡ Khởi động',
+      label: isQ4 ? 'Tăng Tốc Chốt Thầu' : 'Khởi Động Đón Đầu',
+      badge: isQ4 ? '🚀 Tăng tốc' : '⚡ Khởi động',
       bg: '#fefce8',
       border: '#fde047',
       text: '#854d0e',
       barColor: '#eab308',
-      pct: Math.round((budget / 25000000) * 100),
+      pct,
       gsaBudget,
       prBudget
     };
@@ -97,7 +100,7 @@ const getHeatmapInfo = (budget, channels) => {
       border: '#fdba74',
       text: '#9a3412',
       barColor: '#f97316',
-      pct: Math.round((budget / 25000000) * 100),
+      pct,
       gsaBudget,
       prBudget
     };
@@ -110,7 +113,7 @@ const getHeatmapInfo = (budget, channels) => {
     border: '#f43f5e',
     text: '#9f1239',
     barColor: '#f43f5e',
-    pct: Math.round((budget / 25000000) * 100),
+    pct,
     gsaBudget,
     prBudget
   };
@@ -173,7 +176,7 @@ const MONTHS_DATA = [
     budget: 25000000,
     status: 'peak',
     seasonKey: 'summer',
-    seasonName: 'Khởi Động Hè Sớm (💥 Cú Hích PR 1)',
+    seasonName: 'Khởi Động Hè Sớm (📰 PR Báo Chí Đợt 1)',
     seasonIcon: '☀️',
     colorTheme: '#f59e0b',
     bgTheme: '#fffbeb',
@@ -181,13 +184,13 @@ const MONTHS_DATA = [
     targetMarkets: ['Thái Lan (Bangkok - Pattaya)', 'Singapore - Malaysia', 'Trung Quốc Hè', 'Đà Nẵng / Phú Quốc / Nha Trang'],
     channels: [
       { name: 'Google Search Ads (GSA)', budget: 15000000, pct: '60%', desc: 'Đấu thầu top 1 từ khoá tour hè công ty, teambuilding biển cao cấp' },
-      { name: '💥 Quỹ Dồn PR Báo Chí (Hero Push 1)', budget: 10000000, pct: '40%', desc: 'Bài PR Báo chí B2B uy tín: "Xu hướng Doanh nghiệp đặt Tour Hè sớm 2026" làm Profile thầu cả năm' }
+      { name: '📰 Quỹ Dồn PR Báo Chí (Đợt 1)', budget: 10000000, pct: '40%', desc: 'Bài PR Báo chí B2B uy tín: "Xu hướng Doanh nghiệp đặt Tour Hè sớm 2026" làm Profile thầu cả năm' }
     ],
     expectedInquiries: 32,
     expectedDeals: 6,
     expectedPax: 270,
     expectedRevenue: 3240000000,
-    leadTimeNote: 'Sau Tết 1 tháng: Doanh nghiệp vào guồng, Ban Giám Đốc duyệt ngân sách Hè. Kích hoạt Cú Hích PR Báo 10M kết hợp 15M GSA đón đỉnh tìm kiếm.'
+    leadTimeNote: 'Sau Tết 1 tháng: Doanh nghiệp vào guồng, Ban Giám Đốc duyệt ngân sách Hè. Đăng bài PR Báo chí 10M kết hợp 15M GSA đón đỉnh tìm kiếm.'
   },
   {
     month: 4,
@@ -262,7 +265,7 @@ const MONTHS_DATA = [
     budget: 20000000,
     status: 'peak',
     seasonKey: 'autumn',
-    seasonName: 'Mùa Thu Vàng (💥 Cú Hích PR 2)',
+    seasonName: 'Mùa Thu Vàng (📰 PR Báo Chí Đợt 2)',
     seasonIcon: '🍁',
     colorTheme: '#ea580c',
     bgTheme: '#fff7ed',
@@ -270,13 +273,13 @@ const MONTHS_DATA = [
     targetMarkets: ['Trung Quốc (Cửu Trại Câu / Bắc Kinh)', 'Hàn Quốc (Đảo Nami)', 'Nhật Bản (Núi Phú Sĩ)', 'Đài Loan'],
     channels: [
       { name: 'Google Search Ads (GSA)', budget: 10000000, pct: '50%', desc: 'Từ khoá tour mùa thu lá đỏ đoàn công ty (Nhật, Hàn, Cửu Trại Câu)' },
-      { name: '💥 Quỹ Dồn PR Báo Chí (Hero Push 2)', budget: 10000000, pct: '50%', desc: 'Bài PR Báo chí B2B uy tín: "Kinh nghiệm chọn đơn vị lữ hành uy tín tổ chức tour đoàn thể & thẩm định thầu"' }
+      { name: '📰 Quỹ Dồn PR Báo Chí (Đợt 2)', budget: 10000000, pct: '50%', desc: 'Bài PR Báo chí B2B uy tín: "Kinh nghiệm chọn đơn vị lữ hành uy tín tổ chức tour đoàn thể & thẩm định thầu"' }
     ],
     expectedInquiries: 24,
     expectedDeals: 5,
     expectedPax: 200,
     expectedRevenue: 2400000000,
-    leadTimeNote: 'Chạy đón Mùa Thu Vàng (Nhật Bản, Hàn Quốc, Cửu Trại Câu). Đổ 10M GSA kết hợp Cú Hích PR 10M làm bảo chứng hồ sơ năng lực đấu thầu B2B.'
+    leadTimeNote: 'Chạy đón Mùa Thu Vàng (Nhật Bản, Hàn Quốc, Cửu Trại Câu). Đổ 10M GSA kết hợp bài PR Báo chí 10M làm bảo chứng hồ sơ năng lực đấu thầu B2B.'
   },
   {
     month: 8,
@@ -329,7 +332,7 @@ const MONTHS_DATA = [
     budget: 15000000,
     status: 'peak',
     seasonKey: 'yep',
-    seasonName: 'Đón Sóng YEP (💥 Cú Hích PR 3)',
+    seasonName: 'Đón Sóng YEP (📰 PR Báo Chí Đợt 3)',
     seasonIcon: '🥂',
     colorTheme: '#d97706',
     bgTheme: '#fef3c7',
@@ -337,13 +340,13 @@ const MONTHS_DATA = [
     targetMarkets: ['Resort 5 Sao Ven Biển (Phú Quốc/Hồ Tràm)', 'Gala Dinner Trọn Gói', 'Tour Cao Cấp Tri Ân VIP'],
     channels: [
       { name: 'Google Search Ads (GSA)', budget: 5000000, pct: '33.3%', desc: 'Top từ khoá tổ chức year end party công ty trọn gói' },
-      { name: '💥 Quỹ Dồn PR Báo Chí (Hero Push 3)', budget: 10000000, pct: '66.7%', desc: 'Bài PR Báo chí B2B & Kinh tế: "Giải pháp tổ chức Gala Dinner & Year-End Party đỉnh cao cuối năm cho Doanh Nghiệp"' }
+      { name: '📰 Quỹ Dồn PR Báo Chí (Đợt 3)', budget: 10000000, pct: '66.7%', desc: 'Bài PR Báo chí B2B & Kinh tế: "Giải pháp tổ chức Gala Dinner & Year-End Party đỉnh cao cuối năm cho Doanh Nghiệp"' }
     ],
     expectedInquiries: 20,
     expectedDeals: 4,
     expectedPax: 180,
     expectedRevenue: 2160000000,
-    leadTimeNote: 'Thời điểm các tập đoàn lớn mở thầu địa điểm và concept tiệc Tất Niên cuối năm. Kích hoạt Cú Hích PR Báo 10M kết hợp 5M GSA đón sóng mở thầu.'
+    leadTimeNote: 'Thời điểm các tập đoàn lớn mở thầu địa điểm và concept tiệc Tất Niên cuối năm. Lên bài PR Báo chí 10M kết hợp 5M GSA đón sóng mở thầu.'
   },
   {
     month: 11,
@@ -397,7 +400,7 @@ const MONTHS_DATA = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 // BỘ DỮ LIỆU KẾ HOẠCH NƯỚC RÚT BU3 — QUÝ 4/2026 (T10 - T12/2026)
-// TỔNG NGÂN SÁCH: 35.000.000 Đ (GSA: 25M • PR BÁO CHÍ: 10M)
+// TỔNG NGÂN SÁCH: 28.000.000 Đ (GSA: 23M • PR BÁO CHÍ VTC NEWS: 5M)
 // TRỌNG TÂM: CHIẾN DỊCH YEAR-END PARTY & GALA DINNER DOANH NGHIỆP CUỐI NĂM
 // ══════════════════════════════════════════════════════════════════════════════
 const Q4_MONTHS_DATA = [
@@ -405,28 +408,28 @@ const Q4_MONTHS_DATA = [
     month: 10,
     monthLabel: 'Tháng 10/2026',
     executionMonth: 'Tháng 12/2026 & Tháng 1/2027 (Tiệc YEP & Gala)',
-    budget: 15000000,
+    budget: 12000000,
     status: 'peak',
     seasonKey: 'yep',
-    seasonName: 'Đón Sóng Year-End Party (💥 Cú Hích PR 10M)',
+    seasonName: 'Đón Sóng Year-End Party (Bài PR Thương Hiệu VTC News 5M)',
     seasonIcon: '🥂',
     colorTheme: '#d97706',
     bgTheme: '#fef3c7',
     borderTheme: '#fde68a',
     targetMarkets: ['Gala Dinner Doanh Nghiệp', 'Resort Hồ Tràm / Phan Thiết / Phú Quốc', 'Tour Tri Ân Đối Tác VIP'],
     channels: [
-      { name: 'Google Search Ads (GSA)', budget: 5000000, pct: '33.3%', desc: 'Top từ khóa: tổ chức year end party trọn gói, gala dinner công ty, đặt tiệc tất niên' },
-      { name: '💥 Quỹ Dồn PR Báo Chí (Cú Hích B2B)', budget: 10000000, pct: '66.7%', desc: 'Bài PR Báo chí Kinh tế & B2B: "Xu hướng tổ chức Gala Dinner & Year-End Party độc bản cho Doanh Nghiệp cuối năm 2026"' }
+      { name: 'Google Search Ads (GSA)', budget: 7000000, pct: '58.3%', desc: 'Top từ khóa: tổ chức year end party trọn gói, gala dinner công ty, đặt tiệc tất niên' },
+      { name: 'Bài PR Báo Chí (VTC News)', budget: 5000000, pct: '41.7%', desc: 'Bài PR thương hiệu FIT Tour trên VTC News: "FIT Tour mang đến trải nghiệm riêng cho Tour Công Ty" (xây dựng tài sản thương hiệu lâu dài)' }
     ],
-    expectedInquiries: 18,
+    expectedInquiries: 14,
     expectedDeals: 2,
-    expectedPax: 90,
-    expectedRevenue: 1080000000,
-    leadTimeNote: 'Thời điểm các tập đoàn lớn mở thầu địa điểm và concept tiệc Tất Niên cuối năm. Kích hoạt Cú Hích PR Báo 10M kết hợp 5M GSA đón sóng mở thầu ban đầu.',
+    expectedPax: 80,
+    expectedRevenue: 960000000,
+    leadTimeNote: 'Thời điểm các tập đoàn lớn mở thầu địa điểm và concept tiệc Tất Niên cuối năm. Đăng bài PR thương hiệu FIT Tour trên VTC News (5M) kết hợp 7M GSA đón sóng mở thầu ban đầu.',
     actionChecklist: [
       'Tuần 1: Hoàn thiện Profile năng lực "Bộ Sưu Tập Concept YEP 2026" (gửi trực tiếp 200 khách hàng doanh nghiệp cũ).',
-      'Tuần 2: Lên bài PR Báo chí B2B uy tín (VnExpress/CafeF/Doanh Nhân) làm bảo chứng tín nhiệm đấu thầu.',
-      'Tuần 3: Bật chiến dịch Google Search Ads ngân sách 5M đón truy vấn thầu YEP sớm.',
+      'Tuần 2: Lên bài PR báo điện tử VTC News khẳng định thương hiệu FIT Tour mang đến trải nghiệm riêng Tour Công Ty, làm bảo chứng tín nhiệm thầu lâu dài.',
+      'Tuần 3: Bật chiến dịch Google Search Ads ngân sách 7M đón truy vấn thầu YEP sớm.',
       'Tuần 4: Họp chốt danh sách pitching với tối thiểu 10 tập đoàn và tổng công ty tiềm năng.'
     ]
   },
@@ -434,27 +437,27 @@ const Q4_MONTHS_DATA = [
     month: 11,
     monthLabel: 'Tháng 11/2026',
     executionMonth: 'Tháng 12/2026 & Tháng 1/2027 (Đại cao điểm chốt thầu)',
-    budget: 15000000,
+    budget: 10000000,
     status: 'peak',
     seasonKey: 'yep',
-    seasonName: 'Đại Cao Điểm Chốt Thầu YEP (Hỏa Lực 15M GSA)',
+    seasonName: 'Đại Cao Điểm Chốt Thầu YEP (Hỏa Lực 10M GSA)',
     seasonIcon: '🥂',
     colorTheme: '#d97706',
     bgTheme: '#fef3c7',
     borderTheme: '#fde68a',
     targetMarkets: ['Tiệc Tất Niên Doanh Nghiệp', 'Gala Dinner Trọn Gói Sân Khấu', 'Company Trip Biển Cận Tết'],
     channels: [
-      { name: 'Google Search Ads (GSA)', budget: 15000000, pct: '100%', desc: 'Đấu thầu hỏa lực cao nhất toàn bộ từ khóa: đặt tiệc tất niên, công ty tổ chức YEP uy tín, tiệc công ty cuối năm' }
+      { name: 'Google Search Ads (GSA)', budget: 10000000, pct: '100%', desc: 'Đấu thầu hỏa lực tập trung toàn bộ từ khóa: đặt tiệc tất niên, công ty tổ chức YEP uy tín, tiệc công ty cuối năm' }
     ],
-    expectedInquiries: 24,
-    expectedDeals: 4,
-    expectedPax: 160,
-    expectedRevenue: 1920000000,
-    leadTimeNote: 'Tháng chốt hợp đồng nước rút cho các tiệc YEP Tháng 12 và Tháng 1. Hỏa lực 15M GSA tập trung chuyển đổi các doanh nghiệp đang chốt phương án tiệc.',
+    expectedInquiries: 18,
+    expectedDeals: 3,
+    expectedPax: 120,
+    expectedRevenue: 1440000000,
+    leadTimeNote: 'Tháng chốt hợp đồng nước rút cho các tiệc YEP Tháng 12 và Tháng 1. Hỏa lực 10M GSA tập trung chuyển đổi các doanh nghiệp đang chốt phương án tiệc.',
     actionChecklist: [
       'Tuần 1: Đẩy mạnh ngân sách GSA lên tối đa, tập trung khung giờ 8h30 - 11h30 và 14h - 17h (giờ làm việc hành chính của HR/Admin).',
       'Tuần 2: Khảo sát địa điểm (Site Inspection) trực tiếp cùng khách hàng tại các khách sạn/resort đối tác.',
-      'Tuần 3: Đàm phán và chốt ký hợp đồng ít nhất 3-4 đoàn trọng điểm (50 - 150 khách).',
+      'Tuần 3: Đàm phán và chốt ký hợp đồng ít nhất 3 đoàn trọng điểm (40 - 100 khách).',
       'Tuần 4: Chốt hợp đồng các đoàn Company Trip kết hợp Gala khởi hành Tháng 12.'
     ]
   },
@@ -462,26 +465,26 @@ const Q4_MONTHS_DATA = [
     month: 12,
     monthLabel: 'Tháng 12/2026',
     executionMonth: 'Tháng 1/2027 (Chốt vét YEP trước Tết Âm)',
-    budget: 5000000,
+    budget: 6000000,
     status: 'normal',
     seasonKey: 'yep',
-    seasonName: 'Chốt Vét YEP SME & Vận Hành Đợt 1',
+    seasonName: 'Chốt Vét YEP SME & Vận Hành Đợt 1 (6M GSA)',
     seasonIcon: '🥂',
     colorTheme: '#d97706',
     bgTheme: '#fef3c7',
     borderTheme: '#fde68a',
     targetMarkets: ['Gala YEP phút chót (SME)', 'Tiệc Tất Niên Doanh Nghiệp Cận Tết', 'Tour Tri Ân Khách VIP Tháng 1'],
     channels: [
-      { name: 'Google Search Ads (GSA)', budget: 5000000, pct: '100%', desc: 'Top từ khóa đặt tiệc tất niên gấp, gala dinner trọn gói tháng 1 cận Tết' }
+      { name: 'Google Search Ads (GSA)', budget: 6000000, pct: '100%', desc: 'Top từ khóa đặt tiệc tất niên gấp, gala dinner trọn gói tháng 1 cận Tết' }
     ],
     expectedInquiries: 8,
     expectedDeals: 2,
     expectedPax: 70,
     expectedRevenue: 840000000,
-    leadTimeNote: 'Vừa vận hành các tiệc YEP Tháng 12, vừa giữ 5M GSA chốt vét các doanh nghiệp SME tìm địa điểm và concept tiệc muộn cho Tháng 1 cận Tết.',
+    leadTimeNote: 'Vừa vận hành các tiệc YEP Tháng 12, vừa giữ 6M GSA chốt vét các doanh nghiệp SME tìm địa điểm và concept tiệc muộn cho Tháng 1 cận Tết.',
     actionChecklist: [
       'Tuần 1 - 2: Vận hành trơn tru các tiệc Gala Dinner tổ chức trong Tháng 12 Dương lịch.',
-      'Tuần 2 - 3: Giữ GSA 5M chốt vét các công ty SME chốt tiệc cận Tết Âm (Tháng 1).',
+      'Tuần 2 - 3: Giữ GSA 6M chốt vét các công ty SME chốt tiệc cận Tết Âm (Tháng 1).',
       'Tuần 4: Đóng toàn bộ chiến dịch Ads, tập trung dồn 100% nhân sự chuẩn bị vận hành các sự kiện cao điểm Tháng 1.'
     ]
   }
@@ -502,8 +505,8 @@ const Q4_PRODUCTS = [
       'Quan hệ đối tác trực tiếp với các Trung tâm hội nghị & Resort giá tốt',
       'Đội ngũ điều hành hiện trường 1:1, xử lý sự cố trong 5 phút'
     ],
-    priceRange: '1.200.000 đ - 2.500.000 đ / khách',
-    targetDeals: '4 - 5 Đoàn (~160 - 200 khách)'
+    priceRange: '1.200.000 – 2.500.000 đ/k (Tiệc riêng) • Gói trọn gói 10 – 15 Tr/k',
+    targetDeals: '3 - 4 Đoàn (~170 khách) • DT: ~2.04 Tỷ VNĐ'
   },
   {
     id: 'prod-trip-bien',
@@ -518,8 +521,8 @@ const Q4_PRODUCTS = [
       'Xe Limousine / Universe đời mới phục vụ suốt tuyến',
       'Kịch bản Teambuilding bản quyền độc quyền của FIT Tour'
     ],
-    priceRange: '2.800.000 đ - 5.500.000 đ / khách',
-    targetDeals: '2 - 3 Đoàn (~80 - 100 khách)'
+    priceRange: '2.800.000 – 5.500.000 đ/k (Tour 2N1Đ – 3N2Đ)',
+    targetDeals: '2 Đoàn (~80 khách) • DT: ~760 Triệu VNĐ'
   },
   {
     id: 'prod-mice-vip',
@@ -534,8 +537,8 @@ const Q4_PRODUCTS = [
       'Quà tặng độc bản và xe sang đưa đón chuyên biệt',
       'Hướng dẫn viên và Quản lý tour cao cấp kinh nghiệm trên 10 năm'
     ],
-    priceRange: '15.000.000 đ - 35.000.000 đ / khách',
-    targetDeals: '1 Đoàn VIP (~20 - 30 khách)'
+    priceRange: '15.000.000 – 35.000.000 đ/k (Tuyến VIP 5 sao)',
+    targetDeals: '1 Đoàn VIP (~20 khách) • DT: ~440 Triệu VNĐ'
   }
 ];
 
@@ -563,7 +566,7 @@ export default function BU3MarketPlanningPage() {
   // State Máy tính B2B Phễu Doanh Nghiệp
   const [calcBudget, setCalcBudget] = useState(() => {
     const c = searchParams.get('cycle');
-    return (c === '2027' || c === 'year_2027') ? 150000000 : 35000000;
+    return (c === '2027' || c === 'year_2027') ? 150000000 : 28000000;
   });
   const [calcCpl, setCalcCpl] = useState(() => {
     const c = searchParams.get('cycle');
@@ -579,7 +582,7 @@ export default function BU3MarketPlanningPage() {
   const handleSwitchCycle = (newCycle) => {
     setActiveCycle(newCycle);
     if (newCycle === 'q4_2026') {
-      setCalcBudget(35000000);
+      setCalcBudget(28000000);
       setCalcCpl(700000);
       setCalcWinRate(16);
     } else {
@@ -706,7 +709,7 @@ export default function BU3MarketPlanningPage() {
               transition: 'all 0.15s'
             }}
           >
-            <span>⚡ Quý 4/2026 — Nước Rút YEP (35 Triệu)</span>
+            <span>⚡ Quý 4/2026 — Nước Rút YEP (28 Triệu)</span>
             {isQ4 && <span style={{ background: '#86198f', color: '#fff', fontSize: '0.66rem', padding: '1px 6px', borderRadius: '10px' }}>Đang xem</span>}
           </button>
 
@@ -796,12 +799,12 @@ export default function BU3MarketPlanningPage() {
 
           <h1 style={{ fontSize: '1.85rem', fontWeight: 800, margin: '0 0 10px', color: '#ffffff', letterSpacing: '-0.02em', lineHeight: '1.25' }}>
             {isQ4 
-              ? 'Kế Hoạch Nước Rút & Dự Toán Ngân Sách BU3 Quý 4/2026 — 35.000.000 đ' 
+              ? 'Kế Hoạch Nước Rút & Dự Toán Ngân Sách BU3 Quý 4/2026 — 28.000.000 đ' 
               : 'Đề Án & Dự Toán Ngân Sách BU3 Năm 2027 — 150.000.000 đ'}
           </h1>
           <p style={{ margin: '0 0 20px', fontSize: '0.94rem', color: '#f5d0fe', maxWidth: '920px', lineHeight: '1.6' }}>
             {isQ4
-              ? 'Chiến dịch tập trung hỏa lực 3 tháng cuối năm (Tháng 10, 11, 12) đánh chiếm thị trường Year-End Party (YEP), Gala Dinner doanh nghiệp và Company Trip biển kết hợp tri ân đối tác VIP đón Tết Nguyên Đán. Tổng ngân sách 35 Triệu (25M Google Search Ads + 10M Cú Hích PR Báo Chí B2B uy tín trong Tháng 10).'
+              ? 'Chiến dịch tập trung hỏa lực 3 tháng cuối năm (Tháng 10, 11, 12) đánh chiếm thị trường Year-End Party (YEP), Gala Dinner doanh nghiệp và Company Trip biển kết hợp tri ân đối tác VIP đón Tết Nguyên Đán. Tổng ngân sách 28 Triệu (23M Google Search Ads + 5M Bài PR Báo Chí VTC News trong Tháng 10).'
               : 'Khung phân bổ ngân sách Marketing cả năm 2027 theo chu kỳ mùa vụ cho 2 thị trường trọng tâm: (1) Nước ngoài theo mùa (Hoa anh đào, Hè, Thu) và (2) Teambuilding & Company Trip trong nước (Tháng 3-4, 6-9, và Year-End Party Tháng 12 - Tháng 01). Tập trung duy trì Google Search Ads (GSA), Booking Báo Chí uy tín và cắt triệt để ngân sách vào Tháng 2 (Kỳ nghỉ Tết Âm lịch & Tháng Giêng) để tối ưu dòng tiền.'}
           </p>
 
@@ -818,17 +821,17 @@ export default function BU3MarketPlanningPage() {
                 {isQ4 ? 'Tổng Ngân Sách Q4' : 'Tổng Ngân Sách MKT Năm'}
               </div>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#38bdf8', marginTop: '3px' }}>
-                {isQ4 ? '35.000.000 đ' : '150.000.000 đ'}
+                {isQ4 ? '28.000.000 đ' : '150.000.000 đ'}
               </div>
               <div style={{ fontSize: '0.72rem', color: '#d8b4fe' }}>
-                {isQ4 ? 'T10: 15M • T11: 15M • T12: 5M' : 'TB 12.5M/tháng • 3 Làn sóng cao điểm'}
+                {isQ4 ? 'T10: 12M • T11: 10M • T12: 6M' : 'TB 12.5M/tháng • 3 Làn sóng cao điểm'}
               </div>
             </div>
 
             <div>
               <div style={{ fontSize: '0.72rem', color: '#e9d5ff', textTransform: 'uppercase', fontWeight: 600 }}>Kỳ Vọng Lead Doanh Nghiệp</div>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#facc15', marginTop: '3px' }}>
-                {isQ4 ? '48 - 50 Lead DN' : '180 - 220 Lead DN'}
+                {isQ4 ? '38 - 40 Lead DN' : '180 - 220 Lead DN'}
               </div>
               <div style={{ fontSize: '0.72rem', color: '#d8b4fe' }}>
                 {isQ4 ? 'Yêu cầu báo giá YEP & Gala Đoàn' : 'Inquiries / Yêu cầu báo giá đoàn'}
@@ -838,20 +841,20 @@ export default function BU3MarketPlanningPage() {
             <div>
               <div style={{ fontSize: '0.72rem', color: '#e9d5ff', textTransform: 'uppercase', fontWeight: 600 }}>Mục Tiêu Hợp Đồng Đoàn</div>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#4ade80', marginTop: '3px' }}>
-                {isQ4 ? '7 - 8 Đoàn' : '36 - 45 Đoàn'}
+                {isQ4 ? '6 - 7 Đoàn' : '36 - 45 Đoàn'}
               </div>
               <div style={{ fontSize: '0.72rem', color: '#d8b4fe' }}>
-                {isQ4 ? 'Quy mô TB 40 Pax/Đoàn (~300 - 320 Pax)' : 'Quy mô TB 40-50 Pax/Đoàn (~1.800 Pax)'}
+                {isQ4 ? 'Quy mô TB 40 Pax/Đoàn (~260 - 280 Pax)' : 'Quy mô TB 40-50 Pax/Đoàn (~1.800 Pax)'}
               </div>
             </div>
 
             <div>
               <div style={{ fontSize: '0.72rem', color: '#e9d5ff', textTransform: 'uppercase', fontWeight: 600 }}>Doanh Thu Dự Kiến Đoàn</div>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', marginTop: '3px' }}>
-                {isQ4 ? '~3.84 Tỷ VNĐ' : '~21.6 Tỷ VNĐ'}
+                {isQ4 ? '~3.24 Tỷ VNĐ' : '~21.6 Tỷ VNĐ'}
               </div>
               <div style={{ fontSize: '0.72rem', color: '#4ade80', fontWeight: 600 }}>
-                {isQ4 ? 'Tỷ lệ Chi phí Ads / DT: ~0.91%' : 'Tỷ lệ Chi phí Ads / DT: ~0.69%'}
+                {isQ4 ? 'Tỷ lệ Chi phí Ads / DT: ~0.86%' : 'Tỷ lệ Chi phí Ads / DT: ~0.69%'}
               </div>
             </div>
           </div>
@@ -902,7 +905,7 @@ export default function BU3MarketPlanningPage() {
                 </h3>
               </div>
               <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: '#64748b' }}>
-                ① Chạy đón trước 02 tháng • ② Cân đối dồn tiền & Tháng 2 cắt 0đ • ③ GSA Always-on • ④ Quỹ dồn theo Quý bứt tốc PR Báo lớn
+                ① Chạy đón trước 02 tháng • ② Cân đối dồn tiền & Tháng 2 cắt 0đ • ③ GSA Always-on • ④ PR Báo chí uy tín (VTC News) làm Profile thầu
               </p>
             </div>
           </div>
@@ -963,10 +966,10 @@ export default function BU3MarketPlanningPage() {
               <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '8px', padding: '12px 14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: '#047857', fontSize: '0.88rem', marginBottom: '4px' }}>
                   <Award size={16} />
-                  <span>4. Quỹ Dồn Bứt Tốc PR Theo Quý</span>
+                  <span>4. Ngân Sách PR Báo Chí Uy Tín</span>
                 </div>
                 <p style={{ margin: 0, fontSize: '0.82rem', color: '#065f46', lineHeight: '1.5' }}>
-                  Không rải vụn 2-3M/tháng cho PR vì không đủ book báo uy tín. Gom ngân sách theo Quý thành các <strong>Cú Hích PR Báo Chí B2B</strong> (10M/đợt) làm Profile bảo chứng thầu phục vụ Sales chốt khách!
+                  Không rải vụn ngân sách cho PR vì không đủ book báo uy tín. Gom ngân sách thành các bài <strong>PR Báo Chí B2B uy tín</strong> (như VTC News, CafeF...) làm Profile bảo chứng thầu phục vụ Sales chốt khách!
                 </p>
               </div>
             </div>
@@ -1000,7 +1003,7 @@ export default function BU3MarketPlanningPage() {
             <div>
               <h3 style={{ margin: 0, fontSize: '1.02rem', fontWeight: 800, color: '#0f172a' }}>
                 {isQ4 
-                  ? 'Bản Đồ Nhiệt Phân Bổ Ngân Sách Quý 4/2026 (T10 - T12/2026) — 35 Triệu' 
+                  ? 'Bản Đồ Nhiệt Phân Bổ Ngân Sách Quý 4/2026 (T10 - T12/2026) — 28 Triệu' 
                   : 'Bản Đồ Nhiệt Phân Bổ Ngân Sách 12 Tháng Năm 2027 (Yearly Budget Heatmap)'}
               </h3>
               <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: '#64748b' }}>
@@ -1014,13 +1017,13 @@ export default function BU3MarketPlanningPage() {
           {/* Quick Summary Pill Tags */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '0.74rem', background: '#eff6ff', color: '#1d4ed8', fontWeight: 700, padding: '4px 10px', borderRadius: '16px', border: '1px solid #bfdbfe' }}>
-              🔍 Ads: {isQ4 ? '25.000.000 đ (71.4%)' : '120.000.000 đ (80%)'}
+              🔍 Ads: {isQ4 ? '23.000.000 đ (82.1%)' : '120.000.000 đ (80%)'}
             </span>
             <span style={{ fontSize: '0.74rem', background: '#fdf4ff', color: '#86198f', fontWeight: 700, padding: '4px 10px', borderRadius: '16px', border: '1px solid #f0abfc' }}>
-              📰 PR Báo Chí: {isQ4 ? '10.000.000 đ (28.6%)' : '30.000.000 đ (20%)'}
+              📰 PR Báo Chí (VTC News): {isQ4 ? '5.000.000 đ (17.9%)' : '30.000.000 đ (20%)'}
             </span>
             <span style={{ fontSize: '0.74rem', background: '#f0fdf4', color: '#15803d', fontWeight: 800, padding: '4px 10px', borderRadius: '16px', border: '1px solid #bbf7d0' }}>
-              🎯 Tổng: {isQ4 ? '35.000.000 đ' : '150.000.000 đ'}
+              🎯 Tổng: {isQ4 ? '28.000.000 đ' : '150.000.000 đ'}
             </span>
           </div>
         </div>
@@ -1072,7 +1075,7 @@ export default function BU3MarketPlanningPage() {
           gap: '8px'
         }}>
           {(isQ4 ? Q4_MONTHS_DATA : MONTHS_DATA).map((m) => {
-            const heat = getHeatmapInfo(m.budget, m.channels);
+            const heat = getHeatmapInfo(m.budget, m.channels, isQ4);
             const isCut = m.budget === 0;
 
             return (
@@ -1167,7 +1170,7 @@ export default function BU3MarketPlanningPage() {
                       </div>
                       {heat.prBudget > 0 ? (
                         <div style={{ display: 'flex', justifyContent: 'space-between', color: '#86198f', fontWeight: 700 }}>
-                          <span>💥 PR Báo chí B2B:</span>
+                          <span>📰 PR Báo chí:</span>
                           <span>+{heat.prBudget / 1000000} Tr</span>
                         </div>
                       ) : (
@@ -1201,7 +1204,7 @@ export default function BU3MarketPlanningPage() {
         </div>
       </div>
 
-      {/* ── CARD TRỰC QUAN: QUỸ DỒN BÁO CHÍ PR THEO QUÝ ── */}
+      {/* ── CARD TRỰC QUAN: BÁO CHÍ PR THEO QUÝ ── */}
       <div style={{
         background: 'linear-gradient(135deg, #fdf4ff 0%, #f5f3ff 100%)',
         border: '1.5px solid #d946ef',
@@ -1215,54 +1218,54 @@ export default function BU3MarketPlanningPage() {
             <Newspaper size={20} color="#86198f" />
             <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#581c87' }}>
               {isQ4 
-                ? 'Cú Hích PR Báo Chí B2B Quý 4/2026 — 10.000.000 đ (Kích Hoạt Tháng 10)'
-                : 'Cơ Chế "Quỹ Dồn Ngân Sách PR Theo Quý" — 3 Đòn Bẩy Báo Chí Uy Tín (30 Triệu)'}
+                ? 'PR Báo Chí B2B Quý 4/2026 — 5.000.000 đ (VTC News • Bài PR Thương Hiệu FIT Tour Dài Hạn)'
+                : 'Cơ Chế "Quỹ Ngân Sách PR Theo Quý" — 3 Đợt Báo Chí Uy Tín (30 Triệu)'}
             </h3>
           </div>
           <span style={{ fontSize: '0.76rem', background: '#fae8ff', color: '#86198f', fontWeight: 700, padding: '3px 10px', borderRadius: '12px', border: '1px solid #f0abfc' }}>
-            {isQ4 ? 'Ngân Sách PR Q4: 10.000.000 đ' : 'Tổng Quỹ PR Báo Chí Năm: 30.000.000 đ'}
+            {isQ4 ? 'Ngân Sách PR Q4: 5.000.000 đ (VTC News)' : 'Tổng Quỹ PR Báo Chí Năm: 30.000.000 đ'}
           </span>
         </div>
 
         <p style={{ margin: '0 0 14px', fontSize: '0.82rem', color: '#701a75', lineHeight: 1.5 }}>
           {isQ4
-            ? 'Trong Quý 4/2026, toàn bộ 10 Triệu PR được kích hoạt ngay đầu Tháng 10 khi các tập đoàn mở thầu tiệc Tất niên & Year-End Party. Bài viết PR Báo chí B2B chuyên sâu làm bảo chứng tín nhiệm cho Sales chào khách và gửi kèm hồ sơ năng lực dự thầu suốt Tháng 10 và Tháng 11.'
-            : 'Thay vì rải vụn 2 - 3 triệu mỗi tháng (không đủ ngân sách book bài uy tín), FIT Tour áp dụng chiến lược Quarterly Budget Pooling: Tiết kiệm ngân sách hàng tháng để gom thành 3 Cú Hích PR Báo Chí B2B (mỗi đợt 10 triệu) tại 3 điểm rơi quyết định. Link bài báo làm bảo chứng tín nhiệm (Social Proof) nhúng vào hồ sơ năng lực thầu B2B phục vụ Sales chào khách cả năm.'}
+            ? 'Trong Quý 4/2026, ngân sách PR Báo chí 5 Triệu được kích hoạt ngay đầu Tháng 10 đăng tải bài viết PR trực diện thương hiệu FIT Tour trên báo điện tử VTC News. Bài viết tập trung khẳng định: "FIT Tour mang đến trải nghiệm riêng cho Tour Công Ty", xây dựng tài sản thương hiệu uy tín lâu dài để Sales chào khách và gửi kèm hồ sơ năng lực dự thầu suốt Tháng 10, Tháng 11 và các mùa thầu tiếp theo.'
+            : 'Thay vì rải vụn mỗi tháng không đủ book bài uy tín, FIT Tour áp dụng chiến lược gom ngân sách thành 3 đợt PR Báo Chí B2B (mỗi đợt 10 triệu) tại 3 điểm rơi quyết định. Link bài báo làm bảo chứng tín nhiệm (Social Proof) nhúng vào hồ sơ năng lực thầu B2B phục vụ Sales chào khách cả năm.'}
         </p>
 
         {isQ4 ? (
           <div style={{ background: '#ffffff', border: '1.5px solid #f0abfc', borderRadius: '8px', padding: '14px 16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <span style={{ fontSize: '0.74rem', background: '#fdf4ff', color: '#86198f', fontWeight: 800, padding: '3px 8px', borderRadius: '4px' }}>
-                💥 CÚ HÍCH PR BÁO CHÍ THÁNG 10/2026 — ĐÓN SÓNG MỞ THẦU YEAR-END PARTY
+                📰 BÀI PR BÁO CHÍ THÁNG 10/2026 — ĐÓN SÓNG MỞ THẦU YEAR-END PARTY
               </span>
-              <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#86198f' }}>10.000.000 đ</span>
+              <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#86198f' }}>5.000.000 đ</span>
             </div>
             <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>
-              Bài PR Chuyên Sâu B2B Trên VnExpress / CafeF / Diễn Đàn Doanh Nhân
+              Bài Viết PR Thương Hiệu FIT Tour Lâu Dài Trên VTC News
             </div>
             <p style={{ margin: '0 0 8px', fontSize: '0.78rem', color: '#64748b', lineHeight: 1.45 }}>
-              Chủ đề: <em>"Xu hướng tổ chức Gala Dinner & Year-End Party độc bản cho Doanh Nghiệp cuối năm 2026"</em>. Phân tích sự chuyển dịch từ các bữa tiệc ăn uống đơn thuần sang chương trình nghệ thuật cá nhân hóa văn hóa doanh nghiệp.
+              Chủ đề: <em>"FIT Tour — Mang đến trải nghiệm riêng biệt cho Tour Công Ty"</em> trên báo <strong>VTC News</strong>. Bài viết định vị trực diện thương hiệu FIT Tour, khẳng định năng lực cá nhân hóa theo văn hóa doanh nghiệp, tạo lập tài sản thương hiệu uy tín bền vững cho công ty.
             </p>
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', fontSize: '0.72rem' }}>
               <span style={{ background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '4px' }}>
-                📌 Nhúng trực tiếp vào Catalogue YEP 2026
+                📌 Nhúng link VTC News trực tiếp vào Profile & Catalogue YEP FIT Tour
               </span>
               <span style={{ background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '4px' }}>
                 📌 Gửi kèm báo giá Email Marketing tới 500 khách hàng cũ
               </span>
               <span style={{ background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '4px' }}>
-                📌 Làm Landing Page chuyển đổi cho Google Search Ads
+                📌 Làm bảo chứng uy tín cho Google Search Ads & Đấu thầu
               </span>
             </div>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
-            {/* Cú hích 1 */}
+            {/* Đợt PR 1 */}
             <div style={{ background: '#ffffff', border: '1.5px solid #f0abfc', borderRadius: '8px', padding: '12px 14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                 <span style={{ fontSize: '0.72rem', background: '#fdf4ff', color: '#86198f', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
-                  💥 CÚ HÍCH 1 • THÁNG 3
+                  📰 ĐỢT PR 1 • THÁNG 3
                 </span>
                 <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#86198f' }}>10.000.000 đ</span>
               </div>
@@ -1274,11 +1277,11 @@ export default function BU3MarketPlanningPage() {
               </p>
             </div>
 
-            {/* Cú hích 2 */}
+            {/* Đợt PR 2 */}
             <div style={{ background: '#ffffff', border: '1.5px solid #fed7aa', borderRadius: '8px', padding: '12px 14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                 <span style={{ fontSize: '0.72rem', background: '#fff7ed', color: '#ea580c', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
-                  💥 CÚ HÍCH 2 • THÁNG 7
+                  📰 ĐỢT PR 2 • THÁNG 7
                 </span>
                 <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ea580c' }}>10.000.000 đ</span>
               </div>
@@ -1290,11 +1293,11 @@ export default function BU3MarketPlanningPage() {
               </p>
             </div>
 
-            {/* Cú hích 3 */}
+            {/* Đợt PR 3 */}
             <div style={{ background: '#ffffff', border: '1.5px solid #fde68a', borderRadius: '8px', padding: '12px 14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                 <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#b45309', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>
-                  💥 CÚ HÍCH 3 • THÁNG 10
+                  📰 ĐỢT PR 3 • THÁNG 10
                 </span>
                 <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#b45309' }}>10.000.000 đ</span>
               </div>
@@ -1401,7 +1404,7 @@ export default function BU3MarketPlanningPage() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', color: '#64748b' }}>
             <span style={{ fontWeight: 800, color: '#86198f' }}>⚡ Lộ Trình Quý 4/2026:</span>
-            <span>Tháng 10 (Mở thầu + PR Báo chí 10M) → Tháng 11 (Đại cao điểm chốt thầu 15M GSA) → Tháng 12 (Chốt vét SME & Vận hành 5M GSA).</span>
+            <span>Tháng 10 (12M: Mở thầu + PR VTC News 5M + 7M GSA) → Tháng 11 (10M: Đại cao điểm chốt thầu GSA) → Tháng 12 (6M: Chốt vét SME & Vận hành GSA).</span>
           </div>
 
           <a
@@ -1868,7 +1871,7 @@ export default function BU3MarketPlanningPage() {
               <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '10px' }}>
                 <div style={{ fontWeight: 700, color: '#475569' }}>📰 Chiến Lược Booking Báo Chí & PR Profile</div>
                 <div style={{ color: '#64748b', marginTop: '2px' }}>
-                  Đăng các bài viết PR Báo chí B2B uy tín (30 triệu / năm gồm 3 cú hích 10 triệu) nhằm tạo uy tín đấu thầu hồ sơ năng lực B2B cho FIT Tour & Elite BU3 khi chào giá các tập đoàn lớn.
+                  Đăng các bài viết PR Báo chí B2B uy tín trên các đầu báo lớn nhằm tạo uy tín đấu thầu hồ sơ năng lực B2B cho FIT Tour & Elite BU3 khi chào giá các tập đoàn lớn.
                 </div>
               </div>
             </div>
@@ -1906,10 +1909,10 @@ export default function BU3MarketPlanningPage() {
           <button
             onClick={() => {
               if (isQ4) {
-                setCalcBudget(35000000);
+                setCalcBudget(28000000);
                 setCalcCpl(700000);
                 setCalcWinRate(16);
-                setCalcPaxPerDeal(45);
+                setCalcPaxPerDeal(40);
                 setCalcTicketPrice(12000000);
               } else {
                 setCalcBudget(150000000);
@@ -1976,14 +1979,14 @@ export default function BU3MarketPlanningPage() {
               }}
             />
             <div style={{ fontSize: '0.7rem', color: '#7e22ce', marginTop: '6px' }}>
-              {isQ4 ? 'Mặc định Q4: 35.000.000 đ' : 'Mặc định: 150.000.000 đ/năm'}
+              {isQ4 ? 'Mặc định Q4: 28.000.000 đ' : 'Mặc định: 150.000.000 đ/năm'}
             </div>
             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
               <button
-                onClick={() => setCalcBudget(35000000)}
+                onClick={() => setCalcBudget(28000000)}
                 style={{ fontSize: '0.65rem', background: '#fae8ff', color: '#86198f', border: 'none', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', fontWeight: 700 }}
               >
-                35M Q4/2026
+                28M Q4/2026
               </button>
               <button
                 onClick={() => setCalcBudget(150000000)}

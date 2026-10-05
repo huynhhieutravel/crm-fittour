@@ -9,8 +9,11 @@ router.get('/stats', authenticateToken, permCheckAny([['leads','view_all'], ['le
 router.get('/dispatch-today', authenticateToken, leadController.getTodayDispatches);
 router.get('/', authenticateToken, permCheckAny([['leads','view_all'], ['leads','view_own']]), leadController.getAllLeads);
 router.post('/bulk-update', authenticateToken, permCheck('leads', 'edit'), leadController.bulkUpdateLeads);
+router.post('/recreate-from-conversation', authenticateToken, leadController.recreateLeadFromConversation);
 router.post('/', authenticateToken, permCheck('leads', 'create'), idempotencyCheck, leadController.createLead);
 router.get('/:id', authenticateToken, permCheckAny([['leads','view_all'], ['leads','view_own']]), leadController.getLeadById);
+router.get('/:id/related-history', authenticateToken, leadController.getRelatedLeadHistory);
+router.get('/:id/inherited-notes', authenticateToken, leadController.getInheritedNotes);
 router.put('/:id', authenticateToken, permCheck('leads', 'edit'), leadController.updateLead);
 router.get('/:id/customer-journey', authenticateToken, permCheckAny([['leads','view_all'], ['leads','view_own']]), leadController.getCustomerJourney);
 router.post('/:id/claim', authenticateToken, leadController.claimLead);

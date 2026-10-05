@@ -310,19 +310,22 @@ const getGlobalCenterLeads = async (req, res) => {
 
     let query = `
       SELECT l.id, l.name, l.phone, l.email, l.source, l.status, l.assigned_to, l.bu_group, l.tour_id, l.created_at, l.last_contacted_at,
+             l.origin_lead_id, l.is_superseded, orig_tour.name as origin_tour_name,
              COALESCE(l.facebook_psid, l.zalo_uid) as source_id, l.facebook_psid, l.zalo_uid,
              COALESCE(u.full_name, u.username) as assigned_to_name,
              (SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED'))::numeric as total_spent,
              CASE WHEN c.id IS NOT NULL THEN true ELSE false END as is_returning_customer,
-             (SELECT content FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note,
-             (SELECT created_at FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note_at,
-             (SELECT COALESCE(u2.full_name, u2.username) FROM lead_notes ln2 LEFT JOIN users u2 ON ln2.created_by = u2.id WHERE ln2.lead_id = l.id ORDER BY ln2.created_at DESC LIMIT 1) as latest_note_author,
+             (SELECT content FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC, id DESC LIMIT 1) as latest_note,
+             (SELECT created_at FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC, id DESC LIMIT 1) as latest_note_at,
+             (SELECT COALESCE(u2.full_name, u2.username) FROM lead_notes ln2 LEFT JOIN users u2 ON ln2.created_by = u2.id WHERE ln2.lead_id = l.id ORDER BY ln2.created_at DESC, ln2.id DESC LIMIT 1) as latest_note_author,
              (SELECT COUNT(*)::int FROM lead_notes WHERE lead_id = l.id) as notes_count,
              l.consultation_note
       FROM leads l
       LEFT JOIN users u ON l.assigned_to = u.id
       LEFT JOIN customers c ON (l.customer_id = c.id OR (l.phone IS NOT NULL AND l.phone != '' AND c.phone = l.phone))
-      WHERE 1=1
+      LEFT JOIN leads orig_l ON l.origin_lead_id = orig_l.id
+      LEFT JOIN tour_templates orig_tour ON orig_l.tour_id = orig_tour.id
+      WHERE (l.is_superseded IS FALSE OR l.is_superseded IS NULL)
     `;
     const params = [];
     let paramIndex = 1;
@@ -373,6 +376,9 @@ const getGlobalCenterLeads = async (req, res) => {
             ? l.consultation_note.replace(/\[AI Auto-Captured Phone:[^\]]*\]/g, '').trim()
             : null;
 
+        const rawLatestNote = l.latest_note || (cleanedConsultationNote && !cleanedConsultationNote.startsWith('Facebook Message:') ? cleanedConsultationNote : null);
+        const displayLatestNote = rawLatestNote ? rawLatestNote.replace(/^\[Ghi chú ban đầu\]:\s*/, '').trim() : null;
+
         return {
             id: 'lead_' + l.id,
             reference_id: l.id,
@@ -390,7 +396,7 @@ const getGlobalCenterLeads = async (req, res) => {
             bu_group: l.bu_group,
             tour_id: l.tour_id,
             status: l.status || 'Mới',
-            latest_note: l.latest_note || (cleanedConsultationNote && !cleanedConsultationNote.startsWith('Facebook Message:') ? cleanedConsultationNote : null),
+            latest_note: displayLatestNote,
             latest_note_at: l.latest_note_at,
             latest_note_author: l.latest_note_author,
             notes_count: l.notes_count || (l.latest_note ? 1 : 0),
@@ -401,7 +407,9 @@ const getGlobalCenterLeads = async (req, res) => {
             zalo_uid: l.zalo_uid,
             facebook_psid: l.facebook_psid,
             is_returning_customer: l.is_returning_customer,
-            total_spent: l.total_spent
+            total_spent: l.total_spent,
+            origin_lead_id: l.origin_lead_id,
+            origin_tour_name: l.origin_tour_name
         };
     });
 

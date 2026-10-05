@@ -51,12 +51,12 @@ const UsersTab = ({
 
   const getRoleColor = (roleName) => {
     switch (roleName) {
-      case 'admin': return { bg: '#fee2e2', text: '#ef4444', icon: <Shield size={12} /> };
-      case 'manager': return { bg: '#fef3c7', text: '#d97706', icon: <Shield size={12} /> };
-      case 'sales': return { bg: '#dcfce7', text: '#22c55e', icon: <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} /> };
-      case 'marketing': return { bg: '#e0f2fe', text: '#0ea5e9', icon: <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0ea5e9' }} /> };
-      case 'operations': return { bg: '#f3e8ff', text: '#9333ea', icon: <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#9333ea' }} /> };
-      default: return { bg: '#f1f5f9', text: '#64748b', icon: null };
+      case 'admin': return { bg: '#fee2e2', text: '#ef4444', color: '#ef4444', icon: <Shield size={12} /> };
+      case 'manager': return { bg: '#fef3c7', text: '#d97706', color: '#d97706', icon: <Shield size={12} /> };
+      case 'sales': return { bg: '#dcfce7', text: '#22c55e', color: '#22c55e', icon: <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} /> };
+      case 'marketing': return { bg: '#e0f2fe', text: '#0ea5e9', color: '#0ea5e9', icon: <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0ea5e9' }} /> };
+      case 'operations': return { bg: '#f3e8ff', text: '#9333ea', color: '#9333ea', icon: <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#9333ea' }} /> };
+      default: return { bg: '#f1f5f9', text: '#64748b', color: '#64748b', icon: null };
     }
   };
 
@@ -150,17 +150,26 @@ const UsersTab = ({
         </div>
       </div>
 
-      <div className="data-table-container shadow-sm" style={{ border: '1px solid #f1f5f9', borderRadius: '12px', overflow: 'hidden' }}>
-        <table className="data-table">
+      <div 
+        className="data-table-container shadow-sm users-table-container" 
+        style={{ 
+          border: '1px solid #e2e8f0', 
+          borderRadius: '12px', 
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          background: '#ffffff'
+        }}
+      >
+        <table className="data-table users-table">
           <thead style={{ background: '#f8fafc' }}>
             <tr>
-              <th style={{ padding: '1rem 1.5rem' }}>THÔNG TIN THÀNH VIÊN</th>
-              <th>SỐ ĐIỆN THOẠI</th>
-              <th>BUSINESS UNIT</th>
-              <th>TEAM (ĐỘI NHÓM)</th>
-              <th>PHÂN QUYỀN</th>
-              <th>NGÀY GIA NHẬP</th>
-              <th style={{ textAlign: 'right', paddingRight: '2.5rem' }}>THAO TÁC</th>
+              <th style={{ padding: '0.85rem 1rem 0.85rem 1.25rem', minWidth: '240px' }}>THÔNG TIN THÀNH VIÊN</th>
+              <th style={{ padding: '0.85rem 0.75rem', minWidth: '125px' }}>SỐ ĐIỆN THOẠI</th>
+              <th style={{ padding: '0.85rem 0.75rem', minWidth: '115px' }}>BUSINESS UNIT</th>
+              <th style={{ padding: '0.85rem 0.75rem', minWidth: '135px' }}>TEAM (ĐỘI NHÓM)</th>
+              <th style={{ padding: '0.85rem 0.75rem', minWidth: '125px' }}>PHÂN QUYỀN</th>
+              <th style={{ padding: '0.85rem 0.75rem', minWidth: '115px' }}>NGÀY GIA NHẬP</th>
+              <th className="table-sticky-actions" style={{ textAlign: 'center', padding: '0.85rem 0.75rem', minWidth: '145px', width: '145px' }}>THAO TÁC</th>
             </tr>
           </thead>
           <tbody>
@@ -171,7 +180,7 @@ const UsersTab = ({
 
               return (
                 <tr key={u.id} style={{ opacity: u.is_active === false ? 0.6 : 1, filter: u.is_active === false ? 'grayscale(100%)' : 'none' }}>
-                  <td style={{ padding: '1rem 1.5rem' }}>
+                  <td style={{ padding: '0.85rem 1rem 0.85rem 1.25rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div style={{
                         width: '36px', height: '36px', borderRadius: '10px',
@@ -183,8 +192,8 @@ const UsersTab = ({
                       }}>
                         {!u.avatar_url && u.full_name?.charAt(0).toUpperCase()}
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           {u.full_name}
                           {u.is_active === false && <span style={{ fontSize: '0.65rem', background: '#e2e8f0', color: '#475569', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>TẠM DỪNG</span>}
                         </span>
@@ -200,14 +209,14 @@ const UsersTab = ({
                       </div>
                     </div>
                   </td>
-                  <td style={{ fontWeight: 600, color: '#475569', fontSize: '0.85rem' }}>
+                  <td style={{ fontWeight: 600, color: '#475569', fontSize: '0.85rem', padding: '0.85rem 0.75rem' }}>
                     {u.phone ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Phone size={13} color="#0ea5e9" /> {u.phone}
                       </div>
                     ) : '-'}
                   </td>
-                  <td>
+                  <td style={{ padding: '0.85rem 0.75rem' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {(u.bus || []).length > 0 ? (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -231,7 +240,7 @@ const UsersTab = ({
                       )}
                     </div>
                   </td>
-                  <td>
+                  <td style={{ padding: '0.85rem 0.75rem' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {(u.teams || []).length > 0 ? (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -252,7 +261,7 @@ const UsersTab = ({
                       )}
                     </div>
                   </td>
-                  <td>
+                  <td style={{ padding: '0.85rem 0.75rem' }}>
                     <div style={{ 
                       display: 'inline-flex', 
                       alignItems: 'center', 
@@ -269,15 +278,15 @@ const UsersTab = ({
                       {formatRoleDisplayName(u.role_name).toUpperCase()}
                     </div>
                   </td>
-                  <td>
+                  <td style={{ padding: '0.85rem 0.75rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#64748b' }}>
                       <Clock size={14} />
                       {new Date(u.created_at).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', })}
                     </div>
                   </td>
-                  <td>
+                  <td className="table-sticky-actions" style={{ padding: '0.65rem 0.75rem' }}>
                     {!isCurrentUserReadOnly ? (
-                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', paddingRight: '1rem' }}>
+                      <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'center', alignItems: 'center' }}>
                         {checkPerm && checkPerm('users', 'change_permissions') && (
                           <button 
                             className="icon-btn-square" 
@@ -317,7 +326,7 @@ const UsersTab = ({
                         )}
                       </div>
                     ) : (
-                      <div style={{ textAlign: 'right', paddingRight: '2rem', fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>
+                      <div style={{ textAlign: 'center', fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>
                         Không có quyền sửa Admin
                       </div>
                     )}
@@ -327,7 +336,7 @@ const UsersTab = ({
             })}
             {filteredUsers.length === 0 && (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
                   Không tìm thấy thành viên phù hợp.
                 </td>
               </tr>

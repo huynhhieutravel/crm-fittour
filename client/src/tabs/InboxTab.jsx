@@ -18,10 +18,13 @@ import {
   Send,
   Loader2,
   LayoutTemplate,
+  History,
 } from "lucide-react";
 import SearchableSelect from '../components/common/SearchableSelect';
+import CreateLeadFromInboxModal from '../components/modals/CreateLeadFromInboxModal';
+import LeadHistoryModal from '../components/modals/LeadHistoryModal';
 
-const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handleConvertLead, setEditingLead, initialPsid, clearInitialPsid, onGoBack, goBackText = "Quay lại Lead Marketing" }) => {
+const InboxTab = ({ leads, fetchLeads, users = [], currentUser, bus = [], tours = [], handleConvertLead, setEditingLead, initialPsid, clearInitialPsid, onGoBack, goBackText = "Quay lại Lead Marketing" }) => {
   // API Data States
   const [conversations, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
@@ -77,6 +80,45 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
 
   // Bulk Delete States
   const [selectedIds, setSelectedIds] = useState([]);
+
+  // Lead Recreation & History States
+  const [isCreateLeadModalOpen, setIsCreateLeadModalOpen] = useState(false);
+  const [isLeadHistoryModalOpen, setIsLeadHistoryModalOpen] = useState(false);
+  const [leadHistoryCount, setLeadHistoryCount] = useState(0);
+
+  useEffect(() => {
+    if (selectedConv?.lead_id) {
+      const token = localStorage.getItem("token");
+      axios.get(`/api/leads/${selectedConv.lead_id}/related-history`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(res => {
+        setLeadHistoryCount(res.data.leads ? res.data.leads.length : 1);
+      }).catch(err => {
+        console.error("Error fetching related leads history count:", err);
+      });
+    } else {
+      setLeadHistoryCount(0);
+    }
+  }, [selectedConv?.lead_id]);
+
+  const handleNewLeadCreated = (newLead) => {
+    if (!newLead) return;
+    const u = users.find(x => x.id == newLead.assigned_to);
+    const updatedConv = {
+      ...selectedConv,
+      lead_id: newLead.id,
+      lead_tour_id: newLead.tour_id,
+      assigned_bu: newLead.bu_group,
+      assigned_to_id: newLead.assigned_to,
+      assigned_to_name: u ? (u.full_name || u.username) : null,
+      lead_status: newLead.status || 'Mới'
+    };
+    setSelectedConv(updatedConv);
+    setConversations(prev => prev.map(c => c.id === updatedConv.id ? updatedConv : c));
+    setLeadHistoryCount(prev => prev + 1);
+    fetchConversations(true);
+    if (fetchLeads) fetchLeads();
+  };
 
   const messagesEndRef = useRef(null);
   const prevConvIdRef = useRef(null);
@@ -751,22 +793,79 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="chat-action-buttons" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <div className="chat-action-buttons" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    {leadHistoryCount > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setIsLeadHistoryModalOpen(true)}
+                        style={{
+                          background: '#f8fafc',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          color: '#4f46e5',
+                          padding: '6px 10px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          cursor: 'pointer'
+                        }}
+                        title="Xem các lần hỏi tour trước đây của khách hàng này"
+                      >
+                        <History size={14} color="#6366f1" /> Lịch sử Lead ({leadHistoryCount})
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setIsCreateLeadModalOpen(true)}
+                      style={{
+                        background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)',
+                        border: 'none',
+                        borderRadius: '6px',
+                        color: '#ffffff',
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)'
+                      }}
+                      title="Tạo Lead mới độc lập cho nhu cầu tour mới, bảo lưu dữ liệu Lead cũ"
+                    >
+                      <UserPlus size={15} /> + TẠO LEAD MỚI
+                    </button>
+
                     {['admin', 'SALES_LEAD'].includes(currentUser?.role) && (
                       <button onClick={handleDeleteSingle} className="inbox-danger-btn">
                         <Trash2 size={15} /> XÓA
                       </button>
                     )}
                     <button
-                      onClick={() => {
-                        const leadLink = leads.find(
+                      onClick={async () => {
+                        let leadLink = leads.find(
                           (l) => l.id === selectedConv.lead_id,
                         );
-                        if (leadLink) setEditingLead(leadLink);
-                        else
+                        if (leadLink) {
+                          setEditingLead(leadLink);
+                        } else if (selectedConv.lead_id) {
+                          try {
+                            const token = localStorage.getItem("token");
+                            const res = await axios.get(`/api/leads/${selectedConv.lead_id}`, {
+                              headers: { Authorization: `Bearer ${token}` }
+                            });
+                            if (res.data) setEditingLead(res.data);
+                          } catch (e) {
+                            alert("Không tìm thấy thông tin Lead này.");
+                          }
+                        } else {
                           alert(
                             "Khách hàng này chưa được gán Lead ID nào. Vui lòng tạo lead mới.",
                           );
+                        }
                       }}
                       className="inbox-action-btn"
                     >
@@ -1707,6 +1806,44 @@ const InboxTab = ({ leads, users = [], currentUser, bus = [], tours = [], handle
           }
         }
       `}</style>
+
+      {/* Create Lead Modal */}
+      <CreateLeadFromInboxModal
+        isOpen={isCreateLeadModalOpen}
+        onClose={() => setIsCreateLeadModalOpen(false)}
+        conversation={selectedConv}
+        recentMessages={messages}
+        tours={tours}
+        bus={bus}
+        users={users}
+        currentUser={currentUser}
+        onSuccess={handleNewLeadCreated}
+      />
+
+      {/* Lead History Modal */}
+      <LeadHistoryModal
+        isOpen={isLeadHistoryModalOpen}
+        onClose={() => setIsLeadHistoryModalOpen(false)}
+        leadId={selectedConv?.lead_id}
+        customerName={selectedConv?.lead_name}
+        onOpenLeadProfile={async (historicalLead) => {
+          let fullLead = leads.find(l => l.id === historicalLead.id);
+          if (fullLead) {
+            setEditingLead(fullLead);
+          } else {
+            try {
+              const token = localStorage.getItem("token");
+              const res = await axios.get(`/api/leads/${historicalLead.id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              if (res.data) setEditingLead(res.data);
+              else setEditingLead(historicalLead);
+            } catch (e) {
+              setEditingLead(historicalLead);
+            }
+          }
+        }}
+      />
     </div>
   );
 };

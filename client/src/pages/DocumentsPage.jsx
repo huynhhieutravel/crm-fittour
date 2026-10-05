@@ -26,13 +26,28 @@ import LadakhConsultingPage from './LadakhConsultingPage';
 import BhutanConsultingPage from './BhutanConsultingPage';
 import CuuTraiCauConsultingPage from './CuuTraiCauConsultingPage';
 import BU1MarketPlanningPage from './BU1MarketPlanningPage';
+import BU2MarketPlanningPage from './BU2MarketPlanningPage';
 import BU3MarketPlanningPage from './BU3MarketPlanningPage';
 import BU4MarketPlanningPage from './BU4MarketPlanningPage';
+import BU5MarketPlanningPage from './BU5MarketPlanningPage';
+import WebsiteAstroReportSubTab from '../components/Marketing/WebsiteAstroReportSubTab';
+import { 
+  BAO_CAO_TONG_HOP_MXH_T9_MARKDOWN, 
+  BAO_CAO_WEBSITE_T9_MARKDOWN, 
+  BAO_CAO_FACEBOOK_T9_MARKDOWN, 
+  BAO_CAO_TIKTOK_T9_MARKDOWN 
+} from '../data/reportsMxhT9';
+import { BAO_CAO_TIKTOK_T10_MARKDOWN } from '../data/reportsMxhT10';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Static Document Index — TẤT CẢ tài liệu nội bộ đã biết
    ═══════════════════════════════════════════════════════════════════════════ */
 const STATIC_DOCS = [
+  { title: 'Báo Cáo Hiệu Suất MXH & Digital (T9/2026)', description: 'Tổng hợp đa kênh Website fittour.vn, Facebook Fanpage và TikTok Studio tháng 9/2026', category: 'Marketing', path: '/tai-lieu/bao-cao-tong-hop-mxh-thang-9-2026', icon: '🌐' },
+  { title: 'Báo Cáo Bài Viết Website Astro (T9/2026)', description: 'Chi tiết 125 trang/bài hoàn thành, chuyển đổi Elementor sang Astro Native, Core Web Vitals', category: 'Marketing', path: '/tai-lieu/bao-cao-website-thang-9-2026', icon: '💻' },
+  { title: 'Báo Cáo Facebook Fanpage (T9/2026)', description: 'Chi tiết 43 bài post, 138k views, tuần 3 bứt phá 54.7k views & kế hoạch tháng 10', category: 'Marketing', path: '/tai-lieu/bao-cao-facebook-thang-9-2026', icon: '📱' },
+  { title: 'Báo Cáo TikTok Studio (T9/2026)', description: 'Nghiệm thu thực tế 22.7K views, 533 likes, 155 shares, 633 profile views & 32.2% Search', category: 'Marketing', path: '/tai-lieu/bao-cao-tiktok-thang-9-2026', icon: '🎵' },
+  { title: 'Báo Cáo & Kế Hoạch TikTok Studio (T10/2026)', description: 'Chỉ tiêu bứt phá >30k views, 30 video Thu Đông, SEO TikTok & chuyển đổi lead từ profile', category: 'Marketing', path: '/tai-lieu/bao-cao-tiktok-thang-10-2026', icon: '🚀' },
   { title: 'Hướng Dẫn ERP: Tạo Đơn Nghỉ Phép', description: 'Cẩm nang 3 bước gửi đơn xin nghỉ phép, kiểm tra phép dư, bàn giao việc và thông báo email', category: 'Hành chính', path: '/huong-dan-erp/tao-nghi-phep', icon: '🌴' },
   { title: 'Cổng Hướng Dẫn Sử Dụng ERP', description: 'Trung tâm tổng hợp các bài viết và slider hướng dẫn thao tác hệ thống ERP FIT Tour', category: 'Hành chính', path: '/huong-dan-erp', icon: '📖' },
   { title: 'Brand Identity Guideline', description: 'Tài liệu hướng dẫn nhận diện thương hiệu FIT Tour, bao gồm logo, màu sắc, font chữ...', category: 'Marketing', path: '/tai-lieu/brand-guideline', icon: '🎨' },
@@ -47,8 +62,10 @@ const STATIC_DOCS = [
   { title: 'Cẩm Nang Chốt Sale Ladakh (BU4)', description: 'Cẩm nang tư vấn và chốt sale tuyến tour Ladakh Ấn Độ', category: 'Sale', path: '/tai-lieu/tu-van-ladakh-bu4', icon: '🏔️' },
   { title: 'Cẩm Nang Chốt Sale Bhutan (5N4Đ)', description: 'Cẩm nang tư vấn và chốt sale tuyến tour vương quốc hạnh phúc Bhutan', category: 'Sale', path: '/tai-lieu/tu-van-bhutan-5n4d', icon: '⛩️' },
   { title: 'Phân Tích Thị Trường & Dự Toán Ads BU1', description: 'Dữ liệu lịch sử 385 chiến dịch, CPL & Máy tính dự toán ngân sách Ads các tuyến BU1 (Giang Nam, Bắc Kinh, Á Đinh, Tân Cương, Thanh Tạng, Lệ Giang, Cáp Nhĩ Tân)', category: 'Marketing', path: '/tai-lieu/thi-truong-bu1', icon: '📊' },
+  { title: 'Phân Tích Thị Trường & Dự Toán Ads BU2', description: 'Chiến lược Tour Liên Minh (Cung Đường Vàng, Hàn Quốc, Đài Loan) kết hợp Tuyến Trọng Tâm Hokkaido (Thu & Mùa Tuyết Trắng), Máy tính dự toán ngân sách & 11 đoàn khởi hành', category: 'Marketing', path: '/tai-lieu/thi-truong-bu2', icon: '🇯🇵' },
   { title: 'Phân Tích Thị Trường & Dự Toán Ads BU3 (B2B/MICE)', description: 'Kế hoạch 12 tháng, quy tắc chạy trước 2 tháng, phân bổ 150M & Máy tính phễu chuyển đổi đoàn doanh nghiệp', category: 'Marketing', path: '/tai-lieu/thi-truong-bu3', icon: '📊' },
   { title: 'Phân Tích Thị Trường & Dự Toán Ads BU4', description: 'Obsidian Doc: Dữ liệu lịch sử, CPL & Máy tính dự toán ngân sách Ads các tuyến BU4 (Bhutan, Ladakh, Sri Lanka...)', category: 'Marketing', path: '/tai-lieu/thi-truong-bu4', icon: '📊' },
+  { title: 'Phân Tích Thị Trường & Dự Toán Ads BU5 (Khám Phá & Độc Bản)', description: 'Chiến lược 5 tuyến độc bản: Murmansk Bắc Cực Quang (Nga), Ai Cập Sông Nile, Ma Rốc, Pakistan, Trung Á. Đối soát 8 đoàn ERP 10.13 Tỷ & Định mức 1%', category: 'Marketing', path: '/tai-lieu/thi-truong-bu5', icon: '🧭' },
   { title: 'SOP Sales & Workplace', description: 'Hướng dẫn Sales nhận Lead, cập nhật ERP và tối ưu Workplace', category: 'Sale', path: '/tai-lieu/sop-sales', icon: '💼' },
   { title: 'HUB Điều Hành (OP)', description: 'Quy trình điều hành tour, vận hành dịch vụ', category: 'Điều hành', path: '/tai-lieu/dieu-hanh', icon: '🔧' },
   { title: 'Tổng quan Quy trình Lead', description: 'Bức tranh toàn cảnh về quy trình xử lý Lead từ Điều phối đến Sales', category: 'Điều hành', path: '/tai-lieu/tong-quan-lead', icon: '🌐' },
@@ -497,16 +514,9 @@ const DocumentsHome = () => {
     }
   }, []);
 
-  // Popup: hiện 1 lần / user, hết hạn sau ngày 06/06/2026
+  // Popup: Đã ngưng hiển thị popup
   useEffect(() => {
-    const POPUP_KEY = 'popup_chinh_sach_review_hdv_seen';
-    const EXPIRE_DATE = new Date('2026-06-07T00:00:00+07:00'); // hết hạn đầu ngày 7/6
-    const now = new Date();
-    if (now < EXPIRE_DATE && !localStorage.getItem(POPUP_KEY)) {
-      // Delay nhẹ cho trang load xong mới hiện popup
-      const timer = setTimeout(() => setShowPopup(true), 600);
-      return () => clearTimeout(timer);
-    }
+    // Đã ngưng popup theo yêu cầu
   }, []);
 
   const handleClosePopup = () => {
@@ -1180,12 +1190,89 @@ const DocumentsPage = () => {
     return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><BU1MarketPlanningPage /></BlogLayout>;
   }
 
+  if (path === '/tai-lieu/thi-truong-bu2' || path === '/tai-lieu/phan-tich-thi-truong-bu2') {
+    return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><BU2MarketPlanningPage /></BlogLayout>;
+  }
+
   if (path === '/tai-lieu/thi-truong-bu3' || path === '/tai-lieu/phan-tich-thi-truong-bu3') {
     return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><BU3MarketPlanningPage /></BlogLayout>;
   }
 
   if (path === '/tai-lieu/thi-truong-bu4' || path === '/tai-lieu/phan-tich-thi-truong-bu4') {
     return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><BU4MarketPlanningPage /></BlogLayout>;
+  }
+
+  if (path === '/tai-lieu/thi-truong-bu5' || path === '/tai-lieu/phan-tich-thi-truong-bu5') {
+    return <BlogLayout fullWidth={true} backPath="/tai-lieu" backText="Về lại Tài Liệu"><BU5MarketPlanningPage /></BlogLayout>;
+  }
+
+  // ── BÁO CÁO HIỆU SUẤT TRUYỀN THÔNG & MXH THÁNG 9/2026 ──
+  const mxhQuickLinks = [
+    { title: '🌐📱 Tổng Hợp MXH & Digital (T9)', path: '/tai-lieu/bao-cao-tong-hop-mxh-thang-9-2026', icon: '📊' },
+    { title: '🌐 Chi Tiết Website fittour.vn (T9)', path: '/tai-lieu/bao-cao-website-thang-9-2026', icon: '💻' },
+    { title: '📱 Chi Tiết Facebook Fanpage (T9)', path: '/tai-lieu/bao-cao-facebook-thang-9-2026', icon: '📱' },
+    { title: '🎵 Chi Tiết TikTok Studio (T9)', path: '/tai-lieu/bao-cao-tiktok-thang-9-2026', icon: '🎵' },
+    { title: '📈 HUB Marketing', path: '/tai-lieu/marketing', icon: '📈' },
+  ];
+
+  if (path === '/tai-lieu/bao-cao-tong-hop-mxh-thang-9-2026' || path === '/tai-lieu/bao-cao-tong-hop-mxh-t9-2026' || path === '/tai-lieu/bao-cao-mxh-t9') {
+    return (
+      <MarkdownViewer 
+        markdownContent={BAO_CAO_TONG_HOP_MXH_T9_MARKDOWN}
+        title="Báo Cáo Hiệu Suất Mạng Xã Hội & Digital (Tháng 9/2026)"
+        author="FIT TOUR Marketing Team"
+        updatedDate="30/09/2026"
+        breadcrumbs={[{ label: 'Marketing', to: '/tai-lieu/marketing' }, { label: 'Báo cáo MXH T9' }]}
+        quickLinks={mxhQuickLinks}
+      />
+    );
+  }
+
+  if (path === '/tai-lieu/bao-cao-website-thang-9-2026' || path === '/tai-lieu/bao-cao-website-t9-2026' || path === '/tai-lieu/bao-cao-website-t9') {
+    return (
+      <BlogLayout fullWidth={true} backPath="/tai-lieu/marketing" backText="Về Marketing Hub">
+        <WebsiteAstroReportSubTab />
+      </BlogLayout>
+    );
+  }
+
+  if (path === '/tai-lieu/bao-cao-facebook-thang-9-2026' || path === '/tai-lieu/bao-cao-facebook-t9-2026' || path === '/tai-lieu/bao-cao-facebook-t9') {
+    return (
+      <MarkdownViewer 
+        markdownContent={BAO_CAO_FACEBOOK_T9_MARKDOWN}
+        title="Báo Cáo Hiệu Suất Facebook Fanpage (Tháng 9/2026)"
+        author="FIT TOUR Social Team"
+        updatedDate="30/09/2026"
+        breadcrumbs={[{ label: 'Marketing', to: '/tai-lieu/marketing' }, { label: 'Báo cáo Fanpage T9' }]}
+        quickLinks={mxhQuickLinks}
+      />
+    );
+  }
+
+  if (path === '/tai-lieu/bao-cao-tiktok-thang-9-2026' || path === '/tai-lieu/bao-cao-tiktok-t9-2026' || path === '/tai-lieu/bao-cao-tiktok-t9') {
+    return (
+      <MarkdownViewer 
+        markdownContent={BAO_CAO_TIKTOK_T9_MARKDOWN}
+        title="Báo Cáo Hiệu Suất Kênh TikTok Studio (Tháng 9/2026)"
+        author="FIT TOUR Video Creator Team"
+        updatedDate="30/09/2026"
+        breadcrumbs={[{ label: 'Marketing', to: '/tai-lieu/marketing' }, { label: 'Báo cáo TikTok T9' }]}
+        quickLinks={mxhQuickLinks}
+      />
+    );
+  }
+
+  if (path === '/tai-lieu/bao-cao-tiktok-thang-10-2026' || path === '/tai-lieu/bao-cao-tiktok-t10-2026' || path === '/tai-lieu/bao-cao-tiktok-t10') {
+    return (
+      <MarkdownViewer 
+        markdownContent={BAO_CAO_TIKTOK_T10_MARKDOWN}
+        title="Báo Cáo Kế Hoạch & Chỉ Tiêu TikTok Studio (Tháng 10/2026)"
+        author="FIT TOUR Video Creator Team"
+        updatedDate="01/10/2026"
+        breadcrumbs={[{ label: 'Marketing', to: '/tai-lieu/marketing' }, { label: 'Kế hoạch TikTok T10' }]}
+        quickLinks={mxhQuickLinks}
+      />
+    );
   }
 
   // RAG Dynamic Documents

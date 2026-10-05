@@ -572,11 +572,15 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                                         {badgeConfig.label}
                                     </span>
                                 )}
-                                {notif.last_contacted_at && new Date(notif.last_contacted_at).toDateString() !== new Date(notif.created_at).toDateString() && (
+                                {notif.origin_tour_name ? (
+                                    <span style={{ fontSize: '10px', background: '#fdf4ff', color: '#9333ea', border: '1px solid #f0abfc', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                        🎖️ Khách quay lại (Tour trước: {notif.origin_tour_name})
+                                    </span>
+                                ) : (notif.last_contacted_at && new Date(notif.last_contacted_at).toDateString() !== new Date(notif.created_at).toDateString() && (
                                     <span style={{ fontSize: '10px', background: '#fee2e2', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
                                         🔥 Khách cũ nhắn lại: {new Date(notif.last_contacted_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                     </span>
-                                )}
+                                ))}
 
                                 {notif.type === 'NEW_LEAD' && (
                                     <button

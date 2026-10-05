@@ -3,7 +3,7 @@ const db = require('../db');
 exports.getNotesByLeadId = async (req, res) => {
     try {
         const result = await db.query(
-            'SELECT n.*, u.full_name as creator_name FROM lead_notes n LEFT JOIN users u ON n.created_by = u.id WHERE n.lead_id = $1 ORDER BY n.created_at DESC',
+            'SELECT n.*, u.full_name as creator_name FROM lead_notes n LEFT JOIN users u ON n.created_by = u.id WHERE n.lead_id = $1 ORDER BY n.created_at DESC, n.id DESC',
             [req.params.leadId]
         );
         res.json(result.rows);

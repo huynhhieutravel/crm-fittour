@@ -1,7 +1,11 @@
 const axios = require('axios');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+
+// Bắt buộc dùng IPv4 Agent để tránh lỗi ENETUNREACH / AggregateError do máy chủ Vultr cố kết nối IPv6 đến Zalo
+const ipv4Agent = new https.Agent({ family: 4 });
 const db = require('../db');
 const facebookService = require('../services/facebookService');
 const notificationController = require('./notificationController');
@@ -133,7 +137,8 @@ const getZaloProfile = async (uid) => {
       headers: {
         'access_token': tokens.access_token
       },
-      timeout: 3000 // Timeout 3s
+      httpsAgent: ipv4Agent,
+      timeout: 5000 // Timeout 5s
     });
     
     console.log(`[Zalo V3 Response for UID ${uid}]:`, response.data);
@@ -151,6 +156,22 @@ const getZaloProfile = async (uid) => {
 
 const refreshZaloToken = async (refreshToken) => {
   try {
+    if (!refreshToken) {
+      if (fs.existsSync(TOKEN_FILE_PATH)) {
+        try {
+          const current = JSON.parse(fs.readFileSync(TOKEN_FILE_PATH, 'utf8'));
+          refreshToken = current.refresh_token;
+        } catch (e) {
+          console.error('[ZaloV2] Lỗi đọc refresh_token từ file:', e.message);
+        }
+      }
+    }
+
+    if (!refreshToken) {
+      console.error('[ZaloV2] Không tìm thấy refresh_token hợp lệ để làm mới.');
+      return null;
+    }
+
     const response = await axios.post('https://oauth.zaloapp.com/v4/oa/access_token', 
       new URLSearchParams({
         app_id: process.env.ZALO_APP_ID,
@@ -161,16 +182,29 @@ const refreshZaloToken = async (refreshToken) => {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'secret_key': process.env.ZALO_APP_SECRET
-        }
+        },
+        httpsAgent: ipv4Agent,
+        timeout: 10000
       }
     );
+
     if (response.data && response.data.access_token) {
-      fs.writeFileSync(TOKEN_FILE_PATH, JSON.stringify(response.data, null, 2));
-      return response.data;
+      const tokenData = {
+        access_token: response.data.access_token,
+        refresh_token: response.data.refresh_token,
+        expires_in: response.data.expires_in,
+        updated_at: new Date().toISOString(),
+        expires_at: Date.now() + (Number(response.data.expires_in || 90000) * 1000)
+      };
+      fs.writeFileSync(TOKEN_FILE_PATH, JSON.stringify(tokenData, null, 2));
+      console.log('✅ [ZaloV2] Đã làm mới Access Token Zalo OA thành công! Hạn dùng đến:', new Date(tokenData.expires_at).toLocaleString('vi-VN'));
+      return tokenData;
     }
+
+    console.error('❌ [ZaloV2] Zalo OAuth từ chối refresh token:', response.data);
     return null;
   } catch (err) {
-    console.error('Lỗi khi refresh Zalo token:', err.response?.data || err.message);
+    console.error('❌ [ZaloV2] Lỗi khi refresh Zalo token:', err.response?.data || err.message);
     return null;
   }
 };
@@ -199,7 +233,9 @@ const sendZaloCsMessageWithAutoRefresh = async (recipientId, text) => {
         headers: {
           'access_token': token,
           'Content-Type': 'application/json'
-        }
+        },
+        httpsAgent: ipv4Agent,
+        timeout: 10000
       }
     );
   };
@@ -256,7 +292,9 @@ const zaloV2Controller = {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'secret_key': process.env.ZALO_APP_SECRET
-          }
+          },
+          httpsAgent: ipv4Agent,
+          timeout: 10000
         }
       );
 
@@ -285,7 +323,9 @@ const zaloV2Controller = {
       const response = await axios.get('https://openapi.zalo.me/v2.0/oa/getoa', {
         headers: {
           'access_token': accessToken
-        }
+        },
+        httpsAgent: ipv4Agent,
+        timeout: 5000
       });
 
       res.json({
@@ -623,20 +663,22 @@ const zaloV2Controller = {
         const handoverText = `Dạ để hỗ trợ Anh/Chị chu đáo và chi tiết nhất cho hành trình này, em đã chuyển tiếp toàn bộ thông tin của mình tới Chuyên viên tư vấn chuyên tuyến của FIT TOUR. Chuyên viên sẽ trực tiếp nhắn tin hỗ trợ Anh/Chị ngay tại khung chat này nhé ạ! 💚`;
         
         try {
-          await sendZaloCsMessageWithAutoRefresh(senderId, handoverText);
+          const handoverSuccess = await sendZaloCsMessageWithAutoRefresh(senderId, handoverText);
 
-          const customerProfile = await getZaloProfile(senderId);
-          saveMessage({
-            id: Date.now().toString(),
-            senderId: senderId,
-            senderName: customerProfile?.name || profile?.name,
-            senderAvatar: customerProfile?.avatar || profile?.avatar,
-            recipientId: senderId,
-            text: handoverText,
-            type: 'outgoing',
-            senderType: 'ai',
-            senderStaffName: 'AI Agent'
-          });
+          if (handoverSuccess) {
+            const customerProfile = await getZaloProfile(senderId);
+            saveMessage({
+              id: Date.now().toString(),
+              senderId: senderId,
+              senderName: customerProfile?.name || `Zalo Guest ${senderId.substring(0, 5)}`,
+              senderAvatar: customerProfile?.avatar || null,
+              recipientId: senderId,
+              text: handoverText,
+              type: 'outgoing',
+              senderType: 'ai',
+              senderStaffName: 'AI Agent'
+            });
+          }
 
           await setAiSession(senderId, false, 'max_turn_limit', `Đã đạt giới hạn ${maxTurns} tin nhắn`);
         } catch (e) {
@@ -674,23 +716,27 @@ const zaloV2Controller = {
 
         const replyText = aiResult?.reply || 'Dạ em chào Anh/Chị, FIT TOUR hân hạnh được hỗ trợ tư vấn tour cho mình ạ!';
 
-        await sendZaloCsMessageWithAutoRefresh(senderId, replyText);
+        const sendSuccess = await sendZaloCsMessageWithAutoRefresh(senderId, replyText);
 
-        // Lưu tin nhắn Bot gửi vào Sandbox
-        const customerProfile = await getZaloProfile(senderId);
-        saveMessage({
-          id: Date.now().toString(),
-          senderId: senderId,
-          senderName: customerProfile?.name || profile?.name,
-          senderAvatar: customerProfile?.avatar || profile?.avatar,
-          recipientId: senderId,
-          text: replyText,
-          type: 'outgoing',
-          senderType: 'ai',
-          senderStaffName: 'AI Agent'
-        });
+        if (sendSuccess) {
+          // Lưu tin nhắn Bot gửi vào Sandbox
+          const customerProfile = await getZaloProfile(senderId);
+          saveMessage({
+            id: Date.now().toString(),
+            senderId: senderId,
+            senderName: customerProfile?.name || `Zalo Guest ${senderId.substring(0, 5)}`,
+            senderAvatar: customerProfile?.avatar || null,
+            recipientId: senderId,
+            text: replyText,
+            type: 'outgoing',
+            senderType: 'ai',
+            senderStaffName: 'AI Agent'
+          });
 
-        console.log('✅ Auto-Reply Gemini AI thành công:', replyText);
+          console.log('✅ Auto-Reply Gemini AI thành công:', replyText);
+        } else {
+          console.error(`❌ [ZaloV2] Không thể gửi tin CS cho UID ${senderId}. Giữ lại tin nhắn chờ nhân viên.`);
+        }
       } catch (error) {
         console.error('❌ Lỗi Auto-Reply:', error.response?.data || error.message);
       }
@@ -784,13 +830,15 @@ const zaloV2Controller = {
           }
         }
 
-        const response = await axios.post('https://openapi.zalo.me/v3.0/oa/message/cs', 
+        const response = await axios.post('https://openapi.zaloapp.me/v3.0/oa/message/cs'.replace('zaloapp.me', 'zalo.me'), 
           payload,
           {
             headers: {
               'access_token': tokens.access_token,
               'Content-Type': 'application/json'
-            }
+            },
+            httpsAgent: ipv4Agent,
+            timeout: 10000
           }
         );
 
@@ -948,7 +996,32 @@ const zaloV2Controller = {
       console.error('❌ Lỗi sendZnsDemo:', error);
       res.status(500).json({ success: false, message: error.message });
     }
+  },
+
+  // --- Manual Token Refresh API ---
+  manualRefresh: async (req, res) => {
+    try {
+      const result = await refreshZaloToken();
+      if (result) {
+        return res.json({
+          success: true,
+          message: 'Làm mới Zalo Token thành công!',
+          expires_at: result.expires_at,
+          expires_in: result.expires_in
+        });
+      }
+      return res.status(500).json({
+        success: false,
+        message: 'Làm mới token thất bại. Vui lòng kiểm tra log hệ thống hoặc đăng nhập lại.'
+      });
+    } catch (e) {
+      return res.status(500).json({ success: false, error: e.message });
+    }
   }
 };
+
+zaloV2Controller.refreshZaloToken = refreshZaloToken;
+zaloV2Controller.sendZaloCsMessageWithAutoRefresh = sendZaloCsMessageWithAutoRefresh;
+zaloV2Controller.TOKEN_FILE_PATH = TOKEN_FILE_PATH;
 
 module.exports = zaloV2Controller;

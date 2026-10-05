@@ -182,7 +182,7 @@ const ToursTab = ({
         </div>
       </div>
 
-      <div className="data-table-container shadow-sm" style={{ border: '1px solid #f1f5f9', borderRadius: '12px', overflow: 'hidden' }}>
+      <div className="data-table-container shadow-sm" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <table className="data-table">
           <thead style={{ background: '#f8fafc' }}>
             <tr>
@@ -199,7 +199,7 @@ const ToursTab = ({
               <th>LOẠI TOUR</th>
               <th>TRẠNG THÁI</th>
               <th>GIÁ NIÊM YẾT</th>
-              <th style={{ textAlign: 'right', paddingRight: '2rem' }}>THAO TÁC</th>
+              <th className="table-sticky-actions" style={{ textAlign: 'center', padding: '0.85rem 0.75rem', minWidth: '120px' }}>THAO TÁC</th>
             </tr>
           </thead>
           <tbody>
@@ -281,8 +281,8 @@ const ToursTab = ({
                 <td style={{ color: 'var(--secondary)', fontWeight: 700, fontSize: '0.8rem' }}>
                   {Number(template.base_price || template.price || 0).toLocaleString('vi-VN')}đ
                 </td>
-                <td>
-                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', paddingRight: '1rem' }}>
+                <td className="table-sticky-actions" style={{ padding: '0.65rem 0.75rem' }}>
+                  <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
                     <button 
                       className="icon-btn-square primary" 
                       title="Xem biểu đồ và Lịch khởi hành" 

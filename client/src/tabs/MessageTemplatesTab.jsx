@@ -76,7 +76,7 @@ const MessageTemplatesTab = () => {
         {loading ? (
           <p>Đang tải dữ liệu...</p>
         ) : (
-          <div className="data-table-container shadow-sm" style={{ border: '1px solid #f1f5f9', borderRadius: '12px', overflow: 'hidden' }}>
+          <div className="data-table-container shadow-sm" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             <table className="data-table">
               <thead style={{ background: '#f8fafc' }}>
                 <tr>

@@ -27,6 +27,20 @@ const EditLeadModal = ({
   const [loadingReminders, setLoadingReminders] = useState(false);
   const [customerJourney, setCustomerJourney] = useState(null);
   const [loadingJourney, setLoadingJourney] = useState(false);
+  const [inheritedNotes, setInheritedNotes] = useState([]);
+  const [loadingInheritedNotes, setLoadingInheritedNotes] = useState(false);
+
+  useEffect(() => {
+    if (editingLead?.id) {
+       setLoadingInheritedNotes(true);
+       axios.get(`/api/leads/${editingLead.id}/inherited-notes`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }})
+       .then(res => setInheritedNotes(res.data.notes || []))
+       .catch(err => console.error('Error fetching inherited notes:', err))
+       .finally(() => setLoadingInheritedNotes(false));
+    } else {
+       setInheritedNotes([]);
+    }
+  }, [editingLead?.id]);
 
   useEffect(() => {
     if (activeTab === 'journey' && editingLead?.id && customerJourney === null) {
@@ -471,6 +485,39 @@ const EditLeadModal = ({
               <div style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8', border: '2px dashed #f1f5f9', borderRadius: '1rem' }}>
                 <FileText size={40} style={{ marginBottom: '1rem', opacity: 0.2 }} />
                 <div>Chưa có lịch sử tư vấn nào.</div>
+              </div>
+            )}
+
+            {/* INHERITED NOTES FROM PREVIOUS LEADS */}
+            {inheritedNotes.length > 0 && (
+              <div style={{ marginTop: '2rem', borderTop: '2px dashed #cbd5e1', paddingTop: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '12px', background: '#ede9fe', color: '#6d28d9', padding: '3px 8px', borderRadius: '6px', fontWeight: 800 }}>
+                    ⏳ GHI CHÚ TỪ CÁC LẦN TƯ VẤN TRƯỚC ({inheritedNotes.length})
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#64748b' }}>
+                    (Tham khảo thông tin sở thích, số lượng người... từ các lần hỏi trước của khách)
+                  </span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {inheritedNotes.map(n => (
+                    <div key={n.id} style={{ padding: '1.25rem', background: '#f8fafc', borderRadius: '0.75rem', border: '1px solid #e2e8f0', borderLeft: '4px solid #8b5cf6' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <strong>{n.creator_name || 'Nhân viên'}</strong>
+                          {n.source_tour_name && <span style={{ marginLeft: '6px', color: '#7c3aed', fontWeight: 700 }}>• Tour: {n.source_tour_name}</span>}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Clock size={12} />
+                          <span>{new Date(n.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</span>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#334155', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                        {n.content}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

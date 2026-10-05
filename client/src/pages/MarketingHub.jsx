@@ -4,13 +4,15 @@ import {
   Search, Bell, Plus, Home, BookOpen, BarChart2, FileText, 
   LayoutTemplate, Star, Image as ImageIcon, MessageSquare, 
   ChevronDown, ArrowRight, ArrowLeft, TrendingUp, ClipboardList,
-  Calendar, Clock, ExternalLink, Copy, Check, FileSpreadsheet, Share2, Video
+  Calendar, Clock, ExternalLink, Copy, Check, FileSpreadsheet, Share2, Video,
+  Globe
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const MarketingHub = () => {
   const [activeMenu, setActiveMenu] = useState('Tài liệu Marketing');
   const [copiedId, setCopiedId] = useState(null);
+  const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
   const navigate = useNavigate();
 
   // Lấy thông tin user thật từ localStorage
@@ -23,7 +25,7 @@ const MarketingHub = () => {
   // Lấy chữ cái đầu của tên
   const initial = userName.charAt(0).toUpperCase();
 
-  // Danh sách Báo Cáo & Lịch Biểu Bắt Buộc
+  // Danh sách Báo Cáo & Lịch Biểu Bắt Buộc (3 ô section: Facebook, TikTok, Website)
   const recurringReports = [
     {
       id: 'fb-fanpage-reach',
@@ -39,7 +41,17 @@ const MarketingHub = () => {
       cycleBg: '#fef3c7',
       cycleBorder: '#fde68a',
       desc: 'Báo cáo tổng hợp số liệu tiếp cận tự nhiên (Organic Reach), tương tác Fanpage và đo lường hiệu quả bài viết định kỳ tháng.',
-      url: 'https://docs.google.com/spreadsheets/d/1F7FX-2AtT89U4W4uCoq-fcpILDHYUtbvIW9SLenBCOg/edit?usp=sharing'
+      url: 'https://docs.google.com/spreadsheets/d/1F7FX-2AtT89U4W4uCoq-fcpILDHYUtbvIW9SLenBCOg/edit?gid=480259893#gid=480259893',
+      kpi: {
+        target: '40 bài / 100k view',
+        actual: '138.6k view (43 bài)',
+        percent: 100,
+        percentLabel: '138.6%',
+        barGradient: 'linear-gradient(90deg, #3b82f6, #1d4ed8)',
+        badgeColor: '#1d4ed8',
+        badgeBg: '#eff6ff',
+        badgeBorder: '#bfdbfe'
+      }
     },
     {
       id: 'tiktok-schedule',
@@ -55,7 +67,260 @@ const MarketingHub = () => {
       cycleBg: '#ecfdf5',
       cycleBorder: '#a7f3d0',
       desc: 'Kế hoạch phân bổ khung giờ phát sóng, chủ đề kịch bản và theo dõi tiến độ đăng video TikTok cho toàn bộ các kênh.',
-      url: 'https://docs.google.com/spreadsheets/d/1i7ERk50GH4Yr_wnbvp3pqlYd0J9FOvTUzlY_TZ0A6fc/edit?usp=sharing'
+      url: 'https://docs.google.com/spreadsheets/d/1i7ERk50GH4Yr_wnbvp3pqlYd0J9FOvTUzlY_TZ0A6fc/edit?usp=sharing',
+      kpi: {
+        target: '30 video / 20k view',
+        actual: '30 clip lên lịch',
+        percent: 100,
+        percentLabel: '100% Lịch',
+        barGradient: 'linear-gradient(90deg, #6366f1, #4f46e5)',
+        badgeColor: '#4f46e5',
+        badgeBg: '#eef2ff',
+        badgeBorder: '#c7d2fe'
+      }
+    },
+    {
+      id: 'website-fittour',
+      title: 'Báo cáo Bài viết Website fittour.vn',
+      platform: 'Website fittour.vn',
+      platformIcon: <Globe size={14} color="#059669" />,
+      platformColor: '#059669',
+      platformBg: '#ecfdf5',
+      platformBorder: '#a7f3d0',
+      deadline: 'Sáng ngày 1 đầu tháng',
+      cycle: 'Hàng tháng',
+      cycleColor: '#b45309',
+      cycleBg: '#fef3c7',
+      cycleBorder: '#fde68a',
+      desc: 'Theo dõi tiến độ sản xuất bài viết tour độc bản, cẩm nang SEO, hình ảnh showroom và tối ưu tốc độ Astro.',
+      isInternal: true,
+      docUrl: '/tai-lieu/bao-cao-website-thang-9-2026',
+      siteUrl: 'https://fittour.vn',
+      sheetUrl: 'https://docs.google.com/spreadsheets/d/1dr95yLvqX_WfucYrruugkKXns8L0WDP5/edit?usp=sharing&ouid=107203445454776991915&rtpof=true&sd=true',
+      url: '/tai-lieu/bao-cao-website-thang-9-2026',
+      kpi: {
+        target: '30 bài viết',
+        actual: '125 bài/trang',
+        percent: 100,
+        percentLabel: '416.7%',
+        barGradient: 'linear-gradient(90deg, #10b981, #059669)',
+        badgeColor: '#047857',
+        badgeBg: '#ecfdf5',
+        badgeBorder: '#a7f3d0'
+      }
+    }
+  ];
+
+  // Danh mục Lưu Trữ Báo Cáo Định Kỳ Theo Tháng
+  const monthlyArchives = [
+    {
+      monthKey: '2026-09',
+      title: 'Kỳ Báo Cáo Tháng 09/2026',
+      period: '01/09/2026 – 30/09/2026',
+      deadline: 'Sáng ngày 01/10/2026',
+      status: 'completed',
+      statusLabel: 'Đã hoàn thành',
+      statusBg: '#ecfdf5',
+      statusColor: '#059669',
+      statusBorder: '#a7f3d0',
+      reports: [
+        {
+          id: 'web-t9',
+          channel: 'Website Astro',
+          channelIcon: <Globe size={14} color="#059669" />,
+          channelBg: '#ecfdf5',
+          channelBorder: '#a7f3d0',
+          channelColor: '#059669',
+          name: 'Báo Cáo Bài Viết Website Astro (125 Bài/Trang)',
+          kpiBadge: '416.7% KPI',
+          summary: '21 Tour độc bản, 63 Cẩm nang SEO, 29 Showroom ảnh 16:9, 12 Page. Tải trang cực nhanh <0.8s, Astro Native.',
+          docUrl: '/tai-lieu/bao-cao-website-thang-9-2026',
+          siteUrl: 'https://fittour.vn',
+          sheetUrl: 'https://docs.google.com/spreadsheets/d/1dr95yLvqX_WfucYrruugkKXns8L0WDP5/edit?usp=sharing&ouid=107203445454776991915&rtpof=true&sd=true',
+          htmlUrl: '/email_preview_bao_cao_website_t9_2026.html',
+          kpi: {
+            target: '30 bài viết',
+            actual: '125 bài/trang',
+            percent: 100,
+            percentLabel: '416.7%',
+            barGradient: 'linear-gradient(90deg, #10b981, #059669)',
+            badgeColor: '#047857',
+            badgeBg: '#ecfdf5',
+            badgeBorder: '#a7f3d0'
+          }
+        },
+        {
+          id: 'fb-t9',
+          channel: 'Facebook Fanpage',
+          channelIcon: <Share2 size={14} color="#1877f2" />,
+          channelBg: '#eff6ff',
+          channelBorder: '#dbeafe',
+          channelColor: '#1877f2',
+          name: 'Báo Cáo Facebook Fanpage Reach (138k View)',
+          kpiBadge: '+38.6% KPI',
+          summary: '43 bài Organic (35 Album, 6 Reels), đạt 138,580 lượt xem, 1,096 tương tác, tuần 3 bứt phá 54.7k view.',
+          docUrl: '/tai-lieu/bao-cao-facebook-thang-9-2026',
+          sheetUrl: 'https://docs.google.com/spreadsheets/d/1F7FX-2AtT89U4W4uCoq-fcpILDHYUtbvIW9SLenBCOg/edit?usp=sharing',
+          htmlUrl: '/preview_bao_cao_fanpage_facebook_t9_2026.html',
+          kpi: {
+            target: '100k view (40 bài)',
+            actual: '138.6k view (43 bài)',
+            percent: 100,
+            percentLabel: '+38.6%',
+            barGradient: 'linear-gradient(90deg, #3b82f6, #1d4ed8)',
+            badgeColor: '#1d4ed8',
+            badgeBg: '#eff6ff',
+            badgeBorder: '#bfdbfe'
+          }
+        },
+        {
+          id: 'tiktok-t9',
+          channel: 'TikTok Studio',
+          channelIcon: <Video size={14} color="#0f172a" />,
+          channelBg: '#f1f5f9',
+          channelBorder: '#e2e8f0',
+          channelColor: '#0f172a',
+          name: 'Lịch Đăng TikTok Phân Bổ & Báo Cáo Studio',
+          kpiBadge: '113.5% KPI View',
+          summary: '30 video, đạt 22,700 views (113.5% KPI, +12.7% MoM), 533 thích (+36.7%), 155 share, 633 profile views. TikTok Search chiếm 32.2%.',
+          docUrl: '/tai-lieu/bao-cao-tiktok-thang-9-2026',
+          sheetUrl: 'https://docs.google.com/spreadsheets/d/1i7ERk50GH4Yr_wnbvp3pqlYd0J9FOvTUzlY_TZ0A6fc/edit?usp=sharing',
+          htmlUrl: '/preview_bao_cao_tiktok_studio_t9_2026.html',
+          emailUrl: '/email_preview_bao_cao_tiktok_studio_t9_2026.html',
+          kpi: {
+            target: '30 clip / 20k view',
+            actual: '22.7k view (113.5%)',
+            percent: 100,
+            percentLabel: 'Vượt KPI +13.5%',
+            barGradient: 'linear-gradient(90deg, #10b981, #059669)',
+            badgeColor: '#059669',
+            badgeBg: '#ecfdf5',
+            badgeBorder: '#a7f3d0'
+          }
+        },
+        {
+          id: 'overview-t9',
+          channel: 'Tổng Hợp Đa Kênh',
+          channelIcon: <TrendingUp size={14} color="#2563eb" />,
+          channelBg: '#eff6ff',
+          channelBorder: '#bfdbfe',
+          channelColor: '#2563eb',
+          name: 'Báo Cáo Tổng Hợp & Đối Soát KPI Đa Kênh MXH',
+          kpiBadge: 'Đối Soát 3 Kênh',
+          summary: 'Bảng đối chiếu minh bạch chỉ tiêu KPI vs thực tế Website, Fanpage, TikTok và đề xuất chỉ tiêu T10.',
+          docUrl: '/tai-lieu/bao-cao-tong-hop-mxh-thang-9-2026',
+          htmlUrl: '/preview_bao_cao_tong_hop_mxh_t9_2026.html',
+          emailUrl: '/email_preview_bao_cao_tong_hop_mxh_t9_2026.html',
+          kpi: {
+            target: '3/3 kênh (Web, FB, TikTok)',
+            actual: 'Đối soát 100%',
+            percent: 100,
+            percentLabel: 'Hoàn tất',
+            barGradient: 'linear-gradient(90deg, #2563eb, #1d4ed8)',
+            badgeColor: '#1d4ed8',
+            badgeBg: '#eff6ff',
+            badgeBorder: '#bfdbfe'
+          }
+        }
+      ]
+    },
+    {
+      monthKey: '2026-10',
+      title: 'Kỳ Báo Cáo Tháng 10/2026',
+      period: '01/10/2026 – 31/10/2026',
+      deadline: 'Sáng ngày 01/11/2026',
+      status: 'in_progress',
+      statusLabel: 'Đang triển khai',
+      statusBg: '#fef3c7',
+      statusColor: '#b45309',
+      statusBorder: '#fde68a',
+      note: 'Đang ghi nhận số liệu thực tế. Chỉ tiêu: Website 40 bài | Fanpage 40 bài, >120k view (TB >3k/bài) | TikTok 30 video, >25k view. Báo cáo hoàn tất sẽ được cập nhật vào sáng ngày 01/11/2026.',
+      reports: [
+        {
+          id: 'web-t10',
+          channel: 'Website Astro',
+          channelIcon: <Globe size={14} color="#059669" />,
+          channelBg: '#ecfdf5',
+          channelBorder: '#a7f3d0',
+          channelColor: '#059669',
+          name: 'Báo Cáo Bài Viết Website Astro T10',
+          kpiBadge: 'Chỉ tiêu 40 bài',
+          summary: 'Tập trung sản xuất cẩm nang tuyến mới thu đông, tối ưu schema SEO bài viết tour.',
+          siteUrl: 'https://fittour.vn',
+          inProgress: true,
+          kpi: {
+            target: '40 bài viết',
+            actual: 'Đang triển khai',
+            percent: 15,
+            percentLabel: 'Khởi động T10',
+            barGradient: 'linear-gradient(90deg, #10b981, #059669)',
+            badgeColor: '#b45309',
+            badgeBg: '#fef3c7',
+            badgeBorder: '#fde68a'
+          }
+        },
+        {
+          id: 'fb-t10',
+          channel: 'Facebook Fanpage',
+          channelIcon: <Share2 size={14} color="#1877f2" />,
+          channelBg: '#eff6ff',
+          channelBorder: '#dbeafe',
+          channelColor: '#1877f2',
+          name: 'Báo Cáo Facebook Fanpage Reach T10',
+          kpiBadge: 'Chỉ tiêu 40 bài, >120k view (TB >3k/bài)',
+          summary: 'Triển khai 40 bài Organic theo khung giờ vàng và album hình ảnh chân thực hành trình. Mục tiêu TB >3,000 view/bài.',
+          sheetUrl: 'https://docs.google.com/spreadsheets/d/1F7FX-2AtT89U4W4uCoq-fcpILDHYUtbvIW9SLenBCOg/edit?gid=480259893#gid=480259893',
+          inProgress: true,
+          kpi: {
+            target: '40 bài • >120k view (>3k/bài)',
+            actual: 'Đang triển khai',
+            percent: 15,
+            percentLabel: 'Khởi động T10',
+            barGradient: 'linear-gradient(90deg, #3b82f6, #1d4ed8)',
+            badgeColor: '#1d4ed8',
+            badgeBg: '#eff6ff',
+            badgeBorder: '#bfdbfe'
+          }
+        },
+        {
+          id: 'tiktok-t10',
+          channel: 'TikTok Studio',
+          channelIcon: <Video size={14} color="#0f172a" />,
+          channelBg: '#f1f5f9',
+          channelBorder: '#e2e8f0',
+          channelColor: '#0f172a',
+          name: 'Kế Hoạch & Chỉ Tiêu TikTok Studio T10',
+          kpiBadge: 'Mục tiêu >25k view',
+          summary: 'Kế hoạch 30 video Thu Đông (Cửu Trại Câu, Ladakh, Bhutan), đẩy mạnh SEO TikTok (32.2% search) & chuyển đổi qua Profile Visit.',
+          docUrl: '/tai-lieu/bao-cao-tiktok-thang-10-2026',
+          htmlUrl: '/preview_bao_cao_tiktok_studio_t10_2026.html',
+          emailUrl: '/email_preview_bao_cao_tiktok_studio_t9_2026.html',
+          inProgress: false,
+          kpi: {
+            target: '30 video • >25k view',
+            actual: 'Kế hoạch T10',
+            percent: 100,
+            percentLabel: 'Kế hoạch sẵn sàng',
+            barGradient: 'linear-gradient(90deg, #8b5cf6, #7c3aed)',
+            badgeColor: '#6d28d9',
+            badgeBg: '#f5f3ff',
+            badgeBorder: '#ddd6fe'
+          }
+        }
+      ]
+    },
+    {
+      monthKey: '2026-11',
+      title: 'Kỳ Báo Cáo Tháng 11/2026',
+      period: '01/11/2026 – 30/11/2026',
+      deadline: 'Sáng ngày 01/12/2026',
+      status: 'upcoming',
+      statusLabel: 'Dự kiến',
+      statusBg: '#f8fafc',
+      statusColor: '#64748b',
+      statusBorder: '#e2e8f0',
+      note: 'Kỳ báo cáo chuẩn bị cho đợt cao điểm bán tour Tết 2027 và chiến dịch mùa đông. Xuất bản vào sáng 01/12/2026.',
+      reports: []
     }
   ];
 
@@ -102,7 +367,7 @@ const MarketingHub = () => {
   ];
 
   const quickLinks = [
-    { name: 'Báo cáo Fanpage Reach', url: 'https://docs.google.com/spreadsheets/d/1F7FX-2AtT89U4W4uCoq-fcpILDHYUtbvIW9SLenBCOg/edit?usp=sharing', external: true, icon: <Share2 size={16} color="#1877f2" /> },
+    { name: 'Báo cáo Fanpage Reach', url: 'https://docs.google.com/spreadsheets/d/1F7FX-2AtT89U4W4uCoq-fcpILDHYUtbvIW9SLenBCOg/edit?gid=480259893#gid=480259893', external: true, icon: <Share2 size={16} color="#1877f2" /> },
     { name: 'Lịch đăng TikTok Daily', url: 'https://docs.google.com/spreadsheets/d/1i7ERk50GH4Yr_wnbvp3pqlYd0J9FOvTUzlY_TZ0A6fc/edit?usp=sharing', external: true, icon: <Video size={16} color="#0f172a" /> },
     { name: 'Brand Guidelines', url: '/cam-nang-thuong-hieu', icon: <BookOpen size={16} /> },
     { name: 'Giọng văn & Tone of voice (chưa có)', icon: <MessageSquare size={16} /> },
@@ -339,7 +604,7 @@ const MarketingHub = () => {
               </div>
 
               {/* Cards Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 18 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 18 }}>
                 {recurringReports.map((report) => (
                   <div 
                     key={report.id}
@@ -347,10 +612,11 @@ const MarketingHub = () => {
                       backgroundColor: '#f8fafc', 
                       borderRadius: 14, 
                       border: '1px solid #e2e8f0', 
-                      padding: '20px',
+                      padding: '18px 20px',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
+                      gap: 16,
                       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
                     }}
@@ -358,7 +624,7 @@ const MarketingHub = () => {
                   >
                     <div>
                       {/* Top Badges: Platform + Deadline */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
                         {/* Platform Badge */}
                         <div style={{ 
                           display: 'inline-flex', 
@@ -395,64 +661,139 @@ const MarketingHub = () => {
                       </div>
 
                       {/* Title */}
-                      <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', margin: '0 0 8px', lineHeight: 1.4 }}>
+                      <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', margin: '0 0 8px', lineHeight: 1.45 }}>
                         {report.title}
                       </h3>
 
-                      {/* Description */}
-                      <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5, margin: '0 0 18px' }}>
-                        {report.desc}
-                      </p>
+                      {/* KPI Progress Bar */}
+                      {report.kpi && (
+                        <div style={{
+                          backgroundColor: '#ffffff',
+                          borderRadius: 8,
+                          border: '1px solid #e2e8f0',
+                          padding: '8px 10px',
+                          marginTop: 6
+                        }}>
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center', 
+                            fontSize: '11px', 
+                            marginBottom: 6,
+                            gap: 6,
+                            flexWrap: 'wrap'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#475569', fontWeight: 600 }}>
+                              <span>🎯 KPI:</span>
+                              <span style={{ color: '#0f172a', fontWeight: 700 }}>{report.kpi.target}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                              <span style={{ color: '#64748b' }}>Đạt:</span>
+                              <span style={{ fontWeight: 800, color: '#0f172a' }}>{report.kpi.actual}</span>
+                              <span style={{ 
+                                fontSize: '10px', 
+                                fontWeight: 800, 
+                                color: report.kpi.badgeColor || '#059669',
+                                backgroundColor: report.kpi.badgeBg || '#ecfdf5',
+                                border: `1px solid ${report.kpi.badgeBorder || '#a7f3d0'}`,
+                                padding: '1px 6px',
+                                borderRadius: 4
+                              }}>
+                                {report.kpi.percentLabel}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div style={{ 
+                            height: 6, 
+                            width: '100%', 
+                            backgroundColor: '#e2e8f0', 
+                            borderRadius: 999, 
+                            overflow: 'hidden'
+                          }}>
+                            <div 
+                              style={{ 
+                                height: '100%', 
+                                width: `${Math.min(report.kpi.percent, 100)}%`, 
+                                background: report.kpi.barGradient || '#10b981', 
+                                borderRadius: 999,
+                                transition: 'width 0.4s ease'
+                              }} 
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Bottom Actions */}
+                    {/* Bottom Action: Full-width balanced button bar */}
                     <div style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
-                      justifyContent: 'space-between', 
+                      gap: 8,
                       paddingTop: 14, 
                       borderTop: '1px solid #e2e8f0',
-                      flexWrap: 'wrap',
-                      gap: 10
+                      width: '100%'
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '12px', color: '#059669', fontWeight: 600 }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#10b981' }} />
-                        Google Sheets trực tuyến
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        {/* Copy Link Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigator.clipboard.writeText(report.url);
-                            setCopiedId(report.id);
-                            toast.success('Đã chép link Google Sheets!', { id: `copied-${report.id}` });
-                            setTimeout(() => setCopiedId(null), 2000);
-                          }}
-                          title="Sao chép liên kết"
+                      {report.siteUrl && (
+                        <a
+                          href={report.siteUrl}
+                          target="_blank"
+                          rel="noreferrer"
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: 5,
+                            justifyContent: 'center',
+                            gap: 6,
                             backgroundColor: '#ffffff',
                             border: '1px solid #cbd5e1',
                             borderRadius: 8,
-                            padding: '6px 12px',
-                            fontSize: '12px',
+                            padding: '8px 14px',
+                            fontSize: '13px',
                             fontWeight: 600,
-                            color: copiedId === report.id ? '#16a34a' : '#475569',
+                            color: '#0f172a',
+                            textDecoration: 'none',
                             cursor: 'pointer',
-                            transition: 'all 0.15s'
+                            transition: 'all 0.15s',
+                            flex: 1,
+                            minWidth: 0
                           }}
-                          className="hover:bg-slate-50"
+                          className="hover:border-slate-400 hover:bg-slate-50"
                         >
-                          {copiedId === report.id ? <Check size={14} color="#16a34a" /> : <Copy size={14} />}
-                          <span>{copiedId === report.id ? 'Đã chép' : 'Sao chép link'}</span>
-                        </button>
+                          <Globe size={14} color="#059669" />
+                          <span>fittour.vn</span>
+                          <ExternalLink size={12} color="#64748b" />
+                        </a>
+                      )}
 
-                        {/* Open Sheet Button */}
+                      {report.isInternal ? (
+                        <button
+                          type="button"
+                          onClick={() => navigate(report.docUrl)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6,
+                            backgroundColor: '#0f172a',
+                            border: 'none',
+                            borderRadius: 8,
+                            padding: '8px 16px',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            color: '#ffffff',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.15s',
+                            boxShadow: '0 1px 2px rgba(15, 23, 42, 0.15)',
+                            flex: report.siteUrl ? 1 : '1 1 100%',
+                            width: report.siteUrl ? 'auto' : '100%',
+                            minWidth: 0
+                          }}
+                          className="hover:bg-slate-800"
+                        >
+                          <span>Xem Báo Cáo</span>
+                          <ArrowRight size={14} />
+                        </button>
+                      ) : (
                         <a
                           href={report.url}
                           target="_blank"
@@ -460,28 +801,450 @@ const MarketingHub = () => {
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: 6,
+                            justifyContent: 'center',
+                            gap: 7,
                             backgroundColor: '#2563eb',
                             border: 'none',
                             borderRadius: 8,
-                            padding: '6px 14px',
-                            fontSize: '12px',
+                            padding: '8px 16px',
+                            fontSize: '13px',
                             fontWeight: 600,
                             color: '#ffffff',
                             textDecoration: 'none',
                             cursor: 'pointer',
                             transition: 'background-color 0.15s',
-                            boxShadow: '0 1px 2px rgba(37, 99, 235, 0.2)'
+                            boxShadow: '0 1px 2px rgba(37, 99, 235, 0.2)',
+                            width: '100%',
+                            flex: 1
                           }}
                           className="hover:bg-blue-700"
                         >
+                          <FileSpreadsheet size={15} />
                           <span>Mở Trang Tính</span>
-                          <ExternalLink size={13} />
+                          <ExternalLink size={13} style={{ opacity: 0.8 }} />
                         </a>
-                      </div>
+                      )}
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* =========================================================
+                  DANH MỤC BÁO CÁO ĐỊNH KỲ THEO THÁNG (LƯU TRỮ T9, T10, T11...)
+                  ========================================================= */}
+              <div style={{ marginTop: 28, paddingTop: 22, borderTop: '1px solid #e2e8f0' }}>
+                
+                {/* Header danh mục */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Calendar size={18} color="#2563eb" />
+                      <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                        Danh Mục Báo Cáo Định Kỳ Theo Tháng
+                      </h3>
+                      <span style={{ fontSize: '11px', fontWeight: 700, backgroundColor: '#eff6ff', color: '#2563eb', padding: '2px 8px', borderRadius: 12, border: '1px solid #dbeafe' }}>
+                        Kho Lưu Trữ
+                      </span>
+                    </div>
+                    <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>
+                      Danh sách đối soát số liệu đa kênh theo từng kỳ tháng (Website, Fanpage, TikTok). Hạn nộp định kỳ: Sáng ngày 1 đầu tháng.
+                    </p>
+                  </div>
+
+                  {/* Filter tabs theo tháng */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: '#f1f5f9', padding: '4px', borderRadius: 10, flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedMonthFilter('all')}
+                      style={{
+                        border: 'none',
+                        borderRadius: 7,
+                        padding: '5px 12px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        backgroundColor: selectedMonthFilter === 'all' ? '#ffffff' : 'transparent',
+                        color: selectedMonthFilter === 'all' ? '#0f172a' : '#64748b',
+                        boxShadow: selectedMonthFilter === 'all' ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
+                        transition: 'all 0.15s'
+                      }}
+                    >
+                      Tất cả các kỳ
+                    </button>
+                    {monthlyArchives.map(m => (
+                      <button
+                        key={m.monthKey}
+                        type="button"
+                        onClick={() => setSelectedMonthFilter(m.monthKey)}
+                        style={{
+                          border: 'none',
+                          borderRadius: 7,
+                          padding: '5px 12px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          backgroundColor: selectedMonthFilter === m.monthKey ? '#ffffff' : 'transparent',
+                          color: selectedMonthFilter === m.monthKey ? '#2563eb' : '#64748b',
+                          boxShadow: selectedMonthFilter === m.monthKey ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        {m.title.replace('Kỳ Báo Cáo ', '')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Danh sách các tháng */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {monthlyArchives
+                    .filter(m => selectedMonthFilter === 'all' || selectedMonthFilter === m.monthKey)
+                    .map((month) => (
+                      <div 
+                        key={month.monthKey}
+                        style={{
+                          backgroundColor: '#ffffff',
+                          borderRadius: 14,
+                          border: '1px solid #e2e8f0',
+                          padding: '18px 20px',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                        }}
+                      >
+                        {/* Month Header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: month.reports?.length > 0 ? 14 : 0, flexWrap: 'wrap', gap: 8 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: month.status === 'completed' ? '#10b981' : (month.status === 'in_progress' ? '#f59e0b' : '#94a3b8') }} />
+                            <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                              {month.title}
+                            </h4>
+                            <span style={{ fontSize: '12px', color: '#64748b' }}>({month.period})</span>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ 
+                              fontSize: '11px', 
+                              fontWeight: 700, 
+                              backgroundColor: month.statusBg, 
+                              color: month.statusColor, 
+                              border: `1px solid ${month.statusBorder}`,
+                              padding: '3px 10px', 
+                              borderRadius: 12 
+                            }}>
+                              {month.statusLabel}
+                            </span>
+                            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <Clock size={13} color="#f59e0b" /> Hạn: {month.deadline}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Ghi chú kỳ */}
+                        {month.note && (
+                          <div style={{ fontSize: '13px', color: '#475569', backgroundColor: '#f8fafc', padding: '10px 14px', borderRadius: 8, border: '1px solid #f1f5f9', marginBottom: month.reports?.length > 0 ? 14 : 0 }}>
+                            {month.note}
+                          </div>
+                        )}
+
+                        {/* Danh sách báo cáo trong kỳ */}
+                        {month.reports?.length > 0 && (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))', gap: 12 }}>
+                            {month.reports.map((rpt) => (
+                              <div 
+                                key={rpt.id}
+                                style={{
+                                  backgroundColor: '#f8fafc',
+                                  borderRadius: 10,
+                                  border: '1px solid #e2e8f0',
+                                  padding: '14px 16px',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  justifyContent: 'space-between',
+                                  gap: 10,
+                                  transition: 'border-color 0.15s'
+                                }}
+                                className="hover:border-slate-300"
+                              >
+                                <div>
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, gap: 6, flexWrap: 'wrap' }}>
+                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '12px', fontWeight: 600, color: rpt.channelColor, backgroundColor: rpt.channelBg, border: `1px solid ${rpt.channelBorder}`, padding: '2px 8px', borderRadius: 6 }}>
+                                      {rpt.channelIcon}
+                                      <span>{rpt.channel}</span>
+                                    </div>
+                                    {rpt.kpiBadge && (
+                                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#047857', backgroundColor: '#ecfdf5', padding: '2px 8px', borderRadius: 6, border: '1px solid #a7f3d0' }}>
+                                        {rpt.kpiBadge}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>
+                                    {rpt.name}
+                                  </div>
+                                  <div style={{ fontSize: '12px', color: '#64748b', lineHeight: 1.4 }}>
+                                    {rpt.summary}
+                                  </div>
+
+                                  {/* KPI Progress Bar */}
+                                  {rpt.kpi && (
+                                    <div style={{
+                                      backgroundColor: '#ffffff',
+                                      borderRadius: 8,
+                                      border: '1px solid #e2e8f0',
+                                      padding: '8px 10px',
+                                      marginTop: 8
+                                    }}>
+                                      <div style={{ 
+                                        display: 'flex', 
+                                        justifyContent: 'space-between', 
+                                        alignItems: 'center', 
+                                        fontSize: '11px', 
+                                        marginBottom: 6,
+                                        gap: 6,
+                                        flexWrap: 'wrap'
+                                      }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#475569', fontWeight: 600 }}>
+                                          <span>🎯 KPI:</span>
+                                          <span style={{ color: '#0f172a', fontWeight: 700 }}>{rpt.kpi.target}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                          <span style={{ color: '#64748b' }}>Đạt:</span>
+                                          <span style={{ fontWeight: 800, color: '#0f172a' }}>{rpt.kpi.actual}</span>
+                                          <span style={{ 
+                                            fontSize: '10px', 
+                                            fontWeight: 800, 
+                                            color: rpt.kpi.badgeColor || '#059669',
+                                            backgroundColor: rpt.kpi.badgeBg || '#ecfdf5',
+                                            border: `1px solid ${rpt.kpi.badgeBorder || '#a7f3d0'}`,
+                                            padding: '1px 6px',
+                                            borderRadius: 4
+                                          }}>
+                                            {rpt.kpi.percentLabel}
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <div style={{ 
+                                        height: 6, 
+                                        width: '100%', 
+                                        backgroundColor: '#e2e8f0', 
+                                        borderRadius: 999, 
+                                        overflow: 'hidden'
+                                      }}>
+                                        <div 
+                                          style={{ 
+                                            height: '100%', 
+                                            width: `${Math.min(rpt.kpi.percent, 100)}%`, 
+                                            background: rpt.kpi.barGradient || '#10b981', 
+                                            borderRadius: 999,
+                                            transition: 'width 0.4s ease'
+                                          }} 
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Actions */}
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, paddingTop: 8, borderTop: '1px solid #f1f5f9', flexWrap: 'wrap' }}>
+                                  {rpt.inProgress ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                      <span style={{ fontSize: '12px', color: '#b45309', fontStyle: 'italic', fontWeight: 500 }}>
+                                        ⏳ Đang thu thập số liệu...
+                                      </span>
+                                      {rpt.siteUrl && (
+                                        <a
+                                          href={rpt.siteUrl}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 4,
+                                            backgroundColor: '#16a34a',
+                                            color: '#ffffff',
+                                            border: 'none',
+                                            borderRadius: 6,
+                                            padding: '4px 10px',
+                                            fontSize: '11px',
+                                            fontWeight: 600,
+                                            textDecoration: 'none',
+                                            cursor: 'pointer'
+                                          }}
+                                          className="hover:bg-green-700"
+                                        >
+                                          <Globe size={11} />
+                                          <span>Trang Chính Thức</span>
+                                          <ExternalLink size={10} />
+                                        </a>
+                                      )}
+                                      {rpt.sheetUrl && (
+                                        <a
+                                          href={rpt.sheetUrl}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 4,
+                                            backgroundColor: '#2563eb',
+                                            color: '#ffffff',
+                                            border: 'none',
+                                            borderRadius: 6,
+                                            padding: '4px 10px',
+                                            fontSize: '11px',
+                                            fontWeight: 600,
+                                            textDecoration: 'none',
+                                            cursor: 'pointer'
+                                          }}
+                                          className="hover:bg-blue-700"
+                                        >
+                                          <FileSpreadsheet size={11} />
+                                          <span>Trang Tính T10</span>
+                                          <ExternalLink size={10} />
+                                        </a>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <>
+                                      {rpt.docUrl && (
+                                        <button
+                                          type="button"
+                                          onClick={() => navigate(rpt.docUrl)}
+                                          style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 5,
+                                            backgroundColor: '#0f172a',
+                                            color: '#ffffff',
+                                            border: 'none',
+                                            borderRadius: 6,
+                                            padding: '5px 12px',
+                                            fontSize: '12px',
+                                            fontWeight: 600,
+                                            cursor: 'pointer'
+                                          }}
+                                          className="hover:bg-slate-800"
+                                        >
+                                          <FileText size={12} />
+                                          <span>Đọc Báo Cáo</span>
+                                        </button>
+                                      )}
+
+                                      {rpt.siteUrl && (
+                                        <a
+                                          href={rpt.siteUrl}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 5,
+                                            backgroundColor: '#16a34a',
+                                            color: '#ffffff',
+                                            border: 'none',
+                                            borderRadius: 6,
+                                            padding: '5px 12px',
+                                            fontSize: '12px',
+                                            fontWeight: 600,
+                                            textDecoration: 'none',
+                                            cursor: 'pointer'
+                                          }}
+                                          className="hover:bg-green-700"
+                                        >
+                                          <Globe size={12} />
+                                          <span>Trang Chính Thức</span>
+                                          <ExternalLink size={12} />
+                                        </a>
+                                      )}
+
+                                      {rpt.sheetUrl && (
+                                        <a
+                                          href={rpt.sheetUrl}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 5,
+                                            backgroundColor: '#2563eb',
+                                            color: '#ffffff',
+                                            border: 'none',
+                                            borderRadius: 6,
+                                            padding: '5px 12px',
+                                            fontSize: '12px',
+                                            fontWeight: 600,
+                                            textDecoration: 'none',
+                                            cursor: 'pointer'
+                                          }}
+                                          className="hover:bg-blue-700"
+                                        >
+                                          <span>Trang Tính</span>
+                                          <ExternalLink size={12} />
+                                        </a>
+                                      )}
+
+                                      {rpt.htmlUrl && (
+                                        <a
+                                          href={rpt.htmlUrl}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 5,
+                                            backgroundColor: '#0284c7',
+                                            color: '#ffffff',
+                                            border: 'none',
+                                            borderRadius: 6,
+                                            padding: '5px 12px',
+                                            fontSize: '12px',
+                                            fontWeight: 600,
+                                            textDecoration: 'none',
+                                            cursor: 'pointer'
+                                          }}
+                                          className="hover:bg-sky-700"
+                                        >
+                                          <span>Bản HTML</span>
+                                          <ExternalLink size={12} />
+                                        </a>
+                                      )}
+
+                                      {rpt.emailUrl && (
+                                        <a
+                                          href={rpt.emailUrl}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 5,
+                                            backgroundColor: '#be185d',
+                                            color: '#ffffff',
+                                            border: 'none',
+                                            borderRadius: 6,
+                                            padding: '5px 12px',
+                                            fontSize: '12px',
+                                            fontWeight: 600,
+                                            textDecoration: 'none',
+                                            cursor: 'pointer'
+                                          }}
+                                          className="hover:bg-pink-800"
+                                        >
+                                          <span>Email Preview</span>
+                                          <ExternalLink size={12} />
+                                        </a>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+
               </div>
             </div>
 

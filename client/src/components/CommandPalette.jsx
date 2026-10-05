@@ -347,6 +347,15 @@ const globalSearchData = [
         keywords: 'thi truong bu1 tour trung quoc du toan ads giang nam bac kinh dao thanh a dinh tan cuong thanh tang le giang cap nhi tan cpl lead ngan sach'
     },
     {
+        id: 'doc-thi-truong-bu2',
+        title: 'Phân Tích Thị Trường & Dự Toán Ads BU2 (Đông Bắc Á: Nhật Bản, Hàn Quốc, Đài Loan)',
+        subtitle: 'Kế hoạch Q4/2026: Mô hình Liên minh (74% Pax) & Độc quyền Hokkaido (53.3% Ads Budget)',
+        type: 'doc',
+        path: '/tai-lieu/thi-truong-bu2',
+        icon: Activity,
+        keywords: 'thi truong bu2 du toan ads dong bac a nhat ban hokkaido han quoc dai loan cung duong vang lien minh consortium cpl lead ngan sach 75 trieu'
+    },
+    {
         id: 'doc-thi-truong-bu3',
         title: 'Phân Tích Thị Trường & Dự Toán Ads BU3 (B2B/MICE)',
         subtitle: 'Kế hoạch 12 tháng, chạy đón đầu 2 tháng, phân bổ 150M & Máy tính phễu chuyển đổi đoàn',
@@ -363,6 +372,15 @@ const globalSearchData = [
         path: '/tai-lieu/thi-truong-bu4',
         icon: Activity,
         keywords: 'thi truong bu4 du toan ads bhutan ladakh sri lanka may tinh cpl lead ngân sách'
+    },
+    {
+        id: 'doc-thi-truong-bu5',
+        title: 'Phân Tích Thị Trường & Dự Toán Ads BU5 (Khám Phá & Độc Bản)',
+        subtitle: 'Kế hoạch 5 tuyến độc bản: Murmansk Bắc Cực Quang (Nga), Ai Cập Sông Nile, Ma Rốc, Pakistan, Trung Á',
+        type: 'doc',
+        path: '/tai-lieu/thi-truong-bu5',
+        icon: Activity,
+        keywords: 'thi truong bu5 du toan ads pakistan ai cap maroc murmansk nga cuc quang trung a to lua cpl lead ngan sach 100 trieu'
     },
     {
         id: 'doc-hub-marketing',

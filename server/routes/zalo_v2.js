@@ -6,6 +6,7 @@ const zaloV2Controller = require('../controllers/zaloV2Controller');
 router.get('/auth/login', zaloV2Controller.login);
 router.get('/auth/callback', zaloV2Controller.callback);
 router.get('/test-connection', zaloV2Controller.testConnection);
+router.post('/auth/refresh', zaloV2Controller.manualRefresh);
 
 // TEST 2 & 3: Webhook (Nhận tin nhắn & Phản hồi)
 router.get('/webhook', zaloV2Controller.verifyWebhook);

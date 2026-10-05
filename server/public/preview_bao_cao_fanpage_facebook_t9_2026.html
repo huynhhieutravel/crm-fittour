@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo Cáo Hiệu Suất Facebook Fanpage — Tháng 09/2026 & Định Hướng Tháng 10/2026 | FIT TOUR ERP</title>
+  <style>
+    /* Reset & Base Styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f1f5f9;
+      margin: 0;
+      padding: 24px 12px;
+      color: #1e293b;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+    }
+    .preview-bar {
+      max-width: 980px;
+      margin: 0 auto 16px;
+      background: #0f172a;
+      color: #94a3b8;
+      border-radius: 8px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .preview-btn {
+      background: #1877f2;
+      color: #ffffff !important;
+      text-decoration: none;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease;
+    }
+    .preview-btn:hover {
+      background: #0d65d9;
+    }
+    .preview-btn-doc {
+      background: #0284c7;
+    }
+    .preview-btn-doc:hover {
+      background: #0369a1;
+    }
+    .preview-btn-outline {
+      background: transparent;
+      border: 1px solid #475569;
+      color: #cbd5e1 !important;
+    }
+    .preview-btn-outline:hover {
+      background: #1e293b;
+      color: #fff !important;
+    }
+    .email-container {
+      max-width: 980px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.07);
+      border: 1px solid #e2e8f0;
+    }
+    .header-pad {
+      padding: 32px 36px 28px;
+      background: linear-gradient(135deg, #0a192f 0%, #1e3a5f 50%, #0f2942 100%);
+      color: #ffffff;
+      position: relative;
+    }
+    .content-pad {
+      padding: 32px 36px;
+    }
+    /* Section Headings */
+    .section-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f2942;
+      margin: 28px 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .section-title:first-of-type {
+      margin-top: 0;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-primary { background: #dbeafe; color: #1d4ed8; }
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+    .badge-purple { background: #f3e8ff; color: #7e22ce; }
+    .badge-sky { background: #e0f2fe; color: #0369a1; }
+    
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 20px;
+      font-size: 13px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    .data-table th {
+      background-color: #1e3a5f;
+      color: #ffffff;
+      font-weight: 700;
+      text-align: left;
+      padding: 10px 12px;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .data-table th.text-center { text-align: center; }
+    .data-table th.text-right { text-align: right; }
+    .data-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      border-right: 1px solid #f1f5f9;
+      color: #334155;
+    }
+    .data-table td.text-center { text-align: center; }
+    .data-table td.text-right { text-align: right; }
+    .data-table tr:nth-child(even) td {
+      background-color: #f8fafc;
+    }
+    .data-table tr.total-row td {
+      background-color: #eff6ff !important;
+      font-weight: 800;
+      color: #1e3a8a;
+      border-top: 2px solid #bfdbfe;
+    }
+    .data-table tr.highlight-row td {
+      background-color: #ecfdf5 !important;
+      font-weight: 700;
+      color: #065f46;
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 16px 18px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+    .card-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .card-val {
+      font-size: 24px;
+      font-weight: 900;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+    .card-sub {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* Alert / Callout Box */
+    .callout {
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .callout-info {
+      background-color: #f0fdf4;
+      border-left: 4px solid #16a34a;
+      color: #14532d;
+    }
+    .callout-warning {
+      background-color: #fefce8;
+      border-left: 4px solid #ca8a04;
+      color: #713f12;
+    }
+    .callout-purple {
+      background-color: #faf5ff;
+      border-left: 4px solid #9333ea;
+      color: #581c87;
+    }
+    .callout-slate {
+      background-color: #f8fafc;
+      border-left: 4px solid #475569;
+      color: #1e293b;
+    }
+
+    /* Weekly content sub-box */
+    .week-detail-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .week-header {
+      background-color: #dbeafe;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #1e40af;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: #fff !important; padding: 0 !important; }
+      .preview-bar { display: none !important; }
+      .email-container { box-shadow: none !important; border: none !important; width: 100% !important; max-width: 100% !important; }
+      .section-title { page-break-after: avoid; }
+      .data-table { page-break-inside: avoid; }
+    }
+
+    /* Responsive */
+    @media only screen and (max-width: 768px) {
+      body { padding: 8px 4px !important; }
+      .header-pad { padding: 20px 16px !important; }
+      .content-pad { padding: 18px 14px !important; }
+      .cards-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+      .data-table th, .data-table td { padding: 7px 5px !important; font-size: 11px !important; }
+      .preview-bar { padding: 8px 10px !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- THANH CÔNG CỤ XEM TRƯỚC (PREVIEW TOOLBAR) -->
+  <div class="preview-bar">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 16px;">📱</span>
+      <span><strong style="color: #f8fafc;">BÁO CÁO FACEBOOK FANPAGE THÁNG 09/2026</strong> • FIT TOUR – Du lịch có Guu</span>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <a href="https://docs.google.com/document/d/1PXMgdklLImuMm3DB9bYOkN_n_sAOSI-zafud276UWRg/edit?usp=sharing" target="_blank" class="preview-btn preview-btn-doc">
+        📄 Mở Google Docs Gốc ↗
+      </a>
+      <button onclick="window.print()" class="preview-btn preview-btn-outline" style="cursor: pointer;">
+        🖨️ In / Lưu PDF
+      </button>
+      <a href="/marketing-ads" class="preview-btn preview-btn-outline">
+        ⬅ Quay lại ERP
+      </a>
+    </div>
+  </div>
+
+  <!-- CONTAINER CHÍNH -->
+  <div class="email-container">
+    
+    <!-- 1. HEADER CHÍNH -->
+    <div class="header-pad">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span style="background: rgba(24, 119, 242, 0.35); border: 1px solid #1877f2; color: #93c5fd; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase;">
+              FACEBOOK ANALYTICS & INSIGHTS
+            </span>
+            <span style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #6ee7b7; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;">
+              ✓ ĐÃ CHỐT SỐ LIỆU ĐIỀU HÀNH
+            </span>
+          </div>
+          <h1 style="margin: 0 0 6px 0; font-size: 25px; font-weight: 900; line-height: 1.3; color: #ffffff;">
+            BÁO CÁO HIỆU SUẤT FACEBOOK FANPAGE
+          </h1>
+          <div style="font-size: 15px; color: #93c5fd; font-weight: 600;">
+            THÁNG 9/2026 & ĐỊNH HƯỚNG THÁNG 10/2026 — FIT TOUR – DU LỊCH CÓ GUU
+          </div>
+        </div>
+        <div style="text-align: right; min-width: 190px;">
+          <div style="font-size: 12px; color: #cbd5e1;">Kỳ báo cáo:</div>
+          <div style="font-size: 14px; font-weight: 800; color: #ffffff; margin-bottom: 4px;">31/08/2026 – 27/09/2026</div>
+          <div style="font-size: 12px; color: #94a3b8;">Người lập: <strong>Marketing Team</strong></div>
+          <div style="font-size: 12px; color: #94a3b8;">Kính gửi: <strong>BOD & MKT Leader</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. NỘI DUNG CHÍNH -->
+    <div class="content-pad">
+
+      <!-- 4 THẺ TỔNG QUAN METRICS -->
+      <div class="cards-grid">
+        <div class="card" style="border-top: 4px solid #1877f2;">
+          <div class="card-label">TỔNG BÀI CHÍNH (ORGANIC)</div>
+          <div class="card-val" style="color: #1877f2;">43 <span style="font-size: 14px; font-weight: 600; color: #64748b;">Bài</span></div>
+          <div class="card-sub">Trọn vẹn 4 tuần nội dung chính</div>
+        </div>
+        <div class="card" style="border-top: 4px solid #0284c7;">
+          <div class="card-label">TỔNG LƯỢT XEM NỘI DUNG</div>
+          <div class="card-val" style="color: #0284c7;">138,580</div>
+          <div class="card-sub">71,459 người xem duy nhất</div>
+        </div>
+        <div class="card" style="border-top: 4px solid #10b981;">
+          <div class="card-label">TB XEM / BÀI VIẾT (KPI)</div>
+          <div class="card-val" style="color: #059669;">3,223</div>
+          <div class="card-sub">Đỉnh cao: Tuần 3 đạt 4,562/bài</div>
+        </div>
+        <div class="card" style="border-top: 4px solid #8b5cf6;">
+          <div class="card-label">PAID ADS (THEO DÕI RIÊNG)</div>
+          <div class="card-val" style="color: #7c3aed;">66,173</div>
+          <div class="card-sub">6 bài quảng cáo • 271 click link</div>
+        </div>
+      </div>
+
+      <!-- PHẦN 1: TÓM TẮT ĐIỀU HÀNH -->
+      <div class="section-title">
+        <span>1. TÓM TẮT ĐIỀU HÀNH (EXECUTIVE SUMMARY)</span>
+      </div>
+      
+      <p style="margin: 0 0 12px 0; font-size: 13.5px; color: #334155;">
+        Số liệu báo cáo Fanpage Tháng 09/2026 đã được cập nhật và cấu trúc lại theo chuẩn quản trị minh bạch: 
+        <strong>Bảng hiệu suất tuần chỉ tính phần nội dung chính (Organic)</strong>; riêng phần <strong>BÀI QUẢNG CÁO (Paid Media)</strong> của tuần 21/09–27/09 được theo dõi ở một phân hệ khu vực riêng biệt và <em>tuyệt đối không cộng gộp vào tổng tuần</em>.
+      </p>
+
+      <div class="callout callout-info">
+        <strong>✓ ĐIỂM CHỐT QUẢN TRỊ NỘI DUNG CHÍNH (4 TUẦN):</strong>
+        <ul style="margin: 6px 0 0 0; padding-left: 20px;">
+          <li><strong>Quy mô xuất bản:</strong> <strong>43 bài viết</strong>, tạo ra <strong>138,580 lượt xem</strong> và <strong>71,459 người xem thực tế</strong>.</li>
+          <li><strong>Tương tác thu về:</strong> <strong>1,096 tương tác</strong> (gồm 927 Like/Cảm xúc, 205 Bình luận, 101 Chia sẻ, 14 Lượt lưu).</li>
+          <li><strong>Hiệu suất bình quân:</strong> Đạt <strong>3,223 lượt xem/bài</strong> trên toàn bộ 4 tuần.</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-purple">
+        <strong>⚡ PHÂN HỆ PAID MEDIA (TUẦN 21/09–27/09):</strong>
+        <div style="margin-top: 4px;">
+          Tuần 4 triển khai <strong>6 bài quảng cáo</strong> mang lại <strong>66,173 lượt xem</strong>, tiếp cận <strong>34,652 người</strong> và đem về <strong>271 lượt click link</strong> chuyển đổi. Phần này được cách ly độc lập, không cộng dồn vào KPI 4 tuần chính nhằm giữ thước đo năng lực sáng tạo tự nhiên không bị sai lệch bởi ngân sách Ads.
+        </div>
+      </div>
+
+      <!-- PHẦN 2: HIỆU SUẤT THEO TUẦN -->
+      <div class="section-title">
+        <span>2. HIỆU SUẤT THEO TUẦN — NỘI DUNG CHÍNH (ORGANIC)</span>
+        <span class="badge badge-primary">Không bao gồm quảng cáo</span>
+      </div>
+
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 10px;">
+        Bảng số liệu tổng hợp 4 tuần chuẩn hóa (dữ liệu nguồn khớp 100% tài liệu điều hành và Google Sheet):
+      </p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Tuần Phân Tích</th>
+            <th class="text-center">Số bài</th>
+            <th class="text-right">Lượt xem</th>
+            <th class="text-right">Người xem</th>
+            <th class="text-center">Tương tác</th>
+            <th class="text-right">TB xem / bài (KPI)</th>
+            <th class="text-center">Đánh giá vận hành</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Tuần 1:</strong> 31/08 – 06/09</td>
+            <td class="text-center">8</td>
+            <td class="text-right">22,110</td>
+            <td class="text-right">11,420</td>
+            <td class="text-center">131</td>
+            <td class="text-right" style="font-weight: 700; color: #0284c7;">2,764</td>
+            <td class="text-center"><span class="badge badge-sky">Mức nền đầu kỳ</span></td>
+          </tr>
+          <tr>
+            <td><strong>Tuần 2:</strong> 07/09 – 13/09</td>
+            <td class="text-center">16</td>
+            <td class="text-right">34,844</td>
+            <td class="text-right">19,064</td>
+            <td class="text-center">351</td>
+            <td class="text-right" style="font-weight: 700; color: #d97706;">2,178</td>
+            <td class="text-center"><span class="badge badge-warning">Tăng bài, giảm TB</span></td>
+          </tr>
+          <tr class="highlight-row">
+            <td><strong>Tuần 3:</strong> 14/09 – 20/09 ⭐</td>
+            <td class="text-center">12</td>
+            <td class="text-right" style="font-weight: 800;">54,743</td>
+            <td class="text-right">28,037</td>
+            <td class="text-center" style="font-weight: 800;">365</td>
+            <td class="text-right" style="font-weight: 900; color: #15803d; font-size: 14px;">4,562</td>
+            <td class="text-center"><span class="badge badge-success">Đỉnh cao hiệu suất (+109%)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Tuần 4:</strong> 21/09 – 27/09</td>
+            <td class="text-center">7</td>
+            <td class="text-right">26,883</td>
+            <td class="text-right">12,938</td>
+            <td class="text-center">249</td>
+            <td class="text-right" style="font-weight: 700; color: #0284c7;">3,840</td>
+            <td class="text-center"><span class="badge badge-primary">Chất lượng giữ vững</span></td>
+          </tr>
+          <tr class="total-row">
+            <td>TỔNG / BÌNH QUÂN TOÀN KỲ</td>
+            <td class="text-center">43</td>
+            <td class="text-right">138,580</td>
+            <td class="text-right">71,459</td>
+            <td class="text-center">1,096</td>
+            <td class="text-right" style="font-size: 15px; color: #1e40af;">3,223</td>
+            <td class="text-center"><span class="badge badge-primary">KPI Tháng Đạt Chuẩn</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- PHẦN 3: BÓC TÁCH THEO LOẠI NỘI DUNG TỪNG TUẦN -->
+      <div class="section-title">
+        <span>3. BÓC TÁCH THEO LOẠI NỘI DUNG TỪNG TUẦN (DATA TỪ GOOGLE SHEET)</span>
+      </div>
+
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+        Chi tiết từng format xuất bản (Thước phim / Văn bản / Ảnh) bóc tách trực tiếp từ hệ thống bảng tính:
+      </p>
+
+      <!-- Tuần 1 -->
+      <div class="week-detail-box">
+        <div class="week-header">
+          <span>TUẦN 1: 31/08 – 06/09 (8 BÀI • 22,110 LƯỢT XEM)</span>
+          <span>TB: 2,764 xem/bài</span>
+        </div>
+        <table class="data-table" style="margin: 0; border: none; border-radius: 0;">
+          <thead>
+            <tr style="background-color: #f1f5f9; color: #475569;">
+              <th style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Loại nội dung</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Số bài</th>
+              <th class="text-right" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Lượt xem</th>
+              <th class="text-right" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Người xem</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Tương tác</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Like/CX</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Bình luận</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Chia sẻ</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Lưu</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🎥 <strong>Thước phim (Reels)</strong></td>
+              <td class="text-center">2</td>
+              <td class="text-right">7,354</td>
+              <td class="text-right">3,610</td>
+              <td class="text-center">31</td>
+              <td class="text-center">29</td>
+              <td class="text-center">1</td>
+              <td class="text-center">0</td>
+              <td class="text-center">1</td>
+            </tr>
+            <tr>
+              <td>📝 <strong>Văn bản</strong></td>
+              <td class="text-center">1</td>
+              <td class="text-right">2,774</td>
+              <td class="text-right">1,501</td>
+              <td class="text-center">15</td>
+              <td class="text-center">11</td>
+              <td class="text-center">2</td>
+              <td class="text-center">2</td>
+              <td class="text-center">0</td>
+            </tr>
+            <tr>
+              <td>🖼️ <strong>Ảnh</strong></td>
+              <td class="text-center">5</td>
+              <td class="text-right">11,982</td>
+              <td class="text-right">6,309</td>
+              <td class="text-center">85</td>
+              <td class="text-center">71</td>
+              <td class="text-center">7</td>
+              <td class="text-center">5</td>
+              <td class="text-center">2</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tuần 2 -->
+      <div class="week-detail-box">
+        <div class="week-header" style="background-color: #fef3c7; color: #92400e;">
+          <span>TUẦN 2: 07/09 – 13/09 (16 BÀI • 34,844 LƯỢT XEM)</span>
+          <span>TB: 2,178 xem/bài</span>
+        </div>
+        <table class="data-table" style="margin: 0; border: none; border-radius: 0;">
+          <thead>
+            <tr style="background-color: #f1f5f9; color: #475569;">
+              <th style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Loại nội dung</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Số bài</th>
+              <th class="text-right" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Lượt xem</th>
+              <th class="text-right" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Người xem</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Tương tác</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Like/CX</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Bình luận</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Chia sẻ</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Lưu</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>📝 <strong>Văn bản</strong></td>
+              <td class="text-center">1</td>
+              <td class="text-right">3,147</td>
+              <td class="text-right">1,714</td>
+              <td class="text-center">29</td>
+              <td class="text-center">21</td>
+              <td class="text-center">6</td>
+              <td class="text-center">2</td>
+              <td class="text-center">0</td>
+            </tr>
+            <tr>
+              <td>🖼️ <strong>Ảnh</strong></td>
+              <td class="text-center">15</td>
+              <td class="text-right">31,697</td>
+              <td class="text-right">17,350</td>
+              <td class="text-center">322</td>
+              <td class="text-center">329</td>
+              <td class="text-center">43</td>
+              <td class="text-center">24</td>
+              <td class="text-center">5</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tuần 3 -->
+      <div class="week-detail-box" style="border: 2px solid #86efac;">
+        <div class="week-header" style="background-color: #dcfce7; color: #166534;">
+          <span>TUẦN 3: 14/09 – 20/09 ⭐ PEAK TUẦN XUẤT SẮC (12 BÀI • 54,743 LƯỢT XEM)</span>
+          <span style="font-weight: 900;">TB: 4,562 xem/bài (+109.5%)</span>
+        </div>
+        <table class="data-table" style="margin: 0; border: none; border-radius: 0;">
+          <thead>
+            <tr style="background-color: #f1f5f9; color: #475569;">
+              <th style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Loại nội dung</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Số bài</th>
+              <th class="text-right" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Lượt xem</th>
+              <th class="text-right" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Người xem</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Tương tác</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Like/CX</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Bình luận</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Chia sẻ</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Lưu</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🎥 <strong>Thước phim (Reels)</strong></td>
+              <td class="text-center">3</td>
+              <td class="text-right">8,269</td>
+              <td class="text-right">4,766</td>
+              <td class="text-center">65</td>
+              <td class="text-center">62</td>
+              <td class="text-center">11</td>
+              <td class="text-center">1</td>
+              <td class="text-center">0</td>
+            </tr>
+            <tr style="background-color: #f0fdf4;">
+              <td>🖼️ <strong>Ảnh (Đỉnh cao tương tác)</strong></td>
+              <td class="text-center">9</td>
+              <td class="text-right" style="font-weight: 800; color: #166534;">46,474</td>
+              <td class="text-right">23,271</td>
+              <td class="text-center" style="font-weight: 800; color: #166534;">300</td>
+              <td class="text-center">227</td>
+              <td class="text-center" style="font-weight: 800; color: #15803d;">86</td>
+              <td class="text-center" style="font-weight: 800; color: #15803d;">45</td>
+              <td class="text-center">5</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tuần 4 -->
+      <div class="week-detail-box">
+        <div class="week-header" style="background-color: #f1f5f9; color: #334155;">
+          <span>TUẦN 4: 21/09 – 27/09 (7 BÀI NỘI DUNG CHÍNH • 26,883 LƯỢT XEM)</span>
+          <span>TB: 3,840 xem/bài</span>
+        </div>
+        <table class="data-table" style="margin: 0; border: none; border-radius: 0;">
+          <thead>
+            <tr style="background-color: #f1f5f9; color: #475569;">
+              <th style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Loại nội dung</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Số bài</th>
+              <th class="text-right" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Lượt xem</th>
+              <th class="text-right" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Tiếp cận</th>
+              <th class="text-right" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Người xem</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Tương tác</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Like/CX</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Bình luận</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Chia sẻ</th>
+              <th class="text-center" style="background-color: #f1f5f9; color: #334155; font-size: 12px;">Lưu</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🎥 <strong>Thước phim</strong></td>
+              <td class="text-center">1</td>
+              <td class="text-right">2,931</td>
+              <td class="text-right">910</td>
+              <td class="text-right">1,309</td>
+              <td class="text-center">18</td>
+              <td class="text-center">13</td>
+              <td class="text-center">5</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+            </tr>
+            <tr>
+              <td>🖼️ <strong>Ảnh</strong></td>
+              <td class="text-center">6</td>
+              <td class="text-right">23,952</td>
+              <td class="text-right">11,491</td>
+              <td class="text-right">11,629</td>
+              <td class="text-center">231</td>
+              <td class="text-center">164</td>
+              <td class="text-center">44</td>
+              <td class="text-center">22</td>
+              <td class="text-center">1</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PHẦN 4: PAID MEDIA - THEO DÕI RIÊNG -->
+      <div class="section-title">
+        <span>4. PAID MEDIA — THEO DÕI RIÊNG BIỆT TUẦN 21/09–27/09</span>
+        <span class="badge badge-purple">Phân hệ độc lập</span>
+      </div>
+
+      <div class="callout callout-purple">
+        <strong>📌 NGUYÊN TẮC QUẢN TRỊ DỮ LIỆU:</strong>
+        <p style="margin: 4px 0 0 0;">
+          Không nên dùng con số gộp <strong>93,056 lượt xem</strong> để đánh giá KPI sáng tạo nội dung của tuần 21. 
+          Con số 93,056 chỉ là tổng gộp cả 6 bài quảng cáo. 
+          <strong>KPI tuần chính chuẩn xác được chốt ở 26,883 lượt xem</strong>.
+        </p>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr style="background-color: #4c1d95;">
+            <th>Phân Nhóm Dữ Liệu</th>
+            <th class="text-center">Số bài</th>
+            <th class="text-right">Lượt xem</th>
+            <th class="text-right">Tiếp cận</th>
+            <th class="text-right">Người xem</th>
+            <th class="text-center">Tương tác</th>
+            <th class="text-center" style="background-color: #6d28d9;">Click Link</th>
+            <th class="text-right">TB xem / bài</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>🌿 <strong>Nội dung chính (Organic)</strong></td>
+            <td class="text-center">7</td>
+            <td class="text-right">26,883</td>
+            <td class="text-right">12,401</td>
+            <td class="text-right">12,938</td>
+            <td class="text-center">249</td>
+            <td class="text-center" style="color: #64748b;">0</td>
+            <td class="text-right" style="font-weight: 700;">3,840</td>
+          </tr>
+          <tr style="background-color: #f5f3ff;">
+            <td>🚀 <strong>Bài quảng cáo (Paid Media)</strong></td>
+            <td class="text-center">6</td>
+            <td class="text-right" style="font-weight: 800; color: #7c3aed;">66,173</td>
+            <td class="text-right">34,652</td>
+            <td class="text-right">33,892</td>
+            <td class="text-center" style="font-weight: 700; color: #7c3aed;">285</td>
+            <td class="text-center" style="font-weight: 900; color: #16a34a; font-size: 14px; background-color: #dcfce7;">271</td>
+            <td class="text-right" style="font-weight: 800; color: #7c3aed;">11,029</td>
+          </tr>
+          <tr style="background-color: #faf5ff; font-style: italic; color: #6b21a8; border-top: 2px dashed #c084fc;">
+            <td><em>Đối chiếu gộp (Tham khảo Paid/Organic)</em></td>
+            <td class="text-center"><em>13</em></td>
+            <td class="text-right"><em>93,056</em></td>
+            <td class="text-right"><em>47,053</em></td>
+            <td class="text-right"><em>46,830</em></td>
+            <td class="text-center"><em>534</em></td>
+            <td class="text-center"><em>271</em></td>
+            <td class="text-right"><em>7,158</em></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="font-size: 13px; color: #475569; margin: 10px 0 20px;">
+        <strong>Phân tích chuyên sâu Paid Media:</strong>
+        <ul style="margin: 6px 0 0 0; padding-left: 20px;">
+          <li><strong>Sức bật phân phối:</strong> 6 bài quảng cáo tạo 66,173 lượt xem, cao <strong>2.5 lần</strong> so với 7 bài nội dung chính; trung bình đạt <strong>11,029 lượt xem/bài</strong> (so với 3,840 của organic).</li>
+          <li><strong>Vai trò chuyển đổi:</strong> Toàn bộ <strong>271 click link</strong> nằm ở nhóm quảng cáo, chứng minh Paid Media đóng vai trò chiến lược kéo traffic trực tiếp về Website / Landing Page / Zalo Booking.</li>
+          <li><strong>Tách bạch đánh giá:</strong> Tuyệt đối không dùng lượt xem Paid để suy luận chất lượng organic creative. Đánh giá hai nhóm bằng bộ KPI độc lập.</li>
+        </ul>
+      </div>
+
+      <!-- PHẦN 5: TƯƠNG TÁC VÀ CHẤT LƯỢNG NỘI DUNG -->
+      <div class="section-title">
+        <span>5. PHÂN TÍCH TƯƠNG TÁC VÀ CHẤT LƯỢNG NỘI DUNG</span>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Tuần Phân Tích</th>
+            <th class="text-center">Tổng Tương Tác</th>
+            <th class="text-center">Like / Cảm Xúc</th>
+            <th class="text-center">Bình Luận</th>
+            <th class="text-center">Chia Sẻ</th>
+            <th class="text-center">Lưu</th>
+            <th class="text-center">Click Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>31/08 – 06/09</td>
+            <td class="text-center" style="font-weight: 700;">131</td>
+            <td class="text-center">111</td>
+            <td class="text-center">10</td>
+            <td class="text-center">7</td>
+            <td class="text-center">3</td>
+            <td class="text-center">0</td>
+          </tr>
+          <tr>
+            <td>07/09 – 13/09</td>
+            <td class="text-center" style="font-weight: 700;">351</td>
+            <td class="text-center">350</td>
+            <td class="text-center">49</td>
+            <td class="text-center">26</td>
+            <td class="text-center">5</td>
+            <td class="text-center">0</td>
+          </tr>
+          <tr class="highlight-row">
+            <td><strong>14/09 – 20/09 ⭐ (Đỉnh cao)</strong></td>
+            <td class="text-center" style="font-weight: 800; color: #166534;">365</td>
+            <td class="text-center">289</td>
+            <td class="text-center" style="font-weight: 800; color: #15803d;">97</td>
+            <td class="text-center" style="font-weight: 800; color: #15803d;">46</td>
+            <td class="text-center">5</td>
+            <td class="text-center">0</td>
+          </tr>
+          <tr>
+            <td>21/09 – 27/09 (Chính)</td>
+            <td class="text-center" style="font-weight: 700;">249</td>
+            <td class="text-center">177</td>
+            <td class="text-center">49</td>
+            <td class="text-center">22</td>
+            <td class="text-center">1</td>
+            <td class="text-center">0</td>
+          </tr>
+          <tr class="total-row">
+            <td>TỔNG TOÀN KỲ</td>
+            <td class="text-center">1,096</td>
+            <td class="text-center">927</td>
+            <td class="text-center">205</td>
+            <td class="text-center">101</td>
+            <td class="text-center">14</td>
+            <td class="text-center">0</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-warning">
+        <strong>⚠️ NHẬN ĐỊNH CHẤT LƯỢNG NỘI DUNG:</strong>
+        <ul style="margin: 6px 0 0 0; padding-left: 20px;">
+          <li><strong>Chỉ số Bình luận & Chia sẻ:</strong> Tuần 14/09–20/09 bùng nổ vượt trội với 97 bình luận và 46 chia sẻ (chiếm gần một nửa lượng share cả tháng), cho thấy nội dung chùm ảnh giàu cảm xúc và thông tin hành trình độc lạ tạo phản hồi chủ động cực kỳ mạnh.</li>
+          <li><strong>Lượt Lưu còn thấp (14 lượt):</strong> Đây là điểm yếu cố hữu cần cải thiện. Ngành tour cao cấp/guu cần khách hàng "Lưu để dành tham khảo khi có kế hoạch đi". Cần tăng mạnh nội dung dạng cẩm nang, checklist, lịch trình mẫu, kinh nghiệm visa để tăng chỉ số này trong Tháng 10.</li>
+        </ul>
+      </div>
+
+      <!-- PHẦN 6: VẤN ĐỀ VÀ CÁCH ĐỌC DATA -->
+      <div class="section-title">
+        <span>6. VẤN ĐỀ CỐT LÕI & QUY CHUẨN ĐỌC DATA</span>
+      </div>
+
+      <div class="callout callout-slate">
+        <ol style="margin: 0; padding-left: 20px; font-size: 13.5px; line-height: 1.7;">
+          <li><strong>Bảng tổng hợp chuẩn mực:</strong> Bắt buộc dùng 4 dòng chính: 8 bài / 22,110 lượt xem; 16 bài / 34,844; 12 bài / 54,743; 7 bài / 26,883.</li>
+          <li><strong>Tổng đúng của bảng chính:</strong> <strong>43 bài / 138,580 lượt xem / TB 3,223 lượt xem/bài</strong>.</li>
+          <li><strong>Phần BÀI QUẢNG CÁO tuần 21:</strong> 6 bài / 66,173 lượt xem / 271 click link. <em>Tuyệt đối không cộng 6 bài này vào 43 bài của bảng chính</em>.</li>
+          <li><strong>Quy chuẩn Biểu đồ xu hướng:</strong> Chỉ hiển thị <strong>4 điểm dữ liệu của 4 tuần chính</strong>. Không đưa dòng 'Tổng toàn kỳ' hoặc 'Trung bình toàn kỳ' vào cùng biểu đồ vì sẽ bóp méo trục tung (Y-axis) và gây hiểu sai xu hướng.</li>
+        </ol>
+      </div>
+
+      <!-- PHẦN 7: ĐỊNH HƯỚNG THÁNG 10/2026 -->
+      <div class="section-title">
+        <span>7. ĐỊNH HƯỚNG VẬN HÀNH THÁNG 10/2026</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 20px;">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
+          <div style="font-weight: 800; color: #0284c7; margin-bottom: 6px;">1. Tách Paid và Organic ngay từ nguồn</div>
+          <p style="margin: 0; font-size: 12.5px; color: #475569;">
+            Mỗi tuần nhập hai khu vực riêng ngay trên file dữ liệu. KPI tổng hợp tuần chỉ lấy Organic/nội dung chính; Paid dùng một bảng riêng có UTM tracking chuẩn.
+          </p>
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
+          <div style="font-weight: 800; color: #059669; margin-bottom: 6px;">2. Ưu tiên chất lượng hơn số lượng</div>
+          <p style="margin: 0; font-size: 12.5px; color: #475569;">
+            Bài học tuần 07/09 có 16 bài nhưng chỉ đạt 2,178 views/bài; cần tập trung lựa chọn chủ đề sâu sắc, hook mở đầu ấn tượng, visual sắc nét thay vì chạy đua số lượng bài.
+          </p>
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
+          <div style="font-weight: 800; color: #d97706; margin-bottom: 6px;">3. Phát triển nội dung để Lưu & Chia sẻ</div>
+          <p style="margin: 0; font-size: 12.5px; color: #475569;">
+            Tập trung xuất bản: Checklist hành lý, lịch trình mẫu chi tiết, tips săn ảnh đẹp, mùa hoa/mùa thu, kinh nghiệm thực tế, quy trình làm visa và cẩm nang người chuẩn bị đi tour.
+          </p>
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
+          <div style="font-weight: 800; color: #7c3aed; margin-bottom: 6px;">4. Tối ưu Creative cho Paid Media</div>
+          <p style="margin: 0; font-size: 12.5px; color: #475569;">
+            Tách KPI CPM, CPC, click link và lead khỏi KPI content organic. Test A/B tối thiểu 3 định dạng headline / visual / CTA trước khi quyết định tăng ngân sách tuần.
+          </p>
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
+          <div style="font-weight: 800; color: #dc2626; margin-bottom: 6px;">5. Theo dõi Top Content hàng tuần</div>
+          <p style="margin: 0; font-size: 12.5px; color: #475569;">
+            Thiết lập danh mục Top 3 bài theo lượt xem, Top 3 bài theo tương tác và Top 3 theo click/lead; phân loại rõ Organic vs Paid để đúc kết công thức nhân bản.
+          </p>
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
+          <div style="font-weight: 800; color: #0f766e; margin-bottom: 6px;">6. Chuẩn hóa công thức & Báo cáo</div>
+          <p style="margin: 0; font-size: 12.5px; color: #475569;">
+            Không nhập tổng thủ công. Toàn bộ ô tổng, trung bình và biểu đồ phải link trực tiếp bằng công thức từ bảng dữ liệu nguồn trên Google Sheet và CRM.
+          </p>
+        </div>
+      </div>
+
+      <!-- PHẦN 8: KHUNG KPI ĐỀ XUẤT THÁNG 10/2026 -->
+      <div class="section-title">
+        <span>8. KHUNG KPI ĐỀ XUẤT THÁNG 10/2026 (TRÌNH BOD PHÊ DUYỆT)</span>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 20%;">Nhóm KPI</th>
+            <th style="width: 30%;">Chỉ số đo lường</th>
+            <th style="width: 50%;">Mục tiêu quản trị & Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>🎨 <strong>Content</strong></td>
+            <td><strong>TB lượt xem / bài</strong></td>
+            <td>So sánh chất lượng sáng tạo giữa các tuần và format; giữ chuẩn tối thiểu &ge; 3,500 views/bài.</td>
+          </tr>
+          <tr>
+            <td>🌿 <strong>Organic</strong></td>
+            <td><strong>Reach, Viewers, Engagement</strong></td>
+            <td>Đo lường sức khỏe tự nhiên của Fanpage; tỷ lệ tương tác / reach duy trì &ge; 4.5%.</td>
+          </tr>
+          <tr>
+            <td>💰 <strong>Paid</strong></td>
+            <td><strong>Reach, Views, CPM, CPC</strong></td>
+            <td>Kiểm soát chi phí phân phối trả phí, đảm bảo CPC tối ưu cho tệp du khách cao cấp.</td>
+          </tr>
+          <tr>
+            <td>🌐 <strong>Traffic</strong></td>
+            <td><strong>Click link (Website / Zalo)</strong></td>
+            <td>Đo lường năng lực điều hướng người dùng từ Fanpage vào Website native Astro và phễu tư vấn.</td>
+          </tr>
+          <tr>
+            <td>🎯 <strong>Conversion</strong></td>
+            <td><strong>Lead / Booking</strong></td>
+            <td>Gắn kết trực tiếp Marketing với Sales BU; đồng bộ dữ liệu vào CRM đối chiếu SĐT thực tế.</td>
+          </tr>
+          <tr>
+            <td>⭐ <strong>Content Quality</strong></td>
+            <td><strong>Bình luận, Chia sẻ, Lưu</strong></td>
+            <td>Đo lường mức độ quan tâm thực chất và giá trị lâu dài của bài viết thương hiệu FIT TOUR.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- PHẦN 9: KẾT LUẬN & LIÊN KẾT TÀI LIỆU -->
+      <div class="section-title">
+        <span>9. KẾT LUẬN & PHƯƠNG HƯỚNG TRỌNG TÂM</span>
+      </div>
+
+      <p style="font-size: 13.5px; line-height: 1.7; color: #1e293b; margin-bottom: 20px;">
+        <strong>Kết luận chính:</strong> Hiệu suất nội dung chính trong 4 tuần đạt <strong>3,223 lượt xem/bài</strong>. 
+        Tuần 14/09–20/09 là tuần có hiệu suất nội dung chính cao nhất với <strong>4,562 lượt xem/bài</strong> nhờ sức mạnh của chùm ảnh độc quyền. 
+        Tuần 21/09–27/09 được bóc tách khoa học: nội dung chính đạt 3,840 lượt xem/bài, trong khi phân hệ Paid Media mang lại thêm 66,173 lượt xem và 271 click link.<br><br>
+        <strong>Trọng tâm Tháng 10:</strong> Giữ riêng hai hệ KPI Organic và Paid, nâng cao chất lượng visual storytelling, đẩy mạnh nội dung lưu/chia sẻ và liên kết chuyển đổi từ Fanpage sang CRM để tối ưu hóa hiệu quả kinh doanh.
+      </p>
+
+      <!-- Khung liên kết Google Docs & Ký tên -->
+      <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <div style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">TÀI LIỆU CHI TIẾT ĐÍNH KÈM</div>
+          <div style="font-size: 14px; font-weight: 700; color: #0f172a;">Bảng Dữ Liệu Nguồn Google Docs:</div>
+          <a href="https://docs.google.com/document/d/1PXMgdklLImuMm3DB9bYOkN_n_sAOSI-zafud276UWRg/edit?usp=sharing" target="_blank" style="color: #0284c7; font-size: 12.5px; word-break: break-all; text-decoration: underline;">
+            https://docs.google.com/document/d/1PXMgdklLImuMm3DB9bYOkN_n_sAOSI-zafud276UWRg/...
+          </a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <a href="https://docs.google.com/document/d/1PXMgdklLImuMm3DB9bYOkN_n_sAOSI-zafud276UWRg/edit?usp=sharing" target="_blank" class="preview-btn preview-btn-doc" style="padding: 10px 18px; font-size: 13px;">
+            Mở Google Docs ↗
+          </a>
+          <button onclick="window.print()" class="preview-btn" style="padding: 10px 18px; font-size: 13px; background-color: #0f172a; cursor: pointer;">
+            In Báo Cáo
+          </button>
+        </div>
+      </div>
+
+      <!-- FOOTER CHỮ KÝ -->
+      <div style="margin-top: 36px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; color: #64748b;">
+        <div>
+          <strong>FIT TOUR ERP</strong> • Hệ Thống Quản Trị Du Lịch & Marketing Chuyên Sâu<br>
+          Bản quyền số liệu thuộc Phòng Marketing FIT TOUR – Du lịch có Guu.
+        </div>
+        <div style="text-align: right;">
+          Trạng thái: <strong style="color: #16a34a;">ĐÃ KIỂM TRA SỐ LIỆU</strong><br>
+          Ngày duyệt: <strong>01/10/2026</strong>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #94a3b8;">
+    Hệ thống Báo Cáo Marketing Nội Bộ FIT TOUR • Xem tốt nhất trên Desktop & Máy tính bảng
+  </div>
+
+</body>
+</html>

@@ -4,14 +4,8 @@ import { X, Sparkles, FileText, CheckCircle2, ChevronRight, BellRing, Pin, Arrow
 import AnnouncementViewModal from './AnnouncementViewModal';
 
 export default function SystemAnnouncementPopup({ currentUser }) {
-    const [latestDoc, setLatestDoc] = useState(null);
-    const [isOpen, setIsOpen] = useState(false);
-    const [viewFullModal, setViewFullModal] = useState(false);
-
-    const getSeenKey = (docId) => {
-        const uid = currentUser?.id || currentUser?.username || currentUser?.email || 'current_user';
-        return `popup_seen_announcement_${docId}_${uid}`;
-    };
+    // Đã ngừng toàn bộ popup thông báo tự động theo yêu cầu người dùng
+    return null;
 
     const checkAndFetchAnnouncement = useCallback(async () => {
         try {

@@ -63,6 +63,7 @@ exports.getDashboard = async (req, res) => {
             LEFT JOIN tour_templates t ON l.tour_id = t.id
             WHERE l.assigned_to IS NULL 
               AND (l.classification IS NULL OR l.classification != 'Không Nhu Cầu')
+              AND (l.is_superseded IS FALSE OR l.is_superseded IS NULL)
               AND ${dateCondition}
             ORDER BY l.created_at ASC
         `;
@@ -134,7 +135,8 @@ exports.getDashboard = async (req, res) => {
                 count(assigned_to)::int as assigned_leads,
                 sum(case when assigned_to is null then 1 else 0 end)::int as unassigned_leads
             FROM leads l
-            WHERE ${dateCondition}
+            WHERE (l.is_superseded IS FALSE OR l.is_superseded IS NULL)
+              AND ${dateCondition}
             GROUP BY bu_group
             ORDER BY bu_group ASC
         `;

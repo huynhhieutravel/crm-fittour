@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
-import { Upload, CloudUpload, Trash2, Filter, X, Save, Edit2, Lock, Unlock, Star, FileText, ChevronDown, BarChart2 } from 'lucide-react';
+import { Upload, CloudUpload, Trash2, Filter, X, Save, Edit2, Lock, Unlock, Star, FileText, ChevronDown, BarChart2, BookOpen } from 'lucide-react';
 import MarketPlanningSubTab from './MarketPlanningSubTab';
+import SocialMediaOverviewSubTab from '../components/Marketing/SocialMediaOverviewSubTab';
 
 const THANG_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
 const TUAN_OPTIONS = [1, 2, 3, 4, 5];
@@ -87,13 +89,16 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
   
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [activeSubTab, setActiveSubTab] = useState(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
       const sub = p.get('subtab') || p.get('tab');
-      if (['monthly', 'progress', 'weekly', 'planning'].includes(sub)) return sub;
+      if (['social-overview', 'monthly', 'progress', 'weekly', 'planning'].includes(sub)) return sub;
     }
-    return 'monthly';
+    return 'social-overview';
   });
 
   const [selectedPlanId, setSelectedPlanId] = useState(() => {
@@ -104,7 +109,34 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
     return null;
   });
 
-  // Đồng bộ activeSubTab & selectedPlanId lên URL
+  // Tự động lắng nghe thay đổi URL search param (khi click từ Submenu Sidebar hoặc gõ URL)
+  // Các báo cáo chi tiết Website, Fanpage, TikTok đã được quy hoạch về /tai-lieu/
+  useEffect(() => {
+    const p = new URLSearchParams(location.search);
+    const sub = p.get('subtab') || p.get('tab');
+    if (sub === 'website-report') {
+      navigate('/tai-lieu/bao-cao-website-thang-9-2026', { replace: true });
+      return;
+    }
+    if (sub === 'fanpage-report') {
+      navigate('/tai-lieu/bao-cao-facebook-thang-9-2026', { replace: true });
+      return;
+    }
+    if (sub === 'tiktok-report') {
+      navigate('/tai-lieu/bao-cao-tiktok-thang-9-2026', { replace: true });
+      return;
+    }
+    if (sub && ['social-overview', 'monthly', 'progress', 'weekly', 'planning'].includes(sub)) {
+      setActiveSubTab(sub);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } else if (!sub) {
+      setActiveSubTab('social-overview');
+    }
+    const plan = p.get('plan');
+    setSelectedPlanId(plan || null);
+  }, [location.search, navigate]);
+
+  // Đồng bộ activeSubTab & selectedPlanId lên URL khi user bấm tab
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const p = new URLSearchParams(window.location.search);
@@ -115,13 +147,18 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
       } else {
         p.delete('plan');
       }
+    } else if (activeSubTab === 'social-overview') {
+      p.set('subtab', 'social-overview');
+      p.delete('plan');
     } else {
       p.delete('subtab');
       p.delete('plan');
     }
     const newSearch = p.toString();
     const newUrl = `${window.location.pathname}${newSearch ? '?' + newSearch : ''}`;
-    window.history.replaceState(null, '', newUrl);
+    if (window.location.search !== (newSearch ? '?' + newSearch : '')) {
+      window.history.replaceState(null, '', newUrl);
+    }
   }, [activeSubTab, selectedPlanId]);
 
   const [kpiData, setKpiData] = useState({ aggregates: [], kpis: [] });
@@ -808,6 +845,20 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
         >
           <FileText size={14} /> Quản lý Ads
         </a>
+        <button
+          onClick={() => navigate('/tai-lieu/marketing')}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            padding: '8px 16px', borderRadius: '8px',
+            background: '#f0fdf4', color: '#166534', 
+            fontWeight: 700, fontSize: '0.82rem',
+            border: '1px solid #bbf7d0', transition: 'all 0.2s',
+            cursor: 'pointer'
+          }}
+          title="Mở kho tài liệu & báo cáo Marketing (/tai-lieu/marketing)"
+        >
+          <BookOpen size={14} color="#166534" /> 📈 HUB Báo Cáo Marketing
+        </button>
         <a 
           href="https://chatgpt.com/g/g-6a41cd26ce208191ae870f3f28bb3a2b-fit-tour-marketing-analyst"
           target="_blank" rel="noopener noreferrer"
@@ -826,7 +877,30 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
           Hỏi ChatGPT
         </a>
       </div>
-      <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', marginBottom: '1.5rem', gap: '2rem' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', marginBottom: '1.5rem', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        <button 
+          onClick={() => { setActiveSubTab('social-overview'); setSelectedPlanId(null); }}
+          style={{ 
+            background: activeSubTab === 'social-overview' ? '#f0f9ff' : 'none', 
+            border: 'none', 
+            borderBottom: activeSubTab === 'social-overview' ? '3px solid #0284c7' : '3px solid transparent', 
+            padding: '12px 10px', 
+            borderRadius: '8px 8px 0 0',
+            fontSize: '15px', 
+            fontWeight: 700, 
+            color: activeSubTab === 'social-overview' ? '#0284c7' : '#0f172a', 
+            cursor: 'pointer', 
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          <span>🌐📱 TỔNG HỢP MXH (T9)</span>
+          <span style={{ fontSize: '0.68rem', background: '#0284c7', color: '#ffffff', padding: '2px 7px', borderRadius: '10px', fontWeight: 800 }}>
+            3 Kênh
+          </span>
+        </button>
         <button 
           onClick={() => setActiveSubTab('monthly')}
           style={{ background: 'none', border: 'none', borderBottom: activeSubTab === 'monthly' ? '3px solid #3b82f6' : '3px solid transparent', padding: '12px 0', fontSize: '15px', fontWeight: 600, color: activeSubTab === 'monthly' ? '#1e293b' : '#64748b', cursor: 'pointer', transition: 'all 0.2s' }}
@@ -2321,6 +2395,11 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
           selectedPlanId={selectedPlanId} 
           onSelectPlan={setSelectedPlanId} 
         />
+      )}
+
+      {/* ── TỔNG HỢP HIỆU SUẤT TRUYỀN THÔNG & MXH THÁNG 9/2026 ── */}
+      {activeSubTab === 'social-overview' && (
+        <SocialMediaOverviewSubTab />
       )}
 
       {/* Edit Record Modal */}

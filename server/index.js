@@ -363,8 +363,12 @@ server.listen(PORT, () => {
         
         const { startWebhookOutboxEngine } = require('./cron/webhookOutboxEngine');
         startWebhookOutboxEngine();
+
+        // Start Zalo OA Token Auto-Refresh Cron Engine
+        const { startZaloTokenRefreshCron } = require('./cron/zaloTokenRefreshEngine');
+        startZaloTokenRefreshCron();
         
-        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, Monthly Reviews, Monthly Dashboard, Reservation Release, Idempotency Cleanup, Webhook Outbox).');
+        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, Monthly Reviews, Monthly Dashboard, Reservation Release, Idempotency Cleanup, Webhook Outbox, Zalo Token Refresh).');
 
         // Start Email Listeners for Event-Driven Architecture
         const { registerEmailListeners } = require('./listeners/emailListener');

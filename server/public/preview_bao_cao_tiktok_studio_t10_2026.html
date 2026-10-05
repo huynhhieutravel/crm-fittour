@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kế Hoạch & Chỉ Tiêu TikTok Studio Tháng 10/2026 | FIT TOUR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent: #ec4899;
+      --accent-dark: #be185d;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 32px 20px;
+    }
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    .header-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #0f172a 100%);
+      color: white;
+      border-radius: 20px;
+      padding: 36px 40px;
+      box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.4);
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(236, 72, 153, 0.2);
+      color: #f472b6;
+      border: 1px solid rgba(236, 72, 153, 0.4);
+    }
+    .badge-success {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .kpi-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .kpi-card .label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+    .kpi-card .value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      margin: 4px 0 2px 0;
+    }
+    .kpi-card .desc {
+      font-size: 0.72rem;
+      color: #cbd5e1;
+    }
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 26px 30px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      margin-bottom: 24px;
+    }
+    .table-custom {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      margin-top: 14px;
+    }
+    .table-custom th {
+      background: #f8fafc;
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--border);
+      text-align: left;
+      font-weight: 700;
+      color: #475569;
+    }
+    .table-custom td {
+      padding: 14px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+    }
+    .pillar-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .pillar-card {
+      border-radius: 12px;
+      padding: 18px;
+      border: 1px solid;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 4px;
+      margin-top: 6px;
+    }
+    .action-bar {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+      color: white;
+      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.3);
+    }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-banner">
+      <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+        <span class="badge">TikTok Studio Creator</span>
+        <span class="badge badge-success">Đòn Bẩy T9: 22.7K View (+13.5% KPI)</span>
+      </div>
+      <h1 style="font-size: 2.05rem; font-weight: 800; margin: 0 0 6px 0; letter-spacing: -0.02em;">
+        Báo Cáo Kế Hoạch & Chỉ Tiêu TikTok Studio Tháng 10/2026
+      </h1>
+      <p style="color: #cbd5e1; font-size: 0.95rem; max-width: 780px;">
+        Kênh: <strong>@fittour</strong> (FIT TOUR – Du lịch có Guu) • Thời gian thực hiện: 01/10/2026 – 31/10/2026
+      </p>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="label">KPI Số Video</div>
+          <div class="value" style="color: #38bdf8;">30 Video</div>
+          <div class="desc">1 video chất lượng/ngày</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Mục Tiêu Lượt Xem</div>
+          <div class="value" style="color: #4ade80;">&gt; 30,000</div>
+          <div class="desc">Tăng +32.2% so với T9 (22.7K)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Lượt Xem Hồ Sơ</div>
+          <div class="value" style="color: #fbbf24;">&gt; 800</div>
+          <div class="desc">Chuyển đổi du khách tiềm năng</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Mục Tiêu Lead Bio</div>
+          <div class="value" style="color: #f472b6;">&gt; 50 Leads</div>
+          <div class="desc">Dẫn về Zalo OA / Hotline tư vấn</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Đối Soát T9 vs Chỉ Tiêu T10 -->
+    <div class="section-card">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px;">
+        📊 Bảng Đối Soát Chỉ Số Tháng 09/2026 & Chỉ Tiêu KPI Tháng 10/2026
+      </h3>
+      <p style="font-size: 0.85rem; color: #64748b;">
+        Số liệu thực tế Tháng 9 xuất trực tiếp từ TikTok Studio Creator làm cơ sở xây dựng kế hoạch bứt phá Tháng 10:
+      </p>
+      <table class="table-custom">
+        <thead>
+          <tr>
+            <th>Tiêu Chí Đo Lường</th>
+            <th style="text-align: center;">Thực Tế Tháng 09</th>
+            <th style="text-align: center;">Chỉ Tiêu KPI Tháng 10</th>
+            <th style="text-align: center;">Tăng Trưởng</th>
+            <th>Trọng Tâm Chiến Lược</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight: 600;">Số Lượng Video Xuất Bản</td>
+            <td style="text-align: center; font-weight: 700; color: #3b82f6;">30 video</td>
+            <td style="text-align: center; font-weight: 700; color: #0284c7;">30 video</td>
+            <td style="text-align: center; color: #64748b;">Duy trì</td>
+            <td>Tần suất 1 clip/ngày, thời lượng 25 – 45 giây giữ chân người xem</td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Tổng Lượt Xem (Views)</td>
+            <td style="text-align: center; font-weight: 800; color: #16a34a;">22,700 views</td>
+            <td style="text-align: center; font-weight: 800; color: #15803d;">&gt; 30,000 views</td>
+            <td style="text-align: center; font-weight: 700; color: #16a34a;">+32.2%</td>
+            <td>Tập trung vào mùa vàng lá đỏ Cửu Trại Câu và cung đường tuyết Himalaya</td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Lượt Thích (Likes)</td>
+            <td style="text-align: center; font-weight: 700;">533 likes (+36.7%)</td>
+            <td style="text-align: center; font-weight: 700; color: #ec4899;">&gt; 800 likes</td>
+            <td style="text-align: center; font-weight: 700; color: #ec4899;">+50.1%</td>
+            <td>Góc quay visual điện ảnh flycam và âm nhạc trải nghiệm sâu lắng</td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Lượt Bình Luận (Comments)</td>
+            <td style="text-align: center; font-weight: 700;">92 comments</td>
+            <td style="text-align: center; font-weight: 700; color: #8b5cf6;">&gt; 150 comments</td>
+            <td style="text-align: center; font-weight: 700; color: #8b5cf6;">+63.0%</td>
+            <td>Kêu gọi hành động CTA hỏi lịch trình tour độc bản ở cuối video</td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Lượt Chia Sẻ (Shares)</td>
+            <td style="text-align: center; font-weight: 700;">155 shares (+30.3%)</td>
+            <td style="text-align: center; font-weight: 700; color: #6366f1;">&gt; 250 shares</td>
+            <td style="text-align: center; font-weight: 700; color: #6366f1;">+61.3%</td>
+            <td>Sản xuất clip cẩm nang du lịch giá trị khiến người dùng gửi cho bạn đồng hành</td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Lượt Xem Hồ Sơ (Profile Views)</td>
+            <td style="text-align: center; font-weight: 700;">633 views</td>
+            <td style="text-align: center; font-weight: 700; color: #d97706;">&gt; 800 views</td>
+            <td style="text-align: center; font-weight: 700; color: #d97706;">+26.4%</td>
+            <td>Ghim 3 video best-seller và làm nổi bật định vị "Du lịch có Guu"</td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Tỷ Lệ Tìm Kiếm (TikTok Search)</td>
+            <td style="text-align: center; font-weight: 800; color: #047857;">32.2% (Đột phá)</td>
+            <td style="text-align: center; font-weight: 800; color: #047857;">&gt; 30.0%</td>
+            <td style="text-align: center; color: #047857;">Ổn định</td>
+            <td>Tối ưu chuẩn SEO TikTok cho các từ khóa tour tuyến mùa Thu - Đông</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section: 4 Trụ Cột Nội Dung -->
+    <div class="section-card">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px;">
+        🎯 4 Trụ Cột Nội Dung Trọng Tâm (Content Pillars) Tháng 10
+      </h3>
+      <p style="font-size: 0.85rem; color: #64748b;">
+        Cơ cấu sản xuất 30 video đảm bảo cân bằng giữa phủ sóng thương hiệu và tạo khách hàng tiềm năng:
+      </p>
+
+      <div class="pillar-grid">
+        <div class="pillar-card" style="background: #fffbeb; border-color: #fde68a;">
+          <div style="font-size: 0.8rem; font-weight: 800; color: #b45309; text-transform: uppercase;">🍂 Tuyến Mùa Vàng Lá Đỏ</div>
+          <div style="font-size: 1.25rem; font-weight: 800; color: #92400e; margin: 4px 0;">11 Video (35%)</div>
+          <p style="font-size: 0.8rem; color: #78350f;">Cửu Trại Câu thiên đường mùa thu, Bắc Kinh, Nhật Bản lá phong.</p>
+          <span class="tag" style="background: #fef3c7; color: #b45309;">#cuutraicau</span>
+          <span class="tag" style="background: #fef3c7; color: #b45309;">#dulichcuutraicau</span>
+        </div>
+
+        <div class="pillar-card" style="background: #eff6ff; border-color: #bfdbfe;">
+          <div style="font-size: 0.8rem; font-weight: 800; color: #1e40af; text-transform: uppercase;">🏔️ Tuyến Độc Bản Himalaya</div>
+          <div style="font-size: 1.25rem; font-weight: 800; color: #1d4ed8; margin: 4px 0;">9 Video (30%)</div>
+          <p style="font-size: 0.8rem; color: #1e3a8a;">Ladakh tuyết đầu mùa, Vương quốc Hạnh Phúc Bhutan, Tây Tạng.</p>
+          <span class="tag" style="background: #dbeafe; color: #1d4ed8;">#ladakh</span>
+          <span class="tag" style="background: #dbeafe; color: #1d4ed8;">#bhutan</span>
+        </div>
+
+        <div class="pillar-card" style="background: #f0fdf4; border-color: #bbf7d0;">
+          <div style="font-size: 0.8rem; font-weight: 800; color: #166534; text-transform: uppercase;">💡 Tips & Cẩm Nang Du Lịch</div>
+          <div style="font-size: 1.25rem; font-weight: 800; color: #15803d; margin: 4px 0;">6 Video (20%)</div>
+          <p style="font-size: 0.8rem; color: #14532d;">Kinh nghiệm chống sốc độ cao, chuẩn bị áo ấm, mẹo chụp ảnh có guu.</p>
+          <span class="tag" style="background: #dcfce7; color: #15803d;">#kinhnghiemdulich</span>
+          <span class="tag" style="background: #dcfce7; color: #15803d;">#fittour</span>
+        </div>
+
+        <div class="pillar-card" style="background: #faf5ff; border-color: #e9d5ff;">
+          <div style="font-size: 0.8rem; font-weight: 800; color: #7e22ce; text-transform: uppercase;">💬 Cảm Nhận Khách Hàng</div>
+          <div style="font-size: 1.25rem; font-weight: 800; color: #9333ea; margin: 4px 0;">4 Video (15%)</div>
+          <p style="font-size: 0.8rem; color: #581c87;">Phỏng vấn thực tế khách tour, tạo niềm tin xã hội (Social Proof).</p>
+          <span class="tag" style="background: #f3e8ff; color: #7e22ce;">#reviewdulich</span>
+          <span class="tag" style="background: #f3e8ff; color: #7e22ce;">#khachhangfittour</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Khung Giờ Đăng & Chuyển Đổi Lead -->
+    <div class="section-card">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px;">
+        ⏰ Khung Giờ Vàng Phát Sóng & Giải Pháp Tạo Lead
+      </h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 14px;">
+        <div style="background: #f8fafc; border-radius: 12px; padding: 18px; border: 1px solid var(--border);">
+          <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 8px;">
+            🕒 2 Khung Giờ Xuất Bản Tối Ưu
+          </div>
+          <ul style="font-size: 0.85rem; color: #475569; padding-left: 20px; line-height: 1.7;">
+            <li><strong>11:30 – 12:30 (Trưa):</strong> Phù hợp clip tips du lịch ngắn, ẩm thực địa phương để dân văn phòng giải trí lúc nghỉ trưa.</li>
+            <li><strong>19:30 – 21:30 (Tối - Cao điểm):</strong> Clip phong cảnh điện ảnh, flycam 4K, hành trình Himalaya thu hút sự chú ý trọn vẹn của cả gia đình.</li>
+          </ul>
+        </div>
+
+        <div style="background: #fdf2f8; border-radius: 12px; padding: 18px; border: 1px solid #fbcfe8;">
+          <div style="font-weight: 700; font-size: 0.95rem; color: #9d174d; margin-bottom: 8px;">
+            🎯 Chuyển Đổi Khách Từ Lượt Xem Hồ Sơ (633+ Profile)
+          </div>
+          <ul style="font-size: 0.85rem; color: #831843; padding-left: 20px; line-height: 1.7;">
+            <li>Cập nhật Bio trực diện: <em>"FIT TOUR – Chuyên tour độc bản & trải nghiệm có guu. Hotline/Zalo: 0938.xxx.xxx"</em>.</li>
+            <li>Ghim 3 video dẫn dắt hành vi: Tour Cửu Trại Câu, Tour Ladakh, và Giới thiệu FIT TOUR.</li>
+            <li>Đội ngũ CSKH phản hồi bình luận hỏi giá/lịch trình trong vòng <strong>15 phút</strong>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <a href="/preview_bao_cao_tiktok_studio_t9_2026.html" class="btn btn-secondary">
+          ← Xem Nghiệm Thu Tháng 9
+        </a>
+        <a href="/tai-lieu/marketing" class="btn btn-primary">
+          Về Kho Tài Liệu Marketing →
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

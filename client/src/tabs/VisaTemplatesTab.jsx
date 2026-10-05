@@ -102,7 +102,7 @@ const VisaTemplatesTab = ({ currentUser, checkPerm, addToast }) => {
             </div>
 
             {/* Table */}
-            <div className="data-table-container" style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', background: 'white' }}>
+            <div className="data-table-container" style={{ borderRadius: '10px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', border: '1px solid #e2e8f0', background: 'white' }}>
                 <table className="data-table mobile-card-table" style={{ fontSize: '0.85rem', width: '100%' }}>
                     <thead>
                         <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #e2e8f0', textAlign: 'left' }}>

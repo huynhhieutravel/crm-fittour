@@ -74,7 +74,7 @@ exports.getAllCustomers = async (req, res) => {
             SELECT c.*, 
                    COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as total_spent,
                    COALESCE((SELECT COUNT(*)::int FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')), 0) as crm_trip_count,
-                   (SELECT content FROM lead_notes WHERE customer_id = c.id ORDER BY created_at DESC LIMIT 1) as latest_note,
+                   (SELECT content FROM lead_notes WHERE customer_id = c.id ORDER BY created_at DESC, id DESC LIMIT 1) as latest_note,
                    l.source as lead_source
             FROM customers c
             LEFT JOIN leads l ON c.lead_id = l.id

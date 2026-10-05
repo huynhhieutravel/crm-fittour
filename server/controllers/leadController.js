@@ -26,8 +26,8 @@ exports.getAllLeads = async (req, res) => {
         const result = await db.query(`
             SELECT l.*, tt.name as tour_name, u.full_name as assigned_to_name,
                    (SELECT COUNT(*)::int FROM lead_notes WHERE lead_id = l.id) as notes_count,
-                   (SELECT content FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note,
-                   (SELECT created_at FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC LIMIT 1) as latest_note_at,
+                   (SELECT content FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC, id DESC LIMIT 1) as latest_note,
+                   (SELECT created_at FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC, id DESC LIMIT 1) as latest_note_at,
                    c.id as returning_customer_id,
                    (SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED'))::numeric as total_spent,
                    CASE WHEN c.id IS NOT NULL THEN true ELSE false END as is_returning_customer
@@ -1693,3 +1693,263 @@ exports.getCustomerJourney = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
+exports.recreateLeadFromConversation = async (req, res) => {
+    const client = await db.pool.connect();
+    try {
+        const { conversationId, oldLeadId, tour_id, bu_group, assigned_to, note } = req.body;
+
+        if (!conversationId) {
+            return res.status(400).json({ error: 'Thiếu conversationId' });
+        }
+        if (!oldLeadId) {
+            return res.status(400).json({ error: 'Thiếu oldLeadId' });
+        }
+
+        await client.query('BEGIN');
+
+        // 1. Lấy thông tin Lead cũ
+        const oldLeadRes = await client.query('SELECT * FROM leads WHERE id = $1', [oldLeadId]);
+        if (oldLeadRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Không tìm thấy Lead cũ' });
+        }
+        const oldLead = oldLeadRes.rows[0];
+
+        // 2. Lấy thông tin hội thoại
+        const convRes = await client.query('SELECT * FROM conversations WHERE id = $1', [conversationId]);
+        if (convRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Không tìm thấy cuộc hội thoại' });
+        }
+        const conv = convRes.rows[0];
+
+        // 3. Lấy tên Tour cũ (nếu có) và Tour mới (nếu có) để ghi chú
+        let oldTourName = '';
+        if (oldLead.tour_id) {
+            const oldTourRes = await client.query('SELECT name FROM tour_templates WHERE id = $1', [oldLead.tour_id]);
+            if (oldTourRes.rows.length > 0) oldTourName = oldTourRes.rows[0].name;
+        }
+
+        let newTourName = '';
+        const targetTourId = tour_id ? parseInt(tour_id) : null;
+        if (targetTourId) {
+            const newTourRes = await client.query('SELECT name FROM tour_templates WHERE id = $1', [targetTourId]);
+            if (newTourRes.rows.length > 0) newTourName = newTourRes.rows[0].name;
+        }
+
+        // 4. Tìm mốc tin nhắn gần nhất trước hôm nay để lùi last_contacted_at của Lead cũ về quá khứ
+        const prevMsgRes = await client.query(
+            `SELECT created_at FROM messages 
+             WHERE conversation_id = $1 AND created_at < CURRENT_DATE 
+             ORDER BY created_at DESC LIMIT 1`,
+            [conversationId]
+        );
+        const revertedContactedAt = prevMsgRes.rows.length > 0 
+            ? prevMsgRes.rows[0].created_at 
+            : (oldLead.created_at || new Date(Date.now() - 24 * 60 * 60 * 1000));
+
+        // 5. Cập nhật Lead cũ: giữ nguyên 100% status, lùi last_contacted_at, đánh dấu cờ ngầm is_superseded
+        await client.query(
+            `UPDATE leads 
+             SET is_superseded = TRUE, 
+                 last_contacted_at = $1, 
+                 updated_at = NOW() 
+             WHERE id = $2`,
+            [revertedContactedAt, oldLeadId]
+        );
+
+        // 6. Tạo Lead mới: trạng thái 'Mới', mốc created_at = NOW()
+        const targetAssignedTo = assigned_to ? parseInt(assigned_to) : null;
+        const targetBU = bu_group || oldLead.bu_group || null;
+        const newLeadRes = await client.query(
+            `INSERT INTO leads (
+                name, phone, email, source, tour_id, assigned_to, status, 
+                consultation_note, bu_group, gender, birth_date, classification, 
+                created_at, last_contacted_at, facebook_psid, meta_lead_id, fbclid, 
+                customer_id, zalo_uid, origin_lead_id, is_superseded
+             ) VALUES (
+                $1, $2, $3, $4, $5, $6, 'Mới', 
+                $7, $8, $9, $10, 'Mới', 
+                NOW(), NOW(), $11, $12, $13, 
+                $14, $15, $16, FALSE
+             ) RETURNING *`,
+            [
+                oldLead.name, 
+                oldLead.phone, 
+                oldLead.email, 
+                oldLead.source || 'Messenger', 
+                targetTourId, 
+                targetAssignedTo,
+                note || null,
+                targetBU,
+                oldLead.gender || null,
+                oldLead.birth_date || null,
+                oldLead.facebook_psid || conv.external_id || null,
+                oldLead.meta_lead_id || null,
+                oldLead.fbclid || null,
+                oldLead.customer_id || conv.customer_id || null,
+                oldLead.zalo_uid || null,
+                oldLead.origin_lead_id || oldLeadId
+            ]
+        );
+        const newLead = newLeadRes.rows[0];
+
+        // 7. Cập nhật Lead cũ trỏ đến replaced_by_lead_id = newLead.id
+        await client.query(
+            `UPDATE leads SET replaced_by_lead_id = $1 WHERE id = $2`,
+            [newLead.id, oldLeadId]
+        );
+
+        // 8. Cập nhật cuộc hội thoại trỏ sang Lead mới này
+        await client.query(
+            `UPDATE conversations SET lead_id = $1, updated_at = NOW() WHERE id = $2`,
+            [newLead.id, conversationId]
+        );
+
+        // 9. Ghi 2 Lead notes liên kết hai chiều
+        const staffName = req.user ? (req.user.full_name || req.user.username) : 'Hệ thống';
+        const noteForOldLead = `[Chuyển nhu cầu]: Khách quay lại hỏi tour mới -> Đã tách thành Lead Marketing #${newLead.id}${newTourName ? ' (Tour: ' + newTourName + ')' : ''}. Nhân viên thực hiện: ${staffName}`;
+        const noteForNewLead = `[Khách cũ quay lại]: Tiếp nhận từ Lead cũ #${oldLeadId}${oldTourName ? ' (Tour trước: ' + oldTourName + ')' : ''}. Nhân viên thực hiện: ${staffName}`;
+
+        await client.query(
+            `INSERT INTO lead_notes (lead_id, content, created_by, created_at) VALUES ($1, $2, $3, NOW())`,
+            [oldLeadId, noteForOldLead, req.user ? req.user.id : null]
+        );
+        await client.query(
+            `INSERT INTO lead_notes (lead_id, content, created_by, created_at) VALUES ($1, $2, $3, NOW() - interval '1 second')`,
+            [newLead.id, noteForNewLead, req.user ? req.user.id : null]
+        );
+
+        if (note && note.trim()) {
+            await client.query(
+                `INSERT INTO lead_notes (lead_id, content, created_by, created_at) VALUES ($1, $2, $3, NOW())`,
+                [newLead.id, note.trim(), req.user ? req.user.id : null]
+            );
+        }
+
+        // 10. Ghi log hoạt động
+        await logActivity({
+            user_id: req.user ? req.user.id : null,
+            action_type: 'CREATE',
+            entity_type: 'LEAD',
+            entity_id: newLead.id,
+            details: `Tạo Lead mới #${newLead.id} từ Inbox cho khách ${newLead.name} (Lead gốc #${oldLeadId})`,
+            new_data: newLead
+        });
+
+        await client.query('COMMIT');
+
+        // 11. Bắn Meta CAPI (async, không chặn response)
+        metaCapi.sendLeadEvent(newLead).catch(err => 
+            console.error('[CAPI] Recreate lead event error:', err.message)
+        );
+
+        res.json({
+            success: true,
+            message: 'Tạo Lead mới thành công!',
+            lead: newLead,
+            oldLeadId: oldLeadId
+        });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error recreating lead from conversation:', err);
+        res.status(500).json({ error: 'Lỗi máy chủ khi tạo Lead mới: ' + err.message });
+    } finally {
+        client.release();
+    }
+};
+
+exports.getRelatedLeadHistory = async (req, res) => {
+    try {
+        const leadId = parseInt(req.params.id);
+        if (!leadId) return res.status(400).json({ error: 'Lead ID không hợp lệ' });
+
+        const currentLeadRes = await db.query('SELECT * FROM leads WHERE id = $1', [leadId]);
+        if (currentLeadRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Không tìm thấy Lead' });
+        }
+        const currentLead = currentLeadRes.rows[0];
+
+        const historyRes = await db.query(
+            `SELECT l.id, l.name, l.phone, l.source, l.status, l.bu_group, l.tour_id, 
+                    l.created_at, l.last_contacted_at, l.assigned_to, l.is_superseded,
+                    l.origin_lead_id, l.replaced_by_lead_id,
+                    t.name as tour_name, 
+                    COALESCE(u.full_name, u.username) as assigned_to_name,
+                    (SELECT COUNT(*)::int FROM lead_notes WHERE lead_id = l.id) as notes_count,
+                    (SELECT content FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC, id DESC LIMIT 1) as latest_note
+             FROM leads l
+             LEFT JOIN tour_templates t ON l.tour_id = t.id
+             LEFT JOIN users u ON l.assigned_to = u.id
+             WHERE 
+                l.id = $1 OR
+                (l.facebook_psid = $2 AND $2 IS NOT NULL AND $2 != '') OR
+                (l.customer_id = $3 AND $3 IS NOT NULL) OR
+                (l.phone = $4 AND $4 IS NOT NULL AND $4 != '') OR
+                l.origin_lead_id = $1 OR
+                l.id = $5
+             ORDER BY l.created_at DESC`,
+            [
+                leadId, 
+                currentLead.facebook_psid, 
+                currentLead.customer_id, 
+                currentLead.phone, 
+                currentLead.origin_lead_id || leadId
+            ]
+        );
+
+        res.json({ leads: historyRes.rows });
+    } catch (err) {
+        console.error('Error fetching related lead history:', err);
+        res.status(500).json({ error: 'Lỗi tải lịch sử Lead: ' + err.message });
+    }
+};
+
+exports.getInheritedNotes = async (req, res) => {
+    try {
+        const leadId = parseInt(req.params.id);
+        if (!leadId) return res.status(400).json({ error: 'Lead ID không hợp lệ' });
+
+        const currentLeadRes = await db.query('SELECT * FROM leads WHERE id = $1', [leadId]);
+        if (currentLeadRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Không tìm thấy Lead' });
+        }
+        const currentLead = currentLeadRes.rows[0];
+
+        const notesRes = await db.query(
+            `SELECT ln.*, 
+                    COALESCE(u.full_name, u.username) as creator_name,
+                    l.id as source_lead_id,
+                    l.name as source_lead_name,
+                    t.name as source_tour_name,
+                    l.created_at as lead_created_at
+             FROM lead_notes ln
+             JOIN leads l ON ln.lead_id = l.id
+             LEFT JOIN tour_templates t ON l.tour_id = t.id
+             LEFT JOIN users u ON ln.created_by = u.id
+             WHERE l.id != $1 AND (
+                (l.facebook_psid = $2 AND $2 IS NOT NULL AND $2 != '') OR
+                (l.customer_id = $3 AND $3 IS NOT NULL) OR
+                (l.phone = $4 AND $4 IS NOT NULL AND $4 != '') OR
+                l.id = $5 OR
+                l.origin_lead_id = $1
+             )
+             ORDER BY ln.created_at DESC, ln.id DESC`,
+            [
+                leadId, 
+                currentLead.facebook_psid, 
+                currentLead.customer_id, 
+                currentLead.phone, 
+                currentLead.origin_lead_id || leadId
+            ]
+        );
+
+        res.json({ notes: notesRes.rows });
+    } catch (err) {
+        console.error('Error fetching inherited notes:', err);
+        res.status(500).json({ error: 'Lỗi tải ghi chú liên thông: ' + err.message });
+    }
+};
+
