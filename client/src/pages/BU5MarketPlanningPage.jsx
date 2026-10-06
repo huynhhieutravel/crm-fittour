@@ -701,6 +701,29 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           {/* Nút hành động */}
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
             <a
+              href="/email_preview_de_xuat_bu5_q4_2026.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#fffbeb',
+                color: '#b45309',
+                border: '1px solid #fde68a',
+                padding: '9px 16px',
+                borderRadius: '8px',
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                textDecoration: 'none',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+              }}
+            >
+              <span>Preview Email ✉️</span>
+              <ExternalLink size={14} color="#b45309" />
+            </a>
+
+            <a
               href="/GIAI_TRINH_DU_TOAN_BU5_Q4_2026.md"
               target="_blank"
               rel="noopener noreferrer"

@@ -69,6 +69,7 @@ ssh ${VPS_USER}@${VPS_IP} << 'EOF'
     (cd /var/www/fittour-crm/server && node migrations/20260930_add_customer_insights_columns.js || true)
     (cd /var/www/fittour-crm/server && node migrations/20260930_create_customer_events_table.js || true)
     (cd /var/www/fittour-crm/server && node migrations/20261002_add_lead_recreation_fields.js || true)
+    (cd /var/www/fittour-crm/server && node migrations/20261006_update_zalo_ai_settings_quy_khach.js || true)
 
     echo "🔄 Khởi động lại PM2..."
     pm2 restart crm-fittour --update-env

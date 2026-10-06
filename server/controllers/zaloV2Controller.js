@@ -42,14 +42,26 @@ const saveMessage = (msg) => {
     return;
   }
 
-  // 2. Prevent duplicate outgoing messages sent within 10 seconds with identical text
-  const isDuplicateOutgoing = messages.some(m => 
+  // 2. Prevent duplicate outgoing messages sent within 15 seconds with identical text
+  const existingOutgoingIndex = messages.findIndex(m => 
     m.type === 'outgoing' && 
     (m.senderId === msg.senderId || m.recipientId === msg.senderId) && 
     m.text && msg.text && m.text.trim() === msg.text.trim() &&
-    Math.abs(Date.now() - new Date(m.timestamp).getTime()) < 10000
+    Math.abs(Date.now() - new Date(m.timestamp).getTime()) < 15000
   );
-  if (isDuplicateOutgoing) {
+  if (existingOutgoingIndex !== -1) {
+    // Nếu tin nhắn trước đó (từ webhook oa_send_text) chưa gắn senderType 'ai',
+    // nhưng tin nhắn mới này từ luồng AI có senderType 'ai', cập nhật lại để UI hiển thị đúng
+    if (msg.senderType && !messages[existingOutgoingIndex].senderType) {
+      messages[existingOutgoingIndex].senderType = msg.senderType;
+      messages[existingOutgoingIndex].senderStaffName = msg.senderStaffName || messages[existingOutgoingIndex].senderStaffName;
+      try {
+        fs.writeFileSync(SANDBOX_FILE_PATH, JSON.stringify(messages, null, 2));
+        if (global.io) global.io.emit('zalo_message_update');
+      } catch (err) {
+        console.error('[ZaloV2] Lỗi cập nhật senderType cho tin nhắn trùng:', err.message);
+      }
+    }
     return;
   }
 
@@ -258,6 +270,255 @@ const sendZaloCsMessageWithAutoRefresh = async (recipientId, text) => {
   } catch (err) {
     console.error('[ZaloV2] Error sending CS message:', err.response?.data || err.message);
     return false;
+  }
+};
+
+// Bộ nhớ đệm lưu các tin nhắn vừa được AI gửi (trong vòng 60s) để webhook oa_send_text nhận diện
+const recentAiMessages = new Map(); // key: `${recipientId}|${text.trim()}`, value: timestamp
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, timestamp] of recentAiMessages.entries()) {
+    if (now - timestamp > 60000) {
+      recentAiMessages.delete(key);
+    }
+  }
+}, 60000);
+
+// Hàng đợi Debounce gom tin nhắn AI theo từng Zalo UID
+const aiQueue = new Map();
+
+/**
+ * Thực thi sinh phản hồi AI sau khi hết thời gian Debounce gom tin nhắn
+ */
+const executeAiReply = async (senderId) => {
+  const queueItem = aiQueue.get(senderId);
+  if (!queueItem) return;
+
+  if (queueItem.timer) {
+    clearTimeout(queueItem.timer);
+    queueItem.timer = null;
+  }
+
+  const messagesToProcess = [...queueItem.messages];
+  queueItem.messages = [];
+  queueItem.firstMessageAt = Date.now();
+
+  if (messagesToProcess.length === 0) {
+    return;
+  }
+
+  queueItem.isProcessing = true;
+
+  try {
+    // 1. Kiểm tra cấu hình AI Agent toàn cục
+    const aiConfig = await zaloAiService.getAiConfig();
+    if (!aiConfig || aiConfig.system_config?.is_sandbox_bot_enabled === false) {
+      console.log(`[AI Agent] Bot đang tắt trong Cài đặt Zalo AI. Bỏ qua Auto-Reply.`);
+      return;
+    }
+
+    // 2. Kiểm tra trạng thái phiên AI của khách hàng này (Human Takeover)
+    const aiSession = await getAiSession(senderId);
+    if (aiSession && aiSession.is_ai_active === false) {
+      console.log(`[AI Muted] UID ${senderId} đã được nhân viên tiếp quản (Muted by: ${aiSession.muted_by}). Bỏ qua Auto-Reply.`);
+      return;
+    }
+
+    // 3. Kiểm tra Giới hạn số tin nhắn AI tối đa (Max Turns - Mặc định 10 lượt)
+    const maxTurns = Number(aiConfig.system_config?.max_ai_turns || 10);
+    const currentTurn = await incrementAiSessionTurn(senderId);
+
+    // Lấy Access Token hợp lệ của Zalo OA
+    let accessToken = null;
+    if (fs.existsSync(TOKEN_FILE_PATH)) {
+      try {
+        const tokenData = JSON.parse(fs.readFileSync(TOKEN_FILE_PATH, 'utf8'));
+        accessToken = tokenData?.access_token;
+      } catch (e) {
+        console.error('[ZaloV2] Lỗi đọc token file:', e.message);
+      }
+    }
+
+    if (!accessToken) {
+      console.error('[ZaloV2] Không tìm thấy Zalo OA access_token hợp lệ. Vui lòng đăng nhập lại Zalo OA.');
+      return;
+    }
+
+    if (currentTurn > maxTurns) {
+      console.log(`[AI Max Turns Reached] UID ${senderId} đã đạt ngưỡng ${currentTurn}/${maxTurns} tin nhắn. Tự động ngắt AI và gửi câu chuyển giao cho chuyên viên.`);
+      
+      const handoverText = `Dạ để hỗ trợ Quý khách chu đáo và chi tiết nhất cho hành trình này, em đã chuyển tiếp toàn bộ thông tin của mình tới Chuyên viên tư vấn chuyên tuyến của FIT TOUR. Chuyên viên sẽ trực tiếp nhắn tin hỗ trợ Quý khách ngay tại khung chat này nhé ạ! 💚`;
+      
+      try {
+        recentAiMessages.set(`${senderId}|${handoverText.trim()}`, Date.now());
+        const handoverSuccess = await sendZaloCsMessageWithAutoRefresh(senderId, handoverText);
+
+        if (handoverSuccess) {
+          const customerProfile = await getZaloProfile(senderId);
+          saveMessage({
+            id: Date.now().toString(),
+            senderId: senderId,
+            senderName: customerProfile?.name || `Zalo Guest ${senderId.substring(0, 5)}`,
+            senderAvatar: customerProfile?.avatar || null,
+            recipientId: senderId,
+            text: handoverText,
+            type: 'outgoing',
+            senderType: 'ai',
+            senderStaffName: 'AI Agent'
+          });
+        }
+
+        await setAiSession(senderId, false, 'max_turn_limit', `Đã đạt giới hạn ${maxTurns} tin nhắn`);
+      } catch (e) {
+        console.error('[ZaloV2] Lỗi gửi tin nhắn chuyển giao max turns:', e.message);
+      }
+      return;
+    }
+
+    // Gộp tất cả các tin nhắn trong batch thành một tin hoàn chỉnh
+    const combinedText = messagesToProcess.join('\n');
+    const batchCount = messagesToProcess.length;
+
+    console.log(`[Zalo OA AI Agent] 🤖 Đang sinh phản hồi tự động (Lượt ${currentTurn}/${maxTurns}, gom ${batchCount} tin) cho UID: ${senderId}`);
+    console.log(`[Zalo OA AI Agent] Nội dung gộp: "${combinedText.replace(/\n/g, ' ')}"`);
+
+    // Lấy lịch sử hội thoại gần nhất của khách hàng này (tối đa 6 tin quá khứ trước batch hiện tại)
+    let conversationHistory = [];
+    if (fs.existsSync(SANDBOX_FILE_PATH)) {
+      try {
+        const allMsgs = JSON.parse(fs.readFileSync(SANDBOX_FILE_PATH, 'utf8'));
+        const userMsgs = allMsgs.filter(m => (m.senderId === senderId || m.recipientId === senderId) && m.text);
+        // Loại bỏ `batchCount` tin nhắn vừa nhận (vì chúng đã được gộp trong combinedText)
+        const historyPool = userMsgs.length > batchCount ? userMsgs.slice(0, -batchCount) : [];
+        const historySlice = historyPool.slice(-6);
+        conversationHistory = historySlice.map(m => ({
+          sender: m.type === 'incoming' ? 'user' : 'model',
+          text: m.text || ''
+        }));
+      } catch (e) {
+        console.error('[ZaloV2] Lỗi đọc lịch sử tin nhắn:', e.message);
+      }
+    }
+
+    // Tạo câu trả lời thông minh từ Gemini + RAG
+    const aiResult = await zaloAiService.processCustomerMessage({
+      message: combinedText,
+      conversationHistory,
+      leadContext: { zalo_uid: senderId }
+    });
+
+    const replyText = aiResult?.reply || 'Dạ FIT TOUR xin chào Quý khách, FIT TOUR hân hạnh được hỗ trợ tư vấn tour cho mình ạ!';
+
+    // Đánh dấu tin nhắn vừa gửi từ AI để webhook oa_send_text nhận diện
+    recentAiMessages.set(`${senderId}|${replyText.trim()}`, Date.now());
+
+    const sendSuccess = await sendZaloCsMessageWithAutoRefresh(senderId, replyText);
+
+    if (sendSuccess) {
+      // Lưu tin nhắn Bot gửi vào Sandbox
+      const customerProfile = await getZaloProfile(senderId);
+      saveMessage({
+        id: Date.now().toString(),
+        senderId: senderId,
+        senderName: customerProfile?.name || `Zalo Guest ${senderId.substring(0, 5)}`,
+        senderAvatar: customerProfile?.avatar || null,
+        recipientId: senderId,
+        text: replyText,
+        type: 'outgoing',
+        senderType: 'ai',
+        senderStaffName: 'AI Agent'
+      });
+
+      console.log('✅ Auto-Reply Gemini AI thành công:', replyText);
+    } else {
+      console.error(`❌ [ZaloV2] Không thể gửi tin CS cho UID ${senderId}. Giữ lại tin nhắn chờ nhân viên.`);
+    }
+  } catch (error) {
+    console.error('❌ Lỗi Auto-Reply:', error.response?.data || error.message);
+  } finally {
+    queueItem.isProcessing = false;
+
+    // Nếu trong lúc AI đang sinh câu trả lời, khách có gửi thêm tin nhắn
+    if (queueItem.pendingAfterProcessing.length > 0) {
+      console.log(`[AI Debounce] UID ${senderId} có thêm ${queueItem.pendingAfterProcessing.length} tin gửi trong lúc AI phản hồi. Tiếp tục gom.`);
+      queueItem.messages = [...queueItem.pendingAfterProcessing];
+      queueItem.pendingAfterProcessing = [];
+      queueItem.firstMessageAt = Date.now();
+      queueItem.timer = setTimeout(() => {
+        executeAiReply(senderId);
+      }, 4000);
+    } else {
+      if (queueItem.messages.length === 0) {
+        aiQueue.delete(senderId);
+      }
+    }
+  }
+};
+
+/**
+ * Đưa tin nhắn của khách vào hàng đợi Debounce để gom tin
+ */
+const enqueueAiMessage = async (senderId, text) => {
+  try {
+    // 1. Kiểm tra cấu hình AI Agent toàn cục
+    const aiConfig = await zaloAiService.getAiConfig();
+    if (!aiConfig || aiConfig.system_config?.is_sandbox_bot_enabled === false) {
+      console.log(`[AI Agent] Bot đang tắt trong Cài đặt Zalo AI. Bỏ qua Auto-Reply.`);
+      return;
+    }
+
+    // 2. Kiểm tra trạng thái phiên AI của khách hàng này (Human Takeover)
+    const aiSession = await getAiSession(senderId);
+    if (aiSession && aiSession.is_ai_active === false) {
+      console.log(`[AI Muted] UID ${senderId} đã được nhân viên tiếp quản (Muted by: ${aiSession.muted_by}). Bỏ qua Auto-Reply.`);
+      return;
+    }
+
+    // Thời gian debounce (giây): lấy từ cấu hình, mặc định 5s (min 2s, max 15s)
+    const debounceSec = Number(aiConfig.system_config?.debounce_seconds) || 5;
+    const debounceMs = Math.max(2000, Math.min(15000, debounceSec * 1000));
+    const maxWaitMs = 15000; // Không chờ quá 15s nếu khách gửi liên tục
+
+    let queueItem = aiQueue.get(senderId);
+    if (!queueItem) {
+      queueItem = {
+        timer: null,
+        messages: [],
+        firstMessageAt: Date.now(),
+        isProcessing: false,
+        pendingAfterProcessing: []
+      };
+      aiQueue.set(senderId, queueItem);
+    }
+
+    // Nếu AI đang trong quá trình gọi Gemini xử lý
+    if (queueItem.isProcessing) {
+      console.log(`[AI Debounce] UID ${senderId} đang có tiến trình AI xử lý. Lưu tin nhắn vào hàng đợi tiếp theo: "${text}"`);
+      queueItem.pendingAfterProcessing.push(text);
+      return;
+    }
+
+    // Thêm tin nhắn vào batch hiện tại
+    queueItem.messages.push(text);
+
+    // Xóa timer cũ nếu đang đếm ngược
+    if (queueItem.timer) {
+      clearTimeout(queueItem.timer);
+      queueItem.timer = null;
+    }
+
+    // Tính toán thời gian còn lại (không vượt quá maxWaitMs từ tin đầu)
+    const elapsed = Date.now() - queueItem.firstMessageAt;
+    const remainingDelay = elapsed >= maxWaitMs ? 0 : Math.min(debounceMs, maxWaitMs - elapsed);
+
+    console.log(`[AI Debounce] UID ${senderId} nhận tin mới ("${text}"). Đang gom ${queueItem.messages.length} tin, kích hoạt sau ${remainingDelay / 1000}s`);
+
+    queueItem.timer = setTimeout(() => {
+      executeAiReply(senderId);
+    }, remainingDelay);
+  } catch (err) {
+    console.error('[AI Debounce] Lỗi trong enqueueAiMessage:', err.message);
   }
 };
 
@@ -605,141 +866,31 @@ const zaloV2Controller = {
         console.error('❌ Lỗi lưu Lead từ Zalo Webhook vào DB:', dbErr.message);
       }
     } else if (body.event_name === 'oa_send_text' && body.recipient?.id && body.message?.text) {
-      const profile = await getZaloProfile(body.recipient.id);
+      const recipientId = body.recipient.id;
+      const text = body.message.text;
+      const profile = await getZaloProfile(recipientId);
+      const isAiSent = recentAiMessages.has(`${recipientId}|${text.trim()}`);
       saveMessage({
         id: body.message.msg_id || Date.now().toString(),
-        senderId: body.recipient.id, // Nhóm theo người nhận
+        senderId: recipientId, // Nhóm theo người nhận
         senderName: profile?.name,
         senderAvatar: profile?.avatar,
-        text: body.message.text,
-        type: 'outgoing'
+        text: text,
+        type: 'outgoing',
+        senderType: isAiSent ? 'ai' : undefined,
+        senderStaffName: isAiSent ? 'AI Agent' : undefined
       });
     }
 
-    // Logic: Trả lời tự động cho Zalo OA nếu là tin nhắn text từ khách hàng
+    // Logic: Trả lời tự động cho Zalo OA nếu là tin nhắn text từ khách hàng (kèm cơ chế Debounce gom tin nhắn)
     if (body.event_name === 'user_send_text') {
       const senderId = body.sender?.id;
       const text = body.message?.text;
 
       if (!senderId || !text) return;
 
-      // 1. Kiểm tra cấu hình AI Agent toàn cục
-      const aiConfig = await zaloAiService.getAiConfig();
-      if (!aiConfig || aiConfig.system_config?.is_sandbox_bot_enabled === false) {
-        console.log(`[AI Agent] Bot đang tắt trong Cài đặt Zalo AI. Bỏ qua Auto-Reply.`);
-        return;
-      }
-
-      // 2. Kiểm tra trạng thái phiên AI của khách hàng này (Nhân viên tiếp quản / Human Takeover)
-      const aiSession = await getAiSession(senderId);
-      if (aiSession && aiSession.is_ai_active === false) {
-        console.log(`[AI Muted] UID ${senderId} đã được nhân viên tiếp quản (Muted by: ${aiSession.muted_by}). Bỏ qua Auto-Reply để nhân viên chat.`);
-        return;
-      }
-
-      // 3. Kiểm tra Giới hạn số tin nhắn AI tối đa (Max Turns - Mặc định 10 lượt)
-      const maxTurns = Number(aiConfig.system_config?.max_ai_turns || 10);
-      const currentTurn = await incrementAiSessionTurn(senderId);
-
-      // Lấy Access Token hợp lệ của Zalo OA
-      let accessToken = null;
-      if (fs.existsSync(TOKEN_FILE_PATH)) {
-        try {
-          const tokenData = JSON.parse(fs.readFileSync(TOKEN_FILE_PATH, 'utf8'));
-          accessToken = tokenData?.access_token;
-        } catch (e) {
-          console.error('[ZaloV2] Lỗi đọc token file:', e.message);
-        }
-      }
-
-      if (!accessToken) {
-        console.error('[ZaloV2] Không tìm thấy Zalo OA access_token hợp lệ. Vui lòng đăng nhập lại Zalo OA.');
-        return;
-      }
-
-      if (currentTurn > maxTurns) {
-        console.log(`[AI Max Turns Reached] UID ${senderId} đã đạt ngưỡng ${currentTurn}/${maxTurns} tin nhắn. Tự động ngắt AI và gửi câu chuyển giao cho chuyên viên.`);
-        
-        const handoverText = `Dạ để hỗ trợ Anh/Chị chu đáo và chi tiết nhất cho hành trình này, em đã chuyển tiếp toàn bộ thông tin của mình tới Chuyên viên tư vấn chuyên tuyến của FIT TOUR. Chuyên viên sẽ trực tiếp nhắn tin hỗ trợ Anh/Chị ngay tại khung chat này nhé ạ! 💚`;
-        
-        try {
-          const handoverSuccess = await sendZaloCsMessageWithAutoRefresh(senderId, handoverText);
-
-          if (handoverSuccess) {
-            const customerProfile = await getZaloProfile(senderId);
-            saveMessage({
-              id: Date.now().toString(),
-              senderId: senderId,
-              senderName: customerProfile?.name || `Zalo Guest ${senderId.substring(0, 5)}`,
-              senderAvatar: customerProfile?.avatar || null,
-              recipientId: senderId,
-              text: handoverText,
-              type: 'outgoing',
-              senderType: 'ai',
-              senderStaffName: 'AI Agent'
-            });
-          }
-
-          await setAiSession(senderId, false, 'max_turn_limit', `Đã đạt giới hạn ${maxTurns} tin nhắn`);
-        } catch (e) {
-          console.error('[ZaloV2] Lỗi gửi tin nhắn chuyển giao max turns:', e.message);
-        }
-        return;
-      }
-
-      console.log(`[Zalo OA AI Agent] 🤖 Đang sinh phản hồi tự động (Lượt ${currentTurn}/${maxTurns}) cho UID: ${senderId}`);
-      
-      try {
-        // Lấy lịch sử hội thoại gần nhất của khách hàng này (tối đa 6 tin quá khứ)
-        let conversationHistory = [];
-        if (fs.existsSync(SANDBOX_FILE_PATH)) {
-          try {
-            const allMsgs = JSON.parse(fs.readFileSync(SANDBOX_FILE_PATH, 'utf8'));
-            const userMsgs = allMsgs.filter(m => (m.senderId === senderId || m.recipientId === senderId) && m.text);
-            // Tin nhắn hiện tại (vừa nhận) đã được saveMessage ở trên, nên cần loại bỏ tin cuối cùng để không bị lặp context
-            const historySlice = userMsgs.length > 1 ? userMsgs.slice(-7, -1) : [];
-            conversationHistory = historySlice.map(m => ({
-              sender: m.type === 'incoming' ? 'user' : 'model',
-              text: m.text || ''
-            }));
-          } catch (e) {
-            console.error('[ZaloV2] Lỗi đọc lịch sử tin nhắn:', e.message);
-          }
-        }
-
-        // Tạo câu trả lời thông minh từ Gemini + RAG
-        const aiResult = await zaloAiService.processCustomerMessage({
-          message: text,
-          conversationHistory,
-          leadContext: { zalo_uid: senderId }
-        });
-
-        const replyText = aiResult?.reply || 'Dạ em chào Anh/Chị, FIT TOUR hân hạnh được hỗ trợ tư vấn tour cho mình ạ!';
-
-        const sendSuccess = await sendZaloCsMessageWithAutoRefresh(senderId, replyText);
-
-        if (sendSuccess) {
-          // Lưu tin nhắn Bot gửi vào Sandbox
-          const customerProfile = await getZaloProfile(senderId);
-          saveMessage({
-            id: Date.now().toString(),
-            senderId: senderId,
-            senderName: customerProfile?.name || `Zalo Guest ${senderId.substring(0, 5)}`,
-            senderAvatar: customerProfile?.avatar || null,
-            recipientId: senderId,
-            text: replyText,
-            type: 'outgoing',
-            senderType: 'ai',
-            senderStaffName: 'AI Agent'
-          });
-
-          console.log('✅ Auto-Reply Gemini AI thành công:', replyText);
-        } else {
-          console.error(`❌ [ZaloV2] Không thể gửi tin CS cho UID ${senderId}. Giữ lại tin nhắn chờ nhân viên.`);
-        }
-      } catch (error) {
-        console.error('❌ Lỗi Auto-Reply:', error.response?.data || error.message);
-      }
+      // Đưa vào hàng đợi gom tin nhắn thông minh (Debounce)
+      enqueueAiMessage(senderId, text);
     }
   },
 

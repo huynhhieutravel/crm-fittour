@@ -66,12 +66,13 @@ const ZaloAISettingsTab = ({ currentUser, addToast }) => {
     collect_email: false,
     timing: 'on_interest',
     instructions: `4. Không tự suy diễn\nKhông bao giờ tự tạo ra:\nGiá\nLịch\nChương trình\nVisa\nChính sách\nKhuyến mãi\nDịch vụ\n\nLuôn chào đón lịch sự, tinh tế, mang phong cách Du lịch có GUU. Khéo léo xin số điện thoại hoặc Zalo để chuyên viên gửi file PDF lịch trình chi tiết.`,
-    greeting_message: 'Chào Anh/Chị, em là tư vấn viên FIT TOUR. Rất vui được hỗ trợ Anh/Chị! 💚\nAnh/Chị đang quan tâm tour nào hoặc cần em tư vấn gì ạ?'
+    greeting_message: 'Dạ FIT TOUR xin chào Quý khách! Em là tư vấn viên FIT TOUR. Rất vui được hỗ trợ Quý khách! 💚\nQuý khách đang quan tâm tour nào hoặc cần em tư vấn thêm thông tin gì ạ?'
   });
 
   const [systemConfig, setSystemConfig] = useState({
     is_sandbox_bot_enabled: true,
     mute_on_sales_assigned: true,
+    debounce_seconds: 5,
     gemini_api_key: '',
     gemini_model: 'gemini-3.8-flash'
   });
@@ -89,7 +90,7 @@ const ZaloAISettingsTab = ({ currentUser, addToast }) => {
   const [testMessages, setTestMessages] = useState([
     {
       sender: 'bot',
-      text: 'Chào Anh/Chị, em là tư vấn viên FIT TOUR. Rất vui được hỗ trợ Anh/Chị! 💚\nAnh/Chị đang quan tâm tour nào hoặc cần em tư vấn gì ạ?'
+      text: 'Dạ FIT TOUR xin chào Quý khách! Em là tư vấn viên FIT TOUR. Rất vui được hỗ trợ Quý khách! 💚\nQuý khách đang quan tâm tour nào hoặc cần em tư vấn thêm thông tin gì ạ?'
     }
   ]);
   const [inputTestMessage, setInputTestMessage] = useState('');
@@ -122,7 +123,7 @@ const ZaloAISettingsTab = ({ currentUser, addToast }) => {
         if (data.basic_info) setBasicInfo(data.basic_info);
         if (data.purchase_policy) setPurchasePolicy(data.purchase_policy);
         if (data.chat_instructions) setChatInstructions(data.chat_instructions);
-        if (data.system_config) setSystemConfig(data.system_config);
+        if (data.system_config) setSystemConfig(prev => ({ ...prev, ...data.system_config }));
       }
     } catch (err) {
       console.error('Lỗi tải cài đặt AI:', err);
@@ -245,7 +246,7 @@ const ZaloAISettingsTab = ({ currentUser, addToast }) => {
       });
 
       if (res.data?.success && res.data?.data) {
-        const botReply = res.data.data.reply || 'Dạ em chào Anh/Chị, em có thể hỗ trợ gì ạ?';
+        const botReply = res.data.data.reply || 'Dạ FIT TOUR xin chào Quý khách, em có thể hỗ trợ gì cho mình ạ?';
         setTestMessages(prev => [...prev, {
           sender: 'bot',
           text: botReply,
@@ -682,6 +683,23 @@ const ZaloAISettingsTab = ({ currentUser, addToast }) => {
                       Khi khách hàng chat đủ {systemConfig.max_ai_turns || 10} tin nhắn, AI sẽ tự động gửi lời nhắn chuyển giao cho Chuyên viên tư vấn và ngắt tự động (Auto-Mute).
                     </span>
                   </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
+                      Thời gian chờ gom tin nhắn (Debounce - giây, mặc định: 5s)
+                    </label>
+                    <input
+                      type="number"
+                      min="2"
+                      max="15"
+                      value={systemConfig.debounce_seconds ?? 5}
+                      onChange={e => setSystemConfig({ ...systemConfig, debounce_seconds: parseInt(e.target.value) || 5 })}
+                      style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', backgroundColor: '#f8fafc', color: '#0f172a', outline: 'none' }}
+                    />
+                    <span style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                      Khi khách nhắn nhiều câu ngắn liên tiếp, AI sẽ chờ {systemConfig.debounce_seconds ?? 5} giây để gom thành một nội dung hoàn chỉnh trước khi trả lời, tránh bị trả lời lặp hoặc rời rạc.
+                    </span>
+                  </div>
                 </div>
 
               {/* Instructions & Guardrails */}
@@ -993,7 +1011,7 @@ const ZaloAISettingsTab = ({ currentUser, addToast }) => {
               <button
                 onClick={() => setTestMessages([{
                   sender: 'bot',
-                  text: chatInstructions.greeting_message || 'Chào Anh/Chị, em là tư vấn viên FIT TOUR.'
+                  text: chatInstructions.greeting_message || 'Dạ FIT TOUR xin chào Quý khách! Em là tư vấn viên FIT TOUR.'
                 }])}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}
                 title="Làm mới cuộc trò chuyện"
