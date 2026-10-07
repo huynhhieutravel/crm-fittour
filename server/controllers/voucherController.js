@@ -176,7 +176,7 @@ exports.getAllVouchers = async (req, res) => {
             FROM payment_vouchers v
             LEFT JOIN tour_departures td ON v.tour_id = td.id
             LEFT JOIN tour_templates tt ON td.tour_template_id = tt.id
-            LEFT JOIN bookings b ON (v.booking_id ~ '^[0-9]+$' AND v.booking_id::integer = b.id)
+            LEFT JOIN bookings b ON v.booking_id = b.id
             LEFT JOIN users u ON v.created_by = u.id
             ORDER BY v.created_at DESC
             LIMIT 2000
