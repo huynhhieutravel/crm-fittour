@@ -408,7 +408,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
 
             // 3. Nếu chưa có, tạo Lead mới (với facebook_psid, last_contacted_at và dò lại Khách VIP)
             const leadResult = await db.query(
-                'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $5 LIMIT 1)) RETURNING *',
+                'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id) VALUES ($1, $2, $3, $4::text, NOW(), (SELECT id FROM customers WHERE facebook_psid = $5::text LIMIT 1)) RETURNING *',
                 [senderName, 'Messenger', 'Mới', sender_psid, sender_psid]
             );
             leadId = leadResult.rows[0].id;
@@ -476,7 +476,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                 if (['Chốt đơn', 'Thất bại'].includes(oldLead.status) || isExpired) {
                     console.log(`[WEBHOOK] Khách quen nhắn lại (Lead đã đóng hoặc quá 14 ngày): ${oldLead.name}. Đang tạo Lead mới...`);
                     const newLeadResult = await db.query(
-                        'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email) VALUES ($1, $2, $3, $4, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4 LIMIT 1), $5, $6) RETURNING *',
+                        'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email) VALUES ($1, $2, $3, $4::text, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4::text LIMIT 1), $5, $6) RETURNING *',
                         [oldLead.name, 'Messenger', 'Mới', sender_psid, oldLead.phone, oldLead.email]
                     );
                     leadId = newLeadResult.rows[0].id;
@@ -935,8 +935,8 @@ exports.syncRecentConversations = async (limitCount = 25) => {
         }
         if (!pageId) return;
 
-        // Kéo các cuộc trò chuyện gần nhất theo limitCount (kèm attachments để lấy ảnh)
-        const endpoint = `https://graph.facebook.com/v25.0/${pageId}/conversations?fields=link,participants{id,name},messages.limit(100){message,from,created_time,shares,attachments{id,mime_type,name,image_data,file_url}}&limit=${limitCount}&access_token=${token}`;
+        // Kéo các cuộc trò chuyện gần nhất theo limitCount (kèm attachments để lấy ảnh) - giới hạn 15 tin nhắn gần nhất để tránh lỗi 500
+        const endpoint = `https://graph.facebook.com/v20.0/${pageId}/conversations?fields=link,participants{id,name},messages.limit(15){message,from,created_time,shares,attachments{id,mime_type,name,image_data,file_url}}&limit=${limitCount}&access_token=${token}`;
         const res = await axios.get(endpoint);
         
         if (!res.data || !res.data.data) return;
@@ -1068,7 +1068,16 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                     
                     const existingMsgsRes = await db.query('SELECT content, sender_type, image_url FROM messages WHERE conversation_id = $1 ORDER BY id DESC LIMIT 150', [oldConv.id]);
                     const normalizeSenderType = (st) => (st === 'customer' ? 'customer' : 'staff');
-                    const cleanImgKey = (url) => url ? url.split('?')[0] : '';
+                    const cleanImgKey = (url) => {
+                        if (!url) return '';
+                        try {
+                            const pathname = new URL(url).pathname;
+                            const filename = pathname.split('/').pop();
+                            return filename || pathname;
+                        } catch (e) {
+                            return url.split('?')[0].split('/').pop() || '';
+                        }
+                    };
                     const existingMsgSet = new Set(existingMsgsRes.rows.map(m => `${normalizeSenderType(m.sender_type)}|${(m.content || '').trim()}|${cleanImgKey(m.image_url)}`));
                     
                     let hasAnyNewMsg = false;
@@ -1098,8 +1107,11 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         const senderType = (msg.from && msg.from.id === psid) ? 'customer' : 'page';
                         const matchKey = `${normalizeSenderType(senderType)}|${content}|${cleanImgKey(imgUrl)}`;
                         
+                        const createdAt = msg.created_time ? new Date(msg.created_time) : new Date();
+                        const msgAgeMinutes = (Date.now() - createdAt.getTime()) / (1000 * 60);
+                        const isRecentLiveMessage = msgAgeMinutes < 30; // Chỉ tính tin nhắn gửi trong 30 phút gần nhất
+
                         if (!existingMsgSet.has(matchKey)) {
-                            const createdAt = msg.created_time ? new Date(msg.created_time) : new Date();
                             await db.query(
                                 'INSERT INTO messages (conversation_id, sender_type, content, image_url, created_at) VALUES ($1, $2, $3, $4, $5)',
                                 [oldConv.id, senderType, content, imgUrl, createdAt]
@@ -1108,7 +1120,8 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                             lastIteratedMessage = content;
                             existingMsgSet.add(matchKey); // To duplicate handles within same block
                             
-                            if (senderType === 'customer') {
+                            // CHỈ XỬ LÝ NHƯ KHÁCH TƯƠNG TÁC MỚI NẾU ĐÂY LÀ TIN NHẮN THỰC SỰ MỚI (TRONG 30 PHÚT)
+                            if (senderType === 'customer' && isRecentLiveMessage) {
                                 hasNewCustomerMsg = true;
                                 lastCustomerMessage = content;
                                 if (imgUrl) lastCustomerImageUrl = imgUrl;
@@ -1128,8 +1141,8 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                                     if (['Chốt đơn', 'Thất bại'].includes(oldLead.status) || isExpired) {
                                         console.log(`[FB POLLER] Khách Cũ (Đã Đóng hoặc > 14 ngày) nhắn Fanpage: ${userName}. Tạo Lead mới...`);
                                         const newLeadResult = await db.query(
-                                            'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email, fb_conversation_link, created_at) VALUES ($1, $2, $3, $4::text, $8, (SELECT id FROM customers WHERE facebook_psid = $4::text LIMIT 1), $5, $6, $7, $8) RETURNING *',
-                                            [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email, fbLink, fbCreatedAt]
+                                            'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email, fb_conversation_link, created_at) VALUES ($1, $2, $3, $4::text, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4::text LIMIT 1), $5, $6, $7, NOW()) RETURNING *',
+                                            [userName, 'Messenger', 'Mới', psid, oldLead.phone, oldLead.email, fbLink]
                                         );
                                         currentLeadId = newLeadResult.rows[0].id;
                                         await db.query('UPDATE conversations SET lead_id = $1 WHERE id = $2', [currentLeadId, oldConv.id]);
@@ -1143,6 +1156,8 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                                         }
                                     }
                                 }
+                            } else if (senderType === 'customer') {
+                                console.log(`[FB POLLER] 📦 Backfill tin cũ của khách #${oldConv.id}: "${content.substring(0, 30)}" (${createdAt.toISOString()}) - Bỏ qua cảnh báo & không tạo Lead`);
                             }
                         }
                     }
@@ -1258,11 +1273,11 @@ exports.syncRecentConversations = async (limitCount = 25) => {
 let pollerInterval;
 exports.startPolling = () => {
     if (pollerInterval) clearInterval(pollerInterval);
-    // Quét mỗi 60 giây (1 phút) => Rất nhẹ, không đáng kể
-    pollerInterval = setInterval(exports.syncRecentConversations, 60 * 1000);
+    // Quét mỗi 20 giây => Rất nhẹ (query ~1.9s, limit 15 msgs), phản hồi cực nhanh cho Sales
+    pollerInterval = setInterval(exports.syncRecentConversations, 20 * 1000);
     // Chạy thử ngay lần đầu tiên thiết lập
     setTimeout(exports.syncRecentConversations, 5000);
-    console.log('[FB POLLER] Hệ thống tự động quét Lead Facebook đã khởi động (Chống kẹt Webhook).');
+    console.log('[FB POLLER] Hệ thống tự động quét Lead Facebook đã khởi động (Chống kẹt Webhook, chu kỳ 20s).');
 };
 
 exports.classifyBUFromMessage = classifyBUFromMessage;
