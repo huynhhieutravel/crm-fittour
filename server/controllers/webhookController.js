@@ -134,7 +134,7 @@ exports.handleWebhookEvent = async (req, res) => {
                                     // Nếu lead chưa có BU → check lại sau mỗi page reply
                                     const leadId = echoConvRes.rows[0].lead_id;
                                     if (leadId) {
-                                        const leadCheck = await db.query('SELECT bu_group, tour_id, name FROM leads WHERE id = $1', [leadId]);
+                                        const leadCheck = await db.query('SELECT bu_group, tour_id, name, is_bu_locked FROM leads WHERE id = $1', [leadId]);
                                         if (leadCheck.rows.length > 0) {
                                             const allMsgs = await db.query('SELECT sender_type, content FROM messages WHERE conversation_id = $1', [echoConvId]);
                                             // Gộp tin khách VÀ AI (trừ câu hỏi chung chung) để vớt từ khoá Quảng Cáo
@@ -142,8 +142,8 @@ exports.handleWebhookEvent = async (req, res) => {
                                                 .filter(m => !(m.content || '').includes('(Trung Quốc, Himalayas, Quốc tế...)'))
                                                 .map(m => m.content || '').join(' ');
                                             
-                                            // BU Auto
-                                            if (!leadCheck.rows[0].bu_group) {
+                                            // BU Auto: CHỈ TỰ ĐỘNG PHÂN LOẠI NẾU CHƯA CÓ BU VÀ CHƯA BỊ KHÓA THỦ CÔNG
+                                            if (!leadCheck.rows[0].bu_group && !leadCheck.rows[0].is_bu_locked) {
                                                 const autoBU = await facebookService.classifyBUFromMessage(allText);
                                                 if (autoBU) {
                                                     await db.query('UPDATE leads SET bu_group = $1 WHERE id = $2', [autoBU, leadId]);
@@ -155,14 +155,14 @@ exports.handleWebhookEvent = async (req, res) => {
                                                 }
                                             }
                                             
-                                            // Tour Auto
+                                            // Tour Auto: Nếu đã có BU hoặc BU đã bị khóa thủ công -> chỉ cập nhật tour_id
                                             if (!leadCheck.rows[0].tour_id) {
                                                 const autoTour = await facebookService.classifyTourFromMessage(allText, '', leadCheck.rows[0].bu_group);
                                                 if (autoTour && autoTour.tour_id) {
-                                                    if (leadCheck.rows[0].bu_group) {
-                                                        // ĐÃ CÓ BU: KHÓA CỨNG BU, CHỈ CẬP NHẬT TOUR_ID
+                                                    if (leadCheck.rows[0].bu_group || leadCheck.rows[0].is_bu_locked) {
+                                                        // ĐÃ CÓ BU HOẶC BU ĐÃ BỊ KHÓA THỦ CÔNG: KHÓA CỨNG BU, CHỈ CẬP NHẬT TOUR_ID
                                                         await db.query('UPDATE leads SET tour_id = $1 WHERE id = $2', [autoTour.tour_id, leadId]);
-                                                        console.log(`[TOUR-AUTO] Echo Webhook Lead #${leadId} (${leadCheck.rows[0].name}) → Auto Tour: ${autoTour.tour_id} (BU giữ nguyên: ${leadCheck.rows[0].bu_group})`);
+                                                        console.log(`[TOUR-AUTO] Echo Webhook Lead #${leadId} (${leadCheck.rows[0].name}) → Auto Tour: ${autoTour.tour_id} (BU giữ nguyên: ${leadCheck.rows[0].bu_group || 'Chưa phân'})`);
                                                     } else {
                                                         const targetBU = autoTour.bu_group;
                                                         const q = targetBU ? 

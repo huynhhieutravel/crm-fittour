@@ -536,9 +536,10 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
 
                     // [TOUR-AUTO] Nếu lead chưa có Tour
                     if (!oldLead.tour_id) {
-                        // Re-fetch oldLead.bu_group to get the most updated one if it was just assigned above
-                        const updatedLead = await db.query('SELECT bu_group FROM leads WHERE id = $1', [leadId]);
+                        // Re-fetch oldLead.bu_group & is_bu_locked to get the most updated one if it was just assigned above
+                        const updatedLead = await db.query('SELECT bu_group, is_bu_locked FROM leads WHERE id = $1', [leadId]);
                         const currentBuGroup = updatedLead.rows[0]?.bu_group;
+                        const isBuLocked = updatedLead.rows[0]?.is_bu_locked || oldLead.is_bu_locked;
 
                         const allMsgsResult = await db.query(
                             'SELECT sender_type, content FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
@@ -552,10 +553,10 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                         const autoTour3 = await classifyTourFromMessage(allText, adContextText, currentBuGroup);
                         
                         if (autoTour3 && autoTour3.tour_id) {
-                            if (currentBuGroup) {
-                                // ĐÃ CÓ BU: KHÓA CỨNG BU, CHỈ CẬP NHẬT TOUR_ID
+                            if (currentBuGroup || isBuLocked) {
+                                // ĐÃ CÓ BU HOẶC BU ĐÃ BỊ KHÓA THỦ CÔNG: KHÓA CỨNG BU, CHỈ CẬP NHẬT TOUR_ID
                                 await db.query('UPDATE leads SET tour_id = $1 WHERE id = $2', [autoTour3.tour_id, leadId]);
-                                console.log(`[TOUR-AUTO] Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (BU giữ nguyên: ${currentBuGroup}) (từ tin nhắn tiếp theo)`);
+                                console.log(`[TOUR-AUTO] Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (BU giữ nguyên: ${currentBuGroup || 'Chưa phân'}) (từ tin nhắn tiếp theo)`);
                             } else {
                                 const targetBU3 = autoTour3.bu_group;
                                 const q3 = targetBU3 ? 
@@ -1235,16 +1236,17 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         }
 
                         if (!leadCheckRe.rows[0].tour_id) {
-                            // Re-fetch BU to get the most up-to-date one
-                            const checkBu = await db.query('SELECT bu_group FROM leads WHERE id = $1', [currentLeadId]);
+                            // Re-fetch BU và is_bu_locked to get the most up-to-date one
+                            const checkBu = await db.query('SELECT bu_group, is_bu_locked FROM leads WHERE id = $1', [currentLeadId]);
                             const currentPollerBu = checkBu.rows[0]?.bu_group;
+                            const isBuLocked = checkBu.rows[0]?.is_bu_locked || leadCheckRe.rows[0]?.is_bu_locked;
                             const autoTourPoller2 = await classifyTourFromMessage(allPollerText, adContextText, currentPollerBu);
                             
                             if (autoTourPoller2 && autoTourPoller2.tour_id) {
-                                if (currentPollerBu) {
-                                    // ĐÃ CÓ BU: KHÓA CỨNG BU, CHỈ CẬP NHẬT TOUR_ID
+                                if (currentPollerBu || isBuLocked) {
+                                    // ĐÃ CÓ BU HOẶC BU ĐÃ BỊ KHÓA THỦ CÔNG: KHÓA CỨNG BU, CHỈ CẬP NHẬT TOUR_ID
                                     await db.query('UPDATE leads SET tour_id = $1 WHERE id = $2', [autoTourPoller2.tour_id, currentLeadId]);
-                                    console.log(`[TOUR-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto Tour: ${autoTourPoller2.tour_id} (BU giữ nguyên: ${currentPollerBu})`);
+                                    console.log(`[TOUR-AUTO] Poller Lead #${currentLeadId} (${leadCheckRe.rows[0].name}) → Auto Tour: ${autoTourPoller2.tour_id} (BU giữ nguyên: ${currentPollerBu || 'Chưa phân'})`);
                                 } else {
                                     const targetBUPoller2 = autoTourPoller2.bu_group;
                                     const q3 = targetBUPoller2 ? 

@@ -765,14 +765,15 @@ const zaloV2Controller = {
 
             // Phân loại Tour nếu chưa có
             if (!oldLead.tour_id && messageText) {
-              const updatedLead = await db.query('SELECT bu_group FROM leads WHERE id = $1', [leadId]);
+              const updatedLead = await db.query('SELECT bu_group, is_bu_locked FROM leads WHERE id = $1', [leadId]);
               const currentBuGroup = updatedLead.rows[0]?.bu_group;
+              const isBuLocked = updatedLead.rows[0]?.is_bu_locked || oldLead.is_bu_locked;
               const autoTour3 = await facebookService.classifyTourFromMessage(messageText, '', currentBuGroup);
               if (autoTour3 && autoTour3.tour_id) {
-                if (currentBuGroup) {
-                  // ĐÃ CÓ BU: KHÓA CỨNG BU, CHỈ CẬP NHẬT TOUR_ID
+                if (currentBuGroup || isBuLocked) {
+                  // ĐÃ CÓ BU HOẶC BU ĐÃ BỊ KHÓA THỦ CÔNG: KHÓA CỨNG BU, CHỈ CẬP NHẬT TOUR_ID
                   await db.query('UPDATE leads SET tour_id = $1 WHERE id = $2', [autoTour3.tour_id, leadId]);
-                  console.log(`[TOUR-AUTO] Zalo Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (BU giữ nguyên: ${currentBuGroup})`);
+                  console.log(`[TOUR-AUTO] Zalo Lead #${leadId} (${oldLead.name}) → Auto Tour: ${autoTour3.tour_id} (BU giữ nguyên: ${currentBuGroup || 'Chưa phân'})`);
                 } else {
                   const targetBU3 = autoTour3.bu_group;
                   const q3 = targetBU3 ? 
