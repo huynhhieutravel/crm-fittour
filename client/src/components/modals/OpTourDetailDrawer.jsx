@@ -4,6 +4,7 @@ import { X, Plus, Trash2, Save, MoreHorizontal } from 'lucide-react';
 import Select from 'react-select';
 import { CKEditor } from 'ckeditor4-react';
 import { useMarkets } from '../../hooks/useMarkets';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export default function OpTourDetailDrawer({ onClose, tour, onDelete }) {
   const [formData, setFormData] = useState({
@@ -25,6 +26,7 @@ export default function OpTourDetailDrawer({ onClose, tour, onDelete }) {
   const [errorMsg, setErrorMsg] = useState('');
   
   const [loading, setLoading] = useState(false);
+  useEscapeKey(onClose, !loading);
   const [guides, setGuides] = useState([]);
   const [airlinesList, setAirlinesList] = useState([]);
   const [tourTemplates, setTourTemplates] = useState([]);
@@ -258,7 +260,7 @@ export default function OpTourDetailDrawer({ onClose, tour, onDelete }) {
             >
                <Save size={16} /> Lưu Tour
             </button>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+            <button onClick={onClose} title="Đóng (ESC)" style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
           </div>
         </div>
 

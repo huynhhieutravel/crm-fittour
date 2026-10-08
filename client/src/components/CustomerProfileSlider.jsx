@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, User, Phone, Mail, MapPin, Calendar, Briefcase, FileText, Send, Clock, CreditCard, Tag, CalendarPlus, Smartphone, Loader } from 'lucide-react';
 import axios from 'axios';
+import { useEscapeKey } from '../hooks/useEscapeKey';
 
 const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => {
+  useEscapeKey(onClose, true);
+
   const [activeTab, setActiveTab] = useState('overview');
   const [newNote, setNewNote] = useState('');
   const [newEvent, setNewEvent] = useState({ title: '', event_type: 'CALL', event_date: '' });
@@ -170,7 +173,7 @@ const CustomerProfileSlider = ({ customer, onClose, onAddNote, users = [] }) => 
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="icon-btn"><X size={20} /></button>
+          <button onClick={onClose} className="icon-btn" title="Đóng (ESC)"><X size={20} /></button>
         </div>
 
         {/* Tabs */}

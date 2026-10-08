@@ -8,6 +8,7 @@ import axios from 'axios';
 import * as XLSX from 'xlsx-js-style';
 import BookingVouchersModal from './BookingVouchersModal';
 import { exportBU245MembersXlsx } from '../../utils/bu245ExportHelper.js';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAddCustomer, onEditBooking, onUpdateTour, onRefreshList, currentUser, refreshTrigger }) {
   const [hoveredQty, setHoveredQty] = useState({ id: null, rows: [], x: 0, y: 0 });
@@ -20,6 +21,12 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
   const [isTransferring, setIsTransferring] = useState(false);
   const [activeTours, setActiveTours] = useState([]);
   const [confirmTransferModal, setConfirmTransferModal] = useState(false);
+
+  useEscapeKey(() => setConfirmTransferModal(false), confirmTransferModal);
+  useEscapeKey(() => setShowTransferModal(null), !confirmTransferModal && !!showTransferModal);
+  useEscapeKey(() => setShowVouchersModal(null), !!showVouchersModal);
+  useEscapeKey(() => setViewingMembers(null), !!viewingMembers);
+  useEscapeKey(onClose, isOpen && !confirmTransferModal && !showTransferModal && !showVouchersModal && !viewingMembers);
 
   const executeTransfer = async () => {
     setIsTransferring(true);
@@ -363,7 +370,7 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
               {tour?.tour_name || 'Đang tải...'}
             </div>
           </h2>
-          <button onClick={onClose} style={{ position: 'absolute', right: '20px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+          <button onClick={onClose} title="Đóng (ESC)" style={{ position: 'absolute', right: '20px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
             <X size={24} />
           </button>
         </div>

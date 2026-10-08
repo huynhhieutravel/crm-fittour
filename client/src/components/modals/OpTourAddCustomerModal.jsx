@@ -9,6 +9,7 @@ import { loadPdfDocument, renderPdfPageToCanvas } from '../../utils/pdfToImages'
 import * as XLSX from 'xlsx';
 import { toast } from 'react-hot-toast';
 import { formatGenderVN } from '../../utils/tourHelpers';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initialData, currentUser, tour }) {
   // Auto-generate B-XXXX (4-5 digits) for a new booking code
@@ -53,6 +54,9 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   const [isDraggingExcel, setIsDraggingExcel] = useState(false);
   const [isImportingExcel, setIsImportingExcel] = useState(false);
   const [importReport, setImportReport] = useState(null);
+
+  useEscapeKey(onClose, isOpen && !showProfileSlider && !isImportingExcel);
+  useEscapeKey(() => setShowProfileSlider(false), isOpen && showProfileSlider);
 
 
   
@@ -1122,7 +1126,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
         {/* Modal Header */}
         <div style={{ padding: '15px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ margin: 0, textAlign: 'center', flex: 1, fontSize: '18px', fontWeight: 'bold' }}>{initialData ? `CẬP NHẬT BOOKING / GIỮ CHỖ (${initialData.booking_code || initialData.id})` : 'THÊM BOOKING (GIỮ CHỖ)'}</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+          <button onClick={onClose} title="Đóng (ESC)" style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
         </div>
 
         {/* Modal Body (Scrollable) */}

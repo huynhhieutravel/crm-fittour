@@ -12,6 +12,7 @@ import OpTourDetailDrawer from '../components/modals/OpTourDetailDrawer';
 import OpTourAddCustomerModal from '../components/modals/OpTourAddCustomerModal';
 import OpTourBookingListModal from '../components/modals/OpTourBookingListModal';
 import { exportBU245MembersXlsx } from '../utils/bu245ExportHelper.js';
+import { useEscapeKey } from '../hooks/useEscapeKey';
 
 const MarketFilterBar = ({ activeMarket, setActiveMarket, marketOptions, children }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -219,6 +220,11 @@ export default function OpToursTab({ currentUser }) {
   const [salesActiveMonth, setSalesActiveMonth] = useState('Tất cả');
   const [salesActiveBU, setSalesActiveBU] = useState('Tất cả');
   const [salesMetricMode, setSalesMetricMode] = useState('cashflow'); // 'cashflow' (Thực Thu) or 'revenue' (Hợp Đồng)
+
+  // Keyboard shortcut: ESC to close top modal
+  useEscapeKey(() => setViewingAllMembers(null), !!viewingAllMembers);
+  useEscapeKey(() => setActiveCeoModal(null), !!activeCeoModal);
+  useEscapeKey(() => setShowSopModal(false), !!showSopModal);
 
   const openCeoModal = async (type) => {
     setActiveCeoModal(type);
@@ -1708,7 +1714,7 @@ export default function OpToursTab({ currentUser }) {
                 >
                   <Download size={16} /> Tải Xuống DS (Tour BU2,4,5)
                 </button>
-                <button onClick={() => setViewingAllMembers(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
+                <button onClick={() => setViewingAllMembers(null)} title="Đóng (ESC)" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
                   <X size={22} color="#64748b" />
                 </button>
               </div>
@@ -1814,7 +1820,7 @@ export default function OpToursTab({ currentUser }) {
                   {activeCeoModal === 'sales' ? 'Bảng Vàng Sales (Top Revenue)' : 'Theo Dõi Sức Khỏe Lịch Khởi Hành'}
                 </h3>
               </div>
-              <button onClick={() => setActiveCeoModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
+              <button onClick={() => setActiveCeoModal(null)} title="Đóng (ESC)" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>
                 <X size={22} color="#64748b" />
               </button>
             </div>
@@ -2192,6 +2198,7 @@ export default function OpToursTab({ currentUser }) {
           <div style={{ position: 'relative', maxWidth: '1000px', width: '100%', maxHeight: '95vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <button 
               onClick={() => setShowSopModal(false)}
+              title="Đóng (ESC)"
               style={{ position: 'absolute', top: '-40px', right: 0, background: 'rgba(0,0,0,0.5)', border: 'none', color: 'white', cursor: 'pointer', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}
             >
               <X size={20} />
