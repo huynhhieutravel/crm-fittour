@@ -28,15 +28,17 @@ const CreateLeadFromInboxModal = ({
 
   // Ref theo dõi việc khởi tạo để không bị reset khi background polling fetch tin nhắn mỗi 5s
   const hasInitializedRef = useRef(false);
+  const userManuallyChangedRef = useRef(false);
 
   // Gợi ý tour & BU tự động từ tin nhắn gần nhất — CHỈ CHẠY 1 LẦN khi mở modal
   useEffect(() => {
     if (!isOpen) {
       hasInitializedRef.current = false;
+      userManuallyChangedRef.current = false;
       return;
     }
 
-    if (!conversation || hasInitializedRef.current) return;
+    if (!conversation || hasInitializedRef.current || userManuallyChangedRef.current) return;
     hasInitializedRef.current = true;
 
     // Reset form
@@ -129,6 +131,7 @@ const CreateLeadFromInboxModal = ({
 
   // Khi chọn tour, tự động điền BU của tour nếu có
   const handleTourChange = (tourId) => {
+    userManuallyChangedRef.current = true;
     setSelectedTourId(tourId);
     if (tourId) {
       const found = tours.find(t => t.id === tourId || t.id === parseInt(tourId));
@@ -335,7 +338,10 @@ const CreateLeadFromInboxModal = ({
               </label>
               <select
                 value={selectedBU}
-                onChange={(e) => setSelectedBU(e.target.value)}
+                onChange={(e) => {
+                  userManuallyChangedRef.current = true;
+                  setSelectedBU(e.target.value);
+                }}
                 style={{
                   width: '100%',
                   height: '38px',
@@ -362,7 +368,10 @@ const CreateLeadFromInboxModal = ({
               <SearchableSelect
                 options={getSaleOptions(selectedBU)}
                 value={selectedSaleId}
-                onChange={(val) => setSelectedSaleId(val)}
+                onChange={(val) => {
+                  userManuallyChangedRef.current = true;
+                  setSelectedSaleId(val);
+                }}
                 placeholder="Chưa phân (Điều phối sau)"
                 emptyText="Không tìm thấy sale"
                 style={{ width: '100%' }}
@@ -378,7 +387,10 @@ const CreateLeadFromInboxModal = ({
             <textarea
               rows={3}
               value={consultationNote}
-              onChange={(e) => setConsultationNote(e.target.value)}
+              onChange={(e) => {
+                userManuallyChangedRef.current = true;
+                setConsultationNote(e.target.value);
+              }}
               placeholder="Ví dụ: Khách hỏi lịch khởi hành mùng 2 Tết, đi 4 người lớn..."
               style={{
                 width: '100%',
