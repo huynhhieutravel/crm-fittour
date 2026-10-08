@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UserPlus, Sparkles, AlertCircle, CheckCircle2, X, MessageSquare, Info } from 'lucide-react';
 import SearchableSelect from '../common/SearchableSelect';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 const CreateLeadFromInboxModal = ({
   isOpen,
@@ -22,9 +23,21 @@ const CreateLeadFromInboxModal = ({
   const [detectedSuggestion, setDetectedSuggestion] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Gợi ý tour & BU tự động từ tin nhắn gần nhất
+  // Phím tắt ESC để đóng modal
+  useEscapeKey(onClose, isOpen && !isSubmitting);
+
+  // Ref theo dõi việc khởi tạo để không bị reset khi background polling fetch tin nhắn mỗi 5s
+  const hasInitializedRef = useRef(false);
+
+  // Gợi ý tour & BU tự động từ tin nhắn gần nhất — CHỈ CHẠY 1 LẦN khi mở modal
   useEffect(() => {
-    if (!isOpen || !conversation) return;
+    if (!isOpen) {
+      hasInitializedRef.current = false;
+      return;
+    }
+
+    if (!conversation || hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
 
     // Reset form
     setSelectedTourId('');
@@ -244,6 +257,7 @@ const CreateLeadFromInboxModal = ({
           <button
             onClick={onClose}
             type="button"
+            title="Đóng (ESC)"
             style={{
               background: 'none',
               border: 'none',
