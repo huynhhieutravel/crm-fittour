@@ -314,7 +314,7 @@ const getGlobalCenterLeads = async (req, res) => {
              COALESCE(l.facebook_psid, l.zalo_uid) as source_id, l.facebook_psid, l.zalo_uid,
              COALESCE(u.full_name, u.username) as assigned_to_name,
              (SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED'))::numeric as total_spent,
-             CASE WHEN c.id IS NOT NULL THEN true ELSE false END as is_returning_customer,
+             CASE WHEN (COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')), 0) > 0 OR COALESCE(c.past_trip_count, 0) > 0) THEN true ELSE false END as is_returning_customer,
              (SELECT content FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC, id DESC LIMIT 1) as latest_note,
              (SELECT created_at FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC, id DESC LIMIT 1) as latest_note_at,
              (SELECT COALESCE(u2.full_name, u2.username) FROM lead_notes ln2 LEFT JOIN users u2 ON ln2.created_by = u2.id WHERE ln2.lead_id = l.id ORDER BY ln2.created_at DESC, ln2.id DESC LIMIT 1) as latest_note_author,

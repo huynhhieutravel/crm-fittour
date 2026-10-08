@@ -670,8 +670,8 @@ const InboxTab = ({ leads, fetchLeads, users = [], currentUser, bus = [], tours 
                           <h4 className={`name ${isSelected ? "active" : ""}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                             {conv.lead_name || "Khách vãng lai"}
                             {conv.is_returning_customer && (
-                                <span style={{ fontSize: '0.55rem', background: '#f3e8ff', color: '#9333ea', padding: '1px 4px', borderRadius: '4px', fontWeight: 800, whiteSpace: 'nowrap' }} title="Khách VVIP đã từng booking.">
-                                    🎖️ KHÁCH QUEN
+                                <span style={{ fontSize: '0.55rem', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '1px 4px', borderRadius: '4px', fontWeight: 800, whiteSpace: 'nowrap' }} title="Khách hàng cũ (đã từng đi tour / đã thanh toán booking)">
+                                    ⭐ KHÁCH CŨ
                                 </span>
                             )}
                           </h4>
@@ -760,8 +760,8 @@ const InboxTab = ({ leads, fetchLeads, users = [], currentUser, bus = [], tours 
                       <h2 className="chat-name" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', margin: 0 }}>
                         {selectedConv.lead_name || "Khách vãng lai"}
                         {selectedConv.is_returning_customer && (
-                            <span style={{ fontSize: '0.65rem', background: '#f3e8ff', color: '#9333ea', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, whiteSpace: 'nowrap' }} title="Khách VVIP đã từng booking.">
-                                🎖️ KHÁCH QUEN {selectedConv.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(selectedConv.total_spent)}đ)` : ''}
+                            <span style={{ fontSize: '0.65rem', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, whiteSpace: 'nowrap' }} title="Khách hàng cũ (đã từng đi tour / đã thanh toán booking)">
+                                ⭐ KHÁCH CŨ {selectedConv.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(selectedConv.total_spent)}đ)` : ''}
                             </span>
                         )}
                       </h2>

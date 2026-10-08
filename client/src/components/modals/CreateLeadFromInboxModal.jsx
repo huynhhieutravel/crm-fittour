@@ -250,10 +250,10 @@ const CreateLeadFromInboxModal = ({
             </div>
             <div>
               <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#0f172a' }}>
-                Tạo Lead Mới Từ Khách Cũ
+                Tạo Lead Mới Cho Khách Tương Tác Lại
               </h3>
               <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
-                Khách hàng: <strong style={{ color: '#0f172a' }}>{conversation?.lead_name || 'Khách Facebook'}</strong>
+                Khách tương tác: <strong style={{ color: '#0f172a' }}>{conversation?.lead_name || 'Khách Facebook'}</strong>
               </p>
             </div>
           </div>

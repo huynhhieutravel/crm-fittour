@@ -539,8 +539,8 @@ const ZaloSandboxTab = ({ setEditingLead, handleConvertLead, leads = [], users =
                       <div style={{ fontWeight: '600', color: selectedUser === profile.uid ? '#1d4ed8' : '#1f2937', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         {profile.name}
                         {lead && lead.is_returning_customer && (
-                            <span style={{ fontSize: '0.55rem', background: '#f3e8ff', color: '#9333ea', padding: '1px 4px', borderRadius: '4px', fontWeight: 800, whiteSpace: 'nowrap' }} title="Khách VVIP đã từng booking.">
-                                🎖️ KHÁCH QUEN
+                            <span style={{ fontSize: '0.55rem', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '1px 4px', borderRadius: '4px', fontWeight: 800, whiteSpace: 'nowrap' }} title="Khách hàng cũ (đã từng đi tour / đã thanh toán booking)">
+                                ⭐ KHÁCH CŨ
                             </span>
                         )}
                       </div>

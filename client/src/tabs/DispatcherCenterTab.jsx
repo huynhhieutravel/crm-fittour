@@ -406,11 +406,16 @@ const DispatcherCenterTab = ({
                 <td data-label="Thông Tin Lead">
                   <div className="lead-info">
                     <span className="lead-name" style={{ fontWeight: 700, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         {lead.name}
                         {lead.is_returning_customer && (
-                          <span style={{ fontSize: '0.65rem', background: '#f3e8ff', color: '#9333ea', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }} title="Khách VVIP đã từng booking.">
-                            🎖️ KHÁCH QUEN {lead.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(lead.total_spent)}đ)` : ''}
+                          <span style={{ fontSize: '0.65rem', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }} title="Khách hàng cũ (đã từng đi tour / đã thanh toán booking)">
+                            ⭐ KHÁCH CŨ {lead.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(lead.total_spent)}đ)` : ''}
+                          </span>
+                        )}
+                        {(lead.origin_tour_name || lead.origin_lead_id) && (
+                          <span style={{ fontSize: '0.65rem', background: '#fdf4ff', color: '#9333ea', border: '1px solid #f0abfc', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }} title="Khách tương tác lại từ Lead cũ">
+                            🔄 Tương tác lại {lead.origin_tour_name ? `(Từng hỏi: ${lead.origin_tour_name})` : (lead.origin_lead_id ? `Lead #${lead.origin_lead_id}` : '')}
                           </span>
                         )}
                       </div>

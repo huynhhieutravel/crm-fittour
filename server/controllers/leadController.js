@@ -30,11 +30,14 @@ exports.getAllLeads = async (req, res) => {
                    (SELECT created_at FROM lead_notes WHERE lead_id = l.id ORDER BY created_at DESC, id DESC LIMIT 1) as latest_note_at,
                    c.id as returning_customer_id,
                    (SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED'))::numeric as total_spent,
-                   CASE WHEN c.id IS NOT NULL THEN true ELSE false END as is_returning_customer
+                   CASE WHEN (COALESCE((SELECT SUM(total_price) FROM bookings WHERE customer_id = c.id AND booking_status NOT IN ('Huỷ', 'Hủy', 'Mới', 'CANCELLED', 'EXPIRED')), 0) > 0 OR COALESCE(c.past_trip_count, 0) > 0) THEN true ELSE false END as is_returning_customer,
+                   orig_tour.name as origin_tour_name
             FROM leads l 
             LEFT JOIN tour_templates tt ON l.tour_id = tt.id 
             LEFT JOIN users u ON l.assigned_to = u.id 
-            LEFT JOIN customers c ON l.customer_id = c.id
+            LEFT JOIN customers c ON (l.customer_id = c.id OR (l.phone IS NOT NULL AND l.phone != '' AND c.phone = l.phone))
+            LEFT JOIN leads orig_l ON l.origin_lead_id = orig_l.id
+            LEFT JOIN tour_templates orig_tour ON orig_l.tour_id = orig_tour.id
             ORDER BY l.created_at DESC
         `);
 
@@ -1809,8 +1812,8 @@ exports.recreateLeadFromConversation = async (req, res) => {
 
         // 9. Ghi 2 Lead notes liên kết hai chiều
         const staffName = req.user ? (req.user.full_name || req.user.username) : 'Hệ thống';
-        const noteForOldLead = `[Chuyển nhu cầu]: Khách quay lại hỏi tour mới -> Đã tách thành Lead Marketing #${newLead.id}${newTourName ? ' (Tour: ' + newTourName + ')' : ''}. Nhân viên thực hiện: ${staffName}`;
-        const noteForNewLead = `[Khách cũ quay lại]: Tiếp nhận từ Lead cũ #${oldLeadId}${oldTourName ? ' (Tour trước: ' + oldTourName + ')' : ''}. Nhân viên thực hiện: ${staffName}`;
+        const noteForOldLead = `[Chuyển nhu cầu]: Khách tương tác lại hỏi tour mới -> Đã tách thành Lead Marketing #${newLead.id}${newTourName ? ' (Tour: ' + newTourName + ')' : ''}. Nhân viên thực hiện: ${staffName}`;
+        const noteForNewLead = `[Khách tương tác lại]: Tiếp nhận từ Lead cũ #${oldLeadId}${oldTourName ? ' (Từng hỏi: ' + oldTourName + ')' : ''}. Nhân viên thực hiện: ${staffName}`;
 
         await client.query(
             `INSERT INTO lead_notes (lead_id, content, created_by, created_at) VALUES ($1, $2, $3, NOW())`,

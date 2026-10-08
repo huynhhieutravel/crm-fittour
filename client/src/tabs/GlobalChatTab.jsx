@@ -572,9 +572,43 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                                         {badgeConfig.label}
                                     </span>
                                 )}
-                                {notif.origin_tour_name ? (
-                                    <span style={{ fontSize: '10px', background: '#fdf4ff', color: '#9333ea', border: '1px solid #f0abfc', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
-                                        🎖️ Khách quay lại (Tour trước: {notif.origin_tour_name})
+                                {notif.is_returning_customer && (
+                                    <span 
+                                        style={{ 
+                                            fontSize: '10px', 
+                                            background: '#fef3c7', 
+                                            color: '#b45309', 
+                                            border: '1px solid #fde68a', 
+                                            padding: '2px 7px', 
+                                            borderRadius: '5px', 
+                                            fontWeight: '700', 
+                                            display: 'inline-flex', 
+                                            alignItems: 'center', 
+                                            gap: '3px',
+                                            boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
+                                        }} 
+                                        title="Khách hàng cũ (đã từng đi tour / đã thanh toán booking)"
+                                    >
+                                        ⭐ KHÁCH CŨ {notif.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(notif.total_spent)}đ)` : ''}
+                                    </span>
+                                )}
+                                {(notif.origin_tour_name || notif.origin_lead_id) ? (
+                                    <span 
+                                        style={{ 
+                                            fontSize: '10px', 
+                                            background: '#fdf4ff', 
+                                            color: '#9333ea', 
+                                            border: '1px solid #f0abfc', 
+                                            padding: '2px 7px', 
+                                            borderRadius: '5px', 
+                                            fontWeight: '700',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '3px'
+                                        }}
+                                        title={`Khách tương tác lại từ Lead ${notif.origin_lead_id ? '#' + notif.origin_lead_id : ''}`}
+                                    >
+                                        🔄 Khách tương tác lại {notif.origin_tour_name ? `(Từng hỏi: ${notif.origin_tour_name})` : (notif.origin_lead_id ? `từ Lead #${notif.origin_lead_id}` : '')}
                                     </span>
                                 ) : (notif.last_contacted_at && new Date(notif.last_contacted_at).toDateString() !== new Date(notif.created_at).toDateString() && (
                                     <span style={{ fontSize: '10px', background: '#fee2e2', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
@@ -638,11 +672,15 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                                         >
                                             {formatLeadMessage(notif.message, notif.bu_group, notif.name || notif.customer_name)}
                                         </div>
-                                        {notif.is_returning_customer && (
-                                            <span style={{ fontSize: '0.65rem', background: '#f3e8ff', color: '#9333ea', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }} title="Khách VVIP đã từng booking.">
-                                                🎖️ KHÁCH QUEN {notif.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(notif.total_spent)}đ)` : ''}
+                                        {notif.is_returning_customer ? (
+                                            <span style={{ fontSize: '0.65rem', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }} title="Khách hàng cũ (đã từng đi tour / đã thanh toán booking)">
+                                                ⭐ KHÁCH CŨ {notif.total_spent > 0 ? `(Đã chi ${new Intl.NumberFormat('vi-VN').format(notif.total_spent)}đ)` : ''}
                                             </span>
-                                        )}
+                                        ) : (notif.origin_tour_name || notif.origin_lead_id) ? (
+                                            <span style={{ fontSize: '0.65rem', background: '#fdf4ff', color: '#9333ea', border: '1px solid #f0abfc', padding: '2px 6px', borderRadius: '4px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }} title="Khách tương tác lại từ Lead cũ">
+                                                🔄 Tương tác lại Lead {notif.origin_lead_id ? `#${notif.origin_lead_id}` : ''}
+                                            </span>
+                                        ) : null}
                                     </div>
                                     
                                     {notif.type === 'NEW_LEAD' && (() => {
