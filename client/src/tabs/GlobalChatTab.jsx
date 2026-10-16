@@ -320,25 +320,38 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
     return (
         <div className="global-chat-container">
             <div style={{ background: '#fff', borderBottom: '1px solid #e0e0e0' }}>
-                <div className="global-chat-header">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4f46e5' }}>
-                            <ShieldAlert size={20} />
+                <div className="global-chat-header" style={{ padding: '12px 20px 0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                    <div className="global-chat-tabs-container" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                        <div 
+                            onClick={() => setActiveMainTab('chat')} 
+                            style={{ cursor: 'pointer', borderBottom: activeMainTab === 'chat' ? '2px solid #4f46e5' : '2px solid transparent', paddingBottom: '10px', color: activeMainTab === 'chat' ? '#4f46e5' : '#64748b', fontWeight: activeMainTab === 'chat' ? 600 : 500 }}
+                        >
+                            Giám Sát Cảnh Báo
                         </div>
-                        <div>
-                            <div className="global-chat-title-group">
-                                <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#111827' }}>Trung Tâm Điều Phối BU</h2>
-                                <button 
-                                    onClick={requestSubscription} 
-                                    disabled={isSubscribing}
-                                    style={{ padding: '4px 10px', fontSize: '12px', borderRadius: '20px', background: '#ecfdf5', color: '#10b981', border: '1px solid #a7f3d0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', outline: 'none' }}
-                                >
-                                    <Bell size={14} /> {isSubscribing ? 'Đang bật...' : 'Bật thông báo đẩy'}
-                                </button>
-                            </div>
+                        <div 
+                            onClick={() => setActiveMainTab('stats')} 
+                            style={{ cursor: 'pointer', borderBottom: activeMainTab === 'stats' ? '2px solid #4f46e5' : '2px solid transparent', paddingBottom: '10px', color: activeMainTab === 'stats' ? '#4f46e5' : '#64748b', fontWeight: activeMainTab === 'stats' ? 600 : 500, display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                            <BarChart3 size={16} /> Số Lượng Theo BU
                         </div>
+                        <button 
+                            onClick={requestSubscription} 
+                            disabled={isSubscribing}
+                            style={{ marginBottom: '8px', padding: '4px 10px', fontSize: '12px', borderRadius: '20px', background: '#ecfdf5', color: '#10b981', border: '1px solid #a7f3d0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', outline: 'none' }}
+                        >
+                            <Bell size={14} /> {isSubscribing ? 'Đang bật...' : 'Bật thông báo đẩy'}
+                        </button>
                     </div>
-                    <div className="global-chat-time-filters">
+
+                    <div className="global-chat-time-filters" style={{ paddingBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button 
+                            className="mobile-only-push-btn"
+                            onClick={requestSubscription} 
+                            disabled={isSubscribing}
+                            style={{ padding: '4px 10px', fontSize: '12px', borderRadius: '20px', background: '#ecfdf5', color: '#10b981', border: '1px solid #a7f3d0', cursor: 'pointer', alignItems: 'center', gap: '4px', outline: 'none', whiteSpace: 'nowrap' }}
+                        >
+                            <Bell size={14} /> {isSubscribing ? 'Đang bật...' : 'Bật thông báo đẩy'}
+                        </button>
                         {[
                             { id: 'today', label: 'Hôm nay' },
                             { id: 'yesterday', label: 'Hôm qua' },
@@ -351,21 +364,6 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
                         <MoreVertical size={20} style={{ cursor: 'pointer', color: '#6b7280', marginLeft: '8px' }} />
                     </div>
                 </div>
-
-                <div className="global-chat-tabs-container" style={{ display: 'flex', gap: '24px', padding: '0 20px' }}>
-                    <div 
-                        onClick={() => setActiveMainTab('chat')} 
-                        style={{ cursor: 'pointer', borderBottom: activeMainTab === 'chat' ? '2px solid #4f46e5' : '2px solid transparent', paddingBottom: '10px', color: activeMainTab === 'chat' ? '#4f46e5' : '#64748b', fontWeight: activeMainTab === 'chat' ? 600 : 500 }}
-                    >
-                        Giám Sát Cảnh Báo
-                    </div>
-                    <div 
-                        onClick={() => setActiveMainTab('stats')} 
-                        style={{ cursor: 'pointer', borderBottom: activeMainTab === 'stats' ? '2px solid #4f46e5' : '2px solid transparent', paddingBottom: '10px', color: activeMainTab === 'stats' ? '#4f46e5' : '#64748b', fontWeight: activeMainTab === 'stats' ? 600 : 500, display: 'flex', alignItems: 'center', gap: '6px' }}
-                    >
-                        <BarChart3 size={16} /> Số Lượng Theo BU
-                    </div>
-                </div>
             </div>
 
             {activeMainTab === 'stats' ? (
@@ -375,63 +373,62 @@ const GlobalChatTab = ({ users = [], tours = [], leads = [], bus = [], setEditin
             ) : (
                 <>
                     <div className="filter-options-container" style={{ marginTop: 0, padding: '12px 20px', background: '#fff', borderBottom: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {/* Hàng 1: Lọc Đơn vị BU & Tìm kiếm */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                                <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>Đơn vị BU:</span>
-                                {[
-                                    { id: 'all', label: 'Tất cả BU' },
-                                    { id: 'unassigned_bu', label: 'Chưa phân BU' },
-                                    { id: 'BU1', label: 'BU1' },
-                                    { id: 'BU2', label: 'BU2' },
-                                    { id: 'BU3', label: 'BU3' },
-                                    { id: 'BU4', label: 'BU4' },
-                                    { id: 'BU5', label: 'BU5' }
-                                ].map(p => (
-                                    <button 
-                                        key={p.id} 
-                                        className={filterBU === p.id ? 'active' : ''} 
-                                        onClick={() => setFilterBU(p.id)} 
-                                        style={{ 
-                                            padding: '4px 12px', 
-                                            borderRadius: '20px', 
-                                            border: '1px solid',
-                                            borderColor: filterBU === p.id ? '#8b5cf6' : '#e2e8f0', 
-                                            background: filterBU === p.id ? '#8b5cf6' : '#fff', 
-                                            color: filterBU === p.id ? '#fff' : '#475569', 
-                                            fontSize: '12px', 
-                                            fontWeight: filterBU === p.id ? '600' : '500',
-                                            cursor: 'pointer', 
-                                            outline: 'none',
-                                            transition: 'all 0.15s'
-                                        }}
-                                    >
-                                        {p.label}
-                                    </button>
-                                ))}
-                            </div>
+                        {/* Hàng 1: Lọc BU & Tìm kiếm */}
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                            {[
+                                { id: 'all', label: 'All BU' },
+                                { id: 'unassigned_bu', label: 'Chưa phân BU' },
+                                { id: 'BU1', label: 'BU1' },
+                                { id: 'BU2', label: 'BU2' },
+                                { id: 'BU3', label: 'BU3' },
+                                { id: 'BU4', label: 'BU4' },
+                                { id: 'BU5', label: 'BU5' }
+                            ].map(p => (
+                                <button 
+                                    key={p.id} 
+                                    className={filterBU === p.id ? 'active' : ''} 
+                                    onClick={() => setFilterBU(p.id)} 
+                                    style={{ 
+                                        padding: '4px 12px', 
+                                        borderRadius: '20px', 
+                                        border: '1px solid',
+                                        borderColor: filterBU === p.id ? '#8b5cf6' : '#e2e8f0', 
+                                        background: filterBU === p.id ? '#8b5cf6' : '#fff', 
+                                        color: filterBU === p.id ? '#fff' : '#475569', 
+                                        fontSize: '12px', 
+                                        fontWeight: filterBU === p.id ? '600' : '500',
+                                        cursor: 'pointer', 
+                                        outline: 'none',
+                                        transition: 'all 0.15s'
+                                    }}
+                                >
+                                    {p.label}
+                                </button>
+                            ))}
                             
+                            {/* Thanh tìm kiếm ngay kế BU5 */}
                             <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
                                 <Search size={14} style={{ position: 'absolute', left: '10px', color: '#94a3b8' }} />
                                 <input 
                                     type="text" 
+                                    className="filter-search-input"
                                     placeholder="Tìm theo tên, SĐT, BU..." 
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    style={{ padding: '6px 10px 6px 28px', borderRadius: '20px', border: '1px solid #e2e8f0', fontSize: '12px', width: '220px', outline: 'none' }}
+                                    style={{ padding: '5px 10px 5px 28px', borderRadius: '20px', border: '1px solid #e2e8f0', fontSize: '12px', width: '200px', outline: 'none' }}
                                 />
                             </div>
                         </div>
 
-                        {/* Hàng 2: Lọc Phân bổ Sale */}
+                        {/* Hàng 2: Lọc Sale */}
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '6px', borderTop: '1px dashed #f1f5f9' }}>
-                            <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>Phân bổ Sale:</span>
+                            <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>Sale:</span>
                             {[
-                                { id: 'all', label: 'Tất cả trạng thái' },
+                                { id: 'all', label: 'All Trạng Thái' },
                                 { id: 'has_phone', label: '📞 Đã có SĐT' },
-                                { id: 'unassigned', label: '⚡ Chưa phân Sale (Chờ nhận)' },
+                                { id: 'unassigned', label: '⚡ Chưa phân Sale' },
                                 { id: 'my_leads', label: '👤 Lead của tôi' },
-                                { id: 'assigned', label: '✓ Đã có Sale tiếp nhận' }
+                                { id: 'assigned', label: '✓ Đã có Sale' }
                             ].map(p => {
                                 const isHasPhone = p.id === 'has_phone';
                                 const isActive = isHasPhone 

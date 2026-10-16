@@ -147,6 +147,10 @@
     display: none;
 }
 
+.mobile-only-push-btn {
+    display: none !important;
+}
+
 @media (max-width: 768px) {
     .global-chat-container {
         padding-bottom: 60px !important;
@@ -159,7 +163,7 @@
     .global-chat-header {
         flex-direction: column;
         align-items: flex-start;
-        padding: 15px;
+        padding: 10px 12px 6px 12px !important;
     }
     
     .global-chat-title-group {
@@ -175,6 +179,19 @@
     
     .global-chat-tabs-container {
         display: none !important;
+    }
+
+    .mobile-only-push-btn {
+        display: inline-flex !important;
+    }
+
+    .filter-options-container {
+        padding: 8px 12px !important;
+        gap: 6px !important;
+    }
+
+    .filter-search-input {
+        width: 160px !important;
     }
     
     .mobile-bottom-nav {
