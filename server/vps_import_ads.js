@@ -5,9 +5,9 @@ const fs = require('fs');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 const YEAR = 2026;
-const MONTH = 9;
-const WEEK = 4;
-const FILE_NAME = 'qc-t4-t9-2026.xlsx';
+const MONTH = 10;
+const WEEK = 2;
+const FILE_NAME = 'qc-t2-t10-2026.xlsx';
 
 async function run() {
   const pool = new Pool({
