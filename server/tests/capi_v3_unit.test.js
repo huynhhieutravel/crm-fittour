@@ -221,7 +221,7 @@ describe('Meta CAPI Business Messaging v3 - Unit Tests', () => {
     assert.equal(classifyMetaError(null), 'FAILED_RETRYABLE');
   });
 
-  test('10. Purchase Eligibility: Tuyệt đối KHÔNG coi "Xác nhận" đơn thuần là đã mua hàng', () => {
+  test('10. Purchase Eligibility (Nguyên tắc Kế toán Thực thu): BẮT BUỘC paid > 0, từ chối mọi trạng thái nếu paid = 0', () => {
     // 10a. Trạng thái 'Xác nhận' đơn thuần, chưa thanh toán (paid = 0) -> BẮT BUỘC TỪ CHỐI
     const bookingXacNhanChuaCoc = {
       booking_code: 'BK-CONFIRMED-UNPAID',
@@ -241,25 +241,36 @@ describe('Meta CAPI Business Messaging v3 - Unit Tests', () => {
     };
     assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingConfirmedNoMoney), false);
 
-    // 10c. Khách đã nộp cọc thực tế (paid > 0) -> ĐẠT TIÊU CHUẨN
+    // 10c. ĐẶC BIỆT: Nhãn 'Đã đặt cọc' nhưng nhân viên chưa nhập phiếu thu (paid = 0) -> BẮT BUỘC TỪ CHỐI
+    const bookingStatusDaDatCocPaidZero = {
+      booking_code: 'BK-STATUS-DEPOSIT-ZERO',
+      booking_status: 'Đã đặt cọc',
+      paid: 0,
+      total_price: 35000000
+    };
+    assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingStatusDaDatCocPaidZero), false, 'Đã đặt cọc nhưng paid = 0 TUYỆT ĐỐI KHÔNG coi là Purchase');
+
+    // 10d. ĐẶC BIỆT: Nhãn 'Đã thanh toán' hoặc 'Hoàn thành' nhưng chưa có tiền thực thu (paid = 0) -> BẮT BUỘC TỪ CHỐI
+    const bookingStatusPaidZero = {
+      booking_code: 'BK-STATUS-PAID-ZERO',
+      booking_status: 'Đã thanh toán',
+      payment_status: 'paid',
+      paid: 0,
+      total_price: 40000000
+    };
+    assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingStatusPaidZero), false, 'Đã thanh toán nhưng paid = 0 TUYỆT ĐỐI KHÔNG coi là Purchase');
+
+    // 10e. ĐỦ ĐIỀU KIỆN: Khách nộp cọc thực tế (paid = 10,000,000 > 0) kèm trạng thái 'Đã đặt cọc' hoặc 'Xác nhận' -> ĐẠT TIÊU CHUẨN
     const bookingDaDatCocTien = {
       booking_code: 'BK-DEPOSIT-PAID',
-      booking_status: 'Xác nhận',
+      booking_status: 'Đã đặt cọc',
       payment_status: 'partial',
       paid: 10000000,
       total_price: 35000000
     };
-    assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingDaDatCocTien), true, 'Có tiền thanh toán thực tế đạt chuẩn Purchase');
+    assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingDaDatCocTien), true, 'Có tiền thực thu > 0 và trạng thái Đã đặt cọc đạt chuẩn Purchase');
 
-    // 10d. Trạng thái booking_status = 'Đã đặt cọc' -> ĐẠT TIÊU CHUẨN
-    const bookingStatusDaDatCoc = {
-      booking_code: 'BK-STATUS-DEPOSIT',
-      booking_status: 'Đã đặt cọc',
-      total_price: 35000000
-    };
-    assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingStatusDaDatCoc), true);
-
-    // 10e. Trạng thái thanh toán 'paid' hoặc 'Hoàn thành' -> ĐẠT TIÊU CHUẨN
+    // 10f. ĐỦ ĐIỀU KIỆN: Thanh toán đủ thực tế (paid = 35,000,000 > 0) kèm trạng thái 'paid' -> ĐẠT TIÊU CHUẨN
     const bookingDaThanhToanDu = {
       booking_code: 'BK-FULLY-PAID',
       booking_status: 'Hoàn thành',
@@ -267,7 +278,7 @@ describe('Meta CAPI Business Messaging v3 - Unit Tests', () => {
       paid: 35000000,
       total_price: 35000000
     };
-    assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingDaThanhToanDu), true);
+    assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingDaThanhToanDu), true, 'Có tiền thực thu > 0 và thanh toán đủ đạt chuẩn Purchase');
   });
 
   test('11. Meta Token Permissions: Xác định đầy đủ các quyền bắt buộc (page_events, pages_messaging, ads_management)', () => {
@@ -289,6 +300,61 @@ describe('Meta CAPI Business Messaging v3 - Unit Tests', () => {
     const incompleteList = ['ads_management', 'pages_messaging'];
     const missing = REQUIRED_PERMISSIONS.filter(p => !incompleteList.includes(p));
     assert.deepEqual(missing, ['page_events'], 'Phải phát hiện chính xác nếu thiếu page_events');
+  });
+
+  test('12. Phân biệt kênh chuyển đổi: Từ chối Business Messaging khi giao dịch từ Website, Chuyển khoản, Walk-in kể cả khi Customer có PSID', async () => {
+    const customerWithOldPsid = {
+      id: 88,
+      name: 'Nguyễn Văn A',
+      phone: '0901234567',
+      facebook_psid: '100293848572910',
+      facebook_page_id: '107694084435854'
+    };
+
+    // 12a. Đơn hàng từ Website (booking_source: 'Website')
+    const websiteBooking = {
+      id: 501,
+      booking_code: 'BK-WEB-501',
+      booking_source: 'Website',
+      paid: 20000000,
+      total_price: 20000000,
+      payment_status: 'paid'
+    };
+    const resWeb = await metaCapiV3.enqueuePurchase(websiteBooking, customerWithOldPsid, null);
+    assert.equal(resWeb.enqueued, false);
+    assert.equal(resWeb.reason, 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER', 'Đơn hàng Website không được tự động gắn Business Messaging');
+    assert.equal(resWeb.channel, 'Website');
+
+    // 12b. Đơn hàng chuyển khoản trực tiếp (booking_source: 'Chuyển khoản')
+    const transferBooking = {
+      id: 502,
+      booking_code: 'BK-BANK-502',
+      booking_source: 'Chuyển khoản',
+      paid: 50000000,
+      total_price: 50000000,
+      payment_status: 'paid'
+    };
+    const resBank = await metaCapiV3.enqueuePurchase(transferBooking, customerWithOldPsid, null);
+    assert.equal(resBank.enqueued, false);
+    assert.equal(resBank.reason, 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER');
+
+    // 12c. Đơn hàng từ Lead Tiktok / Zalo
+    const tiktokLead = {
+      id: 301,
+      source: 'Tiktok',
+      phone: '0901234567'
+    };
+    const tiktokBooking = {
+      id: 503,
+      booking_code: 'BK-TIKTOK-503',
+      paid: 15000000,
+      total_price: 30000000,
+      booking_status: 'Đã đặt cọc',
+      payment_status: 'partial'
+    };
+    const resTiktok = await metaCapiV3.enqueuePurchase(tiktokBooking, customerWithOldPsid, tiktokLead);
+    assert.equal(resTiktok.enqueued, false);
+    assert.equal(resTiktok.reason, 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER');
   });
 
 });

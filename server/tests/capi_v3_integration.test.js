@@ -134,11 +134,19 @@ describe('Meta CAPI Business Messaging v3 - Integration Tests (Outbox, Concurren
   test('5. Purchase: Phân luồng chính xác, chỉ nhận Booking từ khách Messenger và đủ điều kiện thanh toán', async () => {
     // 5a. Khách ngoài kênh Messenger -> Từ chối an toàn
     const nonMessengerCustomer = { id: 999, name: 'Khách Walk-in', phone: '0912345678', facebook_psid: null };
-    const dummyBooking = { id: TEST_BOOKING_ID, booking_code: 'BK-TEST-INT', total_price: '50000000', paid: '20000000' };
+    const dummyBooking = { 
+      id: TEST_BOOKING_ID, 
+      booking_code: 'BK-TEST-INT', 
+      booking_source: 'Messenger',
+      booking_status: 'Đã đặt cọc',
+      payment_status: 'partial',
+      total_price: '50000000', 
+      paid: '20000000' 
+    };
 
     const resNonMessenger = await metaCapiV3.enqueuePurchase(dummyBooking, nonMessengerCustomer);
     assert.equal(resNonMessenger.enqueued, false);
-    assert.equal(resNonMessenger.reason, 'NOT_MESSENGER_PURCHASE');
+    assert.equal(resNonMessenger.reason, 'MISSING_OR_INVALID_MESSENGER_IDENTIFIERS');
 
     // 5b. Khách Messenger nhưng Booking chỉ mới 'Xác nhận' đơn thuần, CHƯA NỘP TIỀN -> BẮT BUỘC TỪ CHỐI
     const messengerCustomer = { 
@@ -151,6 +159,7 @@ describe('Meta CAPI Business Messaging v3 - Integration Tests (Outbox, Concurren
     const unconfirmedBooking = { 
       id: TEST_BOOKING_ID, 
       booking_code: 'BK-UNPAID', 
+      booking_source: 'Messenger',
       booking_status: 'Xác nhận', 
       payment_status: 'unpaid',
       total_price: '50000000', 
@@ -160,7 +169,35 @@ describe('Meta CAPI Business Messaging v3 - Integration Tests (Outbox, Concurren
     assert.equal(resUnconfirmed.enqueued, false);
     assert.equal(resUnconfirmed.reason, 'NOT_ELIGIBLE_TRANSACTION', 'Booking Xác nhận đơn thuần chưa có tiền phải bị từ chối');
 
-    // 5c. Khách Messenger và Booking đã có thanh toán/cọc thực tế -> Chấp thuận
+    // 5c. Nhãn trạng thái 'Đã đặt cọc' hoặc 'Đã thanh toán' nhưng paid = 0 -> BẮT BUỘC TỪ CHỐI
+    const fakePaidBooking = {
+      id: TEST_BOOKING_ID,
+      booking_code: 'BK-FAKE-PAID',
+      booking_source: 'Messenger',
+      booking_status: 'Đã thanh toán',
+      payment_status: 'paid',
+      total_price: '50000000',
+      paid: 0
+    };
+    const resFakePaid = await metaCapiV3.enqueuePurchase(fakePaidBooking, messengerCustomer);
+    assert.equal(resFakePaid.enqueued, false);
+    assert.equal(resFakePaid.reason, 'NOT_ELIGIBLE_TRANSACTION', 'Trạng thái Đã thanh toán nhưng paid = 0 tuyệt đối không được coi là Purchase');
+
+    // 5d. Khách hàng có PSID nhưng Booking phát sinh từ Website -> BẮT BUỘC TỪ CHỐI KHỎI BUSINESS MESSAGING
+    const crossChannelBooking = {
+      id: TEST_BOOKING_ID,
+      booking_code: 'BK-CROSS-WEB',
+      booking_source: 'Website',
+      booking_status: 'Đã thanh toán',
+      payment_status: 'paid',
+      total_price: '50000000',
+      paid: '50000000'
+    };
+    const resCross = await metaCapiV3.enqueuePurchase(crossChannelBooking, messengerCustomer);
+    assert.equal(resCross.enqueued, false);
+    assert.equal(resCross.reason, 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER');
+
+    // 5e. Khách Messenger và Booking đã có thanh toán/cọc thực tế (paid > 0) -> Chấp thuận
     const resPurchase = await metaCapiV3.enqueuePurchase(dummyBooking, messengerCustomer);
     assert.equal(resPurchase.enqueued, true);
     assert.equal(resPurchase.eventId, `fittour_bm_pur_booking_${TEST_BOOKING_ID}`);
@@ -170,7 +207,7 @@ describe('Meta CAPI Business Messaging v3 - Integration Tests (Outbox, Concurren
       [TEST_BOOKING_ID]
     );
     const purPayload = typeof checkPurchase.rows[0].payload === 'string' ? JSON.parse(checkPurchase.rows[0].payload) : checkPurchase.rows[0].payload;
-    assert.equal(purPayload.custom_data.value, 50000000);
+    assert.equal(purPayload.custom_data.value, 50000000, 'Giá trị đo lường theo chính sách contract_value trong DB');
   });
 
   test('6. Concurrency Test: 2 Worker chạy đồng thời (FOR UPDATE SKIP LOCKED) không bao giờ bị conflict hay double-process', async () => {

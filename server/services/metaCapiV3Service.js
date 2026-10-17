@@ -519,52 +519,104 @@ async function enqueueQualifiedLead(lead, client = null) {
 
 /**
  * Kiểm định điều kiện giao dịch Purchase thực tế cho Booking
- * YÊU CẦU NGHIÊM NGẶT:
- * - Trạng thái 'Xác nhận' (CONFIRMED) đơn thuần KHÔNG được coi là đã mua hàng (tránh ghi nhận khi chưa thanh toán).
- * - BẮT BUỘC phải có thanh toán thực tế (paid > 0) HOẶC trạng thái phản ánh việc thu tiền/đặt cọc thực tế:
- *   + booking_status IN ('Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành')
- *   + HOẶC payment_status IN ('paid', 'partial', 'Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành')
+ * YÊU CẦU NGHIÊM NGẶT THEO NGUYÊN TẮC KẾ TOÁN THỰC THU:
+ * 1. BẮT BUỘC: Tiền thực thu (paid hoặc paid_amount) phải > 0.
+ *    - Tuyệt đối KHÔNG ghi nhận Purchase khi paid <= 0 bất kể nhãn trạng thái là gì!
+ *    - Tránh tình trạng nhân viên chỉ đổi nhãn trạng thái 'Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành' mà chưa có phiếu thu/tiền thực.
+ * 2. Phải có trạng thái xác nhận hợp lệ đi kèm (không nằm trong trạng thái hủy/hoàn tiền).
  */
 function isEligiblePurchaseBooking(booking) {
   if (!booking) return false;
 
+  // 1. RÀNG BUỘC CỐT TỬ: BẮT BUỘC tiền thực thu phải > 0
   const paidAmount = Number(booking.paid || booking.paid_amount || 0);
-  if (paidAmount > 0) return true;
+  if (paidAmount <= 0) {
+    return false;
+  }
 
+  // 2. Không nằm trong trạng thái hủy hoặc hoàn tiền
+  const INVALID_STATUSES = ['Đã hủy', 'Hủy', 'CANCELLED', 'FAILED', 'Refunded', 'Đã hoàn tiền', 'Chờ xử lý', 'Chưa thanh toán'];
+  if (booking.booking_status && INVALID_STATUSES.includes(booking.booking_status)) {
+    return false;
+  }
+  if (booking.payment_status && INVALID_STATUSES.includes(booking.payment_status)) {
+    return false;
+  }
+
+  // 3. Phải có trạng thái giao dịch hợp lệ đi kèm với số tiền đã thu
   const VALID_PAYMENT_STATUSES = ['paid', 'partial', 'Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành', 'PAID', 'DEPOSITED'];
-  if (booking.payment_status && VALID_PAYMENT_STATUSES.includes(booking.payment_status)) {
+  const VALID_BOOKING_STATUSES = ['Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành', 'Xác nhận'];
+
+  const hasValidPaymentStatus = booking.payment_status && VALID_PAYMENT_STATUSES.includes(booking.payment_status);
+  const hasValidBookingStatus = booking.booking_status && VALID_BOOKING_STATUSES.includes(booking.booking_status);
+
+  // Nếu không set status nhưng đã có tiền thu thực tế > 0 và không bị hủy -> vẫn hợp lệ
+  if (!booking.booking_status && !booking.payment_status) {
     return true;
   }
 
-  const VALID_PAID_BOOKING_STATUSES = ['Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành'];
-  if (booking.booking_status && VALID_PAID_BOOKING_STATUSES.includes(booking.booking_status)) {
-    return true;
-  }
-
-  return false;
+  return (hasValidPaymentStatus || hasValidBookingStatus);
 }
 
 /**
  * Enqueue sự kiện Purchase cho Booking hợp lệ
+ * PHÂN BIỆT RÕ RÀNG GIỮA HỘI THOẠI MESSENGER VÀ CÁC KÊNH KHÁC:
+ * - Chỉ gửi Meta Business Messaging nếu đơn hàng THỰC SỰ phát sinh từ cuộc hội thoại Messenger.
+ * - KHÔNG tự động gắn business_messaging cho mọi Booking có PSID nếu giao dịch xuất phát từ Website, Chuyển khoản, Zalo, Tiktok, Walk-in.
  */
 async function enqueuePurchase(booking, customer, lead = null, client = null) {
-  // 1. Kiểm tra điều kiện giao dịch tài chính thực tế
+  // 1. Kiểm tra điều kiện giao dịch tài chính thực tế (BẮT BUỘC paid > 0)
   if (!isEligiblePurchaseBooking(booking)) {
-    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} chưa đủ điều kiện giao dịch Purchase (Status: ${booking.booking_status}, Payment: ${booking.payment_status}, Paid: ${booking.paid || 0}). Trạng thái 'Xác nhận' đơn thuần không được tính là Purchase.`);
+    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} chưa đủ điều kiện giao dịch Purchase (Status: ${booking.booking_status}, Payment: ${booking.payment_status}, Paid: ${booking.paid || 0}). Yêu cầu paid > 0 và trạng thái tài chính hợp lệ.`);
     return { enqueued: false, reason: 'NOT_ELIGIBLE_TRANSACTION' };
   }
 
-  // 2. Chỉ gửi Business Messaging nếu khách có nguồn gốc Messenger hợp lệ
+  // 2. Phân biệt kênh chuyển đổi (Attribution Channel)
+  const bookingSource = (booking.booking_source || booking.source || '').trim();
+  const leadSource = (lead && lead.source ? lead.source : '').trim();
+
+  // Danh sách các kênh rõ ràng không phải Messenger
+  const NON_MESSENGER_CHANNELS = [
+    'website', 'web', 'landing_page', 'form', 'hotline', 
+    'walk-in', 'trực tiếp', 'chuyển khoản', 'ngân hàng', 
+    'zalo', 'tiktok', 'referral', 'đối tác', 'khác'
+  ];
+
+  if (bookingSource && NON_MESSENGER_CHANNELS.includes(bookingSource.toLowerCase())) {
+    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} có kênh giao dịch là '${bookingSource}'. Bỏ qua Business Messaging (Cross-channel protection).`);
+    return { enqueued: false, reason: 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER', channel: bookingSource };
+  }
+
+  if (lead && leadSource && NON_MESSENGER_CHANNELS.includes(leadSource.toLowerCase())) {
+    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} gắn với Lead từ kênh '${leadSource}'. Bỏ qua Business Messaging.`);
+    return { enqueued: false, reason: 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER', channel: leadSource };
+  }
+
+  // Xác nhận nguồn gốc Messenger:
+  // Hoặc bookingSource là 'Messenger'/'Facebook'
+  // Hoặc lead gắn kèm có leadSource là 'Messenger'/'Facebook' và có cặp PSID + Page ID
+  const isMessengerAttributed = 
+    ['messenger', 'facebook', 'chat'].includes(bookingSource.toLowerCase()) ||
+    ['messenger', 'facebook'].includes(leadSource.toLowerCase()) ||
+    (lead && lead.facebook_psid && lead.facebook_page_id);
+
+  if (!isMessengerAttributed) {
+    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} không phát sinh từ hội thoại Messenger. Bỏ qua luồng Business Messaging.`);
+    return { enqueued: false, reason: 'NOT_MESSENGER_PURCHASE', channel: bookingSource || leadSource || 'non_messenger' };
+  }
+
+  // 3. Kiểm tra cặp định danh PSID & Page ID
   const psid = (lead && lead.facebook_psid) || (customer && customer.facebook_psid);
   const pageId = (lead && lead.facebook_page_id) || (customer && customer.facebook_page_id);
 
-  if (!psid || !pageId) {
-    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} không thuộc kênh Messenger (Thiếu PSID hoặc Page ID). Bỏ qua luồng Business Messaging.`);
-    return { enqueued: false, reason: 'NOT_MESSENGER_PURCHASE', channel: 'non_messenger' };
+  if (!psid || !pageId || isInvalidIdentifier(psid) || isInvalidIdentifier(pageId)) {
+    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} thiếu PSID hoặc Page ID hợp lệ. Bỏ qua luồng Business Messaging.`);
+    return { enqueued: false, reason: 'MISSING_OR_INVALID_MESSENGER_IDENTIFIERS', channel: 'messenger_without_psid' };
   }
 
-  // Đọc chính sách đo lường doanh thu từ settings
-  const valueSource = (await getSetting('meta_capi_purchase_value_source')) || 'contract_value';
+  // 4. Đo lường doanh thu thực thu:
+  // Đọc chính sách từ settings: 'paid_amount' (mặc định cho thực thu) hoặc 'contract_value'
+  const valueSource = (await getSetting('meta_capi_purchase_value_source')) || 'paid_amount';
   let purchaseValue = 0;
 
   if (valueSource === 'contract_value') {

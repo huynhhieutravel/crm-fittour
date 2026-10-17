@@ -132,6 +132,11 @@ router.post('/test-capi', auth, admin, async (req, res) => {
         } else {
             res.status(400).json({ success: false, error: 'Có lỗi khi gửi một hoặc nhiều sự kiện', details: results });
         }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // 4. Xác minh quyền Meta Token thực tế (Admin only, Không in secret)
 router.get('/verify-meta-permissions', auth, admin, async (req, res) => {
     try {
