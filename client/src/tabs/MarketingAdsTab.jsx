@@ -98,7 +98,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
       const sub = p.get('subtab') || p.get('tab');
       if (['social-overview', 'monthly', 'progress', 'weekly', 'planning'].includes(sub)) return sub;
     }
-    return 'social-overview';
+    return 'monthly';
   });
 
   const [selectedPlanId, setSelectedPlanId] = useState(() => {
@@ -130,7 +130,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
       setActiveSubTab(sub);
       window.scrollTo({ top: 0, behavior: 'instant' });
     } else if (!sub) {
-      setActiveSubTab('social-overview');
+      setActiveSubTab('monthly');
     }
     const plan = p.get('plan');
     setSelectedPlanId(plan || null);
@@ -878,29 +878,31 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
         </a>
       </div>
       <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', marginBottom: '1.5rem', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        <button 
-          onClick={() => { setActiveSubTab('social-overview'); setSelectedPlanId(null); }}
-          style={{ 
-            background: activeSubTab === 'social-overview' ? '#f0f9ff' : 'none', 
-            border: 'none', 
-            borderBottom: activeSubTab === 'social-overview' ? '3px solid #0284c7' : '3px solid transparent', 
-            padding: '12px 10px', 
-            borderRadius: '8px 8px 0 0',
-            fontSize: '15px', 
-            fontWeight: 700, 
-            color: activeSubTab === 'social-overview' ? '#0284c7' : '#0f172a', 
-            cursor: 'pointer', 
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}
-        >
-          <span>🌐📱 TỔNG HỢP MXH (T9)</span>
-          <span style={{ fontSize: '0.68rem', background: '#0284c7', color: '#ffffff', padding: '2px 7px', borderRadius: '10px', fontWeight: 800 }}>
-            3 Kênh
-          </span>
-        </button>
+        {activeSubTab === 'social-overview' && (
+          <button 
+            onClick={() => { setActiveSubTab('social-overview'); setSelectedPlanId(null); }}
+            style={{ 
+              background: '#f0f9ff', 
+              border: 'none', 
+              borderBottom: '3px solid #0284c7', 
+              padding: '12px 10px', 
+              borderRadius: '8px 8px 0 0',
+              fontSize: '15px', 
+              fontWeight: 700, 
+              color: '#0284c7', 
+              cursor: 'pointer', 
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <span>🌐📱 TỔNG HỢP MXH (T9)</span>
+            <span style={{ fontSize: '0.68rem', background: '#0284c7', color: '#ffffff', padding: '2px 7px', borderRadius: '10px', fontWeight: 800 }}>
+              3 Kênh
+            </span>
+          </button>
+        )}
         <button 
           onClick={() => setActiveSubTab('monthly')}
           style={{ background: 'none', border: 'none', borderBottom: activeSubTab === 'monthly' ? '3px solid #3b82f6' : '3px solid transparent', padding: '12px 0', fontSize: '15px', fontWeight: 600, color: activeSubTab === 'monthly' ? '#1e293b' : '#64748b', cursor: 'pointer', transition: 'all 0.2s' }}

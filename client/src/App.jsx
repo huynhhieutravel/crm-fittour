@@ -2818,13 +2818,13 @@ function AppContent() {
           }}
         >
           <div 
-            className={`submenu-item ${activeTab === 'marketing-ads' ? 'active' : ''}`} 
+            className={`submenu-item ${activeTab === 'marketing-ads' && (!location.search.includes('subtab=') || location.search.includes('subtab=monthly') || location.search.includes('subtab=weekly') || location.search.includes('subtab=progress')) ? 'active' : ''}`} 
             onClick={() => { navigate('/marketing-ads'); setHoveredMenu(null); }} 
           >
             Quản trị Meta Ads (Data/KPI)
           </div>
           <div 
-            className="submenu-item" 
+            className={`submenu-item ${activeTab === 'marketing-ads' && location.search.includes('subtab=planning') ? 'active' : ''}`} 
             onClick={() => { navigate('/marketing-ads?subtab=planning'); setHoveredMenu(null); }} 
             style={{ 
               color: '#38bdf8', 
@@ -2864,7 +2864,7 @@ function AppContent() {
             📈 Tổng Quan Marketing
           </div>
           <div 
-            className={`submenu-item ${activeTab === 'marketing-ads' && (location.search.includes('social-overview') || !location.search.includes('subtab=')) ? 'active' : ''}`} 
+            className={`submenu-item ${activeTab === 'marketing-ads' && location.search.includes('social-overview') ? 'active' : ''}`} 
             onClick={() => { 
               navigate('/marketing-ads?subtab=social-overview'); 
               setActiveTab('marketing-ads'); 
