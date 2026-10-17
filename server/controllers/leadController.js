@@ -2,6 +2,7 @@ const db = require('../db');
 const { logActivity } = require('../utils/logger');
 const { convertLeadToCustomer } = require('../services/conversionService');
 const metaCapi = require('../services/metaCapiService');
+const metaCapiV3 = require('../services/metaCapiV3Service');
 const telegramService = require('../services/telegramService');
 const { getDataScope } = require("../middleware/teamScope");
 const { getUserMergedPerms } = require("../middleware/permCheck");
@@ -625,26 +626,42 @@ exports.updateLead = async (req, res) => {
               });
               
               (async () => {
-                let tourName = null;
-                let tourPrice = 0;
-                
-                // If closing a deal or having a tour_id, try to fetch info for CAPI Value
-                const tourId = updatedLead.tour_id;
-                if (tourId) {
-                  try {
-                    const tourRes = await db.query('SELECT name, price FROM tour_templates WHERE id = $1', [tourId]);
-                    if (tourRes.rows.length > 0) {
-                      tourName = tourRes.rows[0].name;
-                      tourPrice = tourRes.rows[0].price;
+                // 1. CAPI v3: Đánh giá tiêu chí QualifiedLead (Multi-criteria)
+                // Purchase TUYỆT ĐỐI không kích hoạt tại đây. Toàn bộ sự kiện Purchase được quản lý độc quyền qua bookingController khi có giao dịch thực tế.
+                try {
+                  const qualEval = metaCapiV3.evaluateSalesQualification(updatedLead, updates);
+                  if (qualEval.isQualified) {
+                    await metaCapiV3.enqueueQualifiedLead(updatedLead);
+                    if (!updatedLead.is_sales_qualified) {
+                      await db.query('UPDATE leads SET is_sales_qualified = TRUE, sales_qualified_at = NOW() WHERE id = $1', [updatedLead.id]).catch(() => {});
                     }
-                  } catch (err) {
-                    console.error('[CAPI] Error fetching tour info for event:', err.message);
                   }
+                } catch (err) {
+                  console.error('[CAPI-v3] Lỗi đánh giá/enqueue QualifiedLead:', err.message);
                 }
 
-                metaCapi.sendStatusChangeEvent(updatedLead, updates.status, tourName, tourPrice).catch(err =>
-                  console.error('[CAPI] Error sending status change event:', err.message)
-                );
+                // 2. Legacy CAPI: Phân luồng an toàn (Không gửi Purchase từ Lead)
+                if (updates.status !== 'Chốt đơn') {
+                  let tourName = null;
+                  let tourPrice = 0;
+                  
+                  const tourId = updatedLead.tour_id;
+                  if (tourId) {
+                    try {
+                      const tourRes = await db.query('SELECT name, price FROM tour_templates WHERE id = $1', [tourId]);
+                      if (tourRes.rows.length > 0) {
+                        tourName = tourRes.rows[0].name;
+                        tourPrice = tourRes.rows[0].price;
+                      }
+                    } catch (err) {
+                      console.error('[CAPI] Error fetching tour info for event:', err.message);
+                    }
+                  }
+
+                  metaCapi.sendStatusChangeEvent(updatedLead, updates.status, tourName, tourPrice).catch(err =>
+                    console.error('[CAPI] Error sending status change event:', err.message)
+                  );
+                }
               })();
             }
 

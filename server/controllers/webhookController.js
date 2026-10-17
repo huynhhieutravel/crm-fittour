@@ -44,7 +44,8 @@ exports.handleWebhookEvent = async (req, res) => {
 
     if (body.object === 'page') {
         for (const entry of body.entry) {
-            console.log(`[WEBHOOK] Processing entry ID: ${entry.id}`);
+            const entryPageId = entry.id;
+            console.log(`[WEBHOOK] Processing entry ID (Page ID): ${entryPageId}`);
             
             // Handle Messenger Conversations (Primary or Standby)
             const webhooksToProcess = [];
@@ -67,7 +68,8 @@ exports.handleWebhookEvent = async (req, res) => {
 
                     if (webhook_event.sender && webhook_event.sender.id) {
                         const sender_psid = webhook_event.sender.id;
-                        console.log(`[WEBHOOK] Sender PSID: ${sender_psid}`);
+                        const pageId = entryPageId || webhook_event.recipient?.id;
+                        console.log(`[WEBHOOK] Sender PSID: ${sender_psid} | Target Page ID: ${pageId}`);
                         
                         if (webhook_event.message) {
                             // Kiểm tra nếu đây là echo (tin nhắn page gửi khách) → lưu vào messages
@@ -94,6 +96,16 @@ exports.handleWebhookEvent = async (req, res) => {
                                 const echoConvRes = await db.query('SELECT id, lead_id FROM conversations WHERE external_id = $1', [recipientPsid]);
                                 if (echoConvRes.rows.length > 0) {
                                     const echoConvId = echoConvRes.rows[0].id;
+                                    const echoLeadId = echoConvRes.rows[0].lead_id;
+
+                                    // Ghi nhận Page ID nếu trước đó chưa có
+                                    if (pageId) {
+                                        db.query('UPDATE conversations SET facebook_page_id = $1 WHERE id = $2 AND facebook_page_id IS NULL', [pageId, echoConvId]).catch(() => {});
+                                        if (echoLeadId) {
+                                            db.query('UPDATE leads SET facebook_page_id = $1 WHERE id = $2 AND facebook_page_id IS NULL', [pageId, echoLeadId]).catch(() => {});
+                                        }
+                                    }
+
                                     // Chống trùng lặp tin nhắn vừa được gửi qua Send API từ CRM hoặc duplicate echo webhook
                                     const isCrmSent = webhook_event.message.metadata === 'CRM_SENT';
                                     let isDuplicate = isCrmSent;
@@ -237,7 +249,8 @@ exports.handleWebhookEvent = async (req, res) => {
                                     await facebookService.handleMessage(sender_psid, webhook_event.message, isStandby, adContextText, {
                                         adPhotoUrl,
                                         adTitle,
-                                        attachmentImageUrl
+                                        attachmentImageUrl,
+                                        pageId
                                     });
                                     console.log('[WEBHOOK] ✅ handleMessage completed');
                                 } catch (err) {
@@ -245,8 +258,8 @@ exports.handleWebhookEvent = async (req, res) => {
                                 }
                             }
                         } else if (webhook_event.postback) {
-                            console.log(`[WEBHOOK] Postback payload: ${webhook_event.postback.payload}`);
-                            facebookService.handlePostback(sender_psid, webhook_event.postback)
+                            console.log(`[WEBHOOK] Postback payload: ${webhook_event.postback.payload} | Page ID: ${pageId}`);
+                            facebookService.handlePostback(sender_psid, webhook_event.postback, pageId)
                                 .then(() => console.log('[WEBHOOK] ✅ handlePostback completed'))
                                 .catch(err => console.error('[WEBHOOK] ❌ handlePostback error:', err.message, err.stack));
                         }

@@ -364,11 +364,15 @@ server.listen(PORT, () => {
         const { startWebhookOutboxEngine } = require('./cron/webhookOutboxEngine');
         startWebhookOutboxEngine();
 
+        // Start Meta CAPI v3 Outbox Engine
+        const { startMetaCapiOutboxEngine } = require('./cron/metaCapiOutboxEngine');
+        startMetaCapiOutboxEngine();
+
         // Start Zalo OA Token Auto-Refresh Cron Engine
         const { startZaloTokenRefreshCron } = require('./cron/zaloTokenRefreshEngine');
         startZaloTokenRefreshCron();
         
-        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, Monthly Reviews, Monthly Dashboard, Reservation Release, Idempotency Cleanup, Webhook Outbox, Zalo Token Refresh).');
+        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, Monthly Reviews, Monthly Dashboard, Reservation Release, Idempotency Cleanup, Webhook Outbox, Meta CAPI Outbox, Zalo Token Refresh).');
 
         // Start Email Listeners for Event-Driven Architecture
         const { registerEmailListeners } = require('./listeners/emailListener');

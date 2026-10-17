@@ -5,13 +5,32 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const metaCapi = require('../services/metaCapiService');
 
-// 1. Lấy tất cả cài đặt (Admin/Manager only)
+const SENSITIVE_KEYS = [
+    'meta_capi_access_token',
+    'meta_page_access_token',
+    'meta_system_user_token',
+    'meta_app_secret',
+    'zalo_access_token',
+    'zalo_refresh_token',
+    'zalo_secret_key',
+    'gemini_api_key',
+    'jwt_secret'
+];
+const MASK_PLACEHOLDER = '••••••••••••••••';
+
+// 1. Lấy tất cả cài đặt (Admin/Manager only) - Che toàn bộ token nhạy cảm
 router.get('/', auth, admin, async (req, res) => {
     try {
         const result = await db.query('SELECT key, value, description FROM settings');
         const settings = {};
         result.rows.forEach(row => {
-            settings[row.key] = row.value;
+            if (SENSITIVE_KEYS.includes(row.key)) {
+                const hasValue = Boolean(row.value && String(row.value).trim() !== '');
+                settings[row.key] = hasValue ? MASK_PLACEHOLDER : '';
+                settings[`${row.key}_configured`] = hasValue;
+            } else {
+                settings[row.key] = row.value;
+            }
         });
         res.json(settings);
     } catch (err) {
@@ -54,11 +73,17 @@ router.post('/visa-checklist', auth, admin, async (req, res) => {
     }
 });
 
-// 2. Cập nhật cài đặt
+// 2. Cập nhật cài đặt - Bảo vệ chống ghi đè rỗng/mask vào token bí mật
 router.post('/update', auth, admin, async (req, res) => {
     const { settings } = req.body; // { key: value, ... }
     try {
         for (const [key, value] of Object.entries(settings)) {
+            // Guard: Nếu là sensitive key và giá trị nhận được là chuỗi mask hoặc rỗng thì KHÔNG ghi đè vào DB!
+            if (SENSITIVE_KEYS.includes(key)) {
+                if (!value || typeof value !== 'string' || value.startsWith('••••') || value === '__CONFIGURED__') {
+                    continue; // Skip update to preserve secret
+                }
+            }
             await db.query(
                 'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()',
                 [key, value]

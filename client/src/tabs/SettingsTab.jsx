@@ -175,7 +175,14 @@ const SettingsTab = ({
             </div>
           </div>
           <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%' }}>
-            <label>ACCESS TOKEN (CONVERSIONS API)</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+              <label style={{ margin: 0 }}>ACCESS TOKEN (CONVERSIONS API)</label>
+              {metaSettings?.meta_capi_access_token_configured && (
+                <span style={{ fontSize: '0.75rem', background: '#ecfdf5', color: '#059669', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                  🔒 Đã cấu hình & Bảo vệ
+                </span>
+              )}
+            </div>
             <input 
               className="modal-input" 
               placeholder="Paste token dài được tạo từ Events Manager..."
@@ -183,32 +190,84 @@ const SettingsTab = ({
               onChange={e => setMetaSettings({...metaSettings, meta_capi_access_token: e.target.value})} 
             />
           </div>
-          <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <label style={{ marginBottom: 0 }}>BẬT CONVERSIONS API (CAPI)</label>
-            <div 
-              onClick={() => setMetaSettings({...metaSettings, meta_capi_enabled: metaSettings?.meta_capi_enabled === 'true' ? 'false' : 'true'})}
-              style={{ 
-                width: '50px', 
-                height: '24px', 
-                background: metaSettings?.meta_capi_enabled === 'true' ? '#22c55e' : '#cbd5e1', 
-                borderRadius: '12px', 
-                position: 'relative', 
-                cursor: 'pointer',
-                transition: 'all 0.3s'
-              }}
-            >
-              <div style={{ 
-                width: '18px', 
-                height: '18px', 
-                background: 'white', 
-                borderRadius: '50%', 
-                position: 'absolute', 
-                top: '3px', 
-                left: metaSettings?.meta_capi_enabled === 'true' ? '29px' : '3px',
-                transition: 'all 0.3s'
-              }} />
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem', width: '100%' }}>
+            {/* Toggle Legacy CAPI */}
+            <div className="modal-form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>CAPI Cơ bản (v2)</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Luồng chuyển đổi tiêu chuẩn</div>
+              </div>
+              <div 
+                onClick={() => setMetaSettings({...metaSettings, meta_capi_enabled: metaSettings?.meta_capi_enabled === 'true' ? 'false' : 'true'})}
+                style={{ 
+                  width: '46px', 
+                  height: '22px', 
+                  background: metaSettings?.meta_capi_enabled === 'true' ? '#22c55e' : '#cbd5e1', 
+                  borderRadius: '11px', 
+                  position: 'relative', 
+                  cursor: 'pointer',
+                  transition: 'all 0.3s'
+                }}
+              >
+                <div style={{ 
+                  width: '16px', 
+                  height: '16px', 
+                  background: 'white', 
+                  borderRadius: '50%', 
+                  position: 'absolute', 
+                  top: '3px', 
+                  left: metaSettings?.meta_capi_enabled === 'true' ? '27px' : '3px',
+                  transition: 'all 0.3s'
+                }} />
+              </div>
+            </div>
+
+            {/* Toggle Business Messaging v3 */}
+            <div className="modal-form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#eff6ff', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e40af' }}>Business Messaging v3</div>
+                <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Click-to-Messenger + Outbox</div>
+              </div>
+              <div 
+                onClick={() => setMetaSettings({...metaSettings, meta_capi_business_messaging_v3_enabled: metaSettings?.meta_capi_business_messaging_v3_enabled === 'true' ? 'false' : 'true'})}
+                style={{ 
+                  width: '46px', 
+                  height: '22px', 
+                  background: metaSettings?.meta_capi_business_messaging_v3_enabled === 'true' ? '#3b82f6' : '#cbd5e1', 
+                  borderRadius: '11px', 
+                  position: 'relative', 
+                  cursor: 'pointer',
+                  transition: 'all 0.3s'
+                }}
+              >
+                <div style={{ 
+                  width: '16px', 
+                  height: '16px', 
+                  background: 'white', 
+                  borderRadius: '50%', 
+                  position: 'absolute', 
+                  top: '3px', 
+                  left: metaSettings?.meta_capi_business_messaging_v3_enabled === 'true' ? '27px' : '3px',
+                  transition: 'all 0.3s'
+                }} />
+              </div>
             </div>
           </div>
+
+          {/* Chính sách đo lường Purchase */}
+          <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%' }}>
+            <label>CHÍNH SÁCH ĐO LƯỜNG DOANH THU PURCHASE</label>
+            <select 
+              className="modal-input"
+              value={metaSettings?.meta_capi_purchase_value_source || 'contract_value'}
+              onChange={e => setMetaSettings({...metaSettings, meta_capi_purchase_value_source: e.target.value})}
+            >
+              <option value="contract_value">Giá trị Tổng hợp đồng (total_price) — Khuyên dùng cho Tour FIT</option>
+              <option value="paid_value">Số tiền Thực thu / Đã thanh toán (paid)</option>
+            </select>
+          </div>
+
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button className="login-btn" onClick={handleUpdateSettings}>LƯU CẤU HÌNH</button>
             <button className="login-btn" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #16a34a' }} onClick={() => handleTestMeta('capi')}>KIỂM TRA CAPI</button>
@@ -234,7 +293,14 @@ const SettingsTab = ({
             Cấu hình Cổng nối (Webhook) để tự động đưa Lead mới (từ Quảng cáo/Tin nhắn) vào CRM.
           </p>
           <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%' }}>
-            <label>PAGE ACCESS TOKEN (MÃ TRUY CẬP TRANG)</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+              <label style={{ margin: 0 }}>PAGE ACCESS TOKEN (MÃ TRUY CẬP TRANG)</label>
+              {metaSettings?.meta_page_access_token_configured && (
+                <span style={{ fontSize: '0.75rem', background: '#ecfdf5', color: '#059669', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                  🔒 Đã cấu hình & Bảo vệ
+                </span>
+              )}
+            </div>
             <input 
               className="modal-input" 
               placeholder="Paste EAAP... token được tạo từ Graph API Explorer..."

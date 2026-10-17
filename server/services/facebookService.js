@@ -1,6 +1,7 @@
 const axios = require('axios');
 const db = require('../db');
 const metaCapi = require('./metaCapiService');
+const metaCapiV3 = require('./metaCapiV3Service');
 const notificationController = require('../controllers/notificationController');
 const telegramService = require('./telegramService');
 const PAGE_ACCESS_TOKEN_ENV = process.env.FB_PAGE_TOKEN;
@@ -377,11 +378,11 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
     let response;
 
     const messageText = (received_message?.text || '').trim();
-    const { adPhotoUrl, adTitle, attachmentImageUrl } = extraContext || {};
+    const { adPhotoUrl, adTitle, attachmentImageUrl, pageId } = extraContext || {};
     const hasImage = Boolean(attachmentImageUrl || adPhotoUrl);
 
     if (messageText || hasImage) {
-        console.log(`Received ${isStandby ? 'standby' : 'primary'} message from ${sender_psid}: "${messageText}"${hasImage ? ' (with image)' : ''}`);
+        console.log(`Received ${isStandby ? 'standby' : 'primary'} message from ${sender_psid} on page ${pageId || 'unknown'}: "${messageText}"${hasImage ? ' (with image)' : ''}`);
         
         const previewLastMessage = messageText || (adPhotoUrl ? (adTitle ? `[Quảng cáo] ${adTitle}` : '[Ảnh quảng cáo]') : '[Hình ảnh]');
         const textForClassification = messageText || adContextText || adTitle || '';
@@ -406,10 +407,10 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                 console.error('Error fetching messenger profile:', err.response ? err.response.data : err.message);
             }
 
-            // 3. Nếu chưa có, tạo Lead mới (với facebook_psid, last_contacted_at và dò lại Khách VIP)
+            // 3. Nếu chưa có, tạo Lead mới (với facebook_psid, facebook_page_id, last_contacted_at và dò lại Khách VIP)
             const leadResult = await db.query(
-                'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id) VALUES ($1, $2, $3, $4::text, NOW(), (SELECT id FROM customers WHERE facebook_psid = $5::text LIMIT 1)) RETURNING *',
-                [senderName, 'Messenger', 'Mới', sender_psid, sender_psid]
+                'INSERT INTO leads (name, source, status, facebook_psid, facebook_page_id, last_contacted_at, customer_id) VALUES ($1, $2, $3, $4::text, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $6::text LIMIT 1)) RETURNING *',
+                [senderName, 'Messenger', 'Mới', sender_psid, pageId || null, sender_psid]
             );
             leadId = leadResult.rows[0].id;
 
@@ -443,20 +444,37 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                 telegramService.sendOrphanLeadNotification(leadResult.rows[0]).catch(console.error);
             }
 
-            // Fire CAPI Lead event (async, non-blocking)
-            metaCapi.sendLeadEvent(leadResult.rows[0]).catch(err => 
-                console.error('[CAPI] Error sending Lead event:', err.message)
-            );
+            // Phân luồng CAPI an toàn: Nếu v3 bật thì enqueue LeadSubmitted vào Outbox, ngược lại dùng legacy CAPI
+            (async () => {
+                try {
+                    const isV3On = await metaCapiV3.getSetting('meta_capi_business_messaging_v3_enabled');
+                    if (isV3On === 'true') {
+                        await metaCapiV3.enqueueLeadSubmitted(leadResult.rows[0]);
+                    } else {
+                        await metaCapi.sendLeadEvent(leadResult.rows[0]);
+                    }
+                } catch (capiErr) {
+                    console.error('[CAPI] Lỗi gửi tín hiệu Lead:', capiErr.message);
+                }
+            })();
 
-            // 3. Tạo Hội thoại mới
+            // 3. Tạo Hội thoại mới (lưu Page ID)
             const newConv = await db.query(
-                'INSERT INTO conversations (source, external_id, lead_id, last_message) VALUES ($1, $2, $3, $4) RETURNING id',
-                ['messenger', sender_psid, leadId, previewLastMessage]
+                'INSERT INTO conversations (source, external_id, lead_id, last_message, facebook_page_id) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+                ['messenger', sender_psid, leadId, previewLastMessage, pageId || null]
             );
             conversationId = newConv.rows[0].id;
         } else {
             conversationId = convResult.rows[0].id;
             let currentLeadId = convResult.rows[0].lead_id;
+
+            // Bổ sung facebook_page_id cho conversation và lead nếu trước đó chưa có
+            if (pageId) {
+                db.query('UPDATE conversations SET facebook_page_id = $1 WHERE id = $2 AND facebook_page_id IS NULL', [pageId, conversationId]).catch(() => {});
+                if (currentLeadId) {
+                    db.query('UPDATE leads SET facebook_page_id = $1 WHERE id = $2 AND facebook_page_id IS NULL', [pageId, currentLeadId]).catch(() => {});
+                }
+            }
 
             // Kiểm tra trạng thái Lead hiện tại của cuộc hội thoại
             const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [currentLeadId]);
@@ -476,8 +494,8 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                 if (['Chốt đơn', 'Thất bại'].includes(oldLead.status) || isExpired) {
                     console.log(`[WEBHOOK] Khách quen nhắn lại (Lead đã đóng hoặc quá 14 ngày): ${oldLead.name}. Đang tạo Lead mới...`);
                     const newLeadResult = await db.query(
-                        'INSERT INTO leads (name, source, status, facebook_psid, last_contacted_at, customer_id, phone, email) VALUES ($1, $2, $3, $4::text, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4::text LIMIT 1), $5, $6) RETURNING *',
-                        [oldLead.name, 'Messenger', 'Mới', sender_psid, oldLead.phone, oldLead.email]
+                        'INSERT INTO leads (name, source, status, facebook_psid, facebook_page_id, last_contacted_at, customer_id, phone, email) VALUES ($1, $2, $3, $4::text, $5, NOW(), (SELECT id FROM customers WHERE facebook_psid = $4::text LIMIT 1), $6, $7) RETURNING *',
+                        [oldLead.name, 'Messenger', 'Mới', sender_psid, pageId || null, oldLead.phone, oldLead.email]
                     );
                     leadId = newLeadResult.rows[0].id;
 
@@ -504,7 +522,19 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                     // Nối hội thoại cũ sang Lead mới tinh này
                     await db.query('UPDATE conversations SET lead_id = $1, last_message = $2, updated_at = NOW() WHERE id = $3', [leadId, previewLastMessage, conversationId]);
 
-                    metaCapi.sendLeadEvent(newLeadResult.rows[0]).catch(err => console.error(err));
+                    // Phân luồng CAPI cho lead mở lại
+                    (async () => {
+                        try {
+                            const isV3On = await metaCapiV3.getSetting('meta_capi_business_messaging_v3_enabled');
+                            if (isV3On === 'true') {
+                                await metaCapiV3.enqueueLeadSubmitted(newLeadResult.rows[0]);
+                            } else {
+                                await metaCapi.sendLeadEvent(newLeadResult.rows[0]);
+                            }
+                        } catch (capiErr) {
+                            console.error('[CAPI] Lỗi gửi tín hiệu Re-opened Lead:', capiErr.message);
+                        }
+                    })();
                 } else {
                     // LUỒNG VẪN ĐANG ACTIVE → Cập nhật ngày tháng và Re-open nếu đang 'Không phản hồi'
                     leadId = currentLeadId;
@@ -983,10 +1013,10 @@ exports.syncRecentConversations = async (limitCount = 25) => {
 
                 if (convRes.rows.length === 0) {
                     console.log(`[FB POLLER] Phát hiện khách mới chat với Fanpage: ${userName}. Đang tạo Lead...`);
-                    // Tạo Lead mới tinh (Kèm kiểm tra PSID dò Khách Quen)
+                    // Tạo Lead mới tinh (Kèm kiểm tra PSID dò Khách Quen và lưu Page ID)
                     const leadResult = await db.query(
-                        'INSERT INTO leads (name, source, status, facebook_psid, consultation_note, last_contacted_at, customer_id, phone, fb_conversation_link, created_at) VALUES ($1, $2, $3, $4::text, $5, $9, (SELECT id FROM customers WHERE facebook_psid = $6::text OR phone = $7::text LIMIT 1), $7::text, $8, $9) RETURNING *',
-                        [userName, 'Messenger', 'Mới', psid, firstMessageNote, psid, extractedPhone, fbLink, fbCreatedAt]
+                        'INSERT INTO leads (name, source, status, facebook_psid, facebook_page_id, consultation_note, last_contacted_at, customer_id, phone, fb_conversation_link, created_at) VALUES ($1, $2, $3, $4::text, $5, $6, $10, (SELECT id FROM customers WHERE facebook_psid = $7::text OR phone = $8::text LIMIT 1), $8::text, $9, $10) RETURNING *',
+                        [userName, 'Messenger', 'Mới', psid, pageId || null, firstMessageNote, psid, extractedPhone, fbLink, fbCreatedAt]
                     );
 
                     currentLeadId = leadResult.rows[0].id;
@@ -1026,8 +1056,8 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                     // --- LUÔN tạo Conversation để tránh tạo Lead trùng lặp mỗi lần poll ---
                     const messageForConv = actualMessageText || '(Khách mới nhắn tin)';
                     const newConv = await db.query(
-                        'INSERT INTO conversations (source, external_id, lead_id, last_message) VALUES ($1, $2, $3, $4) RETURNING id',
-                        ['messenger', psid, currentLeadId, messageForConv]
+                        'INSERT INTO conversations (source, external_id, lead_id, last_message, facebook_page_id) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+                        ['messenger', psid, currentLeadId, messageForConv, pageId || null]
                     );
                     const conversationId = newConv.rows[0].id;
                     // Lưu TẤT CẢ messages từ cuộc hội thoại (cả customer + page, bao gồm cả ảnh)
@@ -1044,14 +1074,31 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                         );
                     }
 
-                    // Kích hoạt CAPI
-                    metaCapi.sendLeadEvent(leadResult.rows[0]).catch(err => 
-                        console.error('[CAPI] Lỗi khi gửi sự kiện Lead từ Poller:', err.message)
-                    );
+                    // Phân luồng CAPI từ Poller
+                    (async () => {
+                        try {
+                            const isV3On = await metaCapiV3.getSetting('meta_capi_business_messaging_v3_enabled');
+                            if (isV3On === 'true') {
+                                await metaCapiV3.enqueueLeadSubmitted(leadResult.rows[0]);
+                            } else {
+                                await metaCapi.sendLeadEvent(leadResult.rows[0]);
+                            }
+                        } catch (capiErr) {
+                            console.error('[CAPI] Lỗi khi gửi sự kiện Lead từ Poller:', capiErr.message);
+                        }
+                    })();
                 } else {
                     // ĐÃ CÓ CONVERSATION
                     const oldConv = convRes.rows[0];
                     currentLeadId = oldConv.lead_id;
+
+                    // Bổ sung Page ID nếu thiếu
+                    if (pageId) {
+                        db.query('UPDATE conversations SET facebook_page_id = $1 WHERE id = $2 AND facebook_page_id IS NULL', [pageId, oldConv.id]).catch(() => {});
+                        if (currentLeadId) {
+                            db.query('UPDATE leads SET facebook_page_id = $1 WHERE id = $2 AND facebook_page_id IS NULL', [pageId, currentLeadId]).catch(() => {});
+                        }
+                    }
 
                     // Nếu có SĐT mới, cập nhật vào Lead nếu đang trống
                     if (extractedPhone) {

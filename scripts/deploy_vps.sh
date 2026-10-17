@@ -37,6 +37,12 @@ if [ -d "data_import" ]; then
     rsync -avz --exclude '.env' --exclude '.DS_Store' data_import/ ${VPS_USER}@${VPS_IP}:${VPS_PATH}/data_import/
 fi
 
+# 3.1 Deploy MCP Server (Thư mục mcp-server)
+if [ -d "mcp-server" ]; then
+    echo "📦 Đang đẩy thư mục 'mcp-server'..."
+    rsync -avz --exclude '.env' --exclude 'node_modules' --exclude '.DS_Store' mcp-server/ ${VPS_USER}@${VPS_IP}:${VPS_PATH}/mcp-server/
+fi
+
 # 4. Chạy lệnh phân quyền (Fix lỗi Nginx 500 & 403)
 echo "🔒 Đang thiết lập quyền sở hữu Nginx (www-data)..."
 ssh ${VPS_USER}@${VPS_IP} << 'EOF'
@@ -55,6 +61,12 @@ ssh ${VPS_USER}@${VPS_IP} << 'EOF'
         echo "Phân quyền cho thư mục data_import..."
         chown -R www-data:www-data /var/www/fittour-crm/data_import
         chmod -R 755 /var/www/fittour-crm/data_import
+    fi
+
+    if [ -d "/var/www/fittour-crm/mcp-server" ]; then
+        echo "Phân quyền cho thư mục mcp-server..."
+        chown -R www-data:www-data /var/www/fittour-crm/mcp-server
+        chmod -R 755 /var/www/fittour-crm/mcp-server
     fi
 
     echo "✅ Phân quyền hoàn tất!"

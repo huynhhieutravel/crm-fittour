@@ -5,6 +5,7 @@ const { getUserMergedPerms } = require('../middleware/permCheck');
 const { emitEvent } = require('../utils/eventBus');
 const SystemEvents = require('../constants/SystemEvents');
 const zaloZnsService = require('../services/zaloZnsService');
+const metaCapiV3 = require('../services/metaCapiV3Service');
 
 exports.getAllBookings = async (req, res) => {
     try {
@@ -175,6 +176,27 @@ exports.createBooking = async (req, res) => {
             total_price: newBooking.total_price,
             created_at: new Date().toISOString()
         });
+
+        // CAPI v3: Trigger Purchase if booking is created in confirmed/paid status
+        const CONFIRMED_BOOKING_STATUSES = ['Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành', 'Xác nhận', 'CONFIRMED'];
+        if (CONFIRMED_BOOKING_STATUSES.includes(newBooking.booking_status)) {
+            (async () => {
+                try {
+                    const custRes = await db.query('SELECT * FROM customers WHERE id = $1', [newBooking.customer_id]);
+                    if (custRes.rows.length > 0) {
+                        const customer = custRes.rows[0];
+                        let lead = null;
+                        if (customer.lead_id) {
+                            const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
+                            if (leadRes.rows.length > 0) lead = leadRes.rows[0];
+                        }
+                        await metaCapiV3.enqueuePurchase(newBooking, customer, lead);
+                    }
+                } catch (e) {
+                    console.error('[CAPI-v3] Lỗi enqueue Purchase từ createBooking:', e.message);
+                }
+            })();
+        }
 
         res.status(201).json(newBooking);
     } catch (err) {
@@ -352,6 +374,27 @@ exports.updateBooking = async (req, res) => {
                 booking_code: updatedBooking.booking_code,
                 updated_at: new Date().toISOString()
             });
+
+            // CAPI v3: Trigger Purchase if booking reaches confirmed/paid status
+            const CONFIRMED_BOOKING_STATUSES = ['Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành', 'Xác nhận', 'CONFIRMED'];
+            if (CONFIRMED_BOOKING_STATUSES.includes(updatedBooking.booking_status)) {
+                (async () => {
+                    try {
+                        const custRes = await db.query('SELECT * FROM customers WHERE id = $1', [updatedBooking.customer_id]);
+                        if (custRes.rows.length > 0) {
+                            const customer = custRes.rows[0];
+                            let lead = null;
+                            if (customer.lead_id) {
+                                const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
+                                if (leadRes.rows.length > 0) lead = leadRes.rows[0];
+                            }
+                            await metaCapiV3.enqueuePurchase(updatedBooking, customer, lead);
+                        }
+                    } catch (e) {
+                        console.error('[CAPI-v3] Lỗi enqueue Purchase từ updateBooking:', e.message);
+                    }
+                })();
+            }
 
             res.json(updatedBooking);
         } else {
