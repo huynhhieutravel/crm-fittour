@@ -148,4 +148,25 @@ router.get('/verify-meta-permissions', auth, admin, async (req, res) => {
     }
 });
 
+// 5. Kiểm thử chuỗi 3 sự kiện (LeadSubmitted, QualifiedLead, Purchase) trên môi trường cách ly
+// KHÔNG TẠO BOOKING GIẢ, KHÔNG TẠO PHIẾU THU GIẢ TRONG PRODUCTION DB
+router.post('/test-business-messaging-isolated', auth, admin, async (req, res) => {
+    try {
+        const { test_event_code, page_id, psid } = req.body;
+        const metaCapiV3 = require('../services/metaCapiV3Service');
+        const result = await metaCapiV3.sendIsolatedTestEvents({
+            testEventCode: test_event_code,
+            pageId: page_id,
+            customPsid: psid
+        });
+        if (result.success) {
+            res.json(result);
+        } else {
+            res.status(400).json(result);
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 module.exports = router;

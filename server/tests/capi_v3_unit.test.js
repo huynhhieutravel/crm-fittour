@@ -281,29 +281,30 @@ describe('Meta CAPI Business Messaging v3 - Unit Tests', () => {
     assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingDaThanhToanDu), true, 'Có tiền thực thu > 0 và thanh toán đủ đạt chuẩn Purchase');
   });
 
-  test('11. Meta Token Permissions: Xác định đầy đủ các quyền bắt buộc (page_events, pages_messaging, ads_management)', () => {
-    // Kiểm tra cấu trúc kiểm tra quyền
-    const sampleGrantedList = ['ads_management', 'pages_messaging', 'pages_show_list', 'page_events'];
-    const REQUIRED_PERMISSIONS = ['ads_management', 'pages_messaging', 'page_events'];
+  test('11. Meta Token Permissions: Phân biệt quyền CAPI Business Messaging (page_events) với quyền Ads API (ads_management)', () => {
+    // 11a. Trường hợp Token có page_events nhưng KHÔNG CÓ ads_management:
+    // CAPI Business Messaging VẪN ĐỦ ĐIỀU KIỆN GỬI SỰ KIỆN (is_capi_ready = true)
+    const tokenCapiOnly = ['page_events', 'pages_messaging', 'pages_show_list'];
+    const CAPI_REQUIRED = ['page_events'];
+    const missingCapi = CAPI_REQUIRED.filter(p => !tokenCapiOnly.includes(p));
+    const isCapiReady = missingCapi.length === 0;
 
-    const hasPageEvents = sampleGrantedList.includes('page_events');
-    const hasPagesMessaging = sampleGrantedList.includes('pages_messaging');
-    const hasAdsManagement = sampleGrantedList.includes('ads_management');
-    const isFullyQualified = REQUIRED_PERMISSIONS.every(p => sampleGrantedList.includes(p));
+    assert.equal(isCapiReady, true, 'Có page_events là đủ điều kiện gửi CAPI Business Messaging');
+    assert.deepEqual(missingCapi, []);
 
-    assert.equal(hasPageEvents, true, 'Quyền page_events là bắt buộc cho Business Messaging CAPI');
-    assert.equal(hasPagesMessaging, true, 'Quyền pages_messaging là bắt buộc cho Webhook/PSID');
-    assert.equal(hasAdsManagement, true, 'Quyền ads_management là bắt buộc cho Dataset link');
-    assert.equal(isFullyQualified, true);
+    // 11b. Quyền Ads API (ads_management, ads_read) được đánh giá riêng, không chặn CAPI
+    const ADS_API_PERMS = ['ads_management', 'ads_read'];
+    const hasAdsAccess = tokenCapiOnly.some(p => ADS_API_PERMS.includes(p));
+    assert.equal(hasAdsAccess, false, 'Token không có ads_management vẫn không làm mất quyền gửi CAPI');
 
-    // Trường hợp thiếu page_events -> cảnh báo thiếu quyền
-    const incompleteList = ['ads_management', 'pages_messaging'];
-    const missing = REQUIRED_PERMISSIONS.filter(p => !incompleteList.includes(p));
-    assert.deepEqual(missing, ['page_events'], 'Phải phát hiện chính xác nếu thiếu page_events');
+    // 11c. Trường hợp thiếu page_events -> Bắt buộc báo thiếu quyền CAPI
+    const tokenWithoutPageEvents = ['ads_management', 'pages_messaging'];
+    const missingInToken = CAPI_REQUIRED.filter(p => !tokenWithoutPageEvents.includes(p));
+    assert.deepEqual(missingInToken, ['page_events'], 'Phải chỉ ra chính xác thiếu page_events');
   });
 
-  test('12. Phân biệt kênh chuyển đổi: Từ chối Business Messaging khi giao dịch từ Website, Chuyển khoản, Walk-in kể cả khi Customer có PSID', async () => {
-    const customerWithOldPsid = {
+  test('12. Phân tách rạch ròi acquisition_source, conversion_channel và payment_method: Chuyển khoản KHÔNG bị từ chối oan', async () => {
+    const messengerCustomer = {
       id: 88,
       name: 'Nguyễn Văn A',
       phone: '0901234567',
@@ -311,50 +312,116 @@ describe('Meta CAPI Business Messaging v3 - Unit Tests', () => {
       facebook_page_id: '107694084435854'
     };
 
-    // 12a. Đơn hàng từ Website (booking_source: 'Website')
-    const websiteBooking = {
-      id: 501,
-      booking_code: 'BK-WEB-501',
-      booking_source: 'Website',
-      paid: 20000000,
-      total_price: 20000000,
-      payment_status: 'paid'
+    const messengerLead = {
+      id: 99,
+      source: 'Messenger',
+      facebook_psid: '100293848572910',
+      facebook_page_id: '107694084435854'
     };
-    const resWeb = await metaCapiV3.enqueuePurchase(websiteBooking, customerWithOldPsid, null);
+
+    // 12a. CHỐT QUA MESSENGER NHƯNG THANH TOÁN BẰNG CHUYỂN KHOẢN NGÂN HÀNG:
+    // BẮT BUỘC CHẤP THUẬN ENQUEUE (Phương thức thanh toán không được dùng làm kênh loại trừ)!
+    const messengerBankTransferBooking = {
+      id: 601,
+      booking_code: 'BK-MSG-BANK-601',
+      booking_source: 'Messenger',
+      payment_method: 'Chuyển khoản ngân hàng Vietcombank',
+      booking_status: 'Đã đặt cọc',
+      payment_status: 'partial',
+      paid: 20000000,
+      total_price: 50000000
+    };
+    const resMsgBank = await metaCapiV3.enqueuePurchase(messengerBankTransferBooking, messengerCustomer, messengerLead, null);
+    // Khi cờ v3 đang tắt trên test local, nếu enqueue trả về false thì kiểm tra reason không phải là CROSS_CHANNEL
+    assert.notEqual(resMsgBank.reason, 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER', 'Khách Messenger thanh toán chuyển khoản TUYỆT ĐỐI KHÔNG bị coi là Cross-channel!');
+
+    // 12b. CHỐT QUA MESSENGER VÀ THANH TOÁN TIỀN MẶT / THẺ:
+    const messengerCashBooking = {
+      id: 602,
+      booking_code: 'BK-MSG-CASH-602',
+      conversion_channel: 'Messenger',
+      payment_method: 'Tiền mặt',
+      booking_status: 'Đã thanh toán',
+      payment_status: 'paid',
+      paid: 30000000,
+      total_price: 30000000
+    };
+    const resMsgCash = await metaCapiV3.enqueuePurchase(messengerCashBooking, messengerCustomer, messengerLead, null);
+    assert.notEqual(resMsgCash.reason, 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER');
+
+    // 12c. GIAO DỊCH TỪ WEBSITE (conversion_channel = 'Website'):
+    // BẮT BUỘC TỪ CHỐI KHỎI BUSINESS MESSAGING (Kể cả khi khách có PSID cũ trong DB)
+    const websiteBooking = {
+      id: 603,
+      booking_code: 'BK-WEB-603',
+      conversion_channel: 'Website',
+      payment_method: 'Cổng VNPay',
+      booking_status: 'Đã thanh toán',
+      payment_status: 'paid',
+      paid: 25000000,
+      total_price: 25000000
+    };
+    const resWeb = await metaCapiV3.enqueuePurchase(websiteBooking, messengerCustomer, null);
     assert.equal(resWeb.enqueued, false);
-    assert.equal(resWeb.reason, 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER', 'Đơn hàng Website không được tự động gắn Business Messaging');
+    assert.equal(resWeb.reason, 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER');
     assert.equal(resWeb.channel, 'Website');
 
-    // 12b. Đơn hàng chuyển khoản trực tiếp (booking_source: 'Chuyển khoản')
-    const transferBooking = {
-      id: 502,
-      booking_code: 'BK-BANK-502',
-      booking_source: 'Chuyển khoản',
-      paid: 50000000,
-      total_price: 50000000,
-      payment_status: 'paid'
+    // 12d. GIAO DỊCH TRỰC TIẾP TẠI QUẦY (conversion_channel = 'Walk-in'):
+    const walkInBooking = {
+      id: 604,
+      booking_code: 'BK-WALKIN-604',
+      conversion_channel: 'Walk-in',
+      payment_method: 'Tiền mặt',
+      booking_status: 'Đã đặt cọc',
+      payment_status: 'partial',
+      paid: 10000000,
+      total_price: 40000000
     };
-    const resBank = await metaCapiV3.enqueuePurchase(transferBooking, customerWithOldPsid, null);
-    assert.equal(resBank.enqueued, false);
-    assert.equal(resBank.reason, 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER');
+    const resWalkIn = await metaCapiV3.enqueuePurchase(walkInBooking, messengerCustomer, null);
+    assert.equal(resWalkIn.enqueued, false);
+    assert.equal(resWalkIn.reason, 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER');
 
-    // 12c. Đơn hàng từ Lead Tiktok / Zalo
-    const tiktokLead = {
-      id: 301,
-      source: 'Tiktok',
-      phone: '0901234567'
-    };
+    // 12e. ĐƠN HÀNG GẮN VỚI LEAD TỪ KÊNH TIKTOK / ZALO:
+    const tiktokLead = { id: 701, source: 'Tiktok', phone: '0901234567' };
     const tiktokBooking = {
-      id: 503,
-      booking_code: 'BK-TIKTOK-503',
+      id: 605,
+      booking_code: 'BK-TIKTOK-605',
       paid: 15000000,
       total_price: 30000000,
       booking_status: 'Đã đặt cọc',
       payment_status: 'partial'
     };
-    const resTiktok = await metaCapiV3.enqueuePurchase(tiktokBooking, customerWithOldPsid, tiktokLead);
+    const resTiktok = await metaCapiV3.enqueuePurchase(tiktokBooking, messengerCustomer, tiktokLead);
     assert.equal(resTiktok.enqueued, false);
     assert.equal(resTiktok.reason, 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER');
+  });
+
+  test('13. Meta Isolated Test Runner: Kiểm định an toàn, không tạo dữ liệu rác DB production', async () => {
+    // 13a. Thiếu test_event_code -> Bắt buộc ném lỗi validation ngay lập tức
+    await assert.rejects(
+      async () => {
+        await metaCapiV3.sendIsolatedTestEvents({ testEventCode: '' });
+      },
+      /Bắt buộc phải nhập Mã thử nghiệm sự kiện/
+    );
+
+    // 13b. Dựng payload mock 3 sự kiện hợp lệ
+    const mockCode = 'TEST_MOCK_12345';
+    const testPayload = metaCapiV3.buildBusinessMessagingPayload({
+      eventName: 'Purchase',
+      psid: '100293848572910',
+      pageId: '107694084435854',
+      customData: {
+        value: 1000000,
+        currency: 'VND',
+        booking_code: 'BK-ISOLATED-TEST'
+      }
+    });
+
+    assert.equal(testPayload.action_source, 'business_messaging');
+    assert.equal(testPayload.messaging_channel, 'messenger');
+    assert.equal(testPayload.custom_data.value, 1000000);
+    assert.equal(testPayload.custom_data.currency, 'VND');
   });
 
 });

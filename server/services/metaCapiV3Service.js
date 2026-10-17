@@ -560,9 +560,14 @@ function isEligiblePurchaseBooking(booking) {
 
 /**
  * Enqueue sự kiện Purchase cho Booking hợp lệ
- * PHÂN BIỆT RÕ RÀNG GIỮA HỘI THOẠI MESSENGER VÀ CÁC KÊNH KHÁC:
- * - Chỉ gửi Meta Business Messaging nếu đơn hàng THỰC SỰ phát sinh từ cuộc hội thoại Messenger.
- * - KHÔNG tự động gắn business_messaging cho mọi Booking có PSID nếu giao dịch xuất phát từ Website, Chuyển khoản, Zalo, Tiktok, Walk-in.
+ * PHÂN BIỆT RÕ RÀNG GIỮA:
+ * - acquisition_source (Nguồn khách tiếp cận ban đầu)
+ * - conversion_channel (Kênh chốt đơn / hội thoại)
+ * - payment_method (Phương thức thanh toán: chuyển khoản, tiền mặt, POS... KHÔNG dùng làm kênh loại trừ)
+ * 
+ * NGUYÊN TẮC QUAN TRỌNG:
+ * Khách chốt qua Messenger nhưng thanh toán bằng chuyển khoản ngân hàng là hoàn toàn bình thường và chiếm đa số.
+ * Tuyệt đối KHÔNG loại trừ kênh Messenger chỉ vì phương thức thanh toán là 'chuyển khoản' hay 'ngân hàng'.
  */
 async function enqueuePurchase(booking, customer, lead = null, client = null) {
   // 1. Kiểm tra điều kiện giao dịch tài chính thực tế (BẮT BUỘC paid > 0)
@@ -571,38 +576,60 @@ async function enqueuePurchase(booking, customer, lead = null, client = null) {
     return { enqueued: false, reason: 'NOT_ELIGIBLE_TRANSACTION' };
   }
 
-  // 2. Phân biệt kênh chuyển đổi (Attribution Channel)
-  const bookingSource = (booking.booking_source || booking.source || '').trim();
-  const leadSource = (lead && lead.source ? lead.source : '').trim();
+  // 2. Phân tách rạch ròi 3 tầng dữ liệu:
+  // Tầng A: Kênh chốt giao dịch (Conversion Channel)
+  const conversionChannel = (
+    booking.conversion_channel || 
+    booking.booking_source || 
+    booking.source || 
+    ''
+  ).trim();
 
-  // Danh sách các kênh rõ ràng không phải Messenger
-  const NON_MESSENGER_CHANNELS = [
+  // Tầng B: Nguồn khách tiếp cận ban đầu (Acquisition Source)
+  const acquisitionSource = (
+    booking.acquisition_source || 
+    (lead && lead.source) || 
+    (customer && customer.source) || 
+    ''
+  ).trim();
+
+  // Tầng C: Phương thức thanh toán (Payment Method: Chuyển khoản, Tiền mặt, POS...)
+  const paymentMethod = (
+    booking.payment_method || 
+    (booking.payment_details && booking.payment_details.method) || 
+    ''
+  ).trim();
+
+  // Danh sách các kênh tiếp cận hoặc kênh chốt đơn RÕ RÀNG NGOÀI HỘI THOẠI MESSENGER:
+  // (Lưu ý: KHÔNG bao giờ đưa 'chuyển khoản', 'ngân hàng' vào đây vì đó là payment_method)
+  const EXPLICIT_NON_MESSENGER_CHANNELS = [
     'website', 'web', 'landing_page', 'form', 'hotline', 
-    'walk-in', 'trực tiếp', 'chuyển khoản', 'ngân hàng', 
-    'zalo', 'tiktok', 'referral', 'đối tác', 'khác'
+    'walk-in', 'trực tiếp', 'zalo', 'tiktok', 'referral', 'đối tác', 'offline_store'
   ];
 
-  if (bookingSource && NON_MESSENGER_CHANNELS.includes(bookingSource.toLowerCase())) {
-    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} có kênh giao dịch là '${bookingSource}'. Bỏ qua Business Messaging (Cross-channel protection).`);
-    return { enqueued: false, reason: 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER', channel: bookingSource };
+  // Nếu kênh chốt đơn (conversionChannel) rõ ràng thuộc kênh ngoài Messenger (vd: khách tự đặt qua website, hoặc đến trực tiếp quầy)
+  if (conversionChannel && EXPLICIT_NON_MESSENGER_CHANNELS.includes(conversionChannel.toLowerCase())) {
+    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} có kênh chốt đơn là '${conversionChannel}' (ngoài hội thoại Messenger). Bỏ qua Business Messaging.`);
+    return { enqueued: false, reason: 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER', channel: conversionChannel };
   }
 
-  if (lead && leadSource && NON_MESSENGER_CHANNELS.includes(leadSource.toLowerCase())) {
-    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} gắn với Lead từ kênh '${leadSource}'. Bỏ qua Business Messaging.`);
-    return { enqueued: false, reason: 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER', channel: leadSource };
+  // Nếu Lead gắn kèm đến từ kênh ngoài Messenger (vd: Tiktok, Zalo, Form website)
+  if (lead && lead.source && EXPLICIT_NON_MESSENGER_CHANNELS.includes(lead.source.toLowerCase())) {
+    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} gắn với Lead từ nguồn '${lead.source}' (ngoài Messenger). Bỏ qua Business Messaging.`);
+    return { enqueued: false, reason: 'CROSS_CHANNEL_PURCHASE_NOT_MESSENGER', channel: lead.source };
   }
 
-  // Xác nhận nguồn gốc Messenger:
-  // Hoặc bookingSource là 'Messenger'/'Facebook'
-  // Hoặc lead gắn kèm có leadSource là 'Messenger'/'Facebook' và có cặp PSID + Page ID
+  // Xác nhận nguồn gốc giao dịch phát sinh trong hoặc bắt nguồn từ hội thoại Messenger:
+  // - conversionChannel là 'messenger' / 'facebook' / 'chat'
+  // - HOẶC Lead gắn kèm có nguồn gốc Messenger VÀ sở hữu cặp PSID + Page ID hợp lệ
   const isMessengerAttributed = 
-    ['messenger', 'facebook', 'chat'].includes(bookingSource.toLowerCase()) ||
-    ['messenger', 'facebook'].includes(leadSource.toLowerCase()) ||
-    (lead && lead.facebook_psid && lead.facebook_page_id);
+    ['messenger', 'facebook', 'chat'].includes(conversionChannel.toLowerCase()) ||
+    (lead && ['messenger', 'facebook'].includes((lead.source || '').toLowerCase()) && lead.facebook_psid && lead.facebook_page_id) ||
+    (!conversionChannel && lead && lead.facebook_psid && lead.facebook_page_id);
 
   if (!isMessengerAttributed) {
-    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} không phát sinh từ hội thoại Messenger. Bỏ qua luồng Business Messaging.`);
-    return { enqueued: false, reason: 'NOT_MESSENGER_PURCHASE', channel: bookingSource || leadSource || 'non_messenger' };
+    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} không có bằng chứng phát sinh từ hội thoại Messenger. Bỏ qua luồng Business Messaging.`);
+    return { enqueued: false, reason: 'NOT_MESSENGER_PURCHASE', channel: conversionChannel || acquisitionSource || 'unknown' };
   }
 
   // 3. Kiểm tra cặp định danh PSID & Page ID
@@ -637,6 +664,7 @@ async function enqueuePurchase(booking, customer, lead = null, client = null) {
       booking_code: booking.booking_code,
       booking_status: booking.booking_status,
       payment_status: booking.payment_status,
+      payment_method: paymentMethod || 'Chuyển khoản / Khác',
       value: purchaseValue,
       currency: 'VND',
       value_measurement_policy: valueSource,
@@ -674,6 +702,9 @@ async function recoverStaleLocks(timeoutMinutes = 5) {
 
 /**
  * Kiểm tra danh sách quyền thực tế của Meta Access Token qua Graph API
+ * Phân biệt rõ:
+ * 1. Quyền bắt buộc cho CAPI Business Messaging (page_events, pages_messaging)
+ * 2. Quyền cho Ads API (ads_management, ads_read - dùng cho báo cáo quảng cáo, không chặn CAPI)
  * Không bao giờ in hoặc trả về token thô
  */
 async function verifyTokenPermissions(customToken = null) {
@@ -696,23 +727,34 @@ async function verifyTokenPermissions(customToken = null) {
       .filter(p => p.status === 'granted')
       .map(p => p.permission);
 
-    // Kiểm tra các quyền cốt tử cho Business Messaging & CAPI
-    const REQUIRED_PERMISSIONS = [
-      'ads_management',
-      'pages_messaging',
+    // 1. Quyền cốt tử cho Conversions API for Business Messaging
+    const CAPI_REQUIRED_PERMISSIONS = [
       'page_events'
     ];
+    const missingCapiPermissions = CAPI_REQUIRED_PERMISSIONS.filter(p => !grantedPermissions.includes(p));
 
-    const missingPermissions = REQUIRED_PERMISSIONS.filter(p => !grantedPermissions.includes(p));
+    // 2. Quyền tương tác Messenger / Webhook
+    const hasPagesMessaging = grantedPermissions.includes('pages_messaging');
+
+    // 3. Quyền cho Marketing Ads API (dành cho module báo cáo ads, không bắt buộc để gửi CAPI events)
+    const ADS_API_PERMISSIONS = ['ads_management', 'ads_read'];
+    const hasAdsManagement = grantedPermissions.includes('ads_management');
+    const hasAdsRead = grantedPermissions.includes('ads_read');
+    const missingAdsPermissions = ADS_API_PERMISSIONS.filter(p => !grantedPermissions.includes(p));
 
     return {
       success: true,
       granted_permissions: grantedPermissions,
       has_page_events: grantedPermissions.includes('page_events'),
-      has_pages_messaging: grantedPermissions.includes('pages_messaging'),
-      has_ads_management: grantedPermissions.includes('ads_management'),
-      is_fully_qualified: missingPermissions.length === 0,
-      missing_permissions: missingPermissions
+      has_pages_messaging: hasPagesMessaging,
+      has_ads_management: hasAdsManagement,
+      has_ads_read: hasAdsRead,
+      // Đánh giá tính sẵn sàng riêng cho CAPI:
+      is_capi_ready: missingCapiPermissions.length === 0,
+      missing_capi_permissions: missingCapiPermissions,
+      // Đánh giá tính sẵn sàng cho Ads API:
+      is_ads_api_ready: hasAdsManagement || hasAdsRead,
+      missing_ads_permissions: missingAdsPermissions
     };
   } catch (err) {
     const errData = err.response?.data?.error;
@@ -721,6 +763,135 @@ async function verifyTokenPermissions(customToken = null) {
       success: false,
       error: cleanMsg,
       code: errData?.code || null
+    };
+  }
+}
+
+/**
+ * Gửi kiểm thử chuỗi 3 sự kiện (LeadSubmitted, QualifiedLead, Purchase) trên môi trường cách ly
+ * HOÀN TOÀN KHÔNG TẠO BOOKING GIẢ, KHÔNG TẠO PHIẾU THU GIẢ TRONG PRODUCTION DB.
+ * 
+ * @param {object} options
+ * @param {string} options.testEventCode - Mã Test Events từ tab Thử nghiệm sự kiện của Meta
+ * @param {string} options.pageId - Page ID (mặc định lấy cấu hình hoặc 107694084435854)
+ * @param {string} options.customPsid - PSID thử nghiệm (hoặc PSID của tài khoản nội bộ test)
+ */
+async function sendIsolatedTestEvents({
+  testEventCode,
+  pageId = '107694084435854',
+  customPsid = '100293848572910'
+} = {}) {
+  if (!testEventCode || !testEventCode.trim()) {
+    throw new Error('Bắt buộc phải nhập Mã thử nghiệm sự kiện (test_event_code) từ Meta Events Manager!');
+  }
+
+  const datasetId = await getSetting('meta_dataset_id') || '835404925628132';
+  const accessToken = await getSetting('meta_capi_access_token');
+
+  if (!accessToken || !accessToken.trim()) {
+    throw new Error('Chưa cấu hình Meta CAPI Access Token trong settings.');
+  }
+
+  const cleanTestCode = testEventCode.trim();
+  const testNow = new Date();
+  const nowUnix = Math.floor(testNow.getTime() / 1000);
+
+  // 1. Mock Event 1: LeadSubmitted
+  const payloadLeadSubmitted = buildBusinessMessagingPayload({
+    eventName: 'LeadSubmitted',
+    psid: customPsid,
+    pageId: pageId,
+    phone: '0901234567',
+    email: 'test_audit@fittour.vn',
+    customData: {
+      content_name: 'Tour Thử Nghiệm Cách Ly FIT TOUR (Không lưu DB)',
+      lead_source: 'Messenger Test Sandbox'
+    },
+    eventTime: testNow,
+    eventId: `fittour_test_sub_${nowUnix}`
+  });
+
+  // 2. Mock Event 2: QualifiedLead
+  const payloadQualifiedLead = buildBusinessMessagingPayload({
+    eventName: 'QualifiedLead',
+    psid: customPsid,
+    pageId: pageId,
+    phone: '0901234567',
+    customData: {
+      lead_status: 'Tiềm năng',
+      classification: 'Đạt chuẩn Sales',
+      content_name: 'Tour Thử Nghiệm Cách Ly FIT TOUR'
+    },
+    eventTime: testNow,
+    eventId: `fittour_test_qual_${nowUnix}`
+  });
+
+  // 3. Mock Event 3: Purchase (Doanh thu thử nghiệm 1,000,000 VND)
+  const payloadPurchase = buildBusinessMessagingPayload({
+    eventName: 'Purchase',
+    psid: customPsid,
+    pageId: pageId,
+    phone: '0901234567',
+    customData: {
+      booking_code: `BK-TEST-MOCK-${nowUnix}`,
+      value: 1000000,
+      currency: 'VND',
+      value_measurement_policy: 'paid_amount',
+      payment_method: 'Chuyển khoản (Mock Test)'
+    },
+    eventTime: testNow,
+    eventId: `fittour_test_pur_${nowUnix}`
+  });
+
+  const metaUrl = `https://graph.facebook.com/${META_GRAPH_VERSION}/${datasetId}/events`;
+  const requestBody = {
+    data: [payloadLeadSubmitted, payloadQualifiedLead, payloadPurchase],
+    test_event_code: cleanTestCode,
+    access_token: accessToken
+  };
+
+  try {
+    const response = await axios.post(metaUrl, requestBody, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      timeout: 15000
+    });
+
+    return {
+      success: true,
+      dataset_id: datasetId,
+      page_id: pageId,
+      test_event_code: cleanTestCode,
+      events_sent: ['LeadSubmitted', 'QualifiedLead', 'Purchase'],
+      events_received: response.data?.events_received || 3,
+      fbtrace_id: response.data?.fbtrace_id || null,
+      messages: response.data?.messages || [],
+      isolated_notice: 'Hoàn toàn không ghi nhận dữ liệu vào bảng bookings, booking_transactions hay leads của production.'
+    };
+  } catch (err) {
+    let errResp = err.response ? err.response.data : null;
+    let errMsg = err.message || 'Lỗi gửi Meta Test Events';
+
+    // Bảo mật: Xoá bỏ mọi dấu vết của token nếu có
+    if (accessToken) {
+      errMsg = errMsg.split(accessToken).join('[REDACTED_TOKEN]');
+      if (errResp) {
+        try {
+          errResp = JSON.parse(JSON.stringify(errResp).split(accessToken).join('[REDACTED_TOKEN]'));
+        } catch (_) {}
+      }
+    }
+
+    return {
+      success: false,
+      dataset_id: datasetId,
+      page_id: pageId,
+      test_event_code: cleanTestCode,
+      error_message: errMsg,
+      meta_error: errResp?.error || errResp,
+      isolated_notice: 'Không có dữ liệu rác nào được tạo trong DB.'
     };
   }
 }
@@ -738,6 +909,7 @@ module.exports = {
   enqueueQualifiedLead,
   enqueuePurchase,
   verifyTokenPermissions,
+  sendIsolatedTestEvents,
   getSetting,
   KNOWN_DATASET_IDS
 };
