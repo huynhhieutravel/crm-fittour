@@ -177,9 +177,8 @@ exports.createBooking = async (req, res) => {
             created_at: new Date().toISOString()
         });
 
-        // CAPI v3: Trigger Purchase if booking is created in confirmed/paid status
-        const CONFIRMED_BOOKING_STATUSES = ['Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành', 'Xác nhận', 'CONFIRMED'];
-        if (CONFIRMED_BOOKING_STATUSES.includes(newBooking.booking_status)) {
+        // CAPI v3: Trigger Purchase if booking has real payment/deposit (Trạng thái Xác nhận đơn thuần bị từ chối)
+        if (metaCapiV3.isEligiblePurchaseBooking(newBooking)) {
             (async () => {
                 try {
                     const custRes = await db.query('SELECT * FROM customers WHERE id = $1', [newBooking.customer_id]);
@@ -375,9 +374,8 @@ exports.updateBooking = async (req, res) => {
                 updated_at: new Date().toISOString()
             });
 
-            // CAPI v3: Trigger Purchase if booking reaches confirmed/paid status
-            const CONFIRMED_BOOKING_STATUSES = ['Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành', 'Xác nhận', 'CONFIRMED'];
-            if (CONFIRMED_BOOKING_STATUSES.includes(updatedBooking.booking_status)) {
+            // CAPI v3: Trigger Purchase if booking has real payment/deposit (Trạng thái Xác nhận đơn thuần bị từ chối)
+            if (metaCapiV3.isEligiblePurchaseBooking(updatedBooking)) {
                 (async () => {
                     try {
                         const custRes = await db.query('SELECT * FROM customers WHERE id = $1', [updatedBooking.customer_id]);
@@ -569,6 +567,28 @@ exports.addTransaction = async (req, res) => {
             details: `Thêm giao dịch thanh toán: ${Number(amount).toLocaleString('vi-VN')}đ`,
             new_data: newTx
         });
+
+        // 5. CAPI v3: Kích hoạt Purchase khi khách nộp cọc hoặc thanh toán thực tế
+        (async () => {
+            try {
+                const bFull = await db.query('SELECT b.*, (SELECT SUM(amount) FROM booking_transactions WHERE booking_id = b.id) as paid FROM bookings b WHERE b.id = $1', [id]);
+                if (bFull.rows.length > 0 && metaCapiV3.isEligiblePurchaseBooking(bFull.rows[0])) {
+                    const currentBk = bFull.rows[0];
+                    const custRes = await db.query('SELECT * FROM customers WHERE id = $1', [currentBk.customer_id]);
+                    if (custRes.rows.length > 0) {
+                        const customer = custRes.rows[0];
+                        let lead = null;
+                        if (customer.lead_id) {
+                            const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
+                            if (leadRes.rows.length > 0) lead = leadRes.rows[0];
+                        }
+                        await metaCapiV3.enqueuePurchase(currentBk, customer, lead);
+                    }
+                }
+            } catch (capiErr) {
+                console.error('[CAPI-v3] Lỗi enqueue Purchase từ addTransaction:', capiErr.message);
+            }
+        })();
 
         res.status(201).json(newTx);
     } catch (err) {

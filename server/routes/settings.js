@@ -132,6 +132,12 @@ router.post('/test-capi', auth, admin, async (req, res) => {
         } else {
             res.status(400).json({ success: false, error: 'Có lỗi khi gửi một hoặc nhiều sự kiện', details: results });
         }
+// 4. Xác minh quyền Meta Token thực tế (Admin only, Không in secret)
+router.get('/verify-meta-permissions', auth, admin, async (req, res) => {
+    try {
+        const metaCapiV3 = require('../services/metaCapiV3Service');
+        const verification = await metaCapiV3.verifyTokenPermissions();
+        res.json(verification);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

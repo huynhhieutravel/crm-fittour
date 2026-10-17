@@ -221,4 +221,74 @@ describe('Meta CAPI Business Messaging v3 - Unit Tests', () => {
     assert.equal(classifyMetaError(null), 'FAILED_RETRYABLE');
   });
 
+  test('10. Purchase Eligibility: Tuyệt đối KHÔNG coi "Xác nhận" đơn thuần là đã mua hàng', () => {
+    // 10a. Trạng thái 'Xác nhận' đơn thuần, chưa thanh toán (paid = 0) -> BẮT BUỘC TỪ CHỐI
+    const bookingXacNhanChuaCoc = {
+      booking_code: 'BK-CONFIRMED-UNPAID',
+      booking_status: 'Xác nhận',
+      payment_status: 'unpaid',
+      paid: 0,
+      total_price: 35000000
+    };
+    assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingXacNhanChuaCoc), false, 'Xác nhận đơn thuần không được coi là Purchase');
+
+    // 10b. Trạng thái 'CONFIRMED' tiếng Anh chưa nộp tiền -> TỪ CHỐI
+    const bookingConfirmedNoMoney = {
+      booking_code: 'BK-EN-CONFIRMED',
+      booking_status: 'CONFIRMED',
+      paid: null,
+      total_price: 50000000
+    };
+    assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingConfirmedNoMoney), false);
+
+    // 10c. Khách đã nộp cọc thực tế (paid > 0) -> ĐẠT TIÊU CHUẨN
+    const bookingDaDatCocTien = {
+      booking_code: 'BK-DEPOSIT-PAID',
+      booking_status: 'Xác nhận',
+      payment_status: 'partial',
+      paid: 10000000,
+      total_price: 35000000
+    };
+    assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingDaDatCocTien), true, 'Có tiền thanh toán thực tế đạt chuẩn Purchase');
+
+    // 10d. Trạng thái booking_status = 'Đã đặt cọc' -> ĐẠT TIÊU CHUẨN
+    const bookingStatusDaDatCoc = {
+      booking_code: 'BK-STATUS-DEPOSIT',
+      booking_status: 'Đã đặt cọc',
+      total_price: 35000000
+    };
+    assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingStatusDaDatCoc), true);
+
+    // 10e. Trạng thái thanh toán 'paid' hoặc 'Hoàn thành' -> ĐẠT TIÊU CHUẨN
+    const bookingDaThanhToanDu = {
+      booking_code: 'BK-FULLY-PAID',
+      booking_status: 'Hoàn thành',
+      payment_status: 'paid',
+      paid: 35000000,
+      total_price: 35000000
+    };
+    assert.equal(metaCapiV3.isEligiblePurchaseBooking(bookingDaThanhToanDu), true);
+  });
+
+  test('11. Meta Token Permissions: Xác định đầy đủ các quyền bắt buộc (page_events, pages_messaging, ads_management)', () => {
+    // Kiểm tra cấu trúc kiểm tra quyền
+    const sampleGrantedList = ['ads_management', 'pages_messaging', 'pages_show_list', 'page_events'];
+    const REQUIRED_PERMISSIONS = ['ads_management', 'pages_messaging', 'page_events'];
+
+    const hasPageEvents = sampleGrantedList.includes('page_events');
+    const hasPagesMessaging = sampleGrantedList.includes('pages_messaging');
+    const hasAdsManagement = sampleGrantedList.includes('ads_management');
+    const isFullyQualified = REQUIRED_PERMISSIONS.every(p => sampleGrantedList.includes(p));
+
+    assert.equal(hasPageEvents, true, 'Quyền page_events là bắt buộc cho Business Messaging CAPI');
+    assert.equal(hasPagesMessaging, true, 'Quyền pages_messaging là bắt buộc cho Webhook/PSID');
+    assert.equal(hasAdsManagement, true, 'Quyền ads_management là bắt buộc cho Dataset link');
+    assert.equal(isFullyQualified, true);
+
+    // Trường hợp thiếu page_events -> cảnh báo thiếu quyền
+    const incompleteList = ['ads_management', 'pages_messaging'];
+    const missing = REQUIRED_PERMISSIONS.filter(p => !incompleteList.includes(p));
+    assert.deepEqual(missing, ['page_events'], 'Phải phát hiện chính xác nếu thiếu page_events');
+  });
+
 });

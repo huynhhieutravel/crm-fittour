@@ -131,7 +131,7 @@ describe('Meta CAPI Business Messaging v3 - Integration Tests (Outbox, Concurren
     assert.equal(resQual.eventId, `fittour_bm_qual_lead_${TEST_LEAD_ID}`);
   });
 
-  test('5. Purchase: Phân luồng chính xác, chỉ nhận Booking từ khách Messenger', async () => {
+  test('5. Purchase: Phân luồng chính xác, chỉ nhận Booking từ khách Messenger và đủ điều kiện thanh toán', async () => {
     // 5a. Khách ngoài kênh Messenger -> Từ chối an toàn
     const nonMessengerCustomer = { id: 999, name: 'Khách Walk-in', phone: '0912345678', facebook_psid: null };
     const dummyBooking = { id: TEST_BOOKING_ID, booking_code: 'BK-TEST-INT', total_price: '50000000', paid: '20000000' };
@@ -140,7 +140,7 @@ describe('Meta CAPI Business Messaging v3 - Integration Tests (Outbox, Concurren
     assert.equal(resNonMessenger.enqueued, false);
     assert.equal(resNonMessenger.reason, 'NOT_MESSENGER_PURCHASE');
 
-    // 5b. Khách Messenger -> Chấp thuận
+    // 5b. Khách Messenger nhưng Booking chỉ mới 'Xác nhận' đơn thuần, CHƯA NỘP TIỀN -> BẮT BUỘC TỪ CHỐI
     const messengerCustomer = { 
       id: 998, 
       name: 'Khách Messenger', 
@@ -148,7 +148,19 @@ describe('Meta CAPI Business Messaging v3 - Integration Tests (Outbox, Concurren
       facebook_psid: TEST_PSID, 
       facebook_page_id: TEST_PAGE_ID 
     };
+    const unconfirmedBooking = { 
+      id: TEST_BOOKING_ID, 
+      booking_code: 'BK-UNPAID', 
+      booking_status: 'Xác nhận', 
+      payment_status: 'unpaid',
+      total_price: '50000000', 
+      paid: '0' 
+    };
+    const resUnconfirmed = await metaCapiV3.enqueuePurchase(unconfirmedBooking, messengerCustomer);
+    assert.equal(resUnconfirmed.enqueued, false);
+    assert.equal(resUnconfirmed.reason, 'NOT_ELIGIBLE_TRANSACTION', 'Booking Xác nhận đơn thuần chưa có tiền phải bị từ chối');
 
+    // 5c. Khách Messenger và Booking đã có thanh toán/cọc thực tế -> Chấp thuận
     const resPurchase = await metaCapiV3.enqueuePurchase(dummyBooking, messengerCustomer);
     assert.equal(resPurchase.enqueued, true);
     assert.equal(resPurchase.eventId, `fittour_bm_pur_booking_${TEST_BOOKING_ID}`);
@@ -208,6 +220,30 @@ describe('Meta CAPI Business Messaging v3 - Integration Tests (Outbox, Concurren
 
     // Dọn dẹp bản ghi stale test
     await db.query('DELETE FROM meta_capi_events WHERE id = $1', [staleRecordId]);
+  });
+
+  test('8. Legacy CAPI Regression: Khi cờ v3 TẮT (false), Legacy CAPI hoạt động nguyên bản 100% không bị chặn', async () => {
+    const metaCapiLegacy = require('../services/metaCapiService');
+
+    // Đảm bảo cờ v3 đang tắt
+    await db.query("UPDATE settings SET value = 'false' WHERE key = 'meta_capi_business_messaging_v3_enabled'");
+    await db.query("UPDATE settings SET value = 'false' WHERE key = 'meta_capi_enabled'");
+
+    // 8a. Gọi legacy CAPI khi cả 2 đều tắt -> Trả về chuẩn của legacy CAPI
+    const resOff = await metaCapiLegacy.sendEvent('Lead', { phone: '0901234567', facebook_psid: TEST_PSID });
+    assert.equal(resOff.success, false);
+    assert.equal(resOff.reason, 'CAPI disabled', 'Khi v3 tắt, legacy CAPI không bị hijack bởi DELEGATED_TO_V3');
+
+    // 8b. Gọi sendStatusChangeEvent trạng thái "Đang liên hệ" -> Không bị chặn bởi v3
+    const testLead = { id: 12345, name: 'Khách Test', phone: '0901234567' };
+    const resStatus = await metaCapiLegacy.sendStatusChangeEvent(testLead, 'Đang liên hệ');
+    assert.equal(resStatus.success, false);
+    assert.equal(resStatus.reason, 'CAPI disabled');
+
+    // 8c. Trạng thái "Chốt đơn" ở Lead -> Luôn được chuyển nhượng cho Booking dù v3 bật hay tắt
+    const resChotDon = await metaCapiLegacy.sendStatusChangeEvent(testLead, 'Chốt đơn');
+    assert.equal(resChotDon.success, true);
+    assert.equal(resChotDon.reason, 'PURCHASE_DELEGATED_TO_BOOKING');
   });
 
 });

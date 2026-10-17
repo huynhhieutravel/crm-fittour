@@ -735,6 +735,37 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                 </div>
 
                 <a
+                  href="/t9-report/index.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setShowReportDropdown(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '10px',
+                    padding: '8px 14px',
+                    textDecoration: 'none',
+                    color: '#1e293b',
+                    transition: 'background 0.15s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#e0e7ff', color: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                    <BarChart2 size={15} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>Báo Cáo Tháng 9/2026</span>
+                      <span style={{ fontSize: '10px', fontWeight: 700, background: '#e0e7ff', color: '#4338ca', padding: '1px 6px', borderRadius: '4px' }}>Mới nhất</span>
+                    </div>
+                    <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0 0' }}>
+                      427 Leads • BU2 bứt phá +196% • Tour Tuyết Q4
+                    </p>
+                  </div>
+                </a>
+
+                <a
                   href="/t8-report/index.html"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -757,7 +788,7 @@ const MarketingAdsTab = ({ addToast, currentUser, bus }) => {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>Báo Cáo Tháng 8/2026</span>
-                      <span style={{ fontSize: '10px', fontWeight: 700, background: '#dcfce7', color: '#15803d', padding: '1px 6px', borderRadius: '4px' }}>Mới nhất</span>
+                      <span style={{ fontSize: '10px', fontWeight: 600, background: '#f1f5f9', color: '#64748b', padding: '1px 6px', borderRadius: '4px' }}>Tháng 8</span>
                     </div>
                     <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0 0' }}>
                       Đạt 100% KPI (450 Leads) • Deep-dive W2-W4

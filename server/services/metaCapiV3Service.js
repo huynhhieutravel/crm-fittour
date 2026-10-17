@@ -518,16 +518,49 @@ async function enqueueQualifiedLead(lead, client = null) {
 }
 
 /**
+ * Kiểm định điều kiện giao dịch Purchase thực tế cho Booking
+ * YÊU CẦU NGHIÊM NGẶT:
+ * - Trạng thái 'Xác nhận' (CONFIRMED) đơn thuần KHÔNG được coi là đã mua hàng (tránh ghi nhận khi chưa thanh toán).
+ * - BẮT BUỘC phải có thanh toán thực tế (paid > 0) HOẶC trạng thái phản ánh việc thu tiền/đặt cọc thực tế:
+ *   + booking_status IN ('Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành')
+ *   + HOẶC payment_status IN ('paid', 'partial', 'Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành')
+ */
+function isEligiblePurchaseBooking(booking) {
+  if (!booking) return false;
+
+  const paidAmount = Number(booking.paid || booking.paid_amount || 0);
+  if (paidAmount > 0) return true;
+
+  const VALID_PAYMENT_STATUSES = ['paid', 'partial', 'Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành', 'PAID', 'DEPOSITED'];
+  if (booking.payment_status && VALID_PAYMENT_STATUSES.includes(booking.payment_status)) {
+    return true;
+  }
+
+  const VALID_PAID_BOOKING_STATUSES = ['Đã đặt cọc', 'Đã thanh toán', 'Hoàn thành'];
+  if (booking.booking_status && VALID_PAID_BOOKING_STATUSES.includes(booking.booking_status)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Enqueue sự kiện Purchase cho Booking hợp lệ
  */
 async function enqueuePurchase(booking, customer, lead = null, client = null) {
-  // Chỉ gửi Business Messaging nếu khách có nguồn gốc Messenger hợp lệ
+  // 1. Kiểm tra điều kiện giao dịch tài chính thực tế
+  if (!isEligiblePurchaseBooking(booking)) {
+    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} chưa đủ điều kiện giao dịch Purchase (Status: ${booking.booking_status}, Payment: ${booking.payment_status}, Paid: ${booking.paid || 0}). Trạng thái 'Xác nhận' đơn thuần không được tính là Purchase.`);
+    return { enqueued: false, reason: 'NOT_ELIGIBLE_TRANSACTION' };
+  }
+
+  // 2. Chỉ gửi Business Messaging nếu khách có nguồn gốc Messenger hợp lệ
   const psid = (lead && lead.facebook_psid) || (customer && customer.facebook_psid);
   const pageId = (lead && lead.facebook_page_id) || (customer && customer.facebook_page_id);
 
   if (!psid || !pageId) {
-    console.log(`[CAPI-v3] Booking #${booking.booking_code} không thuộc kênh Messenger (Thiếu PSID hoặc Page ID). Bỏ qua luồng Business Messaging.`);
-    return { enqueued: false, reason: 'NOT_MESSENGER_PURCHASE' };
+    console.log(`[CAPI-v3] Booking #${booking.booking_code || booking.id} không thuộc kênh Messenger (Thiếu PSID hoặc Page ID). Bỏ qua luồng Business Messaging.`);
+    return { enqueued: false, reason: 'NOT_MESSENGER_PURCHASE', channel: 'non_messenger' };
   }
 
   // Đọc chính sách đo lường doanh thu từ settings
@@ -537,7 +570,7 @@ async function enqueuePurchase(booking, customer, lead = null, client = null) {
   if (valueSource === 'contract_value') {
     purchaseValue = Number(booking.total_price) || 0;
   } else {
-    purchaseValue = Number(booking.paid) || 0;
+    purchaseValue = Number(booking.paid || booking.paid_amount) || 0;
   }
 
   return enqueueEvent({
@@ -587,6 +620,59 @@ async function recoverStaleLocks(timeoutMinutes = 5) {
   }
 }
 
+/**
+ * Kiểm tra danh sách quyền thực tế của Meta Access Token qua Graph API
+ * Không bao giờ in hoặc trả về token thô
+ */
+async function verifyTokenPermissions(customToken = null) {
+  const token = customToken || (await getSetting('meta_capi_access_token'));
+  if (!token || !token.trim()) {
+    return { success: false, error: 'Chưa cấu hình Access Token' };
+  }
+
+  try {
+    const url = `https://graph.facebook.com/${META_GRAPH_VERSION}/me/permissions`;
+    const response = await axios.get(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      timeout: 10000
+    });
+
+    const data = response.data?.data || [];
+    const grantedPermissions = data
+      .filter(p => p.status === 'granted')
+      .map(p => p.permission);
+
+    // Kiểm tra các quyền cốt tử cho Business Messaging & CAPI
+    const REQUIRED_PERMISSIONS = [
+      'ads_management',
+      'pages_messaging',
+      'page_events'
+    ];
+
+    const missingPermissions = REQUIRED_PERMISSIONS.filter(p => !grantedPermissions.includes(p));
+
+    return {
+      success: true,
+      granted_permissions: grantedPermissions,
+      has_page_events: grantedPermissions.includes('page_events'),
+      has_pages_messaging: grantedPermissions.includes('pages_messaging'),
+      has_ads_management: grantedPermissions.includes('ads_management'),
+      is_fully_qualified: missingPermissions.length === 0,
+      missing_permissions: missingPermissions
+    };
+  } catch (err) {
+    const errData = err.response?.data?.error;
+    const cleanMsg = (errData?.message || err.message || 'Lỗi kiểm tra quyền Meta Token').split(token).join('[REDACTED]');
+    return {
+      success: false,
+      error: cleanMsg,
+      code: errData?.code || null
+    };
+  }
+}
+
 module.exports = {
   sha256,
   normalizePhone,
@@ -595,9 +681,11 @@ module.exports = {
   processOutboxBatch,
   recoverStaleLocks,
   evaluateSalesQualification,
+  isEligiblePurchaseBooking,
   enqueueLeadSubmitted,
   enqueueQualifiedLead,
   enqueuePurchase,
+  verifyTokenPermissions,
   getSetting,
   KNOWN_DATASET_IDS
 };
