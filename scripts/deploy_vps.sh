@@ -14,6 +14,9 @@ VPS_PATH="/var/www/fittour-crm"
 
 echo "🚀 Bắt đầu Deploy Lên VPS ($VPS_IP)..."
 
+git rev-parse --short HEAD > server/CURRENT_DEPLOY_COMMIT
+echo "📌 Commit phát hành: $(cat server/CURRENT_DEPLOY_COMMIT)"
+
 # 1. Deploy Backend (Thư mục server)
 echo "📦 Đang đẩy thư mục 'server'..."
 rsync -avz --exclude '.env' --exclude '.env.*' --exclude 'node_modules' --exclude '.DS_Store' --exclude 'public/uploads' server/ ${VPS_USER}@${VPS_IP}:${VPS_PATH}/server/
@@ -75,8 +78,6 @@ ssh ${VPS_USER}@${VPS_IP} << 'EOF'
 
     echo "🔒 Đảm bảo 2 feature flag CAPI ở trạng thái an toàn OFF (false)..."
     PGPASSWORD=fittour2026 psql -U postgres -h localhost -d fittour_crm -c "UPDATE settings SET value = 'false' WHERE key IN ('meta_capi_crm_enabled', 'meta_capi_business_messaging_v3_enabled');"
-
-    echo "b998614" > /var/www/fittour-crm/server/CURRENT_DEPLOY_COMMIT
 
     echo "🔄 Khởi động lại PM2..."
     pm2 restart crm-fittour --update-env
