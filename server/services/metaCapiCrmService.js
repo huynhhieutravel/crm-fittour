@@ -200,7 +200,9 @@ function evaluateSalesQualification(lead, updates = {}) {
   const hasValidIdentity = hasValidPhone || hasValidEmail;
 
   const isExplicitlyQualified = Boolean(merged.is_sales_qualified);
-  const isStatusTiemNang = merged.status === 'Tiềm năng' || ['Tiềm năng', 'Hot'].includes(merged.classification);
+  const normClassification = String(merged.classification || '').trim().toLowerCase();
+  const normStatus = String(merged.status || '').trim().toLowerCase();
+  const isStatusTiemNang = normStatus.includes('tiềm năng') || ['tiềm năng', 'hot'].includes(normClassification);
   const hasSpecificTour = Boolean(merged.tour_id);
   const hasSubstantialNote = Boolean(merged.consultation_note && merged.consultation_note.trim().length >= 15);
   const isFunnelQualified = isStatusTiemNang && hasSpecificTour && hasSubstantialNote;

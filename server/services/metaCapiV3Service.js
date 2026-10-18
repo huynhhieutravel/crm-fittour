@@ -444,7 +444,9 @@ function evaluateSalesQualification(lead, updates = {}) {
   const isExplicitlyQualified = Boolean(merged.is_sales_qualified);
 
   // Cách B: Trạng thái 'Tiềm năng' + Có Tour cụ thể + Ghi chú tư vấn chi tiết (>= 15 ký tự, ví dụ lịch khởi hành/số khách/nhu cầu)
-  const isStatusTiemNang = merged.status === 'Tiềm năng' || ['Tiềm năng', 'Hot'].includes(merged.classification);
+  const normClassification = String(merged.classification || '').trim().toLowerCase();
+  const normStatus = String(merged.status || '').trim().toLowerCase();
+  const isStatusTiemNang = normStatus.includes('tiềm năng') || ['tiềm năng', 'hot'].includes(normClassification);
   const hasSpecificTour = Boolean(merged.tour_id);
   const hasSubstantialNote = Boolean(merged.consultation_note && merged.consultation_note.trim().length >= 15);
   const isFunnelQualified = isStatusTiemNang && hasSpecificTour && hasSubstantialNote;
