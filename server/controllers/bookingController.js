@@ -8,14 +8,31 @@ const zaloZnsService = require('../services/zaloZnsService');
 const metaCapiV3 = require('../services/metaCapiV3Service');
 const metaCapiCrm = require('../services/metaCapiCrmService');
 const metaCapi = require('../services/metaCapiService');
+const leadAutoResolution = require('../services/leadAutoResolutionService');
 
 // Helper phân luồng Purchase an toàn: v3 -> CRM CAPI Outbox -> Legacy CAPI (fallback / ngoài canary)
 async function dispatchBookingPurchase(booking, customer, lead) {
-    const crmRes = await metaCapiCrm.enqueuePurchase(booking, customer, lead);
-    await metaCapiV3.enqueuePurchase(booking, customer, lead);
+    let resolvedLead = lead;
+    if (!resolvedLead && customer) {
+        try {
+            const resolution = await leadAutoResolution.resolveAndLinkLead({
+                customer,
+                booking,
+                isPaid: true
+            });
+            if (resolution && resolution.resolved) {
+                resolvedLead = resolution.lead;
+            }
+        } catch (e) {
+            console.error('[CAPI] Lỗi resolveAndLinkLead trong dispatchBookingPurchase:', e.message);
+        }
+    }
+
+    const crmRes = await metaCapiCrm.enqueuePurchase(booking, customer, resolvedLead);
+    await metaCapiV3.enqueuePurchase(booking, customer, resolvedLead);
     if (crmRes && !crmRes.enqueued && ['CANARY_NOT_IN_ALLOWLIST', 'CANARY_MODE_DISABLED'].includes(crmRes.reason)) {
-        if (lead) {
-            await metaCapi.sendPurchaseEvent(lead, booking.tour_name, booking.total_price || booking.paid || 0, { bypassCrmDelegation: true });
+        if (resolvedLead) {
+            await metaCapi.sendPurchaseEvent(resolvedLead, booking.tour_name, booking.total_price || booking.paid || 0, { bypassCrmDelegation: true });
         }
     }
 }
@@ -190,25 +207,43 @@ exports.createBooking = async (req, res) => {
             created_at: new Date().toISOString()
         });
 
-        // CAPI: Trigger Purchase if booking has real payment/deposit (Trạng thái Xác nhận đơn thuần bị từ chối)
-        if (metaCapiCrm.isEligiblePurchaseBooking(newBooking) || metaCapiV3.isEligiblePurchaseBooking(newBooking)) {
-            (async () => {
-                try {
-                    const custRes = await db.query('SELECT * FROM customers WHERE id = $1', [newBooking.customer_id]);
-                    if (custRes.rows.length > 0) {
-                        const customer = custRes.rows[0];
-                        let lead = null;
-                        if (customer.lead_id) {
-                            const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
-                            if (leadRes.rows.length > 0) lead = leadRes.rows[0];
-                        }
+        // CAPI & Auto-resolution: Liên kết Lead và kích hoạt Purchase nếu có thanh toán thực tế
+        (async () => {
+            try {
+                const custRes = await db.query('SELECT * FROM customers WHERE id = $1', [newBooking.customer_id]);
+                if (custRes.rows.length > 0) {
+                    const customer = custRes.rows[0];
+                    const isPaid = metaCapiCrm.isEligiblePurchaseBooking(newBooking) || metaCapiV3.isEligiblePurchaseBooking(newBooking);
+                    let lead = null;
+                    if (customer.lead_id) {
+                        const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
+                        if (leadRes.rows.length > 0) lead = leadRes.rows[0];
+                    }
+                    if (!lead) {
+                        const resolution = await leadAutoResolution.resolveAndLinkLead({
+                            customer,
+                            booking: newBooking,
+                            isPaid
+                        });
+                        if (resolution && resolution.resolved) lead = resolution.lead;
+                    } else if (isPaid && lead.status !== 'Chốt đơn') {
+                        await db.query(`
+                            UPDATE leads 
+                            SET status = 'Chốt đơn', won_at = COALESCE(won_at, NOW()), is_sales_qualified = TRUE, sales_qualified_at = COALESCE(sales_qualified_at, NOW()), updated_at = NOW()
+                            WHERE id = $1 AND status != 'Chốt đơn'
+                        `, [lead.id]);
+                        lead.status = 'Chốt đơn';
+                        lead.is_sales_qualified = true;
+                    }
+
+                    if (isPaid) {
                         await dispatchBookingPurchase(newBooking, customer, lead);
                     }
-                } catch (e) {
-                    console.error('[CAPI] Lỗi enqueue Purchase từ createBooking:', e.message);
                 }
-            })();
-        }
+            } catch (e) {
+                console.error('[CAPI] Lỗi auto-resolution/enqueue Purchase từ createBooking:', e.message);
+            }
+        })();
 
         res.status(201).json(newBooking);
     } catch (err) {
@@ -387,25 +422,43 @@ exports.updateBooking = async (req, res) => {
                 updated_at: new Date().toISOString()
             });
 
-            // CAPI: Trigger Purchase if booking has real payment/deposit (Trạng thái Xác nhận đơn thuần bị từ chối)
-            if (metaCapiCrm.isEligiblePurchaseBooking(updatedBooking) || metaCapiV3.isEligiblePurchaseBooking(updatedBooking)) {
-                (async () => {
-                    try {
-                        const custRes = await db.query('SELECT * FROM customers WHERE id = $1', [updatedBooking.customer_id]);
-                        if (custRes.rows.length > 0) {
-                            const customer = custRes.rows[0];
-                            let lead = null;
-                            if (customer.lead_id) {
-                                const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
-                                if (leadRes.rows.length > 0) lead = leadRes.rows[0];
-                            }
+            // CAPI & Auto-resolution: Liên kết Lead và kích hoạt Purchase nếu có thanh toán thực tế
+            (async () => {
+                try {
+                    const custRes = await db.query('SELECT * FROM customers WHERE id = $1', [updatedBooking.customer_id]);
+                    if (custRes.rows.length > 0) {
+                        const customer = custRes.rows[0];
+                        const isPaid = metaCapiCrm.isEligiblePurchaseBooking(updatedBooking) || metaCapiV3.isEligiblePurchaseBooking(updatedBooking);
+                        let lead = null;
+                        if (customer.lead_id) {
+                            const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
+                            if (leadRes.rows.length > 0) lead = leadRes.rows[0];
+                        }
+                        if (!lead) {
+                            const resolution = await leadAutoResolution.resolveAndLinkLead({
+                                customer,
+                                booking: updatedBooking,
+                                isPaid
+                            });
+                            if (resolution && resolution.resolved) lead = resolution.lead;
+                        } else if (isPaid && lead.status !== 'Chốt đơn') {
+                            await db.query(`
+                                UPDATE leads 
+                                SET status = 'Chốt đơn', won_at = COALESCE(won_at, NOW()), is_sales_qualified = TRUE, sales_qualified_at = COALESCE(sales_qualified_at, NOW()), updated_at = NOW()
+                                WHERE id = $1 AND status != 'Chốt đơn'
+                            `, [lead.id]);
+                            lead.status = 'Chốt đơn';
+                            lead.is_sales_qualified = true;
+                        }
+
+                        if (isPaid) {
                             await dispatchBookingPurchase(updatedBooking, customer, lead);
                         }
-                    } catch (e) {
-                        console.error('[CAPI] Lỗi enqueue Purchase từ updateBooking:', e.message);
                     }
-                })();
-            }
+                } catch (e) {
+                    console.error('[CAPI] Lỗi auto-resolution/enqueue Purchase từ updateBooking:', e.message);
+                }
+            })();
 
             res.json(updatedBooking);
         } else {
@@ -486,6 +539,9 @@ exports.createGroupBooking = async (req, res) => {
                 [firstPax.name, firstPax.phone]
             );
             customerId = newCust.rows[0].id;
+            try {
+                await leadAutoResolution.resolveAndLinkLead({ customerId, isPaid: false, client });
+            } catch (_) {}
         }
 
         // 3. Create Booking

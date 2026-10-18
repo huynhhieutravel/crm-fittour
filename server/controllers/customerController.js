@@ -3,6 +3,7 @@ const { logActivity } = require('../utils/logger');
 const { convertLeadToCustomer } = require('../services/conversionService');
 const { getDataScope } = require('../middleware/teamScope');
 const { getUserMergedPerms } = require('../middleware/permCheck');
+const leadAutoResolution = require('../services/leadAutoResolutionService');
 const axios = require('axios');
 
 // Helper: Tính phân khúc VIP tự động dựa trên tổng số chuyến đi
@@ -186,17 +187,14 @@ exports.createCustomer = async (req, res) => {
 
         const newCustomer = result.rows[0];
 
-        // 2. Retroactive Lead Claiming
-        if (newCustomer.phone || newCustomer.facebook_psid || newCustomer.zalo_uid) {
-            await db.query(`
-                UPDATE leads 
-                SET customer_id = $1 
-                WHERE customer_id IS NULL AND (
-                    (phone = $2 AND $2 IS NOT NULL AND $2 != '') OR 
-                    (facebook_psid = $3 AND $3 IS NOT NULL AND $3 != '') OR
-                    (zalo_uid = $4 AND $4 IS NOT NULL AND $4 != '')
-                )
-            `, [newCustomer.id, newCustomer.phone, newCustomer.facebook_psid, newCustomer.zalo_uid]);
+        // 2. Auto-Resolution: Ghép Lead hai chiều an toàn (khách mới chưa thanh toán -> isPaid = false)
+        try {
+            await leadAutoResolution.resolveAndLinkLead({
+                customer: newCustomer,
+                isPaid: false
+            });
+        } catch (resErr) {
+            console.warn('[Customer] Lỗi auto-resolve Lead khi tạo khách:', resErr.message);
         }
 
         // LOG ACTIVITY

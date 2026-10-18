@@ -11,6 +11,7 @@
 const axios = require('axios');
 const crypto = require('crypto');
 const db = require('../db');
+const leadAutoResolution = require('./leadAutoResolutionService');
 
 const META_GRAPH_VERSION = 'v26.0';
 const DEFAULT_DATASET_ID = '835404925628132';
@@ -431,6 +432,25 @@ async function enqueuePurchase(booking, customer, lead = null, client = null) {
   if (!isEligiblePurchaseBooking(booking)) {
     console.log(`[CAPI-CRM] Booking #${booking.booking_code || booking.id} chưa đủ điều kiện Purchase (Status: ${booking.booking_status}, Paid: ${booking.paid || 0}).`);
     return { enqueued: false, reason: 'NOT_ELIGIBLE_TRANSACTION' };
+  }
+
+  // 1.1 Tự động đối soát Lead (Auto-Resolution) nếu chưa có lead truyền vào
+  if (!lead && (customer || booking.customer_id)) {
+    try {
+      const resolution = await leadAutoResolution.resolveAndLinkLead({
+        customer,
+        customerId: booking.customer_id,
+        booking,
+        isPaid: true,
+        client
+      });
+      if (resolution && resolution.resolved) {
+        lead = resolution.lead;
+        console.log(`[CAPI-CRM] ✅ Auto-Resolution đã tìm thấy Lead #${lead.id} cho Booking #${booking.booking_code || booking.id} (${resolution.matchType})`);
+      }
+    } catch (resErr) {
+      console.warn(`[CAPI-CRM] Không thể auto-resolve lead:`, resErr.message);
+    }
   }
 
   // 2. Xác định thông tin đối soát từ Customer hoặc Lead
