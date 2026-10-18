@@ -848,6 +848,7 @@ module.exports = {
   isEligiblePurchaseBooking,
   evaluateSalesQualification,
   isCanaryEligible,
+  getSetting,
   enqueueCrmEvent,
   enqueueLead,
   enqueueQualifiedLead,
