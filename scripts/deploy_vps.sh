@@ -76,7 +76,7 @@ ssh ${VPS_USER}@${VPS_IP} << 'EOF'
     echo "🔒 Đảm bảo 2 feature flag CAPI ở trạng thái an toàn OFF (false)..."
     PGPASSWORD=fittour2026 psql -U postgres -h localhost -d fittour_crm -c "UPDATE settings SET value = 'false' WHERE key IN ('meta_capi_crm_enabled', 'meta_capi_business_messaging_v3_enabled');"
 
-    echo "7b02422" > /var/www/fittour-crm/server/CURRENT_DEPLOY_COMMIT
+    echo "b998614" > /var/www/fittour-crm/server/CURRENT_DEPLOY_COMMIT
 
     echo "🔄 Khởi động lại PM2..."
     pm2 restart crm-fittour --update-env
