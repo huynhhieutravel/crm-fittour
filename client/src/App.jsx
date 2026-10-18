@@ -2000,9 +2000,18 @@ function AppContent() {
       if (type === 'capi') {
         apiPath = '/api/settings/test-capi';
         payload = {};
+      } else if (type === 'crm_capi_ping') {
+        apiPath = '/api/settings/check-crm-capi-connection';
+        payload = {};
       } else if (type === 'crm_capi') {
+        const rawCode = (metaSettings?.meta_test_event_code || '').trim();
+        if (!rawCode || rawCode === 'TEST99999') {
+          addToast('⚠️ Bắt buộc nhập mã Test Event Code thực tế từ tab Thử nghiệm sự kiện trên Meta Events Manager (VD: TEST12345). Không được để trống hoặc dùng mã TEST99999!');
+          setTestLoading(false);
+          return;
+        }
         apiPath = '/api/settings/test-crm-capi-isolated';
-        payload = { test_event_code: metaSettings?.meta_test_event_code || '' };
+        payload = { test_event_code: rawCode, include_purchase: false };
       } else if (type === 'catalog') {
         apiPath = '/api/meta/catalog/sync-all';
         payload = {};
@@ -2021,10 +2030,10 @@ function AppContent() {
       if (res.data.success) {
         addToast(res.data.message || 'Kiểm tra thành công!');
       } else {
-        addToast(res.data.error || 'Kiểm tra thất bại.');
+        addToast(res.data.message || res.data.error || 'Kiểm tra thất bại.');
       }
     } catch (err) {
-      addToast(err.response?.data?.error || err.response?.data?.message || 'Lỗi kết nối Meta.');
+      addToast(err.response?.data?.message || err.response?.data?.error || 'Lỗi kết nối Meta.');
     } finally {
       setTestLoading(false);
       fetchSettings();

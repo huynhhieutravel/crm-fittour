@@ -9,6 +9,9 @@ const db = require('../db');
 async function up() {
     console.log('[MIGRATION CAPI CRM] Bắt đầu khởi tạo cấu hình CRM Standard CAPI...');
 
+    const dbInfo = await db.query('SELECT current_database() as db_name, current_user as db_user;');
+    console.log(`[MIGRATION CAPI CRM] Database kết nối: "${dbInfo.rows[0]?.db_name}" (User: "${dbInfo.rows[0]?.db_user}")`);
+
     await db.query(`
         INSERT INTO settings (key, value, description)
         VALUES 

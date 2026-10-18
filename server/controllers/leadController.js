@@ -232,10 +232,19 @@ exports.createLead = async (req, res) => {
             created_at: new Date().toISOString()
         });
 
-        // CRM CAPI: Enqueue Lead event (chỉ enqueue nếu meta_capi_crm_enabled=true và có định danh SĐT/Email)
-        metaCapiCrm.enqueueLead(newLead).catch(err =>
-            console.error('[CAPI-CRM] Lỗi enqueue Lead mới:', err.message)
-        );
+        // CRM CAPI & Legacy CAPI Routing cho Lead mới
+        (async () => {
+            try {
+                const isCrmOn = await metaCapiCrm.getSetting('meta_capi_crm_enabled');
+                if (isCrmOn === 'true') {
+                    await metaCapiCrm.enqueueLead(newLead);
+                } else {
+                    await metaCapi.sendLeadEvent(newLead);
+                }
+            } catch (capiErr) {
+                console.error('[CAPI] Lỗi gửi tín hiệu Lead mới:', capiErr.message);
+            }
+        })();
 
         // (Đã tắt gửi Telegram khi tạo lead thủ công theo yêu cầu quản trị)
 

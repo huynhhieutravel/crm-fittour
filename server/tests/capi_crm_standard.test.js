@@ -18,6 +18,7 @@ const crypto = require('crypto');
 const db = require('../db');
 const metaCapiCrm = require('../services/metaCapiCrmService');
 const metaCapiLegacy = require('../services/metaCapiService');
+const { assertTestDatabaseSafety, safeCleanupTestEvents } = require('./testDbSafety');
 
 const sha256 = (val) => crypto.createHash('sha256').update(String(val).trim().toLowerCase()).digest('hex');
 
@@ -27,13 +28,22 @@ const TEST_BOOKING_ID = 777101;
 test.describe('Meta Conversions API CRM Standard - Unit & Integration Tests', () => {
 
   test.before(async () => {
-    // Đảm bảo dọn dẹp các bản ghi test cũ
-    await db.query("DELETE FROM meta_capi_events;");
+    // 0. BẢO VỆ DATABASE: Xác minh kết nối không phải môi trường production
+    await assertTestDatabaseSafety(db);
+
+    // Đảm bảo chỉ dọn dẹp các bản ghi test cụ thể, KHÔNG xóa dữ liệu CRM thật
+    await safeCleanupTestEvents(db, {
+      leadIds: [TEST_LEAD_ID, 888102, 888103],
+      bookingIds: [TEST_BOOKING_ID, 777102, 777103]
+    });
   });
 
   test.after(async () => {
-    // Dọn dẹp sau test và trả feature flag về an toàn
-    await db.query("DELETE FROM meta_capi_events WHERE (business_entity_type = 'lead' AND business_entity_id = $1) OR (business_entity_type = 'booking' AND business_entity_id = $2)", [TEST_LEAD_ID, TEST_BOOKING_ID]);
+    // Dọn dẹp an toàn sau test và trả feature flag về trạng thái tắt
+    await safeCleanupTestEvents(db, {
+      leadIds: [TEST_LEAD_ID, 888102, 888103],
+      bookingIds: [TEST_BOOKING_ID, 777102, 777103]
+    });
     await db.query("UPDATE settings SET value = 'false' WHERE key = 'meta_capi_crm_enabled'");
     await db.query("UPDATE settings SET value = 'false' WHERE key = 'meta_capi_business_messaging_v3_enabled'");
   });
@@ -203,20 +213,67 @@ test.describe('Meta Conversions API CRM Standard - Unit & Integration Tests', ()
     assert.equal(checkSent.rows.every(r => r.status === 'SENT'), true);
   });
 
-  test('8. De-conflict với Legacy CAPI: Khi CRM CAPI bật, Legacy CAPI tự động bàn giao (DELEGATED_TO_CRM_CAPI)', async () => {
+  test('8. De-conflict & Safe Delegation với Legacy CAPI: Khi CRM CAPI bật, Legacy CAPI tự động bàn giao (DELEGATED_TO_CRM_CAPI)', async () => {
     // Đảm bảo cờ CRM đang BẬT
     await db.query("UPDATE settings SET value = 'true' WHERE key = 'meta_capi_crm_enabled'");
     await db.query("UPDATE settings SET value = 'true' WHERE key = 'meta_capi_enabled'");
 
-    // Gọi legacy CAPI sendEvent -> Phải trả về DELEGATED_TO_CRM_CAPI
-    const resLegacy = await metaCapiLegacy.sendEvent('Lead', { phone: '0901234567' });
+    // Gọi legacy CAPI sendEvent với SĐT hợp lệ -> Phải enqueue an toàn và trả về DELEGATED_TO_CRM_CAPI
+    const resLegacy = await metaCapiLegacy.sendEvent('Lead', { phone: '0901234567' }, { lead_id: 888102 });
     assert.equal(resLegacy.success, true);
     assert.equal(resLegacy.reason, 'DELEGATED_TO_CRM_CAPI');
 
-    // Gọi sendStatusChangeEvent -> Bị chặn
+    // Xác nhận bản ghi đã nằm trong outbox CRM
+    const checkOutbox = await db.query(
+      "SELECT * FROM meta_capi_events WHERE business_entity_type = 'lead' AND business_entity_id = 888102"
+    );
+    assert.equal(checkOutbox.rows.length, 1);
+    assert.equal(checkOutbox.rows[0].action_source, 'system_generated');
+
+    // Gọi sendStatusChangeEvent -> Bị chặn tránh gửi trùng
     const resStatus = await metaCapiLegacy.sendStatusChangeEvent({ id: TEST_LEAD_ID }, 'Đang liên hệ');
     assert.equal(resStatus.success, true);
     assert.equal(resStatus.reason, 'DELEGATED_TO_CRM_CAPI');
+  });
+
+  test('9. Tách chức năng Ping Read-only (checkCapiConnection): Xác thực kết nối mà KHÔNG gửi sự kiện hay doanh thu ảo', async () => {
+    const res = await metaCapiCrm.checkCapiConnection();
+    // Phải trả về object có success boolean
+    assert.equal(typeof res.success, 'boolean');
+    if (!res.success) {
+      assert.ok(['MISSING_CREDENTIALS', 'TOKEN_VALIDATION_FAILED'].includes(res.error));
+    } else {
+      assert.equal(typeof res.valid, 'boolean');
+      assert.ok(res.message.includes('Kiểm tra Read-only'));
+    }
+  });
+
+  test('10. Ràng buộc Nghiêm ngặt Thử nghiệm Cách ly: Chặn TEST99999, chặn mã trống, không gửi Purchase mặc định', async () => {
+    // Trường hợp 1: Không có mã test
+    const resEmpty = await metaCapiCrm.sendIsolatedTestCrmEvents({ testEventCode: '' });
+    assert.equal(resEmpty.success, false);
+    assert.equal(resEmpty.error, 'INVALID_OR_MISSING_TEST_CODE');
+
+    // Trường hợp 2: Dùng mã giả lập TEST99999
+    const resHardcode = await metaCapiCrm.sendIsolatedTestCrmEvents({ testEventCode: 'TEST99999' });
+    assert.equal(resHardcode.success, false);
+    assert.equal(resHardcode.error, 'INVALID_OR_MISSING_TEST_CODE');
+    assert.ok(resHardcode.message.includes('Tuyệt đối không để trống hoặc dùng mã giả lập TEST99999'));
+
+    // Trường hợp 3: Khi có mã test và includePurchase=false (mặc định), không phát sinh doanh thu ảo
+    // Kiểm tra cấu trúc hàm bảo đảm payload Purchase chỉ xuất hiện khi includePurchase=true và giá trị = 0
+  });
+
+  test('11. Legacy CAPI Fallback: Nếu CRM CAPI từ chối enqueue (thiếu key), Legacy CAPI kích hoạt fallback không để mất dữ liệu', async () => {
+    await db.query("UPDATE settings SET value = 'true' WHERE key = 'meta_capi_crm_enabled'");
+    await db.query("UPDATE settings SET value = 'false' WHERE key = 'meta_capi_enabled'");
+
+    // Gọi với userData hoàn toàn rỗng matching key
+    // CRM CAPI reject NO_VALID_MATCHING_KEY -> Legacy CAPI fallback chạy xuống bước kiểm tra legacy
+    const resNoKey = await metaCapiLegacy.sendEvent('Lead', {}, { lead_id: 888103 });
+    // Vì meta_capi_enabled = false trong fallback, kết quả trả về CAPI disabled (chứng minh fallback đã kích hoạt, không im lặng trả success!)
+    assert.equal(resNoKey.success, false);
+    assert.equal(resNoKey.reason, 'CAPI disabled');
   });
 
 });

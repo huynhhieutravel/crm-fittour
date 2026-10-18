@@ -169,14 +169,31 @@ router.post('/test-business-messaging-isolated', auth, admin, async (req, res) =
     }
 });
 
-// 6. Kiểm thử chuỗi 3 sự kiện (Lead, QualifiedLead, Purchase) cách ly cho CRM Standard CAPI (action_source: system_generated)
-// KHÔNG TẠO BOOKING GIẢ, KHÔNG TẠO PHIẾU THU GIẢ TRONG PRODUCTION DB
+// 6. Kiểm tra kết nối Meta CAPI thuần túy (Read-only Ping)
+// Xác minh tính hợp lệ của Token và Dataset mà TUYỆT ĐỐI KHÔNG gửi event hay doanh thu ảo
+router.post('/check-crm-capi-connection', auth, admin, async (req, res) => {
+    try {
+        const metaCapiCrm = require('../services/metaCapiCrmService');
+        const result = await metaCapiCrm.checkCapiConnection();
+        if (result.success) {
+            res.json(result);
+        } else {
+            res.status(400).json(result);
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// 7. Kiểm thử sự kiện cách ly cho CRM Standard CAPI (action_source: system_generated)
+// RÀNG BUỘC: Bắt buộc mã test thật từ Events Manager, không dùng TEST99999, không gửi Purchase mặc định
 router.post('/test-crm-capi-isolated', auth, admin, async (req, res) => {
     try {
-        const { test_event_code } = req.body;
+        const { test_event_code, include_purchase } = req.body;
         const metaCapiCrm = require('../services/metaCapiCrmService');
         const result = await metaCapiCrm.sendIsolatedTestCrmEvents({
-            testEventCode: test_event_code
+            testEventCode: test_event_code,
+            includePurchase: Boolean(include_purchase)
         });
         if (result.success) {
             res.json(result);

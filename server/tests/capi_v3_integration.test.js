@@ -9,6 +9,7 @@ const { test, describe, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const db = require('../db');
 const metaCapiV3 = require('../services/metaCapiV3Service');
+const { assertTestDatabaseSafety, safeCleanupTestEvents } = require('./testDbSafety');
 
 describe('Meta CAPI Business Messaging v3 - Integration Tests (Outbox, Concurrency & Crash Recovery)', () => {
 
@@ -18,8 +19,14 @@ describe('Meta CAPI Business Messaging v3 - Integration Tests (Outbox, Concurren
   const TEST_PSID = '999888777666555';
 
   before(async () => {
-    // 0. Dọn sạch test data cũ
-    await db.query(`DELETE FROM meta_capi_events;`);
+    // 0. BẢO VỆ DATABASE: Xác minh kết nối không phải môi trường production
+    await assertTestDatabaseSafety(db);
+
+    // Dọn sạch test data cũ có chủ đích, KHÔNG xóa toàn bộ bảng
+    await safeCleanupTestEvents(db, {
+      leadIds: [TEST_LEAD_ID],
+      bookingIds: [TEST_BOOKING_ID]
+    });
 
     // Đảm bảo flag đang tắt ban đầu
     await db.query("UPDATE settings SET value = 'false' WHERE key = 'meta_capi_business_messaging_v3_enabled'");
@@ -27,11 +34,10 @@ describe('Meta CAPI Business Messaging v3 - Integration Tests (Outbox, Concurren
 
   after(async () => {
     // Dọn sạch test data và trả lại trạng thái an toàn tắt flag
-    await db.query(`
-      DELETE FROM meta_capi_events 
-      WHERE (business_entity_type = 'lead' AND business_entity_id = $1)
-         OR (business_entity_type = 'booking' AND business_entity_id = $2)
-    `, [TEST_LEAD_ID, TEST_BOOKING_ID]);
+    await safeCleanupTestEvents(db, {
+      leadIds: [TEST_LEAD_ID],
+      bookingIds: [TEST_BOOKING_ID]
+    });
 
     await db.query("UPDATE settings SET value = 'false' WHERE key = 'meta_capi_business_messaging_v3_enabled'");
   });

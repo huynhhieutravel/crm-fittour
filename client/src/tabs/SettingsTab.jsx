@@ -168,10 +168,13 @@ const SettingsTab = ({
               <label>MÃ THỬ NGHIỆM (TEST EVENT CODE)</label>
               <input 
                 className="modal-input" 
-                placeholder="Ví dụ: TEST12345 (Nếu có)"
+                placeholder="VD: TEST38492 (Từ tab Thử nghiệm sự kiện)"
                 value={metaSettings?.meta_test_event_code || ''} 
                 onChange={e => setMetaSettings({...metaSettings, meta_test_event_code: e.target.value})} 
               />
+              <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.25rem', display: 'block' }}>
+                ⚠️ Bắt buộc lấy mã từ Meta Events Manager &gt; Thử nghiệm sự kiện. Không dùng TEST99999 hoặc để trống khi test sự kiện.
+              </span>
             </div>
           </div>
           <div className="modal-form-group" style={{ marginBottom: '1.5rem', width: '100%' }}>
@@ -299,10 +302,32 @@ const SettingsTab = ({
             </select>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
             <button className="login-btn" onClick={handleUpdateSettings}>LƯU CẤU HÌNH</button>
-            <button className="login-btn" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #16a34a' }} onClick={() => handleTestMeta('crm_capi')}>TEST CRM CAPI CÁCH LY</button>
-            <button className="login-btn" style={{ background: '#f8fafc', color: '#64748b', border: '1px solid #cbd5e1' }} onClick={() => handleTestMeta('capi')}>TEST CAPI LEGACY</button>
+            <button 
+              className="login-btn" 
+              style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #3b82f6' }} 
+              onClick={() => handleTestMeta('crm_capi_ping')}
+              title="Kiểm tra kết nối Token và Dataset (Read-only, không gửi event hay doanh thu ảo)"
+            >
+              🔍 KIỂM TRA KẾT NỐI (READ-ONLY)
+            </button>
+            <button 
+              className="login-btn" 
+              style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #16a34a' }} 
+              onClick={() => handleTestMeta('crm_capi')}
+              title="Gửi sự kiện Lead & QualifiedLead thử nghiệm (Bắt buộc nhập mã Test Event Code)"
+            >
+              🧪 TEST SỰ KIỆN CÁCH LY
+            </button>
+            <button 
+              className="login-btn" 
+              style={{ background: '#f8fafc', color: '#64748b', border: '1px solid #cbd5e1' }} 
+              onClick={() => handleTestMeta('capi')}
+              title="Kiểm tra gửi qua cổng CAPI Legacy"
+            >
+              TEST CAPI LEGACY
+            </button>
           </div>
         </div>
       )}

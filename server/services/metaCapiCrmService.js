@@ -595,23 +595,96 @@ async function processCrmOutboxBatch({ limit = 10, isDryRun = false } = {}) {
 }
 
 /**
- * Gửi sự kiện kiểm thử cách ly trực tiếp đến Meta Events Manager (Test Events)
- * Phục vụ nghiệm thu mà không ảnh hưởng cơ sở dữ liệu production
+ * Kiểm tra kết nối Meta CAPI thuần túy (Read-only Ping)
+ * - Xác minh tính hợp lệ của Token và Dataset
+ * - TUYỆT ĐỐI KHÔNG gửi bất kỳ sự kiện hay giá trị doanh thu giả nào vào Dataset production
  */
-async function sendIsolatedTestCrmEvents({ testEventCode = null } = {}) {
+async function checkCapiConnection() {
   const datasetId = (await getSetting('meta_dataset_id')) || DEFAULT_DATASET_ID;
   const accessToken = await getSetting('meta_capi_access_token');
 
   if (!accessToken || !datasetId) {
-    return { success: false, error: 'MISSING_CREDENTIALS' };
+    return {
+      success: false,
+      error: 'MISSING_CREDENTIALS',
+      message: 'Thiếu Meta Dataset ID hoặc CAPI Access Token trong bảng Settings'
+    };
   }
 
+  try {
+    const debugRes = await axios.get(`https://graph.facebook.com/debug_token?input_token=${accessToken}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      timeout: 10000
+    });
+
+    const tokenData = debugRes.data?.data || {};
+    const scopes = tokenData.scopes || [];
+    const granularScopes = tokenData.granular_scopes || [];
+    
+    let targetDatasets = [];
+    granularScopes.forEach(gs => {
+      if (gs.target_ids) {
+        targetDatasets.push(...gs.target_ids);
+      }
+    });
+
+    const isDatasetAuthorized = targetDatasets.length === 0 || targetDatasets.includes(String(datasetId));
+
+    return {
+      success: true,
+      valid: tokenData.is_valid,
+      app_id: tokenData.app_id,
+      application: tokenData.application || 'Meta Conversions API',
+      dataset_id: datasetId,
+      is_dataset_authorized: isDatasetAuthorized,
+      target_datasets: targetDatasets,
+      scopes: scopes,
+      message: 'Kết nối Meta Graph API thành công! Token và Dataset hợp lệ (Kiểm tra Read-only, không phát sinh sự kiện hay doanh thu ảo).'
+    };
+  } catch (err) {
+    const errorData = err.response ? err.response.data?.error : err.message;
+    return {
+      success: false,
+      error: 'TOKEN_VALIDATION_FAILED',
+      message: (errorData && errorData.message) || err.message,
+      details: errorData
+    };
+  }
+}
+
+/**
+ * Gửi sự kiện kiểm thử cách ly trực tiếp đến Meta Events Manager (Test Events)
+ * RÀNG BUỘC NGHIÊM NGẶT:
+ * 1. BẮT BUỘC có testEventCode hợp lệ từ phiên Test Events đang mở trên Events Manager. Tuyệt đối không dùng mã hardcode 'TEST99999'!
+ * 2. Mặc định chỉ gửi Lead và QualifiedLead. KHÔNG tự động gửi Purchase hoặc doanh thu giả vào Dataset production.
+ * 3. Nếu Meta cảnh báo mã test không khớp phiên hoạt động, hệ thống bắt ngay cảnh báo và thông báo rõ cho Admin.
+ */
+async function sendIsolatedTestCrmEvents({ testEventCode = null, includePurchase = false } = {}) {
+  const datasetId = (await getSetting('meta_dataset_id')) || DEFAULT_DATASET_ID;
+  const accessToken = await getSetting('meta_capi_access_token');
+
+  if (!accessToken || !datasetId) {
+    return { success: false, error: 'MISSING_CREDENTIALS', message: 'Thiếu Meta Dataset ID hoặc CAPI Access Token' };
+  }
+
+  const cleanTestCode = (testEventCode || '').trim();
+
+  // Guard 1: Chặn đứng mọi trường hợp không có mã test hoặc dùng mã hardcode TEST99999
+  if (!cleanTestCode || cleanTestCode === 'TEST99999') {
+    return {
+      success: false,
+      error: 'INVALID_OR_MISSING_TEST_CODE',
+      message: 'Bắt buộc nhập mã Test Event Code thực tế từ tab Thử nghiệm sự kiện trên Meta Events Manager (VD: TEST12345). Tuyệt đối không để trống hoặc dùng mã giả lập TEST99999 để tránh ô nhiễm dữ liệu!'
+    };
+  }
+
+  // Guard 2: Chỉ gửi Lead & QualifiedLead. Chỉ khi includePurchase=true mới gửi kèm Purchase tượng trưng giá trị 0đ
   const events = [
     buildCrmPayload({
       eventName: 'Lead',
       phone: '0901234567',
       email: 'test.lead@fittour.vn',
-      externalId: 'test_lead_001',
+      externalId: 'test_lead_isolated_001',
       customData: {
         test_isolated: true,
         content_name: 'Tour Khảo Sát Thử Nghiệm CRM'
@@ -621,39 +694,42 @@ async function sendIsolatedTestCrmEvents({ testEventCode = null } = {}) {
       eventName: 'QualifiedLead',
       phone: '0901234567',
       email: 'test.lead@fittour.vn',
-      externalId: 'test_lead_001',
+      externalId: 'test_lead_isolated_001',
       customData: {
         test_isolated: true,
         lead_status: 'Tiềm năng',
         content_name: 'Tour Khảo Sát Thử Nghiệm CRM'
       }
-    }),
-    buildCrmPayload({
+    })
+  ];
+
+  if (includePurchase) {
+    events.push(buildCrmPayload({
       eventName: 'Purchase',
       phone: '0901234567',
       email: 'test.lead@fittour.vn',
-      externalId: 'test_lead_001',
+      externalId: 'test_lead_isolated_001',
       customData: {
         test_isolated: true,
-        value: 1000000,
+        value: 0, // Giá trị an toàn tuyệt đối 0 VND
         currency: 'VND',
         booking_code: 'BK-TEST-CRM-ISOLATED',
         payment_method: 'Chuyển khoản (Kiểm thử cách ly)'
       }
-    })
-  ];
+    }));
+  }
 
   const results = [];
   const metaUrl = `https://graph.facebook.com/${META_GRAPH_VERSION}/${datasetId}/events`;
+  let hasSessionMismatchWarning = false;
+  let sessionWarningMessage = null;
 
   for (const evt of events) {
     const body = {
       data: [evt],
-      access_token: accessToken
+      access_token: accessToken,
+      test_event_code: cleanTestCode
     };
-    if (testEventCode && testEventCode.trim()) {
-      body.test_event_code = testEventCode.trim();
-    }
 
     try {
       const res = await axios.post(metaUrl, body, {
@@ -663,12 +739,24 @@ async function sendIsolatedTestCrmEvents({ testEventCode = null } = {}) {
         },
         timeout: 10000
       });
+
+      const messages = res.data?.messages || [];
+      const mismatchMsg = messages.find(m => {
+        const text = typeof m === 'string' ? m : (m && m.message ? m.message : JSON.stringify(m));
+        return text.includes('does not match an active Test Events session');
+      });
+      if (mismatchMsg) {
+        hasSessionMismatchWarning = true;
+        sessionWarningMessage = typeof mismatchMsg === 'string' ? mismatchMsg : (mismatchMsg.message || JSON.stringify(mismatchMsg));
+      }
+
       results.push({
         event: evt.event_name,
-        success: true,
+        success: !mismatchMsg,
         status: res.status,
         events_received: res.data?.events_received,
-        fbtrace_id: res.data?.fbtrace_id
+        fbtrace_id: res.data?.fbtrace_id,
+        messages: messages
       });
     } catch (err) {
       results.push({
@@ -680,7 +768,22 @@ async function sendIsolatedTestCrmEvents({ testEventCode = null } = {}) {
     }
   }
 
-  return { success: true, results };
+  if (hasSessionMismatchWarning) {
+    return {
+      success: false,
+      warning: true,
+      error: 'TEST_EVENT_CODE_MISMATCH',
+      message: `Cảnh báo từ Meta: Mã test "${cleanTestCode}" không khớp với bất kỳ phiên Test Events nào đang mở cho Dataset này. Sự kiện đã được gửi nhưng sẽ KHÔNG xuất hiện trên màn hình Test Events. Vui lòng mở Events Manager -> Tab Thử nghiệm sự kiện và lấy đúng mã hiển thị tại đó!`,
+      details: results
+    };
+  }
+
+  const allSuccess = results.every(r => r.success);
+  return {
+    success: allSuccess,
+    message: allSuccess ? `Gửi thành công ${results.length} sự kiện kiểm thử với mã ${cleanTestCode}. Hãy kiểm tra màn hình Test Events trên Meta!` : 'Có lỗi khi gửi một hoặc nhiều sự kiện test.',
+    results
+  };
 }
 
 module.exports = {
@@ -697,5 +800,6 @@ module.exports = {
   enqueueQualifiedLead,
   enqueuePurchase,
   processCrmOutboxBatch,
+  checkCapiConnection,
   sendIsolatedTestCrmEvents
 };

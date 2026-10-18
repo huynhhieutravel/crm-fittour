@@ -53,11 +53,42 @@ exports.sendEvent = async (eventName, userData = {}, customData = {}, eventSourc
     }
 
     // 1.2 De-conflict with CRM Standard CAPI:
-    // Nếu CRM Standard CAPI đang bật, bàn giao toàn bộ quyền gửi cho luồng Outbox CRM CAPI mới, tránh gửi đè 2 lần
+    // Nếu CRM Standard CAPI đang bật, thực hiện chuyển giao an toàn (safe delegation) sang CRM CAPI Outbox.
+    // TUYỆT ĐỐI KHÔNG im lặng trả success nếu sự kiện thật chưa được chuyển giao an toàn!
     const crmCapiEnabled = await getSetting('meta_capi_crm_enabled');
     if (crmCapiEnabled === 'true') {
-      console.log(`[CAPI Legacy] Đã phân luồng sang CRM Standard CAPI (Outbox engine). Bỏ qua legacy CAPI.`);
-      return { success: true, reason: 'DELEGATED_TO_CRM_CAPI' };
+      try {
+        const metaCapiCrm = require('./metaCapiCrmService');
+        const queueRes = await metaCapiCrm.enqueueCrmEvent({
+          eventName: eventName,
+          businessEntityType: customData?.lead_id ? 'lead' : (customData?.booking_id ? 'booking' : 'legacy_event'),
+          businessEntityId: customData?.lead_id || customData?.booking_id || Math.floor(Date.now() / 1000),
+          phone: userData.phone,
+          email: userData.email,
+          externalId: userData.facebook_psid || (customData?.lead_id ? String(customData.lead_id) : null),
+          metaLeadId: userData.meta_lead_id,
+          fbc: userData.fbclid ? `fb.1.${Date.now()}.${userData.fbclid}` : null,
+          customData: {
+            ...customData,
+            delegated_from: 'legacy_capi'
+          }
+        });
+
+        if (queueRes && (queueRes.enqueued || queueRes.reason === 'ALREADY_EXISTS_IDEMPOTENT')) {
+          console.log(`[CAPI Legacy] ✅ Chuyển giao an toàn sang CRM CAPI Outbox (Event: ${eventName}, Outbox ID: ${queueRes.outboxId || 'idempotent'}).`);
+          return {
+            success: true,
+            reason: queueRes.enqueued ? 'DELEGATED_TO_CRM_CAPI' : 'DELEGATED_ALREADY_EXISTS',
+            outboxId: queueRes.outboxId
+          };
+        } else {
+          console.warn(`[CAPI Legacy] ⚠️ CRM CAPI không thể enqueue (${queueRes?.reason || 'REJECTED'}). Kích hoạt FALLBACK gửi trực tiếp qua Legacy CAPI để bảo toàn dữ liệu chuyển đổi!`);
+          // Tiếp tục chạy xuống dưới gửi trực tiếp qua Legacy CAPI!
+        }
+      } catch (delegateErr) {
+        console.error(`[CAPI Legacy] ❌ Lỗi khi enqueue sang CRM CAPI: ${delegateErr.message}. Kích hoạt FALLBACK gửi trực tiếp qua Legacy CAPI!`);
+        // Tiếp tục chạy xuống dưới gửi trực tiếp qua Legacy CAPI!
+      }
     }
 
     // 2. Get credentials
