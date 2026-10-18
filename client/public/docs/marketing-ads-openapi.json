@@ -1,0 +1,447 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FIT Tour Marketing Ads & CRM Intelligence API",
+    "description": "API truy xuất dữ liệu Marketing Ads, hiệu suất quảng cáo Facebook/Meta, kiểm định tuần, top chiến dịch và số liệu Leads CRM dành cho ChatGPT.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://erp.fittour.vn/api/marketing-ads",
+      "description": "FIT Tour Production ERP Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key",
+        "description": "Nhập mã GPT_API_KEY đã được cấu hình trên server"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/summary": {
+      "get": {
+        "summary": "Tổng quan hiệu suất Marketing Ads theo tháng",
+        "description": "Trả về chi tiêu (spend), số tin nhắn (messages), số lead, CPL Lead, CPL Msg theo từng BU (BU1, BU2, BU4, BU5) và tổng công ty, kèm tỷ lệ hoàn thành KPI.",
+        "operationId": "getMarketingSummary",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 2026
+            },
+            "description": "Năm báo cáo (mặc định 2026)"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "description": "Tháng báo cáo (1-12, ví dụ 9 cho Tháng 9)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "period": { "type": "string" },
+                    "company_total": { "type": "object" },
+                    "bu_breakdown": { "type": "array" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/crm-phone-audit": {
+      "get": {
+        "summary": "Kiểm định pháp y phễu 2 tầng & Lead có SĐT thực tế từ CRM (Phone-Verified Leads)",
+        "description": "Bóc tách số liệu đối chiếu 2 tầng: Tier 1 (427 Form Leads từ Ads) vs Tier 2 (673 Lead có SĐT thực tế từ CRM), chi phí CPL thực tế trên mỗi SĐT (145.018 đ), phân bổ theo tuần W1-W4 và chỉ ra điểm nghẽn chuyển đổi (BU4).",
+        "operationId": "getCrmPhoneAudit",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 2026
+            },
+            "description": "Năm báo cáo (mặc định 2026)"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "description": "Tháng báo cáo (1-12, ví dụ 9 cho Tháng 9)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "period": { "type": "string" },
+                    "summary": { "type": "object" },
+                    "bu_breakdown": { "type": "array" },
+                    "weekly_phone_leads": { "type": "array" },
+                    "audit_findings": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/weekly-audit": {
+      "get": {
+        "summary": "Kiểm định pháp y hiệu suất theo tuần (W1-W5)",
+        "description": "Bóc tách số liệu từng tuần, tự động cảnh báo CPL tăng vọt hoặc hiện tượng bẫy phễu rộng (Broad Funnel Paradox).",
+        "operationId": "getWeeklyAudit",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 2026
+            },
+            "description": "Năm báo cáo"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "description": "Tháng báo cáo"
+          },
+          {
+            "name": "bu_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Lọc theo BU (ví dụ: BU1, BU2, BU4, BU5 hoặc All)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "period": { "type": "string" },
+                    "audits": { "type": "array" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "summary": "Tìm kiếm nhóm quảng cáo và chiến dịch theo từ khóa",
+        "description": "Tìm kiếm dữ liệu chi tiết ad set hoặc campaign theo từ khóa như 'Ladakh', 'Mông Cổ', 'Nga', 'Cáp Nhĩ Tân', 'Ai Cập'...",
+        "operationId": "searchAdSets",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Từ khóa tìm kiếm (tên tour, điểm đến, campaign)"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 2026
+            },
+            "description": "Năm"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Tháng"
+          },
+          {
+            "name": "bu_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Lọc theo BU"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 25
+            },
+            "description": "Giới hạn số dòng trả về"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total_found": { "type": "integer" },
+                    "items": { "type": "array" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/top-tours": {
+      "get": {
+        "summary": "Xếp hạng chiến dịch hiệu quả (Winners) và tốn kém (Bleeders)",
+        "description": "Trả về danh sách các chiến dịch có CPL rẻ nhất (Top Winners) và các chiến dịch chi tiêu nhiều nhưng CPL đắt (Top Bleeders) cần tối ưu.",
+        "operationId": "getTopTours",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 2026
+            },
+            "description": "Năm báo cáo"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Tháng báo cáo"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["winners", "bleeders", "all"],
+              "default": "all"
+            },
+            "description": "Loại phân loại"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Số lượng chiến dịch hiển thị"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "period": { "type": "string" },
+                    "winners": { "type": "array" },
+                    "bleeders": { "type": "array" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mom-trends": {
+      "get": {
+        "summary": "Xu hướng tăng trưởng qua các tháng (Month-over-Month)",
+        "description": "So sánh chi tiêu, tin nhắn, leads và độ biến động CPL giữa các tháng trong năm (ví dụ tháng 7, 8, 9).",
+        "operationId": "getMoMTrends",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 2026
+            },
+            "description": "Năm báo cáo"
+          },
+          {
+            "name": "months",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "7,8,9"
+            },
+            "description": "Danh sách tháng cách nhau bởi dấu phẩy (ví dụ: '7,8,9')"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "year": { "type": "integer" },
+                    "trends": { "type": "array" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/crm-leads-summary": {
+      "get": {
+        "summary": "Thống kê Leads CRM theo BU và trạng thái",
+        "description": "Lấy số lượng leads từ bảng CRM leads: tỷ lệ thu thập số điện thoại, trạng thái tiếp cận và tỷ lệ chốt đơn theo từng BU.",
+        "operationId": "getCRMLeadsSummary",
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "2026-09-01"
+            },
+            "description": "Ngày bắt đầu (YYYY-MM-DD)"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "2026-09-30"
+            },
+            "description": "Ngày kết thúc (YYYY-MM-DD)"
+          },
+          {
+            "name": "bu_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Lọc theo BU"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "date_range": { "type": "string" },
+                    "summary": { "type": "object" },
+                    "breakdown": { "type": "array" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/capi-funnel-audit": {
+      "get": {
+        "summary": "Kiểm định toàn diện Meta Conversions API (CAPI) & Phễu Bán Hàng CRM",
+        "description": "Truy xuất cấu hình Dataset, kiểm tra khả năng khớp nối dữ liệu (Meta Leadgen ID, PSID, Phone, Email), thống kê phân bổ trạng thái phễu CRM và đối chiếu với tiêu chuẩn Meta Conversion Leads Blueprint.",
+        "operationId": "getMetaCapiFunnelAudit",
+        "responses": {
+          "200": {
+            "description": "Báo cáo kiểm định pháp y CAPI thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "timestamp": { "type": "string" },
+                    "system_overview": { "type": "object" },
+                    "matching_health_diagnosis": { "type": "object" },
+                    "crm_sales_funnel_vs_meta": { "type": "object" },
+                    "recommended_action_plan": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
