@@ -12,6 +12,28 @@ const getSetting = async (key) => {
     return res.rows.length > 0 ? res.rows[0].value : null;
 };
 
+// Helper phân luồng CAPI chuẩn hóa: v3 (nếu bật & đủ điều kiện) -> CRM CAPI Outbox (nếu bật & trong allowlist canary) -> Legacy CAPI (fallback / ngoài canary)
+const dispatchLeadCapi = async (lead) => {
+    if (!lead) return;
+    try {
+        const isV3On = await metaCapiV3.getSetting('meta_capi_business_messaging_v3_enabled');
+        const isCrmOn = await metaCapiCrm.getSetting('meta_capi_crm_enabled');
+        if (isV3On === 'true') {
+            await metaCapiV3.enqueueLeadSubmitted(lead);
+        } else if (isCrmOn === 'true') {
+            const crmRes = await metaCapiCrm.enqueueLead(lead);
+            // Nếu CRM CAPI bật nhưng Lead ngoài allowlist Canary -> Gửi qua Legacy CAPI như trước
+            if (crmRes && !crmRes.enqueued && ['CANARY_NOT_IN_ALLOWLIST', 'CANARY_MODE_DISABLED'].includes(crmRes.reason)) {
+                await metaCapi.sendLeadEvent(lead, { bypassCrmDelegation: true });
+            }
+        } else {
+            await metaCapi.sendLeadEvent(lead);
+        }
+    } catch (capiErr) {
+        console.error('[CAPI] Lỗi phân luồng tín hiệu Lead:', capiErr.message);
+    }
+};
+
 const extractVietnamPhone = (text) => {
     if (!text) return null;
     const phoneRegex = /(?:\+84|0)(?:[\s\.\-]*[3|5|7|8|9])(?:[\s\.\-]*[0-9]){8}\b/g;
@@ -446,21 +468,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
             }
 
             // Phân luồng CAPI an toàn: Ưu tiên v3 (nếu bật), tiếp đến CRM CAPI Outbox, fallback sang Legacy CAPI
-            (async () => {
-                try {
-                    const isV3On = await metaCapiV3.getSetting('meta_capi_business_messaging_v3_enabled');
-                    const isCrmOn = await metaCapiCrm.getSetting('meta_capi_crm_enabled');
-                    if (isV3On === 'true') {
-                        await metaCapiV3.enqueueLeadSubmitted(leadResult.rows[0]);
-                    } else if (isCrmOn === 'true') {
-                        await metaCapiCrm.enqueueLead(leadResult.rows[0]);
-                    } else {
-                        await metaCapi.sendLeadEvent(leadResult.rows[0]);
-                    }
-                } catch (capiErr) {
-                    console.error('[CAPI] Lỗi gửi tín hiệu Lead:', capiErr.message);
-                }
-            })();
+            dispatchLeadCapi(leadResult.rows[0]);
 
             // 3. Tạo Hội thoại mới (lưu Page ID)
             const newConv = await db.query(
@@ -527,21 +535,7 @@ exports.handleMessage = async (sender_psid, received_message, isStandby = false,
                     await db.query('UPDATE conversations SET lead_id = $1, last_message = $2, updated_at = NOW() WHERE id = $3', [leadId, previewLastMessage, conversationId]);
 
                     // Phân luồng CAPI cho lead mở lại
-                    (async () => {
-                        try {
-                            const isV3On = await metaCapiV3.getSetting('meta_capi_business_messaging_v3_enabled');
-                            const isCrmOn = await metaCapiCrm.getSetting('meta_capi_crm_enabled');
-                            if (isV3On === 'true') {
-                                await metaCapiV3.enqueueLeadSubmitted(newLeadResult.rows[0]);
-                            } else if (isCrmOn === 'true') {
-                                await metaCapiCrm.enqueueLead(newLeadResult.rows[0]);
-                            } else {
-                                await metaCapi.sendLeadEvent(newLeadResult.rows[0]);
-                            }
-                        } catch (capiErr) {
-                            console.error('[CAPI] Lỗi gửi tín hiệu Re-opened Lead:', capiErr.message);
-                        }
-                    })();
+                    dispatchLeadCapi(newLeadResult.rows[0]);
                 } else {
                     // LUỒNG VẪN ĐANG ACTIVE → Cập nhật ngày tháng và Re-open nếu đang 'Không phản hồi'
                     leadId = currentLeadId;
@@ -944,18 +938,7 @@ exports.handleLeadAd = async (leadgen_id, page_id) => {
             ]);
 
             // Track CAPI (Mới -> Lead): Ưu tiên CRM CAPI Outbox, fallback sang Legacy CAPI
-            (async () => {
-                try {
-                    const isCrmOn = await metaCapiCrm.getSetting('meta_capi_crm_enabled');
-                    if (isCrmOn === 'true') {
-                        await metaCapiCrm.enqueueLead(leadResult.rows[0]);
-                    } else {
-                        await metaCapi.sendLeadEvent(leadResult.rows[0]);
-                    }
-                } catch (capiErr) {
-                    console.error('[CAPI] Error sending Lead Ad event:', capiErr.message);
-                }
-            })();
+            dispatchLeadCapi(leadResult.rows[0]);
         }
     } catch (error) {
         console.error('Error handling lead ad webhook:', error.response ? error.response.data : error.message);
@@ -1091,21 +1074,7 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                     }
 
                     // Phân luồng CAPI từ Poller: Ưu tiên v3 (nếu bật), tiếp đến CRM CAPI Outbox, fallback sang Legacy CAPI
-                    (async () => {
-                        try {
-                            const isV3On = await metaCapiV3.getSetting('meta_capi_business_messaging_v3_enabled');
-                            const isCrmOn = await metaCapiCrm.getSetting('meta_capi_crm_enabled');
-                            if (isV3On === 'true') {
-                                await metaCapiV3.enqueueLeadSubmitted(leadResult.rows[0]);
-                            } else if (isCrmOn === 'true') {
-                                await metaCapiCrm.enqueueLead(leadResult.rows[0]);
-                            } else {
-                                await metaCapi.sendLeadEvent(leadResult.rows[0]);
-                            }
-                        } catch (capiErr) {
-                            console.error('[CAPI] Lỗi khi gửi sự kiện Lead từ Poller:', capiErr.message);
-                        }
-                    })();
+                    dispatchLeadCapi(leadResult.rows[0]);
                 } else {
                     // ĐÃ CÓ CONVERSATION
                     const oldConv = convRes.rows[0];
@@ -1213,21 +1182,7 @@ exports.syncRecentConversations = async (limitCount = 25) => {
                                         );
                                         currentLeadId = newLeadResult.rows[0].id;
                                         await db.query('UPDATE conversations SET lead_id = $1 WHERE id = $2', [currentLeadId, oldConv.id]);
-                                        (async () => {
-                                            try {
-                                                const isV3On = await metaCapiV3.getSetting('meta_capi_business_messaging_v3_enabled');
-                                                const isCrmOn = await metaCapiCrm.getSetting('meta_capi_crm_enabled');
-                                                if (isV3On === 'true') {
-                                                    await metaCapiV3.enqueueLeadSubmitted(newLeadResult.rows[0]);
-                                                } else if (isCrmOn === 'true') {
-                                                    await metaCapiCrm.enqueueLead(newLeadResult.rows[0]);
-                                                } else {
-                                                    await metaCapi.sendLeadEvent(newLeadResult.rows[0]);
-                                                }
-                                            } catch (capiErr) {
-                                                console.error('[CAPI] Lỗi khi gửi sự kiện Re-opened Lead từ Poller:', capiErr.message);
-                                            }
-                                        })();
+                                        dispatchLeadCapi(newLeadResult.rows[0]);
                                     } else {
                                         if (oldLead.status === 'Không phản hồi') {
                                             console.log(`[FB POLLER] Khách nhắn lại cho Lead (Auto-Fail): ${oldLead.name}. Re-opening -> Mới.`);

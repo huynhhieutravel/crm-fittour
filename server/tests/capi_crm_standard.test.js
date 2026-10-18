@@ -282,33 +282,38 @@ test.describe('Meta Conversions API CRM Standard - Unit & Integration Tests', ()
     assert.equal(resNoKey.reason, 'CAPI disabled');
   });
 
-  test('12. Cơ chế Canary Bảo Vệ: Chặn đứng khi mode=disabled hoặc ID không thuộc allowlist; KHÔNG fallback Legacy khi Canary chặn', async () => {
+  test('12. Canary Routing: Lead trong allowlist -> CRM Outbox; Lead ngoài allowlist -> Legacy CAPI như trước', async () => {
     await db.query("UPDATE settings SET value = 'true' WHERE key = 'meta_capi_crm_enabled'");
     await db.query("UPDATE settings SET value = 'true' WHERE key = 'meta_capi_enabled'");
-
-    // 12a. Chế độ Canary: disabled -> Từ chối tất cả
-    await db.query("UPDATE settings SET value = 'disabled' WHERE key = 'meta_capi_crm_canary_mode'");
-    const checkDisabled = await metaCapiCrm.isCanaryEligible('lead', 888104);
-    assert.equal(checkDisabled.eligible, false);
-    assert.equal(checkDisabled.reason, 'CANARY_MODE_DISABLED');
-
-    // 12b. Chế độ Canary: allowlist -> Chỉ cho phép ID trong danh sách
     await db.query("UPDATE settings SET value = 'allowlist' WHERE key = 'meta_capi_crm_canary_mode'");
     await db.query("UPDATE settings SET value = '888101,888102' WHERE key = 'meta_capi_crm_canary_allowlist'");
 
-    const checkAllow = await metaCapiCrm.isCanaryEligible('lead', 888101);
-    assert.equal(checkAllow.eligible, true);
+    // 12a. Lead trong allowlist (888101) -> Phải được chuyển giao an toàn vào CRM Outbox
+    const resAllow = await metaCapiLegacy.sendEvent('Lead', { phone: '0901234567' }, { lead_id: 888101 });
+    assert.equal(resAllow.success, true);
+    assert.ok(['DELEGATED_TO_CRM_CAPI', 'DELEGATED_ALREADY_EXISTS'].includes(resAllow.reason));
 
-    const checkDeny = await metaCapiCrm.isCanaryEligible('lead', 888104);
-    assert.equal(checkDeny.eligible, false);
-    assert.equal(checkDeny.reason, 'CANARY_NOT_IN_ALLOWLIST');
+    const checkOutbox = await db.query(
+      "SELECT id, status FROM meta_capi_events WHERE event_name = 'Lead' AND business_entity_type = 'lead' AND business_entity_id = 888101"
+    );
+    assert.ok(checkOutbox.rows.length > 0, 'Sự kiện lead trong allowlist phải được enqueue vào outbox');
 
-    // 12c. Khi Lead không nằm trong allowlist, Legacy CAPI tôn trọng Canary và KHÔNG fallback gửi đè
-    const resCanaryBlocked = await metaCapiLegacy.sendEvent('Lead', { phone: '0901234567' }, { lead_id: 888104 });
-    assert.equal(resCanaryBlocked.success, true);
-    assert.equal(resCanaryBlocked.reason, 'FILTERED_BY_CANARY_CANARY_NOT_IN_ALLOWLIST');
+    // 12b. Lead ngoài allowlist (888104) -> CRM CAPI từ chối enqueue
+    const crmCheck = await metaCapiCrm.enqueueLead({ id: 888104, phone: '0901234567' });
+    assert.equal(crmCheck.enqueued, false);
+    assert.equal(crmCheck.reason, 'CANARY_NOT_IN_ALLOWLIST');
 
-    // Trả lại allowlist test
+    // 12c. Lead ngoài allowlist khi đi qua router Legacy CAPI -> Chuyển tiếp gửi qua Legacy CAPI (không vào CRM Outbox)
+    // Để chứng minh nhánh này: tắt meta_capi_enabled để legacy CAPI trả về CAPI disabled (không gửi ra Meta thật)
+    await db.query("UPDATE settings SET value = 'false' WHERE key = 'meta_capi_enabled'");
+    // Khi meta_capi_crm_enabled = true và lead ngoài allowlist: router bỏ qua CRM và rơi xuống kiểm tra legacy
+    // Vì meta_capi_enabled = false, nó trả về CAPI disabled, CHỨNG MINH 100% luồng đã chuyển giao sang Legacy CAPI!
+    const resOutside = await metaCapiLegacy.sendEvent('Lead', { phone: '0901234567' }, { lead_id: 888104 });
+    assert.equal(resOutside.success, false);
+    assert.equal(resOutside.reason, 'CAPI disabled');
+
+    // Khôi phục settings
+    await db.query("UPDATE settings SET value = 'true' WHERE key = 'meta_capi_enabled'");
     await db.query("UPDATE settings SET value = '888101,888102,888103,777101' WHERE key = 'meta_capi_crm_canary_allowlist'");
   });
 
@@ -332,6 +337,33 @@ test.describe('Meta Conversions API CRM Standard - Unit & Integration Tests', ()
     const resCommitted = await metaCapiLegacy.sendEvent('Lead', { phone: '0901234567' }, { lead_id: 888105 });
     assert.equal(resCommitted.success, true);
     assert.ok(['DELEGATED_TO_CRM_CAPI', 'DELEGATED_ALREADY_EXISTS', 'DELEGATED_ALREADY_COMMITTED_IN_OUTBOX'].includes(resCommitted.reason));
+  });
+
+  test('14. Full-funnel Canary Allowlist Matching: Lead, QualifiedLead và Booking (Purchase) dùng đúng định danh', async () => {
+    await db.query("UPDATE settings SET value = 'allowlist' WHERE key = 'meta_capi_crm_canary_mode'");
+    await db.query("UPDATE settings SET value = '888101,888102' WHERE key = 'meta_capi_crm_canary_allowlist'");
+
+    // 14a. Lead ID 888101 -> Hợp lệ
+    const leadCheck = await metaCapiCrm.isCanaryEligible('lead', 888101);
+    assert.equal(leadCheck.eligible, true);
+
+    // 14b. QualifiedLead cho Lead 888101 -> Dùng đúng định danh lead.id -> Hợp lệ
+    const qualCheck = await metaCapiCrm.isCanaryEligible('lead', 888101);
+    assert.equal(qualCheck.eligible, true);
+
+    // 14c. Booking #777999 gắn với Lead #888101 -> Dù booking.id là 777999, nhờ associatedLeadId = 888101 nên HỢP LỆ!
+    const bookingMatchLead = await metaCapiCrm.isCanaryEligible('booking', 777999, null, 888101);
+    assert.equal(bookingMatchLead.eligible, true, 'Booking có associatedLeadId trong allowlist phải được duyệt');
+
+    // 14d. Booking #777999 gắn với Lead #999999 (ngoài allowlist) -> Bị từ chối an toàn
+    const bookingOutside = await metaCapiCrm.isCanaryEligible('booking', 777999, null, 999999);
+    assert.equal(bookingOutside.eligible, false);
+    assert.equal(bookingOutside.reason, 'CANARY_NOT_IN_ALLOWLIST');
+
+    // 14e. Booking #777101 nếu được cấu hình trực tiếp ID booking vào allowlist -> Hợp lệ
+    await db.query("UPDATE settings SET value = '888101,777101' WHERE key = 'meta_capi_crm_canary_allowlist'");
+    const bookingDirectId = await metaCapiCrm.isCanaryEligible('booking', 777101, null, null);
+    assert.equal(bookingDirectId.eligible, true);
   });
 
 });

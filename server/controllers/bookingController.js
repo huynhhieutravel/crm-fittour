@@ -7,6 +7,18 @@ const SystemEvents = require('../constants/SystemEvents');
 const zaloZnsService = require('../services/zaloZnsService');
 const metaCapiV3 = require('../services/metaCapiV3Service');
 const metaCapiCrm = require('../services/metaCapiCrmService');
+const metaCapi = require('../services/metaCapiService');
+
+// Helper phân luồng Purchase an toàn: v3 -> CRM CAPI Outbox -> Legacy CAPI (fallback / ngoài canary)
+async function dispatchBookingPurchase(booking, customer, lead) {
+    const crmRes = await metaCapiCrm.enqueuePurchase(booking, customer, lead);
+    await metaCapiV3.enqueuePurchase(booking, customer, lead);
+    if (crmRes && !crmRes.enqueued && ['CANARY_NOT_IN_ALLOWLIST', 'CANARY_MODE_DISABLED'].includes(crmRes.reason)) {
+        if (lead) {
+            await metaCapi.sendPurchaseEvent(lead, booking.tour_name, booking.total_price || booking.paid || 0, { bypassCrmDelegation: true });
+        }
+    }
+}
 
 exports.getAllBookings = async (req, res) => {
     try {
@@ -190,8 +202,7 @@ exports.createBooking = async (req, res) => {
                             const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
                             if (leadRes.rows.length > 0) lead = leadRes.rows[0];
                         }
-                        await metaCapiCrm.enqueuePurchase(newBooking, customer, lead);
-                        await metaCapiV3.enqueuePurchase(newBooking, customer, lead);
+                        await dispatchBookingPurchase(newBooking, customer, lead);
                     }
                 } catch (e) {
                     console.error('[CAPI] Lỗi enqueue Purchase từ createBooking:', e.message);
@@ -388,8 +399,7 @@ exports.updateBooking = async (req, res) => {
                                 const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
                                 if (leadRes.rows.length > 0) lead = leadRes.rows[0];
                             }
-                            await metaCapiCrm.enqueuePurchase(updatedBooking, customer, lead);
-                            await metaCapiV3.enqueuePurchase(updatedBooking, customer, lead);
+                            await dispatchBookingPurchase(updatedBooking, customer, lead);
                         }
                     } catch (e) {
                         console.error('[CAPI] Lỗi enqueue Purchase từ updateBooking:', e.message);
@@ -585,8 +595,7 @@ exports.addTransaction = async (req, res) => {
                             const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
                             if (leadRes.rows.length > 0) lead = leadRes.rows[0];
                         }
-                        await metaCapiCrm.enqueuePurchase(currentBk, customer, lead);
-                        await metaCapiV3.enqueuePurchase(currentBk, customer, lead);
+                        await dispatchBookingPurchase(currentBk, customer, lead);
                     }
                 }
             } catch (capiErr) {

@@ -227,7 +227,7 @@ function evaluateSalesQualification(lead, updates = {}) {
  * - 'all': Gửi cho toàn bộ (chỉ bật khi đã hoàn tất nghiệm thu canary)
  * - Kiểm tra giới hạn tối đa số sự kiện trong ngày (meta_capi_crm_canary_daily_limit)
  */
-async function isCanaryEligible(businessEntityType, businessEntityId, client = null) {
+async function isCanaryEligible(businessEntityType, businessEntityId, client = null, associatedLeadId = null) {
   const canaryMode = (await getSetting('meta_capi_crm_canary_mode')) || 'disabled';
 
   if (canaryMode === 'disabled') {
@@ -242,7 +242,10 @@ async function isCanaryEligible(businessEntityType, businessEntityId, client = n
       .filter(Boolean);
 
     const targetIdStr = String(businessEntityId);
-    if (!allowedIds.includes(targetIdStr)) {
+    const associatedLeadIdStr = associatedLeadId ? String(associatedLeadId) : null;
+    const isMatched = allowedIds.includes(targetIdStr) || (associatedLeadIdStr && allowedIds.includes(associatedLeadIdStr));
+
+    if (!isMatched) {
       return { eligible: false, reason: 'CANARY_NOT_IN_ALLOWLIST', allowedIds };
     }
   }
@@ -274,6 +277,7 @@ async function enqueueCrmEvent({
   eventName,
   businessEntityType,
   businessEntityId,
+  associatedLeadId = null,
   phone = null,
   email = null,
   externalId = null,
@@ -289,7 +293,7 @@ async function enqueueCrmEvent({
   }
 
   // 1.1 Kiểm tra cơ chế Canary bảo vệ (Tránh flood toàn bộ Lead/Booking mới khi bật cờ)
-  const canaryCheck = await isCanaryEligible(businessEntityType, businessEntityId, client);
+  const canaryCheck = await isCanaryEligible(businessEntityType, businessEntityId, client, associatedLeadId);
   if (!canaryCheck.eligible) {
     console.log(`[CAPI-CRM Canary] Bỏ qua ${businessEntityType} #${businessEntityId}: ${canaryCheck.reason}`);
     return { enqueued: false, reason: canaryCheck.reason };
@@ -451,16 +455,20 @@ async function enqueuePurchase(booking, customer, lead = null, client = null) {
   const conversionChannel = booking.conversion_channel || booking.booking_source || 'Direct';
   const paymentMethod = booking.payment_method || (booking.payment_details && booking.payment_details.method) || 'Chuyển khoản';
 
+  const associatedLeadId = (lead && lead.id) || booking.lead_id || (customer && customer.lead_id) || null;
+
   return enqueueCrmEvent({
     eventName: 'Purchase',
     businessEntityType: 'booking',
     businessEntityId: booking.id,
+    associatedLeadId,
     phone: customerPhone,
     email: customerEmail,
     externalId,
     metaLeadId: lead ? lead.meta_lead_id : null,
     customData: {
       booking_code: booking.booking_code || `BK-${booking.id}`,
+      lead_id: associatedLeadId,
       value: purchaseValue,
       currency: 'VND',
       value_measurement_policy: valuePolicy,

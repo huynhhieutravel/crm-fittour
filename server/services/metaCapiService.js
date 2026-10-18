@@ -35,7 +35,7 @@ const getSetting = async (key) => {
  * @param {object} customData - Custom event data { lead_status, tour_name, value, currency, etc. }
  * @param {string} eventSourceUrl - URL where the event occurred (optional)
  */
-exports.sendEvent = async (eventName, userData = {}, customData = {}, eventSourceUrl = null) => {
+exports.sendEvent = async (eventName, userData = {}, customData = {}, eventSourceUrl = null, options = {}) => {
   try {
     // 1. Check if CAPI is enabled
     const capiEnabled = await getSetting('meta_capi_enabled');
@@ -56,13 +56,14 @@ exports.sendEvent = async (eventName, userData = {}, customData = {}, eventSourc
     // Nếu CRM Standard CAPI đang bật, thực hiện chuyển giao an toàn (safe delegation) sang CRM CAPI Outbox.
     // TUYỆT ĐỐI KHÔNG im lặng trả success nếu sự kiện thật chưa được chuyển giao an toàn!
     const crmCapiEnabled = await getSetting('meta_capi_crm_enabled');
-    if (crmCapiEnabled === 'true') {
+    if (crmCapiEnabled === 'true' && !options?.bypassCrmDelegation) {
       try {
         const metaCapiCrm = require('./metaCapiCrmService');
         const queueRes = await metaCapiCrm.enqueueCrmEvent({
           eventName: eventName,
           businessEntityType: customData?.lead_id ? 'lead' : (customData?.booking_id ? 'booking' : 'legacy_event'),
           businessEntityId: customData?.lead_id || customData?.booking_id || Math.floor(Date.now() / 1000),
+          associatedLeadId: customData?.lead_id || null,
           phone: userData.phone,
           email: userData.email,
           externalId: userData.facebook_psid || (customData?.lead_id ? String(customData.lead_id) : null),
@@ -81,10 +82,13 @@ exports.sendEvent = async (eventName, userData = {}, customData = {}, eventSourc
             reason: queueRes.enqueued ? 'DELEGATED_TO_CRM_CAPI' : 'DELEGATED_ALREADY_EXISTS',
             outboxId: queueRes.outboxId
           };
-        } else if (queueRes && ['CANARY_MODE_DISABLED', 'CANARY_NOT_IN_ALLOWLIST', 'CANARY_DAILY_LIMIT_EXCEEDED'].includes(queueRes.reason)) {
-          console.log(`[CAPI Legacy] Sự kiện bị chặn bởi bộ lọc Canary (${queueRes.reason}). Tuyệt đối KHÔNG fallback sang Legacy để bảo đảm tuân thủ giới hạn canary.`);
+        } else if (queueRes && ['CANARY_NOT_IN_ALLOWLIST', 'CANARY_MODE_DISABLED'].includes(queueRes.reason)) {
+          console.log(`[CAPI Legacy] Lead ngoài allowlist canary (${queueRes.reason}). Tiếp tục gửi qua Legacy CAPI như trước.`);
+          // Lead không thuộc canary allowlist: Tiếp tục chuyển giao gửi qua Legacy CAPI như trước!
+        } else if (queueRes && queueRes.reason === 'CANARY_DAILY_LIMIT_EXCEEDED') {
+          console.warn(`[CAPI Legacy] Đã đạt ngưỡng giới hạn Canary trong ngày (${queueRes.reason}). Dừng gửi để bảo vệ hệ thống.`);
           return {
-            success: true,
+            success: false,
             reason: `FILTERED_BY_CANARY_${queueRes.reason}`
           };
         } else {
@@ -211,7 +215,7 @@ exports.sendEvent = async (eventName, userData = {}, customData = {}, eventSourc
 /**
  * Send a Lead event (when a new lead is created)
  */
-exports.sendLeadEvent = async (lead) => {
+exports.sendLeadEvent = async (lead, options = {}) => {
   return exports.sendEvent('Lead', {
     email: lead.email,
     phone: lead.phone,
@@ -222,13 +226,13 @@ exports.sendLeadEvent = async (lead) => {
     lead_id: lead.id,
     lead_source: lead.source,
     content_name: lead.tour_name || 'General Inquiry'
-  });
+  }, null, options);
 };
 
 /**
  * Send a Purchase event (when lead status changes to "Chốt đơn")
  */
-exports.sendPurchaseEvent = async (lead, tourName, value = 0) => {
+exports.sendPurchaseEvent = async (lead, tourName, value = 0, options = {}) => {
   return exports.sendEvent('Purchase', {
     email: lead.email,
     phone: lead.phone,
@@ -240,7 +244,7 @@ exports.sendPurchaseEvent = async (lead, tourName, value = 0) => {
     content_name: tourName || lead.tour_name || 'Tour FIT TOUR',
     value: value,
     currency: 'VND'
-  });
+  }, null, options);
 };
 
 /**

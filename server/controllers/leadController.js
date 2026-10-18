@@ -237,7 +237,10 @@ exports.createLead = async (req, res) => {
             try {
                 const isCrmOn = await metaCapiCrm.getSetting('meta_capi_crm_enabled');
                 if (isCrmOn === 'true') {
-                    await metaCapiCrm.enqueueLead(newLead);
+                    const crmRes = await metaCapiCrm.enqueueLead(newLead);
+                    if (crmRes && !crmRes.enqueued && ['CANARY_NOT_IN_ALLOWLIST', 'CANARY_MODE_DISABLED'].includes(crmRes.reason)) {
+                        await metaCapi.sendLeadEvent(newLead, { bypassCrmDelegation: true });
+                    }
                 } else {
                     await metaCapi.sendLeadEvent(newLead);
                 }
