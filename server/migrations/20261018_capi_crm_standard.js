@@ -15,7 +15,10 @@ async function up() {
     await db.query(`
         INSERT INTO settings (key, value, description)
         VALUES 
-            ('meta_capi_crm_enabled', 'false', 'Bật Meta Conversions API cho CRM Standard (Mặc định tắt)')
+            ('meta_capi_crm_enabled', 'false', 'Bật Meta Conversions API cho CRM Standard (Mặc định tắt)'),
+            ('meta_capi_crm_canary_mode', 'disabled', 'Chế độ Canary CRM: disabled (tắt), allowlist (chỉ gửi ID cho phép), all (toàn bộ)'),
+            ('meta_capi_crm_canary_allowlist', '', 'Danh sách Lead ID hoặc Booking ID được phép thử nghiệm canary (phân cách bằng dấu phẩy)'),
+            ('meta_capi_crm_canary_daily_limit', '20', 'Giới hạn tối đa số lượng sự kiện CRM được gửi mỗi ngày trong giai đoạn canary')
         ON CONFLICT (key) DO NOTHING;
     `);
 

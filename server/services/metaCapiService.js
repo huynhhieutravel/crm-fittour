@@ -81,12 +81,40 @@ exports.sendEvent = async (eventName, userData = {}, customData = {}, eventSourc
             reason: queueRes.enqueued ? 'DELEGATED_TO_CRM_CAPI' : 'DELEGATED_ALREADY_EXISTS',
             outboxId: queueRes.outboxId
           };
+        } else if (queueRes && ['CANARY_MODE_DISABLED', 'CANARY_NOT_IN_ALLOWLIST', 'CANARY_DAILY_LIMIT_EXCEEDED'].includes(queueRes.reason)) {
+          console.log(`[CAPI Legacy] Sự kiện bị chặn bởi bộ lọc Canary (${queueRes.reason}). Tuyệt đối KHÔNG fallback sang Legacy để bảo đảm tuân thủ giới hạn canary.`);
+          return {
+            success: true,
+            reason: `FILTERED_BY_CANARY_${queueRes.reason}`
+          };
         } else {
           console.warn(`[CAPI Legacy] ⚠️ CRM CAPI không thể enqueue (${queueRes?.reason || 'REJECTED'}). Kích hoạt FALLBACK gửi trực tiếp qua Legacy CAPI để bảo toàn dữ liệu chuyển đổi!`);
           // Tiếp tục chạy xuống dưới gửi trực tiếp qua Legacy CAPI!
         }
       } catch (delegateErr) {
-        console.error(`[CAPI Legacy] ❌ Lỗi khi enqueue sang CRM CAPI: ${delegateErr.message}. Kích hoạt FALLBACK gửi trực tiếp qua Legacy CAPI!`);
+        console.error(`[CAPI Legacy] ⚠️ Bắt ngoại lệ khi enqueue sang CRM CAPI: ${delegateErr.message}. Kiểm tra đối soát Outbox...`);
+        try {
+          const entityType = customData?.lead_id ? 'lead' : (customData?.booking_id ? 'booking' : 'legacy_event');
+          const entityId = customData?.lead_id || customData?.booking_id || null;
+          if (entityId) {
+            const checkCommitted = await db.query(
+              `SELECT id, status FROM meta_capi_events WHERE event_name = $1 AND business_entity_type = $2 AND business_entity_id = $3 LIMIT 1`,
+              [eventName, entityType, entityId]
+            );
+            if (checkCommitted.rows.length > 0) {
+              console.log(`[CAPI Legacy] ✅ Bản ghi đã được commit thành công vào Outbox (ID: ${checkCommitted.rows[0].id}, Status: ${checkCommitted.rows[0].status}) dù caller gặp ngoại lệ/timeout. DỪNG FALLBACK để chống gửi trùng lặp tuyệt đối!`);
+              return {
+                success: true,
+                reason: 'DELEGATED_ALREADY_COMMITTED_IN_OUTBOX',
+                outboxId: checkCommitted.rows[0].id
+              };
+            }
+          }
+        } catch (dbCheckErr) {
+          console.error('[CAPI Legacy] Lỗi khi kiểm tra đối soát outbox:', dbCheckErr.message);
+        }
+
+        console.warn(`[CAPI Legacy] ⚠️ Bản ghi chưa có trong Outbox. Kích hoạt FALLBACK gửi trực tiếp qua Legacy CAPI để bảo toàn dữ liệu chuyển đổi!`);
         // Tiếp tục chạy xuống dưới gửi trực tiếp qua Legacy CAPI!
       }
     }

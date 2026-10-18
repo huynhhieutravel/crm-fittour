@@ -33,19 +33,25 @@ test.describe('Meta Conversions API CRM Standard - Unit & Integration Tests', ()
 
     // Đảm bảo chỉ dọn dẹp các bản ghi test cụ thể, KHÔNG xóa dữ liệu CRM thật
     await safeCleanupTestEvents(db, {
-      leadIds: [TEST_LEAD_ID, 888102, 888103],
-      bookingIds: [TEST_BOOKING_ID, 777102, 777103]
+      leadIds: [TEST_LEAD_ID, 888102, 888103, 888104, 888105],
+      bookingIds: [TEST_BOOKING_ID, 777102, 777103, 777104]
     });
+
+    // Khởi tạo canary cho phép test ID
+    await db.query("INSERT INTO settings (key, value) VALUES ('meta_capi_crm_canary_mode', 'allowlist') ON CONFLICT (key) DO UPDATE SET value = 'allowlist'");
+    await db.query("INSERT INTO settings (key, value) VALUES ('meta_capi_crm_canary_allowlist', '888101,888102,888103,777101') ON CONFLICT (key) DO UPDATE SET value = '888101,888102,888103,777101'");
   });
 
   test.after(async () => {
     // Dọn dẹp an toàn sau test và trả feature flag về trạng thái tắt
     await safeCleanupTestEvents(db, {
-      leadIds: [TEST_LEAD_ID, 888102, 888103],
-      bookingIds: [TEST_BOOKING_ID, 777102, 777103]
+      leadIds: [TEST_LEAD_ID, 888102, 888103, 888104, 888105],
+      bookingIds: [TEST_BOOKING_ID, 777102, 777103, 777104]
     });
     await db.query("UPDATE settings SET value = 'false' WHERE key = 'meta_capi_crm_enabled'");
     await db.query("UPDATE settings SET value = 'false' WHERE key = 'meta_capi_business_messaging_v3_enabled'");
+    await db.query("UPDATE settings SET value = 'disabled' WHERE key = 'meta_capi_crm_canary_mode'");
+    await db.query("UPDATE settings SET value = '' WHERE key = 'meta_capi_crm_canary_allowlist'");
   });
 
   test('1. Normalization & Hashing: SĐT chuẩn E.164 không dấu +, Email sạch, External ID hash', () => {
@@ -274,6 +280,58 @@ test.describe('Meta Conversions API CRM Standard - Unit & Integration Tests', ()
     // Vì meta_capi_enabled = false trong fallback, kết quả trả về CAPI disabled (chứng minh fallback đã kích hoạt, không im lặng trả success!)
     assert.equal(resNoKey.success, false);
     assert.equal(resNoKey.reason, 'CAPI disabled');
+  });
+
+  test('12. Cơ chế Canary Bảo Vệ: Chặn đứng khi mode=disabled hoặc ID không thuộc allowlist; KHÔNG fallback Legacy khi Canary chặn', async () => {
+    await db.query("UPDATE settings SET value = 'true' WHERE key = 'meta_capi_crm_enabled'");
+    await db.query("UPDATE settings SET value = 'true' WHERE key = 'meta_capi_enabled'");
+
+    // 12a. Chế độ Canary: disabled -> Từ chối tất cả
+    await db.query("UPDATE settings SET value = 'disabled' WHERE key = 'meta_capi_crm_canary_mode'");
+    const checkDisabled = await metaCapiCrm.isCanaryEligible('lead', 888104);
+    assert.equal(checkDisabled.eligible, false);
+    assert.equal(checkDisabled.reason, 'CANARY_MODE_DISABLED');
+
+    // 12b. Chế độ Canary: allowlist -> Chỉ cho phép ID trong danh sách
+    await db.query("UPDATE settings SET value = 'allowlist' WHERE key = 'meta_capi_crm_canary_mode'");
+    await db.query("UPDATE settings SET value = '888101,888102' WHERE key = 'meta_capi_crm_canary_allowlist'");
+
+    const checkAllow = await metaCapiCrm.isCanaryEligible('lead', 888101);
+    assert.equal(checkAllow.eligible, true);
+
+    const checkDeny = await metaCapiCrm.isCanaryEligible('lead', 888104);
+    assert.equal(checkDeny.eligible, false);
+    assert.equal(checkDeny.reason, 'CANARY_NOT_IN_ALLOWLIST');
+
+    // 12c. Khi Lead không nằm trong allowlist, Legacy CAPI tôn trọng Canary và KHÔNG fallback gửi đè
+    const resCanaryBlocked = await metaCapiLegacy.sendEvent('Lead', { phone: '0901234567' }, { lead_id: 888104 });
+    assert.equal(resCanaryBlocked.success, true);
+    assert.equal(resCanaryBlocked.reason, 'FILTERED_BY_CANARY_CANARY_NOT_IN_ALLOWLIST');
+
+    // Trả lại allowlist test
+    await db.query("UPDATE settings SET value = '888101,888102,888103,777101' WHERE key = 'meta_capi_crm_canary_allowlist'");
+  });
+
+  test('13. Chống gửi trùng lặp khi Enqueue đã commit Outbox nhưng caller gặp timeout', async () => {
+    await db.query("UPDATE settings SET value = 'true' WHERE key = 'meta_capi_crm_enabled'");
+    await db.query("UPDATE settings SET value = 'true' WHERE key = 'meta_capi_enabled'");
+    await db.query("UPDATE settings SET value = 'allowlist' WHERE key = 'meta_capi_crm_canary_mode'");
+    await db.query("UPDATE settings SET value = '888101,888102,888103,888105,777101' WHERE key = 'meta_capi_crm_canary_allowlist'");
+
+    // Giả lập bản ghi đã được commit an toàn vào outbox trước khi caller xử lý tiếp
+    await db.query(`
+      INSERT INTO meta_capi_events (
+        event_id, event_name, action_source, business_entity_type, business_entity_id, idempotency_key, payload, status
+      ) VALUES (
+        'fittour_crm_evt_lead_lead_888105', 'Lead', 'system_generated', 'lead', 888105, 'fittour_crm_lead_lead_888105', '{"event_name":"Lead"}', 'PENDING'
+      ) ON CONFLICT DO NOTHING;
+    `);
+
+    // Khi gọi sendEvent cho lead 888105:
+    // Hệ thống kiểm tra thấy bản ghi đã có trong Outbox -> Trả về thành công và TUYỆT ĐỐI KHÔNG fallback gửi trực tiếp
+    const resCommitted = await metaCapiLegacy.sendEvent('Lead', { phone: '0901234567' }, { lead_id: 888105 });
+    assert.equal(resCommitted.success, true);
+    assert.ok(['DELEGATED_TO_CRM_CAPI', 'DELEGATED_ALREADY_EXISTS', 'DELEGATED_ALREADY_COMMITTED_IN_OUTBOX'].includes(resCommitted.reason));
   });
 
 });

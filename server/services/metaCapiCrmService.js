@@ -221,9 +221,54 @@ function evaluateSalesQualification(lead, updates = {}) {
 }
 
 /**
+ * Kiểm tra tính hợp lệ theo cơ chế Canary
+ * - 'disabled': Mặc định tắt canary, không gửi sự kiện tự động
+ * - 'allowlist': Chỉ gửi cho các ID được chỉ định trong meta_capi_crm_canary_allowlist (VD: "888101,12345")
+ * - 'all': Gửi cho toàn bộ (chỉ bật khi đã hoàn tất nghiệm thu canary)
+ * - Kiểm tra giới hạn tối đa số sự kiện trong ngày (meta_capi_crm_canary_daily_limit)
+ */
+async function isCanaryEligible(businessEntityType, businessEntityId, client = null) {
+  const canaryMode = (await getSetting('meta_capi_crm_canary_mode')) || 'disabled';
+
+  if (canaryMode === 'disabled') {
+    return { eligible: false, reason: 'CANARY_MODE_DISABLED' };
+  }
+
+  if (canaryMode === 'allowlist') {
+    const rawAllowlist = (await getSetting('meta_capi_crm_canary_allowlist')) || '';
+    const allowedIds = rawAllowlist
+      .split(',')
+      .map(id => id.trim())
+      .filter(Boolean);
+
+    const targetIdStr = String(businessEntityId);
+    if (!allowedIds.includes(targetIdStr)) {
+      return { eligible: false, reason: 'CANARY_NOT_IN_ALLOWLIST', allowedIds };
+    }
+  }
+
+  const dailyLimitSetting = await getSetting('meta_capi_crm_canary_daily_limit');
+  const dailyLimit = dailyLimitSetting ? parseInt(dailyLimitSetting, 10) : 20;
+  if (dailyLimit > 0) {
+    const dbRunner = client || db;
+    const countToday = await dbRunner.query(`
+      SELECT COUNT(*)::int as cnt FROM meta_capi_events
+      WHERE action_source = 'system_generated'
+        AND created_at >= CURRENT_DATE;
+    `);
+    if ((countToday.rows[0]?.cnt || 0) >= dailyLimit) {
+      return { eligible: false, reason: 'CANARY_DAILY_LIMIT_EXCEEDED', dailyLimit };
+    }
+  }
+
+  return { eligible: true, canaryMode };
+}
+
+/**
  * Enqueue sự kiện CRM vào Outbox (meta_capi_events)
  * - Ràng buộc Unique: uq_capi_event_entity (event_name, business_entity_type, business_entity_id)
  * - Nếu Feature Flag meta_capi_crm_enabled đang TẮT: Không insert vào DB, không tích tụ backlog.
+ * - Kiểm soát chặt chẽ bởi cơ chế Canary bảo vệ (allowlist / daily limit)
  */
 async function enqueueCrmEvent({
   eventName,
@@ -241,6 +286,13 @@ async function enqueueCrmEvent({
   const isCrmEnabled = await getSetting('meta_capi_crm_enabled');
   if (isCrmEnabled !== 'true') {
     return { enqueued: false, reason: 'CRM_CAPI_FEATURE_FLAG_DISABLED' };
+  }
+
+  // 1.1 Kiểm tra cơ chế Canary bảo vệ (Tránh flood toàn bộ Lead/Booking mới khi bật cờ)
+  const canaryCheck = await isCanaryEligible(businessEntityType, businessEntityId, client);
+  if (!canaryCheck.eligible) {
+    console.log(`[CAPI-CRM Canary] Bỏ qua ${businessEntityType} #${businessEntityId}: ${canaryCheck.reason}`);
+    return { enqueued: false, reason: canaryCheck.reason };
   }
 
   // 2. Kiểm tra định danh bắt buộc cho CRM matching (phải có SĐT hoặc Email hoặc Meta Lead ID)
@@ -795,6 +847,7 @@ module.exports = {
   buildCrmPayload,
   isEligiblePurchaseBooking,
   evaluateSalesQualification,
+  isCanaryEligible,
   enqueueCrmEvent,
   enqueueLead,
   enqueueQualifiedLead,

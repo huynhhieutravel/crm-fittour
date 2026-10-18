@@ -220,7 +220,16 @@ router.get('/crm-capi-status', auth, admin, async (req, res) => {
         `);
         const flags = await db.query(`
             SELECT key, value FROM settings 
-            WHERE key IN ('meta_capi_enabled', 'meta_capi_crm_enabled', 'meta_capi_business_messaging_v3_enabled', 'meta_dataset_id', 'meta_capi_purchase_value_source')
+            WHERE key IN (
+                'meta_capi_enabled', 
+                'meta_capi_crm_enabled', 
+                'meta_capi_business_messaging_v3_enabled', 
+                'meta_dataset_id', 
+                'meta_capi_purchase_value_source',
+                'meta_capi_crm_canary_mode',
+                'meta_capi_crm_canary_allowlist',
+                'meta_capi_crm_canary_daily_limit'
+            )
         `);
         res.json({
             success: true,
