@@ -19,11 +19,7 @@ describe('Meta CAPI Business Messaging v3 - Integration Tests (Outbox, Concurren
 
   before(async () => {
     // 0. Dọn sạch test data cũ
-    await db.query(`
-      DELETE FROM meta_capi_events 
-      WHERE (business_entity_type = 'lead' AND business_entity_id = $1)
-         OR (business_entity_type = 'booking' AND business_entity_id = $2)
-    `, [TEST_LEAD_ID, TEST_BOOKING_ID]);
+    await db.query(`DELETE FROM meta_capi_events;`);
 
     // Đảm bảo flag đang tắt ban đầu
     await db.query("UPDATE settings SET value = 'false' WHERE key = 'meta_capi_business_messaging_v3_enabled'");

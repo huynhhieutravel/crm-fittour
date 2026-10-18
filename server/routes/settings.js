@@ -148,7 +148,7 @@ router.get('/verify-meta-permissions', auth, admin, async (req, res) => {
     }
 });
 
-// 5. Kiểm thử chuỗi 3 sự kiện (LeadSubmitted, QualifiedLead, Purchase) trên môi trường cách ly
+// 5. Kiểm thử chuỗi 3 sự kiện (LeadSubmitted, QualifiedLead, Purchase) trên môi trường cách ly cho Business Messaging v3
 // KHÔNG TẠO BOOKING GIẢ, KHÔNG TẠO PHIẾU THU GIẢ TRONG PRODUCTION DB
 router.post('/test-business-messaging-isolated', auth, admin, async (req, res) => {
     try {
@@ -164,6 +164,52 @@ router.post('/test-business-messaging-isolated', auth, admin, async (req, res) =
         } else {
             res.status(400).json(result);
         }
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// 6. Kiểm thử chuỗi 3 sự kiện (Lead, QualifiedLead, Purchase) cách ly cho CRM Standard CAPI (action_source: system_generated)
+// KHÔNG TẠO BOOKING GIẢ, KHÔNG TẠO PHIẾU THU GIẢ TRONG PRODUCTION DB
+router.post('/test-crm-capi-isolated', auth, admin, async (req, res) => {
+    try {
+        const { test_event_code } = req.body;
+        const metaCapiCrm = require('../services/metaCapiCrmService');
+        const result = await metaCapiCrm.sendIsolatedTestCrmEvents({
+            testEventCode: test_event_code
+        });
+        if (result.success) {
+            res.json(result);
+        } else {
+            res.status(400).json(result);
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// 7. Lấy báo cáo trạng thái Outbox và Feature Flags của Meta CAPI
+router.get('/crm-capi-status', auth, admin, async (req, res) => {
+    try {
+        const stats = await db.query(`
+            SELECT 
+                action_source,
+                event_name,
+                status,
+                COUNT(*) as count
+            FROM meta_capi_events
+            GROUP BY action_source, event_name, status
+            ORDER BY action_source, event_name, status;
+        `);
+        const flags = await db.query(`
+            SELECT key, value FROM settings 
+            WHERE key IN ('meta_capi_enabled', 'meta_capi_crm_enabled', 'meta_capi_business_messaging_v3_enabled', 'meta_dataset_id', 'meta_capi_purchase_value_source')
+        `);
+        res.json({
+            success: true,
+            flags: flags.rows.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {}),
+            outboxStats: stats.rows
+        });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }

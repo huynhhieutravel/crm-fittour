@@ -52,6 +52,14 @@ exports.sendEvent = async (eventName, userData = {}, customData = {}, eventSourc
       return { success: true, reason: 'DELEGATED_TO_V3' };
     }
 
+    // 1.2 De-conflict with CRM Standard CAPI:
+    // Nếu CRM Standard CAPI đang bật, bàn giao toàn bộ quyền gửi cho luồng Outbox CRM CAPI mới, tránh gửi đè 2 lần
+    const crmCapiEnabled = await getSetting('meta_capi_crm_enabled');
+    if (crmCapiEnabled === 'true') {
+      console.log(`[CAPI Legacy] Đã phân luồng sang CRM Standard CAPI (Outbox engine). Bỏ qua legacy CAPI.`);
+      return { success: true, reason: 'DELEGATED_TO_CRM_CAPI' };
+    }
+
     // 2. Get credentials
     const accessToken = await getSetting('meta_capi_access_token');
     const datasetId = await getSetting('meta_dataset_id');
@@ -187,11 +195,17 @@ exports.sendStatusChangeEvent = async (lead, newStatus, tourName = null, value =
     return { success: true, reason: 'PURCHASE_DELEGATED_TO_BOOKING' };
   }
 
-  // Đối với 'Đang liên hệ': Nếu CAPI v3 đang bật, bỏ qua hoàn toàn vì tiêu chuẩn QualifiedLead v3 yêu cầu Sales xác nhận nghiệp vụ
+  // Đối với 'Đang liên hệ': Nếu CAPI v3 hoặc CRM CAPI đang bật, bỏ qua hoàn toàn vì tiêu chuẩn QualifiedLead yêu cầu Sales xác nhận nghiệp vụ
   const v3Enabled = await getSetting('meta_capi_business_messaging_v3_enabled');
   if (v3Enabled === 'true') {
     console.log(`[CAPI Legacy] CAPI v3 đang bật. Bỏ qua gửi Lead từ trạng thái "${newStatus}" để tránh duplicate tín hiệu.`);
     return { success: true, reason: 'DELEGATED_TO_V3' };
+  }
+
+  const crmCapiEnabled = await getSetting('meta_capi_crm_enabled');
+  if (crmCapiEnabled === 'true') {
+    console.log(`[CAPI Legacy] CRM CAPI đang bật. Bỏ qua gửi Lead từ trạng thái "${newStatus}" để tránh duplicate tín hiệu.`);
+    return { success: true, reason: 'DELEGATED_TO_CRM_CAPI' };
   }
 
   const STATUS_TO_EVENT = {

@@ -2000,6 +2000,9 @@ function AppContent() {
       if (type === 'capi') {
         apiPath = '/api/settings/test-capi';
         payload = {};
+      } else if (type === 'crm_capi') {
+        apiPath = '/api/settings/test-crm-capi-isolated';
+        payload = { test_event_code: metaSettings?.meta_test_event_code || '' };
       } else if (type === 'catalog') {
         apiPath = '/api/meta/catalog/sync-all';
         payload = {};

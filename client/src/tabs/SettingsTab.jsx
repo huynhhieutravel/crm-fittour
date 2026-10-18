@@ -223,11 +223,42 @@ const SettingsTab = ({
               </div>
             </div>
 
-            {/* Toggle Business Messaging v3 */}
-            <div className="modal-form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#eff6ff', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+            {/* Toggle CRM Standard CAPI (Khuyên dùng) */}
+            <div className="modal-form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e40af' }}>Business Messaging v3</div>
-                <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Click-to-Messenger + Outbox</div>
+                <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#166534' }}>CRM Standard CAPI (Khuyên dùng)</div>
+                <div style={{ fontSize: '0.75rem', color: '#15803d' }}>Outbox + SĐT/Email Matching (Lead, QualifiedLead, Purchase)</div>
+              </div>
+              <div 
+                onClick={() => setMetaSettings({...metaSettings, meta_capi_crm_enabled: metaSettings?.meta_capi_crm_enabled === 'true' ? 'false' : 'true'})}
+                style={{ 
+                  width: '46px', 
+                  height: '22px', 
+                  background: metaSettings?.meta_capi_crm_enabled === 'true' ? '#22c55e' : '#cbd5e1', 
+                  borderRadius: '11px', 
+                  position: 'relative', 
+                  cursor: 'pointer',
+                  transition: 'all 0.3s'
+                }}
+              >
+                <div style={{ 
+                  width: '16px', 
+                  height: '16px', 
+                  background: 'white', 
+                  borderRadius: '50%', 
+                  position: 'absolute', 
+                  top: '3px', 
+                  left: metaSettings?.meta_capi_crm_enabled === 'true' ? '27px' : '3px',
+                  transition: 'all 0.3s'
+                }} />
+              </div>
+            </div>
+
+            {/* Toggle Business Messaging v3 */}
+            <div className="modal-form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', opacity: 0.85 }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#475569' }}>Business Messaging v3</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Tạm dừng (Chờ Meta cấp quyền page_events)</div>
               </div>
               <div 
                 onClick={() => setMetaSettings({...metaSettings, meta_capi_business_messaging_v3_enabled: metaSettings?.meta_capi_business_messaging_v3_enabled === 'true' ? 'false' : 'true'})}
@@ -268,9 +299,10 @@ const SettingsTab = ({
             </select>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <button className="login-btn" onClick={handleUpdateSettings}>LƯU CẤU HÌNH</button>
-            <button className="login-btn" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #16a34a' }} onClick={() => handleTestMeta('capi')}>KIỂM TRA CAPI</button>
+            <button className="login-btn" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #16a34a' }} onClick={() => handleTestMeta('crm_capi')}>TEST CRM CAPI CÁCH LY</button>
+            <button className="login-btn" style={{ background: '#f8fafc', color: '#64748b', border: '1px solid #cbd5e1' }} onClick={() => handleTestMeta('capi')}>TEST CAPI LEGACY</button>
           </div>
         </div>
       )}

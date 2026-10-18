@@ -1,9 +1,10 @@
 const { processOutboxBatch, recoverStaleLocks } = require('../services/metaCapiV3Service');
+const metaCapiCrmService = require('../services/metaCapiCrmService');
 
 let isProcessing = false;
 
 /**
- * Kích hoạt một chu kỳ quét và gửi Outbox
+ * Kích hoạt một chu kỳ quét và gửi Outbox cho cả CRM CAPI và Business Messaging
  */
 async function triggerBatch() {
   if (isProcessing) {
@@ -11,9 +12,12 @@ async function triggerBatch() {
   }
   isProcessing = true;
   try {
+    // 1. Quét Outbox CRM Standard (action_source: system_generated)
+    await metaCapiCrmService.processCrmOutboxBatch({ limit: 10 });
+    // 2. Quét Outbox Business Messaging v3 (action_source: business_messaging)
     await processOutboxBatch({ limit: 10 });
   } catch (err) {
-    console.error('[CAPI-v3 Engine] Lỗi trong chu trình Outbox:', err.message);
+    console.error('[CAPI Outbox Engine] Lỗi trong chu trình Outbox:', err.message);
   } finally {
     isProcessing = false;
   }

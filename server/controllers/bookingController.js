@@ -6,6 +6,7 @@ const { emitEvent } = require('../utils/eventBus');
 const SystemEvents = require('../constants/SystemEvents');
 const zaloZnsService = require('../services/zaloZnsService');
 const metaCapiV3 = require('../services/metaCapiV3Service');
+const metaCapiCrm = require('../services/metaCapiCrmService');
 
 exports.getAllBookings = async (req, res) => {
     try {
@@ -177,8 +178,8 @@ exports.createBooking = async (req, res) => {
             created_at: new Date().toISOString()
         });
 
-        // CAPI v3: Trigger Purchase if booking has real payment/deposit (Trạng thái Xác nhận đơn thuần bị từ chối)
-        if (metaCapiV3.isEligiblePurchaseBooking(newBooking)) {
+        // CAPI: Trigger Purchase if booking has real payment/deposit (Trạng thái Xác nhận đơn thuần bị từ chối)
+        if (metaCapiCrm.isEligiblePurchaseBooking(newBooking) || metaCapiV3.isEligiblePurchaseBooking(newBooking)) {
             (async () => {
                 try {
                     const custRes = await db.query('SELECT * FROM customers WHERE id = $1', [newBooking.customer_id]);
@@ -189,10 +190,11 @@ exports.createBooking = async (req, res) => {
                             const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
                             if (leadRes.rows.length > 0) lead = leadRes.rows[0];
                         }
+                        await metaCapiCrm.enqueuePurchase(newBooking, customer, lead);
                         await metaCapiV3.enqueuePurchase(newBooking, customer, lead);
                     }
                 } catch (e) {
-                    console.error('[CAPI-v3] Lỗi enqueue Purchase từ createBooking:', e.message);
+                    console.error('[CAPI] Lỗi enqueue Purchase từ createBooking:', e.message);
                 }
             })();
         }
@@ -374,8 +376,8 @@ exports.updateBooking = async (req, res) => {
                 updated_at: new Date().toISOString()
             });
 
-            // CAPI v3: Trigger Purchase if booking has real payment/deposit (Trạng thái Xác nhận đơn thuần bị từ chối)
-            if (metaCapiV3.isEligiblePurchaseBooking(updatedBooking)) {
+            // CAPI: Trigger Purchase if booking has real payment/deposit (Trạng thái Xác nhận đơn thuần bị từ chối)
+            if (metaCapiCrm.isEligiblePurchaseBooking(updatedBooking) || metaCapiV3.isEligiblePurchaseBooking(updatedBooking)) {
                 (async () => {
                     try {
                         const custRes = await db.query('SELECT * FROM customers WHERE id = $1', [updatedBooking.customer_id]);
@@ -386,10 +388,11 @@ exports.updateBooking = async (req, res) => {
                                 const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
                                 if (leadRes.rows.length > 0) lead = leadRes.rows[0];
                             }
+                            await metaCapiCrm.enqueuePurchase(updatedBooking, customer, lead);
                             await metaCapiV3.enqueuePurchase(updatedBooking, customer, lead);
                         }
                     } catch (e) {
-                        console.error('[CAPI-v3] Lỗi enqueue Purchase từ updateBooking:', e.message);
+                        console.error('[CAPI] Lỗi enqueue Purchase từ updateBooking:', e.message);
                     }
                 })();
             }
@@ -568,11 +571,11 @@ exports.addTransaction = async (req, res) => {
             new_data: newTx
         });
 
-        // 5. CAPI v3: Kích hoạt Purchase khi khách nộp cọc hoặc thanh toán thực tế
+        // 5. CAPI: Kích hoạt Purchase khi khách nộp cọc hoặc thanh toán thực tế
         (async () => {
             try {
                 const bFull = await db.query('SELECT b.*, (SELECT SUM(amount) FROM booking_transactions WHERE booking_id = b.id) as paid FROM bookings b WHERE b.id = $1', [id]);
-                if (bFull.rows.length > 0 && metaCapiV3.isEligiblePurchaseBooking(bFull.rows[0])) {
+                if (bFull.rows.length > 0 && (metaCapiCrm.isEligiblePurchaseBooking(bFull.rows[0]) || metaCapiV3.isEligiblePurchaseBooking(bFull.rows[0]))) {
                     const currentBk = bFull.rows[0];
                     const custRes = await db.query('SELECT * FROM customers WHERE id = $1', [currentBk.customer_id]);
                     if (custRes.rows.length > 0) {
@@ -582,11 +585,12 @@ exports.addTransaction = async (req, res) => {
                             const leadRes = await db.query('SELECT * FROM leads WHERE id = $1', [customer.lead_id]);
                             if (leadRes.rows.length > 0) lead = leadRes.rows[0];
                         }
+                        await metaCapiCrm.enqueuePurchase(currentBk, customer, lead);
                         await metaCapiV3.enqueuePurchase(currentBk, customer, lead);
                     }
                 }
             } catch (capiErr) {
-                console.error('[CAPI-v3] Lỗi enqueue Purchase từ addTransaction:', capiErr.message);
+                console.error('[CAPI] Lỗi enqueue Purchase từ addTransaction:', capiErr.message);
             }
         })();
 

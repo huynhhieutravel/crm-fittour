@@ -3,6 +3,7 @@ const { logActivity } = require('../utils/logger');
 const { convertLeadToCustomer } = require('../services/conversionService');
 const metaCapi = require('../services/metaCapiService');
 const metaCapiV3 = require('../services/metaCapiV3Service');
+const metaCapiCrm = require('../services/metaCapiCrmService');
 const telegramService = require('../services/telegramService');
 const { getDataScope } = require("../middleware/teamScope");
 const { getUserMergedPerms } = require("../middleware/permCheck");
@@ -230,6 +231,11 @@ exports.createLead = async (req, res) => {
             status: newLead.status,
             created_at: new Date().toISOString()
         });
+
+        // CRM CAPI: Enqueue Lead event (chỉ enqueue nếu meta_capi_crm_enabled=true và có định danh SĐT/Email)
+        metaCapiCrm.enqueueLead(newLead).catch(err =>
+            console.error('[CAPI-CRM] Lỗi enqueue Lead mới:', err.message)
+        );
 
         // (Đã tắt gửi Telegram khi tạo lead thủ công theo yêu cầu quản trị)
 
@@ -626,9 +632,19 @@ exports.updateLead = async (req, res) => {
               });
               
               (async () => {
-                // 1. CAPI v3: Đánh giá tiêu chí QualifiedLead (Multi-criteria)
+                // 1. CAPI CRM & v3: Đánh giá tiêu chí QualifiedLead (Multi-criteria)
                 // Purchase TUYỆT ĐỐI không kích hoạt tại đây. Toàn bộ sự kiện Purchase được quản lý độc quyền qua bookingController khi có giao dịch thực tế.
                 try {
+                  // CRM Standard CAPI: Enqueue nếu đủ tiêu chuẩn và meta_capi_crm_enabled=true
+                  const crmQualEval = metaCapiCrm.evaluateSalesQualification(updatedLead, updates);
+                  if (crmQualEval.isQualified) {
+                    await metaCapiCrm.enqueueQualifiedLead(updatedLead);
+                    if (!updatedLead.is_sales_qualified) {
+                      await db.query('UPDATE leads SET is_sales_qualified = TRUE, sales_qualified_at = NOW() WHERE id = $1', [updatedLead.id]).catch(() => {});
+                    }
+                  }
+
+                  // Business Messaging v3
                   const qualEval = metaCapiV3.evaluateSalesQualification(updatedLead, updates);
                   if (qualEval.isQualified) {
                     await metaCapiV3.enqueueQualifiedLead(updatedLead);
@@ -637,7 +653,7 @@ exports.updateLead = async (req, res) => {
                     }
                   }
                 } catch (err) {
-                  console.error('[CAPI-v3] Lỗi đánh giá/enqueue QualifiedLead:', err.message);
+                  console.error('[CAPI] Lỗi đánh giá/enqueue QualifiedLead:', err.message);
                 }
 
                 // 2. Legacy CAPI: Phân luồng an toàn (Không gửi Purchase từ Lead)
@@ -1861,6 +1877,9 @@ exports.recreateLeadFromConversation = async (req, res) => {
         await client.query('COMMIT');
 
         // 11. Bắn Meta CAPI (async, không chặn response)
+        metaCapiCrm.enqueueLead(newLead).catch(err => 
+            console.error('[CAPI-CRM] Recreate lead event error:', err.message)
+        );
         metaCapi.sendLeadEvent(newLead).catch(err => 
             console.error('[CAPI] Recreate lead event error:', err.message)
         );
