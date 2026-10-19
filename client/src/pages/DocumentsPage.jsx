@@ -38,11 +38,13 @@ import {
   BAO_CAO_TIKTOK_T9_MARKDOWN 
 } from '../data/reportsMxhT9';
 import { BAO_CAO_TIKTOK_T10_MARKDOWN } from '../data/reportsMxhT10';
+import SriLankaFarmTripReportPage from './SriLankaFarmTripReportPage';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Static Document Index — TẤT CẢ tài liệu nội bộ đã biết
    ═══════════════════════════════════════════════════════════════════════════ */
 const STATIC_DOCS = [
+  { title: 'Báo Cáo Khảo Sát FARM Trip Sri Lanka (10–15/10/2026)', description: 'Đánh giá thực địa 6N5Đ: Tuyến điểm, khách sạn 5 sao, ẩm thực, xe 29 vs 45 chỗ & cẩm nang thực chiến cho Sales & HDV', category: 'Điều hành', path: '/tai-lieu/bao-cao-farm-trip-sri-lanka', icon: '🇱🇰' },
   { title: 'Báo Cáo Hiệu Suất MXH & Digital (T9/2026)', description: 'Tổng hợp đa kênh Website fittour.vn, Facebook Fanpage và TikTok Studio tháng 9/2026', category: 'Marketing', path: '/tai-lieu/bao-cao-tong-hop-mxh-thang-9-2026', icon: '🌐' },
   { title: 'Báo Cáo Bài Viết Website Astro (T9/2026)', description: 'Chi tiết 125 trang/bài hoàn thành, chuyển đổi Elementor sang Astro Native, Core Web Vitals', category: 'Marketing', path: '/tai-lieu/bao-cao-website-thang-9-2026', icon: '💻' },
   { title: 'Báo Cáo Facebook Fanpage (T9/2026)', description: 'Chi tiết 43 bài post, 138k views, tuần 3 bứt phá 54.7k views & kế hoạch tháng 10', category: 'Marketing', path: '/tai-lieu/bao-cao-facebook-thang-9-2026', icon: '📱' },
@@ -678,6 +680,9 @@ const DocumentsHome = () => {
             </Link>
             <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '0.75rem 0' }} />
             <ul className="blog-list">
+              <li style={{ marginBottom: '0.5rem' }}>
+                <Link to="/tai-lieu/bao-cao-farm-trip-sri-lanka" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>🇱🇰</span> Báo cáo FARM Trip Sri Lanka</Link>
+              </li>
               <li style={{ marginBottom: 0 }}>
                 <Link to="/tai-lieu/quy-trinh-thanh-toan-ban-giao-quyet-toan-tour" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>💸</span> Thanh toán, bàn giao, quyết toán</Link>
               </li>
@@ -729,6 +734,7 @@ const DocumentsHome = () => {
 
             <h3 className="blog-section-title" style={{ marginTop: '2rem' }}>Quy chuẩn & SOP</h3>
             <ul className="blog-list">
+              <li><Link to="/tai-lieu/bao-cao-farm-trip-sri-lanka"><span className="blog-list-icon">🇱🇰</span> Khảo sát FARM Trip Sri Lanka</Link></li>
               <li><Link to="/tai-lieu/dat-ten-tour"><span className="blog-list-icon">📓</span> SOP – Chuẩn hóa tên Tour</Link></li>
             </ul>
           </div>
@@ -1273,6 +1279,10 @@ const DocumentsPage = () => {
         quickLinks={mxhQuickLinks}
       />
     );
+  }
+
+  if (path === '/tai-lieu/bao-cao-farm-trip-sri-lanka' || path === '/tai-lieu/farm-trip-sri-lanka' || path === '/tai-lieu/khao-sat-sri-lanka') {
+    return <SriLankaFarmTripReportPage />;
   }
 
   // RAG Dynamic Documents
