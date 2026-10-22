@@ -243,6 +243,7 @@ app.use('/api/email-rules', require('./routes/emailRuleRoutes'));
 const dashboardRoutes = require('./routes/dashboard');
 
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/departure-cashflow', require('./routes/departureCashflowRoutes'));
 
 const licenseRoutes = require('./routes/licenses');
 app.use('/api/licenses', licenseRoutes);

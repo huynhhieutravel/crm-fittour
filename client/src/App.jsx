@@ -41,6 +41,7 @@ const BURulesTab = lazy(() => import('./tabs/BURulesTab'));
 const InsurancesTab = lazy(() => import('./tabs/InsurancesTab'));
 const VisaProvidersTab = lazy(() => import('./tabs/VisaProvidersTab'));
 const OpToursTab = lazy(() => import('./tabs/OpToursTab'));
+const DepartureCashflowTab = lazy(() => import('./tabs/DepartureCashflowTab'));
 const TravelSupportTab = lazy(() => import('./tabs/TravelSupportTab'));
 
 const DispatchScheduleTab = lazy(() => import('./tabs/DispatchScheduleTab'));
@@ -104,6 +105,7 @@ import BrandSocialPage from './pages/BrandSocialPage';
 import BrandLayout from './pages/BrandLayout';
 import AdminTripDashboard from './pages/AdminTripDashboard';
 import PublicReceiptPage from './pages/PublicReceiptPage';
+import PublicTourLogisticsPage from './pages/PublicTourLogisticsPage';
 import PublicAnnouncementPage from './pages/PublicAnnouncementPage';
 import ZnsDemoTab from './tabs/ZnsDemoTab';
 import HuongDanTaoNghiPhepPage from './pages/HuongDanTaoNghiPhepPage';
@@ -204,7 +206,7 @@ function AppContent() {
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
   const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
-  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'marketing-budget-plan', 'marketing-google-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'announcements', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'visa-form-templates', 'dispatch-schedule', 'notification-center', 'zns-demo'];
+  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'departure-cashflow', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'marketing-budget-plan', 'marketing-google-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'announcements', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'visa-form-templates', 'dispatch-schedule', 'notification-center', 'zns-demo'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -3066,6 +3068,13 @@ function AppContent() {
           >
             Danh sách Lịch khởi hành
           </div>
+          <div 
+            className={`submenu-item ${activeTab === 'departure-cashflow' ? 'active' : ''}`} 
+            onClick={() => { navigate('/departure-cashflow'); setHoveredMenu(null); }}
+            style={{ fontWeight: activeTab === 'departure-cashflow' ? 700 : 500, color: activeTab === 'departure-cashflow' ? '#ff4b2b' : 'inherit' }}
+          >
+            💰 Sổ Tay Dòng Tiền & Công Nợ
+          </div>
           {(user?.role === 'admin' || user?.role === 'manager' || user?.role === 'ceo') && (
             <div 
               className={`submenu-item ${activeTab === 'ceo-departures-dashboard' ? 'active' : ''}`} 
@@ -3573,6 +3582,7 @@ function AppContent() {
         <div className="breadcrumb-container">
           <div className="breadcrumb">CRM / {
               activeTab === 'op-tours' ? 'LỊCH KHỞI HÀNH' : 
+              activeTab === 'departure-cashflow' ? 'SỔ TAY KHỞI HÀNH & DÒNG TIỀN' : 
               activeTab === 'management-dashboard' ? 'TỔNG QUAN MARKETING' : 
               activeTab === 'marketing-google-ads' ? 'TOUR ĐOÀN / GOOGLE ADS BU3' : 
               activeTab === 'notification-center' ? 'TRUNG TÂM ĐIỀU PHỐI' :
@@ -3599,6 +3609,7 @@ function AppContent() {
             activeTab === 'bu-rules' ? 'Quy tắc chọn BU cho Lead' :
             activeTab === 'manual' ? 'Sổ tay HDSD CRM' :
             activeTab === 'op-tours' ? 'Lịch khởi hành' :
+            activeTab === 'departure-cashflow' ? 'Sổ Tay Khởi Hành & Dòng Tiền' :
             activeTab === 'ceo-departures-dashboard' ? 'Dashboard Lịch Khởi Hành' :
             activeTab === 'team-directory' ? 'Nhân Sự FIT Tour' :
             activeTab === 'my-profile' ? 'Trang cá nhân' :
@@ -3923,6 +3934,10 @@ function AppContent() {
 
         {activeTab === 'op-tours' && (
           <OpToursTab currentUser={user} />
+        )}
+
+        {activeTab === 'departure-cashflow' && (
+          <DepartureCashflowTab currentUser={user} />
         )}
 
         {activeTab === 'ceo-departures-dashboard' && (
@@ -4482,6 +4497,7 @@ function AppContent() {
       <Route path="/tai-lieu/manager" element={isLoggedIn ? <RagDocsManager /> : <Navigate to="/login" />} />
       <Route path="/tai-lieu" element={<DocumentsPage />} />
       <Route path="/tai-lieu/sop-astro-tour" element={<DocumentsPage />} />
+      <Route path="/tai-lieu/doan/:token" element={<PublicTourLogisticsPage />} />
       <Route path="/tai-lieu/rule-meta-ads" element={<DocumentsPage />} />
       <Route path="/tai-lieu/blueprint-meta-ads" element={<DocumentsPage />} />
 
@@ -4497,6 +4513,7 @@ function AppContent() {
       <Route path="/cam-nang-thuong-hieu/*" element={isLoggedIn ? <BrandLayout><BrandGuidelinePage /></BrandLayout> : <Navigate to="/login" />} />
       <Route path="/simple-list-share/lich_dai_ly" element={<AgencySharePage />} />
       <Route path="/receipt/:token" element={<PublicReceiptPage />} />
+      <Route path="/phieu-thu/:token" element={<PublicReceiptPage />} />
       <Route path="/service-confirm/:tourId/:bookingId" element={<ServiceContractViewer />} />
       <Route path="/visa-portal/:token" element={<PublicVisaPortalPage />} />
       <Route path="/thong-bao/:id" element={<PublicAnnouncementPage />} />

@@ -39,11 +39,13 @@ import {
 } from '../data/reportsMxhT9';
 import { BAO_CAO_TIKTOK_T10_MARKDOWN } from '../data/reportsMxhT10';
 import SriLankaFarmTripReportPage from './SriLankaFarmTripReportPage';
+import SriLankaTravelChecklistPage from './SriLankaTravelChecklistPage';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Static Document Index — TẤT CẢ tài liệu nội bộ đã biết
    ═══════════════════════════════════════════════════════════════════════════ */
 const STATIC_DOCS = [
+  { title: 'Checklist & Điều Cần Biết Trước Khi Du Lịch Sri Lanka', description: 'Cẩm nang toàn diện: Giấy tờ, múi giờ, quy tắc đền chùa, vớ đi chân trần, củ sạc Type D/G, tiền lẻ & mẫu tin nhắn Zalo dặn khách', category: 'Điều hành', path: '/tai-lieu/checklist-du-lich-sri-lanka', icon: '📋' },
   { title: 'Báo Cáo Khảo Sát FARM Trip Sri Lanka (10–15/10/2026)', description: 'Đánh giá thực địa 6N5Đ: Tuyến điểm, khách sạn 5 sao, ẩm thực, xe 29 vs 45 chỗ & cẩm nang thực chiến cho Sales & HDV', category: 'Điều hành', path: '/tai-lieu/bao-cao-farm-trip-sri-lanka', icon: '🇱🇰' },
   { title: 'Báo Cáo Hiệu Suất MXH & Digital (T9/2026)', description: 'Tổng hợp đa kênh Website fittour.vn, Facebook Fanpage và TikTok Studio tháng 9/2026', category: 'Marketing', path: '/tai-lieu/bao-cao-tong-hop-mxh-thang-9-2026', icon: '🌐' },
   { title: 'Báo Cáo Bài Viết Website Astro (T9/2026)', description: 'Chi tiết 125 trang/bài hoàn thành, chuyển đổi Elementor sang Astro Native, Core Web Vitals', category: 'Marketing', path: '/tai-lieu/bao-cao-website-thang-9-2026', icon: '💻' },
@@ -1279,6 +1281,10 @@ const DocumentsPage = () => {
         quickLinks={mxhQuickLinks}
       />
     );
+  }
+
+  if (path === '/tai-lieu/checklist-du-lich-sri-lanka' || path === '/tai-lieu/dieu-can-biet-sri-lanka' || path === '/tai-lieu/chuan-bi-sri-lanka') {
+    return <SriLankaTravelChecklistPage />;
   }
 
   if (path === '/tai-lieu/bao-cao-farm-trip-sri-lanka' || path === '/tai-lieu/farm-trip-sri-lanka' || path === '/tai-lieu/khao-sat-sri-lanka') {

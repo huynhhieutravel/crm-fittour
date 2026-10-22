@@ -31,3 +31,21 @@ _Avoid_: Fuzzy matching, lead merge, manual linking
 **Ambiguous Match**:
 A state where multiple active leads match contact identifiers without sufficient business evidence (different tours, same timeframe) to distinguish attribution safely.
 _Avoid_: Conflict error, failed link
+
+**Departure Cashflow Hub (Sổ Tay Khởi Hành & Dòng Tiền)**:
+The unified operational and financial dashboard in FIT TOUR CRM aggregating tour departure capacity, real-time cash flow, and debt collection progress across Business Units.
+_Avoid_: External note app, manual ledger, separate tracking sheet
+
+**Transparent BU Scope**:
+The data access model in FIT TOUR CRM where users default to their personal / assigned Business Unit perspective, but have unrestricted permissions to switch and monitor other BUs' departure and cashflow metrics.
+_Avoid_: Hard data silo, cross-department data masking
+
+**Debt Collection Stages (Phân Tầng Công Nợ Booking)**:
+The three standardized debt recovery tiers: Fully Paid (100%), Partial Deposit (Cọc dở dang), and Zero Deposit / Overdue (Nợ 100% chưa cọc).
+_Avoid_: Rough status, vague payment state
+
+**Quick Logistics Ledger (Sổ Tay Ghi Nhận Hậu Cần Nhanh)**:
+An inline-editable metadata layer on tour departures and bookings capturing operational counts per category (SIM types, rooming allocations, surcharges, and demographics) with quantity breakdown without forcing individual passenger-by-passenger entry into the core booking transaction table.
+_Avoid_: Hardcoded booking schema, separate paper notes, manual calculation
+
+
