@@ -2,22 +2,17 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { 
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, 
-  Tooltip, Legend, ResponsiveContainer, ComposedChart, PieChart, Pie, Cell 
+  Tooltip, Legend, ResponsiveContainer, ComposedChart
 } from 'recharts';
 import { 
   Calendar, DollarSign, Users, AlertTriangle, CheckCircle, 
   Clock, Share2, Edit3, Smartphone, BedDouble, Search, 
-  ExternalLink, MessageCircle, Copy, Check, ChevronRight, 
+  ExternalLink, MessageCircle, Copy, Check, ChevronRight, ChevronDown,
   Filter, TrendingUp, ShieldCheck, ArrowUpRight, Flame, Layers
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QuickLogisticsDrawer from '../components/drawers/QuickLogisticsDrawer';
 import DepartureShareModal from '../components/modals/DepartureShareModal';
-
-// Color Palettes
-const COLORS_SIM = ['#3b82f6', '#10b981', '#94a3b8']; // eSIM, Physical, None
-const COLORS_ROOM = ['#8b5cf6', '#06b6d4', '#f59e0b', '#ec4899', '#64748b']; // DBL, TWIN, TRIP, SGL, Odd
-const COLORS_DEMO = ['#3b82f6', '#f43f5e']; // Adult, Child
 
 const formatMoney = (val) => {
   const num = Number(val) || 0;
@@ -30,6 +25,20 @@ const formatMoney = (val) => {
     return t.replace(/\.00$/, '') + ' Tr đ';
   }
   return Math.round(num).toLocaleString('vi-VN') + ' đ';
+};
+
+const formatShortMoney = (val) => {
+  const num = Number(val) || 0;
+  if (num === 0) return '0';
+  if (num >= 1000000000) {
+    let t = (num / 1000000000).toFixed(1);
+    return t.replace(/\.0$/, '') + ' Tỷ';
+  }
+  if (num >= 1000000) {
+    let t = (num / 1000000).toFixed(0);
+    return t + ' Tr';
+  }
+  return Math.round(num).toLocaleString('vi-VN');
 };
 
 const formatFullVND = (val) => {
@@ -47,6 +56,22 @@ const resolveAutoBU = (bus) => {
 };
 
 export default function DepartureCashflowTab({ currentUser }) {
+  // Responsive mobile state
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Navigation View: 'operations' (Toàn cảnh BU) | 'personal' (Sổ tay cá nhân Sale)
   const [activeView, setActiveView] = useState('operations');
 
@@ -56,7 +81,10 @@ export default function DepartureCashflowTab({ currentUser }) {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [selectedMonth, setSelectedMonth] = useState('all'); // 'all' or 1..12
+  // Default to current month (Requirement 1 & 2)
+  const [selectedMonths, setSelectedMonths] = useState([currentMonth]);
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const monthPickerRef = useRef(null);
 
   // Auto-resolve initial BU
   const getInitialBU = () => {
@@ -90,28 +118,79 @@ export default function DepartureCashflowTab({ currentUser }) {
   const [quickLogisticsTourId, setQuickLogisticsTourId] = useState(null);
   const [shareModalTour, setShareModalTour] = useState(null);
 
+  // Click outside to close Month Picker
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (monthPickerRef.current && !monthPickerRef.current.contains(event.target)) {
+        setShowMonthPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const getMonthSummaryText = () => {
+    if (selectedMonths.length === 0 || selectedMonths.length === 12) {
+      return 'Tất cả các tháng';
+    }
+    if (selectedMonths.length === 1) {
+      return `Tháng ${selectedMonths[0]}`;
+    }
+    const sorted = [...selectedMonths].sort((a, b) => a - b);
+    if (sorted.length <= 3) {
+      return sorted.map(m => `T${m}`).join(', ');
+    }
+    return `${sorted.length} tháng đã chọn`;
+  };
+
+  const toggleMonth = (m) => {
+    setSelectedMonths(prev => {
+      if (prev.length === 12) {
+        return [m];
+      }
+      if (prev.includes(m)) {
+        const next = prev.filter(x => x !== m);
+        return next.length === 0 ? [currentMonth] : next;
+      } else {
+        return [...prev, m].sort((a, b) => a - b);
+      }
+    });
+  };
+
+  // Helper to format months query param
+  const getMonthsQueryParam = () => {
+    if (selectedMonths.length === 12 || selectedMonths.length === 0) {
+      return 'all';
+    }
+    return [...selectedMonths].sort((a, b) => a - b).join(',');
+  };
+
   // Load Operations & BU Stats
   useEffect(() => {
     if (activeView === 'operations') {
       fetchStats();
     }
-  }, [activeView, selectedYear, selectedMonth, selectedBU, searchRoute, debtStatus]);
+  }, [activeView, selectedYear, selectedMonths, selectedBU, searchRoute, debtStatus]);
 
   // Load Personal Sales Stats
   useEffect(() => {
     if (activeView === 'personal') {
       fetchPersonal();
     }
-  }, [activeView, selectedSalesUser, selectedYear, selectedMonth, selectedBU]);
+  }, [activeView, selectedSalesUser, selectedYear, selectedMonths, selectedBU]);
 
   const fetchStats = async () => {
     setLoadingStats(true);
     try {
+      const monthsParam = getMonthsQueryParam();
       const res = await axios.get('/api/departure-cashflow/stats', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         params: {
           year: selectedYear,
-          month: selectedMonth,
+          months: monthsParam,
+          month: selectedMonths.length === 1 ? selectedMonths[0] : monthsParam,
           bu: selectedBU,
           route: searchRoute,
           debtStatus: debtStatus
@@ -136,12 +215,14 @@ export default function DepartureCashflowTab({ currentUser }) {
   const fetchPersonal = async () => {
     setLoadingPersonal(true);
     try {
+      const monthsParam = getMonthsQueryParam();
       const res = await axios.get('/api/departure-cashflow/personal', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         params: {
           userId: selectedSalesUser || currentUser?.id,
           year: selectedYear,
-          month: selectedMonth,
+          months: monthsParam,
+          month: selectedMonths.length === 1 ? selectedMonths[0] : monthsParam,
           bu: selectedBU
         }
       });
@@ -181,71 +262,117 @@ export default function DepartureCashflowTab({ currentUser }) {
     toast.success(`Đã sao chép mẫu nhắc nợ cho khách ${customerName}!`);
   };
 
-  // Donut chart datasets
-  const simPieData = useMemo(() => {
-    if (!statsData?.logistics?.sim) return [];
-    const s = statsData.logistics.sim;
-    return [
-      { name: 'eSIM', value: s.esim || 0 },
-      { name: 'SIM Vật lý', value: s.physical || 0 },
-      { name: 'Không lấy', value: s.none || 0 }
-    ].filter(item => item.value > 0);
-  }, [statsData]);
 
-  const roomPieData = useMemo(() => {
-    if (!statsData?.logistics?.rooms) return [];
-    const r = statsData.logistics.rooms;
-    return [
-      { name: 'DBL (Đôi)', value: r.dbl || 0 },
-      { name: 'TWIN (2G)', value: r.twin || 0 },
-      { name: 'TRIP (Phòng 3)', value: r.trip || 0 },
-      { name: 'SGL (Đơn)', value: r.sgl || 0 },
-      { name: 'Lẻ ghép', value: r.odd || 0 }
-    ].filter(item => item.value > 0);
-  }, [statsData]);
-
-  const demoPieData = useMemo(() => {
-    if (!statsData?.logistics?.demographics) return [];
-    const d = statsData.logistics.demographics;
-    return [
-      { name: 'Người lớn (ADL)', value: d.adult || 0 },
-      { name: 'Trẻ em (CHD)', value: d.child || 0 }
-    ].filter(item => item.value > 0);
-  }, [statsData]);
 
   return (
-    <div style={{ padding: '1.25rem 1.5rem', minHeight: '100%', color: 'var(--text, #0f172a)' }}>
+    <div style={{ padding: isMobile ? '0.25rem 0 1rem' : '0.5rem 0 1.5rem', minHeight: '100%', color: 'var(--text, #0f172a)' }}>
       
-      {/* ═══ TOP UNIFIED ACTION & FILTER BAR (NO DUPLICATE TITLE, FILTERS ON LEFT) ═══ */}
+      {/* ═══ TOP VIEW SWITCHER: TOÀN CẢNH BU vs SỔ TAY CÁ NHÂN ═══ */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '10px',
+        marginBottom: isMobile ? '0.75rem' : '1rem'
+      }}>
+        <div style={{
+          display: isMobile ? 'flex' : 'inline-flex',
+          width: isMobile ? '100%' : 'auto',
+          backgroundColor: '#f1f5f9',
+          padding: '4px',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0',
+          gap: '4px'
+        }}>
+          <button
+            onClick={() => setActiveView('operations')}
+            style={{
+              flex: isMobile ? 1 : 'none',
+              justifyContent: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: isMobile ? '7px 6px' : '8px 18px',
+              borderRadius: '9px',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: isMobile ? '0.78rem' : '0.86rem',
+              backgroundColor: activeView === 'operations' ? 'var(--card-bg, #ffffff)' : 'transparent',
+              color: activeView === 'operations' ? '#ff4b2b' : 'var(--text-light, #64748b)',
+              boxShadow: activeView === 'operations' ? '0 2px 6px rgba(255, 75, 43, 0.15)' : 'none',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <Layers size={isMobile ? 14 : 16} /> {isMobile ? 'Toàn Cảnh BU' : 'Toàn Cảnh BU & Khởi Hành'}
+          </button>
+          <button
+            onClick={() => setActiveView('personal')}
+            style={{
+              flex: isMobile ? 1 : 'none',
+              justifyContent: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: isMobile ? '7px 6px' : '8px 18px',
+              borderRadius: '9px',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: isMobile ? '0.78rem' : '0.86rem',
+              backgroundColor: activeView === 'personal' ? 'var(--card-bg, #ffffff)' : 'transparent',
+              color: activeView === 'personal' ? '#2563eb' : 'var(--text-light, #64748b)',
+              boxShadow: activeView === 'personal' ? '0 2px 6px rgba(37, 99, 235, 0.15)' : 'none',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <Flame size={isMobile ? 14 : 16} /> {isMobile ? 'Sổ Tay Của Tôi' : 'Sổ Tay Bán Hàng Của Tôi'}
+          </button>
+        </div>
+
+        {activeView === 'personal' && (
+          <div style={{ fontSize: isMobile ? '0.78rem' : '0.85rem', color: 'var(--text-light, #64748b)', display: 'flex', alignItems: 'center', gap: '6px', width: isMobile ? '100%' : 'auto' }}>
+            <span>Đang xem sổ tay của:</span>
+            <span style={{ fontWeight: 700, color: '#2563eb', backgroundColor: '#eff6ff', padding: '3px 10px', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
+              {personalData?.user?.full_name || currentUser?.full_name || 'Tôi'}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* ═══ TOP UNIFIED ACTION & FILTER BAR (NĂM, THÁNG, BU, TUYẾN, CÔNG NỢ) ═══ */}
       <div style={{
         backgroundColor: 'var(--card-bg, #ffffff)',
         borderRadius: '16px',
-        padding: '0.85rem 1.25rem',
+        padding: isMobile ? '0.75rem' : '0.85rem 1.25rem',
         boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
         border: '1px solid var(--border, #e2e8f0)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '12px',
-        marginBottom: '1.25rem'
+        gap: isMobile ? '8px' : '12px',
+        marginBottom: isMobile ? '1rem' : '1.25rem'
       }}>
         {/* LEFT SIDE: ALL FILTERS */}
-        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: isMobile ? '8px' : '10px', width: isMobile ? '100%' : 'auto' }}>
           
           {/* Year Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-light, #64748b)' }}>Năm:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-light, #64748b)' }}>Năm:</span>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
               style={{
-                padding: '6px 10px',
+                padding: '6px 8px',
                 borderRadius: '8px',
                 border: '1px solid var(--border, #cbd5e1)',
                 backgroundColor: 'var(--bg, #f8fbfd)',
                 color: 'var(--text, #0f172a)',
-                fontSize: '0.85rem',
+                fontSize: isMobile ? '0.8rem' : '0.85rem',
                 fontWeight: 600,
                 cursor: 'pointer'
               }}
@@ -256,33 +383,166 @@ export default function DepartureCashflowTab({ currentUser }) {
             </select>
           </div>
 
-          {/* Month Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-light, #64748b)' }}>Tháng:</span>
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              style={{
-                padding: '6px 10px',
-                borderRadius: '8px',
+          {/* Multi-Month Selector */}
+          <div ref={monthPickerRef} style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-light, #64748b)' }}>Tháng:</span>
+              <button
+                type="button"
+                onClick={() => setShowMonthPicker(prev => !prev)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '6px 10px',
+                  borderRadius: '8px',
+                  border: selectedMonths.length === 12 
+                    ? '1px solid var(--border, #cbd5e1)' 
+                    : '1.5px solid #ff4b2b',
+                  backgroundColor: selectedMonths.length === 12 
+                    ? 'var(--bg, #f8fbfd)' 
+                    : '#fff5f3',
+                  color: selectedMonths.length === 12 
+                    ? 'var(--text, #0f172a)' 
+                    : '#ff4b2b',
+                  fontSize: isMobile ? '0.8rem' : '0.85rem',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                <Calendar size={13} />
+                <span>{getMonthSummaryText()}</span>
+                <ChevronDown size={14} style={{ opacity: 0.7 }} />
+              </button>
+            </div>
+
+            {showMonthPicker && (
+              <div style={{
+                position: 'absolute',
+                top: 'calc(100% + 6px)',
+                left: 0,
+                width: isMobile ? 'calc(100vw - 44px)' : '280px',
+                maxWidth: '300px',
+                backgroundColor: 'var(--card-bg, #ffffff)',
                 border: '1px solid var(--border, #cbd5e1)',
-                backgroundColor: 'var(--bg, #f8fbfd)',
-                color: 'var(--text, #0f172a)',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              <option value="all">Tất cả tháng</option>
-              {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                <option key={m} value={m}>Tháng {m}</option>
-              ))}
-            </select>
+                borderRadius: '12px',
+                padding: '12px',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+                zIndex: 100
+              }}>
+                {/* Quick actions */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid var(--border, #f1f5f9)' }}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMonths([currentMonth])}
+                    style={{
+                      flex: 1,
+                      padding: '5px 8px',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      borderRadius: '6px',
+                      border: '1px solid #ffd5ce',
+                      backgroundColor: '#fff5f3',
+                      color: '#ff4b2b',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Tháng này (T{currentMonth})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedMonths.length === 12) {
+                        setSelectedMonths([currentMonth]);
+                      } else {
+                        setSelectedMonths([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+                      }
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '5px 8px',
+                      fontSize: '0.74rem',
+                      fontWeight: 600,
+                      borderRadius: '6px',
+                      border: '1px solid var(--border, #cbd5e1)',
+                      backgroundColor: 'var(--bg, #f8fafc)',
+                      color: 'var(--text-light, #475569)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {selectedMonths.length === 12 ? 'Bỏ tất cả' : 'Cả 12 tháng'}
+                  </button>
+                </div>
+
+                {/* Grid 12 months (4x3) */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map(m => {
+                    const isSelected = selectedMonths.includes(m);
+                    const isCurrent = m === currentMonth;
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => toggleMonth(m)}
+                        style={{
+                          position: 'relative',
+                          padding: '8px 2px',
+                          borderRadius: '8px',
+                          fontSize: '0.8rem',
+                          fontWeight: isSelected ? 700 : 500,
+                          border: isSelected ? '1.5px solid #ff4b2b' : '1px solid var(--border, #e2e8f0)',
+                          backgroundColor: isSelected ? '#fff5f3' : 'var(--card-bg, #ffffff)',
+                          color: isSelected ? '#ff4b2b' : 'var(--text, #334155)',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        Tháng {m}
+                        {isCurrent && (
+                          <span
+                            title="Tháng hiện tại"
+                            style={{
+                              position: 'absolute',
+                              top: '3px',
+                              right: '3px',
+                              width: '5px',
+                              height: '5px',
+                              borderRadius: '50%',
+                              backgroundColor: '#ff4b2b'
+                            }}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Footer status */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid var(--border, #f1f5f9)', fontSize: '0.74rem', color: 'var(--text-light, #64748b)' }}>
+                  <span>{selectedMonths.length === 12 ? 'Tất cả các tháng' : `${selectedMonths.length} tháng được chọn`}</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowMonthPicker(false)}
+                    style={{
+                      border: 'none',
+                      background: 'none',
+                      color: '#ff4b2b',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      padding: '2px 6px'
+                    }}
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* BU Dropdown (Auto-selected to user's BU) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-light, #64748b)' }}>Đơn vị:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-light, #64748b)' }}>Đơn vị:</span>
             <select
               value={selectedBU}
               onChange={(e) => {
@@ -290,12 +550,12 @@ export default function DepartureCashflowTab({ currentUser }) {
                 setSelectedBU(e.target.value);
               }}
               style={{
-                padding: '6px 12px',
+                padding: '6px 8px',
                 borderRadius: '8px',
                 border: selectedBU !== 'all' ? '1.5px solid #ff4b2b' : '1px solid var(--border, #cbd5e1)',
                 backgroundColor: selectedBU !== 'all' ? '#fff5f3' : 'var(--bg, #f8fbfd)',
                 color: selectedBU !== 'all' ? '#ff4b2b' : 'var(--text, #0f172a)',
-                fontSize: '0.85rem',
+                fontSize: isMobile ? '0.8rem' : '0.85rem',
                 fontWeight: 700,
                 cursor: 'pointer'
               }}
@@ -309,7 +569,7 @@ export default function DepartureCashflowTab({ currentUser }) {
 
           {/* Search Route (For Operations View) */}
           {activeView === 'operations' && (
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', width: isMobile ? '100%' : 'auto', flex: isMobile ? '1 1 100%' : 'none' }}>
               <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="text"
@@ -322,8 +582,9 @@ export default function DepartureCashflowTab({ currentUser }) {
                   border: '1px solid var(--border, #cbd5e1)',
                   backgroundColor: 'var(--bg, #f8fbfd)',
                   color: 'var(--text, #0f172a)',
-                  fontSize: '0.85rem',
-                  width: '180px'
+                  fontSize: isMobile ? '0.8rem' : '0.85rem',
+                  width: isMobile ? '100%' : '180px',
+                  boxSizing: 'border-box'
                 }}
               />
             </div>
@@ -331,20 +592,21 @@ export default function DepartureCashflowTab({ currentUser }) {
 
           {/* Sales User Selector (For Personal Sales View) */}
           {activeView === 'personal' && personalData?.salesUsers && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-light, #64748b)' }}>Nhân viên:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: isMobile ? '100%' : 'auto' }}>
+              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-light, #64748b)' }}>Nhân viên:</span>
               <select
                 value={selectedSalesUser}
                 onChange={(e) => setSelectedSalesUser(e.target.value)}
                 style={{
-                  padding: '6px 12px',
+                  padding: '6px 10px',
                   borderRadius: '8px',
                   border: '1px solid #93c5fd',
                   backgroundColor: '#eff6ff',
                   color: '#1d4ed8',
-                  fontSize: '0.85rem',
+                  fontSize: isMobile ? '0.8rem' : '0.85rem',
                   fontWeight: 700,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  flex: isMobile ? 1 : 'none'
                 }}
               >
                 {personalData.salesUsers.map(u => (
@@ -357,23 +619,25 @@ export default function DepartureCashflowTab({ currentUser }) {
         </div>
 
         {/* RIGHT SIDE: VIEW SWITCHER + DEBT FILTER */}
-        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', width: isMobile ? '100%' : 'auto' }}>
           
           {/* Debt Filter Buttons (For Operations View) */}
           {activeView === 'operations' && (
-            <div style={{ display: 'flex', backgroundColor: 'var(--bg, #f8fbfd)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border, #e2e8f0)' }}>
+            <div style={{ display: 'flex', width: isMobile ? '100%' : 'auto', backgroundColor: 'var(--bg, #f8fbfd)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border, #e2e8f0)' }}>
               <button
                 onClick={() => setDebtStatus('all')}
                 style={{
-                  padding: '5px 12px',
+                  flex: isMobile ? 1 : 'none',
+                  padding: isMobile ? '5px 4px' : '5px 12px',
                   borderRadius: '6px',
                   border: 'none',
                   cursor: 'pointer',
-                  fontSize: '0.78rem',
+                  fontSize: '0.75rem',
                   fontWeight: 600,
                   backgroundColor: debtStatus === 'all' ? '#1e293b' : 'transparent',
                   color: debtStatus === 'all' ? 'white' : 'var(--text-light, #64748b)',
-                  transition: 'all 0.15s'
+                  transition: 'all 0.15s',
+                  textAlign: 'center'
                 }}
               >
                 Toàn bộ
@@ -381,15 +645,17 @@ export default function DepartureCashflowTab({ currentUser }) {
               <button
                 onClick={() => setDebtStatus('debt')}
                 style={{
-                  padding: '5px 12px',
+                  flex: isMobile ? 1 : 'none',
+                  padding: isMobile ? '5px 4px' : '5px 12px',
                   borderRadius: '6px',
                   border: 'none',
                   cursor: 'pointer',
-                  fontSize: '0.78rem',
+                  fontSize: '0.75rem',
                   fontWeight: 600,
                   backgroundColor: debtStatus === 'debt' ? '#ea580c' : 'transparent',
                   color: debtStatus === 'debt' ? 'white' : 'var(--text-light, #64748b)',
-                  transition: 'all 0.15s'
+                  transition: 'all 0.15s',
+                  textAlign: 'center'
                 }}
               >
                 Còn nợ
@@ -397,71 +663,23 @@ export default function DepartureCashflowTab({ currentUser }) {
               <button
                 onClick={() => setDebtStatus('settled')}
                 style={{
-                  padding: '5px 12px',
+                  flex: isMobile ? 1 : 'none',
+                  padding: isMobile ? '5px 4px' : '5px 12px',
                   borderRadius: '6px',
                   border: 'none',
                   cursor: 'pointer',
-                  fontSize: '0.78rem',
+                  fontSize: '0.75rem',
                   fontWeight: 600,
                   backgroundColor: debtStatus === 'settled' ? '#059669' : 'transparent',
                   color: debtStatus === 'settled' ? 'white' : 'var(--text-light, #64748b)',
-                  transition: 'all 0.15s'
+                  transition: 'all 0.15s',
+                  textAlign: 'center'
                 }}
               >
                 Đã tất toán
               </button>
             </div>
           )}
-
-          {/* View Switcher Pill Buttons */}
-          <div style={{
-            display: 'flex',
-            backgroundColor: 'var(--border, #e2e8f0)',
-            padding: '3px',
-            borderRadius: '10px',
-            gap: '3px'
-          }}>
-            <button
-              onClick={() => setActiveView('operations')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 14px',
-                borderRadius: '7px',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: '0.82rem',
-                backgroundColor: activeView === 'operations' ? 'var(--card-bg, #ffffff)' : 'transparent',
-                color: activeView === 'operations' ? '#ff4b2b' : 'var(--text-light, #64748b)',
-                boxShadow: activeView === 'operations' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                transition: 'all 0.2s'
-              }}
-            >
-              <Layers size={15} /> Toàn Cảnh BU & Khởi Hành
-            </button>
-            <button
-              onClick={() => setActiveView('personal')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 14px',
-                borderRadius: '7px',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: '0.82rem',
-                backgroundColor: activeView === 'personal' ? 'var(--card-bg, #ffffff)' : 'transparent',
-                color: activeView === 'personal' ? '#2563eb' : 'var(--text-light, #64748b)',
-                boxShadow: activeView === 'personal' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                transition: 'all 0.2s'
-              }}
-            >
-              <Flame size={15} /> Sổ Tay Bán Hàng Của Tôi
-            </button>
-          </div>
 
         </div>
       </div>
@@ -474,33 +692,33 @@ export default function DepartureCashflowTab({ currentUser }) {
           {/* Top 4 KPI Cards */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '1rem',
-            marginBottom: '1.5rem'
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: isMobile ? '8px' : '1rem',
+            marginBottom: isMobile ? '1rem' : '1.5rem'
           }}>
             {/* Card 1: Tổng Khách */}
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
               borderRadius: '14px',
-              padding: '1.25rem',
+              padding: isMobile ? '10px 12px' : '1.25rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)',
               position: 'relative'
             }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-light, #64748b)', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: isMobile ? '0.68rem' : '0.75rem', fontWeight: 700, color: 'var(--text-light, #64748b)', textTransform: 'uppercase' }}>
                 Tổng Khách
               </span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '6px' }}>
-                <span style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '4px' }}>
+                <span style={{ fontSize: isMobile ? '1.35rem' : '1.8rem', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
                   {statsData?.metrics?.total_pax || 0}
                 </span>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-light, #64748b)' }}>khách</span>
+                <span style={{ fontSize: isMobile ? '0.75rem' : '0.85rem', color: 'var(--text-light, #64748b)' }}>khách</span>
               </div>
-              <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: 'var(--text-light, #94a3b8)' }}>
-                {statsData?.metrics?.total_departures || 0} đợt tour ghi sổ
+              <p style={{ margin: '2px 0 0', fontSize: isMobile ? '0.68rem' : '0.78rem', color: 'var(--text-light, #94a3b8)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {statsData?.metrics?.total_departures || 0} đợt tour
               </p>
-              <div style={{ position: 'absolute', right: '16px', top: '16px', color: '#6366f1', opacity: 0.8 }}>
-                <Users size={24} />
+              <div style={{ position: 'absolute', right: isMobile ? '10px' : '16px', top: isMobile ? '10px' : '16px', color: '#6366f1', opacity: 0.8 }}>
+                <Users size={isMobile ? 18 : 24} />
               </div>
             </div>
 
@@ -508,24 +726,24 @@ export default function DepartureCashflowTab({ currentUser }) {
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
               borderRadius: '14px',
-              padding: '1.25rem',
+              padding: isMobile ? '10px 12px' : '1.25rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)',
               position: 'relative'
             }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: isMobile ? '0.68rem' : '0.75rem', fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase' }}>
                 Doanh Thu Dự Kiến
               </span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '6px' }}>
-                <span style={{ fontSize: '1.8rem', fontWeight: 800, color: '#2563eb' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '4px' }}>
+                <span style={{ fontSize: isMobile ? '1.15rem' : '1.8rem', fontWeight: 800, color: '#2563eb' }}>
                   {formatMoney(statsData?.metrics?.total_projected)}
                 </span>
               </div>
-              <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: 'var(--text-light, #94a3b8)' }}>
+              <p style={{ margin: '2px 0 0', fontSize: isMobile ? '0.68rem' : '0.78rem', color: 'var(--text-light, #94a3b8)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 Giá bán + Phụ phí
               </p>
-              <div style={{ position: 'absolute', right: '16px', top: '16px', color: '#3b82f6', opacity: 0.8 }}>
-                <TrendingUp size={24} />
+              <div style={{ position: 'absolute', right: isMobile ? '10px' : '16px', top: isMobile ? '10px' : '16px', color: '#3b82f6', opacity: 0.8 }}>
+                <TrendingUp size={isMobile ? 18 : 24} />
               </div>
             </div>
 
@@ -533,24 +751,24 @@ export default function DepartureCashflowTab({ currentUser }) {
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
               borderRadius: '14px',
-              padding: '1.25rem',
+              padding: isMobile ? '10px 12px' : '1.25rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)',
               position: 'relative'
             }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: isMobile ? '0.68rem' : '0.75rem', fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>
                 Thực Thu (Cọc)
               </span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '6px' }}>
-                <span style={{ fontSize: '1.8rem', fontWeight: 800, color: '#059669' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '4px' }}>
+                <span style={{ fontSize: isMobile ? '1.15rem' : '1.8rem', fontWeight: 800, color: '#059669' }}>
                   {formatMoney(statsData?.metrics?.total_collected)}
                 </span>
               </div>
-              <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#059669', fontWeight: 600 }}>
+              <p style={{ margin: '2px 0 0', fontSize: isMobile ? '0.68rem' : '0.78rem', color: '#059669', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 Đạt {statsData?.metrics?.recovery_progress_pct || 0}% dòng tiền
               </p>
-              <div style={{ position: 'absolute', right: '16px', top: '16px', color: '#10b981', opacity: 0.8 }}>
-                <CheckCircle size={24} />
+              <div style={{ position: 'absolute', right: isMobile ? '10px' : '16px', top: isMobile ? '10px' : '16px', color: '#10b981', opacity: 0.8 }}>
+                <CheckCircle size={isMobile ? 18 : 24} />
               </div>
             </div>
 
@@ -558,24 +776,24 @@ export default function DepartureCashflowTab({ currentUser }) {
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
               borderRadius: '14px',
-              padding: '1.25rem',
+              padding: isMobile ? '10px 12px' : '1.25rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)',
               position: 'relative'
             }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ea580c', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: isMobile ? '0.68rem' : '0.75rem', fontWeight: 700, color: '#ea580c', textTransform: 'uppercase' }}>
                 Công Nợ Còn Lại
               </span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '6px' }}>
-                <span style={{ fontSize: '1.8rem', fontWeight: 800, color: '#ea580c' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '4px' }}>
+                <span style={{ fontSize: isMobile ? '1.15rem' : '1.8rem', fontWeight: 800, color: '#ea580c' }}>
                   {formatMoney(statsData?.metrics?.remaining_debt)}
                 </span>
               </div>
-              <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: 'var(--text-light, #94a3b8)' }}>
-                {(statsData?.metrics?.tiers?.partial_paid?.count || 0) + (statsData?.metrics?.tiers?.unpaid?.count || 0)} khách cọc dở dang & chưa cọc
+              <p style={{ margin: '2px 0 0', fontSize: isMobile ? '0.68rem' : '0.78rem', color: 'var(--text-light, #94a3b8)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {(statsData?.metrics?.tiers?.partial_paid?.count || 0) + (statsData?.metrics?.tiers?.unpaid?.count || 0)} khách nợ
               </p>
-              <div style={{ position: 'absolute', right: '16px', top: '16px', color: '#ea580c', opacity: 0.8 }}>
-                <Clock size={24} />
+              <div style={{ position: 'absolute', right: isMobile ? '10px' : '16px', top: isMobile ? '10px' : '16px', color: '#ea580c', opacity: 0.8 }}>
+                <Clock size={isMobile ? 18 : 24} />
               </div>
             </div>
           </div>
@@ -584,23 +802,23 @@ export default function DepartureCashflowTab({ currentUser }) {
           <div style={{
             backgroundColor: 'var(--card-bg, #ffffff)',
             borderRadius: '14px',
-            padding: '1.25rem 1.5rem',
+            padding: isMobile ? '12px' : '1.25rem 1.5rem',
             boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
             border: '1px solid var(--border, #e2e8f0)',
-            marginBottom: '1.5rem'
+            marginBottom: isMobile ? '1rem' : '1.5rem'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text, #0f172a)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
+              <span style={{ fontSize: isMobile ? '0.8rem' : '0.9rem', fontWeight: 700, color: 'var(--text, #0f172a)' }}>
                 Tiến độ thu hồi dòng tiền: <span style={{ color: '#059669' }}>{statsData?.metrics?.recovery_progress_pct || 0}%</span>
               </span>
-              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-light, #64748b)' }}>
+              <span style={{ fontSize: isMobile ? '0.74rem' : '0.8rem', fontWeight: 600, color: 'var(--text-light, #64748b)' }}>
                 {formatMoney(statsData?.metrics?.total_collected)} / {formatMoney(statsData?.metrics?.total_projected)}
               </span>
             </div>
 
             {/* Segmented Bar */}
             <div style={{
-              height: '14px',
+              height: isMobile ? '10px' : '14px',
               backgroundColor: '#fee2e2',
               borderRadius: '7px',
               overflow: 'hidden',
@@ -626,17 +844,25 @@ export default function DepartureCashflowTab({ currentUser }) {
             </div>
 
             {/* Legend Tiers */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginTop: '12px', fontSize: '0.825rem' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: isMobile ? 'flex-start' : 'center',
+              flexDirection: isMobile ? 'column' : 'row',
+              justifyContent: 'space-between',
+              gap: isMobile ? '6px' : '10px',
+              marginTop: '10px',
+              fontSize: isMobile ? '0.75rem' : '0.825rem'
+            }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }} />
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }} />
                 <span><strong>{statsData?.metrics?.tiers?.fully_paid?.pax || 0}</strong> khách đã tất toán 100%</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f59e0b', display: 'inline-block' }} />
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f59e0b', display: 'inline-block' }} />
                 <span><strong>{statsData?.metrics?.tiers?.partial_paid?.pax || 0}</strong> khách cọc dở dang</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#ef4444', display: 'inline-block' }} />
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ef4444', display: 'inline-block' }} />
                 <span><strong>{statsData?.metrics?.tiers?.unpaid?.pax || 0}</strong> khách nợ 100% (chưa cọc)</span>
               </div>
             </div>
@@ -648,23 +874,23 @@ export default function DepartureCashflowTab({ currentUser }) {
           <div style={{
             backgroundColor: 'var(--card-bg, #ffffff)',
             borderRadius: '16px',
-            padding: '1.5rem',
+            padding: isMobile ? '12px 10px' : '1.5rem',
             boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
             border: '1px solid var(--border, #e2e8f0)',
-            marginBottom: '1.5rem'
+            marginBottom: isMobile ? '1rem' : '1.5rem'
           }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               flexWrap: 'wrap',
-              gap: '12px',
-              marginBottom: '1.25rem'
+              gap: '10px',
+              marginBottom: '1rem'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{
-                  width: '36px',
-                  height: '36px',
+                  width: isMobile ? '30px' : '36px',
+                  height: isMobile ? '30px' : '36px',
                   borderRadius: '10px',
                   backgroundColor: '#eef2ff',
                   display: 'flex',
@@ -672,66 +898,67 @@ export default function DepartureCashflowTab({ currentUser }) {
                   justifyContent: 'center',
                   color: '#4f46e5'
                 }}>
-                  <TrendingUp size={20} />
+                  <TrendingUp size={isMobile ? 16 : 20} />
                 </div>
                 <div>
                   <h3 style={{
-                    fontSize: '1rem',
+                    fontSize: isMobile ? '0.88rem' : '1rem',
                     fontWeight: 800,
                     margin: 0,
                     textTransform: 'uppercase',
                     color: 'var(--text, #0f172a)',
-                    letterSpacing: '0.3px'
+                    letterSpacing: '0.2px'
                   }}>
                     DOANH THU & RỦI RO CÔNG NỢ THEO TUYẾN TOUR
                   </h3>
-                  <p style={{ margin: '3px 0 0', fontSize: '0.8rem', color: 'var(--text-light, #64748b)' }}>
+                  <p style={{ margin: '2px 0 0', fontSize: isMobile ? '0.72rem' : '0.8rem', color: 'var(--text-light, #64748b)' }}>
                     So sánh tỷ trọng Đã thu (Xanh) và Còn nợ (Cam) trên từng nhóm tour
                   </p>
                 </div>
               </div>
 
-              {/* Top-Right Legend matching reference design */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#10b981', display: 'inline-block' }} />
+              {/* Top-Right Legend */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '20px', fontSize: isMobile ? '0.78rem' : '0.85rem', fontWeight: 600 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '3px', backgroundColor: '#10b981', display: 'inline-block' }} />
                   <span style={{ color: 'var(--text, #1e293b)' }}>Đã thu</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#f59e0b', display: 'inline-block' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '3px', backgroundColor: '#f59e0b', display: 'inline-block' }} />
                   <span style={{ color: 'var(--text, #1e293b)' }}>Còn nợ</span>
                 </div>
               </div>
             </div>
 
             <div style={{
-              height: `${Math.max(400, (statsData?.routesBreakdown?.length || 10) * 28 + 60)}px`,
+              height: `${Math.max(320, (statsData?.routesBreakdown?.length || 10) * (isMobile ? 26 : 28) + 50)}px`,
               width: '100%'
             }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   layout="vertical"
                   data={statsData?.routesBreakdown || []}
-                  margin={{ top: 10, right: 30, left: 10, bottom: 10 }}
-                  barSize={18}
+                  margin={{ top: 10, right: isMobile ? 12 : 30, left: isMobile ? -15 : 10, bottom: 10 }}
+                  barSize={isMobile ? 14 : 18}
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
                   <XAxis
                     type="number"
-                    tickFormatter={(v) => formatMoney(v)}
-                    fontSize={12}
+                    tickFormatter={(v) => isMobile ? formatShortMoney(v) : formatMoney(v)}
+                    fontSize={isMobile ? 10 : 12}
                     stroke="#64748b"
                     tickLine={false}
                   />
                   <YAxis
                     dataKey="route_name"
                     type="category"
-                    width={170}
-                    fontSize={12}
+                    width={isMobile ? 95 : 170}
+                    fontSize={isMobile ? 11 : 12}
                     fontWeight={600}
                     stroke="#475569"
                     tickLine={false}
                     axisLine={{ stroke: '#cbd5e1' }}
+                    tickFormatter={(v) => isMobile && v && v.length > 11 ? v.slice(0, 10) + '…' : v}
                   />
                   <Tooltip 
                     formatter={(value, name) => [formatFullVND(value), name === 'collected' ? 'Đã thu' : 'Còn nợ']}
@@ -748,25 +975,25 @@ export default function DepartureCashflowTab({ currentUser }) {
               ════════════════════════════════════════════════════════════════════════ */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
-            gap: '1.5rem',
-            marginBottom: '1.5rem'
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(360px, 1fr))',
+            gap: isMobile ? '1rem' : '1.5rem',
+            marginBottom: isMobile ? '1rem' : '1.5rem'
           }}>
             {/* Chart 2: Xu Hướng Dòng Tiền Qua Các Tháng (Line Chart) */}
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
               borderRadius: '16px',
-              padding: '1.5rem',
+              padding: isMobile ? '12px 10px' : '1.5rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)',
               display: 'flex',
               flexDirection: 'column'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{
-                    width: '36px',
-                    height: '36px',
+                    width: isMobile ? '30px' : '36px',
+                    height: isMobile ? '30px' : '36px',
                     borderRadius: '10px',
                     backgroundColor: '#ecfdf5',
                     display: 'flex',
@@ -774,35 +1001,35 @@ export default function DepartureCashflowTab({ currentUser }) {
                     justifyContent: 'center',
                     color: '#059669'
                   }}>
-                    <Calendar size={20} />
+                    <Calendar size={isMobile ? 16 : 20} />
                   </div>
                   <div>
                     <h3 style={{
-                      fontSize: '1rem',
+                      fontSize: isMobile ? '0.88rem' : '1rem',
                       fontWeight: 800,
                       margin: 0,
                       textTransform: 'uppercase',
                       color: 'var(--text, #0f172a)'
                     }}>
-                      XU HƯỚNG DÒNG TIỀN QUA CÁC THÁNG ({selectedYear})
+                      XU HƯỚNG DÒNG TIỀN ({selectedYear})
                     </h3>
-                    <p style={{ margin: '3px 0 0', fontSize: '0.8rem', color: 'var(--text-light, #64748b)' }}>
+                    <p style={{ margin: '2px 0 0', fontSize: isMobile ? '0.72rem' : '0.8rem', color: 'var(--text-light, #64748b)' }}>
                       Dòng tiền dự kiến (Tím) & Thực thu theo các tháng khởi hành
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div style={{ height: '320px', width: '100%' }}>
+              <div style={{ height: isMobile ? '250px' : '320px', width: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={statsData?.monthlyTrend || []} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+                  <ComposedChart data={statsData?.monthlyTrend || []} margin={{ top: 10, right: isMobile ? 10 : 20, left: isMobile ? -15 : 10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="month" fontSize={12} stroke="#64748b" tickLine={false} />
-                    <YAxis tickFormatter={(v) => formatMoney(v)} fontSize={12} stroke="#64748b" tickLine={false} axisLine={false} />
+                    <XAxis dataKey="month" fontSize={isMobile ? 10 : 12} stroke="#64748b" tickLine={false} />
+                    <YAxis tickFormatter={(v) => isMobile ? formatShortMoney(v) : formatMoney(v)} fontSize={isMobile ? 10 : 12} stroke="#64748b" tickLine={false} axisLine={false} width={isMobile ? 48 : 65} />
                     <Tooltip formatter={(value, name) => [formatFullVND(value), name === 'projected' ? 'Doanh thu dự kiến' : 'Thực thu']} />
-                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                    <Line type="monotone" dataKey="projected" stroke="#6366f1" strokeWidth={2.8} dot={{ r: 4.5, fill: '#6366f1' }} activeDot={{ r: 7 }} name="Doanh thu dự kiến" />
-                    <Line type="monotone" dataKey="collected" stroke="#10b981" strokeWidth={2.8} strokeDasharray="4 4" dot={{ r: 4.5, fill: '#10b981' }} activeDot={{ r: 7 }} name="Thực thu" />
+                    <Legend wrapperStyle={{ fontSize: isMobile ? '11px' : '12px', paddingTop: '8px' }} />
+                    <Line type="monotone" dataKey="projected" stroke="#6366f1" strokeWidth={2.5} dot={{ r: 3.5, fill: '#6366f1' }} activeDot={{ r: 6 }} name="Doanh thu dự kiến" />
+                    <Line type="monotone" dataKey="collected" stroke="#10b981" strokeWidth={2.5} strokeDasharray="4 4" dot={{ r: 3.5, fill: '#10b981' }} activeDot={{ r: 6 }} name="Thực thu" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -812,16 +1039,16 @@ export default function DepartureCashflowTab({ currentUser }) {
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
               borderRadius: '16px',
-              padding: '1.5rem',
+              padding: isMobile ? '12px 10px' : '1.5rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)',
               display: 'flex',
               flexDirection: 'column'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                 <div style={{
-                  width: '36px',
-                  height: '36px',
+                  width: isMobile ? '30px' : '36px',
+                  height: isMobile ? '30px' : '36px',
                   borderRadius: '10px',
                   backgroundColor: '#fff7ed',
                   display: 'flex',
@@ -829,11 +1056,11 @@ export default function DepartureCashflowTab({ currentUser }) {
                   justifyContent: 'center',
                   color: '#ea580c'
                 }}>
-                  <DollarSign size={20} />
+                  <DollarSign size={isMobile ? 16 : 20} />
                 </div>
                 <div>
                   <h4 style={{
-                    fontSize: '0.95rem',
+                    fontSize: isMobile ? '0.88rem' : '0.95rem',
                     fontWeight: 800,
                     margin: 0,
                     textTransform: 'uppercase',
@@ -841,8 +1068,8 @@ export default function DepartureCashflowTab({ currentUser }) {
                   }}>
                     CƠ CẤU PHỤ PHÍ PHÁT SINH
                   </h4>
-                  <div style={{ fontSize: '0.82rem', color: '#2563eb', fontWeight: 700, marginTop: '2px' }}>
-                    Tổng phụ thu: <strong style={{ fontSize: '0.92rem' }}>+{formatFullVND(statsData?.logistics?.surcharges?.total || 0)}</strong>
+                  <div style={{ fontSize: isMobile ? '0.78rem' : '0.82rem', color: '#2563eb', fontWeight: 700, marginTop: '2px' }}>
+                    Tổng phụ thu: <strong style={{ fontSize: isMobile ? '0.86rem' : '0.92rem' }}>+{formatFullVND(statsData?.logistics?.surcharges?.total || 0)}</strong>
                   </div>
                 </div>
               </div>
@@ -851,9 +1078,9 @@ export default function DepartureCashflowTab({ currentUser }) {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '8px',
-                marginTop: '12px',
+                marginTop: '10px',
                 flex: 1,
-                maxHeight: '290px',
+                maxHeight: isMobile ? '200px' : '290px',
                 overflowY: 'auto',
                 paddingRight: '4px'
               }}>
@@ -864,10 +1091,10 @@ export default function DepartureCashflowTab({ currentUser }) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     height: '100%',
-                    minHeight: '180px',
+                    minHeight: '140px',
                     color: 'var(--text-light, #94a3b8)'
                   }}>
-                    <p style={{ fontSize: '0.85rem', fontStyle: 'italic', margin: 0 }}>
+                    <p style={{ fontSize: '0.82rem', fontStyle: 'italic', margin: 0 }}>
                       Chưa phát sinh phụ phí nào được ghi sổ.
                     </p>
                   </div>
@@ -877,20 +1104,20 @@ export default function DepartureCashflowTab({ currentUser }) {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '10px 14px',
+                      padding: '8px 12px',
                       borderRadius: '10px',
                       backgroundColor: '#f8fafc',
                       border: '1px solid #f1f5f9',
-                      fontSize: '0.85rem'
+                      fontSize: '0.82rem'
                     }}>
                       <span style={{ color: 'var(--text, #1e293b)', fontWeight: 600 }}>{sc.title}</span>
                       <span style={{
                         fontWeight: 800,
                         color: '#0284c7',
                         backgroundColor: '#e0f2fe',
-                        padding: '3px 10px',
-                        borderRadius: '8px',
-                        fontSize: '0.82rem'
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        fontSize: '0.8rem'
                       }}>
                         +{formatFullVND(sc.amount)}
                       </span>
@@ -901,190 +1128,106 @@ export default function DepartureCashflowTab({ currentUser }) {
             </div>
           </div>
 
-          {/* ════════════════════════════════════════════════════════════════════════
-              ROW 3: 3 DONUT CHARTS (SIM, XẾP PHÒNG, ĐỐI TƯỢNG)
-              ════════════════════════════════════════════════════════════════════════ */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '1.5rem',
-            marginBottom: '1.5rem'
-          }}>
-            {/* Donut 1: Tỷ lệ SIM */}
-            <div style={{
-              backgroundColor: 'var(--card-bg, #ffffff)',
-              borderRadius: '16px',
-              padding: '1.25rem',
-              boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
-              border: '1px solid var(--border, #e2e8f0)',
-              textAlign: 'center'
-            }}>
-              <h4 style={{ fontSize: '0.88rem', fontWeight: 800, margin: '0 0 4px', textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
-                TỶ LỆ SIM DU LỊCH
-              </h4>
-              <div style={{ height: '160px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={simPieData} dataKey="value" nameKey="name" innerRadius={46} outerRadius={68} paddingAngle={4}>
-                      {simPieData.map((_, i) => (
-                        <Cell key={i} fill={COLORS_SIM[i % COLORS_SIM.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', fontSize: '0.78rem', flexWrap: 'wrap', marginTop: '6px' }}>
-                <span style={{ color: '#3b82f6', fontWeight: 600 }}>&bull; eSIM</span>
-                <span style={{ color: '#10b981', fontWeight: 600 }}>&bull; SIM Vật lý</span>
-                <span style={{ color: '#94a3b8', fontWeight: 600 }}>&bull; Không lấy</span>
-              </div>
-            </div>
-
-            {/* Donut 2: Xếp phòng */}
-            <div style={{
-              backgroundColor: 'var(--card-bg, #ffffff)',
-              borderRadius: '16px',
-              padding: '1.25rem',
-              boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
-              border: '1px solid var(--border, #e2e8f0)',
-              textAlign: 'center'
-            }}>
-              <h4 style={{ fontSize: '0.88rem', fontWeight: 800, margin: '0 0 4px', textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
-                CƠ CẤU XẾP PHÒNG
-              </h4>
-              <div style={{ height: '160px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={roomPieData} dataKey="value" nameKey="name" innerRadius={46} outerRadius={68} paddingAngle={4}>
-                      {roomPieData.map((_, i) => (
-                        <Cell key={i} fill={COLORS_ROOM[i % COLORS_ROOM.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', fontSize: '0.78rem', flexWrap: 'wrap', marginTop: '6px' }}>
-                <span style={{ color: '#8b5cf6', fontWeight: 600 }}>&bull; DBL</span>
-                <span style={{ color: '#06b6d4', fontWeight: 600 }}>&bull; TWIN</span>
-                <span style={{ color: '#f59e0b', fontWeight: 600 }}>&bull; TRIP</span>
-                <span style={{ color: '#ec4899', fontWeight: 600 }}>&bull; SGL</span>
-              </div>
-            </div>
-
-            {/* Donut 3: Cơ cấu đối tượng */}
-            <div style={{
-              backgroundColor: 'var(--card-bg, #ffffff)',
-              borderRadius: '16px',
-              padding: '1.25rem',
-              boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
-              border: '1px solid var(--border, #e2e8f0)',
-              textAlign: 'center'
-            }}>
-              <h4 style={{ fontSize: '0.88rem', fontWeight: 800, margin: '0 0 4px', textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
-                CƠ CẤU ĐỐI TƯỢNG
-              </h4>
-              <div style={{ height: '160px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={demoPieData} dataKey="value" nameKey="name" innerRadius={46} outerRadius={68} paddingAngle={4}>
-                      {demoPieData.map((_, i) => (
-                        <Cell key={i} fill={COLORS_DEMO[i % COLORS_DEMO.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', fontSize: '0.78rem', marginTop: '6px' }}>
-                <span style={{ color: '#3b82f6', fontWeight: 600 }}>&bull; Người lớn (ADL)</span>
-                <span style={{ color: '#f43f5e', fontWeight: 600 }}>&bull; Trẻ em (CHD)</span>
-              </div>
-            </div>
-          </div>
-
           {/* Departures Table */}
           <div style={{
             backgroundColor: 'var(--card-bg, #ffffff)',
             borderRadius: '14px',
-            padding: '1.25rem',
+            padding: isMobile ? '12px 10px' : '1.25rem',
             boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
             border: '1px solid var(--border, #e2e8f0)',
             overflow: 'hidden'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '6px' }}>
+              <h3 style={{ fontSize: isMobile ? '0.88rem' : '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase' }}>
                 Danh Sách Đợt Tour Khởi Hành ({statsData?.departures?.length || 0})
               </h3>
+              {isMobile && (
+                <span style={{ fontSize: '0.7rem', color: '#ff4b2b', fontWeight: 600 }}>
+                  👉 Vuốt ngang xem đủ cột
+                </span>
+              )}
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table style={{ width: '100%', minWidth: '680px', borderCollapse: 'collapse', textAlign: 'left', fontSize: isMobile ? '0.8rem' : '0.85rem' }}>
                 <thead>
-                  <tr style={{ backgroundColor: 'var(--bg, #f8fbfd)', borderBottom: '2px solid var(--border, #e2e8f0)', color: 'var(--text-light, #475569)', fontSize: '0.75rem', textTransform: 'uppercase' }}>
-                    <th style={{ padding: '10px 12px' }}>Mã Tour</th>
-                    <th style={{ padding: '10px 12px' }}>Tên Tuyến Tour</th>
-                    <th style={{ padding: '10px 10px' }}>BU</th>
-                    <th style={{ padding: '10px 10px' }}>Ngày Khởi Hành</th>
-                    <th style={{ padding: '10px 10px', textAlign: 'center' }}>Số Chỗ</th>
-                    <th style={{ padding: '10px 12px', textAlign: 'right' }}>Doanh Thu</th>
-                    <th style={{ padding: '10px 12px', textAlign: 'right' }}>Thực Thu</th>
-                    <th style={{ padding: '10px 12px', textAlign: 'right' }}>Còn Nợ</th>
-                    <th style={{ padding: '10px 12px', textAlign: 'center' }}>Thao Tác</th>
+                  <tr style={{ backgroundColor: 'var(--bg, #f8fbfd)', borderBottom: '2px solid var(--border, #e2e8f0)', color: 'var(--text-light, #475569)', fontSize: '0.74rem', textTransform: 'uppercase' }}>
+                    <th style={{ padding: isMobile ? '8px 10px' : '10px 14px' }}>Tên Tuyến Tour</th>
+                    <th style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>BU</th>
+                    <th style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>Ngày Khởi Hành</th>
+                    <th style={{ padding: isMobile ? '8px 6px' : '10px 10px', textAlign: 'center' }}>Số Chỗ</th>
+                    <th style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'right' }}>Doanh Thu</th>
+                    <th style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'right' }}>Thực Thu</th>
+                    <th style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'right' }}>Còn Nợ</th>
+                    <th style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'center' }}>Thao Tác</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(statsData?.departures || []).map((dep, idx) => (
                     <tr key={dep.id} style={{ borderBottom: '1px solid var(--border, #f1f5f9)', backgroundColor: idx % 2 === 0 ? 'var(--card-bg, #ffffff)' : 'var(--bg, #fafafa)' }}>
-                      <td style={{ padding: '10px 12px', fontWeight: 700, color: '#ff4b2b' }}>
-                        {dep.code}
+                      <td style={{ padding: isMobile ? '8px 10px' : '10px 14px' }}>
+                        <div style={{ fontWeight: 700, color: 'var(--text, #0f172a)', fontSize: isMobile ? '0.82rem' : '0.86rem', lineHeight: 1.3 }}>
+                          {dep.tour_name}
+                        </div>
+                        <div style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          marginTop: '3px',
+                          color: '#ff4b2b',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          backgroundColor: '#fff5f3',
+                          padding: '1px 5px',
+                          borderRadius: '4px',
+                          border: '1px solid #ffd5ce',
+                          letterSpacing: '0.01em'
+                        }}>
+                          {dep.code}
+                        </div>
                       </td>
-                      <td style={{ padding: '10px 12px', fontWeight: 600, maxWidth: '240px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {dep.tour_name}
-                      </td>
-                      <td style={{ padding: '10px 10px' }}>
-                        <span style={{ padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f1f5f9', fontWeight: 700, fontSize: '0.75rem', color: '#475569' }}>
+                      <td style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>
+                        <span style={{ padding: '2px 6px', borderRadius: '4px', backgroundColor: '#f1f5f9', fontWeight: 700, fontSize: '0.72rem', color: '#475569' }}>
                           {dep.bu_group || 'Chung'}
                         </span>
                       </td>
-                      <td style={{ padding: '10px 10px' }}>
+                      <td style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>
                         {dep.start_date ? new Date(dep.start_date).toLocaleDateString('vi-VN') : '---'}
                       </td>
-                      <td style={{ padding: '10px 10px', textAlign: 'center' }}>
+                      <td style={{ padding: isMobile ? '8px 6px' : '10px 10px', textAlign: 'center' }}>
                         <span style={{ fontWeight: 700, color: dep.sold_pax >= dep.max_pax ? '#059669' : '#1e293b' }}>
                           {dep.sold_pax}/{dep.max_pax}
                         </span>
                       </td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>
+                      <td style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'right', fontWeight: 600 }}>
                         {formatMoney(dep.revenue)}
                       </td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#059669' }}>
+                      <td style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'right', fontWeight: 700, color: '#059669' }}>
                         {formatMoney(dep.collected)}
                       </td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: dep.debt > 0 ? '#ea580c' : '#10b981' }}>
+                      <td style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'right', fontWeight: 700, color: dep.debt > 0 ? '#ea580c' : '#10b981' }}>
                         {formatMoney(dep.debt)}
                       </td>
-                      <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                      <td style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                           <button
                             onClick={() => setQuickLogisticsTourId(dep.id)}
                             title="Sổ tay ghi nhận hậu cần (SIM, Phòng, Phụ thu)"
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '4px',
-                              padding: '5px 10px',
+                              gap: '3px',
+                              padding: '4px 8px',
                               borderRadius: '6px',
                               border: '1px solid var(--border, #cbd5e1)',
                               backgroundColor: dep.has_quick_logistics ? '#ecfdf5' : 'var(--card-bg, #fff)',
                               color: dep.has_quick_logistics ? '#059669' : 'var(--text, #0f172a)',
-                              fontSize: '0.75rem',
+                              fontSize: '0.72rem',
                               fontWeight: 600,
                               cursor: 'pointer'
                             }}
                           >
-                            <Edit3 size={13} /> Sổ tay
+                            <Edit3 size={12} /> Sổ tay
                           </button>
                           <button
                             onClick={() => setShareModalTour(dep)}
@@ -1092,18 +1235,18 @@ export default function DepartureCashflowTab({ currentUser }) {
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '4px',
-                              padding: '5px 10px',
+                              gap: '3px',
+                              padding: '4px 8px',
                               borderRadius: '6px',
                               border: 'none',
                               backgroundColor: '#e0f2fe',
                               color: '#0284c7',
-                              fontSize: '0.75rem',
+                              fontSize: '0.72rem',
                               fontWeight: 600,
                               cursor: 'pointer'
                             }}
                           >
-                            <Share2 size={13} /> Link HDV
+                            <Share2 size={12} /> Link HDV
                           </button>
                         </div>
                       </td>
@@ -1124,24 +1267,24 @@ export default function DepartureCashflowTab({ currentUser }) {
           {/* Top 3 Personal Metrics */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-            gap: '1rem',
-            marginBottom: '1.5rem'
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: isMobile ? '8px' : '1rem',
+            marginBottom: isMobile ? '1rem' : '1.5rem'
           }}>
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
               borderRadius: '14px',
-              padding: '1.25rem',
+              padding: isMobile ? '10px 12px' : '1.25rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)'
             }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: isMobile ? '0.68rem' : '0.75rem', fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase' }}>
                 Doanh Số Của Tôi
               </span>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#2563eb', marginTop: '6px' }}>
+              <div style={{ fontSize: isMobile ? '1.35rem' : '1.8rem', fontWeight: 800, color: '#2563eb', marginTop: '4px' }}>
                 {formatFullVND(personalData?.personalMetrics?.my_revenue || 0)}
               </div>
-              <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: 'var(--text-light, #64748b)' }}>
+              <p style={{ margin: '2px 0 0', fontSize: isMobile ? '0.7rem' : '0.78rem', color: 'var(--text-light, #64748b)' }}>
                 {personalData?.personalMetrics?.total_bookings || 0} booking &bull; {personalData?.personalMetrics?.total_pax || 0} khách
               </p>
             </div>
@@ -1149,17 +1292,17 @@ export default function DepartureCashflowTab({ currentUser }) {
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
               borderRadius: '14px',
-              padding: '1.25rem',
+              padding: isMobile ? '10px 12px' : '1.25rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)'
             }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: isMobile ? '0.68rem' : '0.75rem', fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>
                 Thực Thu
               </span>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#059669', marginTop: '6px' }}>
+              <div style={{ fontSize: isMobile ? '1.35rem' : '1.8rem', fontWeight: 800, color: '#059669', marginTop: '4px' }}>
                 {formatFullVND(personalData?.personalMetrics?.my_collected || 0)}
               </div>
-              <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#059669', fontWeight: 600 }}>
+              <p style={{ margin: '2px 0 0', fontSize: isMobile ? '0.7rem' : '0.78rem', color: '#059669', fontWeight: 600 }}>
                 {personalData?.personalMetrics?.settled_bookings || 0} booking đã thanh toán đủ
               </p>
             </div>
@@ -1167,17 +1310,17 @@ export default function DepartureCashflowTab({ currentUser }) {
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
               borderRadius: '14px',
-              padding: '1.25rem',
+              padding: isMobile ? '10px 12px' : '1.25rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)'
             }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ea580c', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: isMobile ? '0.68rem' : '0.75rem', fontWeight: 700, color: '#ea580c', textTransform: 'uppercase' }}>
                 Công Nợ Cần Thu
               </span>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#ea580c', marginTop: '6px' }}>
+              <div style={{ fontSize: isMobile ? '1.35rem' : '1.8rem', fontWeight: 800, color: '#ea580c', marginTop: '4px' }}>
                 {formatFullVND(personalData?.personalMetrics?.my_debt || 0)}
               </div>
-              <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#ea580c', fontWeight: 600 }}>
+              <p style={{ margin: '2px 0 0', fontSize: isMobile ? '0.7rem' : '0.78rem', color: '#ea580c', fontWeight: 600 }}>
                 {personalData?.personalMetrics?.debt_bookings_count || 0} khách còn thiếu tiền
               </p>
             </div>
@@ -1187,70 +1330,72 @@ export default function DepartureCashflowTab({ currentUser }) {
           <div style={{
             backgroundColor: 'var(--card-bg, #ffffff)',
             borderRadius: '14px',
-            padding: '1.25rem',
+            padding: isMobile ? '12px 10px' : '1.25rem',
             boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
             border: '1px solid var(--border, #e2e8f0)',
-            marginBottom: '1.5rem',
+            marginBottom: isMobile ? '1rem' : '1.5rem',
             overflow: 'hidden'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Clock size={18} color="#ea580c" />
-                <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase', color: '#ea580c' }}>
-                  Danh Sách Khách Hàng Còn Nợ Tiền ({personalData?.debtBookings?.length || 0})
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Clock size={16} color="#ea580c" />
+                <h3 style={{ fontSize: isMobile ? '0.88rem' : '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase', color: '#ea580c' }}>
+                  Danh Sách Khách Hàng Còn Nợ ({personalData?.debtBookings?.length || 0})
                 </h3>
               </div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-light, #64748b)' }}>
-                Bấm "Nhắc nợ Zalo" để copy mẫu tin nhắn đôn đốc gửi khách
-              </span>
+              {isMobile && (
+                <span style={{ fontSize: '0.7rem', color: '#ea580c', fontWeight: 600 }}>
+                  👉 Vuốt ngang xem đủ cột
+                </span>
+              )}
             </div>
 
             {(personalData?.debtBookings || []).length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '2.5rem', color: '#059669', fontSize: '0.95rem', fontWeight: 600 }}>
-                <CheckCircle size={32} style={{ margin: '0 auto 8px' }} />
+              <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#059669', fontSize: '0.9rem', fontWeight: 600 }}>
+                <CheckCircle size={28} style={{ margin: '0 auto 6px' }} />
                 Chúc mừng! Không có booking nào đang bị nợ tiền.
               </div>
             ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+              <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <table style={{ width: '100%', minWidth: '680px', borderCollapse: 'collapse', textAlign: 'left', fontSize: isMobile ? '0.8rem' : '0.85rem' }}>
                   <thead>
-                    <tr style={{ backgroundColor: 'var(--bg, #f8fbfd)', borderBottom: '2px solid var(--border, #e2e8f0)', color: 'var(--text-light, #475569)', fontSize: '0.75rem', textTransform: 'uppercase' }}>
-                      <th style={{ padding: '10px 12px' }}>Khách Hàng</th>
-                      <th style={{ padding: '10px 10px' }}>Số Điện Thoại</th>
-                      <th style={{ padding: '10px 12px' }}>Tuyến Tour</th>
-                      <th style={{ padding: '10px 10px' }}>Ngày Đi</th>
-                      <th style={{ padding: '10px 10px' }}>Hạn Chót D-Day</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'right' }}>Tổng Tiền</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'right' }}>Đã Đóng</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'right' }}>Còn Nợ</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'center' }}>Hành Động</th>
+                    <tr style={{ backgroundColor: 'var(--bg, #f8fbfd)', borderBottom: '2px solid var(--border, #e2e8f0)', color: 'var(--text-light, #475569)', fontSize: '0.74rem', textTransform: 'uppercase' }}>
+                      <th style={{ padding: isMobile ? '8px 10px' : '10px 12px' }}>Khách Hàng</th>
+                      <th style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>Số Điện Thoại</th>
+                      <th style={{ padding: isMobile ? '8px 10px' : '10px 12px' }}>Tuyến Tour</th>
+                      <th style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>Ngày Đi</th>
+                      <th style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>Hạn Chót D-Day</th>
+                      <th style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'right' }}>Tổng Tiền</th>
+                      <th style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'right' }}>Đã Đóng</th>
+                      <th style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'right' }}>Còn Nợ</th>
+                      <th style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'center' }}>Hành Động</th>
                     </tr>
                   </thead>
                   <tbody>
                     {personalData.debtBookings.map((b, idx) => (
                       <tr key={b.id} style={{ borderBottom: '1px solid var(--border, #f1f5f9)', backgroundColor: idx % 2 === 0 ? 'var(--card-bg, #ffffff)' : 'var(--bg, #fafafa)' }}>
-                        <td style={{ padding: '10px 12px', fontWeight: 700, color: 'var(--text, #0f172a)' }}>
+                        <td style={{ padding: isMobile ? '8px 10px' : '10px 12px', fontWeight: 700, color: 'var(--text, #0f172a)' }}>
                           {b.customer_name}
                         </td>
-                        <td style={{ padding: '10px 10px' }}>
+                        <td style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>
                           {b.customer_phone ? (
                             <a href={`tel:${b.customer_phone}`} style={{ color: '#0284c7', textDecoration: 'none', fontWeight: 500 }}>
                               {b.customer_phone}
                             </a>
                           ) : '---'}
                         </td>
-                        <td style={{ padding: '10px 12px', fontWeight: 600, maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <td style={{ padding: isMobile ? '8px 10px' : '10px 12px', fontWeight: 600, maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {b.tour_name}
                         </td>
-                        <td style={{ padding: '10px 10px' }}>
+                        <td style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>
                           {b.start_date ? new Date(b.start_date).toLocaleDateString('vi-VN') : '---'}
                         </td>
-                        <td style={{ padding: '10px 10px' }}>
+                        <td style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>
                           <span style={{
-                            padding: '3px 8px',
-                            borderRadius: '12px',
+                            padding: '2px 6px',
+                            borderRadius: '10px',
                             fontWeight: 700,
-                            fontSize: '0.75rem',
+                            fontSize: '0.72rem',
                             backgroundColor: b.urgency === 'critical' ? '#fee2e2' : (b.urgency === 'warning' ? '#fef3c7' : '#ecfdf5'),
                             color: b.urgency === 'critical' ? '#dc2626' : (b.urgency === 'warning' ? '#d97706' : '#059669')
                           }}>
@@ -1259,35 +1404,35 @@ export default function DepartureCashflowTab({ currentUser }) {
                               : `Còn ${b.days_until_departure} ngày ${b.urgency === 'critical' ? '🔥' : ''}`}
                           </span>
                         </td>
-                        <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>
+                        <td style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'right', fontWeight: 600 }}>
                           {formatFullVND(b.total_price)}
                         </td>
-                        <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#059669' }}>
+                        <td style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'right', fontWeight: 700, color: '#059669' }}>
                           {formatFullVND(b.paid)}
                         </td>
-                        <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 800, color: '#ea580c' }}>
+                        <td style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'right', fontWeight: 800, color: '#ea580c' }}>
                           {formatFullVND(b.remaining_debt)}
                         </td>
-                        <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                        <td style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                             <button
                               onClick={() => handleCopyReminder(b)}
                               title="Sao chép mẫu tin nhắn nhắc nợ gửi khách"
                               style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px',
-                                padding: '5px 10px',
+                                gap: '3px',
+                                padding: '4px 8px',
                                 borderRadius: '6px',
                                 border: 'none',
                                 backgroundColor: '#ff4b2b',
                                 color: 'white',
-                                fontSize: '0.75rem',
+                                fontSize: '0.72rem',
                                 fontWeight: 700,
                                 cursor: 'pointer'
                               }}
                             >
-                              <MessageCircle size={13} /> Nhắc Zalo
+                              <MessageCircle size={12} /> Nhắc Zalo
                             </button>
                             {b.public_token && (
                               <a
@@ -1298,16 +1443,16 @@ export default function DepartureCashflowTab({ currentUser }) {
                                 style={{
                                   display: 'inline-flex',
                                   alignItems: 'center',
-                                  padding: '5px 8px',
+                                  padding: '4px 6px',
                                   borderRadius: '6px',
                                   border: '1px solid var(--border, #cbd5e1)',
                                   backgroundColor: 'var(--card-bg, #fff)',
                                   color: 'var(--text-light, #64748b)',
-                                  fontSize: '0.75rem',
+                                  fontSize: '0.72rem',
                                   textDecoration: 'none'
                                 }}
                               >
-                                <ExternalLink size={13} />
+                                <ExternalLink size={12} />
                               </a>
                             )}
                           </div>
@@ -1324,31 +1469,33 @@ export default function DepartureCashflowTab({ currentUser }) {
           <div style={{
             backgroundColor: 'var(--card-bg, #ffffff)',
             borderRadius: '14px',
-            padding: '1.25rem',
+            padding: isMobile ? '12px 10px' : '1.25rem',
             boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
             border: '1px solid var(--border, #e2e8f0)',
             overflow: 'hidden'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '6px' }}>
+              <h3 style={{ fontSize: isMobile ? '0.88rem' : '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
                 Tình Trạng Chỗ Trống Các Đoàn Mở Bán ({personalData?.availableDepartures?.length || 0})
               </h3>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-light, #64748b)' }}>
-                Nắm chắc số chỗ còn trống để tư vấn và chốt khách kịp thời
-              </span>
+              {isMobile && (
+                <span style={{ fontSize: '0.7rem', color: '#ff4b2b', fontWeight: 600 }}>
+                  👉 Vuốt ngang xem đủ cột
+                </span>
+              )}
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table style={{ width: '100%', minWidth: '680px', borderCollapse: 'collapse', textAlign: 'left', fontSize: isMobile ? '0.8rem' : '0.85rem' }}>
                 <thead>
-                  <tr style={{ backgroundColor: 'var(--bg, #f8fbfd)', borderBottom: '2px solid var(--border, #e2e8f0)', color: 'var(--text-light, #475569)', fontSize: '0.75rem', textTransform: 'uppercase' }}>
-                    <th style={{ padding: '10px 12px' }}>Mã Tour</th>
-                    <th style={{ padding: '10px 12px' }}>Tên Tour</th>
-                    <th style={{ padding: '10px 10px' }}>BU</th>
-                    <th style={{ padding: '10px 10px' }}>Ngày Đi</th>
-                    <th style={{ padding: '10px 10px', textAlign: 'center' }}>Tổng Chỗ</th>
-                    <th style={{ padding: '10px 10px', textAlign: 'center' }}>Đã Giữ/Bán</th>
-                    <th style={{ padding: '10px 12px', textAlign: 'center' }}>Còn Trống</th>
+                  <tr style={{ backgroundColor: 'var(--bg, #f8fbfd)', borderBottom: '2px solid var(--border, #e2e8f0)', color: 'var(--text-light, #475569)', fontSize: '0.74rem', textTransform: 'uppercase' }}>
+                    <th style={{ padding: isMobile ? '8px 10px' : '10px 12px' }}>Mã Tour</th>
+                    <th style={{ padding: isMobile ? '8px 10px' : '10px 12px' }}>Tên Tour</th>
+                    <th style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>BU</th>
+                    <th style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>Ngày Đi</th>
+                    <th style={{ padding: isMobile ? '8px 6px' : '10px 10px', textAlign: 'center' }}>Tổng Chỗ</th>
+                    <th style={{ padding: isMobile ? '8px 6px' : '10px 10px', textAlign: 'center' }}>Đã Giữ/Bán</th>
+                    <th style={{ padding: isMobile ? '8px 10px' : '10px 12px', textAlign: 'center' }}>Còn Trống</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1356,33 +1503,33 @@ export default function DepartureCashflowTab({ currentUser }) {
                     const avail = parseInt(dep.available_seats) || 0;
                     return (
                       <tr key={dep.id} style={{ borderBottom: '1px solid var(--border, #f1f5f9)', backgroundColor: idx % 2 === 0 ? 'var(--card-bg, #ffffff)' : 'var(--bg, #fafafa)' }}>
-                        <td style={{ padding: '10px 12px', fontWeight: 700, color: '#ff4b2b' }}>
+                        <td style={{ padding: isMobile ? '8px 10px' : '10px 12px', fontWeight: 700, color: '#ff4b2b' }}>
                           {dep.code}
                         </td>
-                        <td style={{ padding: '10px 12px', fontWeight: 600 }}>
+                        <td style={{ padding: isMobile ? '8px 10px' : '10px 12px', fontWeight: 600 }}>
                           {dep.tour_name}
                         </td>
-                        <td style={{ padding: '10px 10px' }}>
-                          <span style={{ padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f1f5f9', fontWeight: 700, fontSize: '0.75rem' }}>
+                        <td style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>
+                          <span style={{ padding: '2px 6px', borderRadius: '4px', backgroundColor: '#f1f5f9', fontWeight: 700, fontSize: '0.72rem', color: '#475569' }}>
                             {dep.bu_group || 'Chung'}
                           </span>
                         </td>
-                        <td style={{ padding: '10px 10px' }}>
+                        <td style={{ padding: isMobile ? '8px 6px' : '10px 10px' }}>
                           {dep.start_date ? new Date(dep.start_date).toLocaleDateString('vi-VN') : '---'}
                         </td>
-                        <td style={{ padding: '10px 10px', textAlign: 'center', fontWeight: 600 }}>
+                        <td style={{ padding: isMobile ? '8px 6px' : '10px 10px', textAlign: 'center', fontWeight: 600 }}>
                           {dep.max_pax}
                         </td>
-                        <td style={{ padding: '10px 10px', textAlign: 'center', fontWeight: 700, color: '#0284c7' }}>
+                        <td style={{ padding: isMobile ? '8px 6px' : '10px 10px', textAlign: 'center', fontWeight: 700, color: '#0284c7' }}>
                           {dep.sold_pax}
                         </td>
-                        <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                        <td style={{ padding: isMobile ? '8px 10px' : '10px 12px', textAlign: 'center' }}>
                           <span style={{
                             display: 'inline-block',
-                            padding: '3px 12px',
+                            padding: '2px 8px',
                             borderRadius: '12px',
                             fontWeight: 800,
-                            fontSize: '0.85rem',
+                            fontSize: '0.75rem',
                             backgroundColor: avail > 0 ? '#ecfdf5' : '#fee2e2',
                             color: avail > 0 ? '#059669' : '#dc2626'
                           }}>

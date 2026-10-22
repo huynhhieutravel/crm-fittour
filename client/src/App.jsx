@@ -3068,13 +3068,6 @@ function AppContent() {
           >
             Danh sách Lịch khởi hành
           </div>
-          <div 
-            className={`submenu-item ${activeTab === 'departure-cashflow' ? 'active' : ''}`} 
-            onClick={() => { navigate('/departure-cashflow'); setHoveredMenu(null); }}
-            style={{ fontWeight: activeTab === 'departure-cashflow' ? 700 : 500, color: activeTab === 'departure-cashflow' ? '#ff4b2b' : 'inherit' }}
-          >
-            💰 Sổ Tay Dòng Tiền & Công Nợ
-          </div>
           {(user?.role === 'admin' || user?.role === 'manager' || user?.role === 'ceo') && (
             <div 
               className={`submenu-item ${activeTab === 'ceo-departures-dashboard' ? 'active' : ''}`} 
@@ -3813,6 +3806,7 @@ function AppContent() {
               <DashboardTab 
                 leads={leads}
                 setEditingLead={setEditingLead}
+                user={user}
               />
             )}
             

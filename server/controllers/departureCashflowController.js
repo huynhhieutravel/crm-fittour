@@ -28,7 +28,7 @@ function buildDateCondition(alias, year, month, startParamIdx = 1) {
  */
 exports.getCashflowStats = async (req, res) => {
     try {
-        const { year, month, bu, route, debtStatus } = req.query;
+        const { year, month, months, bu, route, debtStatus } = req.query;
         const currentYear = parseInt(year) || new Date().getFullYear();
 
         // 1. Build Departure Base Filter
@@ -41,9 +41,15 @@ exports.getCashflowStats = async (req, res) => {
 
         depWhere += ` AND EXTRACT(YEAR FROM td.start_date) = $1`;
 
-        if (month && month !== 'all') {
-            depWhere += ` AND EXTRACT(MONTH FROM td.start_date) = $${pIdx++}`;
-            depParams.push(parseInt(month));
+        const monthInput = months || month;
+        if (monthInput && monthInput !== 'all') {
+            const mArr = String(monthInput).split(',')
+                .map(m => parseInt(m.trim()))
+                .filter(m => !isNaN(m) && m >= 1 && m <= 12);
+            if (mArr.length > 0 && mArr.length < 12) {
+                depWhere += ` AND EXTRACT(MONTH FROM td.start_date) = ANY($${pIdx++}::int[])`;
+                depParams.push(mArr);
+            }
         }
 
         if (bu && bu !== 'all') {
@@ -354,7 +360,7 @@ exports.getCashflowStats = async (req, res) => {
  */
 exports.getPersonalCashflow = async (req, res) => {
     try {
-        const { userId, year, month } = req.query;
+        const { userId, year, month, months } = req.query;
         const targetUserId = parseInt(userId) || req.user.id;
         const currentYear = parseInt(year) || new Date().getFullYear();
 
@@ -370,9 +376,15 @@ exports.getPersonalCashflow = async (req, res) => {
         let dateParams = [targetUserId, currentYear];
         let pIdx = 3;
 
-        if (month && month !== 'all') {
-            dateWhere += ` AND EXTRACT(MONTH FROM b.created_at) = $${pIdx++}`;
-            dateParams.push(parseInt(month));
+        const monthInput = months || month;
+        if (monthInput && monthInput !== 'all') {
+            const mArr = String(monthInput).split(',')
+                .map(m => parseInt(m.trim()))
+                .filter(m => !isNaN(m) && m >= 1 && m <= 12);
+            if (mArr.length > 0 && mArr.length < 12) {
+                dateWhere += ` AND EXTRACT(MONTH FROM b.created_at) = ANY($${pIdx++}::int[])`;
+                dateParams.push(mArr);
+            }
         }
 
         // 3. Personal Sales Overview Metrics

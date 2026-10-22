@@ -9,8 +9,9 @@ import {
 } from 'lucide-react';
 import OpTourBookingListModal from './modals/OpTourBookingListModal';
 import EmployeeProfileModal from './modals/EmployeeProfileModal';
+import DepartureCashflowTab from '../tabs/DepartureCashflowTab';
 
-const LeaderDashboardView = () => {
+const LeaderDashboardView = ({ user }) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const currentYear = new Date().getFullYear();
@@ -22,13 +23,12 @@ const LeaderDashboardView = () => {
     const [activeTab, setActiveTab] = useState('BU1'); // Default to BU1
     const [activeSalesTab, setActiveSalesTab] = useState('BU1');
     const [activeScheduleTab, setActiveScheduleTab] = useState('BU1');
-    const [salesMetricMode, setSalesMetricMode] = useState('collected'); // 'collected' (Thực nhận) or 'contract' (Hợp đồng)
-    const [mainTab, setMainTab] = useState('so-lieu'); // 'so-lieu' or 'nhan-su'
+    const [mainTab, setMainTab] = useState('dong-tien'); // Mặc định mở Sổ tay Khởi hành & Dòng tiền
     const [isBookingListOpen, setIsBookingListOpen] = useState(false);
     const [selectedTourForModal, setSelectedTourForModal] = useState(null);
     const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
     const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const currentUser = user || JSON.parse(localStorage.getItem('user') || '{}');
 
     useEffect(() => {
         fetchData();
@@ -117,70 +117,106 @@ const LeaderDashboardView = () => {
 
     return (
         <div className="management-dashboard animate-slide-up" style={{ padding: '0 0px 24px 0px' }}>
-            {/* Executive Single-Row Filter Bar */}
-            <div className="executive-filter-panel mb-8" style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'rgba(255,255,255,0.8)', padding: '16px 24px', borderRadius: '20px', border: '1px solid #e2e8f0', backdropFilter: 'blur(10px)', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', marginBottom: '32px' }}>
-                <div style={{ display: 'flex', background: '#f1f5f9', padding: '4px', borderRadius: '12px' }}>
-                    <button onClick={() => setPeriod('month')} style={{ padding: '8px 24px', borderRadius: '8px', border: 'none', background: period === 'month' ? '#ffffff' : 'transparent', color: period === 'month' ? '#1e293b' : '#64748b', fontWeight: 600, boxShadow: period === 'month' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', transition: 'all 0.2s' }}>Tháng</button>
-                    <button onClick={() => setPeriod('quarter')} style={{ padding: '8px 24px', borderRadius: '8px', border: 'none', background: period === 'quarter' ? '#ffffff' : 'transparent', color: period === 'quarter' ? '#1e293b' : '#64748b', fontWeight: 600, boxShadow: period === 'quarter' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', transition: 'all 0.2s' }}>Quý</button>
-                    <button onClick={() => setPeriod('year')} style={{ padding: '8px 24px', borderRadius: '8px', border: 'none', background: period === 'year' ? '#ffffff' : 'transparent', color: period === 'year' ? '#1e293b' : '#64748b', fontWeight: 600, boxShadow: period === 'year' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', transition: 'all 0.2s' }}>Năm</button>
-                </div>
-
-                <div style={{ width: '1px', height: '24px', background: '#cbd5e1', margin: '0 8px' }}></div>
-
-                {period === 'month' && (
-                    <select value={month} onChange={e => setMonth(e.target.value)} style={{ padding: '10px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#1e293b', fontWeight: 500, outline: 'none', cursor: 'pointer', minWidth: '120px' }}>
-                        {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>Tháng {m}</option>)}
-                    </select>
-                )}
-
-                {period === 'quarter' && (
-                    <select value={quarter} onChange={e => setQuarter(e.target.value)} style={{ padding: '10px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#1e293b', fontWeight: 500, outline: 'none', cursor: 'pointer', minWidth: '120px' }}>
-                        {[1, 2, 3, 4].map(q => <option key={q} value={q}>Quý {q}</option>)}
-                    </select>
-                )}
-
-                <select value={year} onChange={e => setYear(e.target.value)} style={{ padding: '10px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#1e293b', fontWeight: 500, outline: 'none', cursor: 'pointer', minWidth: '120px' }}>
-                    {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>Năm {y}</option>)}
-                </select>
-            </div>
-
             {/* Main Dashboard Tabs */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '2px solid #e2e8f0', paddingBottom: '0' }}>
+            <div style={{ 
+                display: 'flex', 
+                gap: '8px', 
+                marginBottom: '20px', 
+                borderBottom: '2px solid #e2e8f0', 
+                paddingBottom: '0',
+                overflowX: 'auto',
+                whiteSpace: 'nowrap',
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+            }}>
                 <button 
                     onClick={() => setMainTab('so-lieu')}
                     style={{
-                        padding: '12px 24px',
+                        padding: '10px 18px',
                         border: 'none',
                         background: 'transparent',
                         color: mainTab === 'so-lieu' ? '#0f172a' : '#64748b',
                         fontWeight: mainTab === 'so-lieu' ? 'bold' : '600',
-                        fontSize: '1.05rem',
+                        fontSize: '0.98rem',
                         cursor: 'pointer',
                         borderBottom: mainTab === 'so-lieu' ? '3px solid #3b82f6' : '3px solid transparent',
                         transform: 'translateY(2px)',
-                        transition: 'all 0.2s'
+                        transition: 'all 0.2s',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0
                     }}
                 >
                     📈 Báo Cáo Số Liệu
                 </button>
                 <button 
+                    onClick={() => setMainTab('dong-tien')}
+                    style={{
+                        padding: '10px 18px',
+                        border: 'none',
+                        background: 'transparent',
+                        color: mainTab === 'dong-tien' ? '#0f172a' : '#64748b',
+                        fontWeight: mainTab === 'dong-tien' ? 'bold' : '600',
+                        fontSize: '0.98rem',
+                        cursor: 'pointer',
+                        borderBottom: mainTab === 'dong-tien' ? '3px solid #ff4b2b' : '3px solid transparent',
+                        transform: 'translateY(2px)',
+                        transition: 'all 0.2s',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0
+                    }}
+                >
+                    💰 Khởi Hành & Dòng Tiền
+                </button>
+                <button 
                     onClick={() => setMainTab('nhan-su')}
                     style={{
-                        padding: '12px 24px',
+                        padding: '10px 18px',
                         border: 'none',
                         background: 'transparent',
                         color: mainTab === 'nhan-su' ? '#0f172a' : '#64748b',
                         fontWeight: mainTab === 'nhan-su' ? 'bold' : '600',
-                        fontSize: '1.05rem',
+                        fontSize: '0.98rem',
                         cursor: 'pointer',
                         borderBottom: mainTab === 'nhan-su' ? '3px solid #10b981' : '3px solid transparent',
                         transform: 'translateY(2px)',
-                        transition: 'all 0.2s'
+                        transition: 'all 0.2s',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0
                     }}
                 >
                     👥 Quản Lý Nhân Sự
                 </button>
             </div>
+
+            {/* Executive Single-Row Filter Bar (dành cho Báo cáo số liệu & Quản lý nhân sự) */}
+            {mainTab !== 'dong-tien' && (
+                <div className="executive-filter-panel mb-8" style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'rgba(255,255,255,0.8)', padding: '16px 24px', borderRadius: '20px', border: '1px solid #e2e8f0', backdropFilter: 'blur(10px)', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', marginBottom: '32px' }}>
+                    <div style={{ display: 'flex', background: '#f1f5f9', padding: '4px', borderRadius: '12px' }}>
+                        <button onClick={() => setPeriod('month')} style={{ padding: '8px 24px', borderRadius: '8px', border: 'none', background: period === 'month' ? '#ffffff' : 'transparent', color: period === 'month' ? '#1e293b' : '#64748b', fontWeight: 600, boxShadow: period === 'month' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', transition: 'all 0.2s' }}>Tháng</button>
+                        <button onClick={() => setPeriod('quarter')} style={{ padding: '8px 24px', borderRadius: '8px', border: 'none', background: period === 'quarter' ? '#ffffff' : 'transparent', color: period === 'quarter' ? '#1e293b' : '#64748b', fontWeight: 600, boxShadow: period === 'quarter' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', transition: 'all 0.2s' }}>Quý</button>
+                        <button onClick={() => setPeriod('year')} style={{ padding: '8px 24px', borderRadius: '8px', border: 'none', background: period === 'year' ? '#ffffff' : 'transparent', color: period === 'year' ? '#1e293b' : '#64748b', fontWeight: 600, boxShadow: period === 'year' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', cursor: 'pointer', transition: 'all 0.2s' }}>Năm</button>
+                    </div>
+
+                    <div style={{ width: '1px', height: '24px', background: '#cbd5e1', margin: '0 8px' }}></div>
+
+                    {period === 'month' && (
+                        <select value={month} onChange={e => setMonth(e.target.value)} style={{ padding: '10px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#1e293b', fontWeight: 500, outline: 'none', cursor: 'pointer', minWidth: '120px' }}>
+                            {Array.from({length: 12}, (_, i) => i + 1).map(m => <option key={m} value={m}>Tháng {m}</option>)}
+                        </select>
+                    )}
+
+                    {period === 'quarter' && (
+                        <select value={quarter} onChange={e => setQuarter(e.target.value)} style={{ padding: '10px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#1e293b', fontWeight: 500, outline: 'none', cursor: 'pointer', minWidth: '120px' }}>
+                            {[1, 2, 3, 4].map(q => <option key={q} value={q}>Quý {q}</option>)}
+                        </select>
+                    )}
+
+                    <select value={year} onChange={e => setYear(e.target.value)} style={{ padding: '10px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#1e293b', fontWeight: 500, outline: 'none', cursor: 'pointer', minWidth: '120px' }}>
+                        {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>Năm {y}</option>)}
+                    </select>
+                </div>
+            )}
 
             {mainTab === 'so-lieu' && (
                 <>
@@ -654,6 +690,13 @@ const LeaderDashboardView = () => {
                 )}
             </div>
             </>
+            )}
+
+            {/* SỔ TAY KHỞI HÀNH & DÒNG TIỀN */}
+            {mainTab === 'dong-tien' && (
+                <div style={{ marginTop: '-8px' }}>
+                    <DepartureCashflowTab currentUser={currentUser} />
+                </div>
             )}
 
             {/* 5. PHÂN TÍCH LỊCH LÀM VIỆC & NGHỈ PHÉP */}
