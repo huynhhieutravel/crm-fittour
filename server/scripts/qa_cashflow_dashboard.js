@@ -1,7 +1,7 @@
 require('dotenv').config();
-const pool = require('./db');
-const dashboardController = require('./controllers/dashboardController');
-const departureCashflowController = require('./controllers/departureCashflowController');
+const pool = require('../db');
+const dashboardController = require('../controllers/dashboardController');
+const departureCashflowController = require('../controllers/departureCashflowController');
 
 let passed = 0;
 let failed = 0;
