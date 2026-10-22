@@ -23,6 +23,7 @@ const LeaderDashboardView = ({ user }) => {
     const [activeTab, setActiveTab] = useState('BU1'); // Default to BU1
     const [activeSalesTab, setActiveSalesTab] = useState('BU1');
     const [activeScheduleTab, setActiveScheduleTab] = useState('BU1');
+    const [salesMetricMode, setSalesMetricMode] = useState('collected'); // 'collected' (Thực nhận) or 'contract' (Hợp đồng)
     const [mainTab, setMainTab] = useState('dong-tien'); // Mặc định mở Sổ tay Khởi hành & Dòng tiền
     const [isBookingListOpen, setIsBookingListOpen] = useState(false);
     const [selectedTourForModal, setSelectedTourForModal] = useState(null);
