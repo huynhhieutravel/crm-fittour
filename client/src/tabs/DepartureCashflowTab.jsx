@@ -620,159 +620,290 @@ export default function DepartureCashflowTab({ currentUser }) {
             </div>
           </div>
 
-          {/* Charts Row: Route Debt (Horizontal Bar) & Cashflow Trend (Line Chart) */}
+          {/* ════════════════════════════════════════════════════════════════════════
+              ROW 1: DOANH THU & RỦI RO CÔNG NỢ THEO TUYẾN TOUR (FULL WIDTH - 1 DÒNG)
+              ════════════════════════════════════════════════════════════════════════ */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
-            gap: '1.5rem',
+            backgroundColor: 'var(--card-bg, #ffffff)',
+            borderRadius: '16px',
+            padding: '1.5rem',
+            boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
+            border: '1px solid var(--border, #e2e8f0)',
             marginBottom: '1.5rem'
           }}>
-            {/* Chart 1: Doanh Thu & Rủi Ro Công Nợ Theo Tuyến */}
             <div style={{
-              backgroundColor: 'var(--card-bg, #ffffff)',
-              borderRadius: '14px',
-              padding: '1.25rem 1.5rem',
-              boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
-              border: '1px solid var(--border, #e2e8f0)',
               display: 'flex',
-              flexDirection: 'column'
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '12px',
+              marginBottom: '1.25rem'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  backgroundColor: '#eef2ff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#4f46e5'
+                }}>
+                  <TrendingUp size={20} />
+                </div>
                 <div>
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
-                    Doanh Thu & Rủi Ro Công Nợ Theo Tuyến Tour
+                  <h3 style={{
+                    fontSize: '1rem',
+                    fontWeight: 800,
+                    margin: 0,
+                    textTransform: 'uppercase',
+                    color: 'var(--text, #0f172a)',
+                    letterSpacing: '0.3px'
+                  }}>
+                    DOANH THU & RỦI RO CÔNG NỢ THEO TUYẾN TOUR
                   </h3>
-                  <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--text-light, #64748b)' }}>
-                    So sánh tỷ trọng Đã thu (Xanh lá) và Còn nợ (Cam) trên từng tuyến
+                  <p style={{ margin: '3px 0 0', fontSize: '0.8rem', color: 'var(--text-light, #64748b)' }}>
+                    So sánh tỷ trọng Đã thu (Xanh) và Còn nợ (Cam) trên từng nhóm tour
                   </p>
                 </div>
               </div>
 
-              <div style={{ height: '340px', width: '100%' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    layout="vertical"
-                    data={statsData?.routesBreakdown || []}
-                    margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                    <XAxis type="number" tickFormatter={(v) => formatMoney(v)} fontSize={11} stroke="#64748b" />
-                    <YAxis dataKey="route_name" type="category" width={110} fontSize={11} stroke="#64748b" />
-                    <Tooltip 
-                      formatter={(value, name) => [formatFullVND(value), name === 'collected' ? 'Đã thu' : 'Còn nợ']}
-                    />
-                    <Legend wrapperStyle={{ fontSize: '12px' }} />
-                    <Bar dataKey="collected" stackId="a" fill="#10b981" name="Đã thu" radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="remaining_debt" stackId="a" fill="#f59e0b" name="Còn nợ" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              {/* Top-Right Legend matching reference design */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#10b981', display: 'inline-block' }} />
+                  <span style={{ color: 'var(--text, #1e293b)' }}>Đã thu</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#f59e0b', display: 'inline-block' }} />
+                  <span style={{ color: 'var(--text, #1e293b)' }}>Còn nợ</span>
+                </div>
               </div>
             </div>
 
+            <div style={{
+              height: `${Math.max(400, (statsData?.routesBreakdown?.length || 10) * 28 + 60)}px`,
+              width: '100%'
+            }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  layout="vertical"
+                  data={statsData?.routesBreakdown || []}
+                  margin={{ top: 10, right: 30, left: 10, bottom: 10 }}
+                  barSize={18}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                  <XAxis
+                    type="number"
+                    tickFormatter={(v) => formatMoney(v)}
+                    fontSize={12}
+                    stroke="#64748b"
+                    tickLine={false}
+                  />
+                  <YAxis
+                    dataKey="route_name"
+                    type="category"
+                    width={170}
+                    fontSize={12}
+                    fontWeight={600}
+                    stroke="#475569"
+                    tickLine={false}
+                    axisLine={{ stroke: '#cbd5e1' }}
+                  />
+                  <Tooltip 
+                    formatter={(value, name) => [formatFullVND(value), name === 'collected' ? 'Đã thu' : 'Còn nợ']}
+                  />
+                  <Bar dataKey="collected" stackId="a" fill="#10b981" name="Đã thu" radius={[0, 0, 0, 0]} />
+                  <Bar dataKey="remaining_debt" stackId="a" fill="#f59e0b" name="Còn nợ" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* ════════════════════════════════════════════════════════════════════════
+              ROW 2: XU HƯỚNG DÒNG TIỀN (65%) & CƠ CẤU PHỤ PHÍ (35%)
+              ════════════════════════════════════════════════════════════════════════ */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+            gap: '1.5rem',
+            marginBottom: '1.5rem'
+          }}>
             {/* Chart 2: Xu Hướng Dòng Tiền Qua Các Tháng (Line Chart) */}
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
-              borderRadius: '14px',
-              padding: '1.25rem 1.5rem',
+              borderRadius: '16px',
+              padding: '1.5rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)',
               display: 'flex',
               flexDirection: 'column'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <div>
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
-                    Xu Hướng Dòng Tiền Qua Các Tháng ({selectedYear})
-                  </h3>
-                  <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--text-light, #64748b)' }}>
-                    Dòng tiền dự kiến (Tím) & Thực thu theo các tháng khởi hành
-                  </p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    backgroundColor: '#ecfdf5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#059669'
+                  }}>
+                    <Calendar size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{
+                      fontSize: '1rem',
+                      fontWeight: 800,
+                      margin: 0,
+                      textTransform: 'uppercase',
+                      color: 'var(--text, #0f172a)'
+                    }}>
+                      XU HƯỚNG DÒNG TIỀN QUA CÁC THÁNG ({selectedYear})
+                    </h3>
+                    <p style={{ margin: '3px 0 0', fontSize: '0.8rem', color: 'var(--text-light, #64748b)' }}>
+                      Dòng tiền dự kiến (Tím) & Thực thu theo các tháng khởi hành
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div style={{ height: '340px', width: '100%' }}>
+              <div style={{ height: '320px', width: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={statsData?.monthlyTrend || []}>
+                  <ComposedChart data={statsData?.monthlyTrend || []} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="month" fontSize={11} stroke="#64748b" />
-                    <YAxis tickFormatter={(v) => formatMoney(v)} fontSize={11} stroke="#64748b" />
+                    <XAxis dataKey="month" fontSize={12} stroke="#64748b" tickLine={false} />
+                    <YAxis tickFormatter={(v) => formatMoney(v)} fontSize={12} stroke="#64748b" tickLine={false} axisLine={false} />
                     <Tooltip formatter={(value, name) => [formatFullVND(value), name === 'projected' ? 'Doanh thu dự kiến' : 'Thực thu']} />
-                    <Legend wrapperStyle={{ fontSize: '12px' }} />
-                    <Line type="monotone" dataKey="projected" stroke="#6366f1" strokeWidth={2.5} dot={{ r: 4 }} name="Doanh thu dự kiến" />
-                    <Line type="monotone" dataKey="collected" stroke="#10b981" strokeWidth={2.5} strokeDasharray="4 4" dot={{ r: 4 }} name="Thực thu" />
+                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                    <Line type="monotone" dataKey="projected" stroke="#6366f1" strokeWidth={2.8} dot={{ r: 4.5, fill: '#6366f1' }} activeDot={{ r: 7 }} name="Doanh thu dự kiến" />
+                    <Line type="monotone" dataKey="collected" stroke="#10b981" strokeWidth={2.8} strokeDasharray="4 4" dot={{ r: 4.5, fill: '#10b981' }} activeDot={{ r: 7 }} name="Thực thu" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
             </div>
-          </div>
 
-          {/* Logistics Section: Surcharges + 3 Donut Charts */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '1.25rem',
-            marginBottom: '1.5rem'
-          }}>
-            
             {/* Phụ Phí Phát Sinh */}
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
-              borderRadius: '14px',
-              padding: '1.25rem',
+              borderRadius: '16px',
+              padding: '1.5rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)',
               display: 'flex',
               flexDirection: 'column'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <h4 style={{ fontSize: '0.85rem', fontWeight: 800, margin: 0, textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
-                  Cơ Cấu Phụ Phí Phát Sinh
-                </h4>
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#2563eb', fontWeight: 700, marginBottom: '10px' }}>
-                Tổng phụ thu: +{formatFullVND(statsData?.logistics?.surcharges?.total || 0)}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  backgroundColor: '#fff7ed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#ea580c'
+                }}>
+                  <DollarSign size={20} />
+                </div>
+                <div>
+                  <h4 style={{
+                    fontSize: '0.95rem',
+                    fontWeight: 800,
+                    margin: 0,
+                    textTransform: 'uppercase',
+                    color: 'var(--text, #0f172a)'
+                  }}>
+                    CƠ CẤU PHỤ PHÍ PHÁT SINH
+                  </h4>
+                  <div style={{ fontSize: '0.82rem', color: '#2563eb', fontWeight: 700, marginTop: '2px' }}>
+                    Tổng phụ thu: <strong style={{ fontSize: '0.92rem' }}>+{formatFullVND(statsData?.logistics?.surcharges?.total || 0)}</strong>
+                  </div>
+                </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto' }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                marginTop: '12px',
+                flex: 1,
+                maxHeight: '290px',
+                overflowY: 'auto',
+                paddingRight: '4px'
+              }}>
                 {(statsData?.logistics?.surcharges?.items || []).length === 0 ? (
-                  <p style={{ fontSize: '0.78rem', color: 'var(--text-light, #94a3b8)', fontStyle: 'italic', margin: 'auto 0' }}>
-                    Chưa phát sinh phụ phí nào được ghi sổ.
-                  </p>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    minHeight: '180px',
+                    color: 'var(--text-light, #94a3b8)'
+                  }}>
+                    <p style={{ fontSize: '0.85rem', fontStyle: 'italic', margin: 0 }}>
+                      Chưa phát sinh phụ phí nào được ghi sổ.
+                    </p>
+                  </div>
                 ) : (
                   statsData.logistics.surcharges.items.map((sc, idx) => (
                     <div key={idx} style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '6px 10px',
-                      borderRadius: '8px',
-                      backgroundColor: 'var(--bg, #f8fbfd)',
-                      fontSize: '0.8rem'
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      backgroundColor: '#f8fafc',
+                      border: '1px solid #f1f5f9',
+                      fontSize: '0.85rem'
                     }}>
-                      <span style={{ color: 'var(--text, #0f172a)', fontWeight: 500 }}>{sc.title}</span>
-                      <span style={{ fontWeight: 700, color: '#0284c7' }}>+{formatFullVND(sc.amount)}</span>
+                      <span style={{ color: 'var(--text, #1e293b)', fontWeight: 600 }}>{sc.title}</span>
+                      <span style={{
+                        fontWeight: 800,
+                        color: '#0284c7',
+                        backgroundColor: '#e0f2fe',
+                        padding: '3px 10px',
+                        borderRadius: '8px',
+                        fontSize: '0.82rem'
+                      }}>
+                        +{formatFullVND(sc.amount)}
+                      </span>
                     </div>
                   ))
                 )}
               </div>
             </div>
+          </div>
 
+          {/* ════════════════════════════════════════════════════════════════════════
+              ROW 3: 3 DONUT CHARTS (SIM, XẾP PHÒNG, ĐỐI TƯỢNG)
+              ════════════════════════════════════════════════════════════════════════ */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '1.5rem',
+            marginBottom: '1.5rem'
+          }}>
             {/* Donut 1: Tỷ lệ SIM */}
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
-              borderRadius: '14px',
+              borderRadius: '16px',
               padding: '1.25rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)',
               textAlign: 'center'
             }}>
-              <h4 style={{ fontSize: '0.85rem', fontWeight: 800, margin: '0 0 4px', textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
-                Tỷ Lệ SIM Du Lịch
+              <h4 style={{ fontSize: '0.88rem', fontWeight: 800, margin: '0 0 4px', textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
+                TỶ LỆ SIM DU LỊCH
               </h4>
-              <div style={{ height: '150px' }}>
+              <div style={{ height: '160px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={simPieData} dataKey="value" nameKey="name" innerRadius={42} outerRadius={62} paddingAngle={4}>
+                    <Pie data={simPieData} dataKey="value" nameKey="name" innerRadius={46} outerRadius={68} paddingAngle={4}>
                       {simPieData.map((_, i) => (
                         <Cell key={i} fill={COLORS_SIM[i % COLORS_SIM.length]} />
                       ))}
@@ -781,29 +912,29 @@ export default function DepartureCashflowTab({ currentUser }) {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', fontSize: '0.72rem', flexWrap: 'wrap' }}>
-                <span style={{ color: '#3b82f6' }}>&bull; eSIM</span>
-                <span style={{ color: '#10b981' }}>&bull; SIM Vật lý</span>
-                <span style={{ color: '#94a3b8' }}>&bull; Không lấy</span>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', fontSize: '0.78rem', flexWrap: 'wrap', marginTop: '6px' }}>
+                <span style={{ color: '#3b82f6', fontWeight: 600 }}>&bull; eSIM</span>
+                <span style={{ color: '#10b981', fontWeight: 600 }}>&bull; SIM Vật lý</span>
+                <span style={{ color: '#94a3b8', fontWeight: 600 }}>&bull; Không lấy</span>
               </div>
             </div>
 
             {/* Donut 2: Xếp phòng */}
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
-              borderRadius: '14px',
+              borderRadius: '16px',
               padding: '1.25rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)',
               textAlign: 'center'
             }}>
-              <h4 style={{ fontSize: '0.85rem', fontWeight: 800, margin: '0 0 4px', textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
-                Cơ Cấu Xếp Phòng
+              <h4 style={{ fontSize: '0.88rem', fontWeight: 800, margin: '0 0 4px', textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
+                CƠ CẤU XẾP PHÒNG
               </h4>
-              <div style={{ height: '150px' }}>
+              <div style={{ height: '160px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={roomPieData} dataKey="value" nameKey="name" innerRadius={42} outerRadius={62} paddingAngle={4}>
+                    <Pie data={roomPieData} dataKey="value" nameKey="name" innerRadius={46} outerRadius={68} paddingAngle={4}>
                       {roomPieData.map((_, i) => (
                         <Cell key={i} fill={COLORS_ROOM[i % COLORS_ROOM.length]} />
                       ))}
@@ -812,30 +943,30 @@ export default function DepartureCashflowTab({ currentUser }) {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', fontSize: '0.72rem', flexWrap: 'wrap' }}>
-                <span style={{ color: '#8b5cf6' }}>&bull; DBL</span>
-                <span style={{ color: '#06b6d4' }}>&bull; TWIN</span>
-                <span style={{ color: '#f59e0b' }}>&bull; TRIP</span>
-                <span style={{ color: '#ec4899' }}>&bull; SGL</span>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', fontSize: '0.78rem', flexWrap: 'wrap', marginTop: '6px' }}>
+                <span style={{ color: '#8b5cf6', fontWeight: 600 }}>&bull; DBL</span>
+                <span style={{ color: '#06b6d4', fontWeight: 600 }}>&bull; TWIN</span>
+                <span style={{ color: '#f59e0b', fontWeight: 600 }}>&bull; TRIP</span>
+                <span style={{ color: '#ec4899', fontWeight: 600 }}>&bull; SGL</span>
               </div>
             </div>
 
             {/* Donut 3: Cơ cấu đối tượng */}
             <div style={{
               backgroundColor: 'var(--card-bg, #ffffff)',
-              borderRadius: '14px',
+              borderRadius: '16px',
               padding: '1.25rem',
               boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
               border: '1px solid var(--border, #e2e8f0)',
               textAlign: 'center'
             }}>
-              <h4 style={{ fontSize: '0.85rem', fontWeight: 800, margin: '0 0 4px', textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
-                Cơ Cấu Đối Tượng
+              <h4 style={{ fontSize: '0.88rem', fontWeight: 800, margin: '0 0 4px', textTransform: 'uppercase', color: 'var(--text, #0f172a)' }}>
+                CƠ CẤU ĐỐI TƯỢNG
               </h4>
-              <div style={{ height: '150px' }}>
+              <div style={{ height: '160px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={demoPieData} dataKey="value" nameKey="name" innerRadius={42} outerRadius={62} paddingAngle={4}>
+                    <Pie data={demoPieData} dataKey="value" nameKey="name" innerRadius={46} outerRadius={68} paddingAngle={4}>
                       {demoPieData.map((_, i) => (
                         <Cell key={i} fill={COLORS_DEMO[i % COLORS_DEMO.length]} />
                       ))}
@@ -844,12 +975,11 @@ export default function DepartureCashflowTab({ currentUser }) {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', fontSize: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', fontSize: '0.78rem', marginTop: '6px' }}>
                 <span style={{ color: '#3b82f6', fontWeight: 600 }}>&bull; Người lớn (ADL)</span>
                 <span style={{ color: '#f43f5e', fontWeight: 600 }}>&bull; Trẻ em (CHD)</span>
               </div>
             </div>
-
           </div>
 
           {/* Departures Table */}

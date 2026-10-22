@@ -96,7 +96,27 @@ exports.getCashflowStats = async (req, res) => {
         // 3. Route Debt Breakdown (Horizontal Stacked Bar Chart)
         const routesQuery = `
             SELECT 
-                COALESCE(tt.name, td.market, 'Khác') as route_name,
+                CASE 
+                    WHEN tt.name ILIKE '%Giang Nam%' OR td.market ILIKE '%Giang Nam%' THEN 'Giang Nam'
+                    WHEN tt.name ILIKE '%Á Đinh%' OR tt.name ILIKE '%Đạo Thành%' OR td.market ILIKE '%Á Đinh%' THEN 'Đạo Thành Á Đinh'
+                    WHEN tt.name ILIKE '%Tân Cương%' OR td.market ILIKE '%Tân Cương%' THEN 'Tân Cương'
+                    WHEN tt.name ILIKE '%Thanh Tạng%' OR tt.name ILIKE '%Tây Tạng%' OR td.market ILIKE '%Tây Tạng%' THEN 'Thanh Tạng'
+                    WHEN tt.name ILIKE '%Bắc Kinh%' OR td.market ILIKE '%Bắc Kinh%' THEN 'Bắc Kinh'
+                    WHEN tt.name ILIKE '%Lệ Giang%' OR td.market ILIKE '%Lệ Giang%' THEN 'Lệ Giang'
+                    WHEN tt.name ILIKE '%Bhutan%' OR td.market ILIKE '%Bhutan%' THEN 'Bhutan'
+                    WHEN tt.name ILIKE '%Ladakh%' OR td.market ILIKE '%Ladakh%' THEN 'Ladakh'
+                    WHEN tt.name ILIKE '%Vũ Hán%' OR td.market ILIKE '%Vũ Hán%' THEN 'Vũ Hán'
+                    WHEN tt.name ILIKE '%Nhật Bản%' OR td.market ILIKE '%Nhật Bản%' THEN 'Nhật Bản'
+                    WHEN tt.name ILIKE '%Hàn Quốc%' OR td.market ILIKE '%Hàn Quốc%' THEN 'Hàn Quốc'
+                    WHEN tt.name ILIKE '%Pakistan%' OR td.market ILIKE '%Pakistan%' THEN 'Pakistan'
+                    WHEN tt.name ILIKE '%Mông Cổ%' OR tt.name ILIKE '%Orkhon%' OR td.market ILIKE '%Mông Cổ%' THEN 'Mông Cổ'
+                    WHEN tt.name ILIKE '%Đài Loan%' OR td.market ILIKE '%Đài Loan%' THEN 'Đài Loan'
+                    WHEN tt.name ILIKE '%Ai Cập%' OR td.market ILIKE '%Ai Cập%' THEN 'Ai Cập'
+                    WHEN tt.name ILIKE '%Châu Âu%' OR td.market ILIKE '%Châu Âu%' THEN 'Châu Âu'
+                    WHEN NULLIF(TRIM(td.market), '') IS NOT NULL THEN TRIM(td.market)
+                    WHEN tt.name IS NOT NULL THEN REGEXP_REPLACE(REGEXP_REPLACE(tt.name, '^(TOUR|LỊCH KHỞI HÀNH|LKH)\\s+', '', 'i'), '\\s*\\d+N\\d+Đ.*$', '', 'i')
+                    ELSE 'Khác'
+                END as route_name,
                 COALESCE(SUM(b.total_price), 0) as total_revenue,
                 COALESCE(SUM(b.paid), 0) as collected,
                 GREATEST(0, COALESCE(SUM(b.total_price), 0) - COALESCE(SUM(b.paid), 0)) as remaining_debt,
@@ -107,7 +127,7 @@ exports.getCashflowStats = async (req, res) => {
                 AND b.booking_status NOT IN ('Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED')
                 ${bookingDebtFilter}
             WHERE ${depWhere}
-            GROUP BY COALESCE(tt.name, td.market, 'Khác')
+            GROUP BY 1
             HAVING COALESCE(SUM(b.total_price), 0) > 0
             ORDER BY total_revenue DESC
             LIMIT 15
@@ -205,7 +225,7 @@ exports.getCashflowStats = async (req, res) => {
                     if (amt > 0) {
                         totalSurchargesAmount += amt;
                         surchargesList.push({
-                            title: sc.title || 'Phụ phí phát sinh',
+                            title: sc.title || sc.label || 'Phụ phí phát sinh',
                             amount: amt,
                             note: sc.note || ''
                         });
