@@ -621,7 +621,7 @@ exports.getDepartureQuickLogistics = async (req, res) => {
  */
 exports.saveDepartureQuickLogistics = async (req, res) => {
     const { id } = req.params;
-    const { sim_counts, room_counts, demographics, surcharges, booking_overrides } = req.body;
+    const { sim_counts, room_counts, demographics, surcharges, booking_overrides } = req.body || {};
 
     try {
         const query = `
@@ -667,7 +667,7 @@ exports.saveDepartureQuickLogistics = async (req, res) => {
  */
 exports.generateDepartureShareLink = async (req, res) => {
     const { id } = req.params;
-    const { title } = req.body;
+    const { title } = req.body || {};
 
     try {
         // Check existing active link
@@ -692,7 +692,9 @@ exports.generateDepartureShareLink = async (req, res) => {
             linkRecord = insertRes.rows[0];
         }
 
-        const fullUrl = `${req.protocol}://${req.get('host')}/tai-lieu/doan/${linkRecord.token}`;
+        const protocol = req.protocol || 'https';
+        const host = (req.get && req.get('host')) || req.headers?.host || 'erp.fittour.vn';
+        const fullUrl = `${protocol}://${host}/tai-lieu/doan/${linkRecord.token}`;
 
         res.json({
             success: true,
