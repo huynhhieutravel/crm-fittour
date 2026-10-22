@@ -45,7 +45,8 @@ exports.login = async (req, res) => {
                 id: user.id,
                 username: user.username,
                 full_name: user.full_name,
-                role: user.role_name
+                role: user.role_name,
+                bus: user.bus || []
             }
         });
     } catch (err) {
@@ -58,7 +59,7 @@ exports.login = async (req, res) => {
 exports.refreshToken = async (req, res) => {
     try {
         const result = await db.query(
-            'SELECT u.id, u.username, u.full_name, u.is_active, COALESCE(r.name, u.role) as role_name FROM users u LEFT JOIN roles r ON u.role_id = r.id WHERE u.id = $1',
+            'SELECT u.id, u.username, u.full_name, u.bus, u.is_active, COALESCE(r.name, u.role) as role_name FROM users u LEFT JOIN roles r ON u.role_id = r.id WHERE u.id = $1',
             [req.user.id]
         );
         if (result.rows.length === 0) return res.status(401).json({ message: 'User not found' });
@@ -70,7 +71,7 @@ exports.refreshToken = async (req, res) => {
 
         res.json({
             token,
-            user: { id: user.id, username: user.username, full_name: user.full_name, role: user.role_name }
+            user: { id: user.id, username: user.username, full_name: user.full_name, role: user.role_name, bus: user.bus || [] }
         });
     } catch (err) {
         console.error('Token refresh error:', err);

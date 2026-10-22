@@ -289,6 +289,14 @@ exports.getCashflowStats = async (req, res) => {
         `);
         const availableBUs = buRes.rows.map(r => r.bu_group);
 
+        let userBUs = [];
+        if (req.user && req.user.id) {
+            const uRes = await db.query('SELECT bus FROM users WHERE id = $1', [req.user.id]);
+            if (uRes.rows.length > 0 && Array.isArray(uRes.rows[0].bus)) {
+                userBUs = uRes.rows[0].bus;
+            }
+        }
+
         res.json({
             metrics: {
                 total_departures: parseInt(mRow.total_departures) || 0,
@@ -330,7 +338,8 @@ exports.getCashflowStats = async (req, res) => {
                 }
             },
             departures: listRes.rows,
-            availableBUs
+            availableBUs,
+            userBUs
         });
 
     } catch (err) {

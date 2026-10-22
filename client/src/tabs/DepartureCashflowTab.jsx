@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { 
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, 
@@ -36,16 +36,43 @@ const formatFullVND = (val) => {
   return (Number(val) || 0).toLocaleString('vi-VN') + ' đ';
 };
 
+// Helper to auto-resolve user's BU:
+// "Auto chọn đúng BU của mình đang thuộc, chỉ chọn Tất cả nếu là BU3 hoặc team khác, hoặc chưa có BU"
+const resolveAutoBU = (bus) => {
+  if (!bus || !Array.isArray(bus) || bus.length === 0) return 'all';
+  const standardBUs = bus.filter(b => b && /^BU\d+$/i.test(String(b).trim()));
+  const nonBU3 = standardBUs.filter(b => b.toUpperCase() !== 'BU3');
+  if (nonBU3.length > 0) return nonBU3[0].toUpperCase();
+  return 'all';
+};
+
 export default function DepartureCashflowTab({ currentUser }) {
   // Navigation View: 'operations' (Toàn cảnh BU) | 'personal' (Sổ tay cá nhân Sale)
   const [activeView, setActiveView] = useState('operations');
+
+  const userChangedBURef = useRef(false);
 
   // Filters State
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState('all'); // 'all' or 1..12
-  const [selectedBU, setSelectedBU] = useState('all'); // 'all' or BU1..BU5
+
+  // Auto-resolve initial BU
+  const getInitialBU = () => {
+    if (currentUser?.bus) {
+      return resolveAutoBU(currentUser.bus);
+    }
+    try {
+      const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      if (savedUser?.bus) {
+        return resolveAutoBU(savedUser.bus);
+      }
+    } catch (e) {}
+    return 'all';
+  };
+
+  const [selectedBU, setSelectedBU] = useState(getInitialBU);
   const [searchRoute, setSearchRoute] = useState('');
   const [debtStatus, setDebtStatus] = useState('all'); // 'all', 'debt', 'settled'
 
@@ -91,6 +118,13 @@ export default function DepartureCashflowTab({ currentUser }) {
         }
       });
       setStatsData(res.data);
+      // Auto-select BU from server response if user hasn't changed it and it's still 'all'
+      if (!userChangedBURef.current && res.data?.userBUs && res.data.userBUs.length > 0) {
+        const autoBU = resolveAutoBU(res.data.userBUs);
+        if (autoBU !== 'all' && selectedBU === 'all') {
+          setSelectedBU(autoBU);
+        }
+      }
     } catch (err) {
       console.error('Error fetching cashflow stats:', err);
       toast.error('Không thể tải số liệu dòng tiền khởi hành');
@@ -114,6 +148,12 @@ export default function DepartureCashflowTab({ currentUser }) {
       setPersonalData(res.data);
       if (!selectedSalesUser && res.data.user?.id) {
         setSelectedSalesUser(res.data.user.id);
+      }
+      if (!userChangedBURef.current && res.data.user?.bus && res.data.user.bus.length > 0) {
+        const autoBU = resolveAutoBU(res.data.user.bus);
+        if (autoBU !== 'all' && selectedBU === 'all') {
+          setSelectedBU(autoBU);
+        }
       }
     } catch (err) {
       console.error('Error fetching personal cashflow:', err);
@@ -176,95 +216,11 @@ export default function DepartureCashflowTab({ currentUser }) {
   return (
     <div style={{ padding: '1.25rem 1.5rem', minHeight: '100%', color: 'var(--text, #0f172a)' }}>
       
-      {/* ═══ TOP HEADER & VIEW SWITCHER ═══ */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '1rem',
-        marginBottom: '1.25rem'
-      }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: 'var(--text, #0f172a)' }}>
-              Sổ Tay Khởi Hành & Dòng Tiền
-            </h1>
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '3px 8px',
-              borderRadius: '12px',
-              backgroundColor: '#ecfdf5',
-              color: '#059669',
-              fontSize: '0.72rem',
-              fontWeight: 700
-            }}>
-              <ShieldCheck size={14} /> Realtime Hub
-            </span>
-          </div>
-          <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--text-light, #64748b)' }}>
-            Quản trị tiến độ thu hồi dòng tiền, rủi ro công nợ theo tuyến & sổ tay hậu cần đoàn
-          </p>
-        </div>
-
-        {/* View Switcher Pill Buttons */}
-        <div style={{
-          display: 'flex',
-          backgroundColor: 'var(--border, #e2e8f0)',
-          padding: '4px',
-          borderRadius: '12px',
-          gap: '4px'
-        }}>
-          <button
-            onClick={() => setActiveView('operations')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: '0.85rem',
-              backgroundColor: activeView === 'operations' ? 'var(--card-bg, #ffffff)' : 'transparent',
-              color: activeView === 'operations' ? '#ff4b2b' : 'var(--text-light, #64748b)',
-              boxShadow: activeView === 'operations' ? '0 2px 4px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.2s'
-            }}
-          >
-            <Layers size={16} /> Toàn Cảnh BU & Khởi Hành
-          </button>
-          <button
-            onClick={() => setActiveView('personal')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: '0.85rem',
-              backgroundColor: activeView === 'personal' ? 'var(--card-bg, #ffffff)' : 'transparent',
-              color: activeView === 'personal' ? '#2563eb' : 'var(--text-light, #64748b)',
-              boxShadow: activeView === 'personal' ? '0 2px 4px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.2s'
-            }}
-          >
-            <Flame size={16} /> Sổ Tay Bán Hàng Của Tôi
-          </button>
-        </div>
-      </div>
-
-      {/* ═══ FILTER TOOLBAR ═══ */}
+      {/* ═══ TOP UNIFIED ACTION & FILTER BAR (NO DUPLICATE TITLE, FILTERS ON LEFT) ═══ */}
       <div style={{
         backgroundColor: 'var(--card-bg, #ffffff)',
-        borderRadius: '14px',
-        padding: '1rem 1.25rem',
+        borderRadius: '16px',
+        padding: '0.85rem 1.25rem',
         boxShadow: 'var(--shadow, 0 1px 3px rgba(0,0,0,0.05))',
         border: '1px solid var(--border, #e2e8f0)',
         display: 'flex',
@@ -272,9 +228,9 @@ export default function DepartureCashflowTab({ currentUser }) {
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '12px',
-        marginBottom: '1.5rem'
+        marginBottom: '1.25rem'
       }}>
-        {/* Left Filter Controls */}
+        {/* LEFT SIDE: ALL FILTERS */}
         <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           
           {/* Year Selector */}
@@ -290,7 +246,8 @@ export default function DepartureCashflowTab({ currentUser }) {
                 backgroundColor: 'var(--bg, #f8fbfd)',
                 color: 'var(--text, #0f172a)',
                 fontSize: '0.85rem',
-                fontWeight: 600
+                fontWeight: 600,
+                cursor: 'pointer'
               }}
             >
               {[currentYear - 1, currentYear, currentYear + 1].map(y => (
@@ -312,7 +269,8 @@ export default function DepartureCashflowTab({ currentUser }) {
                 backgroundColor: 'var(--bg, #f8fbfd)',
                 color: 'var(--text, #0f172a)',
                 fontSize: '0.85rem',
-                fontWeight: 600
+                fontWeight: 600,
+                cursor: 'pointer'
               }}
             >
               <option value="all">Tất cả tháng</option>
@@ -322,20 +280,24 @@ export default function DepartureCashflowTab({ currentUser }) {
             </select>
           </div>
 
-          {/* BU Dropdown (Transparent BU Scope) */}
+          {/* BU Dropdown (Auto-selected to user's BU) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-light, #64748b)' }}>Đơn vị:</span>
             <select
               value={selectedBU}
-              onChange={(e) => setSelectedBU(e.target.value)}
+              onChange={(e) => {
+                userChangedBURef.current = true;
+                setSelectedBU(e.target.value);
+              }}
               style={{
                 padding: '6px 12px',
                 borderRadius: '8px',
-                border: '1px solid #ff4b2b',
-                backgroundColor: '#fff5f3',
-                color: '#ff4b2b',
+                border: selectedBU !== 'all' ? '1.5px solid #ff4b2b' : '1px solid var(--border, #cbd5e1)',
+                backgroundColor: selectedBU !== 'all' ? '#fff5f3' : 'var(--bg, #f8fbfd)',
+                color: selectedBU !== 'all' ? '#ff4b2b' : 'var(--text, #0f172a)',
                 fontSize: '0.85rem',
-                fontWeight: 700
+                fontWeight: 700,
+                cursor: 'pointer'
               }}
             >
               <option value="all">Tất cả BU</option>
@@ -360,7 +322,8 @@ export default function DepartureCashflowTab({ currentUser }) {
                   border: '1px solid var(--border, #cbd5e1)',
                   backgroundColor: 'var(--bg, #f8fbfd)',
                   color: 'var(--text, #0f172a)',
-                  fontSize: '0.85rem'
+                  fontSize: '0.85rem',
+                  width: '180px'
                 }}
               />
             </div>
@@ -374,13 +337,14 @@ export default function DepartureCashflowTab({ currentUser }) {
                 value={selectedSalesUser}
                 onChange={(e) => setSelectedSalesUser(e.target.value)}
                 style={{
-                  padding: '6px 10px',
+                  padding: '6px 12px',
                   borderRadius: '8px',
-                  border: '1px solid #2563eb',
+                  border: '1px solid #93c5fd',
                   backgroundColor: '#eff6ff',
                   color: '#1d4ed8',
                   fontSize: '0.85rem',
-                  fontWeight: 700
+                  fontWeight: 700,
+                  cursor: 'pointer'
                 }}
               >
                 {personalData.salesUsers.map(u => (
@@ -392,56 +356,114 @@ export default function DepartureCashflowTab({ currentUser }) {
 
         </div>
 
-        {/* Right Debt Filter Buttons (For Operations View) */}
-        {activeView === 'operations' && (
-          <div style={{ display: 'flex', backgroundColor: 'var(--bg, #f8fbfd)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border, #e2e8f0)' }}>
+        {/* RIGHT SIDE: VIEW SWITCHER + DEBT FILTER */}
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          
+          {/* Debt Filter Buttons (For Operations View) */}
+          {activeView === 'operations' && (
+            <div style={{ display: 'flex', backgroundColor: 'var(--bg, #f8fbfd)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border, #e2e8f0)' }}>
+              <button
+                onClick={() => setDebtStatus('all')}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  backgroundColor: debtStatus === 'all' ? '#1e293b' : 'transparent',
+                  color: debtStatus === 'all' ? 'white' : 'var(--text-light, #64748b)',
+                  transition: 'all 0.15s'
+                }}
+              >
+                Toàn bộ
+              </button>
+              <button
+                onClick={() => setDebtStatus('debt')}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  backgroundColor: debtStatus === 'debt' ? '#ea580c' : 'transparent',
+                  color: debtStatus === 'debt' ? 'white' : 'var(--text-light, #64748b)',
+                  transition: 'all 0.15s'
+                }}
+              >
+                Còn nợ
+              </button>
+              <button
+                onClick={() => setDebtStatus('settled')}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  backgroundColor: debtStatus === 'settled' ? '#059669' : 'transparent',
+                  color: debtStatus === 'settled' ? 'white' : 'var(--text-light, #64748b)',
+                  transition: 'all 0.15s'
+                }}
+              >
+                Đã tất toán
+              </button>
+            </div>
+          )}
+
+          {/* View Switcher Pill Buttons */}
+          <div style={{
+            display: 'flex',
+            backgroundColor: 'var(--border, #e2e8f0)',
+            padding: '3px',
+            borderRadius: '10px',
+            gap: '3px'
+          }}>
             <button
-              onClick={() => setDebtStatus('all')}
+              onClick={() => setActiveView('operations')}
               style={{
-                padding: '4px 12px',
-                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '7px',
                 border: 'none',
                 cursor: 'pointer',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                backgroundColor: debtStatus === 'all' ? '#1e293b' : 'transparent',
-                color: debtStatus === 'all' ? 'white' : 'var(--text-light, #64748b)'
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                backgroundColor: activeView === 'operations' ? 'var(--card-bg, #ffffff)' : 'transparent',
+                color: activeView === 'operations' ? '#ff4b2b' : 'var(--text-light, #64748b)',
+                boxShadow: activeView === 'operations' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                transition: 'all 0.2s'
               }}
             >
-              Toàn bộ
+              <Layers size={15} /> Toàn Cảnh BU & Khởi Hành
             </button>
             <button
-              onClick={() => setDebtStatus('debt')}
+              onClick={() => setActiveView('personal')}
               style={{
-                padding: '4px 12px',
-                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '7px',
                 border: 'none',
                 cursor: 'pointer',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                backgroundColor: debtStatus === 'debt' ? '#ea580c' : 'transparent',
-                color: debtStatus === 'debt' ? 'white' : 'var(--text-light, #64748b)'
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                backgroundColor: activeView === 'personal' ? 'var(--card-bg, #ffffff)' : 'transparent',
+                color: activeView === 'personal' ? '#2563eb' : 'var(--text-light, #64748b)',
+                boxShadow: activeView === 'personal' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                transition: 'all 0.2s'
               }}
             >
-              Còn nợ
-            </button>
-            <button
-              onClick={() => setDebtStatus('settled')}
-              style={{
-                padding: '4px 12px',
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                backgroundColor: debtStatus === 'settled' ? '#059669' : 'transparent',
-                color: debtStatus === 'settled' ? 'white' : 'var(--text-light, #64748b)'
-              }}
-            >
-              Đã tất toán
+              <Flame size={15} /> Sổ Tay Bán Hàng Của Tôi
             </button>
           </div>
-        )}
+
+        </div>
       </div>
 
       {/* ═══════════════════════════════════════════════
