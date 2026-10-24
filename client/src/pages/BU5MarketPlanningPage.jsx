@@ -496,52 +496,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
               <ExternalLink size={14} color="#059669" />
             </a>
 
-            <a
-              href="/email_preview_ke_hoach_bu5_2027.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#fffbeb',
-                color: '#b45309',
-                border: '1px solid #fde68a',
-                padding: '9px 16px',
-                borderRadius: '8px',
-                fontSize: '0.84rem',
-                fontWeight: 700,
-                textDecoration: 'none',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-              }}
-            >
-              <span>Preview Email Đề Án 2027 ✉️</span>
-              <ExternalLink size={14} color="#b45309" />
-            </a>
 
-            <a
-              href="/GIAI_TRINH_KE_HOACH_BU5_2027.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#ffffff',
-                color: '#0f172a',
-                border: '1px solid #cbd5e1',
-                padding: '9px 16px',
-                borderRadius: '8px',
-                fontSize: '0.84rem',
-                fontWeight: 700,
-                textDecoration: 'none',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-              }}
-            >
-              <FileText size={16} color="#0284c7" />
-              <span>Xem Báo Cáo .MD 2027</span>
-              <ExternalLink size={14} color="#64748b" />
-            </a>
           </div>
         </div>
       </div>

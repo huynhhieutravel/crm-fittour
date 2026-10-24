@@ -723,206 +723,69 @@ const DocumentsHome = () => {
           <p style={{ marginTop: '0.75rem' }}>👉 Mục tiêu của chúng ta: <span className="blog-text-orange">làm việc hiệu quả hơn – năng suất cao hơn – thu nhập tốt hơn</span>.</p>
         </div>
 
-        {/* ═══ BẢN THẢO NỔI BẬT: KẾ HOẠCH SẢN PHẨM & DỰ TOÁN MKT BU5 2027 ═══ */}
+        {/* ═══ BẢN THẢO: KẾ HOẠCH MKT BU5 2027 ═══ */}
         <div style={{
-          background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #fefce8 100%)',
+          background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
           border: '1.5px solid #7dd3fc',
-          borderRadius: '16px',
-          padding: '1.25rem 1.5rem',
-          margin: '1.5rem 0 2rem',
-          boxShadow: '0 8px 24px -6px rgba(2, 132, 199, 0.12)',
+          borderRadius: '14px',
+          padding: '1.15rem 1.4rem',
+          margin: '1.25rem 0 1.75rem',
+          boxShadow: '0 4px 14px -3px rgba(2, 132, 199, 0.12)',
           display: 'flex',
-          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
           gap: '1rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', maxWidth: '820px' }}>
-              <div style={{
-                width: '46px', height: '46px', borderRadius: '12px',
-                background: '#0284c7', color: 'white', display: 'flex',
-                alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0,
-                boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)'
-              }}>
-                🧭
-              </div>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
-                  <span style={{
-                    background: '#dbeafe',
-                    color: '#0369a1',
-                    fontSize: '0.72rem',
-                    fontWeight: 800,
-                    padding: '3px 9px',
-                    borderRadius: '999px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    border: '1px solid #bae6fd'
-                  }}>
-                    Bản Thảo Đang Hoàn Thiện (Public Draft)
-                  </span>
-                  <span style={{
-                    background: '#ecfdf5',
-                    color: '#047857',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    padding: '3px 9px',
-                    borderRadius: '999px',
-                    border: '1px solid #a7f3d0'
-                  }}>
-                    Master Plan 2027 • BU5 Độc Bản
-                  </span>
-                  <span style={{ color: '#64748b', fontSize: '0.8rem' }}>• Cập nhật 25/10/2026</span>
-                </div>
-                <h3 style={{ margin: 0, fontSize: '1.18rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.35 }}>
-                  Kế Hoạch Khởi Hành &amp; Dự Toán Chi Phí MKT BU5 Năm 2027 (1% Doanh Thu)
-                </h3>
-                <p style={{ margin: '6px 0 0', fontSize: '0.88rem', color: '#334155', lineHeight: 1.55 }}>
-                  Toàn bộ <strong>27 đoàn độc bản</strong> (Mông Cổ, Nga Murmansk, Alaska, Nam Mỹ, Trung Á, Pakistan...). 
-                  Doanh thu: <strong>31.65 Tỷ</strong> | Ngân sách MKT (1%): <strong>316.460.000 VNĐ</strong> phân bổ theo từng tháng độc lập với chu kỳ chạy trước 1 – 10 tháng.
-                </p>
-              </div>
-            </div>
-
-            {/* Quick Metrics Badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', maxWidth: '720px' }}>
             <div style={{
-              display: 'flex', gap: '8px', flexWrap: 'wrap',
-              background: 'rgba(255, 255, 255, 0.85)',
-              padding: '8px 14px', borderRadius: '12px', border: '1px solid #e2e8f0',
-              backdropFilter: 'blur(4px)'
+              width: '42px', height: '42px', borderRadius: '10px',
+              background: '#0284c7', color: 'white', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0
             }}>
-              <div style={{ textAlign: 'center', padding: '0 8px' }}>
-                <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>QUY MÔ</div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0284c7' }}>27 Đoàn</div>
+              🧭
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+                <span style={{
+                  background: '#dbeafe', color: '#0369a1',
+                  fontSize: '0.72rem', fontWeight: 800, padding: '2px 8px', borderRadius: '999px',
+                  textTransform: 'uppercase'
+                }}>
+                  Bản Thảo (Draft)
+                </span>
+                <span style={{ color: '#64748b', fontSize: '0.8rem' }}>27 Đoàn • Doanh thu 31.65 Tỷ • Ngân sách MKT (1%): 316.46M</span>
               </div>
-              <div style={{ width: '1px', background: '#cbd5e1' }} />
-              <div style={{ textAlign: 'center', padding: '0 8px' }}>
-                <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>DOANH THU</div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>31.65 Tỷ</div>
-              </div>
-              <div style={{ width: '1px', background: '#cbd5e1' }} />
-              <div style={{ textAlign: 'center', padding: '0 8px' }}>
-                <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>MKT (1%)</div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#e55e20' }}>316.46M</div>
-              </div>
+              <h3 style={{ margin: 0, fontSize: '1.12rem', fontWeight: 800, color: '#0f172a' }}>
+                Kế Hoạch Khởi Hành &amp; Dự Toán Chi Phí MKT BU5 Năm 2027
+              </h3>
+              <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#334155' }}>
+                Báo cáo tiến độ phân bổ chi phí Marketing theo từng tháng độc lập (chạy trước 1 – 10 tháng).
+              </p>
             </div>
           </div>
 
-          {/* Quick Action Navigation Buttons */}
-          <div style={{
-            display: 'flex',
-            gap: '0.65rem',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            paddingTop: '0.5rem',
-            borderTop: '1px dashed #bae6fd'
-          }}>
-            <Link 
-              to="/tai-lieu/thi-truong-bu5?tab=monthly-mkt"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#0284c7',
-                color: '#ffffff',
-                padding: '9px 16px',
-                borderRadius: '8px',
-                fontWeight: 700,
-                fontSize: '0.88rem',
-                textDecoration: 'none',
-                boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
-                transition: 'all 0.15s'
-              }}
-              onMouseOver={e => e.currentTarget.style.background = '#0369a1'}
-              onMouseOut={e => e.currentTarget.style.background = '#0284c7'}
-            >
-              <span>📊</span> Xem Tiến Độ Phân Bổ Từng Tháng &rarr;
-            </Link>
-            <Link 
-              to="/tai-lieu/thi-truong-bu5?tab=product-plan"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#ffffff',
-                color: '#1e293b',
-                border: '1px solid #cbd5e1',
-                padding: '9px 14px',
-                borderRadius: '8px',
-                fontWeight: 600,
-                fontSize: '0.88rem',
-                textDecoration: 'none'
-              }}
-              onMouseOver={e => { e.currentTarget.style.borderColor = '#0284c7'; e.currentTarget.style.color = '#0284c7'; }}
-              onMouseOut={e => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.color = '#1e293b'; }}
-            >
-              <span>🗓️</span> Danh Sách 27 Tuyến Khởi Hành
-            </Link>
-            <Link 
-              to="/tai-lieu/thi-truong-bu5?tab=explanation"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#ffffff',
-                color: '#1e293b',
-                border: '1px solid #cbd5e1',
-                padding: '9px 14px',
-                borderRadius: '8px',
-                fontWeight: 600,
-                fontSize: '0.88rem',
-                textDecoration: 'none'
-              }}
-              onMouseOver={e => { e.currentTarget.style.borderColor = '#0284c7'; e.currentTarget.style.color = '#0284c7'; }}
-              onMouseOut={e => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.color = '#1e293b'; }}
-            >
-              <span>📄</span> Tờ Trình Giải Trình Chi Tiết
-            </Link>
-            <a 
-              href="/email_preview_ke_hoach_bu5_2027.html"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#ffffff',
-                color: '#475569',
-                border: '1px solid #e2e8f0',
-                padding: '9px 13px',
-                borderRadius: '8px',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                textDecoration: 'none'
-              }}
-              onMouseOver={e => e.currentTarget.style.background = '#f8fafc'}
-              onMouseOut={e => e.currentTarget.style.background = '#ffffff'}
-            >
-              <span>📧</span> Bản Email Preview
-            </a>
-            <a 
-              href="https://docs.google.com/spreadsheets/d/10kuQXdFgFLVSRS4CbKYa-ozuch6RnPJd8NTo36fFhrc/edit?usp=sharing"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#ffffff',
-                color: '#059669',
-                border: '1px solid #a7f3d0',
-                padding: '9px 13px',
-                borderRadius: '8px',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                textDecoration: 'none',
-                marginLeft: 'auto'
-              }}
-              onMouseOver={e => e.currentTarget.style.background = '#ecfdf5'}
-              onMouseOut={e => e.currentTarget.style.background = '#ffffff'}
-            >
-              <span>📊</span> Google Sheet Gốc &rarr;
-            </a>
-          </div>
+          <Link 
+            to="/tai-lieu/thi-truong-bu5?tab=monthly-mkt"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#0284c7',
+              color: '#ffffff',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              fontWeight: 700,
+              fontSize: '0.9rem',
+              textDecoration: 'none',
+              boxShadow: '0 2px 8px rgba(2, 132, 199, 0.25)',
+              transition: 'all 0.15s'
+            }}
+            onMouseOver={e => e.currentTarget.style.background = '#0369a1'}
+            onMouseOut={e => e.currentTarget.style.background = '#0284c7'}
+          >
+            <span>📊</span> Xem Bảng Tiến Độ Tháng &rarr;
+          </Link>
         </div>
 
         {/* 3 Columns */}
