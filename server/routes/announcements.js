@@ -6,6 +6,8 @@ const ctrl = require('../controllers/announcementController');
 // Public direct link (No auth required)
 router.get('/public/latest', ctrl.getLatestAnnouncement);
 router.get('/public/:idOrCode', ctrl.getPublicAnnouncement);
+router.get('/company-trip/stats', ctrl.getCompanyTripStats);
+router.post('/company-trip/sync', ctrl.syncCompanyTripStats);
 
 // All authenticated users can view list and single announcement
 router.get('/suggest-code', auth, ctrl.suggestNextCode);

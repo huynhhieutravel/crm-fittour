@@ -81,6 +81,7 @@ import EditLeadModal from './components/modals/EditLeadModal';
 import NotificationBell from './components/common/NotificationBell';
 import CommandPalette from './components/CommandPalette';
 import SystemAnnouncementPopup from './components/modals/SystemAnnouncementPopup';
+import CompanyTripModal from './components/modals/CompanyTripModal';
 const EmailGroupsTab = lazy(() => import('./tabs/EmailGroupsTab'));
 import LeaveRequestModal from './components/modals/LeaveRequestModal';
 import { AddCustomerModal, EditCustomerModal } from './components/modals/CustomerModals';
@@ -3753,6 +3754,7 @@ function AppContent() {
 
         {/* Đã ngừng popup thông báo tự động */}
         {/* <SystemAnnouncementPopup currentUser={user} /> */}
+        <CompanyTripModal currentUser={user} />
 
         <CommandPalette onNavigate={(id) => {
             if (VALID_TABS.includes(id)) {

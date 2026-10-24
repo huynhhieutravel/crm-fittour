@@ -386,3 +386,226 @@ exports.deleteAnnouncement = async (req, res) => {
         res.status(500).json({ message: 'Lỗi xóa văn bản: ' + err.message });
     }
 };
+
+// ==========================================
+// COMPANY TRIP 2026 REALTIME STATS
+// ==========================================
+const XLSX = require('xlsx');
+const path = require('path');
+const fs = require('fs');
+const { exec } = require('child_process');
+
+function parseCompanyTripStatsData() {
+    const filePath = path.join(__dirname, '../public/uploads/company_trip_2026.xlsx');
+    if (!fs.existsSync(filePath)) {
+        return null;
+    }
+    const workbook = XLSX.readFile(filePath);
+    const sheetName = workbook.SheetNames.includes('DS LAO DONG') ? 'DS LAO DONG' : workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+    const members = [];
+    let maleCount = 0;
+    let femaleCount = 0;
+
+    for (let i = 7; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || !r[1]) continue;
+        const stt = r[0] || (members.length + 1);
+        const name = String(r[1]).trim();
+        const gender = r[2] ? String(r[2]).trim() : '';
+        if (gender.toLowerCase() === 'nam') maleCount++;
+        else if (gender.toLowerCase() === 'nữ') femaleCount++;
+
+        const phone = r[5] ? String(r[5]).trim() : '';
+        const role = r[6] ? String(r[6]).trim() : '';
+        let bu = r[7];
+        if (typeof bu === 'number') bu = 'BU' + bu;
+        else if (!bu || String(bu).trim() === '') bu = 'Khối Chung / Ban Giám Đốc';
+        else bu = String(bu).trim();
+
+        const status = r[8] ? String(r[8]).trim() : 'Đang làm việc';
+        const confirmRaw = r[9] ? String(r[9]).trim() : '';
+        let confirm = 'Chưa phản hồi';
+        let statusClass = 'pending';
+        if (confirmRaw.toLowerCase().includes('đồng ý') || confirmRaw.toLowerCase().includes('tham gia')) {
+            confirm = 'Đồng ý';
+            statusClass = 'agreed';
+        } else if (confirmRaw.toLowerCase().includes('không') || confirmRaw.toLowerCase().includes('từ chối')) {
+            confirm = 'Không tham gia';
+            statusClass = 'declined';
+        }
+
+        const notes = r[10] ? String(r[10]).trim() : '';
+
+        members.push({ stt, name, gender, phone, role, bu, status, confirm, statusClass, notes });
+    }
+
+    const total = members.length;
+    const agreed = members.filter(m => m.statusClass === 'agreed');
+    const declined = members.filter(m => m.statusClass === 'declined');
+    const pending = members.filter(m => m.statusClass === 'pending');
+
+    // Nhóm theo phòng ban / BU
+    const byBu = {};
+    members.forEach(m => {
+        if (!byBu[m.bu]) {
+            byBu[m.bu] = { total: 0, agreed: 0, declined: 0, pending: 0, members: [] };
+        }
+        byBu[m.bu].total++;
+        if (m.statusClass === 'agreed') byBu[m.bu].agreed++;
+        else if (m.statusClass === 'declined') byBu[m.bu].declined++;
+        else byBu[m.bu].pending++;
+        byBu[m.bu].members.push(m);
+    });
+
+    const stat = fs.statSync(filePath);
+
+    return {
+        summary: {
+            total,
+            maleCount,
+            femaleCount,
+            agreedCount: agreed.length,
+            declinedCount: declined.length,
+            pendingCount: pending.length,
+            rateAgreed: total > 0 ? ((agreed.length / total) * 100).toFixed(1) : 0,
+            ratePending: total > 0 ? ((pending.length / total) * 100).toFixed(1) : 0,
+            deadline: '12:00 26/10/2026',
+            updatedAt: stat.mtime
+        },
+        byBu,
+        members,
+        sheetUrl: 'https://docs.google.com/spreadsheets/d/1RW2Qp3O-HC30KeoaWF5Vqx2LEY6kQXtw/edit?gid=1730784899#gid=1730784899'
+    };
+}
+
+const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1RW2Qp3O-HC30KeoaWF5Vqx2LEY6kQXtw/export?format=csv&gid=1730784899';
+const axios = require('axios');
+
+function parseRowsToStats(rows, sourceTime) {
+    const members = [];
+    let maleCount = 0;
+    let femaleCount = 0;
+
+    for (let i = 7; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || !r[1]) continue;
+        const stt = r[0] || (members.length + 1);
+        const name = String(r[1]).trim();
+        const gender = r[2] ? String(r[2]).trim() : '';
+        if (gender.toLowerCase() === 'nam') maleCount++;
+        else if (gender.toLowerCase() === 'nữ') femaleCount++;
+
+        const phone = r[5] ? String(r[5]).trim() : '';
+        const role = r[6] ? String(r[6]).trim() : '';
+        let bu = r[7];
+        if (typeof bu === 'number') bu = 'BU' + bu;
+        else if (!bu || String(bu).trim() === '') bu = 'Khối Chung / Ban Giám Đốc';
+        else bu = String(bu).trim();
+
+        const status = r[8] ? String(r[8]).trim() : 'Đang làm việc';
+        const confirmRaw = r[9] ? String(r[9]).trim() : '';
+        let confirm = 'Chưa phản hồi';
+        let statusClass = 'pending';
+        if (confirmRaw.toLowerCase().includes('đồng ý') || confirmRaw.toLowerCase().includes('tham gia')) {
+            confirm = 'Đồng ý';
+            statusClass = 'agreed';
+        } else if (confirmRaw.toLowerCase().includes('không') || confirmRaw.toLowerCase().includes('từ chối')) {
+            confirm = 'Không tham gia';
+            statusClass = 'declined';
+        }
+
+        const notes = r[10] ? String(r[10]).trim() : '';
+
+        members.push({ stt, name, gender, phone, role, bu, status, confirm, statusClass, notes });
+    }
+
+    const total = members.length;
+    const agreed = members.filter(m => m.statusClass === 'agreed');
+    const declined = members.filter(m => m.statusClass === 'declined');
+    const pending = members.filter(m => m.statusClass === 'pending');
+
+    // Nhóm theo phòng ban / BU
+    const byBu = {};
+    members.forEach(m => {
+        if (!byBu[m.bu]) {
+            byBu[m.bu] = { total: 0, agreed: 0, declined: 0, pending: 0, members: [] };
+        }
+        byBu[m.bu].total++;
+        if (m.statusClass === 'agreed') byBu[m.bu].agreed++;
+        else if (m.statusClass === 'declined') byBu[m.bu].declined++;
+        else byBu[m.bu].pending++;
+        byBu[m.bu].members.push(m);
+    });
+
+    return {
+        summary: {
+            total,
+            maleCount,
+            femaleCount,
+            agreedCount: agreed.length,
+            declinedCount: declined.length,
+            pendingCount: pending.length,
+            rateAgreed: total > 0 ? ((agreed.length / total) * 100).toFixed(1) : 0,
+            ratePending: total > 0 ? ((pending.length / total) * 100).toFixed(1) : 0,
+            deadline: '12:00 26/10/2026',
+            updatedAt: sourceTime || new Date()
+        },
+        byBu,
+        members,
+        sheetUrl: 'https://docs.google.com/spreadsheets/d/1RW2Qp3O-HC30KeoaWF5Vqx2LEY6kQXtw/edit?gid=1730784899#gid=1730784899'
+    };
+}
+
+// GET /api/announcements/company-trip/stats (Live Realtime từ Google Sheet)
+exports.getCompanyTripStats = async (req, res) => {
+    try {
+        // 1. Thử fetch trực tiếp realtime từ Google Sheet công khai
+        try {
+            const resp = await axios.get(GOOGLE_SHEET_CSV_URL, { timeout: 4000 });
+            if (resp.data) {
+                const workbook = XLSX.read(resp.data, { type: 'string' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                const stats = parseRowsToStats(rows, new Date());
+                return res.json(stats);
+            }
+        } catch (fetchErr) {
+            console.warn('Google Sheet live fetch failed, falling back to local cached file:', fetchErr.message);
+        }
+
+        // 2. Fallback sang file local
+        const filePath = path.join(__dirname, '../public/uploads/company_trip_2026.xlsx');
+        if (fs.existsSync(filePath)) {
+            const workbook = XLSX.readFile(filePath);
+            const sheetName = workbook.SheetNames.includes('DS LAO DONG') ? 'DS LAO DONG' : workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            const stats = parseRowsToStats(rows, fs.statSync(filePath).mtime);
+            return res.json(stats);
+        }
+
+        res.status(404).json({ message: 'Không thể tải dữ liệu thống kê Company Trip' });
+    } catch (err) {
+        console.error('Error fetching company trip stats:', err);
+        res.status(500).json({ message: 'Lỗi phân tích số liệu thống kê: ' + err.message });
+    }
+};
+
+// POST /api/announcements/company-trip/sync (Fetch và lưu vào local)
+exports.syncCompanyTripStats = async (req, res) => {
+    try {
+        const resp = await axios.get(GOOGLE_SHEET_CSV_URL, { timeout: 6000 });
+        const workbook = XLSX.read(resp.data, { type: 'string' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        const freshData = parseRowsToStats(rows, new Date());
+
+        res.json({ message: 'Đồng bộ dữ liệu trực tiếp từ Google Sheet thành công', data: freshData });
+    } catch (err) {
+        console.error('Error syncing company trip stats:', err);
+        res.status(500).json({ message: 'Lỗi đồng bộ: ' + err.message });
+    }
+};
