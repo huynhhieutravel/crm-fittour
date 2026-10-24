@@ -37,7 +37,8 @@ import {
   BU5_RAW_DEPARTURES,
   TIMELINE_MONTHS,
   calculateBU5MonthlySchedule,
-  addMonthsToKey
+  addMonthsToKey,
+  getCategoryBadgeStyle
 } from '../data/bu5MarketingMasterPlan';
 
 // Helper format tiền tệ VNĐ: 32.000.000 đ
@@ -412,48 +413,10 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
               <Download size={15} />
               Xuất Excel (.xlsx)
             </button>
-
-            <button
-              onClick={handleSaveSettings}
-              disabled={isSaving}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '9px 16px',
-                background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
-                border: 'none',
-                color: '#ffffff',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                cursor: isSaving ? 'not-allowed' : 'pointer',
-                boxShadow: '0 4px 12px rgba(56, 189, 248, 0.3)',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <Save size={15} />
-              {isSaving ? 'Đang lưu...' : 'Lưu Vào CRM'}
-            </button>
-
-            <button
-              onClick={handleResetToDefault}
-              title="Khôi phục số tháng chạy trước về mặc định"
-              style={{
-                padding: '9px 12px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                color: '#cbd5e1',
-                borderRadius: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              <RotateCcw size={15} />
-            </button>
           </div>
         </div>
 
-        {/* Thanh chuyển đổi chế độ xem: Kế hoạch 2027 vs Toàn bộ 2026-2027 */}
+        {/* Thanh trạng thái kế hoạch 2027 & Checkbox chạy trước cuối 2026 */}
         <div style={{
           marginTop: '18px',
           display: 'flex',
@@ -466,64 +429,42 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
           borderRadius: '10px',
           border: '1px solid rgba(255, 255, 255, 0.12)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#e2e8f0' }}>Phạm vi:</span>
-            <div style={{ display: 'inline-flex', background: 'rgba(255, 255, 255, 0.1)', padding: '3px', borderRadius: '8px', gap: '4px' }}>
-              <button
-                onClick={() => setYearScope('2027')}
-                style={{
-                  padding: '7px 15px',
-                  borderRadius: '6px',
-                  fontSize: '0.82rem',
-                  fontWeight: yearScope === '2027' ? 800 : 600,
-                  border: 'none',
-                  background: yearScope === '2027' ? '#38bdf8' : 'transparent',
-                  color: yearScope === '2027' ? '#0f172a' : '#cbd5e1',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <span>🎯</span>
-                <span>Chỉ Chuẩn Bị 2027 (27 Đoàn • 31.65 Tỷ)</span>
-              </button>
-              <button
-                onClick={() => setYearScope('ALL')}
-                style={{
-                  padding: '7px 15px',
-                  borderRadius: '6px',
-                  fontSize: '0.82rem',
-                  fontWeight: yearScope === 'ALL' ? 800 : 600,
-                  border: 'none',
-                  background: yearScope === 'ALL' ? '#38bdf8' : 'transparent',
-                  color: yearScope === 'ALL' ? '#0f172a' : '#cbd5e1',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <span>🌐</span>
-                <span>Toàn Bộ 2026 - 2027 (30 Đoàn • 34.83 Tỷ)</span>
-              </button>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e2e8f0', fontSize: '0.86rem' }}>
+            <span style={{ 
+              background: '#0284c7', 
+              color: '#ffffff', 
+              padding: '2px 8px', 
+              borderRadius: '4px', 
+              fontSize: '0.75rem', 
+              fontWeight: 800 
+            }}>
+              KẾ HOẠCH NĂM 2027
+            </span>
+            <span>
+              <strong>27 Đoàn Khởi Hành</strong> • Doanh thu: <strong>31.65 Tỷ</strong> • Quỹ MKT (1%): <strong>316.46M</strong>
+            </span>
           </div>
 
           {/* Toggle các tháng chuẩn bị cuối 2026 (T09-T12/26) */}
-          {yearScope === '2027' && (
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', color: '#e2e8f0', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.08)', padding: '6px 12px', borderRadius: '6px' }}>
-              <input
-                type="checkbox"
-                checked={showPrepMonths2026}
-                onChange={(e) => setShowPrepMonths2026(e.target.checked)}
-                style={{ cursor: 'pointer', width: '15px', height: '15px', accentColor: '#38bdf8' }}
-              />
-              <span>Bao gồm 4 tháng chạy trước cuối 2026 (T09-T12/26: <strong style={{ color: '#38bdf8' }}>{fmtShort(kpis.mktPrepIn2026)}</strong> chuẩn bị tour Tết 2027)</span>
-            </label>
-          )}
+          <label style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '8px', 
+            fontSize: '0.82rem', 
+            color: '#e2e8f0', 
+            cursor: 'pointer', 
+            background: 'rgba(255, 255, 255, 0.08)', 
+            padding: '6px 12px', 
+            borderRadius: '6px' 
+          }}>
+            <input
+              type="checkbox"
+              checked={showPrepMonths2026}
+              onChange={(e) => setShowPrepMonths2026(e.target.checked)}
+              style={{ cursor: 'pointer', width: '15px', height: '15px', accentColor: '#38bdf8' }}
+            />
+            <span>Bao gồm 4 tháng chạy trước cuối 2026 (T09-T12/26: <strong style={{ color: '#38bdf8' }}>{fmtShort(kpis.mktPrepIn2026)}</strong> chuẩn bị tour Tết 2027)</span>
+          </label>
         </div>
 
         {/* Thông tin chốt từ Sheet */}
@@ -1010,22 +951,36 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                       </td>
 
                       <td style={{ padding: '10px 12px', borderRight: '1px solid #f1f5f9' }}>
-                        <div style={{ fontWeight: 700, color: isZeroGroup ? '#64748b' : '#0f172a' }}>
-                          {dep.prod?.icon} {dep.name}
-                        </div>
-                        <div style={{ fontSize: '0.72rem', color: '#64748b', display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
-                          <span style={{ 
-                            background: dep.prod?.badgeBg || '#f1f5f9', 
-                            color: dep.prod?.badgeText || '#475569',
-                            padding: '1px 5px',
-                            borderRadius: '3px',
-                            fontSize: '0.68rem',
-                            fontWeight: 600
-                          }}>
-                            {dep.category}
+                        {/* Hàng 1: Tên sản phẩm + Badge nằm cùng 1 hàng */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 700, color: isZeroGroup ? '#64748b' : '#0f172a', fontSize: '0.85rem' }}>
+                            {dep.prod?.icon} {dep.name}
                           </span>
-                          {dep.note && <span>• {dep.note}</span>}
+                          {dep.category && (() => {
+                            const badgeStyle = getCategoryBadgeStyle(dep.category);
+                            return (
+                              <span style={{ 
+                                background: badgeStyle.bg, 
+                                color: badgeStyle.text,
+                                border: `1px solid ${badgeStyle.border}`,
+                                padding: '2px 7px',
+                                borderRadius: '4px',
+                                fontSize: '0.68rem',
+                                fontWeight: 700,
+                                whiteSpace: 'nowrap'
+                              }}>
+                                {dep.category}
+                              </span>
+                            );
+                          })()}
                         </div>
+
+                        {/* Hàng 2: Text mô tả nằm bên dưới */}
+                        {dep.note && (
+                          <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '3px', lineHeight: 1.35 }}>
+                            • {dep.note}
+                          </div>
+                        )}
                       </td>
 
                       <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 600, color: '#1e293b', borderRight: '1px solid #f1f5f9' }}>
@@ -1033,7 +988,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                       </td>
 
                       <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 700, color: isZeroGroup ? '#94a3b8' : '#0f172a', borderRight: '1px solid #f1f5f9' }}>
-                        {dep.groupsCount > 0 ? `${dep.groupsCount} đ` : '-'}
+                        {dep.groupsCount > 0 ? dep.groupsCount : '-'}
                       </td>
 
                       <td style={{ padding: '10px 10px', textAlign: 'right', fontWeight: 600, color: isZeroGroup ? '#94a3b8' : '#1e293b', borderRight: '1px solid #f1f5f9' }}>

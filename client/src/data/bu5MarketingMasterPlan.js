@@ -17,8 +17,9 @@ export const BU5_PRODUCTS_CATALOG = {
     defaultPaxPerGroup: 10,
     icon: '🏔️',
     color: '#16a34a',
-    badgeBg: '#dcfce7',
-    badgeText: '#166534',
+    badgeBg: '#eff6ff',
+    badgeText: '#1e40af',
+    badgeBorder: '#bfdbfe',
     note: 'Mùa hoa (T3-4) và Mùa thu (T10) là hai campaign độc lập'
   },
   aicap: {
@@ -31,8 +32,9 @@ export const BU5_PRODUCTS_CATALOG = {
     defaultPaxPerGroup: 10,
     icon: '☀️',
     color: '#d97706',
-    badgeBg: '#fef3c7',
-    badgeText: '#92400e',
+    badgeBg: '#eff6ff',
+    badgeText: '#1e40af',
+    badgeBorder: '#bfdbfe',
     note: 'Bán lặp lại, tạo nền sản phẩm đường xa; ưu tiên mùa thu, cuối năm và Tết'
   },
   maroc: {
@@ -45,8 +47,9 @@ export const BU5_PRODUCTS_CATALOG = {
     defaultPaxPerGroup: 10,
     icon: '🏜️',
     color: '#e11d48',
-    badgeBg: '#ffe4e6',
-    badgeText: '#9f1239',
+    badgeBg: '#eff6ff',
+    badgeText: '#1e40af',
+    badgeBorder: '#bfdbfe',
     note: 'Bán lặp lại, kết hợp văn hóa và sa mạc; ưu tiên Tết và 30/4'
   },
   nga: {
@@ -59,8 +62,9 @@ export const BU5_PRODUCTS_CATALOG = {
     defaultPaxPerGroup: 10,
     icon: '❄️',
     color: '#0284c7',
-    badgeBg: '#e0f2fe',
-    badgeText: '#0369a1',
+    badgeBg: '#f0fdf4',
+    badgeText: '#15803d',
+    badgeBorder: '#bbf7d0',
     note: 'Sản phẩm mùa đông, trải nghiệm Bắc Cực; gom 3 đoàn cao điểm tháng 2'
   },
   baikal: {
@@ -73,8 +77,9 @@ export const BU5_PRODUCTS_CATALOG = {
     defaultPaxPerGroup: 10,
     icon: '🧊',
     color: '#06b6d4',
-    badgeBg: '#cffafe',
-    badgeText: '#155e75',
+    badgeBg: '#f0fdf4',
+    badgeText: '#15803d',
+    badgeBorder: '#bbf7d0',
     note: 'Sản phẩm thử nghiệm mùa đông đặc thù'
   },
   mongco: {
@@ -87,8 +92,9 @@ export const BU5_PRODUCTS_CATALOG = {
     defaultPaxPerGroup: 10,
     icon: '🐎',
     color: '#059669',
-    badgeBg: '#d1fae5',
-    badgeText: '#065f46',
+    badgeBg: '#eff6ff',
+    badgeText: '#1e40af',
+    badgeBorder: '#bfdbfe',
     note: 'Sản phẩm volume chủ lực mùa hè (T6-T9), tổng 6 đoàn'
   },
   trunga: {
@@ -101,8 +107,9 @@ export const BU5_PRODUCTS_CATALOG = {
     defaultPaxPerGroup: 10,
     icon: '🏛️',
     color: '#8b5cf6',
-    badgeBg: '#ede9fe',
-    badgeText: '#5b21b6',
+    badgeBg: '#f0fdf4',
+    badgeText: '#15803d',
+    badgeBorder: '#bbf7d0',
     note: 'Bổ sung lựa chọn mùa hè, mỗi tháng 1 đoàn từ tháng 6 đến tháng 9'
   },
   alaska: {
@@ -115,8 +122,9 @@ export const BU5_PRODUCTS_CATALOG = {
     defaultPaxPerGroup: 10,
     icon: '🌲',
     color: '#0284c7',
-    badgeBg: '#e0f2fe',
-    badgeText: '#075985',
+    badgeBg: '#fdf4ff',
+    badgeText: '#9333ea',
+    badgeBorder: '#f5d0fe',
     note: 'Thiên nhiên và wildlife phân khúc premium; 2 đoàn (T7 hè & T8-9 lễ 2/9)'
   },
   nammy: {
@@ -129,8 +137,9 @@ export const BU5_PRODUCTS_CATALOG = {
     defaultPaxPerGroup: 10,
     icon: '🗿',
     color: '#f59e0b',
-    badgeBg: '#fef3c7',
-    badgeText: '#78350f',
+    badgeBg: '#fdf4ff',
+    badgeText: '#9333ea',
+    badgeBorder: '#f5d0fe',
     note: 'Mở rộng danh mục đường xa đỉnh cao, tạo khác biệt; visa chuẩn bị 9-10 tháng'
   },
   namibia: {
@@ -143,8 +152,9 @@ export const BU5_PRODUCTS_CATALOG = {
     defaultPaxPerGroup: 10,
     icon: '🦒',
     color: '#ea580c',
-    badgeBg: '#ffedd5',
-    badgeText: '#9a3412',
+    badgeBg: '#fdf4ff',
+    badgeText: '#9333ea',
+    badgeBorder: '#f5d0fe',
     note: 'Wildlife, sa mạc và mùa lễ 2/9 phân khúc siêu cao cấp'
   },
   bacmongco: {
@@ -157,9 +167,41 @@ export const BU5_PRODUCTS_CATALOG = {
     defaultPaxPerGroup: 10,
     icon: '🦌',
     color: '#475569',
-    badgeBg: '#f1f5f9',
-    badgeText: '#1e293b',
+    badgeBg: '#fff7ed',
+    badgeText: '#c2410c',
+    badgeBorder: '#fed7aa',
     note: 'Mở rộng hệ sinh thái sản phẩm Mông Cổ mùa thu lá vàng'
+  }
+};
+
+// Helper lấy style badge đồng nhất 100% theo Phân Loại Tuyến
+export const getCategoryBadgeStyle = (category) => {
+  switch (category) {
+    case 'Tuyến trụ cột':
+      return {
+        bg: '#eff6ff',
+        text: '#1e40af',
+        border: '#bfdbfe'
+      };
+    case 'Tuyến mùa vụ':
+      return {
+        bg: '#f0fdf4',
+        text: '#15803d',
+        border: '#bbf7d0'
+      };
+    case 'Tuyến định vị':
+      return {
+        bg: '#fdf4ff',
+        text: '#9333ea',
+        border: '#f5d0fe'
+      };
+    case 'Tuyến phát triển':
+    default:
+      return {
+        bg: '#fff7ed',
+        text: '#c2410c',
+        border: '#fed7aa'
+      };
   }
 };
 
