@@ -736,3 +736,52 @@ exports.exportExcel = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// 7. GET /api/marketing-budget-plan/bu5-monthly-schedule
+exports.getBU5MonthlySchedule = async (req, res) => {
+  try {
+    const settingRes = await db.query(
+      "SELECT value FROM app_settings WHERE key = 'bu5_mkt_schedule_settings' LIMIT 1"
+    );
+    const settings = settingRes.rows[0]?.value || null;
+    res.json({
+      success: true,
+      settings
+    });
+  } catch (err) {
+    console.error('getBU5MonthlySchedule error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// 8. POST /api/marketing-budget-plan/bu5-monthly-schedule/save-settings
+exports.saveBU5MonthlySchedule = async (req, res) => {
+  try {
+    const { leadOverrides, mktRatio, distributionMode, notes } = req.body;
+    const payload = {
+      leadOverrides: leadOverrides || {},
+      mktRatio: Number(mktRatio) || 0.01,
+      distributionMode: distributionMode || 'even',
+      notes: notes || '',
+      updatedAt: new Date().toISOString(),
+      updatedBy: req.user?.name || req.user?.email || 'User'
+    };
+
+    await db.query(`
+      INSERT INTO app_settings (key, value, updated_at)
+      VALUES ('bu5_mkt_schedule_settings', $1, NOW())
+      ON CONFLICT (key) DO UPDATE SET
+        value = EXCLUDED.value,
+        updated_at = NOW();
+    `, [JSON.stringify(payload)]);
+
+    res.json({
+      success: true,
+      message: 'Đã lưu cấu hình phân bổ dòng tiền Marketing BU5 thành công!',
+      data: payload
+    });
+  } catch (err) {
+    console.error('saveBU5MonthlySchedule error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

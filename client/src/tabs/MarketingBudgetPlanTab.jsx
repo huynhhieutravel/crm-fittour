@@ -897,6 +897,55 @@ export default function MarketingBudgetPlanTab({ currentUser, addToast, bus = []
         </button>
       </div>
 
+      {/* BU5 Monthly Marketing Schedule Link Banner */}
+      {selectedBU === 'BU5' && (
+        <div style={{
+          background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+          borderRadius: '10px',
+          padding: '12px 18px',
+          color: '#ffffff',
+          marginBottom: '1rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px',
+          boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '1.2rem' }}>📊</span>
+            <div>
+              <div style={{ fontSize: '0.88rem', fontWeight: 800 }}>
+                Kế Hoạch MKT BU5 Năm 2027 (Master Plan Google Sheet): 27 Đoàn • 31.65 Tỷ DT • Ngân Sách 1%: 316.46M
+              </div>
+              <div style={{ fontSize: '0.78rem', color: '#e0f2fe' }}>
+                Đã tính toán chi tiết kinh phí MKT 1% theo từng tháng (không gộp năm), phân bổ chu kỳ chạy trước 1 đến 10 tháng.
+              </div>
+            </div>
+          </div>
+          <a
+            href="/tai-lieu/thi-truong-bu5?tab=monthly-mkt"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 14px',
+              background: '#ffffff',
+              color: '#0284c7',
+              borderRadius: '6px',
+              fontSize: '0.82rem',
+              fontWeight: 800,
+              textDecoration: 'none',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <span>Mở Báo Cáo Theo Tháng (1-10T)</span>
+            <ExternalLink size={14} />
+          </a>
+        </div>
+      )}
+
       {/* 4. COMPACT HORIZONTAL FILTER TOOLBAR (Single line, sleek, not bulky) */}
       <div style={{
         display: 'flex',

@@ -344,7 +344,10 @@ function AppContent() {
     setIsHeaderHidden(false);
   }, [activeTab]);
 
-  const [loginData, setLoginData] = useState({ username: '', password: '' });
+  const [loginData, setLoginData] = useState(() => {
+    const isDev = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    return { username: isDev ? 'admin' : '', password: isDev ? 'admin123' : '' };
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [leads, setLeads] = useState([]);
@@ -749,12 +752,16 @@ function AppContent() {
         // Do not auto logout on 403 (Permission Denied). Only logout on 401 (Unauthorized/Token Expired)
         if (error.response && [401].includes(error.response.status)) {
           if (error.config && error.config.url !== '/api/auth/login') {
-            console.error('Logout triggered by 401 on URL:', error.config.url);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            setIsLoggedIn(false);
-            setUser(null);
-            navigate('/login');
+            const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+            const isPublicDoc = currentPath.startsWith('/tai-lieu') || currentPath.startsWith('/huong-dan-erp') || currentPath.startsWith('/cam-nang-thuong-hieu') || currentPath.startsWith('/hdv');
+            if (!isPublicDoc) {
+              console.error('Logout triggered by 401 on URL:', error.config.url);
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              setIsLoggedIn(false);
+              setUser(null);
+              navigate('/login');
+            }
           }
         }
         return Promise.reject(error);
@@ -1974,6 +1981,7 @@ function AppContent() {
       localStorage.setItem('token', res.data.token);
       const u = res.data.user;
       localStorage.setItem('user', JSON.stringify(u));
+      sessionStorage.removeItem('dev_manual_logout');
       setUser(u);
       setIsLoggedIn(true);
       
@@ -1991,6 +1999,46 @@ function AppContent() {
       setError(err.response?.data?.message || 'Đăng nhập thất bại');
     }
   };
+
+  // Đăng nhập nhanh 1-Click cho Localhost Dev
+  const handleDevQuickLogin = async () => {
+    setError('');
+    try {
+      let res;
+      try {
+        res = await axios.post('/api/auth/dev-login');
+      } catch (devErr) {
+        res = await axios.post('/api/auth/login', { username: 'admin', password: 'admin123' });
+      }
+      localStorage.setItem('token', res.data.token);
+      const u = res.data.user;
+      localStorage.setItem('user', JSON.stringify(u));
+      sessionStorage.removeItem('dev_manual_logout');
+      setUser(u);
+      setIsLoggedIn(true);
+      
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectPath = searchParams.get('redirect');
+      if (redirectPath) {
+        navigate(redirectPath);
+      } else {
+        navigate('/tai-lieu/thi-truong-bu5');
+      }
+    } catch (err) {
+      setError('Đăng nhập nhanh Dev thất bại: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  // Tự động đăng nhập ngầm trên Localhost nếu chưa có token
+  useEffect(() => {
+    const isDev = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isDev && !isLoggedIn && sessionStorage.getItem('dev_manual_logout') !== 'true') {
+      const hasToken = localStorage.getItem('token') && localStorage.getItem('user');
+      if (!hasToken) {
+        handleDevQuickLogin();
+      }
+    }
+  }, [isLoggedIn]);
 
   const handleTestMeta = async (type = 'messenger') => {
     setTestLoading(true);
@@ -2044,6 +2092,7 @@ function AppContent() {
   };
 
   const handleLogout = () => {
+    sessionStorage.setItem('dev_manual_logout', 'true');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsLoggedIn(false);
@@ -4594,6 +4643,34 @@ function AppContent() {
                 <button type="submit" className="login-submit-btn">
                   Đăng nhập
                 </button>
+
+                {(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
+                  <button
+                    type="button"
+                    onClick={handleDevQuickLogin}
+                    style={{
+                      marginTop: '12px',
+                      width: '100%',
+                      padding: '12px',
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: 700,
+                      fontSize: '0.92rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <span>⚡</span>
+                    <span>1-Click Đăng Nhập Dev (Admin Hiếu)</span>
+                  </button>
+                )}
               </form>
 
               <div style={{ display: 'flex', alignItems: 'center', margin: '1.25rem 0' }}>

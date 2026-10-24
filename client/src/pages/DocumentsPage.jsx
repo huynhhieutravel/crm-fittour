@@ -69,7 +69,9 @@ const STATIC_DOCS = [
   { title: 'Phân Tích Thị Trường & Dự Toán Ads BU2', description: 'Chiến lược Tour Liên Minh (Cung Đường Vàng, Hàn Quốc, Đài Loan) kết hợp Tuyến Trọng Tâm Hokkaido (Thu & Mùa Tuyết Trắng), Máy tính dự toán ngân sách & 11 đoàn khởi hành', category: 'Marketing', path: '/tai-lieu/thi-truong-bu2', icon: '🇯🇵' },
   { title: 'Phân Tích Thị Trường & Dự Toán Ads BU3 (B2B/MICE)', description: 'Kế hoạch 12 tháng, quy tắc chạy trước 2 tháng, phân bổ 150M & Máy tính phễu chuyển đổi đoàn doanh nghiệp', category: 'Marketing', path: '/tai-lieu/thi-truong-bu3', icon: '📊' },
   { title: 'Phân Tích Thị Trường & Dự Toán Ads BU4', description: 'Obsidian Doc: Dữ liệu lịch sử, CPL & Máy tính dự toán ngân sách Ads các tuyến BU4 (Bhutan, Ladakh, Sri Lanka...)', category: 'Marketing', path: '/tai-lieu/thi-truong-bu4', icon: '📊' },
-  { title: 'Phân Tích Thị Trường & Dự Toán Ads BU5 (Khám Phá & Độc Bản)', description: 'Chiến lược 5 tuyến độc bản: Murmansk Bắc Cực Quang (Nga), Ai Cập Sông Nile, Ma Rốc, Pakistan, Trung Á. Đối soát 8 đoàn ERP 10.13 Tỷ & Định mức 1%', category: 'Marketing', path: '/tai-lieu/thi-truong-bu5', icon: '🧭' },
+  { title: 'Kế Hoạch Sản Phẩm & Dự Toán MKT BU5 Năm 2027', description: 'Master Plan Google Sheet: 27 đoàn độc bản (Mông Cổ, Nga Murmansk, Alaska, Nam Mỹ, Trung Á, Pakistan...). Doanh thu 31.65 Tỷ, Định mức MKT 1% (316.46M) phân bổ theo từng tháng độc lập.', category: 'Marketing', path: '/tai-lieu/thi-truong-bu5', icon: '🧭' },
+  { title: 'Tiến Độ Ngân Sách MKT BU5 Từng Tháng (2026-2027)', description: 'Bảng theo dõi dòng tiền & ngân sách MKT 316.46M chia theo từng tháng chạy trước của 27 đoàn BU5', category: 'Marketing', path: '/tai-lieu/thi-truong-bu5?tab=monthly-mkt', icon: '📅' },
+  { title: 'Văn Bản Giải Trình Kế Hoạch BU5 2027', description: 'Tờ trình chi tiết cơ cấu 27 đoàn, định mức 1% doanh thu và dòng tiền 15 tháng gửi Ban Giám Đốc', category: 'Marketing', path: '/tai-lieu/thi-truong-bu5?tab=explanation', icon: '📄' },
   { title: 'SOP Sales & Workplace', description: 'Hướng dẫn Sales nhận Lead, cập nhật ERP và tối ưu Workplace', category: 'Sale', path: '/tai-lieu/sop-sales', icon: '💼' },
   { title: 'HUB Điều Hành (OP)', description: 'Quy trình điều hành tour, vận hành dịch vụ', category: 'Điều hành', path: '/tai-lieu/dieu-hanh', icon: '🔧' },
   { title: 'Tổng quan Quy trình Lead', description: 'Bức tranh toàn cảnh về quy trình xử lý Lead từ Điều phối đến Sales', category: 'Điều hành', path: '/tai-lieu/tong-quan-lead', icon: '🌐' },
@@ -653,10 +655,26 @@ const DocumentsHome = () => {
               </li>
             </ul>
           </div>
-          <Link to="/tai-lieu/marketing" className="blog-top-card">
-            <img src="https://cdn-icons-png.flaticon.com/512/1998/1998087.png" alt="Marketing" className="blog-icon-img" />
-            <span>HUB Marketing</span>
-          </Link>
+          <div className="blog-top-card" style={{ background: 'linear-gradient(to right, #f8fafc, #f1f5f9)', display: 'block', padding: '1.25rem' }}>
+            <Link to="/tai-lieu/marketing" style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: '#1e293b' }}>
+              <img src="https://cdn-icons-png.flaticon.com/512/1998/1998087.png" alt="Marketing" className="blog-icon-img" />
+              <span style={{ fontWeight: 600 }}>HUB Marketing</span>
+            </Link>
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '0.75rem 0' }} />
+            <ul className="blog-list">
+              <li style={{ marginBottom: '0.5rem' }}>
+                <Link to="/tai-lieu/thi-truong-bu5?tab=monthly-mkt" style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0369a1' }}>
+                  <span className="blog-list-icon" style={{ fontSize: '1rem' }}>🧭</span> Kế hoạch MKT BU5 2027 (27 đoàn)
+                </Link>
+              </li>
+              <li style={{ marginBottom: '0.5rem' }}>
+                <Link to="/tai-lieu/rule-meta-ads" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>📜</span> Rule Meta Ads &amp; Blueprint</Link>
+              </li>
+              <li style={{ marginBottom: 0 }}>
+                <Link to="/tai-lieu/marketing/quy-tac-phan-loai" style={{ fontSize: '0.85rem' }}><span className="blog-list-icon" style={{ fontSize: '1rem' }}>🧹</span> Quy tắc phân loại Lead</Link>
+              </li>
+            </ul>
+          </div>
           <div className="blog-top-card" style={{ background: 'linear-gradient(to right, #f8fafc, #f1f5f9)', display: 'block', padding: '1.25rem' }}>
             <Link to="/tai-lieu/sale" style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: '#1e293b' }}>
               <img src="https://cdn-icons-png.flaticon.com/512/3135/3135673.png" alt="Sale" className="blog-icon-img" />
@@ -705,6 +723,208 @@ const DocumentsHome = () => {
           <p style={{ marginTop: '0.75rem' }}>👉 Mục tiêu của chúng ta: <span className="blog-text-orange">làm việc hiệu quả hơn – năng suất cao hơn – thu nhập tốt hơn</span>.</p>
         </div>
 
+        {/* ═══ BẢN THẢO NỔI BẬT: KẾ HOẠCH SẢN PHẨM & DỰ TOÁN MKT BU5 2027 ═══ */}
+        <div style={{
+          background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #fefce8 100%)',
+          border: '1.5px solid #7dd3fc',
+          borderRadius: '16px',
+          padding: '1.25rem 1.5rem',
+          margin: '1.5rem 0 2rem',
+          boxShadow: '0 8px 24px -6px rgba(2, 132, 199, 0.12)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', maxWidth: '820px' }}>
+              <div style={{
+                width: '46px', height: '46px', borderRadius: '12px',
+                background: '#0284c7', color: 'white', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0,
+                boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)'
+              }}>
+                🧭
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                  <span style={{
+                    background: '#dbeafe',
+                    color: '#0369a1',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    padding: '3px 9px',
+                    borderRadius: '999px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    border: '1px solid #bae6fd'
+                  }}>
+                    Bản Thảo Đang Hoàn Thiện (Public Draft)
+                  </span>
+                  <span style={{
+                    background: '#ecfdf5',
+                    color: '#047857',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    padding: '3px 9px',
+                    borderRadius: '999px',
+                    border: '1px solid #a7f3d0'
+                  }}>
+                    Master Plan 2027 • BU5 Độc Bản
+                  </span>
+                  <span style={{ color: '#64748b', fontSize: '0.8rem' }}>• Cập nhật 25/10/2026</span>
+                </div>
+                <h3 style={{ margin: 0, fontSize: '1.18rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.35 }}>
+                  Kế Hoạch Khởi Hành &amp; Dự Toán Chi Phí MKT BU5 Năm 2027 (1% Doanh Thu)
+                </h3>
+                <p style={{ margin: '6px 0 0', fontSize: '0.88rem', color: '#334155', lineHeight: 1.55 }}>
+                  Toàn bộ <strong>27 đoàn độc bản</strong> (Mông Cổ, Nga Murmansk, Alaska, Nam Mỹ, Trung Á, Pakistan...). 
+                  Doanh thu: <strong>31.65 Tỷ</strong> | Ngân sách MKT (1%): <strong>316.460.000 VNĐ</strong> phân bổ theo từng tháng độc lập với chu kỳ chạy trước 1 – 10 tháng.
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Metrics Badge */}
+            <div style={{
+              display: 'flex', gap: '8px', flexWrap: 'wrap',
+              background: 'rgba(255, 255, 255, 0.85)',
+              padding: '8px 14px', borderRadius: '12px', border: '1px solid #e2e8f0',
+              backdropFilter: 'blur(4px)'
+            }}>
+              <div style={{ textAlign: 'center', padding: '0 8px' }}>
+                <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>QUY MÔ</div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0284c7' }}>27 Đoàn</div>
+              </div>
+              <div style={{ width: '1px', background: '#cbd5e1' }} />
+              <div style={{ textAlign: 'center', padding: '0 8px' }}>
+                <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>DOANH THU</div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>31.65 Tỷ</div>
+              </div>
+              <div style={{ width: '1px', background: '#cbd5e1' }} />
+              <div style={{ textAlign: 'center', padding: '0 8px' }}>
+                <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>MKT (1%)</div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#e55e20' }}>316.46M</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Action Navigation Buttons */}
+          <div style={{
+            display: 'flex',
+            gap: '0.65rem',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            paddingTop: '0.5rem',
+            borderTop: '1px dashed #bae6fd'
+          }}>
+            <Link 
+              to="/tai-lieu/thi-truong-bu5?tab=monthly-mkt"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#0284c7',
+                color: '#ffffff',
+                padding: '9px 16px',
+                borderRadius: '8px',
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                textDecoration: 'none',
+                boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
+                transition: 'all 0.15s'
+              }}
+              onMouseOver={e => e.currentTarget.style.background = '#0369a1'}
+              onMouseOut={e => e.currentTarget.style.background = '#0284c7'}
+            >
+              <span>📊</span> Xem Tiến Độ Phân Bổ Từng Tháng &rarr;
+            </Link>
+            <Link 
+              to="/tai-lieu/thi-truong-bu5?tab=product-plan"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#ffffff',
+                color: '#1e293b',
+                border: '1px solid #cbd5e1',
+                padding: '9px 14px',
+                borderRadius: '8px',
+                fontWeight: 600,
+                fontSize: '0.88rem',
+                textDecoration: 'none'
+              }}
+              onMouseOver={e => { e.currentTarget.style.borderColor = '#0284c7'; e.currentTarget.style.color = '#0284c7'; }}
+              onMouseOut={e => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.color = '#1e293b'; }}
+            >
+              <span>🗓️</span> Danh Sách 27 Tuyến Khởi Hành
+            </Link>
+            <Link 
+              to="/tai-lieu/thi-truong-bu5?tab=explanation"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#ffffff',
+                color: '#1e293b',
+                border: '1px solid #cbd5e1',
+                padding: '9px 14px',
+                borderRadius: '8px',
+                fontWeight: 600,
+                fontSize: '0.88rem',
+                textDecoration: 'none'
+              }}
+              onMouseOver={e => { e.currentTarget.style.borderColor = '#0284c7'; e.currentTarget.style.color = '#0284c7'; }}
+              onMouseOut={e => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.color = '#1e293b'; }}
+            >
+              <span>📄</span> Tờ Trình Giải Trình Chi Tiết
+            </Link>
+            <a 
+              href="/email_preview_ke_hoach_bu5_2027.html"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#ffffff',
+                color: '#475569',
+                border: '1px solid #e2e8f0',
+                padding: '9px 13px',
+                borderRadius: '8px',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                textDecoration: 'none'
+              }}
+              onMouseOver={e => e.currentTarget.style.background = '#f8fafc'}
+              onMouseOut={e => e.currentTarget.style.background = '#ffffff'}
+            >
+              <span>📧</span> Bản Email Preview
+            </a>
+            <a 
+              href="https://docs.google.com/spreadsheets/d/10kuQXdFgFLVSRS4CbKYa-ozuch6RnPJd8NTo36fFhrc/edit?usp=sharing"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#ffffff',
+                color: '#059669',
+                border: '1px solid #a7f3d0',
+                padding: '9px 13px',
+                borderRadius: '8px',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                textDecoration: 'none',
+                marginLeft: 'auto'
+              }}
+              onMouseOver={e => e.currentTarget.style.background = '#ecfdf5'}
+              onMouseOut={e => e.currentTarget.style.background = '#ffffff'}
+            >
+              <span>📊</span> Google Sheet Gốc &rarr;
+            </a>
+          </div>
+        </div>
+
         {/* 3 Columns */}
         <div className="blog-columns">
           {/* Col 1 */}
@@ -738,6 +958,7 @@ const DocumentsHome = () => {
             <ul className="blog-list">
               <li><Link to="/tai-lieu/bao-cao-farm-trip-sri-lanka"><span className="blog-list-icon">🇱🇰</span> Khảo sát FARM Trip Sri Lanka</Link></li>
               <li><Link to="/tai-lieu/dat-ten-tour"><span className="blog-list-icon">📓</span> SOP – Chuẩn hóa tên Tour</Link></li>
+              <li><Link to="/tai-lieu/thi-truong-bu5?tab=monthly-mkt"><span className="blog-list-icon">🧭</span> Dự thảo KH &amp; MKT BU5 2027 (27 đoàn)</Link></li>
             </ul>
           </div>
 

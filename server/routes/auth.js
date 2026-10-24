@@ -4,6 +4,7 @@ const authController = require('../controllers/authController');
 const authenticateToken = require('../middleware/auth');
 
 router.post('/login', authController.login);
+router.post('/dev-login', authController.devLogin);
 router.get('/refresh', authenticateToken, authController.refreshToken);
 router.get('/google', authController.googleAuth);
 router.get('/google/callback', authController.googleCallback);

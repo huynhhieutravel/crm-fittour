@@ -55,6 +55,45 @@ exports.login = async (req, res) => {
     }
 };
 
+// Đăng nhập nhanh 1-Click cho môi trường Local Development (Admin bypass)
+exports.devLogin = async (req, res) => {
+    const isLocalhost = req.hostname === 'localhost' || req.hostname === '127.0.0.1' || req.ip === '127.0.0.1' || req.ip === '::1';
+    if (process.env.NODE_ENV === 'production' && !isLocalhost) {
+        return res.status(403).json({ message: 'Dev login chỉ được phép chạy trên localhost' });
+    }
+
+    try {
+        const result = await db.query(
+            `SELECT u.*, COALESCE(r.name, u.role) as role_name 
+             FROM users u 
+             LEFT JOIN roles r ON u.role_id = r.id 
+             WHERE u.username = 'admin' OR u.role = 'admin' 
+             ORDER BY u.id ASC LIMIT 1`
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Không tìm thấy tài khoản admin' });
+        }
+
+        const user = result.rows[0];
+        const token = generateAccessToken(user);
+
+        res.json({
+            token,
+            user: {
+                id: user.id,
+                username: user.username,
+                full_name: user.full_name,
+                role: user.role_name,
+                bus: user.bus || []
+            }
+        });
+    } catch (err) {
+        console.error('Lỗi devLogin:', err);
+        res.status(500).json({ message: 'Lỗi máy chủ' });
+    }
+};
+
 // Silent token refresh — re-issue JWT with latest role from DB
 exports.refreshToken = async (req, res) => {
     try {
