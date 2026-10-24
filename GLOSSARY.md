@@ -48,4 +48,114 @@ _Avoid_: Rough status, vague payment state
 An inline-editable metadata layer on tour departures and bookings capturing operational counts per category (SIM types, rooming allocations, surcharges, and demographics) with quantity breakdown without forcing individual passenger-by-passenger entry into the core booking transaction table.
 _Avoid_: Hardcoded booking schema, separate paper notes, manual calculation
 
+**Dispatch 3D Twin (Trung Tâm Điều Phối 3D)**:
+A real-time, interactive 3D digital representation of FIT TOUR's sales operations center simulating consultants, leads, and customer flows.
+_Avoid_: Game 3D, mô hình trang trí, màn hình ảo
 
+**Customer Entity (Thực Thể Khách Hàng 3D)**:
+A 3D spatial entity representing a prospective or active Lead in the dispatch lounge or at a consultant's desk.
+_Avoid_: Con bot, nhân vật game, NPC
+
+**Consultant Station (Bàn Tư Vấn BU)**:
+A dedicated 3D workstation assigned to a specific Business Unit (BU1 to BU5) where sales consultants interact with customer entities.
+_Avoid_: Bàn làm việc, seat, booth
+
+**SLA Mood Indicator (Chỉ Số Cảm Xúc SLA)**:
+A visual real-time emotion state reflecting response delay milestones: Normal (< 1h), Impatient (1–4h), Frustrated (4–12h), and Critical/Abandoned (> 12h).
+_Avoid_: Điểm tức giận, trạng thái khách
+
+**Floating Dialogue Pill (Bóng Thoại Thời Gian Thực)**:
+A temporary 2D HTML/CSS overlay anchored above 3D entities showing incoming chat snippets (Zalo, Messenger, Web) and fading out after a brief interval.
+_Avoid_: Chat bubble tĩnh, bảng phụ đề
+
+**Open Lounge & Cafe Hub (Phòng Lớn & Góc Cafe Tám Chuyện)**:
+An open-plan co-working and hospitality lounge where prospective leads can relax with coffee and informal chats prior to or between direct desk consultations.
+_Avoid_: Phòng chờ bệnh viện, hàng ghế cứng
+
+**Live In-Scene Chat Console (Khung Chat Tương Tác Trực Tiếp 3D)**:
+An interactive messaging console embedded within the 3D space allowing operators to type, send messages, and observe instant 3D character reactions and SLA resets.
+_Avoid_: Read-only log, bảng xem thụ động
+
+**Pipeline Pod Architecture (Quy Hoạch Phân Khu Theo Phễu Vận Hành)**:
+A zoned spatial layout scaling from Entrance Reception ➔ Cafe Waiting Lounge ➔ BU Consultation Wings ➔ Deposit Closing Booths to cleanly manage 50–100+ concurrent multi-day leads.
+_Avoid_: Mặt bằng đơn lẻ, bàn làm việc chật chội
+
+**Floor Decal Typography (Kiến Trúc Đồ Họa Mặt Sàn)**:
+Graphic typography baked or projected directly onto the 3D ground plane to designate zones and Business Units without obstructing line-of-sight.
+_Avoid_: Biển hiệu 2D che lấp, bảng chữ nổi cồng kềnh
+
+**Interaction Aura (Vòng Sáng Tương Tác)**:
+A synchronized floor illumination ring connecting an active sales consultant with their specific seated customer to visualize 1-1 engagement.
+_Avoid_: Dây nối ảo, đường kẻ rối mắt
+
+**RTS Roaming Camera**:
+An unconstrained tactical camera navigation system supporting right-click dragging, cursor-centric zooming, and WASD keyboard panning across the entire campus.
+_Avoid_: Camera xoay quanh điểm chết, góc nhìn cố định
+
+**Desk Hologram Pill (Thẻ Bàn Trực Quan BU & Tour)**:
+A streamlined, horizontal glassmorphic badge anchored securely above each consultation desk showing the BU tag, destination tour, SLA mood, and the latest chat snippet with zero overlap.
+_Avoid_: Bảng thông tin che người, biển quảng cáo lơ lửng
+
+**Spaced Campus Masterplan (Mặt Bằng Giãn Cách Chuẩn Kiến Trúc)**:
+An expanded 72×48 spatial layout providing a minimum 6–8m buffer zone between consultation pods to guarantee zero label collision even from wide camera angles.
+_Avoid_: Mặt bằng chật hẹp, bàn dính liền nhau
+
+**Elevated Indicator Stem (Đường Dóng Thẻ Không Gian)**:
+A vertical holographic leader line elevating information pills to y=4.0m above desks, guaranteeing 100% unobstructed visibility of characters and furniture underneath.
+_Avoid_: Thẻ đè đầu người, bảng chữ che khuất
+
+**Hover Chat Popover (Hộp Thoại Chat Nổi Khi Rê Chuột)**:
+A dynamic expansion state on desk hologram pills that reveals the complete 3-4 message dialogue history automatically upon mouse cursor hover.
+_Avoid_: Bắt buộc click, xem chat bị gián đoạn
+
+**Staggered Pod Grid (Bố Trí So Le Zíc-Zắc)**:
+An isometric spatial layout shifting neighboring consultation desks along both X and Z axes (e.g. z=-2.2 and z=+2.2) so horizontal screen projections never collide.
+_Avoid_: Bàn thẳng hàng song song, thẻ chạm mép
+
+**Stationary Camera Dispatch (Giữ Nguyên Góc Nhìn Khi Tương Tác)**:
+A non-intrusive interaction model where opening chat consoles preserves the operator's current camera altitude and orientation, eliminating disorienting zoom-in jumps.
+_Avoid_: Ép zoom cận cảnh, mất dấu toàn cảnh
+
+**Multi-Day Temporal Filter (Bộ Lọc Dòng Thời Gian Đa Ngày)**:
+A unified time scrubber (Today, Yesterday, This Week, Backlog) that filters both 3D entities and live chat streams to mirror real-world multi-shift dispatch centers.
+_Avoid_: Hiển thị một cục không có mốc thời gian, thiếu lọc theo ca
+
+**Smart Staggering & Compact LOD (Xếp Lệch Tầng Tự Động & Thẻ Đa Tầng)**:
+An intelligent spatial layout algorithm that dynamically staggers vertical and horizontal label offsets for customers sharing the same workstation suite, paired with a compact badge level-of-detail mode to permanently eliminate card overlap.
+_Avoid_: Đè chéo chữ, thẻ chồng lấn
+
+**Digital Luxury Twin Architecture (Kiến Trúc Không Gian Số Hạng Sang)**:
+A high-fidelity environmental design system featuring zone-specific acoustic BU carpets, warm oak parquet walkways, indoor botanical elements, and warm 3000K spotlights elevating the digital twin to enterprise luxury standards.
+_Avoid_: Mô hình hộp kính thô sơ, văn phòng khung dây
+
+**Workload Heatmap Mode (Chế Độ Nhiệt Tải Phòng Điều Phối)**:
+A visual operational telemetry overlay illuminating consultation suite floors in amber-red (overloaded queue > 3 leads) or emerald green (available capacity / idle sales) for split-second dispatch decision making.
+_Avoid_: Đếm lead thủ công, chia khách cảm tính
+
+**Executive Dark / Night Mode (Chế Độ Giám Sát Ban Đêm)**:
+A high-contrast dark theme shifting ground surfaces to deep slate, glass mullions to luminescent sci-fi contours, and desk lamps to warm ambient glows for 24/7 command center and large wall display operations.
+_Avoid_: Chói mắt màn hình lớn, giao diện đơn sắc
+
+**Stylized Entity Scale (Tỷ Lệ Nhân Vật Chuẩn Mô Phỏng)**:
+A 2.2x to 2.4x enlarged character proportion system (~4.8m height in campus coordinates) inspired by premier management games (The Sims, Two Point) ensuring human figures, posture, and clothing are immediately recognizable from wide isometric viewpoints.
+_Avoid_: Nhân vật li ti, người tí hon 10 pixel
+
+**Pedestal Glow Disc (Đĩa Hào Quang Chân Nhân Vật)**:
+A dynamic ground-level illumination ring beneath each character entity reflecting their assigned BU color or operational triage urgency, anchoring visual presence and eliminating ghost-like detachment.
+_Avoid_: Chấm đen mờ nhạt, mất dấu vị trí người
+
+**Tight Shoulder Callout (Khung Thoại Cận Vai)**:
+An ergonomic speech bubble layout anchoring the chat card within 45px–50px of the character's right shoulder, bridged by an unbreakable beacon stem originating precisely from the character's head.
+_Avoid_: Tin nhắn từ không khí, thẻ văng xa khỏi người
+
+**Role-Distinct Visual Rigging (Trang Bị Ngoại Hình Phân Biệt Sale & Khách)**:
+A clear 3D modeling differentiation equipping Sales Consultants with business attire and call-center communication headsets, while Customers carry travel backpacks, mobile devices, and dynamic casual posture.
+_Avoid_: Khối người giống nhau, khó phân biệt vai trò
+
+**Executive Overview Camera (Góc Quay Bao Quát Trụ Sở)**:
+A commanding isometric vantage point positioned at `(75, 58, 75)` framing the entire 108m × 64m headquarters across all 5 Business Units, the central reception lounge, and main promenade simultaneously, accessible at any moment via the `🌐 Toàn Cảnh` dock preset.
+_Avoid_: Zoom cận quá đà cắt mất phòng ban, mất tầm nhìn tổng thể
+
+**Geometric SVG Speech Arrow (Mũi Tên Chỉ Xuất Phát Từ Đầu Nhân Vật)**:
+An unbroken geometric SVG leader tail and colored energy spine rooted at the character's head beacon pin `(0, 0)`, connecting directly into the dialogue card's left edge and dynamically angling to track vertically staggered cards without ever detaching from the speaker.
+_Avoid_: Thanh ngang lơ lửng giữa trời, que chỉ đứt rời không chạm người

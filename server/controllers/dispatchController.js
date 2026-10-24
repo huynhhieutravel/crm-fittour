@@ -259,3 +259,68 @@ exports.getSnapshotData = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server' });
     }
 };
+
+exports.getTwinData = async (req, res) => {
+    try {
+        const t0 = Date.now();
+
+        // 1. Exact count metrics from PostgreSQL
+        const statsRes = await db.pool.query(`
+            SELECT
+                count(*)::int as total_all,
+                count(CASE WHEN created_at >= (SELECT max(created_at) - interval '30 days' FROM leads) THEN 1 END)::int as count_month,
+                count(CASE WHEN created_at >= (SELECT max(created_at) - interval '7 days' FROM leads) THEN 1 END)::int as count_week,
+                count(CASE WHEN created_at >= (SELECT max(created_at) - interval '24 hours' FROM leads) THEN 1 END)::int as count_today,
+                count(CASE WHEN created_at >= (SELECT max(created_at) - interval '48 hours' FROM leads) 
+                            AND created_at < (SELECT max(created_at) - interval '24 hours' FROM leads) THEN 1 END)::int as count_yesterday,
+                count(CASE WHEN status IN ('Mới', 'Chưa chăm sóc') THEN 1 END)::int as count_breached
+            FROM leads
+        `);
+
+        // 2. Workload distribution per BU
+        const buRes = await db.pool.query(`
+            SELECT 
+                COALESCE(bu_group, 'OTHER') as bu_group,
+                count(*)::int as total_week,
+                count(CASE WHEN created_at >= (SELECT max(created_at) - interval '24 hours' FROM leads) THEN 1 END)::int as total_today,
+                count(CASE WHEN status IN ('Mới', 'Chưa chăm sóc') THEN 1 END)::int as unassigned
+            FROM leads
+            WHERE created_at >= (SELECT max(created_at) - interval '7 days' FROM leads)
+            GROUP BY bu_group
+        `);
+
+        // 3. Fetch real leads (last 7 days of records, up to 500)
+        const leadsRes = await db.pool.query(`
+            SELECT l.id, l.name, l.phone, l.source, l.status, l.bu_group, l.consultation_note,
+                   tt.name as tour_name,
+                   u.full_name as consultant_name,
+                   c.last_message as conv_message,
+                   l.created_at, l.updated_at
+            FROM leads l
+            LEFT JOIN tour_templates tt ON l.tour_id = tt.id
+            LEFT JOIN users u ON l.assigned_to = u.id
+            LEFT JOIN conversations c ON c.lead_id = l.id
+            WHERE l.name IS NOT NULL AND l.name != '' AND l.name != 'Facebook User'
+              AND l.created_at >= (SELECT max(created_at) - interval '7 days' FROM leads)
+            ORDER BY l.created_at DESC
+            LIMIT 500
+        `);
+
+        const t1 = Date.now();
+        const latency = t1 - t0;
+
+        res.json({
+            success: true,
+            source: 'PostgreSQL Database (fittour_local)',
+            latency_ms: latency,
+            metrics: statsRes.rows[0],
+            bu_summary: buRes.rows,
+            total_fetched: leadsRes.rows.length,
+            leads: leadsRes.rows
+        });
+    } catch (err) {
+        console.error('Lỗi getTwinData:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
+
