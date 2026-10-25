@@ -69,10 +69,12 @@ const fmtBillion = (val) => {
   return (Number(val) / 1000000000).toFixed(2) + ' Tỷ';
 };
 
-// Format tiền triệu gọn gàng: 316.5 Tr
+// Format tiền triệu gọn gàng: 316.5 triệu
 const fmtMillion = (val) => {
-  if (!val || isNaN(val)) return '0 Tr';
-  return (Number(val) / 1000000).toFixed(1) + ' Tr';
+  if (!val || isNaN(val)) return '0 triệu';
+  const num = (Number(val) / 1000000).toFixed(1);
+  const clean = num.endsWith('.0') ? num.slice(0, -2) : num;
+  return `${clean} triệu`;
 };
 
 export default function BU5MonthlyMktReport({ currentUser = null }) {
@@ -712,7 +714,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                 borderRadius: '20px',
                 border: '1px solid #bfdbfe'
               }}>
-                Tổng 3 Tuyến: 13.98 Tỷ DT • 139.8M MKT
+                Tổng 3 Tuyến: 13.98 Tỷ DT • 139.8 triệu MKT
               </span>
             </div>
 
@@ -1238,16 +1240,16 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#64748b' }}>
               <span>Mức chi:</span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#eff6ff', border: '1px solid #bfdbfe' }} /> &lt;3M
+                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#eff6ff', border: '1px solid #bfdbfe' }} /> &lt;3 triệu
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#dbeafe', border: '1px solid #93c5fd' }} /> 3M-6M
+                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#dbeafe', border: '1px solid #93c5fd' }} /> 3 - 6 triệu
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#bfdbfe', border: '1px solid #60a5fa' }} /> 6M-10M
+                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#bfdbfe', border: '1px solid #60a5fa' }} /> 6 - 10 triệu
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#fef3c7', border: '1px solid #fcd34d' }} /> &gt;10M
+                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#fef3c7', border: '1px solid #fcd34d' }} /> &gt;10 triệu
               </span>
             </div>
           </div>
@@ -1972,7 +1974,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             </h4>
             <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.82rem', color: '#475569', lineHeight: 1.6 }}>
               <li>
-                <strong>Giai đoạn T9/2026 - T02/2027:</strong> Ngân sách duy trì ở mức cao (~28M - 35M/tháng) do đồng thời mở chiến dịch cho Ai Cập, Maroc mùa thu, 3 đoàn Cực quang Nga tháng 2 và kích hoạt sớm các tour đường xa (Alaska, Nam Mỹ, Pakistan hoa).
+                <strong>Giai đoạn T9/2026 - T02/2027:</strong> Ngân sách duy trì ở mức cao (~28 - 35 triệu/tháng) do đồng thời mở chiến dịch cho Ai Cập, Maroc mùa thu, 3 đoàn Cực quang Nga tháng 2 và kích hoạt sớm các tour đường xa (Alaska, Nam Mỹ, Pakistan hoa).
               </li>
               <li>
                 <strong>Tháng 02/2027 là đỉnh điểm chi tiêu ({fmt(kpis.peakMonthAmount)}):</strong> Giai đoạn này là điểm giao thoa giữa chiến dịch chốt cọc cao điểm cho Ai Cập/Maroc 30/4 và bắt đầu truyền thông mạnh mẽ cho mùa hè Mông Cổ & Trung Á.

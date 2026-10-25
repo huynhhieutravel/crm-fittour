@@ -640,14 +640,14 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
                   MASTER PLAN GOOGLE SHEET 2027 (BU5)
                 </span>
                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e0f2fe' }}>
-                  27 Đoàn Khởi Hành • 31.65 Tỷ DT • Ngân Sách MKT 1%: 316.46M
+                  27 Đoàn Khởi Hành • 31.65 Tỷ DT • Ngân Sách MKT 1%: 316.46 triệu
                 </span>
               </div>
               <h3 style={{ margin: '0 0 6px 0', fontSize: '1.3rem', fontWeight: 800, color: '#ffffff' }}>
                 Báo Cáo Dự Toán &amp; Phân Bổ Dòng Tiền Marketing BU5 Năm 2027
               </h3>
               <p style={{ margin: 0, fontSize: '0.9rem', color: '#e0f2fe', lineHeight: 1.55 }}>
-                Đã lập lịch chi tiết theo từng tháng độc lập cho toàn bộ <strong>27 đoàn khởi hành trong năm 2027</strong> với chu kỳ chạy trước 1 đến 10 tháng. Trong đó, <strong>28.6% (90.44M)</strong> chạy trước từ cuối 2026 và <strong>71.4% (226.02M)</strong> phát sinh trong năm 2027.
+                Đã lập lịch chi tiết theo từng tháng độc lập cho toàn bộ <strong>27 đoàn khởi hành trong năm 2027</strong> với chu kỳ chạy trước 1 đến 10 tháng. Trong đó, <strong>28.6% (90.44 triệu)</strong> chạy trước từ cuối 2026 và <strong>71.4% (226.02 triệu)</strong> phát sinh trong năm 2027.
               </p>
             </div>
             <button
@@ -781,7 +781,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
               </p>
             </div>
             <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '6px 14px', borderRadius: '6px', fontSize: '0.85rem', color: '#166534', fontWeight: 700 }}>
-              27 Đoàn • 270 Pax • Doanh Thu: 31.646 Tỷ • Ngân Sách MKT 1%: 316.46M
+              27 Đoàn • 270 Pax • Doanh Thu: 31.646 Tỷ • Ngân Sách MKT 1%: 316.46 triệu
             </div>
           </div>
 
@@ -1122,7 +1122,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
         overflowX: 'auto',
         gap: '4px',
         height: '42px',
-        margin: '28px -24px -60px -24px'
+        margin: isEmbedded ? '24px 0 0 0' : '28px -24px -60px -24px'
       }}>
         {/* Label Google Sheet branding indicator */}
         <div style={{

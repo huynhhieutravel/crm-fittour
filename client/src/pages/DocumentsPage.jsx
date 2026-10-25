@@ -69,8 +69,8 @@ const STATIC_DOCS = [
   { title: 'Phân Tích Thị Trường & Dự Toán Ads BU2', description: 'Chiến lược Tour Liên Minh (Cung Đường Vàng, Hàn Quốc, Đài Loan) kết hợp Tuyến Trọng Tâm Hokkaido (Thu & Mùa Tuyết Trắng), Máy tính dự toán ngân sách & 11 đoàn khởi hành', category: 'Marketing', path: '/tai-lieu/thi-truong-bu2', icon: '🇯🇵' },
   { title: 'Phân Tích Thị Trường & Dự Toán Ads BU3 (B2B/MICE)', description: 'Kế hoạch 12 tháng, quy tắc chạy trước 2 tháng, phân bổ 150M & Máy tính phễu chuyển đổi đoàn doanh nghiệp', category: 'Marketing', path: '/tai-lieu/thi-truong-bu3', icon: '📊' },
   { title: 'Phân Tích Thị Trường & Dự Toán Ads BU4', description: 'Obsidian Doc: Dữ liệu lịch sử, CPL & Máy tính dự toán ngân sách Ads các tuyến BU4 (Bhutan, Ladakh, Sri Lanka...)', category: 'Marketing', path: '/tai-lieu/thi-truong-bu4', icon: '📊' },
-  { title: 'Kế Hoạch Sản Phẩm & Dự Toán MKT BU5 Năm 2027', description: 'Master Plan Google Sheet: 27 đoàn độc bản (Mông Cổ, Nga Murmansk, Alaska, Nam Mỹ, Trung Á, Pakistan...). Doanh thu 31.65 Tỷ, Định mức MKT 1% (316.46M) phân bổ theo từng tháng độc lập.', category: 'Marketing', path: '/tai-lieu/thi-truong-bu5', icon: '🧭' },
-  { title: 'Tiến Độ Ngân Sách MKT BU5 Từng Tháng (2026-2027)', description: 'Bảng theo dõi dòng tiền & ngân sách MKT 316.46M chia theo từng tháng chạy trước của 27 đoàn BU5', category: 'Marketing', path: '/tai-lieu/thi-truong-bu5?tab=monthly-mkt', icon: '📅' },
+  { title: 'Kế Hoạch Sản Phẩm & Dự Toán MKT BU5 Năm 2027', description: 'Master Plan Google Sheet: 27 đoàn độc bản (Mông Cổ, Nga Murmansk, Alaska, Nam Mỹ, Trung Á, Pakistan...). Doanh thu 31.65 Tỷ, Định mức MKT 1% (316.46 triệu) phân bổ theo từng tháng độc lập.', category: 'Marketing', path: '/tai-lieu/thi-truong-bu5', icon: '🧭' },
+  { title: 'Tiến Độ Ngân Sách MKT BU5 Từng Tháng (2026-2027)', description: 'Bảng theo dõi dòng tiền & ngân sách MKT 316.46 triệu chia theo từng tháng chạy trước của 27 đoàn BU5', category: 'Marketing', path: '/tai-lieu/thi-truong-bu5?tab=monthly-mkt', icon: '📅' },
   { title: 'Văn Bản Giải Trình Kế Hoạch BU5 2027', description: 'Tờ trình chi tiết cơ cấu 27 đoàn, định mức 1% doanh thu và dòng tiền 15 tháng gửi Ban Giám Đốc', category: 'Marketing', path: '/tai-lieu/thi-truong-bu5?tab=explanation', icon: '📄' },
   { title: 'SOP Sales & Workplace', description: 'Hướng dẫn Sales nhận Lead, cập nhật ERP và tối ưu Workplace', category: 'Sale', path: '/tai-lieu/sop-sales', icon: '💼' },
   { title: 'HUB Điều Hành (OP)', description: 'Quy trình điều hành tour, vận hành dịch vụ', category: 'Điều hành', path: '/tai-lieu/dieu-hanh', icon: '🔧' },
@@ -754,7 +754,7 @@ const DocumentsHome = () => {
                 }}>
                   Bản Thảo (Draft)
                 </span>
-                <span style={{ color: '#64748b', fontSize: '0.8rem' }}>27 Đoàn • Doanh thu 31.65 Tỷ • Ngân sách MKT (1%): 316.46M</span>
+                <span style={{ color: '#64748b', fontSize: '0.8rem' }}>27 Đoàn • Doanh thu 31.65 Tỷ • Ngân sách MKT (1%): 316.46 triệu</span>
               </div>
               <h3 style={{ margin: 0, fontSize: '1.12rem', fontWeight: 800, color: '#0f172a' }}>
                 Kế Hoạch Khởi Hành &amp; Dự Toán Chi Phí MKT BU5 Năm 2027
