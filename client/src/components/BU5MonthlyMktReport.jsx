@@ -506,7 +506,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             }}
           >
             <Sparkles size={14} color={viewMode === 'executive' ? '#ffffff' : '#0284c7'} />
-            Bản Trình Sếp (Executive)
+            Tóm Tắt Quản Trị (Executive Summary)
           </button>
 
           <button
@@ -593,7 +593,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
               cursor: 'pointer',
               boxShadow: '0 2px 4px rgba(2, 132, 199, 0.25)'
             }}
-            title="In hoặc lưu PDF chuẩn A4 gửi Ban Giám Đốc"
+            title="In hoặc lưu file PDF chuẩn A4"
           >
             <Download size={14} />
             In / Xuất PDF
@@ -601,7 +601,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
         </div>
       </div>
 
-      {/* ── 3.5. VIEW 0: BẢN TRÌNH BAN GIÁM ĐỐC (EXECUTIVE SUMMARY) ── */}
+      {/* ── 3.5. VIEW 0: TÓM TẮT QUẢN TRỊ (EXECUTIVE SUMMARY) ── */}
       {viewMode === 'executive' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
@@ -1162,7 +1162,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             </div>
           </div>
 
-          {/* KHỐI 5: PHIẾU TRÌNH BAN GIÁM ĐỐC PHÊ DUYỆT */}
+          {/* KHỐI 5: ĐỀ XUẤT HÀNH ĐỘNG CHIẾN LƯỢC */}
           <div style={{
             background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
             borderRadius: '12px',
@@ -1171,7 +1171,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
           }}>
             <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>
-              3 ĐỀ XUẤT HÀNH ĐỘNG KÍNH TRÌNH BAN GIÁM ĐỐC:
+              3 ĐỀ XUẤT HÀNH ĐỘNG CHIẾN LƯỢC:
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
               <div style={{ background: '#ffffff', padding: '14px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
