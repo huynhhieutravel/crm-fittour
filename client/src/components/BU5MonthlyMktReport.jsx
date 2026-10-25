@@ -76,8 +76,8 @@ const fmtMillion = (val) => {
 };
 
 export default function BU5MonthlyMktReport({ currentUser = null }) {
-  // View mode: 'executive' | 'matrix' | 'monthly' | 'leadtime' | 'chart'
-  const [viewMode, setViewMode] = useState('executive'); // Mặc định mở Bản Trình Sếp trực quan cao cấp
+  // View mode: 'matrix' | 'executive' | 'monthly' | 'leadtime' | 'chart'
+  const [viewMode, setViewMode] = useState('matrix'); // Mặc định mở Bảng Tính Ma Trận (Spreadsheet-First)
 
   // Filter & Search
   const [selectedCategory, setSelectedCategory] = useState('ALL');
@@ -447,323 +447,33 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
   };
 
   return (
-    <div style={{ fontFamily: 'Inter, -apple-system, sans-serif', color: '#0f172a', padding: '0 0 40px 0' }}>
+    <div style={{ fontFamily: 'Inter, -apple-system, sans-serif', color: '#0f172a', padding: '0 0 20px 0' }}>
       
-      {/* ── 1. HEADER BANNER CHUYÊN NGHIỆP ── */}
-      <div style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
-        borderRadius: '16px',
-        padding: '28px 32px',
-        color: '#ffffff',
-        marginBottom: '24px',
-        boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.25)',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Glow decoration */}
-        <div style={{
-          position: 'absolute',
-          top: '-60px',
-          right: '-40px',
-          width: '260px',
-          height: '260px',
-          background: 'radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(15, 23, 42, 0) 70%)',
-          borderRadius: '50%',
-          pointerEvents: 'none'
-        }} />
-
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <h1 style={{ margin: '0 0 8px 0', fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff' }}>
-            Báo Cáo Dự Toán &amp; Dòng Tiền Marketing BU5 Năm 2027 (Theo Từng Tháng)
-          </h1>
-          <p style={{ margin: 0, fontSize: '0.95rem', color: '#cbd5e1', maxWidth: '850px', lineHeight: 1.5 }}>
-            Mô hình hóa chi tiết ngân sách Marketing 1% doanh thu cho 27 đoàn năm 2027 theo từng tháng độc lập (không gộp năm), phân bổ dựa trên thời gian chạy truyền thông trước 1 đến 10 tháng theo đặc thù từng tuyến độc bản (Alaska, Nam Mỹ, Mông Cổ, Nga, Pakistan...). Đồng bộ 100% với Google Sheet của BU5.
-          </p>
-        </div>
-
-        {/* Thanh trạng thái kế hoạch 2027 & Checkbox chạy trước cuối 2026 */}
-        <div style={{
-          marginTop: '18px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '12px',
-          background: 'rgba(0, 0, 0, 0.28)',
-          padding: '12px 16px',
-          borderRadius: '10px',
-          border: '1px solid rgba(255, 255, 255, 0.12)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e2e8f0', fontSize: '0.86rem' }}>
-            <span style={{ 
-              background: '#0284c7', 
-              color: '#ffffff', 
-              padding: '2px 8px', 
-              borderRadius: '4px', 
-              fontSize: '0.75rem', 
-              fontWeight: 800 
-            }}>
-              KẾ HOẠCH NĂM 2027
-            </span>
-            <span>
-              <strong>27 Đoàn Khởi Hành</strong> • Doanh thu: <strong>31.65 Tỷ</strong> • Quỹ MKT (1%): <strong>316.46 Triệu</strong>
-            </span>
-          </div>
-
-          {/* Toggle các tháng chuẩn bị cuối 2026 (T09-T12/26) */}
-          <label style={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: '8px', 
-            fontSize: '0.82rem', 
-            color: '#e2e8f0', 
-            cursor: 'pointer', 
-            background: 'rgba(255, 255, 255, 0.08)', 
-            padding: '6px 12px', 
-            borderRadius: '6px' 
-          }}>
-            <input
-              type="checkbox"
-              checked={showPrepMonths2026}
-              onChange={(e) => setShowPrepMonths2026(e.target.checked)}
-              style={{ cursor: 'pointer', width: '15px', height: '15px', accentColor: '#38bdf8' }}
-            />
-            <span>Bao gồm 4 tháng chạy trước cuối 2026 (T09-T12/26: <strong style={{ color: '#38bdf8' }}>{fmtShort(kpis.mktPrepIn2026)}</strong> chuẩn bị tour Tết 2027)</span>
-          </label>
-        </div>
-
-        {/* Thông tin chốt từ Sheet */}
-        <div style={{
-          marginTop: '16px',
-          paddingTop: '14px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.15)',
-          display: 'flex',
-          gap: '24px',
-          flexWrap: 'wrap',
-          fontSize: '0.85rem',
-          color: '#94a3b8'
-        }}>
-          <div>
-            <span style={{ color: '#ffffff', fontWeight: 700 }}>Tổng quy mô:</span> {kpis.totalGroups} đoàn • {kpis.totalPax} khách (10 khách/đoàn)
-          </div>
-          <div>
-            <span style={{ color: '#ffffff', fontWeight: 700 }}>Doanh thu kế hoạch:</span> {fmt(kpis.totalRevenue)}
-          </div>
-          <div>
-            <span style={{ color: '#ffffff', fontWeight: 700 }}>Ngân sách MKT (1%):</span> <strong style={{ color: '#38bdf8' }}>{fmt(kpis.totalMktBudget)}</strong>
-          </div>
-          <div>
-            <span style={{ color: '#ffffff', fontWeight: 700 }}>Chu kỳ triển khai:</span> {timelineMonths.length} tháng ({timelineMonths[0]?.fullLabel} - {timelineMonths[timelineMonths.length - 1]?.fullLabel})
-          </div>
-        </div>
-      </div>
-
-      {/* ── 2. KPI SUMMARY CARDS (ĐỒNG BỘ ĐỘNG THEO PHẠM VI 2027) ── */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '14px',
-        marginBottom: '20px'
-      }}>
-        {/* Card 1: Tổng Ngân Sách MKT */}
-        <div style={{
-          background: '#ffffff',
-          borderRadius: '12px',
-          padding: '16px 18px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between'
-        }}>
-          <div style={{ marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
-              {yearScope === '2027' ? 'Tổng Budget MKT 2027 (1%)' : 'Tổng Ngân Sách MKT (1%)'}
-            </span>
-          </div>
-          <div>
-            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
-              {fmt(kpis.totalMktBudget)}
-            </div>
-            <div style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: 600, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              Chuẩn 1.00% của {fmt(kpis.totalRevenue)} ({kpis.totalGroups} đoàn)
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Dòng tiền MKT chi trong năm 2027 hoặc Bình quân / tháng */}
-        <div style={{
-          background: '#ffffff',
-          borderRadius: '12px',
-          padding: '16px 18px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between'
-        }}>
-          <div style={{ marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
-              {yearScope === '2027' ? 'Giải Ngân Năm 2027' : 'Chi Phí MKT Bình Quân / Tháng'}
-            </span>
-          </div>
-          <div>
-            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0284c7', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
-              {yearScope === '2027' ? fmt(kpis.mktIn2027Only) : fmt(kpis.avgMonthlyMkt)}
-            </div>
-            <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {yearScope === '2027' 
-                ? `Chiếm ${((kpis.mktIn2027Only / (kpis.totalMktBudget || 1)) * 100).toFixed(1)}% tổng quỹ 2027`
-                : `Trải đều qua ${timelineMonths.length} tháng phát sinh`
-              }
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Chạy trước cuối 2026 hoặc Tháng Cao Điểm Nhất */}
-        <div style={{
-          background: '#ffffff',
-          borderRadius: '12px',
-          padding: '16px 18px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between'
-        }}>
-          <div style={{ marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
-              {yearScope === '2027' ? 'Chạy trước cuối 2026' : 'Tháng Chi Tiêu Đỉnh Điểm (Peak)'}
-            </span>
-          </div>
-          <div>
-            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: yearScope === '2027' ? '#d97706' : '#d97706', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
-              {yearScope === '2027' ? fmt(kpis.mktPrepIn2026) : fmt(kpis.peakMonthAmount)}
-            </div>
-            <div style={{ fontSize: '0.78rem', color: '#92400e', fontWeight: 600, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {yearScope === '2027'
-                ? `Chiếm ${((kpis.mktPrepIn2026 / (kpis.totalMktBudget || 1)) * 100).toFixed(1)}% (gom khách Tết & visa)`
-                : `Rơi vào ${kpis.peakMonthKey} (nhiều tour lớn)`
-              }
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: Quy mô hoặc thời gian chạy trước bình quân */}
-        <div style={{
-          background: '#ffffff',
-          borderRadius: '12px',
-          padding: '16px 18px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between'
-        }}>
-          <div style={{ marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Thời Gian Chạy Trước TB</span>
-          </div>
-          <div>
-            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
-              {kpis.avgLeadMonths} Tháng
-            </div>
-            <div style={{ fontSize: '0.78rem', color: '#8b5cf6', fontWeight: 600, marginTop: '4px', whiteSpace: 'nowrap' }}>
-              Biên độ tùy chỉnh: 1 đến 10 tháng
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 2.5 STRATEGIC INSIGHT BOX: BÀI TOÁN CHUẨN BỊ 2027 ── */}
-      {yearScope === '2027' && (
-        <div style={{
-          background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfeff 100%)',
-          border: '1px solid #a7f3d0',
-          borderRadius: '12px',
-          padding: '16px 20px',
-          marginBottom: '20px',
-          display: 'flex',
-          gap: '16px',
-          alignItems: 'flex-start'
-        }}>
-          <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '8px',
-            background: '#10b981',
-            color: '#ffffff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            marginTop: '2px'
-          }}>
-            <Sparkles size={20} />
-          </div>
-          <div style={{ fontSize: '0.88rem', color: '#064e3b', lineHeight: 1.6 }}>
-            <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#065f46', marginBottom: '4px' }}>
-              Chiến Lược Dòng Tiền & Kế Hoạch Chuẩn Bị Cho 2027 (Ngân sách MKT 1% = {fmt(kpis.totalMktBudget)}):
-            </div>
-            <div style={{ marginBottom: '4px' }}>
-              • <strong>Kế hoạch thuần 2027:</strong> Tập trung vận hành <strong>27 đoàn</strong> (270 khách mục tiêu), doanh thu <strong>{fmt(kpis.totalRevenue)}</strong> (~31.65 Tỷ). Định mức kinh phí Marketing 1% là <strong>{fmt(kpis.totalMktBudget)}</strong>.
-            </div>
-            <div style={{ marginBottom: '4px' }}>
-              • <strong>Bắt buộc giải ngân {fmt(kpis.mktPrepIn2026)} (28.6%) ngay từ cuối năm 2026 (T09-T12/2026):</strong> Do các tuyến đầu năm 2027 (Ai Cập Tết T2, Maroc Tết T2, 3 đoàn săn Cực quang Nga T2, 2 đoàn Pakistan mùa hoa T3) cần thời gian truyền thông 4-6 tháng để gom khách và làm thủ tục visa, dòng tiền MKT bắt buộc phải chi trước từ quý IV/2026.
-            </div>
-            <div>
-              • <strong>Dòng tiền giải ngân trong năm 2027 ({fmt(kpis.mktIn2027Only)} - 71.4%):</strong> Rải đều qua các tháng T1-T10/2027, đạt đỉnh điểm chi tiêu vào <strong>Tháng 02/2027 ({fmt(kpis.peakMonthAmount)})</strong> khi đồng thời chạy chiến dịch cho Lễ 30/4, Hè Mông Cổ và Trung Á.
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── 3. TOOLBAR ĐIỀU KHIỂN & BỘ LỌC ── */}
+      {/* ── TOOLBAR ĐIỀU KHIỂN CHUẨN GOOGLE SHEETS ── */}
       <div style={{
         background: '#ffffff',
-        borderRadius: '12px',
-        padding: '16px 20px',
+        borderRadius: '10px',
+        padding: '12px 18px',
         border: '1px solid #e2e8f0',
-        marginBottom: '20px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+        marginBottom: '16px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
         display: 'flex',
         flexWrap: 'wrap',
-        gap: '16px',
+        gap: '12px',
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
         {/* Nhóm nút chọn View Mode */}
-        <div style={{ display: 'flex', gap: '6px', background: '#f1f5f9', padding: '4px', borderRadius: '8px' }}>
-          <button
-            onClick={() => setViewMode('executive')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '7px 14px',
-              borderRadius: '6px',
-              fontSize: '0.85rem',
-              fontWeight: viewMode === 'executive' ? 700 : 500,
-              border: 'none',
-              background: viewMode === 'executive' ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' : 'transparent',
-              color: viewMode === 'executive' ? '#ffffff' : '#475569',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-              boxShadow: viewMode === 'executive' ? '0 2px 4px rgba(2, 132, 199, 0.3)' : 'none'
-            }}
-          >
-            <Sparkles size={14} color={viewMode === 'executive' ? '#ffffff' : '#0284c7'} />
-            Bản Trình Sếp (Executive)
-          </button>
-
+        <div style={{ display: 'flex', gap: '4px', background: '#f1f5f9', padding: '3px', borderRadius: '6px' }}>
           <button
             onClick={() => setViewMode('matrix')}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '7px 14px',
-              borderRadius: '6px',
-              fontSize: '0.85rem',
+              padding: '6px 14px',
+              borderRadius: '5px',
+              fontSize: '0.84rem',
               fontWeight: viewMode === 'matrix' ? 700 : 500,
               border: 'none',
               background: viewMode === 'matrix' ? '#0f172a' : 'transparent',
@@ -773,28 +483,28 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             }}
           >
             <Layers size={14} />
-            Ma Trận 15 Tháng
+            Bảng Tính Ma Trận (15 Tháng)
           </button>
 
           <button
-            onClick={() => setViewMode('monthly')}
+            onClick={() => setViewMode('executive')}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '7px 14px',
-              borderRadius: '6px',
-              fontSize: '0.85rem',
-              fontWeight: viewMode === 'monthly' ? 700 : 500,
+              padding: '6px 14px',
+              borderRadius: '5px',
+              fontSize: '0.84rem',
+              fontWeight: viewMode === 'executive' ? 700 : 500,
               border: 'none',
-              background: viewMode === 'monthly' ? '#0f172a' : 'transparent',
-              color: viewMode === 'monthly' ? '#ffffff' : '#475569',
+              background: viewMode === 'executive' ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' : 'transparent',
+              color: viewMode === 'executive' ? '#ffffff' : '#475569',
               cursor: 'pointer',
               transition: 'all 0.15s ease'
             }}
           >
-            <Eye size={14} />
-            Soi Chi Tiết Từng Tháng
+            <Sparkles size={14} color={viewMode === 'executive' ? '#ffffff' : '#0284c7'} />
+            Bản Trình Sếp (Executive)
           </button>
 
           <button
@@ -803,9 +513,9 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '7px 14px',
-              borderRadius: '6px',
-              fontSize: '0.85rem',
+              padding: '6px 14px',
+              borderRadius: '5px',
+              fontSize: '0.84rem',
               fontWeight: viewMode === 'leadtime' ? 700 : 500,
               border: 'none',
               background: viewMode === 'leadtime' ? '#0f172a' : 'transparent',
@@ -815,7 +525,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             }}
           >
             <SlidersHorizontal size={14} />
-            Cài Đặt Chạy Trước (1-10T)
+            Cài Đặt Chạy Trước
           </button>
 
           <button
@@ -824,9 +534,9 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '7px 14px',
-              borderRadius: '6px',
-              fontSize: '0.85rem',
+              padding: '6px 14px',
+              borderRadius: '5px',
+              fontSize: '0.84rem',
               fontWeight: viewMode === 'chart' ? 700 : 500,
               border: 'none',
               background: viewMode === 'chart' ? '#0f172a' : 'transparent',
@@ -840,56 +550,29 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
           </button>
         </div>
 
-        {/* Bộ lọc kịch bản tính toán */}
+        {/* Tùy chọn & In PDF */}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* Phương thức phân bổ */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>Phân bổ:</span>
-            <select
-              value={distributionMode}
-              onChange={(e) => setDistributionMode(e.target.value)}
-              style={{
-                padding: '6px 10px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                color: '#1e293b',
-                background: '#f8fafc',
-                border: '1px solid #cbd5e1',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                outline: 'none'
-              }}
-            >
-              <option value="even">Chia đều các tháng</option>
-              <option value="funnel">Phễu MKT (20% Đầu - 60% Giữa - 20% Cuối)</option>
-            </select>
-          </div>
-
-          {/* Tỷ lệ MKT % */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}>Tỷ lệ:</span>
-            <select
-              value={mktRatio}
-              onChange={(e) => setMktRatio(parseFloat(e.target.value))}
-              style={{
-                padding: '6px 10px',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                color: '#0f172a',
-                background: '#f8fafc',
-                border: '1px solid #cbd5e1',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                outline: 'none'
-              }}
-            >
-              <option value={0.008}>0.8% Doanh thu</option>
-              <option value={0.01}>1.0% Doanh thu (Chuẩn)</option>
-              <option value={0.012}>1.2% Doanh thu</option>
-              <option value={0.015}>1.5% Doanh thu</option>
-              <option value={0.02}>2.0% Doanh thu (Trần)</option>
-            </select>
-          </div>
+          {/* Checkbox 4 tháng chuẩn bị cuối 2026 */}
+          <label style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '6px', 
+            fontSize: '0.82rem', 
+            color: '#334155', 
+            cursor: 'pointer', 
+            background: '#f8fafc', 
+            border: '1px solid #e2e8f0',
+            padding: '5px 10px', 
+            borderRadius: '6px' 
+          }}>
+            <input
+              type="checkbox"
+              checked={showPrepMonths2026}
+              onChange={(e) => setShowPrepMonths2026(e.target.checked)}
+              style={{ cursor: 'pointer', width: '14px', height: '14px', accentColor: '#0284c7' }}
+            />
+            <span>Hiện 4 tháng chuẩn bị cuối 2026 (<strong>{fmtShort(kpis.mktPrepIn2026)}</strong>)</span>
+          </label>
 
           {/* Nút In / Xuất PDF A4 */}
           <button
@@ -899,7 +582,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
               alignItems: 'center',
               gap: '6px',
               padding: '6px 14px',
-              fontSize: '0.85rem',
+              fontSize: '0.84rem',
               fontWeight: 700,
               background: '#0284c7',
               color: '#ffffff',

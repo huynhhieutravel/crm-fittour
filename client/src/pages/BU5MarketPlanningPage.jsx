@@ -611,241 +611,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
         </div>
       </div>
 
-      {/* ── SUB-HEADER TABS ĐIỀU HƯỚNG NĂM 2027 ── */}
-      <div style={{
-        display: 'flex',
-        gap: '6px',
-        borderBottom: '1px solid #e2e8f0',
-        paddingBottom: '10px',
-        marginBottom: '22px',
-        overflowX: 'auto'
-      }}>
-        <button
-          onClick={() => handleTabChange('monthly-mkt')}
-          style={{
-            padding: '9px 16px',
-            borderRadius: '6px',
-            border: activeTab === 'monthly-mkt' ? '1px solid #0284c7' : 'none',
-            cursor: 'pointer',
-            fontSize: '0.86rem',
-            fontWeight: activeTab === 'monthly-mkt' ? 700 : 600,
-            background: activeTab === 'monthly-mkt' ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' : '#e0f2fe',
-            color: activeTab === 'monthly-mkt' ? '#ffffff' : '#0369a1',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            whiteSpace: 'nowrap',
-            boxShadow: activeTab === 'monthly-mkt' ? '0 4px 12px rgba(2, 132, 199, 0.3)' : 'none',
-            transition: 'all 0.15s ease'
-          }}
-        >
-          <Calendar size={16} color={activeTab === 'monthly-mkt' ? '#ffffff' : '#0284c7'} />
-          <span>Ma Trận Dòng Tiền MKT 2027</span>
-        </button>
-
-        <button
-          onClick={() => handleTabChange('overview')}
-          style={{
-            padding: '9px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.86rem',
-            fontWeight: activeTab === 'overview' ? 700 : 500,
-            background: activeTab === 'overview' ? '#0f172a' : '#f1f5f9',
-            color: activeTab === 'overview' ? '#ffffff' : '#475569',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <BarChart3 size={16} />
-          <span>Tổng Quan Kế Hoạch 2027</span>
-        </button>
-
-        <button
-          onClick={() => handleTabChange('departures')}
-          style={{
-            padding: '9px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.86rem',
-            fontWeight: activeTab === 'departures' ? 700 : 500,
-            background: activeTab === 'departures' ? '#0f172a' : '#f1f5f9',
-            color: activeTab === 'departures' ? '#ffffff' : '#475569',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <Calendar size={16} />
-          <span>Danh Sách 27 Đoàn</span>
-        </button>
-
-        {/* 10 TUYẾN SẢN PHẨM 2027 */}
-        <button
-          onClick={() => handleTabChange('mongco')}
-          style={{
-            padding: '9px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.86rem',
-            fontWeight: activeTab === 'mongco' ? 700 : 500,
-            background: activeTab === 'mongco' ? '#059669' : '#f1f5f9',
-            color: activeTab === 'mongco' ? '#ffffff' : '#475569',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <span>Mông Cổ</span>
-        </button>
-
-        <button
-          onClick={() => handleTabChange('murmansk')}
-          style={{
-            padding: '9px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.86rem',
-            fontWeight: activeTab === 'murmansk' ? 700 : 500,
-            background: activeTab === 'murmansk' ? '#0284c7' : '#f1f5f9',
-            color: activeTab === 'murmansk' ? '#ffffff' : '#475569',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <span>Nga Cực Quang</span>
-        </button>
-
-        <button
-          onClick={() => handleTabChange('alaska')}
-          style={{
-            padding: '9px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.86rem',
-            fontWeight: activeTab === 'alaska' ? 700 : 500,
-            background: activeTab === 'alaska' ? '#0369a1' : '#f1f5f9',
-            color: activeTab === 'alaska' ? '#ffffff' : '#475569',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <span>Alaska Hoang Dã</span>
-        </button>
-
-        <button
-          onClick={() => handleTabChange('trunga')}
-          style={{
-            padding: '9px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.86rem',
-            fontWeight: activeTab === 'trunga' ? 700 : 500,
-            background: activeTab === 'trunga' ? '#8b5cf6' : '#f1f5f9',
-            color: activeTab === 'trunga' ? '#ffffff' : '#475569',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <span>Trung Á Tơ Lụa</span>
-        </button>
-
-        <button
-          onClick={() => handleTabChange('maroc')}
-          style={{
-            padding: '9px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.86rem',
-            fontWeight: activeTab === 'maroc' ? 700 : 500,
-            background: activeTab === 'maroc' ? '#e11d48' : '#f1f5f9',
-            color: activeTab === 'maroc' ? '#ffffff' : '#475569',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <span>Ma Rốc Sahara</span>
-        </button>
-
-        <button
-          onClick={() => handleTabChange('nammy')}
-          style={{
-            padding: '9px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.86rem',
-            fontWeight: activeTab === 'nammy' ? 700 : 500,
-            background: activeTab === 'nammy' ? '#f59e0b' : '#f1f5f9',
-            color: activeTab === 'nammy' ? '#ffffff' : '#475569',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <span>Nam Mỹ</span>
-        </button>
-
-        <button
-          onClick={() => handleTabChange('pakistan')}
-          style={{
-            padding: '9px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.86rem',
-            fontWeight: activeTab === 'pakistan' ? 700 : 500,
-            background: activeTab === 'pakistan' ? '#16a34a' : '#f1f5f9',
-            color: activeTab === 'pakistan' ? '#ffffff' : '#475569',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <span>Pakistan</span>
-        </button>
-
-        <button
-          onClick={() => handleTabChange('aicap')}
-          style={{
-            padding: '9px 16px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.86rem',
-            fontWeight: activeTab === 'aicap' ? 700 : 500,
-            background: activeTab === 'aicap' ? '#d97706' : '#f1f5f9',
-            color: activeTab === 'aicap' ? '#ffffff' : '#475569',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <span>Ai Cập Sông Nile</span>
-        </button>
-      </div>
+      {/* ── NỘI DUNG CHI TIẾT THEO TABS (HIỂN THỊ TRỰC TIẾP TRÊN SHEET TABS DƯỚI ĐÁY) ── */}
 
       {/* ── NỘI DUNG CHI TIẾT THEO TABS ── */}
       {activeTab === 'monthly-mkt' && (
@@ -1341,6 +1107,85 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           </div>
         );
       })()}
+
+      {/* ── GOOGLE SHEETS STYLE BOTTOM TABS BAR (STICKY DƯỚI ĐÁY BẢNG TÍNH) ── */}
+      <div style={{
+        position: 'sticky',
+        bottom: 0,
+        zIndex: 100,
+        background: '#f1f5f9',
+        borderTop: '2px solid #cbd5e1',
+        boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.08)',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 8px',
+        overflowX: 'auto',
+        gap: '4px',
+        height: '42px',
+        margin: '28px -24px -60px -24px'
+      }}>
+        {/* Label Google Sheet branding indicator */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '0 12px',
+          borderRight: '1px solid #cbd5e1',
+          color: '#475569',
+          fontSize: '0.76rem',
+          fontWeight: 800,
+          whiteSpace: 'nowrap'
+        }}>
+          <FileSpreadsheet size={15} color="#059669" />
+          <span>SHEETS BU5</span>
+        </div>
+
+        {[
+          { key: 'monthly-mkt', label: 'Ma Trận Dòng Tiền MKT 2027', icon: <Calendar size={13} /> },
+          { key: 'departures', label: 'Lịch 27 Đoàn', icon: <Layers size={13} /> },
+          { key: 'overview', label: 'P&L & Tổng Quan', icon: <BarChart3 size={13} /> },
+          { key: 'mongco', label: 'Mông Cổ (6 đoàn)', color: '#059669' },
+          { key: 'murmansk', label: 'Nga Murmansk (3 đoàn)', color: '#0284c7' },
+          { key: 'alaska', label: 'Alaska (2 đoàn)', color: '#0369a1' },
+          { key: 'trunga', label: 'Trung Á (4 đoàn)', color: '#8b5cf6' },
+          { key: 'maroc', label: 'Ma Rốc (3 đoàn)', color: '#e11d48' },
+          { key: 'nammy', label: 'Nam Mỹ (1 đoàn)', color: '#f59e0b' },
+          { key: 'pakistan', label: 'Pakistan (4 đoàn)', color: '#16a34a' },
+          { key: 'aicap', label: 'Ai Cập (2 đoàn)', color: '#d97706' }
+        ].map(tab => {
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => handleTabChange(tab.key)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                height: '34px',
+                borderRadius: '6px 6px 0 0',
+                border: isActive ? '1px solid #cbd5e1' : '1px solid transparent',
+                borderBottom: isActive ? '3px solid #059669' : 'none',
+                background: isActive ? '#ffffff' : 'transparent',
+                color: isActive ? '#0f172a' : '#475569',
+                fontWeight: isActive ? 700 : 500,
+                fontSize: '0.82rem',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.1s ease',
+                boxShadow: isActive ? '0 -1px 3px rgba(0,0,0,0.04)' : 'none'
+              }}
+            >
+              {tab.icon}
+              {tab.color && (
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: tab.color, display: 'inline-block' }} />
+              )}
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };
