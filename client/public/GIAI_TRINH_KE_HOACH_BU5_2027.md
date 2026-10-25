@@ -1,87 +1,130 @@
-# BÁO CÁO GIẢI TRÌNH KẾ HOẠCH SẢN PHẨM & DỰ TOÁN MARKETING BU5 NĂM 2027
+# BÁO CÁO GIẢI TRÌNH ĐIỀU HÀNH: KẾ HOẠCH SẢN PHẨM & DÒNG TIỀN MARKETING BU5 NĂM 2027
 
-> **Người thực hiện:** Bộ phận Kế Hoạch & Marketing FIT Tour  
-> **Kính gửi:** Ban Giám Đốc (CEO), Trưởng Phòng Marketing & Trưởng Khối Kinh Doanh BU5 (Khám Phá & Độc Bản)  
-> **Thời gian áp dụng:** Kế hoạch Cả Năm 2027 (Kèm Dòng Tiền Chạy Trước Cuối 2026)  
-> **Phạm vi sản phẩm:** 10 Tuyến Độc Bản (Mông Cổ, Murmansk Nga, Alaska, Trung Á, Ma Rốc, Nam Mỹ, Pakistan, Ai Cập, Namibia, Bắc Mông Cổ)  
-> **Nguồn dữ liệu:** Đối soát chuẩn xác 100% theo [Master Plan Google Sheet BU5](https://docs.google.com/spreadsheets/d/10kuQXdFgFLVSRS4CbKYa-ozuch6RnPJd8NTo36fFhrc/edit?usp=sharing)
+> **Đơn vị lập báo cáo:** Bộ phận Kế Hoạch & Marketing FIT Tour  
+> **Kính trình:** Ban Giám Đốc (CEO), Trưởng Phòng Marketing & Trưởng Khối Kinh Doanh BU5 (Khám Phá & Độc Bản)  
+> **Thời gian áp dụng:** Kế hoạch Cả Năm 2027 (Kèm Dòng Tiền Chuẩn Bị Cuối 2026)  
+> **Phạm vi sản phẩm:** 10 Tuyến Độc Bản (Mông Cổ, Nga Murmansk, Alaska, Nam Mỹ, Trung Á, Ma Rốc, Pakistan, Ai Cập, Namibia, Bắc Mông Cổ)  
+> **Nguồn dữ liệu:** Đồng bộ 100% theo [Master Plan Google Sheet BU5](https://docs.google.com/spreadsheets/d/10kuQXdFgFLVSRS4CbKYa-ozuch6RnPJd8NTo36fFhrc/edit?usp=sharing) & Hệ thống ERP FIT Tour
 
 ---
 
-## I. TỔNG QUAN CHỈ TIÊU KẾ HOẠCH NĂM 2027 & ĐỊNH MỨC MKT 1% DOANH THU
-
-Căn cứ vào dữ liệu đồng bộ từ Google Sheet Kế hoạch Sản phẩm BU5 2027:
-* **TỔNG SỐ ĐOÀN KHỞI HÀNH NĂM 2027:** **27 Đoàn** (Tương ứng 24 đợt khởi hành trong năm 2027 trên Google Sheet)
-* **QUY MÔ KHÁCH MỤC TIÊU:** **270 Pax** (Tiêu chuẩn định mức đoàn khám phá độc bản: **10 khách / đoàn**)
-* **TỔNG DOANH THU KẾ HOẠCH:** **31.646.000.000 VNĐ (~31.65 TỶ ĐỒNG)**
-* **TỔNG CHI PHÍ GIÁ VỐN KẾ HOẠCH:** **27.163.717.620 VNĐ (~27.16 TỶ ĐỒNG)**
-* **TỔNG LÃI GỘP KẾ HOẠCH:** **4.482.282.380 VNĐ (~4.48 TỶ ĐỒNG — Tỷ suất lợi nhuận gộp 14.16%)**
-* **ĐỊNH MỨC KINH PHÍ MARKETING 1% DOANH THU:** **316.460.000 VNĐ (~316.46 TRIỆU ĐỒNG)**
-* **PHÂN BỔ DÒNG TIỀN MKT CUỐN CHIẾU:**
-  - **Chạy trước cuối năm 2026 (T09 - T12/2026):** **90.439.620 VNĐ** (Chiếm **28.6%** tổng ngân sách — Chuẩn bị visa & gom khách tour Tết T2/27 và Cực quang Nga Murmansk).
-  - **Giải ngân trong năm 2027 (T01 - T10/2027):** **226.020.380 VNĐ** (Chiếm **71.4%** tổng ngân sách — Rải đều 10 tháng, đỉnh điểm Tháng 02/2027 đạt ~35.26M).
+## 🏆 I. EXECUTIVE SUMMARY (TỔNG QUAN ĐIỀU HÀNH 30 GIÂY)
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────────────────────┐
-│                 BẢNG ĐỐI CHIẾU CHỈ SỐ TÀI CHÍNH KẾ HOẠCH BU5 NĂM 2027                       │
-├──────────────────────────────────┬────────────────────────────┬─────────────────────────────┤
-│ CHỈ SỐ                           │ SỐ LIỆU TOÀN NĂM 2027      │ GHI CHÚ ĐIỀU HÀNH           │
-├──────────────────────────────────┼────────────────────────────┼─────────────────────────────┤
-│ Số lượng đoàn khởi hành          │ 27 Đoàn                    │ 24 đợt trên Google Sheet    │
-│ Quy mô khách mục tiêu            │ 270 Pax                    │ Chuẩn 10 khách / đoàn       │
-│ TỔNG DOANH THU KẾ HOẠCH          │ 31.646.000.000 đ (~31.65 Tỷ)│ Bình quân ~1.17 Tỷ / đoàn   │
-│ TỔNG LÃI GỘP KẾ HOẠCH            │ 4.482.282.380 đ (~4.48 Tỷ) │ Biên lãi gộp 14.16%         │
-│ ĐỊNH MỨC MKT 1% DOANH THU        │ 316.460.000 đ              │ Đúng 1.00% Doanh thu        │
-│ Dòng tiền chạy trước cuối 2026   │ 90.439.620 đ (28.6%)       │ T09 - T12/2026 (Tết & Visa) │
-│ Dòng tiền phát sinh năm 2027     │ 226.020.380 đ (71.4%)      │ T01 - T10/2027              │
-│ Tháng đỉnh điểm chi tiêu MKT     │ Tháng 02/2027 (35.26M)     │ 16 tour chạy song song      │
-└──────────────────────────────────┴────────────────────────────┴─────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                      4 CHỈ SỐ SỐNG CÒN KẾ HOẠCH BU5 NĂM 2027                                    │
+├──────────────────────────┬──────────────────────────┬──────────────────────────┬────────────────┤
+│ DOANH THU MỤC TIÊU       │ LÃI GỘP DỰ KIẾN          │ KINH PHÍ MKT (1% DT)     │ QUY MÔ KHỞI HÀNH│
+│   31.65 TỶ VNĐ           │   4.48 TỶ VNĐ            │   316.46 TRIỆU VNĐ       │   27 ĐOÀN       │
+│  (31.646.000.000 đ)      │  (Biên lãi: 14.16%)      │  (Đúng chuẩn 1.00% DT)   │  (270 Khách VIP)│
+├──────────────────────────┴──────────────────────────┴──────────────────────────┴────────────────┤
+│ 💡 PHÂN BỔ DÒNG TIỀN MKT CUỐN CHIẾU:                                                           │
+│  • Ứng trước Quý 4/2026 (T09-T12/26):  90.44 Triệu (28.6%) ➔ Gom khách tour Tết & Visa Murmansk │
+│  • Giải ngân trong năm 2027 (T01-T10/27): 226.02 Triệu (71.4%) ➔ Rải đều 10 tháng (Đỉnh T2: 35.3M) │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## II. BẢNG TỔNG HỢP 10 TUYẾN SẢN PHẨM BU5 NĂM 2027 (CHUẨN XÁC THEO GOOGLE SHEET)
+## 📊 II. BẢNG 10 TUYẾN SẢN PHẨM 2027 (TRỰC QUAN TỶ TRỌNG & DOANH THU)
 
-| STT | Tuyến Sản Phẩm | Số Đoàn | Số Pax | Giá Bán / Pax | Doanh Thu Kế Hoạch | Lãi Gộp Kế Hoạch | Kinh Phí MKT (1%) | Chu Kỳ Chạy Trước |
-| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| 1 | **🐎 Mông Cổ** (Đầu hè, Chính hè Naadam, Tháng 8, Cuối hè) | 6 đoàn | 60 pax | 78.900.000 đ | 4.734.000.000 đ | 600.000.000 đ | 47.340.000 đ | Chạy trước 4 - 7 tháng |
-| 2 | **❄️ Nga - Murmansk Săn Cực Quang** | 3 đoàn | 30 pax | 165.000.000 đ | 4.950.000.000 đ | 750.000.000 đ | 49.500.000 đ | Chạy trước 5 tháng (từ T09/26) |
-| 3 | **🌲 Alaska Hoang Dã Vùng Cực** (Hè T7 & Lễ 2/9) | 2 đoàn | 20 pax | 215.000.000 đ | 4.300.000.000 đ | 600.000.000 đ | 43.000.000 đ | Chạy trước 7 - 8 tháng |
-| 4 | **🏛️ Con Đường Tơ Lụa Trung Á** (T6, T7, T8, T9) | 4 đoàn | 40 pax | 80.000.000 đ | 3.200.000.000 đ | 320.000.000 đ | 32.000.000 đ | Chạy trước 4 - 7 tháng |
-| 5 | **🏜️ Ma Rốc Sa Mạc Sahara** (Tết T2, Xuân T3, Lễ 30/4) | 3 đoàn | 30 pax | 109.000.000 đ | 3.270.000.000 đ | 564.733.080 đ | 32.700.000 đ | Chạy trước 5 - 7 tháng (từ T09/26) |
-| 6 | **🗿 Nam Mỹ Huyền Thoại** (Brazil - Argentina - Peru - Chile) | 1 đoàn | 10 pax | 330.900.000 đ | 3.309.000.000 đ | 609.000.000 đ | 33.090.000 đ | Chạy trước 9 tháng (từ T12/26) |
-| 7 | **🏔️ Pakistan Hoa Anh Đào & Mùa Thu Hunza** | 4 đoàn | 40 pax | 74.900.000 đ | 2.996.000.000 đ | 316.000.000 đ | 29.960.000 đ | Chạy trước 4 - 5 tháng |
-| 8 | **☀️ Ai Cập Huyền Bí Sông Nile 5 Sao** (Tết T2 & Lễ 30/4) | 2 đoàn | 20 pax | 104.900.000 đ | 2.098.000.000 đ | 310.549.300 đ | 20.980.000 đ | Chạy trước 5 - 7 tháng (từ T09/26) |
-| 9 | **🦒 Namibia Châu Phi Wildlife** (Lễ 2/9) | 1 đoàn | 10 pax | 180.000.000 đ | 1.800.000.000 đ | 300.000.000 đ | 18.000.000 đ | Chạy trước 8 tháng (từ T01/27) |
-| 10 | **🦌 Bắc Mông Cổ Tuần Lộc Tsaatan** (Mùa thu) | 1 đoàn | 10 pax | 98.900.000 đ | 989.000.000 đ | 112.000.000 đ | 9.890.000 đ | Chạy trước 5 tháng (từ T04/27) |
-| **Σ** | **TỔNG CỘNG NĂM 2027** | **27 đoàn** | **270 pax** | — | **31.646.000.000 đ** | **4.482.282.380 đ** | **316.460.000 đ** | **Bình quân 5.7 tháng** |
+*Đơn vị rút gọn: Doanh thu & Lãi gộp tính theo **Tỷ VNĐ**, Ngân sách MKT tính theo **Triệu VNĐ**.*
+
+| Hạng | Tuyến Sản Phẩm | Đoàn | Khách | Giá/Pax | Doanh Thu | Lãi Gộp | MKT 1% | Thanh Tỷ Trọng Doanh Thu | Chu Kỳ Chạy |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :---: |
+| 🥇 | **❄️ Nga (Murmansk Cực Quang)** | 3 | 30 | 165.0 Tr | **4.95 Tỷ** | 0.75 Tỷ | **49.5 Tr** | `█████████░` 15.6% | T09/26 (T-5) |
+| 🥈 | **🐎 Mông Cổ** (Hè Naadam & Gobi) | 6 | 60 | 78.9 Tr | **4.73 Tỷ** | 0.60 Tỷ | **47.3 Tr** | `████████░░` 15.0% | T02/27 (T-4→7) |
+| 🥉 | **🌲 Alaska** (Hè & Thu Lễ 2/9) | 2 | 20 | 215.0 Tr | **4.30 Tỷ** | 0.60 Tỷ | **43.0 Tr** | `███████░░░` 13.6% | T12/26 (T-7→8) |
+| 4 | **🗿 Nam Mỹ** (Đại cảnh 4 nước) | 1 | 10 | 330.9 Tr | **3.31 Tỷ** | 0.61 Tỷ | **33.1 Tr** | `██████░░░░` 10.5% | T12/26 (T-9) |
+| 5 | **🏜️ Maroc** (Tết, Xuân & 30/4) | 3 | 30 | 109.0 Tr | **3.27 Tỷ** | 0.56 Tỷ | **32.7 Tr** | `██████░░░░` 10.3% | T09/26 (T-5→7) |
+| 6 | **🏛️ Trung Á** (Con đường Tơ Lụa) | 4 | 40 | 80.0 Tr | **3.20 Tỷ** | 0.32 Tỷ | **32.0 Tr** | `██████░░░░` 10.1% | T02/27 (T-4→7) |
+| 7 | **🏔️ Pakistan** (Hoa anh đào & Thu) | 4 | 40 | 74.9 Tr | **3.00 Tỷ** | 0.32 Tỷ | **30.0 Tr** | `█████░░░░░` 9.5% | T11/26 (T-4→5) |
+| 8 | **☀️ Ai Cập** (Tết & Lễ 30/4) | 2 | 20 | 104.9 Tr | **2.10 Tỷ** | 0.31 Tỷ | **21.0 Tr** | `████░░░░░░` 6.6% | T09/26 (T-5→7) |
+| 9 | **🦒 Namibia** (Wildlife Sa mạc Đỏ) | 1 | 10 | 180.0 Tr | **1.80 Tỷ** | 0.30 Tỷ | **18.0 Tr** | `███░░░░░░░` 5.7% | T01/27 (T-8) |
+| 10 | **🦌 Bắc Mông Cổ** (Tuần lộc Tsaatan)| 1 | 10 | 98.9 Tr | **0.99 Tỷ** | 0.11 Tỷ | **9.9 Tr** | `██░░░░░░░░` 3.1% | T04/27 (T-5) |
+| **Σ** | **TỔNG CỘNG CẢ NĂM 2027** | **27** | **270** | — | **31.65 Tỷ** | **4.48 Tỷ** | **316.5 Tr** | `██████████` **100%** | **TB 5.7T** |
+
+> **💡 INSIGHT DATA ANALYST (QUY LUẬT PARETO 80/20):**  
+> Top 3 tuyến sản phẩm đầu bảng (**Nga Murmansk, Mông Cổ, Alaska**) đóng góp **13.98 Tỷ VNĐ (chiếm 44.2% Doanh thu toàn BU5)** và tiêu thụ **139.8 Triệu VNĐ ngân sách MKT**. Đây là 3 "mỏ neo" doanh thu và lợi nhuận mà Marketing cần bảo vệ tiến độ truyền thông tuyệt đối.
 
 ---
 
-## III. TIẾN ĐỘ DÒNG TIỀN MARKETING GIẢI NGÂN THEO TỪNG THÁNG (2026 - 2027)
+## 📅 III. BẢNG DÒNG TIỀN MKT 15 THÁNG GOM THEO 4 QUÝ CHIẾN LƯỢC
 
-| Tháng Giải Ngân | Ngân Sách MKT (VNĐ) | Tỷ Lệ % | Số Lượng Tour Đang Chạy | Mục Đích Trọng Tâm |
+*Thay vì dàn trải 14 dòng tháng đơn điệu, toàn bộ dòng tiền 316.46M được gom thành 4 giai đoạn chiến lược kèm thanh đo độ cao ngân sách:*
+
+### 🔹 GIAI ĐOẠN 1: CHẠY TRƯỚC CUỐI 2026 (T09 ➔ T12/2026) — TỔNG: 90.44 TRIỆU (28.6%)
+*Mục đích: Gom khách tour Tết Âm Lịch 2027, tour Săn Cực Quang Nga tháng 2 và làm hồ sơ Visa dài hạn (Nam Mỹ, Alaska).*
+
+| Tháng | Ngân Sách MKT | Tỷ Trọng | Số Tour Chạy | Biểu Đồ Độ Cao Ngân Sách Tháng | Trọng Tâm Chiến Dịch |
+| :---: | :---: | :---: | :---: | :--- | :--- |
+| **T09/2026** | **19.05 Tr** | 6.0% | 6 tours | `▇▇▇▇▇░░░░░` 19.1M | Khởi động Tết: Ai Cập Tết, Maroc Tết, Nga Murmansk |
+| **T10/2026** | **19.05 Tr** | 6.0% | 6 tours | `▇▇▇▇▇░░░░░` 19.1M | Tăng tốc gom cọc đợt 1 tour Tết & Nga Murmansk |
+| **T11/2026** | **22.80 Tr** | 7.2% | 7 tours | `▇▇▇▇▇▇░░░░` 22.8M | Kích hoạt thêm Pakistan mùa hoa anh đào T3/27 |
+| **T12/2026** | **29.54 Tr** | 9.3% | 9 tours | `▇▇▇▇▇▇▇▇░░` 29.5M | Kích hoạt Alaska hè T7 & Nam Mỹ T9 (Visa đường xa 9T) |
+| **TIỂU KẾT Q1**| **90.44 Tr** | **28.6%** | — | **Kinh phí cần Ban Giám Đốc phê duyệt tạm ứng từ Quý 4/2026** |
+
+---
+
+### 🔹 GIAI ĐOẠN 2: CAO ĐIỂM QUÝ 1/2027 (T01 ➔ T03/2027) — TỔNG: 99.45 TRIỆU (31.4%)
+*Mục đích: Chốt cọc tour Tết, kích hoạt mở bán đồng loạt toàn bộ các tuyến mùa hè chủ lực (Mông Cổ, Trung Á).*
+
+| Tháng | Ngân Sách MKT | Tỷ Trọng | Số Tour Chạy | Biểu Đồ Độ Cao Ngân Sách Tháng | Trọng Tâm Chiến Dịch |
+| :---: | :---: | :---: | :---: | :--- | :--- |
+| **T01/2027** | **34.48 Tr** | 10.9% | 11 tours | `▇▇▇▇▇▇▇▇▇░` 34.5M | Đóng cọc tour Tết; Kích hoạt Namibia 2/9 & Alaska thu |
+| **T02/2027** | **35.26 Tr (PEAK)**| **11.1%** | **16 tours** | `▇▇▇▇▇▇▇▇██` **35.3M (ĐỈNH NĂM)** | Mở bán đồng loạt: 6 đoàn Mông Cổ & 4 đoàn Trung Á |
+| **T03/2027** | **29.70 Tr** | 9.4% | 14 tours | `▇▇▇▇▇▇▇▇░░` 29.7M | Đẩy mạnh Mông Cổ chính hè, Trung Á và chốt Alaska |
+| **TIỂU KẾT Q2**| **99.45 Tr** | **31.4%** | — | **Quý giải ngân lớn nhất năm — quyết định 60% chỉ tiêu mùa hè** |
+
+---
+
+### 🔹 GIAI ĐOẠN 3: GIỮ NHỊP QUÝ 2/2027 (T04 ➔ T06/2027) — TỔNG: 87.89 TRIỆU (27.8%)
+*Mục đích: Khởi động tuyến mùa thu, hoàn tất chốt khách Mông Cổ Naadam & Trung Á hè.*
+
+| Tháng | Ngân Sách MKT | Tỷ Trọng | Số Tour Chạy | Biểu Đồ Độ Cao Ngân Sách Tháng | Trọng Tâm Chiến Dịch |
+| :---: | :---: | :---: | :---: | :--- | :--- |
+| **T04/2027** | **28.63 Tr** | 9.0% | 13 tours | `▇▇▇▇▇▇▇▇░░` 28.6M | Đóng cọc lễ 30/4; Kích hoạt Bắc Mông Cổ mùa thu |
+| **T05/2027** | **31.62 Tr** | 10.0% | 14 tours | `▇▇▇▇▇▇▇▇▇░` 31.6M | Kích hoạt đợt 2 Pakistan mùa thu Hunza T10/27 |
+| **T06/2027** | **27.65 Tr** | 8.7% | 12 tours | `▇▇▇▇▇▇▇░░░` 27.7M | Đóng cọc Mông Cổ chính hè, dồn sức cho mùa thu |
+| **TIỂU KẾT Q3**| **87.89 Tr** | **27.8%** | — | **Giai đoạn gối đầu giữa cao điểm hè và mùa thu** |
+
+---
+
+### 🔹 GIAI ĐOẠN 4: HẠ NHIỆT & ĐÓNG SỔ (T07 ➔ T10/2027) — TỔNG: 38.68 TRIỆU (12.2%)
+*Mục đích: Thu nốt cọc các đoàn cuối năm, giảm dần chi phí quảng cáo để bảo toàn lợi nhuận ròng.*
+
+| Tháng | Ngân Sách MKT | Tỷ Trọng | Số Tour Chạy | Biểu Đồ Độ Cao Ngân Sách Tháng | Trọng Tâm Chiến Dịch |
+| :---: | :---: | :---: | :---: | :--- | :--- |
+| **T07/2027** | **19.82 Tr** | 6.3% | 9 tours | `▇▇▇▇▇░░░░░` 19.8M | Duy trì truyền thông Nam Mỹ, Alaska 2/9, Namibia |
+| **T08/2027** | **15.86 Tr** | 5.0% | 7 tours | `▇▇▇▇░░░░░░` 15.9M | Chốt cọc cuối cùng cho mùa thu (Namibia, Bắc Mông Cổ) |
+| **T09/2027** | **3.00 Tr** | 0.9% | 1 tour | `█░░░░░░░░░` 3.0M | Đóng đoàn cuối cùng trong năm: Pakistan Hunza |
+| **T10/2027** | **0.00 Tr** | 0.0% | 0 tour | `░░░░░░░░░░` 0.0M | Hoàn tất chu kỳ khởi hành năm 2027 |
+| **TIỂU KẾT Q4**| **38.68 Tr** | **12.2%** | — | **Dòng tiền MKT giảm mạnh, doanh thu thu về đạt đỉnh** |
+
+---
+
+## ⚖️ IV. BẢNG CÂN ĐỐI DÒNG TIỀN (CASH-IN VS CASH-OUT THEO THÁNG)
+
+*Bảng đối chiếu minh chứng quy luật "Chi tiền trước - Thu tiền sau" (Cashflow Lag):*
+
+| Tháng | Chi Tiền MKT (Cash-Out) | Doanh Thu Khởi Hành (Cash-In) | Số Đoàn Khởi Hành | Đánh Giá Dòng Tiền & Cân Đối |
 | :---: | :---: | :---: | :---: | :--- |
-| **Tháng 09/2026** | 19.049.048 đ | 6.0% | 6 tours | Khởi động truyền thông tour Tết 2027 (Ai Cập Tết, Maroc Tết, Nga Murmansk) |
-| **Tháng 10/2026** | 19.049.048 đ | 6.0% | 6 tours | Đẩy mạnh gom khách tour Tết và Nga Cực quang |
-| **Tháng 11/2026** | 22.794.048 đ | 7.2% | 7 tours | Kích hoạt thêm Pakistan hoa anh đào T3/2027 |
-| **Tháng 12/2026** | 29.542.476 đ | 9.3% | 9 tours | Kích hoạt Alaska hè T7/2027 & Nam Mỹ T9/2027 (visa đường xa) |
-| **Tháng 01/2027** | 34.475.810 đ | 10.9% | 11 tours | Chốt cọc tour Tết, kích hoạt Namibia lễ 2/9 & Alaska thu |
-| **Tháng 02/2027** | **35.264.808 đ (PEAK)** | **11.1%** | **16 tours** | Cao điểm kích hoạt đồng loạt mùa hè: 6 đoàn Mông Cổ & 4 đoàn Trung Á |
-| **Tháng 03/2027** | 29.696.952 đ | 9.4% | 14 tours | Đẩy mạnh Mông Cổ, Trung Á và Alaska |
-| **Tháng 04/2027** | 28.627.904 đ | 9.0% | 13 tours | Đóng cọc lễ 30/4, kích hoạt Bắc Mông Cổ mùa thu |
-| **Tháng 05/2027** | 31.623.904 đ | 10.0% | 14 tours | Kích hoạt Pakistan mùa thu Hunza T10/2027 |
-| **Tháng 06/2027** | 27.653.904 đ | 8.7% | 12 tours | Chốt khách Mông Cổ chính hè và Trung Á hè |
-| **Tháng 07/2027** | 19.824.856 đ | 6.3% | 9 tours | Khởi hành cao điểm hè, duy trì Nam Mỹ, Alaska 2/9, Namibia |
-| **Tháng 08/2027** | 15.864.856 đ | 5.0% | 7 tours | Chốt cọc các đoàn mùa thu (Alaska, Namibia, Bắc Mông Cổ, Pakistan) |
-| **Tháng 09/2027** | 2.996.000 đ | 0.9% | 1 tour | Đóng đoàn cuối cùng: Pakistan mùa thu Hunza |
-| **Tháng 10/2027** | 0 đ | 0.0% | 0 tour | Hoàn tất chu kỳ khởi hành cả năm 2027 |
-| **TỔNG CỘNG** | **316.460.000 đ** | **100.0%** | — | **Chuẩn định mức 1.00% Doanh Thu (31.646.000.000 đ)** |
+| **T09/26 - T01/27** | **124.9 Triệu** | **0 VNĐ** | 0 đoàn | **Giai đoạn gieo hạt:** Ứng trước ngân sách để gom cọc 50% |
+| **T02/2027** | **35.3 Triệu** | **7.09 TỶ VNĐ** | 5 đoàn | **Gặt hái đợt 1:** Thu tiền 5 đoàn lớn (Ai Cập Tết, Maroc Tết, 3 Nga) |
+| **T03/2027** | **29.7 Triệu** | **2.59 TỶ VNĐ** | 3 đoàn | **Gặt hái đợt 2:** Thu tiền Maroc xuân & 2 đoàn Pakistan hoa |
+| **T04/2027** | **28.6 Triệu** | **2.14 TỶ VNĐ** | 2 đoàn | **Gặt hái đợt 3:** Thu tiền cao điểm Lễ 30/4 (Ai Cập, Maroc) |
+| **T05/2027** | **31.6 Triệu** | **0 VNĐ** | 0 đoàn | **Vùng đệm:** Tập trung gom cọc cho 12 đoàn mùa hè |
+| **T06/2027** | **27.6 Triệu** | **1.59 TỶ VNĐ** | 2 đoàn | **Khởi động hè:** Thu tiền Mông Cổ đầu hè & Trung Á |
+| **T07/2027** | **19.8 Triệu** | **4.53 TỶ VNĐ** | 4 đoàn | **Đỉnh hè:** Thu tiền Mông Cổ Naadam, Alaska hè, Trung Á |
+| **T08/2027** | **15.9 Triệu** | **2.38 TỶ VNĐ** | 3 đoàn | **Hạ nhiệt hè:** Thu tiền 2 đoàn Mông Cổ T8 & Trung Á T8 |
+| **T09/2027** | **3.0 Triệu** | **9.84 TỶ VNĐ (PEAK)** | 6 đoàn | **Đỉnh thu lớn nhất năm:** Nam Mỹ (3.3B), Namibia (1.8B), Alaska (2.1B)... |
+| **T10/2027** | **0.0 Triệu** | **1.50 TỶ VNĐ** | 2 đoàn | **Khép lại năm:** Thu tiền 2 đoàn Pakistan mùa thu Hunza |
+| **TỔNG CỘNG** | **316.46 TRIỆU** | **31.65 TỶ VNĐ** | **27 ĐOÀN** | **Chuẩn xác 1.00% chi phí MKT trên Doanh thu thực tế** |
 
 ---
 
-## IV. ĐỀ XUẤT KIẾN NGHỊ THỰC THI CHO BAN LÃNH ĐẠO
+## 📌 V. 3 ĐỀ XUẤT HÀNH ĐỘNG TRÌNH BAN GIÁM ĐỐC PHÊ DUYỆT
 
-1. **Phê duyệt chuẩn hóa ngân sách Marketing 1% Doanh thu cho BU5 năm 2027: `316.460.000 VNĐ`**.
-2. **Cho phép cơ chế giải ngân đón đầu**: Cấp trước `90.439.620 VNĐ` từ Quý 4/2026 để chuẩn bị visa và truyền thông sớm cho các đoàn khởi hành đầu năm 2027 (Maroc Tết, Ai Cập Tết, Nga Cực Quang Murmansk).
-3. **Theo dõi realtime trên hệ thống CRM**: Toàn bộ dữ liệu trên đã được số hóa thành bảng ma trận nhiệt động và bảng kế hoạch chi tiết tại module `/tai-lieu/thi-truong-bu5?tab=monthly-mkt`.
+1. **Phê duyệt chuẩn hóa hạn mức Marketing 1% Doanh thu cho BU5 năm 2027: `316.460.000 VNĐ`**.
+2. **Chấp thuận cơ chế tạm ứng giải ngân Quý 4/2026: `90.439.620 VNĐ`** (28.6% tổng ngân sách) để đội ngũ Marketing kịp triển khai gom khách tour Tết và nộp hồ sơ Visa Murmansk, Alaska, Nam Mỹ trước 5 - 9 tháng.
+3. **Áp dụng cơ chế kiểm soát cuốn chiếu realtime:** Toàn bộ tiến độ giải ngân và số lượng khách cọc thực tế được theo dõi tự động hàng ngày trên CRM FIT Tour tại liên kết: `https://erp.fittour.vn/tai-lieu/thi-truong-bu5?tab=monthly-mkt`.

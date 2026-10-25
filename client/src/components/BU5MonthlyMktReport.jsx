@@ -62,9 +62,21 @@ const fmtShort = (val) => {
   return String(num);
 };
 
+// Format tiền tỷ gọn gàng: 31.65 Tỷ
+const fmtBillion = (val) => {
+  if (!val || isNaN(val)) return '0 Tỷ';
+  return (Number(val) / 1000000000).toFixed(2) + ' Tỷ';
+};
+
+// Format tiền triệu gọn gàng: 316.5 Tr
+const fmtMillion = (val) => {
+  if (!val || isNaN(val)) return '0 Tr';
+  return (Number(val) / 1000000).toFixed(1) + ' Tr';
+};
+
 export default function BU5MonthlyMktReport({ currentUser = null }) {
-  // View mode: 'matrix' | 'monthly' | 'leadtime' | 'chart'
-  const [viewMode, setViewMode] = useState('matrix');
+  // View mode: 'executive' | 'matrix' | 'monthly' | 'leadtime' | 'chart'
+  const [viewMode, setViewMode] = useState('executive'); // Mặc định mở Bản Trình Sếp trực quan cao cấp
 
   // Filter & Search
   const [selectedCategory, setSelectedCategory] = useState('ALL');
@@ -143,6 +155,100 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
       return true;
     });
   }, [departures, selectedCategory, selectedProduct, searchQuery]);
+
+  // 1. Dữ liệu tổng hợp theo 4 Quý (Quarterly Grouping cho Executive View)
+  const quarterlyData = useMemo(() => {
+    const q4_26 = {
+      id: 'Q4_2026',
+      label: 'Quý 4/2026 (Chuẩn Bị)',
+      badge: 'Chạy Trước',
+      badgeColor: '#d97706',
+      badgeBg: '#fef3c7',
+      months: ['2026-09', '2026-10', '2026-11', '2026-12'],
+      mkt: 0,
+      rev: 0,
+      groups: 0,
+      tag: 'Gieo hạt & Gom khách Tết, Visa Murmansk/Alaska'
+    };
+    const q1_27 = {
+      id: 'Q1_2027',
+      label: 'Quý 1/2027 (Đỉnh MKT)',
+      badge: 'Đỉnh MKT',
+      badgeColor: '#dc2626',
+      badgeBg: '#fee2e2',
+      months: ['2027-01', '2027-02', '2027-03'],
+      mkt: 0,
+      rev: 0,
+      groups: 0,
+      tag: 'Đỉnh điểm MKT T2 & Gặt hái 8 đoàn Tết/Xuân'
+    };
+    const q2_27 = {
+      id: 'Q2_2027',
+      label: 'Quý 2/2027 (Gối Đầu Hè)',
+      badge: 'Giữ Nhịp',
+      badgeColor: '#2563eb',
+      badgeBg: '#dbeafe',
+      months: ['2027-04', '2027-05', '2027-06'],
+      mkt: 0,
+      rev: 0,
+      groups: 0,
+      tag: 'Chốt khách 30/4 & Khởi động hè Mông Cổ'
+    };
+    const q34_27 = {
+      id: 'Q34_2027',
+      label: 'Quý 3-4/2027 (Đỉnh Thu & Đóng Sổ)',
+      badge: 'Đỉnh Thu',
+      badgeColor: '#16a34a',
+      badgeBg: '#dcfce7',
+      months: ['2027-07', '2027-08', '2027-09', '2027-10'],
+      mkt: 0,
+      rev: 0,
+      groups: 0,
+      tag: 'Thu 18.2 Tỷ (Nam Mỹ, Namibia, Mông Cổ Naadam)'
+    };
+
+    const quarters = [q4_26, q1_27, q2_27, q34_27];
+
+    quarters.forEach(q => {
+      q.months.forEach(m => {
+        q.mkt += (monthlyTotals[m] || 0);
+        q.rev += (monthlyDepartureRevenues[m] || 0);
+        q.groups += (monthlyDeparturesCount[m] || 0);
+      });
+    });
+
+    return quarters;
+  }, [monthlyTotals, monthlyDepartureRevenues, monthlyDeparturesCount]);
+
+  // 2. Dữ liệu tổng hợp 10 Tuyến Sản Phẩm (Pareto ranking cho Executive View)
+  const productAggregates = useMemo(() => {
+    const map = {};
+    departures.forEach(dep => {
+      if (!map[dep.productKey]) {
+        map[dep.productKey] = {
+          key: dep.productKey,
+          name: dep.name,
+          category: dep.category,
+          groups: 0,
+          pax: 0,
+          revenue: 0,
+          grossProfit: 0,
+          mktBudget: 0,
+          pricePerPax: dep.pricePerPax,
+          icon: dep.prod?.icon || '🧭',
+          leadMonths: dep.leadMonths,
+          startMonth: dep.startMonth
+        };
+      }
+      map[dep.productKey].groups += dep.groupsCount;
+      map[dep.productKey].pax += dep.totalPax;
+      map[dep.productKey].revenue += dep.revenue;
+      map[dep.productKey].grossProfit += dep.grossProfit;
+      map[dep.productKey].mktBudget += dep.mktBudget;
+    });
+
+    return Object.values(map).sort((a, b) => b.revenue - a.revenue);
+  }, [departures]);
 
   // Handler cập nhật Lead Time cho 1 tour (1 -> 10 tháng)
   const handleUpdateLeadTime = (stt, newMonths) => {
@@ -681,6 +787,28 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
         {/* Nhóm nút chọn View Mode */}
         <div style={{ display: 'flex', gap: '6px', background: '#f1f5f9', padding: '4px', borderRadius: '8px' }}>
           <button
+            onClick={() => setViewMode('executive')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 14px',
+              borderRadius: '6px',
+              fontSize: '0.85rem',
+              fontWeight: viewMode === 'executive' ? 700 : 500,
+              border: 'none',
+              background: viewMode === 'executive' ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' : 'transparent',
+              color: viewMode === 'executive' ? '#ffffff' : '#475569',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              boxShadow: viewMode === 'executive' ? '0 2px 4px rgba(2, 132, 199, 0.3)' : 'none'
+            }}
+          >
+            <Sparkles size={14} color={viewMode === 'executive' ? '#ffffff' : '#0284c7'} />
+            👔 Bản Trình Sếp (Executive)
+          </button>
+
+          <button
             onClick={() => setViewMode('matrix')}
             style={{
               display: 'flex',
@@ -816,27 +944,424 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             </select>
           </div>
 
-          {/* Ô tìm kiếm */}
-          <div style={{ position: 'relative' }}>
-            <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-            <input
-              type="text"
-              placeholder="Tìm tên tour / tuyến..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                padding: '6px 12px 6px 30px',
-                fontSize: '0.85rem',
-                border: '1px solid #cbd5e1',
-                borderRadius: '6px',
-                background: '#f8fafc',
-                outline: 'none',
-                width: '180px'
-              }}
-            />
-          </div>
+          {/* Nút In / Xuất PDF A4 */}
+          <button
+            onClick={() => window.print()}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 14px',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              background: '#0284c7',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(2, 132, 199, 0.25)'
+            }}
+            title="In hoặc lưu PDF chuẩn A4 gửi Ban Giám Đốc"
+          >
+            <Download size={14} />
+            In / Xuất PDF
+          </button>
         </div>
       </div>
+
+      {/* ── 3.5. VIEW 0: BẢN TRÌNH BAN GIÁM ĐỐC (EXECUTIVE SUMMARY) ── */}
+      {viewMode === 'executive' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          {/* KHỐI 1: 4 THẺ CHỈ SỐ SỐNG CÒN (BIG NUMBERS 30 GIÂY) */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '16px'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+              color: '#ffffff',
+              borderRadius: '12px',
+              padding: '20px',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
+              borderLeft: '5px solid #38bdf8'
+            }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '6px' }}>
+                DOANH THU KẾ HOẠCH 2027
+              </div>
+              <div style={{ fontSize: '1.9rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#38bdf8' }}>
+                {fmtBillion(kpis.totalRevenue)}
+              </div>
+              <div style={{ fontSize: '0.82rem', color: '#cbd5e1', marginTop: '6px' }}>
+                <strong>27 Đoàn</strong> • <strong>270 Khách VIP</strong> (24 đợt)
+              </div>
+            </div>
+
+            <div style={{
+              background: '#ffffff',
+              borderRadius: '12px',
+              padding: '20px',
+              border: '1px solid #e2e8f0',
+              borderLeft: '5px solid #10b981',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
+            }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', marginBottom: '6px' }}>
+                LÃI GỘP DỰ KIẾN (GROSS PROFIT)
+              </div>
+              <div style={{ fontSize: '1.9rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#10b981' }}>
+                {fmtBillion(kpis.totalProfit)}
+              </div>
+              <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '6px' }}>
+                Biên lợi nhuận gộp đạt <strong>{kpis.grossMarginPercent}%</strong>
+              </div>
+            </div>
+
+            <div style={{
+              background: '#ffffff',
+              borderRadius: '12px',
+              padding: '20px',
+              border: '1px solid #e2e8f0',
+              borderLeft: '5px solid #0284c7',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
+            }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', marginBottom: '6px' }}>
+                KINH PHÍ MKT ĐỀ XUẤT (1% DT)
+              </div>
+              <div style={{ fontSize: '1.9rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#0284c7' }}>
+                {fmtMillion(kpis.totalMktBudget)}
+              </div>
+              <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '6px' }}>
+                Chuẩn định mức <strong>1.00% Doanh Thu</strong> ({fmt(kpis.totalMktBudget)})
+              </div>
+            </div>
+
+            <div style={{
+              background: '#fffbeb',
+              borderRadius: '12px',
+              padding: '20px',
+              border: '1px solid #fef3c7',
+              borderLeft: '5px solid #d97706',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
+            }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#92400e', marginBottom: '6px' }}>
+                ỨNG TRƯỚC CUỐI 2026 (T09-T12)
+              </div>
+              <div style={{ fontSize: '1.9rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#d97706' }}>
+                {fmtMillion(kpis.prep2026Budget)}
+              </div>
+              <div style={{ fontSize: '0.82rem', color: '#92400e', marginTop: '6px' }}>
+                Chiếm <strong>28.6%</strong> (Gom khách Tết & Visa Murmansk)
+              </div>
+            </div>
+          </div>
+
+          {/* KHỐI 2: TOP 3 TRỤ CỘT DOANH THU (PARETO 44.2%) */}
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0',
+            padding: '20px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>🎯</span> TOP 3 TUYẾN TRỤ CỘT (Gánh 44.2% Doanh Thu Toàn BU5)
+                </h3>
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                  Quy luật Pareto: Tập trung bảo vệ 3 tuyến này đảm bảo 13.98 Tỷ doanh thu & 1.95 Tỷ lãi gộp
+                </span>
+              </div>
+              <span style={{
+                background: '#eff6ff',
+                color: '#1e40af',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                padding: '4px 10px',
+                borderRadius: '20px',
+                border: '1px solid #bfdbfe'
+              }}>
+                Tổng 3 Tuyến: 13.98 Tỷ DT • 139.8M MKT
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+              {productAggregates.slice(0, 3).map((prod, idx) => {
+                const medals = ['🥇', '🥈', '🥉'];
+                const pct = ((prod.revenue / (kpis.totalRevenue || 1)) * 100).toFixed(1);
+                return (
+                  <div key={prod.key} style={{
+                    background: idx === 0 ? '#f0f9ff' : (idx === 1 ? '#f0fdf4' : '#faf5ff'),
+                    border: `1px solid ${idx === 0 ? '#bae6fd' : (idx === 1 ? '#bbf7d0' : '#e9d5ff')}`,
+                    borderRadius: '10px',
+                    padding: '16px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>
+                        {medals[idx]} {prod.name}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: '#ffffff', border: '1px solid #e2e8f0' }}>
+                        {pct}% DT
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#475569', marginBottom: '4px' }}>
+                      <span>Quy mô: <strong>{prod.groups} đoàn</strong> ({prod.pax} pax)</span>
+                      <span>Giá: <strong>{fmtShort(prod.pricePerPax)}</strong>/pax</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 800, marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed rgba(0,0,0,0.1)' }}>
+                      <span style={{ color: '#0284c7' }}>DT: {fmtBillion(prod.revenue)}</span>
+                      <span style={{ color: '#16a34a' }}>Lãi: {fmtBillion(prod.grossProfit)}</span>
+                      <span style={{ color: '#d97706' }}>MKT: {fmtMillion(prod.mktBudget)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* KHỐI 3: BẢNG ĐỐI XỨNG DÒNG TIỀN 4 QUÝ (CASH-IN VS CASH-OUT) */}
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0',
+            padding: '20px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+          }}>
+            <div style={{ marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>⚖️</span> CÂN ĐỐI DÒNG TIỀN THEO 4 QUÝ CHIẾN LƯỢC (Tiền Chi MKT vs Doanh Thu Thu Về)
+              </h3>
+              <p style={{ margin: '4px 0 0 0', fontSize: '0.82rem', color: '#64748b' }}>
+                Giải trình độ trễ dòng tiền (Cashflow Lag): Chi trước 90.44M cuối năm 2026 là điều kiện bắt buộc để gặt hái 31.65 Tỷ doanh thu trong năm 2027.
+              </p>
+            </div>
+
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <thead>
+                  <tr style={{ background: '#0f172a', color: '#ffffff' }}>
+                    <th style={{ padding: '10px 14px', textAlign: 'left', borderRadius: '6px 0 0 0' }}>GIAI ĐOẠN / QUÝ</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>SỐ THÁNG</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'right' }}>TIỀN CHI MKT (CASH-OUT)</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'right' }}>DOANH THU THU VỀ (CASH-IN)</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>ĐOÀN KHỞI HÀNH</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left', borderRadius: '0 6px 0 0' }}>ĐÁNH GIÁ CÂN ĐỐI DÒNG TIỀN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {quarterlyData.map((q, idx) => {
+                    const mktPercent = ((q.mkt / (kpis.totalMktBudget || 1)) * 100).toFixed(1);
+                    return (
+                      <tr key={q.id} style={{ borderBottom: '1px solid #e2e8f0', background: idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
+                        <td style={{ padding: '12px 14px' }}>
+                          <div style={{ fontWeight: 800, color: '#0f172a' }}>{q.label}</div>
+                          <span style={{ fontSize: '0.72rem', color: q.badgeColor, background: q.badgeBg, padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                            {q.badge}
+                          </span>
+                        </td>
+                        <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b' }}>
+                          {q.months.length} tháng
+                        </td>
+                        <td style={{ padding: '12px 14px', textAlign: 'right' }}>
+                          <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0284c7' }}>
+                            {fmtMillion(q.mkt)}
+                          </span>
+                          <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{mktPercent}% ngân sách</div>
+                        </td>
+                        <td style={{ padding: '12px 14px', textAlign: 'right' }}>
+                          <span style={{ fontSize: '0.95rem', fontWeight: 800, color: q.rev > 0 ? '#10b981' : '#94a3b8' }}>
+                            {q.rev > 0 ? fmtBillion(q.rev) : '0 VNĐ'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '12px 14px', textAlign: 'center', fontWeight: 700, color: '#0f172a' }}>
+                          {q.groups > 0 ? `${q.groups} đoàn` : '0 đoàn'}
+                        </td>
+                        <td style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569' }}>
+                          {q.tag}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  <tr style={{ background: '#f1f5f9', fontWeight: 900, borderTop: '2px solid #0f172a' }}>
+                    <td style={{ padding: '12px 14px', color: '#0f172a' }}>TỔNG CỘNG CẢ NĂM 2027</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'center' }}>15 tháng</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', color: '#0284c7', fontSize: '1rem' }}>
+                      {fmtMillion(kpis.totalMktBudget)}
+                    </td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', color: '#10b981', fontSize: '1rem' }}>
+                      {fmtBillion(kpis.totalRevenue)}
+                    </td>
+                    <td style={{ padding: '12px 14px', textAlign: 'center', color: '#0f172a', fontSize: '1rem' }}>
+                      {kpis.totalGroups} đoàn
+                    </td>
+                    <td style={{ padding: '12px 14px', color: '#15803d', fontSize: '0.85rem' }}>
+                      ✔ Đúng chuẩn định mức 1.00% Doanh Thu
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* KHỐI 4: BẢNG 10 TUYẾN SẢN PHẨM RÚT GỌN (COMPACT PORTFOLIO) */}
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0',
+            padding: '20px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+          }}>
+            <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>📋</span> BẢNG 10 TUYẾN SẢN PHẨM BU5 NĂM 2027 (Đơn Vị Rút Gọn Tỷ / Triệu)
+                </h3>
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                  Sắp xếp theo thứ tự doanh thu đóng góp từ cao đến thấp
+                </span>
+              </div>
+            </div>
+
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <thead>
+                  <tr style={{ background: '#f8fafc', color: '#475569', borderBottom: '2px solid #e2e8f0', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <th style={{ padding: '10px 12px', textAlign: 'center', width: '50px' }}>Hạng</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'left' }}>Tuyến Sản Phẩm</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'center' }}>Phân Loại</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'center' }}>Số Đoàn</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'center' }}>Số Pax</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right' }}>Giá Vé / Pax</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right' }}>Doanh Thu (Tỷ)</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right' }}>Lãi Gộp (Tỷ)</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right' }}>MKT 1% (Tr)</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'left', width: '180px' }}>Tỷ Trọng Doanh Thu</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productAggregates.map((prod, idx) => {
+                    const badgeStyle = getCategoryBadgeStyle(prod.category);
+                    const revPct = ((prod.revenue / (kpis.totalRevenue || 1)) * 100);
+                    return (
+                      <tr key={prod.key} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 800, color: idx < 3 ? '#0284c7' : '#94a3b8' }}>
+                          #{idx + 1}
+                        </td>
+                        <td style={{ padding: '10px 12px', fontWeight: 700, color: '#0f172a' }}>
+                          <span style={{ marginRight: '6px' }}>{prod.icon}</span> {prod.name}
+                        </td>
+                        <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                          <span style={{
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            background: badgeStyle.bg,
+                            color: badgeStyle.text,
+                            border: `1px solid ${badgeStyle.border}`
+                          }}>
+                            {prod.category}
+                          </span>
+                        </td>
+                        <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 700, color: '#0f172a' }}>
+                          {prod.groups}
+                        </td>
+                        <td style={{ padding: '10px 12px', textAlign: 'center', color: '#64748b' }}>
+                          {prod.pax}
+                        </td>
+                        <td style={{ padding: '10px 12px', textAlign: 'right', color: '#475569' }}>
+                          {fmtShort(prod.pricePerPax)}
+                        </td>
+                        <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 800, color: '#0284c7' }}>
+                          {fmtBillion(prod.revenue)}
+                        </td>
+                        <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#16a34a' }}>
+                          {fmtBillion(prod.grossProfit)}
+                        </td>
+                        <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 800, color: '#d97706' }}>
+                          {fmtMillion(prod.mktBudget)}
+                        </td>
+                        <td style={{ padding: '10px 12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{
+                              flex: 1,
+                              height: '8px',
+                              background: '#f1f5f9',
+                              borderRadius: '4px',
+                              overflow: 'hidden'
+                            }}>
+                              <div style={{
+                                width: `${Math.min(100, (revPct / 16) * 100)}%`,
+                                height: '100%',
+                                background: idx < 3 ? 'linear-gradient(90deg, #0284c7 0%, #38bdf8 100%)' : '#94a3b8',
+                                borderRadius: '4px'
+                              }} />
+                            </div>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', width: '38px', textAlign: 'right' }}>
+                              {revPct.toFixed(1)}%
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  <tr style={{ background: '#f8fafc', fontWeight: 900, borderTop: '2px solid #0f172a' }}>
+                    <td colSpan={3} style={{ padding: '12px 14px', color: '#0f172a' }}>TỔNG CỘNG CẢ NĂM 2027</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'center', color: '#0f172a' }}>{kpis.totalGroups}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b' }}>{kpis.totalPax}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', color: '#64748b' }}>—</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', color: '#0284c7', fontSize: '0.95rem' }}>{fmtBillion(kpis.totalRevenue)}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', color: '#16a34a', fontSize: '0.95rem' }}>{fmtBillion(kpis.totalProfit)}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', color: '#d97706', fontSize: '0.95rem' }}>{fmtMillion(kpis.totalMktBudget)}</td>
+                    <td style={{ padding: '12px 14px', fontWeight: 800, color: '#0f172a' }}>100.0% Doanh Thu</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* KHỐI 5: PHIẾU TRÌNH BAN GIÁM ĐỐC PHÊ DUYỆT */}
+          <div style={{
+            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+            borderRadius: '12px',
+            border: '1px solid #cbd5e1',
+            padding: '24px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+          }}>
+            <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>✍️</span> 3 ĐỀ XUẤT HÀNH ĐỘNG KÍNH TRÌNH BAN GIÁM ĐỐC:
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+              <div style={{ background: '#ffffff', padding: '14px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0284c7', marginBottom: '4px' }}>
+                  1. Duyệt Định Mức 1% Doanh Thu
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.5 }}>
+                  Khống chế ngân sách MKT cả năm 2027 ở mức <strong>316.460.000 VNĐ</strong> theo tiến độ khởi hành 27 đoàn.
+                </div>
+              </div>
+              <div style={{ background: '#ffffff', padding: '14px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#d97706', marginBottom: '4px' }}>
+                  2. Cấp Hạn Mức Tạm Ứng Quý 4/2026
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.5 }}>
+                  Cho phép ứng trước <strong>90.439.620 VNĐ</strong> để gom khách tour Tết và nộp hồ sơ Visa Murmansk, Alaska, Nam Mỹ trước 5-9 tháng.
+                </div>
+              </div>
+              <div style={{ background: '#ffffff', padding: '14px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#16a34a', marginBottom: '4px' }}>
+                  3. Theo Dõi Realtime & Cắt Lỗ Cuốn Chiếu
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.5 }}>
+                  Toàn bộ chi phí phân bổ theo từng tháng độc lập, tự động điều chỉnh nếu tiến độ cọc thực tế có thay đổi.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      )}
 
       {/* ── 4. VIEW 1: BẢNG MA TRẬN 15 THÁNG (HEATMAP MATRIX) ── */}
       {viewMode === 'matrix' && (
