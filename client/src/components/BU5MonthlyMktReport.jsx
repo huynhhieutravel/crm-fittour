@@ -247,7 +247,9 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
       map[dep.productKey].mktBudget += dep.mktBudget;
     });
 
-    return Object.values(map).sort((a, b) => b.revenue - a.revenue);
+    return Object.values(map)
+      .filter(p => p.groups > 0)
+      .sort((a, b) => b.revenue - a.revenue);
   }, [departures]);
 
   // Handler cập nhật Lead Time cho 1 tour (1 -> 10 tháng)
@@ -602,34 +604,31 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
       {/* ── 2. KPI SUMMARY CARDS (ĐỒNG BỘ ĐỘNG THEO PHẠM VI 2027) ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '16px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '14px',
         marginBottom: '20px'
       }}>
         {/* Card 1: Tổng Ngân Sách MKT */}
         <div style={{
           background: '#ffffff',
           borderRadius: '12px',
-          padding: '20px',
+          padding: '16px 18px',
           border: '1px solid #e2e8f0',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>
-              {yearScope === '2027' ? 'Tổng MKT Kế Hoạch 2027 (1%)' : 'Tổng Ngân Sách MKT (1%)'}
+          <div style={{ marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
+              {yearScope === '2027' ? 'Tổng Budget MKT 2027 (1%)' : 'Tổng Ngân Sách MKT (1%)'}
             </span>
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
-              <DollarSign size={18} />
-            </div>
           </div>
           <div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
               {fmt(kpis.totalMktBudget)}
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 600, marginTop: '4px' }}>
+            <div style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: 600, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               Chuẩn 1.00% của {fmt(kpis.totalRevenue)} ({kpis.totalGroups} đoàn)
             </div>
           </div>
@@ -639,29 +638,26 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
         <div style={{
           background: '#ffffff',
           borderRadius: '12px',
-          padding: '20px',
+          padding: '16px 18px',
           border: '1px solid #e2e8f0',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>
-              {yearScope === '2027' ? 'Chi Trong Năm 2027 (T1-T10)' : 'Chi Phí MKT Bình Quân / Tháng'}
+          <div style={{ marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
+              {yearScope === '2027' ? 'Giải Ngân Năm 2027' : 'Chi Phí MKT Bình Quân / Tháng'}
             </span>
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
-              <Calendar size={18} />
-            </div>
           </div>
           <div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0284c7', letterSpacing: '-0.02em' }}>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0284c7', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
               {yearScope === '2027' ? fmt(kpis.mktIn2027Only) : fmt(kpis.avgMonthlyMkt)}
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>
+            <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {yearScope === '2027' 
-                ? `Chiếm ${((kpis.mktIn2027Only / (kpis.totalMktBudget || 1)) * 100).toFixed(1)}% tổng ngân sách 2027`
-                : `Trải đều qua ${timelineMonths.length} tháng phát sinh chi phí`
+                ? `Chiếm ${((kpis.mktIn2027Only / (kpis.totalMktBudget || 1)) * 100).toFixed(1)}% tổng quỹ 2027`
+                : `Trải đều qua ${timelineMonths.length} tháng phát sinh`
               }
             </div>
           </div>
@@ -671,28 +667,25 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
         <div style={{
           background: '#ffffff',
           borderRadius: '12px',
-          padding: '20px',
+          padding: '16px 18px',
           border: '1px solid #e2e8f0',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>
-              {yearScope === '2027' ? 'Chạy Trước Cuối 2026 (T9-T12)' : 'Tháng Chi Tiêu Đỉnh Điểm (Peak)'}
+          <div style={{ marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
+              {yearScope === '2027' ? 'Chạy trước cuối 2026' : 'Tháng Chi Tiêu Đỉnh Điểm (Peak)'}
             </span>
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d97706' }}>
-              {yearScope === '2027' ? <Clock size={18} /> : <Flame size={18} />}
-            </div>
           </div>
           <div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: yearScope === '2027' ? '#d97706' : '#d97706', letterSpacing: '-0.02em' }}>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: yearScope === '2027' ? '#d97706' : '#d97706', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
               {yearScope === '2027' ? fmt(kpis.mktPrepIn2026) : fmt(kpis.peakMonthAmount)}
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#92400e', fontWeight: 600, marginTop: '4px' }}>
+            <div style={{ fontSize: '0.78rem', color: '#92400e', fontWeight: 600, marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {yearScope === '2027'
-                ? `Chiếm ${((kpis.mktPrepIn2026 / (kpis.totalMktBudget || 1)) * 100).toFixed(1)}% (gom khách Tết T2 & visa)`
+                ? `Chiếm ${((kpis.mktPrepIn2026 / (kpis.totalMktBudget || 1)) * 100).toFixed(1)}% (gom khách Tết & visa)`
                 : `Rơi vào ${kpis.peakMonthKey} (nhiều tour lớn)`
               }
             </div>
@@ -703,24 +696,21 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
         <div style={{
           background: '#ffffff',
           borderRadius: '12px',
-          padding: '20px',
+          padding: '16px 18px',
           border: '1px solid #e2e8f0',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Thời Gian Chạy Trước TB</span>
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#f3e8ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b5cf6' }}>
-              <TrendingUp size={18} />
-            </div>
+          <div style={{ marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Thời Gian Chạy Trước TB</span>
           </div>
           <div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
               {kpis.avgLeadMonths} Tháng
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#8b5cf6', fontWeight: 600, marginTop: '4px' }}>
+            <div style={{ fontSize: '0.78rem', color: '#8b5cf6', fontWeight: 600, marginTop: '4px', whiteSpace: 'nowrap' }}>
               Biên độ tùy chỉnh: 1 đến 10 tháng
             </div>
           </div>
@@ -805,7 +795,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             }}
           >
             <Sparkles size={14} color={viewMode === 'executive' ? '#ffffff' : '#0284c7'} />
-            👔 Bản Trình Sếp (Executive)
+            Bản Trình Sếp (Executive)
           </button>
 
           <button
@@ -983,17 +973,17 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
               background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
               color: '#ffffff',
               borderRadius: '12px',
-              padding: '20px',
+              padding: '18px 20px',
               boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
               borderLeft: '5px solid #38bdf8'
             }}>
               <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '6px' }}>
-                DOANH THU KẾ HOẠCH 2027
+                DOANH THU 2027
               </div>
-              <div style={{ fontSize: '1.9rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#38bdf8' }}>
+              <div style={{ fontSize: '1.45rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#38bdf8', whiteSpace: 'nowrap' }}>
                 {fmtBillion(kpis.totalRevenue)}
               </div>
-              <div style={{ fontSize: '0.82rem', color: '#cbd5e1', marginTop: '6px' }}>
+              <div style={{ fontSize: '0.8rem', color: '#cbd5e1', marginTop: '6px', whiteSpace: 'nowrap' }}>
                 <strong>27 Đoàn</strong> • <strong>270 Khách VIP</strong> (24 đợt)
               </div>
             </div>
@@ -1001,18 +991,18 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             <div style={{
               background: '#ffffff',
               borderRadius: '12px',
-              padding: '20px',
+              padding: '18px 20px',
               border: '1px solid #e2e8f0',
               borderLeft: '5px solid #10b981',
               boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
             }}>
               <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', marginBottom: '6px' }}>
-                LÃI GỘP DỰ KIẾN (GROSS PROFIT)
+                LÃI GỘP 2027
               </div>
-              <div style={{ fontSize: '1.9rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#10b981' }}>
-                {fmtBillion(kpis.totalProfit)}
+              <div style={{ fontSize: '1.45rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#10b981', whiteSpace: 'nowrap' }}>
+                {fmtBillion(kpis.totalGrossProfit)}
               </div>
-              <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '6px' }}>
+              <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '6px', whiteSpace: 'nowrap' }}>
                 Biên lợi nhuận gộp đạt <strong>{kpis.grossMarginPercent}%</strong>
               </div>
             </div>
@@ -1020,18 +1010,18 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             <div style={{
               background: '#ffffff',
               borderRadius: '12px',
-              padding: '20px',
+              padding: '18px 20px',
               border: '1px solid #e2e8f0',
               borderLeft: '5px solid #0284c7',
               boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
             }}>
               <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', marginBottom: '6px' }}>
-                KINH PHÍ MKT ĐỀ XUẤT (1% DT)
+                TỔNG BUDGET MKT 2027 (1%)
               </div>
-              <div style={{ fontSize: '1.9rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#0284c7' }}>
+              <div style={{ fontSize: '1.45rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#0284c7', whiteSpace: 'nowrap' }}>
                 {fmtMillion(kpis.totalMktBudget)}
               </div>
-              <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '6px' }}>
+              <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '6px', whiteSpace: 'nowrap' }}>
                 Chuẩn định mức <strong>1.00% Doanh Thu</strong> ({fmt(kpis.totalMktBudget)})
               </div>
             </div>
@@ -1039,19 +1029,19 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             <div style={{
               background: '#fffbeb',
               borderRadius: '12px',
-              padding: '20px',
+              padding: '18px 20px',
               border: '1px solid #fef3c7',
               borderLeft: '5px solid #d97706',
               boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
             }}>
               <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#92400e', marginBottom: '6px' }}>
-                ỨNG TRƯỚC CUỐI 2026 (T09-T12)
+                CHẠY TRƯỚC CUỐI 2026
               </div>
-              <div style={{ fontSize: '1.9rem', fontWeight: 900, letterSpacing: '-0.03em', color: '#d97706' }}>
+              <div style={{ fontSize: '1.45rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#d97706', whiteSpace: 'nowrap' }}>
                 {fmtMillion(kpis.prep2026Budget)}
               </div>
-              <div style={{ fontSize: '0.82rem', color: '#92400e', marginTop: '6px' }}>
-                Chiếm <strong>28.6%</strong> (Gom khách Tết & Visa Murmansk)
+              <div style={{ fontSize: '0.8rem', color: '#92400e', marginTop: '6px', whiteSpace: 'nowrap' }}>
+                Chiếm <strong>28.6%</strong> (Gom khách Tết &amp; Visa Murmansk)
               </div>
             </div>
           </div>
@@ -1066,11 +1056,11 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>🎯</span> TOP 3 TUYẾN TRỤ CỘT (Gánh 44.2% Doanh Thu Toàn BU5)
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                  TOP 3 TUYẾN TRỤ CỘT (Gánh 44.2% Doanh Thu Toàn BU5)
                 </h3>
                 <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                  Quy luật Pareto: Tập trung bảo vệ 3 tuyến này đảm bảo 13.98 Tỷ doanh thu & 1.95 Tỷ lãi gộp
+                  Quy luật Pareto: Tập trung bảo vệ 3 tuyến này đảm bảo 13.98 Tỷ doanh thu &amp; 1.95 Tỷ lãi gộp
                 </span>
               </div>
               <span style={{
@@ -1088,7 +1078,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
               {productAggregates.slice(0, 3).map((prod, idx) => {
-                const medals = ['🥇', '🥈', '🥉'];
+                const ranks = ['#1', '#2', '#3'];
                 const pct = ((prod.revenue / (kpis.totalRevenue || 1)) * 100).toFixed(1);
                 return (
                   <div key={prod.key} style={{
@@ -1099,7 +1089,8 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                       <span style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>
-                        {medals[idx]} {prod.name}
+                        <span style={{ color: idx === 0 ? '#0284c7' : (idx === 1 ? '#16a34a' : '#8b5cf6'), marginRight: '6px' }}>{ranks[idx]}</span>
+                        {prod.name}
                       </span>
                       <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: '#ffffff', border: '1px solid #e2e8f0' }}>
                         {pct}% DT
@@ -1129,8 +1120,8 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
           }}>
             <div style={{ marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>⚖️</span> CÂN ĐỐI DÒNG TIỀN THEO 4 QUÝ CHIẾN LƯỢC (Tiền Chi MKT vs Doanh Thu Thu Về)
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                CÂN ĐỐI DÒNG TIỀN THEO 4 QUÝ CHIẾN LƯỢC (Tiền Chi MKT vs Doanh Thu Thu Về)
               </h3>
               <p style={{ margin: '4px 0 0 0', fontSize: '0.82rem', color: '#64748b' }}>
                 Giải trình độ trễ dòng tiền (Cashflow Lag): Chi trước 90.44M cuối năm 2026 là điều kiện bắt buộc để gặt hái 31.65 Tỷ doanh thu trong năm 2027.
@@ -1214,8 +1205,8 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
           }}>
             <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>📋</span> BẢNG 10 TUYẾN SẢN PHẨM BU5 NĂM 2027 (Đơn Vị Rút Gọn Tỷ / Triệu)
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                  BẢNG 10 TUYẾN SẢN PHẨM BU5 NĂM 2027 (Đơn Vị Rút Gọn Tỷ / Triệu)
                 </h3>
                 <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
                   Sắp xếp theo thứ tự doanh thu đóng góp từ cao đến thấp
@@ -1249,7 +1240,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                           #{idx + 1}
                         </td>
                         <td style={{ padding: '10px 12px', fontWeight: 700, color: '#0f172a' }}>
-                          <span style={{ marginRight: '6px' }}>{prod.icon}</span> {prod.name}
+                          {prod.name}
                         </td>
                         <td style={{ padding: '10px 12px', textAlign: 'center' }}>
                           <span style={{
@@ -1312,7 +1303,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                     <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b' }}>{kpis.totalPax}</td>
                     <td style={{ padding: '12px 14px', textAlign: 'right', color: '#64748b' }}>—</td>
                     <td style={{ padding: '12px 14px', textAlign: 'right', color: '#0284c7', fontSize: '0.95rem' }}>{fmtBillion(kpis.totalRevenue)}</td>
-                    <td style={{ padding: '12px 14px', textAlign: 'right', color: '#16a34a', fontSize: '0.95rem' }}>{fmtBillion(kpis.totalProfit)}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', color: '#16a34a', fontSize: '0.95rem' }}>{fmtBillion(kpis.totalGrossProfit)}</td>
                     <td style={{ padding: '12px 14px', textAlign: 'right', color: '#d97706', fontSize: '0.95rem' }}>{fmtMillion(kpis.totalMktBudget)}</td>
                     <td style={{ padding: '12px 14px', fontWeight: 800, color: '#0f172a' }}>100.0% Doanh Thu</td>
                   </tr>
@@ -1329,8 +1320,8 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             padding: '24px',
             boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
           }}>
-            <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>✍️</span> 3 ĐỀ XUẤT HÀNH ĐỘNG KÍNH TRÌNH BAN GIÁM ĐỐC:
+            <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>
+              3 ĐỀ XUẤT HÀNH ĐỘNG KÍNH TRÌNH BAN GIÁM ĐỐC:
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
               <div style={{ background: '#ffffff', padding: '14px 16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>

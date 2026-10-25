@@ -8,7 +8,7 @@
 
 ---
 
-## 🏆 I. EXECUTIVE SUMMARY (TỔNG QUAN ĐIỀU HÀNH 30 GIÂY)
+## I. EXECUTIVE SUMMARY (TỔNG QUAN ĐIỀU HÀNH 30 GIÂY)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -18,7 +18,7 @@
 │   31.65 TỶ VNĐ           │   4.48 TỶ VNĐ            │   316.46 TRIỆU VNĐ       │   27 ĐOÀN       │
 │  (31.646.000.000 đ)      │  (Biên lãi: 14.16%)      │  (Đúng chuẩn 1.00% DT)   │  (270 Khách VIP)│
 ├──────────────────────────┴──────────────────────────┴──────────────────────────┴────────────────┤
-│ 💡 PHÂN BỔ DÒNG TIỀN MKT CUỐN CHIẾU:                                                           │
+│ PHÂN BỔ DÒNG TIỀN MKT CUỐN CHIẾU:                                                               │
 │  • Ứng trước Quý 4/2026 (T09-T12/26):  90.44 Triệu (28.6%) ➔ Gom khách tour Tết & Visa Murmansk │
 │  • Giải ngân trong năm 2027 (T01-T10/27): 226.02 Triệu (71.4%) ➔ Rải đều 10 tháng (Đỉnh T2: 35.3M) │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -26,34 +26,34 @@
 
 ---
 
-## 📊 II. BẢNG 10 TUYẾN SẢN PHẨM 2027 (TRỰC QUAN TỶ TRỌNG & DOANH THU)
+## II. BẢNG 10 TUYẾN SẢN PHẨM 2027 (TRỰC QUAN TỶ TRỌNG & DOANH THU)
 
 *Đơn vị rút gọn: Doanh thu & Lãi gộp tính theo **Tỷ VNĐ**, Ngân sách MKT tính theo **Triệu VNĐ**.*
 
 | Hạng | Tuyến Sản Phẩm | Đoàn | Khách | Giá/Pax | Doanh Thu | Lãi Gộp | MKT 1% | Thanh Tỷ Trọng Doanh Thu | Chu Kỳ Chạy |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :---: |
-| 🥇 | **❄️ Nga (Murmansk Cực Quang)** | 3 | 30 | 165.0 Tr | **4.95 Tỷ** | 0.75 Tỷ | **49.5 Tr** | `█████████░` 15.6% | T09/26 (T-5) |
-| 🥈 | **🐎 Mông Cổ** (Hè Naadam & Gobi) | 6 | 60 | 78.9 Tr | **4.73 Tỷ** | 0.60 Tỷ | **47.3 Tr** | `████████░░` 15.0% | T02/27 (T-4→7) |
-| 🥉 | **🌲 Alaska** (Hè & Thu Lễ 2/9) | 2 | 20 | 215.0 Tr | **4.30 Tỷ** | 0.60 Tỷ | **43.0 Tr** | `███████░░░` 13.6% | T12/26 (T-7→8) |
-| 4 | **🗿 Nam Mỹ** (Đại cảnh 4 nước) | 1 | 10 | 330.9 Tr | **3.31 Tỷ** | 0.61 Tỷ | **33.1 Tr** | `██████░░░░` 10.5% | T12/26 (T-9) |
-| 5 | **🏜️ Maroc** (Tết, Xuân & 30/4) | 3 | 30 | 109.0 Tr | **3.27 Tỷ** | 0.56 Tỷ | **32.7 Tr** | `██████░░░░` 10.3% | T09/26 (T-5→7) |
-| 6 | **🏛️ Trung Á** (Con đường Tơ Lụa) | 4 | 40 | 80.0 Tr | **3.20 Tỷ** | 0.32 Tỷ | **32.0 Tr** | `██████░░░░` 10.1% | T02/27 (T-4→7) |
-| 7 | **🏔️ Pakistan** (Hoa anh đào & Thu) | 4 | 40 | 74.9 Tr | **3.00 Tỷ** | 0.32 Tỷ | **30.0 Tr** | `█████░░░░░` 9.5% | T11/26 (T-4→5) |
-| 8 | **☀️ Ai Cập** (Tết & Lễ 30/4) | 2 | 20 | 104.9 Tr | **2.10 Tỷ** | 0.31 Tỷ | **21.0 Tr** | `████░░░░░░` 6.6% | T09/26 (T-5→7) |
-| 9 | **🦒 Namibia** (Wildlife Sa mạc Đỏ) | 1 | 10 | 180.0 Tr | **1.80 Tỷ** | 0.30 Tỷ | **18.0 Tr** | `███░░░░░░░` 5.7% | T01/27 (T-8) |
-| 10 | **🦌 Bắc Mông Cổ** (Tuần lộc Tsaatan)| 1 | 10 | 98.9 Tr | **0.99 Tỷ** | 0.11 Tỷ | **9.9 Tr** | `██░░░░░░░░` 3.1% | T04/27 (T-5) |
+| #1 | **Nga (Murmansk Cực Quang)** | 3 | 30 | 165.0 Tr | **4.95 Tỷ** | 0.75 Tỷ | **49.5 Tr** | `█████████░` 15.6% | T09/26 (T-5) |
+| #2 | **Mông Cổ** (Hè Naadam & Gobi) | 6 | 60 | 78.9 Tr | **4.73 Tỷ** | 0.60 Tỷ | **47.3 Tr** | `████████░░` 15.0% | T02/27 (T-4→7) |
+| #3 | **Alaska** (Hè & Thu Lễ 2/9) | 2 | 20 | 215.0 Tr | **4.30 Tỷ** | 0.60 Tỷ | **43.0 Tr** | `███████░░░` 13.6% | T12/26 (T-7→8) |
+| #4 | **Nam Mỹ** (Đại cảnh 4 nước) | 1 | 10 | 330.9 Tr | **3.31 Tỷ** | 0.61 Tỷ | **33.1 Tr** | `██████░░░░` 10.5% | T12/26 (T-9) |
+| #5 | **Maroc** (Tết, Xuân & 30/4) | 3 | 30 | 109.0 Tr | **3.27 Tỷ** | 0.56 Tỷ | **32.7 Tr** | `██████░░░░` 10.3% | T09/26 (T-5→7) |
+| #6 | **Trung Á** (Con đường Tơ Lụa) | 4 | 40 | 80.0 Tr | **3.20 Tỷ** | 0.32 Tỷ | **32.0 Tr** | `██████░░░░` 10.1% | T02/27 (T-4→7) |
+| #7 | **Pakistan** (Hoa anh đào & Thu) | 4 | 40 | 74.9 Tr | **3.00 Tỷ** | 0.32 Tỷ | **30.0 Tr** | `█████░░░░░` 9.5% | T11/26 (T-4→5) |
+| #8 | **Ai Cập** (Tết & Lễ 30/4) | 2 | 20 | 104.9 Tr | **2.10 Tỷ** | 0.31 Tỷ | **21.0 Tr** | `████░░░░░░` 6.6% | T09/26 (T-5→7) |
+| #9 | **Namibia** (Wildlife Sa mạc Đỏ) | 1 | 10 | 180.0 Tr | **1.80 Tỷ** | 0.30 Tỷ | **18.0 Tr** | `███░░░░░░░` 5.7% | T01/27 (T-8) |
+| #10 | **Bắc Mông Cổ** (Tuần lộc Tsaatan)| 1 | 10 | 98.9 Tr | **0.99 Tỷ** | 0.11 Tỷ | **9.9 Tr** | `██░░░░░░░░` 3.1% | T04/27 (T-5) |
 | **Σ** | **TỔNG CỘNG CẢ NĂM 2027** | **27** | **270** | — | **31.65 Tỷ** | **4.48 Tỷ** | **316.5 Tr** | `██████████` **100%** | **TB 5.7T** |
 
-> **💡 INSIGHT DATA ANALYST (QUY LUẬT PARETO 80/20):**  
+> **INSIGHT DATA ANALYST (QUY LUẬT PARETO 80/20):**  
 > Top 3 tuyến sản phẩm đầu bảng (**Nga Murmansk, Mông Cổ, Alaska**) đóng góp **13.98 Tỷ VNĐ (chiếm 44.2% Doanh thu toàn BU5)** và tiêu thụ **139.8 Triệu VNĐ ngân sách MKT**. Đây là 3 "mỏ neo" doanh thu và lợi nhuận mà Marketing cần bảo vệ tiến độ truyền thông tuyệt đối.
 
 ---
 
-## 📅 III. BẢNG DÒNG TIỀN MKT 15 THÁNG GOM THEO 4 QUÝ CHIẾN LƯỢC
+## III. BẢNG DÒNG TIỀN MKT 15 THÁNG GOM THEO 4 QUÝ CHIẾN LƯỢC
 
 *Thay vì dàn trải 14 dòng tháng đơn điệu, toàn bộ dòng tiền 316.46M được gom thành 4 giai đoạn chiến lược kèm thanh đo độ cao ngân sách:*
 
-### 🔹 GIAI ĐOẠN 1: CHẠY TRƯỚC CUỐI 2026 (T09 ➔ T12/2026) — TỔNG: 90.44 TRIỆU (28.6%)
+### GIAI ĐOẠN 1: CHẠY TRƯỚC CUỐI 2026 (T09 ➔ T12/2026) — TỔNG: 90.44 TRIỆU (28.6%)
 *Mục đích: Gom khách tour Tết Âm Lịch 2027, tour Săn Cực Quang Nga tháng 2 và làm hồ sơ Visa dài hạn (Nam Mỹ, Alaska).*
 
 | Tháng | Ngân Sách MKT | Tỷ Trọng | Số Tour Chạy | Biểu Đồ Độ Cao Ngân Sách Tháng | Trọng Tâm Chiến Dịch |
@@ -66,7 +66,7 @@
 
 ---
 
-### 🔹 GIAI ĐOẠN 2: CAO ĐIỂM QUÝ 1/2027 (T01 ➔ T03/2027) — TỔNG: 99.45 TRIỆU (31.4%)
+### GIAI ĐOẠN 2: CAO ĐIỂM QUÝ 1/2027 (T01 ➔ T03/2027) — TỔNG: 99.45 TRIỆU (31.4%)
 *Mục đích: Chốt cọc tour Tết, kích hoạt mở bán đồng loạt toàn bộ các tuyến mùa hè chủ lực (Mông Cổ, Trung Á).*
 
 | Tháng | Ngân Sách MKT | Tỷ Trọng | Số Tour Chạy | Biểu Đồ Độ Cao Ngân Sách Tháng | Trọng Tâm Chiến Dịch |
@@ -78,7 +78,7 @@
 
 ---
 
-### 🔹 GIAI ĐOẠN 3: GIỮ NHỊP QUÝ 2/2027 (T04 ➔ T06/2027) — TỔNG: 87.89 TRIỆU (27.8%)
+### GIAI ĐOẠN 3: GIỮ NHỊP QUÝ 2/2027 (T04 ➔ T06/2027) — TỔNG: 87.89 TRIỆU (27.8%)
 *Mục đích: Khởi động tuyến mùa thu, hoàn tất chốt khách Mông Cổ Naadam & Trung Á hè.*
 
 | Tháng | Ngân Sách MKT | Tỷ Trọng | Số Tour Chạy | Biểu Đồ Độ Cao Ngân Sách Tháng | Trọng Tâm Chiến Dịch |
@@ -90,7 +90,7 @@
 
 ---
 
-### 🔹 GIAI ĐOẠN 4: HẠ NHIỆT & ĐÓNG SỔ (T07 ➔ T10/2027) — TỔNG: 38.68 TRIỆU (12.2%)
+### GIAI ĐOẠN 4: HẠ NHIỆT & ĐÓNG SỔ (T07 ➔ T10/2027) — TỔNG: 38.68 TRIỆU (12.2%)
 *Mục đích: Thu nốt cọc các đoàn cuối năm, giảm dần chi phí quảng cáo để bảo toàn lợi nhuận ròng.*
 
 | Tháng | Ngân Sách MKT | Tỷ Trọng | Số Tour Chạy | Biểu Đồ Độ Cao Ngân Sách Tháng | Trọng Tâm Chiến Dịch |
@@ -103,7 +103,7 @@
 
 ---
 
-## ⚖️ IV. BẢNG CÂN ĐỐI DÒNG TIỀN (CASH-IN VS CASH-OUT THEO THÁNG)
+## IV. BẢNG CÂN ĐỐI DÒNG TIỀN (CASH-IN VS CASH-OUT THEO THÁNG)
 
 *Bảng đối chiếu minh chứng quy luật "Chi tiền trước - Thu tiền sau" (Cashflow Lag):*
 
@@ -123,7 +123,7 @@
 
 ---
 
-## 📌 V. 3 ĐỀ XUẤT HÀNH ĐỘNG TRÌNH BAN GIÁM ĐỐC PHÊ DUYỆT
+## V. 3 ĐỀ XUẤT HÀNH ĐỘNG TRÌNH BAN GIÁM ĐỐC PHÊ DUYỆT
 
 1. **Phê duyệt chuẩn hóa hạn mức Marketing 1% Doanh thu cho BU5 năm 2027: `316.460.000 VNĐ`**.
 2. **Chấp thuận cơ chế tạm ứng giải ngân Quý 4/2026: `90.439.620 VNĐ`** (28.6% tổng ngân sách) để đội ngũ Marketing kịp triển khai gom khách tour Tết và nộp hồ sơ Visa Murmansk, Alaska, Nam Mỹ trước 5 - 9 tháng.

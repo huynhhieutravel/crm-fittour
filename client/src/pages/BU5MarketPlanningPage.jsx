@@ -462,8 +462,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
               </span>
             </div>
 
-            <h1 style={{ margin: 0, fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Compass size={30} color="#d97706" />
+            <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
               Kế Hoạch Sản Phẩm &amp; Ngân Sách Marketing BU5 Năm 2027
             </h1>
             <p style={{ margin: '6px 0 0', fontSize: '0.92rem', color: '#64748b', maxWidth: '880px', lineHeight: 1.55 }}>
@@ -492,7 +491,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
                 boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
               }}
             >
-              <span>Mở Google Sheet BU5 📊</span>
+              <span>Mở Google Sheet BU5</span>
               <ExternalLink size={14} color="#059669" />
             </a>
 
@@ -504,142 +503,132 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
       {/* ── 5 THẺ KPI TỔNG HỢP NĂM 2027 (HERO KPI STATS) ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        gap: '14px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
+        gap: '12px',
         marginBottom: '22px'
       }}>
-        {/* Card 1: Quy mô đoàn & khách 2027 */}
+        {/* Card 1: Quy mô 2027 */}
         <div style={{
           background: '#ffffff',
           borderRadius: '12px',
           border: '1px solid #e2e8f0',
-          padding: '18px 20px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+          padding: '14px 12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          minWidth: 0
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ marginBottom: '6px' }}>
             <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
-              Quy Mô Đoàn &amp; Khách 2027
+              Quy mô 2027
             </span>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ecfdf5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Users size={17} />
-            </div>
           </div>
-          <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
             27 Đoàn • 270 Pax
           </div>
-          <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '4px' }}>
-            Tổng số đợt: <strong style={{ color: '#0369a1' }}>24 đợt khởi hành năm 2027</strong>
+          <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Tổng số: <strong style={{ color: '#0369a1' }}>24 đợt khởi hành</strong>
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#0284c7', marginTop: '2px', fontWeight: 600 }}>
-            Tiêu chuẩn: <strong>10 khách mục tiêu / đoàn</strong>
+          <div style={{ fontSize: '0.74rem', color: '#0284c7', marginTop: '2px', fontWeight: 600, whiteSpace: 'nowrap' }}>
+            Tiêu chuẩn: <strong>10 khách / đoàn</strong>
           </div>
         </div>
 
-        {/* Card 2: Doanh thu kế hoạch 2027 */}
+        {/* Card 2: Doanh thu 2027 */}
         <div style={{
           background: '#ffffff',
           borderRadius: '12px',
           border: '1px solid #e2e8f0',
-          padding: '18px 20px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+          padding: '14px 12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          minWidth: 0
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ marginBottom: '6px' }}>
             <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
-              Doanh Thu Kế Hoạch 2027
+              Doanh thu 2027
             </span>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <TrendingUp size={17} />
-            </div>
           </div>
-          <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#0284c7', letterSpacing: '-0.02em' }}>
+          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0284c7', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
             31.646.000.000 đ
           </div>
-          <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '4px' }}>
-            Lãi gộp KH: <strong style={{ color: '#16a34a' }}>4.482.282.380 đ (14.2%)</strong>
+          <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Lãi gộp KH: <strong style={{ color: '#16a34a' }}>4.48 Tỷ (14.2%)</strong>
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#0369a1', marginTop: '2px', fontWeight: 600 }}>
+          <div style={{ fontSize: '0.74rem', color: '#0369a1', marginTop: '2px', fontWeight: 600, whiteSpace: 'nowrap' }}>
             Bình quân: <strong>~1.17 Tỷ đ / đoàn</strong>
           </div>
         </div>
 
-        {/* Card 3: Tổng ngân sách MKT 1% */}
+        {/* Card 3: Tổng Budget MKT 2027 (1%) */}
         <div style={{
           background: '#ffffff',
           borderRadius: '12px',
           border: '1px solid #e2e8f0',
-          padding: '18px 20px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+          padding: '14px 12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          minWidth: 0
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ marginBottom: '6px' }}>
             <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
-              Tổng Ngân Sách MKT 2027 (1%)
+              Tổng Budget MKT 2027 (1%)
             </span>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ecfdf5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <DollarSign size={17} />
-            </div>
           </div>
-          <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#10b981', letterSpacing: '-0.02em' }}>
+          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#10b981', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
             316.460.000 đ
           </div>
-          <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '4px' }}>
-            Chuẩn đúng: <strong style={{ color: '#10b981' }}>1.00% Doanh Thu Kế Hoạch</strong>
+          <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Chuẩn đúng: <strong style={{ color: '#10b981' }}>1.00% Doanh Thu</strong>
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px' }}>
-            Bình quân / đoàn: <strong>~11.72 Triệu đ</strong>
+          <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '2px', whiteSpace: 'nowrap' }}>
+            Bình quân: <strong>~11.72 Triệu / đoàn</strong>
           </div>
         </div>
 
-        {/* Card 4: Dòng tiền MKT Chuẩn bị cuối 2026 */}
+        {/* Card 4: Chạy trước cuối 2026 */}
         <div style={{
           background: '#ffffff',
           borderRadius: '12px',
           border: '1px solid #e2e8f0',
-          padding: '18px 20px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+          padding: '14px 12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          minWidth: 0
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ marginBottom: '6px' }}>
             <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
-              Chạy Trước Cuối 2026 (T9-T12)
+              Chạy trước cuối 2026
             </span>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fffbeb', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Clock size={17} />
-            </div>
           </div>
-          <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#d97706', letterSpacing: '-0.02em' }}>
+          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#d97706', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
             90.439.620 đ
           </div>
-          <div style={{ fontSize: '0.82rem', color: '#92400e', marginTop: '4px', fontWeight: 600 }}>
-            Chiếm 28.6% tổng ngân sách 2027
+          <div style={{ fontSize: '0.78rem', color: '#92400e', marginTop: '4px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Chiếm 28.6% tổng ngân sách
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px' }}>
-            Gom khách tour Tết &amp; visa Nga Murmansk
+          <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '2px', whiteSpace: 'nowrap' }}>
+            Gom khách Tết &amp; visa Murmansk
           </div>
         </div>
 
-        {/* Card 5: Dòng tiền MKT chi trong năm 2027 */}
+        {/* Card 5: Giải Ngân Năm 2027 */}
         <div style={{
           background: '#ffffff',
           borderRadius: '12px',
           border: '1px solid #e2e8f0',
-          padding: '18px 20px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+          padding: '14px 12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          minWidth: 0
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ marginBottom: '6px' }}>
             <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
-              Giải Ngân Trong Năm 2027
+              Giải Ngân Năm 2027
             </span>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#e0f2fe', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Calendar size={17} />
-            </div>
           </div>
-          <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#0284c7', letterSpacing: '-0.02em' }}>
+          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0284c7', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
             226.020.380 đ
           </div>
-          <div style={{ fontSize: '0.82rem', color: '#0369a1', marginTop: '4px', fontWeight: 600 }}>
-            Chiếm 71.4% tổng quỹ Marketing 2027
+          <div style={{ fontSize: '0.78rem', color: '#0369a1', marginTop: '4px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Chiếm 71.4% tổng quỹ MKT
           </div>
-          <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px' }}>
-            Rải đều 10 tháng • Đỉnh: <strong>T02/2027 (~35.3M)</strong>
+          <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '2px', whiteSpace: 'nowrap' }}>
+            Rải đều 10 tháng • Đỉnh: <strong>T02/2027</strong>
           </div>
         </div>
       </div>
@@ -673,7 +662,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           }}
         >
           <Calendar size={16} color={activeTab === 'monthly-mkt' ? '#ffffff' : '#0284c7'} />
-          <span>📊 Ma Trận Dòng Tiền MKT 2027 (Theo Tháng • 316.5M)</span>
+          <span>Ma Trận Dòng Tiền MKT 2027</span>
           <span style={{
             fontSize: '0.7rem',
             padding: '1px 6px',
@@ -704,7 +693,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           }}
         >
           <BarChart3 size={16} />
-          <span>📋 Tổng Quan Kế Hoạch 2027</span>
+          <span>Tổng Quan Kế Hoạch 2027</span>
         </button>
 
         <button
@@ -725,7 +714,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           }}
         >
           <Calendar size={16} />
-          <span>📅 Danh Sách 27 Đoàn 2027</span>
+          <span>Danh Sách 27 Đoàn 2027</span>
           <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: '#dcfce7', color: '#166534', fontWeight: 700 }}>
             Google Sheet
           </span>
@@ -749,8 +738,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
             whiteSpace: 'nowrap'
           }}
         >
-          <Mountain size={16} />
-          <span>🐎 Mông Cổ</span>
+          <span>Mông Cổ</span>
           <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'mongco' ? 'rgba(255,255,255,0.25)' : '#d1fae5', color: activeTab === 'mongco' ? '#ffffff' : '#065f46', fontWeight: 700 }}>
             6 đoàn • 4.73 Tỷ
           </span>
@@ -773,8 +761,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
             whiteSpace: 'nowrap'
           }}
         >
-          <Snowflake size={16} />
-          <span>❄️ Nga Cực Quang</span>
+          <span>Nga Cực Quang</span>
           <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'murmansk' ? 'rgba(255,255,255,0.25)' : '#e0f2fe', color: activeTab === 'murmansk' ? '#ffffff' : '#0369a1', fontWeight: 700 }}>
             3 đoàn • 4.95 Tỷ
           </span>
@@ -797,8 +784,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
             whiteSpace: 'nowrap'
           }}
         >
-          <Mountain size={16} />
-          <span>🌲 Alaska Hoang Dã</span>
+          <span>Alaska Hoang Dã</span>
           <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'alaska' ? 'rgba(255,255,255,0.25)' : '#e0f2fe', color: activeTab === 'alaska' ? '#ffffff' : '#075985', fontWeight: 700 }}>
             2 đoàn • 4.30 Tỷ
           </span>
@@ -821,8 +807,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
             whiteSpace: 'nowrap'
           }}
         >
-          <Globe2 size={16} />
-          <span>🏛️ Trung Á Tơ Lụa</span>
+          <span>Trung Á Tơ Lụa</span>
           <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'trunga' ? 'rgba(255,255,255,0.25)' : '#ede9fe', color: activeTab === 'trunga' ? '#ffffff' : '#5b21b6', fontWeight: 700 }}>
             4 đoàn • 3.20 Tỷ
           </span>
@@ -845,8 +830,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
             whiteSpace: 'nowrap'
           }}
         >
-          <Compass size={16} />
-          <span>🏜️ Ma Rốc Sahara</span>
+          <span>Ma Rốc Sahara</span>
           <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'maroc' ? 'rgba(255,255,255,0.25)' : '#ffe4e6', color: activeTab === 'maroc' ? '#ffffff' : '#9f1239', fontWeight: 700 }}>
             3 đoàn • 3.27 Tỷ
           </span>
@@ -869,8 +853,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
             whiteSpace: 'nowrap'
           }}
         >
-          <Sun size={16} />
-          <span>🗿 Nam Mỹ</span>
+          <span>Nam Mỹ</span>
           <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'nammy' ? 'rgba(255,255,255,0.25)' : '#fef3c7', color: activeTab === 'nammy' ? '#ffffff' : '#78350f', fontWeight: 700 }}>
             1 đoàn • 3.31 Tỷ
           </span>
@@ -893,8 +876,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
             whiteSpace: 'nowrap'
           }}
         >
-          <Mountain size={16} />
-          <span>🏔️ Pakistan</span>
+          <span>Pakistan</span>
           <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'pakistan' ? 'rgba(255,255,255,0.25)' : '#dcfce7', color: activeTab === 'pakistan' ? '#ffffff' : '#166534', fontWeight: 700 }}>
             4 đoàn • 3.00 Tỷ
           </span>
@@ -917,8 +899,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
             whiteSpace: 'nowrap'
           }}
         >
-          <Sun size={16} />
-          <span>☀️ Ai Cập Sông Nile</span>
+          <span>Ai Cập Sông Nile</span>
           <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'aicap' ? 'rgba(255,255,255,0.25)' : '#fef3c7', color: activeTab === 'aicap' ? '#ffffff' : '#92400e', fontWeight: 700 }}>
             2 đoàn • 2.10 Tỷ
           </span>
