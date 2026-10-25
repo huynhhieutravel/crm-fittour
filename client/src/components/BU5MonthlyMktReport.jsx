@@ -1255,7 +1255,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
           </div>
 
           {/* Table container cuộn ngang */}
-          <div style={{ overflowX: 'auto', maxHeight: '720px' }}>
+          <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
               <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0f172a', color: '#ffffff' }}>
                 <tr>
@@ -1275,11 +1275,12 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                         key={tm.key} 
                         style={{ 
                           padding: '10px 8px', 
-                          minWidth: '78px', 
+                          minWidth: '88px', 
                           textAlign: 'center', 
                           borderRight: '1px solid #1e293b',
                           background: tm.key === selectedMonthDrilldown ? '#0284c7' : (isPrepMonth ? '#1e293b' : '#0f172a'),
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap'
                         }}
                         onClick={() => {
                           setSelectedMonthDrilldown(tm.key);
@@ -1451,14 +1452,14 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                 })}
               </tbody>
 
-              {/* DÒNG CỐ ĐỊNH TỔNG KẾT DÒNG TIỀN THEO THÁNG */}
-              <tfoot style={{ position: 'sticky', bottom: 0, zIndex: 10, background: '#0f172a', color: '#ffffff' }}>
+              {/* DÒNG TỔNG KẾT DÒNG TIỀN THEO THÁNG */}
+              <tfoot style={{ background: '#0f172a', color: '#ffffff' }}>
                 {/* 1. Tổng kinh phí MKT chi ra trong tháng */}
                 <tr style={{ borderTop: '2px solid #38bdf8' }}>
-                  <td colSpan={6} style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 800, fontSize: '0.88rem', color: '#38bdf8' }}>
+                  <td colSpan={6} style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 800, fontSize: '0.88rem', color: '#38bdf8', whiteSpace: 'nowrap' }}>
                     TỔNG KINH PHÍ MKT GIẢI NGÂN THEO THÁNG (1% DT):
                   </td>
-                  <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700, color: '#94a3b8', fontSize: '0.75rem' }}>
+                  <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700, color: '#94a3b8', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
                     100%
                   </td>
                   {timelineMonths.map(tm => {
@@ -1473,7 +1474,8 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                           fontSize: '0.82rem',
                           color: total >= 30000000 ? '#fde047' : (total > 0 ? '#ffffff' : '#64748b'),
                           background: tm.key === selectedMonthDrilldown ? '#0284c7' : '#0f172a',
-                          borderRight: '1px solid #1e293b'
+                          borderRight: '1px solid #1e293b',
+                          whiteSpace: 'nowrap'
                         }}
                       >
                         {total > 0 ? fmtShort(total) : '-'}
@@ -1484,10 +1486,10 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
 
                 {/* 2. Doanh thu khởi hành thực tế trong tháng để đối chiếu */}
                 <tr style={{ background: '#1e293b', borderTop: '1px solid #334155' }}>
-                  <td colSpan={6} style={{ padding: '8px 14px', textAlign: 'right', fontWeight: 600, fontSize: '0.78rem', color: '#cbd5e1' }}>
+                  <td colSpan={6} style={{ padding: '8px 14px', textAlign: 'right', fontWeight: 600, fontSize: '0.78rem', color: '#cbd5e1', whiteSpace: 'nowrap' }}>
                     Doanh thu các đoàn khởi hành trong tháng:
                   </td>
-                  <td style={{ padding: '8px 8px', textAlign: 'center', color: '#94a3b8', fontSize: '0.72rem' }}>
+                  <td style={{ padding: '8px 8px', textAlign: 'center', color: '#94a3b8', fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
                     34.8 Tỷ
                   </td>
                   {timelineMonths.map(tm => {
@@ -1513,7 +1515,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
 
                 {/* 3. Tỷ trọng MKT / Doanh thu khởi hành tháng */}
                 <tr style={{ background: '#090d16', borderTop: '1px solid #1e293b' }}>
-                  <td colSpan={7} style={{ padding: '6px 14px', textAlign: 'right', fontWeight: 500, fontSize: '0.72rem', color: '#94a3b8' }}>
+                  <td colSpan={7} style={{ padding: '6px 14px', textAlign: 'right', fontWeight: 500, fontSize: '0.72rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
                     Số lượng tour chạy Ads trong tháng:
                   </td>
                   {timelineMonths.map(tm => {
@@ -1526,7 +1528,8 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                           textAlign: 'right',
                           fontSize: '0.72rem',
                           color: activeCount > 0 ? '#93c5fd' : '#475569',
-                          borderRight: '1px solid #1e293b'
+                          borderRight: '1px solid #1e293b',
+                          whiteSpace: 'nowrap'
                         }}
                       >
                         {activeCount > 0 ? `${activeCount} tour` : '-'}

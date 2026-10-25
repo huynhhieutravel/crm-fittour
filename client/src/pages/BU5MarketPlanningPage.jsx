@@ -405,7 +405,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
     <div style={{
       maxWidth: '1380px',
       margin: '0 auto',
-      padding: isEmbedded ? '10px 0' : '20px 24px 60px',
+      padding: isEmbedded ? '10px 0 80px' : '20px 24px 80px',
       fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
       color: '#0f172a'
     }}>
@@ -1108,35 +1108,38 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
         );
       })()}
 
-      {/* ── GOOGLE SHEETS STYLE BOTTOM TABS BAR (STICKY DƯỚI ĐÁY BẢNG TÍNH) ── */}
+      {/* ── GOOGLE SHEETS STYLE BOTTOM TABS BAR (FIXED DƯỚI ĐÁY MÀN HÌNH) ── */}
       <div style={{
-        position: 'sticky',
+        position: 'fixed',
         bottom: 0,
-        zIndex: 100,
-        background: '#f1f5f9',
-        borderTop: '2px solid #cbd5e1',
-        boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.08)',
+        left: 0,
+        right: 0,
+        zIndex: 999,
+        background: '#ffffff',
+        borderTop: '1px solid #cbd5e1',
+        boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.08)',
         display: 'flex',
         alignItems: 'center',
-        padding: '0 8px',
+        padding: '0 16px',
         overflowX: 'auto',
         gap: '4px',
-        height: '42px',
-        margin: isEmbedded ? '24px 0 0 0' : '28px -24px -60px -24px'
+        height: '46px',
+        scrollbarWidth: 'thin'
       }}>
         {/* Label Google Sheet branding indicator */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
-          padding: '0 12px',
+          padding: '0 12px 0 0',
+          marginRight: '6px',
           borderRight: '1px solid #cbd5e1',
-          color: '#475569',
-          fontSize: '0.76rem',
+          color: '#334155',
+          fontSize: '0.78rem',
           fontWeight: 800,
           whiteSpace: 'nowrap'
         }}>
-          <FileSpreadsheet size={15} color="#059669" />
+          <FileSpreadsheet size={16} color="#059669" />
           <span>SHEETS BU5</span>
         </div>
 
@@ -1162,19 +1165,19 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '6px 14px',
-                height: '34px',
+                padding: '0 14px',
+                height: '36px',
                 borderRadius: '6px 6px 0 0',
-                border: isActive ? '1px solid #cbd5e1' : '1px solid transparent',
-                borderBottom: isActive ? '3px solid #059669' : 'none',
-                background: isActive ? '#ffffff' : 'transparent',
+                border: isActive ? '1px solid #cbd5e1' : '1px solid #e2e8f0',
+                borderBottom: isActive ? '3px solid #059669' : '1px solid #e2e8f0',
+                background: isActive ? '#ffffff' : '#f8fafc',
                 color: isActive ? '#0f172a' : '#475569',
                 fontWeight: isActive ? 700 : 500,
                 fontSize: '0.82rem',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.1s ease',
-                boxShadow: isActive ? '0 -1px 3px rgba(0,0,0,0.04)' : 'none'
+                boxShadow: isActive ? '0 -1px 4px rgba(0,0,0,0.05)' : 'none'
               }}
             >
               {tab.icon}
