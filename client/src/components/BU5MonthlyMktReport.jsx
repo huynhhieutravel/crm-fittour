@@ -47,14 +47,15 @@ const fmt = (val) => {
   return Math.round(Number(val)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' đ';
 };
 
-// Format số tiền gọn gàng dạng triệu: 32.5M
+// Format số tiền gọn gàng tiếng Việt: 1049 triệu, 2.1 triệu
 const fmtShort = (val) => {
   if (!val || isNaN(val)) return '-';
   const num = Number(val);
   if (num === 0) return '-';
   if (num >= 1000000) {
     const m = (num / 1000000).toFixed(1);
-    return (m.endsWith('.0') ? m.slice(0, -2) : m) + 'M';
+    const cleanM = m.endsWith('.0') ? m.slice(0, -2) : m;
+    return `${cleanM} triệu`;
   }
   if (num >= 1000) {
     return Math.round(num / 1000) + 'k';
@@ -471,102 +472,13 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
           pointerEvents: 'none'
         }} />
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px', position: 'relative', zIndex: 1 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <span style={{
-                background: 'rgba(56, 189, 248, 0.2)',
-                color: '#38bdf8',
-                padding: '4px 12px',
-                borderRadius: '999px',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-                border: '1px solid rgba(56, 189, 248, 0.3)'
-              }}>
-                Master Plan 2027 (BU5)
-              </span>
-              <span style={{
-                background: 'rgba(16, 185, 129, 0.2)',
-                color: '#34d399',
-                padding: '4px 12px',
-                borderRadius: '999px',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                border: '1px solid rgba(16, 185, 129, 0.3)'
-              }}>
-                Định Mức 1% Doanh Thu (316.5M)
-              </span>
-              <span style={{
-                background: 'rgba(245, 158, 11, 0.2)',
-                color: '#fbbf24',
-                padding: '4px 12px',
-                borderRadius: '999px',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                border: '1px solid rgba(245, 158, 11, 0.3)'
-              }}>
-                27 Đoàn Khởi Hành Năm 2027
-              </span>
-            </div>
-
-            <h1 style={{ margin: '0 0 8px 0', fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff' }}>
-              Báo Cáo Dự Toán &amp; Dòng Tiền Marketing BU5 Năm 2027 (Theo Từng Tháng)
-            </h1>
-            <p style={{ margin: 0, fontSize: '0.95rem', color: '#cbd5e1', maxWidth: '850px', lineHeight: 1.5 }}>
-              Mô hình hóa chi tiết ngân sách Marketing 1% doanh thu cho 27 đoàn năm 2027 theo từng tháng độc lập (không gộp năm), phân bổ dựa trên thời gian chạy truyền thông trước 1 đến 10 tháng theo đặc thù từng tuyến độc bản (Alaska, Nam Mỹ, Mông Cổ, Nga, Pakistan...). Đồng bộ 100% với Google Sheet của BU5.
-            </p>
-          </div>
-
-          {/* Action buttons */}
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-            <a
-              href="https://docs.google.com/spreadsheets/d/10kuQXdFgFLVSRS4CbKYa-ozuch6RnPJd8NTo36fFhrc/edit?usp=sharing"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '9px 15px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                color: '#ffffff',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                textDecoration: 'none',
-                backdropFilter: 'blur(4px)',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <ExternalLink size={15} />
-              Mở Google Sheet
-            </a>
-
-            <button
-              onClick={handleExportExcel}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '9px 15px',
-                background: '#10b981',
-                border: 'none',
-                color: '#ffffff',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <Download size={15} />
-              Xuất Excel (.xlsx)
-            </button>
-          </div>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h1 style={{ margin: '0 0 8px 0', fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff' }}>
+            Báo Cáo Dự Toán &amp; Dòng Tiền Marketing BU5 Năm 2027 (Theo Từng Tháng)
+          </h1>
+          <p style={{ margin: 0, fontSize: '0.95rem', color: '#cbd5e1', maxWidth: '850px', lineHeight: 1.5 }}>
+            Mô hình hóa chi tiết ngân sách Marketing 1% doanh thu cho 27 đoàn năm 2027 theo từng tháng độc lập (không gộp năm), phân bổ dựa trên thời gian chạy truyền thông trước 1 đến 10 tháng theo đặc thù từng tuyến độc bản (Alaska, Nam Mỹ, Mông Cổ, Nga, Pakistan...). Đồng bộ 100% với Google Sheet của BU5.
+          </p>
         </div>
 
         {/* Thanh trạng thái kế hoạch 2027 & Checkbox chạy trước cuối 2026 */}
@@ -594,7 +506,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
               KẾ HOẠCH NĂM 2027
             </span>
             <span>
-              <strong>27 Đoàn Khởi Hành</strong> • Doanh thu: <strong>31.65 Tỷ</strong> • Quỹ MKT (1%): <strong>316.46M</strong>
+              <strong>27 Đoàn Khởi Hành</strong> • Doanh thu: <strong>31.65 Tỷ</strong> • Quỹ MKT (1%): <strong>316.46 Triệu</strong>
             </span>
           </div>
 
@@ -1666,7 +1578,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                   <th style={{ padding: '12px 12px', minWidth: '190px', borderRight: '1px solid #1e293b' }}>Tuyến / Sản Phẩm</th>
                   <th style={{ padding: '12px 10px', width: '85px', textAlign: 'center', borderRight: '1px solid #1e293b' }}>Khởi Hành</th>
                   <th style={{ padding: '12px 8px', width: '55px', textAlign: 'center', borderRight: '1px solid #1e293b' }}>Đoàn</th>
-                  <th style={{ padding: '12px 10px', width: '105px', textAlign: 'right', borderRight: '1px solid #1e293b' }}>Doanh Thu</th>
+                  <th style={{ padding: '12px 10px', width: '115px', textAlign: 'right', borderRight: '1px solid #1e293b', whiteSpace: 'nowrap' }}>Doanh Thu</th>
                   <th style={{ padding: '12px 10px', width: '95px', textAlign: 'right', borderRight: '1px solid #1e293b', background: '#1e293b', color: '#38bdf8' }}>MKT 1%</th>
                   <th style={{ padding: '12px 8px', width: '80px', textAlign: 'center', borderRight: '2px solid #334155' }}>Chạy Trước</th>
                   
@@ -1760,7 +1672,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                         {dep.groupsCount > 0 ? dep.groupsCount : '-'}
                       </td>
 
-                      <td style={{ padding: '10px 10px', textAlign: 'right', fontWeight: 600, color: isZeroGroup ? '#94a3b8' : '#1e293b', borderRight: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '10px 10px', textAlign: 'right', fontWeight: 600, color: isZeroGroup ? '#94a3b8' : '#1e293b', borderRight: '1px solid #f1f5f9', whiteSpace: 'nowrap' }}>
                         {dep.revenue > 0 ? fmtShort(dep.revenue) : '-'}
                       </td>
 
@@ -1904,7 +1816,8 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                           fontWeight: 600,
                           fontSize: '0.75rem',
                           color: depRev > 0 ? '#34d399' : '#64748b',
-                          borderRight: '1px solid #334155'
+                          borderRight: '1px solid #334155',
+                          whiteSpace: 'nowrap'
                         }}
                       >
                         {depRev > 0 ? fmtShort(depRev) : '-'}

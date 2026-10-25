@@ -438,28 +438,6 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
               }}>
                 BU5 • KHÁM PHÁ &amp; ĐỘC BẢN (ADVENTURE &amp; EXOTIC)
               </span>
-              <span style={{
-                background: '#e0f2fe',
-                color: '#0369a1',
-                border: '1px solid #bae6fd',
-                padding: '3px 10px',
-                borderRadius: '6px',
-                fontSize: '0.78rem',
-                fontWeight: 700
-              }}>
-                27 ĐOÀN KHỞI HÀNH NĂM 2027 (24 ĐỢT GOOGLE SHEET)
-              </span>
-              <span style={{
-                background: '#dcfce7',
-                color: '#166534',
-                border: '1px solid #bbf7d0',
-                padding: '3px 10px',
-                borderRadius: '6px',
-                fontSize: '0.78rem',
-                fontWeight: 700
-              }}>
-                DOANH THU KH: 31.646.000.000 VNĐ (~31.65 TỶ) • ĐỊNH MỨC MKT 1%: 316.460.000 VNĐ
-              </span>
             </div>
 
             <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
@@ -663,16 +641,6 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
         >
           <Calendar size={16} color={activeTab === 'monthly-mkt' ? '#ffffff' : '#0284c7'} />
           <span>Ma Trận Dòng Tiền MKT 2027</span>
-          <span style={{
-            fontSize: '0.7rem',
-            padding: '1px 6px',
-            borderRadius: '4px',
-            background: activeTab === 'monthly-mkt' ? '#ffffff' : '#0284c7',
-            color: activeTab === 'monthly-mkt' ? '#0369a1' : '#ffffff',
-            fontWeight: 800
-          }}>
-            27 Đoàn • 31.65 Tỷ
-          </span>
         </button>
 
         <button
@@ -714,10 +682,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           }}
         >
           <Calendar size={16} />
-          <span>Danh Sách 27 Đoàn 2027</span>
-          <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: '#dcfce7', color: '#166534', fontWeight: 700 }}>
-            Google Sheet
-          </span>
+          <span>Danh Sách 27 Đoàn</span>
         </button>
 
         {/* 10 TUYẾN SẢN PHẨM 2027 */}
@@ -739,9 +704,6 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           }}
         >
           <span>Mông Cổ</span>
-          <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'mongco' ? 'rgba(255,255,255,0.25)' : '#d1fae5', color: activeTab === 'mongco' ? '#ffffff' : '#065f46', fontWeight: 700 }}>
-            6 đoàn • 4.73 Tỷ
-          </span>
         </button>
 
         <button
@@ -762,9 +724,6 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           }}
         >
           <span>Nga Cực Quang</span>
-          <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'murmansk' ? 'rgba(255,255,255,0.25)' : '#e0f2fe', color: activeTab === 'murmansk' ? '#ffffff' : '#0369a1', fontWeight: 700 }}>
-            3 đoàn • 4.95 Tỷ
-          </span>
         </button>
 
         <button
@@ -785,9 +744,6 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           }}
         >
           <span>Alaska Hoang Dã</span>
-          <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'alaska' ? 'rgba(255,255,255,0.25)' : '#e0f2fe', color: activeTab === 'alaska' ? '#ffffff' : '#075985', fontWeight: 700 }}>
-            2 đoàn • 4.30 Tỷ
-          </span>
         </button>
 
         <button
@@ -808,9 +764,6 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           }}
         >
           <span>Trung Á Tơ Lụa</span>
-          <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'trunga' ? 'rgba(255,255,255,0.25)' : '#ede9fe', color: activeTab === 'trunga' ? '#ffffff' : '#5b21b6', fontWeight: 700 }}>
-            4 đoàn • 3.20 Tỷ
-          </span>
         </button>
 
         <button
@@ -831,9 +784,6 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           }}
         >
           <span>Ma Rốc Sahara</span>
-          <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'maroc' ? 'rgba(255,255,255,0.25)' : '#ffe4e6', color: activeTab === 'maroc' ? '#ffffff' : '#9f1239', fontWeight: 700 }}>
-            3 đoàn • 3.27 Tỷ
-          </span>
         </button>
 
         <button
@@ -854,9 +804,6 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           }}
         >
           <span>Nam Mỹ</span>
-          <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'nammy' ? 'rgba(255,255,255,0.25)' : '#fef3c7', color: activeTab === 'nammy' ? '#ffffff' : '#78350f', fontWeight: 700 }}>
-            1 đoàn • 3.31 Tỷ
-          </span>
         </button>
 
         <button
@@ -877,9 +824,6 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           }}
         >
           <span>Pakistan</span>
-          <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'pakistan' ? 'rgba(255,255,255,0.25)' : '#dcfce7', color: activeTab === 'pakistan' ? '#ffffff' : '#166534', fontWeight: 700 }}>
-            4 đoàn • 3.00 Tỷ
-          </span>
         </button>
 
         <button
@@ -900,9 +844,6 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           }}
         >
           <span>Ai Cập Sông Nile</span>
-          <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: activeTab === 'aicap' ? 'rgba(255,255,255,0.25)' : '#fef3c7', color: activeTab === 'aicap' ? '#ffffff' : '#92400e', fontWeight: 700 }}>
-            2 đoàn • 2.10 Tỷ
-          </span>
         </button>
       </div>
 
