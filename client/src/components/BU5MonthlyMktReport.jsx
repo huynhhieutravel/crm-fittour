@@ -1226,30 +1226,24 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
           }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>
-                Bảng Ma Trận Ngân Sách Marketing {yearScope === '2027' ? 'Kế Hoạch 2027 (Theo Từng Tháng)' : '15 Tháng (08/2026 – 10/2027)'}
+                Bảng Ma Trận Ngân Sách Marketing {yearScope === '2027' ? 'Kế Hoạch 2027 (Theo Tiến Độ Chiến Dịch)' : '15 Tháng (08/2026 – 10/2027)'}
               </h3>
               <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>
                 {yearScope === '2027'
-                  ? `Ma trận phân bổ kinh phí MKT 1% doanh thu cho ${kpis.totalGroups} đoàn năm 2027, bao gồm các tháng chạy trước cuối 2026 để chuẩn bị tour Tết & đón đầu cọc.`
-                  : 'Mỗi ô thể hiện số tiền kinh phí MKT (1% doanh thu) phân bổ vào tháng đó. Ô đậm hơn tương ứng số tiền chi lớn hơn.'
+                  ? `Tiến độ chiến dịch MKT cho ${kpis.totalGroups} đoàn năm 2027. Mỗi dải Gantt nối liền toàn bộ các tháng chạy trước và hiển thị tổng ngân sách 1% (linh hoạt điều phối theo thực tế cọc, không chia đều cơ học).`
+                  : 'Mỗi dải Gantt thể hiện giai đoạn chạy trước và tổng kinh phí MKT (1% doanh thu) phân bổ theo tiến độ tour.'
                 }
               </p>
             </div>
 
-            {/* Chú thích màu Heatmap */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#64748b' }}>
-              <span>Mức chi:</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#eff6ff', border: '1px solid #bfdbfe' }} /> &lt;3 triệu
+            {/* Chú thích Dải Gantt & Khởi hành */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '0.76rem', color: '#475569', flexWrap: 'wrap' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '24px', height: '12px', borderRadius: '3px', background: 'linear-gradient(90deg, #eff6ff 0%, #dbeafe 100%)', border: '1px solid #93c5fd', display: 'inline-block' }} />
+                <strong>Dải Gantt:</strong> Giai đoạn chạy MKT (Tổng ngân sách linh hoạt theo cọc)
               </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#dbeafe', border: '1px solid #93c5fd' }} /> 3 - 6 triệu
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#bfdbfe', border: '1px solid #60a5fa' }} /> 6 - 10 triệu
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#fef3c7', border: '1px solid #fcd34d' }} /> &gt;10 triệu
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ color: '#10b981', fontWeight: 800 }}>✈️ Khởi hành:</span> Tháng tour cất cánh
               </span>
             </div>
           </div>
@@ -1387,66 +1381,127 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                         </span>
                       </td>
 
-                      {/* 15 Ô Phân bổ theo từng tháng */}
-                      {timelineMonths.map(tm => {
-                        const amount = dep.monthlyAllocations[tm.key] || 0;
-                        const hasBudget = amount > 0;
-                        
-                        // Tính màu nền Heatmap
-                        let cellBg = 'transparent';
-                        let textColor = '#cbd5e1';
-                        let cellBorder = '1px solid #f8fafc';
+                      {/* Dải Timeline Gantt qua các tháng chạy trước hoặc từng tháng */}
+                      {(() => {
+                        const isZero = dep.groupsCount === 0 || dep.mktBudget <= 0;
+                        if (isZero) {
+                          return timelineMonths.map(tm => {
+                            const isDep = dep.departureMonth === tm.key;
+                            return (
+                              <td
+                                key={tm.key}
+                                style={{
+                                  padding: '8px 6px',
+                                  textAlign: 'center',
+                                  fontSize: '0.72rem',
+                                  color: isDep ? '#10b981' : '#cbd5e1',
+                                  fontWeight: isDep ? 700 : 400,
+                                  background: isDep ? '#f0fdf4' : 'transparent',
+                                  borderRight: '1px solid #f1f5f9',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                {isDep ? '✈️ Khởi hành' : '·'}
+                              </td>
+                            );
+                          });
+                        }
 
-                        if (hasBudget) {
-                          if (amount >= 10000000) {
-                            cellBg = '#fef3c7'; // Vàng đậm
-                            textColor = '#92400e';
-                            cellBorder = '1px solid #fcd34d';
-                          } else if (amount >= 6000000) {
-                            cellBg = '#bfdbfe'; // Xanh đậm
-                            textColor = '#1e3a8a';
-                            cellBorder = '1px solid #93c5fd';
-                          } else if (amount >= 3000000) {
-                            cellBg = '#dbeafe'; // Xanh vừa
-                            textColor = '#1d4ed8';
-                            cellBorder = '1px solid #bfdbfe';
+                        // Lọc các tháng chạy trước hiển thị trên bảng
+                        const visibleActiveKeys = timelineMonths
+                          .map(tm => tm.key)
+                          .filter(k => dep.activeMonths.includes(k));
+
+                        const firstActiveKey = visibleActiveKeys.length > 0 ? visibleActiveKeys[0] : null;
+                        const spanCount = visibleActiveKeys.length;
+                        const cells = [];
+                        let skip = 0;
+
+                        for (let i = 0; i < timelineMonths.length; i++) {
+                          if (skip > 0) {
+                            skip--;
+                            continue;
+                          }
+
+                          const tm = timelineMonths[i];
+                          const isFirstActive = tm.key === firstActiveKey;
+                          const isDep = dep.departureMonth === tm.key;
+
+                          if (isFirstActive && spanCount > 0) {
+                            skip = spanCount - 1;
+                            cells.push(
+                              <td
+                                key={tm.key}
+                                colSpan={spanCount}
+                                style={{
+                                  padding: '4px 6px',
+                                  borderRight: '1px solid #cbd5e1',
+                                  verticalAlign: 'middle',
+                                  background: '#f8fafc'
+                                }}
+                                title={`${dep.name}\nGiai đoạn MKT: ${dep.leadMonths} tháng (từ ${dep.startMonth} đến ${dep.activeMonths[dep.activeMonths.length - 1]})\nTổng ngân sách MKT (1%): ${fmt(dep.mktBudget)}\nKhởi hành: ${dep.displayTime}`}
+                              >
+                                <div style={{
+                                  background: 'linear-gradient(90deg, #eff6ff 0%, #dbeafe 50%, #eff6ff 100%)',
+                                  border: '1px solid #93c5fd',
+                                  borderRadius: '6px',
+                                  padding: '5px 12px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '8px',
+                                  color: '#1e40af',
+                                  fontSize: '0.8rem',
+                                  fontWeight: 800,
+                                  boxShadow: '0 1px 2px rgba(37, 99, 235, 0.06)',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#2563eb' }} />
+                                  <span>Tổng {fmtShort(dep.mktBudget)}</span>
+                                  <span style={{ fontSize: '0.72rem', color: '#3b82f6', fontWeight: 600 }}>
+                                    ({dep.leadMonths} tháng • linh hoạt theo cọc)
+                                  </span>
+                                </div>
+                              </td>
+                            );
+                          } else if (isDep) {
+                            cells.push(
+                              <td
+                                key={tm.key}
+                                style={{
+                                  padding: '8px 6px',
+                                  textAlign: 'center',
+                                  fontSize: '0.72rem',
+                                  color: '#10b981',
+                                  fontWeight: 700,
+                                  background: '#f0fdf4',
+                                  borderRight: '1px solid #f1f5f9',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                ✈️ Khởi hành
+                              </td>
+                            );
                           } else {
-                            cellBg = '#eff6ff'; // Xanh nhạt
-                            textColor = '#2563eb';
-                            cellBorder = '1px solid #dbeafe';
+                            cells.push(
+                              <td
+                                key={tm.key}
+                                style={{
+                                  padding: '8px 6px',
+                                  textAlign: 'center',
+                                  color: '#cbd5e1',
+                                  borderRight: '1px solid #f1f5f9',
+                                  fontSize: '0.85rem'
+                                }}
+                              >
+                                ·
+                              </td>
+                            );
                           }
                         }
 
-                        // Kiểm tra nếu đây chính là tháng khởi hành
-                        const isDepMonth = dep.departureMonth === tm.key;
-
-                        return (
-                          <td
-                            key={tm.key}
-                            style={{
-                              padding: '8px 6px',
-                              textAlign: 'right',
-                              fontSize: '0.78rem',
-                              fontWeight: hasBudget ? 700 : 400,
-                              background: cellBg,
-                              color: textColor,
-                              borderRight: '1px solid #f1f5f9',
-                              position: 'relative'
-                            }}
-                            title={hasBudget ? `${dep.name}\nTháng: ${tm.fullLabel}\nKinh phí MKT: ${fmt(amount)}\nKhởi hành: ${dep.displayTime}` : ''}
-                          >
-                            {hasBudget ? (
-                              <span>{fmtShort(amount)}</span>
-                            ) : (
-                              isDepMonth ? (
-                                <span style={{ fontSize: '0.65rem', color: '#10b981', fontWeight: 700 }}>✈️ Khởi hành</span>
-                              ) : (
-                                <span style={{ color: '#e2e8f0' }}>·</span>
-                              )
-                            )}
-                          </td>
-                        );
-                      })}
+                        return cells;
+                      })()}
                     </tr>
                   );
                 })}
@@ -1456,8 +1511,8 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
               <tfoot style={{ background: '#0f172a', color: '#ffffff' }}>
                 {/* 1. Tổng kinh phí MKT chi ra trong tháng */}
                 <tr style={{ borderTop: '2px solid #38bdf8' }}>
-                  <td colSpan={6} style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 800, fontSize: '0.88rem', color: '#38bdf8', whiteSpace: 'nowrap' }}>
-                    TỔNG KINH PHÍ MKT GIẢI NGÂN THEO THÁNG (1% DT):
+                  <td colSpan={6} style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 800, fontSize: '0.86rem', color: '#38bdf8', whiteSpace: 'nowrap' }}>
+                    DỰ TOÁN DÒNG TIỀN MKT THEO THÁNG (Tham chiếu chuẩn bị quỹ):
                   </td>
                   <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700, color: '#94a3b8', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
                     100%
