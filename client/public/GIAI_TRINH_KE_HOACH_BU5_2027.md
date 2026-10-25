@@ -103,9 +103,122 @@
 
 ---
 
-## IV. BẢNG CÂN ĐỐI DÒNG TIỀN (CASH-IN VS CASH-OUT THEO THÁNG)
+## IV. BẢNG CÂN ĐỐI DÒNG TIỀN (CASH-IN VS CASH-OUT)
 
-*Bảng đối chiếu minh chứng quy luật "Chi tiền trước - Thu tiền sau" (Cashflow Lag):*
+### 1. BẢNG TỔNG HỢP CÂN ĐỐI THEO QUÝ (EXECUTIVE DASHBOARD)
+
+| Giai Đoạn / Quý | Chi Tiền MKT (Cash-Out) | Doanh Thu Khởi Hành (Cash-In) | Số Đoàn | Lãi Gộp Dự Kiến | Trọng Tâm Quý |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Quý 4/2026 (Chuẩn Bị)**<br>`T09 - T12/2026` | **90.44 Triệu**<br>*(28.6% NS)* | **0 VNĐ**<br>*(Đệm gom cọc)* | **0 đoàn** | **0 VNĐ** | Gieo hạt & Gom khách tour Tết, nộp Visa Murmansk, Alaska, Nam Mỹ sớm |
+| **Quý 1/2027 (Đỉnh MKT)**<br>`T01 - T03/2027` | **99.45 Triệu**<br>*(31.4% NS)* | **9.68 TỶ VNĐ**<br>*(30.6% DT)* | **8 đoàn**<br>*(80 khách)* | **1.44 Tỷ VNĐ**<br>*(Tỷ suất 14.9%)* | Đỉnh điểm MKT T2; Thu tiền 8 đoàn lớn (3 Murmansk, Maroc Tết/Xuân, Ai Cập Tết, 2 Pakistan hoa) |
+| **Quý 2/2027 (Gối Đầu Hè)**<br>`T04 - T06/2027` | **87.90 Triệu**<br>*(27.8% NS)* | **3.73 TỶ VNĐ**<br>*(11.8% DT)* | **4 đoàn**<br>*(40 khách)* | **523.5 Triệu**<br>*(Tỷ suất 14.0%)* | Giữ nhịp gom khách hè Mông Cổ, Namibia, Alaska; Thu tiền 4 đoàn (Lễ 30/4 & khởi động hè) |
+| **Quý 3-4/2027 (Đỉnh Thu)**<br>`T07 - T10/2027` | **38.68 Triệu**<br>*(12.2% NS)* | **18.24 TỶ VNĐ**<br>*(57.6% DT)* | **15 đoàn**<br>*(150 khách)* | **2.52 Tỷ VNĐ**<br>*(Tỷ suất 13.8%)* | Chi MKT hạ nhiệt cực mạnh (-56%); Thu tiền đỉnh cao 15 đoàn (Nam Mỹ, Alaska hè & 2/9, Namibia, Mông Cổ Naadam...) |
+| **TỔNG CỘNG NĂM 2027** | **316.46 TRIỆU**<br>*(100% NS)* | **31.65 TỶ VNĐ**<br>*(100% DT)* | **27 ĐOÀN**<br>*(270 khách)* | **4.48 TỶ VNĐ**<br>*(Tỷ suất 14.2%)* | **Chuẩn xác 1.00% chi phí MKT trên Doanh thu thực tế (ROI Lãi gộp: 14.2 lần)** |
+
+---
+
+### 2. CHI TIẾT DÒNG TIỀN TỪNG DÒNG TOUR THEO QUÝ (DRILL-DOWN)
+
+#### A. QUÝ 4/2026 (CHUẨN BỊ GỐI ĐẦU) — CHI MKT: 90.44 TRIỆU | THU: 0 VNĐ | 0 ĐOÀN KHỞI HÀNH
+
+> [!NOTE]
+> **Đặc thù dòng tiền:** Quý 4/2026 là giai đoạn "gieo hạt ứng trước" phục vụ các tour đặc thù tuyến xa có thời gian chuẩn bị (Lead time) từ 4 đến 9 tháng. Toàn bộ tiền MKT 90.44M bỏ ra tại đây nhằm gom tiền đặt cọc 50% của khách và kịp nộp hồ sơ xin Visa Murmansk, Alaska, Nam Mỹ.
+
+* **Danh sách 9 chiến dịch Tour chi tiền MKT trong Quý 4/2026 (Cash-Out):**
+
+| STT | Dòng Tour / Sản Phẩm | Tháng Khởi Hành | Lead Time | Chi MKT Trong Quý | Tỷ Trọng / Quý | Tổng Budget Tour |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: |
+| 1 | **Nga - Săn Cực Quang Murmansk (3 Đoàn)** | 02/2027 | 5 tháng | **39.60 Triệu** | 43.8% | 49.50 Triệu |
+| 2 | **Maroc Tết Nguyên Đán** | 02/2027 | 5 tháng | **8.72 Triệu** | 9.6% | 10.90 Triệu |
+| 3 | **Ai Cập Tết Nguyên Đán** | 02/2027 | 5 tháng | **8.39 Triệu** | 9.3% | 10.49 Triệu |
+| 4 | **Pakistan Mùa Hoa Anh Đào (2 Đoàn)** | 03/2027 | 4 tháng | **7.49 Triệu** | 8.3% | 14.98 Triệu |
+| 5 | **Maroc Mùa Xuân** | 03/2027 | 6 tháng | **7.27 Triệu** | 8.0% | 10.90 Triệu |
+| 6 | **Maroc Cao Điểm Lễ 30/4** | 04/2027 | 7 tháng | **6.23 Triệu** | 6.9% | 10.90 Triệu |
+| 7 | **Ai Cập Cao Điểm Lễ 30/4** | 04/2027 | 7 tháng | **5.99 Triệu** | 6.6% | 10.49 Triệu |
+| 8 | **Nam Mỹ Huyền Thoại (3 Nước)** | 09/2027 | 9 tháng | **3.68 Triệu** | 4.1% | 33.09 Triệu |
+| 9 | **Alaska Mùa Hè Hoang Dã** | 07/2027 | 7 tháng | **3.07 Triệu** | 3.4% | 21.50 Triệu |
+| | **TỔNG CHI MKT QUÝ 4/2026** | | | **90.44 Triệu** | **100%** | |
+
+---
+
+#### B. QUÝ 1/2027 (ĐỈNH MKT & GẶT HÁI ĐỢT 1) — CHI MKT: 99.45 TRIỆU | THU: 9.68 TỶ | 8 ĐOÀN
+
+* **Doanh thu & Đoàn thực tế khởi hành trong Quý 1/2027 (Cash-In):**
+
+| STT | Dòng Tour Khởi Hành | Tháng KH | Quy Mô Đoàn | Doanh Thu Thu Về | Lợi Nhuận Gộp | Tỷ Suất |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: |
+| 1 | **Nga - Săn Cực Quang Murmansk (3 Đoàn)** | 02/2027 | 3 đoàn (30 pax) | **4.95 TỶ VNĐ** | 750.0 Triệu | 15.2% |
+| 2 | **Pakistan Mùa Hoa Anh Đào (2 Đoàn)** | 03/2027 | 2 đoàn (20 pax) | **1.50 TỶ VNĐ** | 158.0 Triệu | 10.5% |
+| 3 | **Maroc Tết Nguyên Đán** | 02/2027 | 1 đoàn (10 pax) | **1.09 TỶ VNĐ** | 188.2 Triệu | 17.3% |
+| 4 | **Maroc Mùa Xuân** | 03/2027 | 1 đoàn (10 pax) | **1.09 TỶ VNĐ** | 188.2 Triệu | 17.3% |
+| 5 | **Ai Cập Tết Nguyên Đán** | 02/2027 | 1 đoàn (10 pax) | **1.05 TỶ VNĐ** | 155.3 Triệu | 14.8% |
+| | **TỔNG THU QUÝ 1/2027** | | **8 đoàn (80 pax)** | **9.68 TỶ VNĐ** | **1.44 TỶ VNĐ** | **14.9%** |
+
+* **Top chiến dịch MKT chi tiền trong Quý 1/2027 (Cash-Out: 99.45 Triệu):**
+  - **Nam Mỹ huyền thoại**: 11.03 Triệu (11.1% quý) — chạy gom khách nộp hồ sơ visa Mỹ/Brazil/Peru.
+  - **3 Nga Murmansk**: 9.90 Triệu (10.0% quý) — chốt những chỗ cuối cùng khởi hành T2.
+  - **Alaska mùa hè**: 9.21 Triệu (9.3% quý) — tuyển khách phỏng vấn visa Mỹ.
+  - **Alaska Lễ 2/9**: 8.06 Triệu (8.1% quý).
+  - **Pakistan Hoa (2 đoàn)**: 7.49 Triệu (7.5% quý) — chốt đoàn T3.
+  - **Namibia Lễ 2/9**: 6.75 Triệu (6.8% quý).
+  - **Mông Cổ chính hè (2 đoàn)**: 6.31 Triệu (6.3% quý).
+  - *Và 12 tour khác (Mông Cổ T8, Maroc 30/4, Ai Cập 30/4, Trung Á đầu hè...)*.
+
+---
+
+#### C. QUÝ 2/2027 (GỐI ĐẦU HÈ) — CHI MKT: 87.90 TRIỆU | THU: 3.73 TỶ | 4 ĐOÀN
+
+* **Doanh thu & Đoàn thực tế khởi hành trong Quý 2/2027 (Cash-In):**
+
+| STT | Dòng Tour Khởi Hành | Tháng KH | Quy Mô Đoàn | Doanh Thu Thu Về | Lợi Nhuận Gộp | Tỷ Suất |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: |
+| 1 | **Maroc Cao Điểm Lễ 30/4** | 04/2027 | 1 đoàn (10 pax) | **1.09 TỶ VNĐ** | 188.2 Triệu | 17.3% |
+| 2 | **Ai Cập Cao Điểm Lễ 30/4** | 04/2027 | 1 đoàn (10 pax) | **1.05 TỶ VNĐ** | 155.3 Triệu | 14.8% |
+| 3 | **Trung Á Đầu Hè** | 06/2027 | 1 đoàn (10 pax) | **0.80 TỶ VNĐ** | 80.0 Triệu | 10.0% |
+| 4 | **Mông Cổ Đầu Hè** | 06/2027 | 1 đoàn (10 pax) | **0.79 TỶ VNĐ** | 100.0 Triệu | 12.7% |
+| | **TỔNG THU QUÝ 2/2027** | | **4 đoàn (40 pax)** | **3.73 TỶ VNĐ** | **523.5 Triệu** | **14.0%** |
+
+* **Top chiến dịch MKT chi tiền trong Quý 2/2027 (Cash-Out: 87.90 Triệu):**
+  - **Nam Mỹ huyền thoại**: 11.03 Triệu (12.5% quý).
+  - **Mông Cổ chính hè (2 đoàn)**: 9.47 Triệu (10.8% quý) — đẩy mạnh lễ hội Naadam T7.
+  - **Alaska mùa hè**: 9.21 Triệu (10.5% quý) — hoàn tất chốt đoàn KH T7.
+  - **Alaska Lễ 2/9**: 8.06 Triệu (9.2% quý).
+  - **Mông Cổ tháng 8 (2 đoàn)**: 7.89 Triệu (9.0% quý).
+  - **Namibia Lễ 2/9**: 6.75 Triệu (7.7% quý).
+  - **Pakistan Thu Hunza (2 đoàn)**: 5.99 Triệu (6.8% quý).
+  - **Bắc Mông Cổ mùa thu**: 5.93 Triệu (6.8% quý).
+  - *Và 6 tour Trung Á & Mông Cổ khác (Trung Á hè, Mông Cổ đầu hè, Trung Á T8...)*.
+
+---
+
+#### D. QUÝ 3-4/2027 (ĐỈNH THU & ĐÓNG SỔ) — CHI MKT: 38.68 TRIỆU | THU: 18.24 TỶ | 15 ĐOÀN
+
+* **Doanh thu & Đoàn thực tế khởi hành trong Quý 3-4/2027 (Cash-In):**
+
+| STT | Dòng Tour Khởi Hành | Tháng KH | Quy Mô Đoàn | Doanh Thu Thu Về | Lợi Nhuận Gộp | Tỷ Suất |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: |
+| 1 | **Nam Mỹ Huyền Thoại (3 Nước)** | 09/2027 | 1 đoàn (10 pax) | **3.31 TỶ VNĐ** | 609.0 Triệu | 18.4% |
+| 2 | **Alaska Mùa Hè Hoang Dã** | 07/2027 | 1 đoàn (10 pax) | **2.15 TỶ VNĐ** | 300.0 Triệu | 14.0% |
+| 3 | **Alaska Mùa Thu (Lễ 2/9)** | 09/2027 | 1 đoàn (10 pax) | **2.15 TỶ VNĐ** | 300.0 Triệu | 14.0% |
+| 4 | **Namibia Châu Phi (Lễ 2/9)** | 09/2027 | 1 đoàn (10 pax) | **1.80 TỶ VNĐ** | 300.0 Triệu | 16.7% |
+| 5 | **Mông Cổ Chính Hè (Lễ Hội Naadam - 2 Đoàn)** | 07/2027 | 2 đoàn (20 pax) | **1.58 TỶ VNĐ** | 200.0 Triệu | 12.7% |
+| 6 | **Mông Cổ Tháng 8 (2 Đoàn)** | 08/2027 | 2 đoàn (20 pax) | **1.58 TỶ VNĐ** | 200.0 Triệu | 12.7% |
+| 7 | **Pakistan Mùa Thu Hunza (2 Đoàn)** | 10/2027 | 2 đoàn (20 pax) | **1.50 TỶ VNĐ** | 158.0 Triệu | 10.5% |
+| 8 | **Bắc Mông Cổ Mùa Thu** | 09/2027 | 1 đoàn (10 pax) | **0.99 TỶ VNĐ** | 112.0 Triệu | 11.3% |
+| 9 | **Trung Á Chính Hè** | 07/2027 | 1 đoàn (10 pax) | **0.80 TỶ VNĐ** | 80.0 Triệu | 10.0% |
+| 10 | **Trung Á Tháng 8** | 08/2027 | 1 đoàn (10 pax) | **0.80 TỶ VNĐ** | 80.0 Triệu | 10.0% |
+| 11 | **Trung Á Cuối Hè** | 09/2027 | 1 đoàn (10 pax) | **0.80 TỶ VNĐ** | 80.0 Triệu | 10.0% |
+| 12 | **Mông Cổ Cuối Hè** | 09/2027 | 1 đoàn (10 pax) | **0.79 TỶ VNĐ** | 100.0 Triệu | 12.7% |
+| | **TỔNG THU QUÝ 3-4/2027** | | **15 đoàn (150 pax)** | **18.24 TỶ VNĐ** | **2.52 TỶ VNĐ** | **13.8%** |
+
+* **Đặc điểm MKT Quý 3-4/2027 (Cash-Out giảm mạnh còn 38.68 Triệu):**
+  - Chi phí MKT giảm nhanh: T7 (19.82M) ➔ T8 (15.86M) ➔ T9 (3.00M) ➔ T10 (0.00M).
+  - Trọng tâm MKT chỉ còn tập trung chốt những chỗ cuối cùng cho Pakistan Thu (8.99M), Nam Mỹ (7.35M), Alaska 2/9 (5.38M), Namibia (4.50M).
+  - Lợi nhuận gộp thu về đạt đỉnh: **2.52 TỶ VNĐ**, giúp bảo toàn trọn vẹn biên lợi nhuận ròng toàn năm.
+
+---
+
+### 3. BẢNG CÂN ĐỐI DÒNG TIỀN THEO TỪNG THÁNG (MONTHLY CASHFLOW LAG)
 
 | Tháng | Chi Tiền MKT (Cash-Out) | Doanh Thu Khởi Hành (Cash-In) | Số Đoàn Khởi Hành | Đánh Giá Dòng Tiền & Cân Đối |
 | :---: | :---: | :---: | :---: | :--- |
@@ -119,7 +232,7 @@
 | **T08/2027** | **15.9 Triệu** | **2.38 TỶ VNĐ** | 3 đoàn | **Hạ nhiệt hè:** Thu tiền 2 đoàn Mông Cổ T8 & Trung Á T8 |
 | **T09/2027** | **3.0 Triệu** | **9.84 TỶ VNĐ (PEAK)** | 6 đoàn | **Đỉnh thu lớn nhất năm:** Nam Mỹ (3.3B), Namibia (1.8B), Alaska (2.1B)... |
 | **T10/2027** | **0.0 Triệu** | **1.50 TỶ VNĐ** | 2 đoàn | **Khép lại năm:** Thu tiền 2 đoàn Pakistan mùa thu Hunza |
-| **TỔNG CỘNG** | **316.46 TRIỆU** | **31.65 TỶ VNĐ** | **27 ĐOÀN** | **Chuẩn xác 1.00% chi phí MKT trên Doanh thu thực tế** |
+| **TỔNG CỘNG** | **316.46 TRIỆU** | **31.65 TỶ VNĐ** | **27 ĐOÀN** | **Chuẩn xác 1.00% chi phí MKT trên Doanh thu thực tế (ROI Lãi gộp: 14.2x)** |
 
 ---
 

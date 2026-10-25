@@ -95,6 +95,9 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
   const [isSaving, setIsSaving] = useState(false);
   const [hasSavedSettings, setHasSavedSettings] = useState(false);
 
+  // Accordion state cho 4 Quý trong Executive View (mặc định mở Quý 4/2026 để giải trình chạy trước)
+  const [expandedQuarterIds, setExpandedQuarterIds] = useState({ 'Q4_2026': true });
+
   // 1. Tải cài đặt đã lưu từ Backend (nếu có)
   useEffect(() => {
     let isMounted = true;
@@ -215,10 +218,52 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
         q.rev += (monthlyDepartureRevenues[m] || 0);
         q.groups += (monthlyDeparturesCount[m] || 0);
       });
+
+      // 1. Danh sách các tour ĐANG CHI TIỀN MKT trong quý này (Cash-Out)
+      const mktToursList = [];
+      departures.forEach(dep => {
+        if (dep.groupsCount > 0 && dep.monthlyAllocations) {
+          const mktInQ = q.months.reduce((sum, m) => sum + (dep.monthlyAllocations[m] || 0), 0);
+          if (mktInQ > 0) {
+            mktToursList.push({
+              stt: dep.stt,
+              name: dep.name,
+              category: dep.category,
+              departureMonth: dep.departureMonth,
+              leadMonths: dep.leadMonths,
+              groupsCount: dep.groupsCount,
+              totalPax: dep.totalPax,
+              mktInQ,
+              totalMktBudget: dep.mktBudget,
+              pctOfTourMkt: dep.mktBudget > 0 ? Math.round((mktInQ / dep.mktBudget) * 100) : 0,
+              pctOfQuarterMkt: q.mkt > 0 ? ((mktInQ / q.mkt) * 100).toFixed(1) : '0.0'
+            });
+          }
+        }
+      });
+      q.mktTours = mktToursList.sort((a, b) => b.mktInQ - a.mktInQ);
+
+      // 2. Danh sách các đoàn THỰC TẾ KHỞI HÀNH trong quý này (Cash-In)
+      q.departingTours = departures
+        .filter(dep => dep.groupsCount > 0 && q.months.includes(dep.departureMonth))
+        .map(dep => ({
+          stt: dep.stt,
+          name: dep.name,
+          category: dep.category,
+          departureMonth: dep.departureMonth,
+          groupsCount: dep.groupsCount,
+          totalPax: dep.totalPax,
+          revenue: dep.revenue,
+          grossProfit: dep.grossProfit,
+          pricePerPax: dep.pricePerPax
+        }))
+        .sort((a, b) => b.revenue - a.revenue);
+
+      q.grossProfit = q.departingTours.reduce((sum, d) => sum + (d.grossProfit || 0), 0);
     });
 
     return quarters;
-  }, [monthlyTotals, monthlyDepartureRevenues, monthlyDeparturesCount]);
+  }, [departures, monthlyTotals, monthlyDepartureRevenues, monthlyDeparturesCount]);
 
   // 2. Dữ liệu tổng hợp 10 Tuyến Sản Phẩm (Pareto ranking cho Executive View)
   const productAggregates = useMemo(() => {
@@ -1119,13 +1164,45 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             padding: '20px',
             boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
           }}>
-            <div style={{ marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
-                CÂN ĐỐI DÒNG TIỀN THEO 4 QUÝ CHIẾN LƯỢC (Tiền Chi MKT vs Doanh Thu Thu Về)
-              </h3>
-              <p style={{ margin: '4px 0 0 0', fontSize: '0.82rem', color: '#64748b' }}>
-                Giải trình độ trễ dòng tiền (Cashflow Lag): Chi trước 90.44M cuối năm 2026 là điều kiện bắt buộc để gặt hái 31.65 Tỷ doanh thu trong năm 2027.
-              </p>
+            <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                  CÂN ĐỐI DÒNG TIỀN THEO 4 QUÝ CHIẾN LƯỢC (Tiền Chi MKT vs Doanh Thu Thu Về)
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.82rem', color: '#64748b' }}>
+                  Bấm vào từng Quý hoặc nút bên phải để mở rộng xem các dòng tour con chi tiết (Tiền chi MKT vs Đoàn khởi hành).
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const allExpanded = quarterlyData.every(q => expandedQuarterIds[q.id]);
+                  if (allExpanded) {
+                    setExpandedQuarterIds({});
+                  } else {
+                    const next = {};
+                    quarterlyData.forEach(q => { next[q.id] = true; });
+                    setExpandedQuarterIds(next);
+                  }
+                }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '7px 14px',
+                  background: '#f1f5f9',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '6px',
+                  color: '#334155',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {quarterlyData.every(q => expandedQuarterIds[q.id]) ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                {quarterlyData.every(q => expandedQuarterIds[q.id]) ? 'Thu gọn tất cả chi tiết' : 'Mở rộng tất cả dòng tour con'}
+              </button>
             </div>
 
             <div style={{ overflowX: 'auto' }}>
@@ -1142,36 +1219,212 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                 </thead>
                 <tbody>
                   {quarterlyData.map((q, idx) => {
+                    const isExpanded = !!expandedQuarterIds[q.id];
                     const mktPercent = ((q.mkt / (kpis.totalMktBudget || 1)) * 100).toFixed(1);
                     return (
-                      <tr key={q.id} style={{ borderBottom: '1px solid #e2e8f0', background: idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
-                        <td style={{ padding: '12px 14px' }}>
-                          <div style={{ fontWeight: 800, color: '#0f172a' }}>{q.label}</div>
-                          <span style={{ fontSize: '0.72rem', color: q.badgeColor, background: q.badgeBg, padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
-                            {q.badge}
-                          </span>
-                        </td>
-                        <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b' }}>
-                          {q.months.length} tháng
-                        </td>
-                        <td style={{ padding: '12px 14px', textAlign: 'right' }}>
-                          <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0284c7' }}>
-                            {fmtMillion(q.mkt)}
-                          </span>
-                          <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{mktPercent}% ngân sách</div>
-                        </td>
-                        <td style={{ padding: '12px 14px', textAlign: 'right' }}>
-                          <span style={{ fontSize: '0.95rem', fontWeight: 800, color: q.rev > 0 ? '#10b981' : '#94a3b8' }}>
-                            {q.rev > 0 ? fmtBillion(q.rev) : '0 VNĐ'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '12px 14px', textAlign: 'center', fontWeight: 700, color: '#0f172a' }}>
-                          {q.groups > 0 ? `${q.groups} đoàn` : '0 đoàn'}
-                        </td>
-                        <td style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569' }}>
-                          {q.tag}
-                        </td>
-                      </tr>
+                      <React.Fragment key={q.id}>
+                        <tr
+                          onClick={() => setExpandedQuarterIds(prev => ({ ...prev, [q.id]: !prev[q.id] }))}
+                          style={{
+                            borderBottom: isExpanded ? 'none' : '1px solid #e2e8f0',
+                            background: isExpanded ? '#f0f9ff' : (idx % 2 === 0 ? '#ffffff' : '#f8fafc'),
+                            cursor: 'pointer',
+                            transition: 'background 0.15s ease'
+                          }}
+                        >
+                          <td style={{ padding: '12px 14px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ color: isExpanded ? '#0284c7' : '#94a3b8' }}>
+                                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                              </span>
+                              <div>
+                                <div style={{ fontWeight: 800, color: '#0f172a' }}>{q.label}</div>
+                                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
+                                  <span style={{ fontSize: '0.72rem', color: q.badgeColor, background: q.badgeBg, padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                                    {q.badge}
+                                  </span>
+                                  <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                                    ({q.mktTours.length} tour MKT • {q.groups} đoàn KH)
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b' }}>
+                            {q.months.length} tháng
+                          </td>
+                          <td style={{ padding: '12px 14px', textAlign: 'right' }}>
+                            <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0284c7' }}>
+                              {fmtMillion(q.mkt)}
+                            </span>
+                            <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{mktPercent}% ngân sách</div>
+                          </td>
+                          <td style={{ padding: '12px 14px', textAlign: 'right' }}>
+                            <span style={{ fontSize: '0.95rem', fontWeight: 800, color: q.rev > 0 ? '#10b981' : '#94a3b8' }}>
+                              {q.rev > 0 ? fmtBillion(q.rev) : '0 VNĐ'}
+                            </span>
+                            {q.grossProfit > 0 && (
+                              <div style={{ fontSize: '0.72rem', color: '#16a34a' }}>Lãi: {fmtBillion(q.grossProfit)}</div>
+                            )}
+                          </td>
+                          <td style={{ padding: '12px 14px', textAlign: 'center', fontWeight: 700, color: '#0f172a' }}>
+                            {q.groups > 0 ? `${q.groups} đoàn` : '0 đoàn'}
+                          </td>
+                          <td style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#475569' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span>{q.tag}</span>
+                              <span style={{ fontSize: '0.72rem', color: '#0284c7', fontWeight: 600 }}>
+                                {isExpanded ? 'Đóng ▲' : 'Xem chi tiết ▼'}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* ACCORDION CHI TIẾT DÒNG TOUR CON CỦA QUÝ */}
+                        {isExpanded && (
+                          <tr style={{ background: '#f8fafc', borderBottom: '2px solid #cbd5e1' }}>
+                            <td colSpan={6} style={{ padding: '16px 20px' }}>
+                              <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+                                gap: '16px'
+                              }}>
+                                {/* CỘT TRÁI: TIỀN RA (CHI MKT) */}
+                                <div style={{
+                                  background: '#ffffff',
+                                  border: '1px solid #bfdbfe',
+                                  borderRadius: '10px',
+                                  padding: '14px',
+                                  boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                                }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
+                                    <div>
+                                      <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0369a1', textTransform: 'uppercase' }}>
+                                        Tiền Chi MKT (Cash-Out): {fmtMillion(q.mkt)}
+                                      </div>
+                                      <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                                        {q.mktTours.length} chiến dịch tour đang giải ngân ngân sách trong quý
+                                      </div>
+                                    </div>
+                                    <span style={{ fontSize: '0.72rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                                      {mktPercent}% Quỹ 2027
+                                    </span>
+                                  </div>
+
+                                  <div style={{ overflowX: 'auto' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
+                                      <thead>
+                                        <tr style={{ background: '#f1f5f9', color: '#475569', fontSize: '0.72rem', textTransform: 'uppercase' }}>
+                                          <th style={{ padding: '6px 8px', textAlign: 'left' }}>Tuyến Tour</th>
+                                          <th style={{ padding: '6px 8px', textAlign: 'center' }}>Tháng KH</th>
+                                          <th style={{ padding: '6px 8px', textAlign: 'center' }}>Chạy Trước</th>
+                                          <th style={{ padding: '6px 8px', textAlign: 'right' }}>MKT Trong Quý</th>
+                                          <th style={{ padding: '6px 8px', textAlign: 'right' }}>% Quý</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {q.mktTours.map((tour) => (
+                                          <tr key={`${q.id}_mkt_${tour.stt}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                            <td style={{ padding: '7px 8px', fontWeight: 700, color: '#0f172a' }}>
+                                              {tour.name}
+                                            </td>
+                                            <td style={{ padding: '7px 8px', textAlign: 'center', color: '#0369a1', fontWeight: 600 }}>
+                                              {tour.departureMonth}
+                                            </td>
+                                            <td style={{ padding: '7px 8px', textAlign: 'center', color: '#64748b' }}>
+                                              {tour.leadMonths}T
+                                            </td>
+                                            <td style={{ padding: '7px 8px', textAlign: 'right', fontWeight: 800, color: '#0284c7' }}>
+                                              {fmtMillion(tour.mktInQ)}
+                                            </td>
+                                            <td style={{ padding: '7px 8px', textAlign: 'right', color: '#64748b' }}>
+                                              {tour.pctOfQuarterMkt}%
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+
+                                {/* CỘT PHẢI: TIỀN VÀO (DOANH THU & ĐOÀN KHỞI HÀNH) */}
+                                <div style={{
+                                  background: '#ffffff',
+                                  border: '1px solid #bbf7d0',
+                                  borderRadius: '10px',
+                                  padding: '14px',
+                                  boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                                }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
+                                    <div>
+                                      <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#166534', textTransform: 'uppercase' }}>
+                                        Doanh Thu Thu Về (Cash-In): {q.rev > 0 ? fmtBillion(q.rev) : '0 VNĐ'}
+                                      </div>
+                                      <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                                        {q.departingTours.length > 0 ? `${q.groups} đoàn khởi hành (${q.departingTours.length} tuyến)` : 'Giai đoạn chuẩn bị (chưa khởi hành)'}
+                                      </div>
+                                    </div>
+                                    {q.rev > 0 && (
+                                      <span style={{ fontSize: '0.72rem', background: '#dcfce7', color: '#166534', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                                        Lãi gộp: {fmtBillion(q.grossProfit)}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {q.departingTours.length === 0 ? (
+                                    <div style={{
+                                      background: '#fffbeb',
+                                      border: '1px solid #fef3c7',
+                                      borderRadius: '8px',
+                                      padding: '16px',
+                                      color: '#92400e',
+                                      fontSize: '0.8rem',
+                                      lineHeight: 1.55
+                                    }}>
+                                      <strong>Giai đoạn gieo hạt &amp; chuẩn bị:</strong> Chưa có đoàn khởi hành trong quý này. Toàn bộ <strong>{fmtMillion(q.mkt)}</strong> chi trước dùng để chạy chiến dịch quảng cáo gom khách tour Tết (Ai Cập, Maroc, Nga Murmansk) và chuẩn bị hồ sơ visa dài hạn (Alaska, Nam Mỹ). Doanh thu tương ứng sẽ được gặt hái vào các quý năm 2027.
+                                    </div>
+                                  ) : (
+                                    <div style={{ overflowX: 'auto' }}>
+                                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
+                                        <thead>
+                                          <tr style={{ background: '#f1f5f9', color: '#475569', fontSize: '0.72rem', textTransform: 'uppercase' }}>
+                                            <th style={{ padding: '6px 8px', textAlign: 'left' }}>Đoàn Khởi Hành</th>
+                                            <th style={{ padding: '6px 8px', textAlign: 'center' }}>Tháng KH</th>
+                                            <th style={{ padding: '6px 8px', textAlign: 'center' }}>Quy Mô</th>
+                                            <th style={{ padding: '6px 8px', textAlign: 'right' }}>Doanh Thu</th>
+                                            <th style={{ padding: '6px 8px', textAlign: 'right' }}>Lãi Gộp</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {q.departingTours.map((tour) => (
+                                            <tr key={`${q.id}_dep_${tour.stt}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                              <td style={{ padding: '7px 8px', fontWeight: 700, color: '#0f172a' }}>
+                                                {tour.name}
+                                              </td>
+                                              <td style={{ padding: '7px 8px', textAlign: 'center', color: '#166534', fontWeight: 600 }}>
+                                                {tour.departureMonth}
+                                              </td>
+                                              <td style={{ padding: '7px 8px', textAlign: 'center', color: '#475569' }}>
+                                                {tour.groupsCount} đoàn ({tour.totalPax} pax)
+                                              </td>
+                                              <td style={{ padding: '7px 8px', textAlign: 'right', fontWeight: 800, color: '#16a34a' }}>
+                                                {fmtBillion(tour.revenue)}
+                                              </td>
+                                              <td style={{ padding: '7px 8px', textAlign: 'right', color: '#0284c7', fontWeight: 600 }}>
+                                                {fmtBillion(tour.grossProfit)}
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     );
                   })}
                   <tr style={{ background: '#f1f5f9', fontWeight: 900, borderTop: '2px solid #0f172a' }}>
