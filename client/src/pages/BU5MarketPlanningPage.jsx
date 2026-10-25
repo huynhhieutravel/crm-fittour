@@ -350,13 +350,8 @@ export const BU5_ROUTES_2027 = {
 // ==============================================================================
 const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState(() => {
-    const tabFromUrl = new URLSearchParams(window.location.search).get('tab');
-    if (tabFromUrl && ['overview', 'monthly-mkt', 'departures', 'mongco', 'murmansk', 'alaska', 'trunga', 'maroc', 'nammy', 'pakistan', 'aicap', 'namibia'].includes(tabFromUrl)) {
-      return tabFromUrl;
-    }
-    return 'monthly-mkt'; // Mặc định mở Báo cáo Dòng tiền MKT theo tháng
-  });
+  const [activeSection, setActiveSection] = useState('sec-monthly-mkt');
+  const [selectedRouteKey, setSelectedRouteKey] = useState('mongco');
 
   // State tính toán cho từng tuyến
   const [routeCalcs, setRouteCalcs] = useState(() => {
@@ -367,18 +362,66 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
     return initial;
   });
 
-  // Đồng bộ tab từ URL query (?tab=...)
+  const scrollToSection = (sectionId, routeKey = null) => {
+    if (routeKey) {
+      setSelectedRouteKey(routeKey);
+    }
+    const el = document.getElementById(sectionId);
+    if (el) {
+      const yOffset = -24;
+      const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+    setActiveSection(sectionId);
+    if (routeKey) {
+      setSearchParams({ tab: routeKey });
+    } else {
+      const tabMap = {
+        'sec-monthly-mkt': 'monthly-mkt',
+        'sec-departures': 'departures',
+        'sec-pnl': 'overview',
+        'sec-routes': 'routes'
+      };
+      if (tabMap[sectionId]) {
+        setSearchParams({ tab: tabMap[sectionId] });
+      }
+    }
+  };
+
+  // Scrollspy: theo dõi vị trí cuộn chuột để highlight tab tương ứng ở đáy
+  useEffect(() => {
+    const handleScroll = () => {
+      const sectionIds = ['sec-monthly-mkt', 'sec-departures', 'sec-pnl', 'sec-routes'];
+      const scrollPos = window.scrollY + 250;
+
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sectionIds[i]);
+        if (el && el.offsetTop <= scrollPos) {
+          setActiveSection(sectionIds[i]);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Đồng bộ khi người dùng mở link có ?tab=...
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl && ['overview', 'monthly-mkt', 'departures', 'mongco', 'murmansk', 'alaska', 'trunga', 'maroc', 'nammy', 'pakistan', 'aicap', 'namibia'].includes(tabFromUrl)) {
-      setActiveTab(tabFromUrl);
+    if (tabFromUrl) {
+      if (tabFromUrl === 'monthly-mkt') {
+        scrollToSection('sec-monthly-mkt');
+      } else if (tabFromUrl === 'departures') {
+        scrollToSection('sec-departures');
+      } else if (tabFromUrl === 'overview') {
+        scrollToSection('sec-pnl');
+      } else if (BU5_ROUTES_2027[tabFromUrl]) {
+        scrollToSection('sec-routes', tabFromUrl);
+      }
     }
-  }, [searchParams]);
-
-  const handleTabChange = (newTab) => {
-    setActiveTab(newTab);
-    setSearchParams({ tab: newTab });
-  };
+  }, []);
 
   const updateRouteCalc = (routeKey, field, val) => {
     setRouteCalcs(prev => ({
@@ -611,159 +654,15 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
         </div>
       </div>
 
-      {/* ── NỘI DUNG CHI TIẾT THEO TABS (HIỂN THỊ TRỰC TIẾP TRÊN SHEET TABS DƯỚI ĐÁY) ── */}
+      {/* ── NỘI DUNG TOÀN DIỆN 1 TRANG LIÊN TỤC (KHÔNG BỊ MẤT DỮ LIỆU KHI CHUYỂN TAB) ── */}
 
-      {/* ── NỘI DUNG CHI TIẾT THEO TABS ── */}
-      {activeTab === 'monthly-mkt' && (
+      {/* ── PHẦN 1: MA TRẬN DÒNG TIỀN MARKETING 15 THÁNG ── */}
+      <section id="sec-monthly-mkt" style={{ marginBottom: '36px' }}>
         <BU5MonthlyMktReport />
-      )}
+      </section>
 
-      {/* ── TAB TỔNG QUAN KẾ HOẠCH NĂM 2027 ── */}
-      {activeTab === 'overview' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-          {/* Banner dẫn tới Ma Trận Dòng Tiền */}
-          <div style={{
-            background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-            borderRadius: '12px',
-            padding: '24px 28px',
-            color: '#ffffff',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '16px',
-            boxShadow: '0 8px 24px -4px rgba(2, 132, 199, 0.4)'
-          }}>
-            <div style={{ maxWidth: '820px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <span style={{ background: '#ffffff', color: '#0369a1', padding: '3px 9px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 800 }}>
-                  MASTER PLAN GOOGLE SHEET 2027 (BU5)
-                </span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e0f2fe' }}>
-                  27 Đoàn Khởi Hành • 31.65 Tỷ DT • Ngân Sách MKT 1%: 316.46 triệu
-                </span>
-              </div>
-              <h3 style={{ margin: '0 0 6px 0', fontSize: '1.3rem', fontWeight: 800, color: '#ffffff' }}>
-                Báo Cáo Dự Toán &amp; Phân Bổ Dòng Tiền Marketing BU5 Năm 2027
-              </h3>
-              <p style={{ margin: 0, fontSize: '0.9rem', color: '#e0f2fe', lineHeight: 1.55 }}>
-                Đã lập lịch chi tiết theo từng tháng độc lập cho toàn bộ <strong>27 đoàn khởi hành trong năm 2027</strong> với chu kỳ chạy trước 1 đến 10 tháng. Trong đó, <strong>28.6% (90.44 triệu)</strong> chạy trước từ cuối 2026 và <strong>71.4% (226.02 triệu)</strong> phát sinh trong năm 2027.
-              </p>
-            </div>
-            <button
-              onClick={() => handleTabChange('monthly-mkt')}
-              style={{
-                padding: '12px 24px',
-                background: '#ffffff',
-                color: '#0284c7',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '0.92rem',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              <Calendar size={18} />
-              <span>Mở Ma Trận Dòng Tiền 15 Tháng</span>
-              <ArrowRight size={18} />
-            </button>
-          </div>
-
-          {/* Bảng tổng hợp 10 tuyến 2027 */}
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '12px',
-            border: '1px solid #e2e8f0',
-            padding: '24px 28px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
-          }}>
-            <h2 style={{ margin: '0 0 16px', fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-              Bảng Tổng Hợp 10 Tuyến Sản Phẩm Độc Bản BU5 Năm 2027 (Đối Soát Master Plan)
-            </h2>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.86rem' }}>
-                <thead>
-                  <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
-                    <th style={{ padding: '12px 14px', textAlign: 'center' }}>STT</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'left' }}>Tuyến Sản Phẩm</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'center' }}>Số Đoàn</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'center' }}>Target Pax</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'right' }}>Giá Bán / Pax</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'right' }}>Doanh Thu Kế Hoạch</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'right' }}>Lãi Gộp Kế Hoạch</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'right' }}>Kinh Phí MKT 1%</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'center' }}>Chạy Trước</th>
-                    <th style={{ padding: '12px 14px', textAlign: 'center' }}>Thao Tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(BU5_ROUTES_2027).map(([key, route], idx) => (
-                    <tr key={key} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b' }}>{idx + 1}</td>
-                      <td style={{ padding: '12px 14px', fontWeight: 700, color: '#0f172a' }}>
-                        <span style={{ color: route.color }}>{route.name}</span>
-                        <div style={{ fontSize: '0.76rem', color: '#64748b', fontWeight: 400 }}>{route.departureMonths}</div>
-                      </td>
-                      <td style={{ padding: '12px 14px', textAlign: 'center', fontWeight: 700 }}>{route.groups} đoàn</td>
-                      <td style={{ padding: '12px 14px', textAlign: 'center' }}>{route.targetPax}p</td>
-                      <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 600 }}>{formatMoney(route.price)} đ</td>
-                      <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#0284c7' }}>{formatMoney(route.revenue)} đ</td>
-                      <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#16a34a' }}>{formatMoney(route.profit)} đ</td>
-                      <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#10b981' }}>{formatMoney(route.mktBudget)} đ</td>
-                      <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b' }}>{route.leadMonths}</td>
-                      <td style={{ padding: '12px 14px', textAlign: 'center' }}>
-                        <button
-                          onClick={() => handleTabChange(key)}
-                          style={{
-                            background: '#f1f5f9',
-                            border: '1px solid #cbd5e1',
-                            padding: '4px 10px',
-                            borderRadius: '6px',
-                            fontSize: '0.78rem',
-                            fontWeight: 700,
-                            color: '#0f172a',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Soi Tuyến →
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  <tr style={{ background: '#f8fafc', fontWeight: 800, borderTop: '2px solid #0f172a' }}>
-                    <td colSpan={2} style={{ padding: '14px', color: '#0f172a' }}>
-                      TỔNG CỘNG NĂM 2027 (10 TUYẾN SẢN PHẨM)
-                    </td>
-                    <td style={{ padding: '14px', textAlign: 'center', color: '#0f172a' }}>27 đoàn</td>
-                    <td style={{ padding: '14px', textAlign: 'center', color: '#0f172a' }}>270 Pax</td>
-                    <td style={{ padding: '14px', textAlign: 'right' }}>—</td>
-                    <td style={{ padding: '14px', textAlign: 'right', color: '#0284c7', fontSize: '0.96rem' }}>
-                      31.646.000.000 đ
-                    </td>
-                    <td style={{ padding: '14px', textAlign: 'right', color: '#16a34a', fontSize: '0.96rem' }}>
-                      4.482.282.380 đ
-                    </td>
-                    <td style={{ padding: '14px', textAlign: 'right', color: '#10b981', fontSize: '0.96rem' }}>
-                      316.460.000 đ
-                    </td>
-                    <td colSpan={2} style={{ padding: '14px', textAlign: 'center', color: '#64748b', fontSize: '0.8rem' }}>
-                      1.00% Doanh Thu Kế Hoạch
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB DANH SÁCH 27 ĐOÀN KHỞI HÀNH NĂM 2027 (GOOGLE SHEET) ── */}
-      {activeTab === 'departures' && (
+      {/* ── PHẦN 2: LỊCH CHI TIẾT 27 ĐOÀN KHỞI HÀNH NĂM 2027 ── */}
+      <section id="sec-departures" style={{ marginBottom: '36px' }}>
         <div style={{
           background: '#ffffff',
           borderRadius: '12px',
@@ -774,9 +673,9 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
             <div>
               <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                Bảng Kế Hoạch 27 Đoàn Khởi Hành BU5 Năm 2027 (Đối Soát Google Sheet Master Plan)
+                Bảng Kế Hoạch 27 Đoàn Khởi Hành BU5 Năm 2027 (Master Plan Google Sheet)
               </h2>
-              <p style={{ margin: '2px 0 0', fontSize: '0.84rem', color: '#64748b' }}>
+              <p style={{ margin: '3px 0 0', fontSize: '0.84rem', color: '#64748b' }}>
                 Trích xuất 100% từ Tab "Lịch khởi hành" &amp; "Kế hoạch triển khai" — 24 đợt khởi hành trong năm 2027.
               </p>
             </div>
@@ -892,223 +791,386 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
             </table>
           </div>
         </div>
-      )}
+      </section>
 
-      {/* ── CHI TIẾT TỪNG TUYẾN NĂM 2027 (MÁY TÍNH DỰ TOÁN) ── */}
-      {['mongco', 'murmansk', 'alaska', 'trunga', 'maroc', 'nammy', 'pakistan', 'aicap', 'namibia', 'bacmongco'].includes(activeTab) && (() => {
-        const routeKey = activeTab;
-        const routeConf = BU5_ROUTES_2027[routeKey];
-        if (!routeConf) return null;
-        const c = routeCalcs[routeKey] || routeConf.defaultCalcs;
-        const RouteIcon = routeConf.icon;
-
-        // Tính toán phễu
-        const leads = c.cpl > 0 ? Math.floor(c.budget / c.cpl) : 0;
-        const paxFromAds = Math.floor(leads * (c.cr / 100));
-        const totalPax = (c.depositedPax || 0) + paxFromAds;
-        const totalEstimatedRev = totalPax * routeConf.price;
-        const grossProfitPerPax = routeConf.price - routeConf.cost;
-        const totalProfit = totalPax * grossProfitPerPax;
-        const adsRatioOnRev = totalEstimatedRev > 0 ? (c.budget / totalEstimatedRev) * 100 : 0;
-
-        // Lọc các đoàn của tuyến trong năm 2027
-        const routeDepartures = departures2027.filter(d => d.productKey === routeKey || (routeKey === 'mongco' && d.productKey === 'mongco') || (routeKey === 'murmansk' && d.productKey === 'nga'));
-
-        return (
-          <div>
-            {/* Header Tuyến */}
-            <div style={{
-              background: '#ffffff',
-              borderRadius: '12px',
-              border: `1.5px solid ${routeConf.color}`,
-              padding: '22px 24px',
-              marginBottom: '20px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: routeConf.badgeBg, color: routeConf.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <RouteIcon size={24} />
-                  </div>
-                  <div>
-                    <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: '#0f172a' }}>
-                      Máy Tính Dự Toán 2027: {routeConf.name}
-                    </h2>
-                    <p style={{ margin: '2px 0 0', fontSize: '0.84rem', color: '#64748b' }}>
-                      {routeConf.subName} • Giá tour: <strong>{formatMoney(routeConf.price)} đ</strong>
-                    </p>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '6px 12px', borderRadius: '6px', fontSize: '0.82rem', color: '#475569' }}>
-                    Quy mô năm 2027: <strong style={{ color: '#0f172a' }}>{routeConf.groups} đoàn ({routeConf.targetPax} pax)</strong>
-                  </div>
-                  <div style={{ background: '#ecfdf4', border: '1px solid #86efac', padding: '6px 12px', borderRadius: '6px', fontSize: '0.82rem', color: '#166534' }}>
-                    Lãi gộp KH: <strong>{formatMoney(routeConf.profit)} đ</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Layout 2 Cột: Input Tham Số & Kết Quả Tính Toán */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-              {/* Cột Trái: Input Tham Số */}
-              <div style={{
-                background: '#ffffff',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-                padding: '22px 24px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-              }}>
-                <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Sliders size={18} color="#0284c7" />
-                  <span>Tham Số Dự Toán Năm 2027 (Input)</span>
-                </h3>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
-                      Ngân sách Marketing phân bổ cho tuyến (Định mức 1% Doanh thu):
-                    </label>
-                    <CurrencyInput
-                      value={c.budget}
-                      onChange={(v) => updateRouteCalc(routeKey, 'budget', v)}
-                    />
-                    <span style={{ fontSize: '0.74rem', color: '#10b981', display: 'block', marginTop: '3px', fontWeight: 600 }}>
-                      Chuẩn định mức 1% của {formatMoney(routeConf.revenue)} đ = <strong>{formatMoney(routeConf.mktBudget)} đ</strong>
-                    </span>
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
-                      Chi phí trên mỗi Lead SĐT (CPL giả định):
-                    </label>
-                    <CurrencyInput
-                      value={c.cpl}
-                      onChange={(v) => updateRouteCalc(routeKey, 'cpl', v)}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
-                      Tỷ lệ chuyển đổi chốt đơn (CR Sale):
-                    </label>
-                    <NumberInput
-                      value={c.cr}
-                      onChange={(v) => updateRouteCalc(routeKey, 'cr', v)}
-                      unit="%"
-                      max={100}
-                    />
-                    <span style={{ fontSize: '0.74rem', color: '#64748b', display: 'block', marginTop: '3px' }}>
-                      Định mức dòng khám phá độc bản: <strong>8.0% - 10.0%</strong>
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Cột Phải: Kết Quả Dự Toán */}
-              <div style={{
-                background: '#ffffff',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0',
-                padding: '22px 24px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-              }}>
-                <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <TrendingUp size={18} color="#16a34a" />
-                  <span>Kỳ Vọng Phễu Chuyển Đổi &amp; Tài Chính</span>
-                </h3>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-                  <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>DỰ KIẾN LEAD SĐT:</span>
-                    <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>
-                      ~{leads} Lead
-                    </div>
-                  </div>
-
-                  <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>KHÁCH CHỐT TỪ ADS:</span>
-                    <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#16a34a', marginTop: '4px' }}>
-                      ~{paxFromAds} Pax
-                    </div>
-                  </div>
-
-                  <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>DOANH THU KỲ VỌNG:</span>
-                    <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0284c7', marginTop: '4px' }}>
-                      {formatMoney(totalEstimatedRev)} đ
-                    </div>
-                  </div>
-
-                  <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>LÃI GỘP KỲ VỌNG:</span>
-                    <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#16a34a', marginTop: '4px' }}>
-                      {formatMoney(totalProfit)} đ
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ marginTop: '14px', padding: '10px 14px', background: '#ecfdf5', borderRadius: '8px', border: '1px solid #a7f3d0', fontSize: '0.82rem', color: '#065f46' }}>
-                  Tỷ lệ Marketing / Doanh thu dự kiến: <strong>{adsRatioOnRev.toFixed(2)}%</strong> (Định mức tiêu chuẩn: <strong>1.00%</strong>).
-                </div>
-              </div>
-            </div>
-
-            {/* Bảng các đợt khởi hành của tuyến */}
-            <div style={{
-              background: '#ffffff',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              padding: '20px 24px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-            }}>
-              <h3 style={{ margin: '0 0 14px', fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>
-                Lịch Khởi Hành Năm 2027 Thuộc Tuyến: {routeConf.name}
-              </h3>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
-                  <thead>
-                    <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
-                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>STT</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>Khởi Hành</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'left' }}>Tên Đợt Khởi Hành</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>Số Đoàn</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>Số Pax</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'right' }}>Doanh Thu KH</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'right' }}>Kinh Phí MKT (1%)</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>Chạy Trước</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'center' }}>Bắt Đầu MKT</th>
-                      <th style={{ padding: '8px 12px', textAlign: 'left' }}>Tình Trạng</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {routeDepartures.map((d, i) => (
-                      <tr key={d.stt} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '8px 12px', textAlign: 'center', color: '#64748b' }}>{i + 1}</td>
-                        <td style={{ padding: '8px 12px', textAlign: 'center', fontWeight: 700, color: '#0369a1' }}>{d.displayTime}</td>
-                        <td style={{ padding: '8px 12px', fontWeight: 600, color: '#0f172a' }}>{d.name}</td>
-                        <td style={{ padding: '8px 12px', textAlign: 'center', fontWeight: 700 }}>{d.groupsCount} đoàn</td>
-                        <td style={{ padding: '8px 12px', textAlign: 'center' }}>{d.totalPax} pax</td>
-                        <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: '#0284c7' }}>{formatMoney(d.revenue)} đ</td>
-                        <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: '#10b981' }}>{formatMoney(d.mktBudget)} đ</td>
-                        <td style={{ padding: '8px 12px', textAlign: 'center' }}>{d.leadMonths} tháng</td>
-                        <td style={{ padding: '8px 12px', textAlign: 'center', fontWeight: d.startMonth.startsWith('2026') ? 700 : 500, color: d.startMonth.startsWith('2026') ? '#d97706' : '#64748b' }}>
-                          {d.startMonth}
-                        </td>
-                        <td style={{ padding: '8px 12px', color: '#64748b', fontSize: '0.8rem' }}>{d.status}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+      {/* ── PHẦN 3: BẢNG TỔNG HỢP P&L & ĐỊNH MỨC 10 TUYẾN ── */}
+      <section id="sec-pnl" style={{ marginBottom: '36px' }}>
+        <div style={{
+          background: '#ffffff',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0',
+          padding: '24px 28px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
+                Bảng Tổng Hợp P&amp;L 10 Tuyến Sản Phẩm Độc Bản BU5 Năm 2027
+              </h2>
+              <p style={{ margin: '4px 0 0', fontSize: '0.84rem', color: '#64748b' }}>
+                Cơ cấu doanh thu, lãi gộp và ngân sách Marketing 1% trên 10 tuyến. Bấm "Soi Máy Tính" để điều chỉnh phễu và CPL chi tiết bên dưới.
+              </p>
             </div>
           </div>
-        );
-      })()}
 
-      {/* ── GOOGLE SHEETS STYLE BOTTOM TABS BAR (FIXED DƯỚI ĐÁY MÀN HÌNH) ── */}
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.86rem' }}>
+              <thead>
+                <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
+                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>STT</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left' }}>Tuyến Sản Phẩm</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>Số Đoàn</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>Target Pax</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Giá Bán / Pax</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Doanh Thu Kế Hoạch</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Lãi Gộp Kế Hoạch</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Kinh Phí MKT 1%</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>Chạy Trước</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(BU5_ROUTES_2027).map(([key, route], idx) => (
+                  <tr key={key} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b' }}>{idx + 1}</td>
+                    <td style={{ padding: '12px 14px', fontWeight: 700, color: '#0f172a' }}>
+                      <span style={{ color: route.color }}>{route.name}</span>
+                      <div style={{ fontSize: '0.76rem', color: '#64748b', fontWeight: 400 }}>{route.departureMonths}</div>
+                    </td>
+                    <td style={{ padding: '12px 14px', textAlign: 'center', fontWeight: 700 }}>{route.groups} đoàn</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'center' }}>{route.targetPax}p</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 600 }}>{formatMoney(route.price)} đ</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#0284c7' }}>{formatMoney(route.revenue)} đ</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#16a34a' }}>{formatMoney(route.profit)} đ</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#10b981' }}>{formatMoney(route.mktBudget)} đ</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b' }}>{route.leadMonths}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                      <button
+                        onClick={() => scrollToSection('sec-routes', key)}
+                        style={{
+                          background: '#f1f5f9',
+                          border: '1px solid #cbd5e1',
+                          padding: '5px 12px',
+                          borderRadius: '6px',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          color: '#0f172a',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <span>Soi Máy Tính</span>
+                        <span>↓</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                <tr style={{ background: '#f8fafc', fontWeight: 800, borderTop: '2px solid #0f172a' }}>
+                  <td colSpan={2} style={{ padding: '14px', color: '#0f172a' }}>
+                    TỔNG CỘNG NĂM 2027 (10 TUYẾN SẢN PHẨM)
+                  </td>
+                  <td style={{ padding: '14px', textAlign: 'center', color: '#0f172a' }}>27 đoàn</td>
+                  <td style={{ padding: '14px', textAlign: 'center', color: '#0f172a' }}>270 Pax</td>
+                  <td style={{ padding: '14px', textAlign: 'right' }}>—</td>
+                  <td style={{ padding: '14px', textAlign: 'right', color: '#0284c7', fontSize: '0.96rem' }}>
+                    31.646.000.000 đ
+                  </td>
+                  <td style={{ padding: '14px', textAlign: 'right', color: '#16a34a', fontSize: '0.96rem' }}>
+                    4.482.282.380 đ
+                  </td>
+                  <td style={{ padding: '14px', textAlign: 'right', color: '#10b981', fontSize: '0.96rem' }}>
+                    316.460.000 đ
+                  </td>
+                  <td colSpan={2} style={{ padding: '14px', textAlign: 'center', color: '#64748b', fontSize: '0.8rem' }}>
+                    1.00% Doanh Thu Kế Hoạch
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PHẦN 4: CHI TIẾT & MÁY TÍNH DỰ TOÁN TỪNG TUYẾN ── */}
+      <section id="sec-routes" style={{ marginBottom: '40px' }}>
+        <div style={{
+          background: '#ffffff',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0',
+          padding: '20px 24px',
+          marginBottom: '16px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+        }}>
+          <div style={{ marginBottom: '14px' }}>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
+              Máy Tính Dự Toán Chi Tiết &amp; Phễu Chuyển Đổi 10 Tuyến BU5
+            </h2>
+            <p style={{ margin: '4px 0 0', fontSize: '0.84rem', color: '#64748b' }}>
+              Bấm chọn tuyến bên dưới để điều chỉnh ngân sách, chi phí CPL giả định và tính toán số khách / lãi gộp thu về.
+            </p>
+          </div>
+
+          {/* Thanh chọn nhanh tuyến (Pill Selector) */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {Object.entries(BU5_ROUTES_2027).map(([key, r]) => {
+              const isSelected = selectedRouteKey === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setSelectedRouteKey(key)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '7px 14px',
+                    borderRadius: '8px',
+                    border: isSelected ? `2px solid ${r.color}` : '1px solid #e2e8f0',
+                    background: isSelected ? r.badgeBg : '#f8fafc',
+                    color: isSelected ? r.badgeText : '#475569',
+                    fontWeight: isSelected ? 800 : 600,
+                    fontSize: '0.82rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: r.color }} />
+                  <span>{r.name.split(' - ')[0]}</span>
+                  <span style={{ fontSize: '0.74rem', opacity: 0.85 }}>({r.groups} đoàn)</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Khối hiển thị chi tiết của tuyến đang chọn */}
+        {(() => {
+          const routeKey = selectedRouteKey;
+          const routeConf = BU5_ROUTES_2027[routeKey] || BU5_ROUTES_2027.mongco;
+          if (!routeConf) return null;
+          const c = routeCalcs[routeKey] || routeConf.defaultCalcs;
+          const RouteIcon = routeConf.icon;
+
+          // Tính toán phễu
+          const leads = c.cpl > 0 ? Math.floor(c.budget / c.cpl) : 0;
+          const paxFromAds = Math.floor(leads * (c.cr / 100));
+          const totalPax = (c.depositedPax || 0) + paxFromAds;
+          const totalEstimatedRev = totalPax * routeConf.price;
+          const grossProfitPerPax = routeConf.price - routeConf.cost;
+          const totalProfit = totalPax * grossProfitPerPax;
+          const adsRatioOnRev = totalEstimatedRev > 0 ? (c.budget / totalEstimatedRev) * 100 : 0;
+
+          // Lọc các đoàn của tuyến trong năm 2027
+          const routeDepartures = departures2027.filter(d => d.productKey === routeKey || (routeKey === 'mongco' && d.productKey === 'mongco') || (routeKey === 'murmansk' && d.productKey === 'nga'));
+
+          return (
+            <div>
+              {/* Header Tuyến */}
+              <div style={{
+                background: '#ffffff',
+                borderRadius: '12px',
+                border: `1.5px solid ${routeConf.color}`,
+                padding: '22px 24px',
+                marginBottom: '20px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: routeConf.badgeBg, color: routeConf.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <RouteIcon size={24} />
+                    </div>
+                    <div>
+                      <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: '#0f172a' }}>
+                        Máy Tính Dự Toán 2027: {routeConf.name}
+                      </h2>
+                      <p style={{ margin: '2px 0 0', fontSize: '0.84rem', color: '#64748b' }}>
+                        {routeConf.subName} • Giá tour: <strong>{formatMoney(routeConf.price)} đ</strong>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '6px 12px', borderRadius: '6px', fontSize: '0.82rem', color: '#475569' }}>
+                      Quy mô năm 2027: <strong style={{ color: '#0f172a' }}>{routeConf.groups} đoàn ({routeConf.targetPax} pax)</strong>
+                    </div>
+                    <div style={{ background: '#ecfdf4', border: '1px solid #86efac', padding: '6px 12px', borderRadius: '6px', fontSize: '0.82rem', color: '#166534' }}>
+                      Lãi gộp KH: <strong>{formatMoney(routeConf.profit)} đ</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Layout 2 Cột: Input Tham Số & Kết Quả Tính Toán */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+                {/* Cột Trái: Input Tham Số */}
+                <div style={{
+                  background: '#ffffff',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                  padding: '22px 24px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                }}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Sliders size={18} color="#0284c7" />
+                    <span>Tham Số Dự Toán Năm 2027 (Input)</span>
+                  </h3>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+                        Ngân sách Marketing phân bổ cho tuyến (Định mức 1% Doanh thu):
+                      </label>
+                      <CurrencyInput
+                        value={c.budget}
+                        onChange={(v) => updateRouteCalc(routeKey, 'budget', v)}
+                      />
+                      <span style={{ fontSize: '0.74rem', color: '#10b981', display: 'block', marginTop: '3px', fontWeight: 600 }}>
+                        Chuẩn định mức 1% của {formatMoney(routeConf.revenue)} đ = <strong>{formatMoney(routeConf.mktBudget)} đ</strong>
+                      </span>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+                        Chi phí trên mỗi Lead SĐT (CPL giả định):
+                      </label>
+                      <CurrencyInput
+                        value={c.cpl}
+                        onChange={(v) => updateRouteCalc(routeKey, 'cpl', v)}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#475569', marginBottom: '6px' }}>
+                        Tỷ lệ chuyển đổi chốt đơn (CR Sale):
+                      </label>
+                      <NumberInput
+                        value={c.cr}
+                        onChange={(v) => updateRouteCalc(routeKey, 'cr', v)}
+                        unit="%"
+                        max={100}
+                      />
+                      <span style={{ fontSize: '0.74rem', color: '#64748b', display: 'block', marginTop: '3px' }}>
+                        Định mức dòng khám phá độc bản: <strong>8.0% - 10.0%</strong>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cột Phải: Kết Quả Dự Toán */}
+                <div style={{
+                  background: '#ffffff',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                  padding: '22px 24px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                }}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <TrendingUp size={18} color="#16a34a" />
+                    <span>Kỳ Vọng Phễu Chuyển Đổi &amp; Tài Chính</span>
+                  </h3>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                    <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>Số Lead Ước Tính:</span>
+                      <strong style={{ fontSize: '1.25rem', color: '#0284c7' }}>{leads.toLocaleString()}</strong>
+                      <span style={{ fontSize: '0.72rem', color: '#94a3b8', display: 'block' }}>Ngân sách / CPL</span>
+                    </div>
+
+                    <div style={{ background: '#ecfdf5', padding: '12px 14px', borderRadius: '8px', border: '1px solid #a7f3d0' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#065f46', display: 'block' }}>Khách Chốt Được:</span>
+                      <strong style={{ fontSize: '1.25rem', color: '#059669' }}>{paxFromAds} Pax</strong>
+                      <span style={{ fontSize: '0.72rem', color: '#047857', display: 'block' }}>Target: {routeConf.targetPax} pax ({routeConf.groups} đoàn)</span>
+                    </div>
+
+                    <div style={{ background: '#eff6ff', padding: '12px 14px', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#1e40af', display: 'block' }}>Doanh Thu Dự Kiến:</span>
+                      <strong style={{ fontSize: '1.1rem', color: '#1d4ed8' }}>{formatMoney(totalEstimatedRev)} đ</strong>
+                      <span style={{ fontSize: '0.72rem', color: '#60a5fa', display: 'block' }}>Kế hoạch: {formatMoney(routeConf.revenue)} đ</span>
+                    </div>
+
+                    <div style={{ background: '#fefce8', padding: '12px 14px', borderRadius: '8px', border: '1px solid #fef08a' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#854d0e', display: 'block' }}>Lãi Gộp Kỳ Vọng:</span>
+                      <strong style={{ fontSize: '1.1rem', color: '#ca8a04' }}>{formatMoney(totalProfit)} đ</strong>
+                      <span style={{ fontSize: '0.72rem', color: '#a16207', display: 'block' }}>Kế hoạch: {formatMoney(routeConf.profit)} đ</span>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    background: paxFromAds >= routeConf.targetPax ? '#ecfdf5' : '#fffbeb',
+                    border: `1px solid ${paxFromAds >= routeConf.targetPax ? '#86efac' : '#fde68a'}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    fontSize: '0.82rem'
+                  }}>
+                    {paxFromAds >= routeConf.targetPax ? (
+                      <CheckCircle2 size={18} color="#16a34a" />
+                    ) : (
+                      <AlertCircle size={18} color="#d97706" />
+                    )}
+                    <span>
+                      {paxFromAds >= routeConf.targetPax 
+                        ? `Đạt và vượt chỉ tiêu! Thu về ${paxFromAds}/${routeConf.targetPax} khách (tương đương ${Math.floor(paxFromAds / 10)} đoàn). Chi phí MKT chiếm ${adsRatioOnRev.toFixed(2)}% doanh thu.`
+                        : `Còn thiếu ${routeConf.targetPax - paxFromAds} khách để đạt mục tiêu ${routeConf.groups} đoàn. Cần tối ưu CPL thấp hơn hoặc tăng tỷ lệ chốt CR của Sales.`
+                      }
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Lịch các đoàn khởi hành của tuyến */}
+              <div style={{
+                background: '#ffffff',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+                padding: '20px 24px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+              }}>
+                <h3 style={{ margin: '0 0 14px', fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>
+                  Lịch Khởi Hành Năm 2027 Của Tuyến ({routeDepartures.length} đợt khởi hành)
+                </h3>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                    <thead>
+                      <tr style={{ background: '#f8fafc', color: '#475569', borderBottom: '1px solid #e2e8f0' }}>
+                        <th style={{ padding: '8px 12px', textAlign: 'left' }}>Tên Đợt Khởi Hành</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'center' }}>Tháng Đi</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'center' }}>Số Đoàn</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'center' }}>Số Pax</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'right' }}>Doanh Thu</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'right' }}>Lãi Gộp</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'right' }}>Kinh Phí MKT (1%)</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'center' }}>Chạy Trước</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'left' }}>Trạng Thái</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {routeDepartures.map(d => (
+                        <tr key={d.stt} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                          <td style={{ padding: '8px 12px', fontWeight: 700, color: '#0f172a' }}>{d.name}</td>
+                          <td style={{ padding: '8px 12px', textAlign: 'center', color: '#0284c7', fontWeight: 700 }}>{d.displayTime}</td>
+                          <td style={{ padding: '8px 12px', textAlign: 'center', fontWeight: 600 }}>{d.groupsCount} đoàn</td>
+                          <td style={{ padding: '8px 12px', textAlign: 'center' }}>{d.totalPax} pax</td>
+                          <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 600 }}>{formatMoney(d.revenue)} đ</td>
+                          <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: '#16a34a' }}>{formatMoney(d.grossProfit)} đ</td>
+                          <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: '#10b981' }}>{formatMoney(d.mktBudget)} đ</td>
+                          <td style={{ padding: '8px 12px', textAlign: 'center' }}>{d.leadMonths} tháng</td>
+                          <td style={{ padding: '8px 12px', color: '#64748b', fontSize: '0.8rem' }}>{d.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </section>
+
+      {/* ── THANH TAB ĐIỀU HƯỚNG CUỘN (SCROLLSPY GOOGLE SHEETS STYLE FIXED Ở ĐÁY) ── */}
       <div style={{
         position: 'fixed',
         bottom: 0,
@@ -1126,7 +1188,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
         height: '46px',
         scrollbarWidth: 'thin'
       }}>
-        {/* Label Google Sheet branding indicator */}
+        {/* Nhãn Google Sheets */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -1144,23 +1206,27 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
         </div>
 
         {[
-          { key: 'monthly-mkt', label: 'Ma Trận Dòng Tiền MKT 2027', icon: <Calendar size={13} /> },
-          { key: 'departures', label: 'Lịch 27 Đoàn', icon: <Layers size={13} /> },
-          { key: 'overview', label: 'P&L & Tổng Quan', icon: <BarChart3 size={13} /> },
-          { key: 'mongco', label: 'Mông Cổ (6 đoàn)', color: '#059669' },
-          { key: 'murmansk', label: 'Nga Murmansk (3 đoàn)', color: '#0284c7' },
-          { key: 'alaska', label: 'Alaska (2 đoàn)', color: '#0369a1' },
-          { key: 'trunga', label: 'Trung Á (4 đoàn)', color: '#8b5cf6' },
-          { key: 'maroc', label: 'Ma Rốc (3 đoàn)', color: '#e11d48' },
-          { key: 'nammy', label: 'Nam Mỹ (1 đoàn)', color: '#f59e0b' },
-          { key: 'pakistan', label: 'Pakistan (4 đoàn)', color: '#16a34a' },
-          { key: 'aicap', label: 'Ai Cập (2 đoàn)', color: '#d97706' }
+          { key: 'sec-monthly-mkt', label: 'Ma Trận Dòng Tiền MKT 2027', icon: <Calendar size={13} />, target: 'sec-monthly-mkt' },
+          { key: 'sec-departures', label: 'Lịch 27 Đoàn', icon: <Layers size={13} />, target: 'sec-departures' },
+          { key: 'sec-pnl', label: 'P&L 10 Tuyến', icon: <BarChart3 size={13} />, target: 'sec-pnl' },
+          { key: 'sec-routes', label: 'Máy Tính Dự Toán', icon: <Sliders size={13} />, target: 'sec-routes' },
+          { key: 'mongco', label: 'Mông Cổ (6 đoàn)', color: '#059669', target: 'sec-routes', routeKey: 'mongco' },
+          { key: 'murmansk', label: 'Nga Murmansk (3 đoàn)', color: '#0284c7', target: 'sec-routes', routeKey: 'murmansk' },
+          { key: 'alaska', label: 'Alaska (2 đoàn)', color: '#0369a1', target: 'sec-routes', routeKey: 'alaska' },
+          { key: 'trunga', label: 'Trung Á (4 đoàn)', color: '#8b5cf6', target: 'sec-routes', routeKey: 'trunga' },
+          { key: 'maroc', label: 'Ma Rốc (3 đoàn)', color: '#e11d48', target: 'sec-routes', routeKey: 'maroc' },
+          { key: 'nammy', label: 'Nam Mỹ (1 đoàn)', color: '#f59e0b', target: 'sec-routes', routeKey: 'nammy' },
+          { key: 'pakistan', label: 'Pakistan (4 đoàn)', color: '#16a34a', target: 'sec-routes', routeKey: 'pakistan' },
+          { key: 'aicap', label: 'Ai Cập (2 đoàn)', color: '#d97706', target: 'sec-routes', routeKey: 'aicap' }
         ].map(tab => {
-          const isActive = activeTab === tab.key;
+          const isActive = tab.routeKey 
+            ? (activeSection === 'sec-routes' && selectedRouteKey === tab.routeKey)
+            : activeSection === tab.key;
+
           return (
             <button
               key={tab.key}
-              onClick={() => handleTabChange(tab.key)}
+              onClick={() => scrollToSection(tab.target, tab.routeKey)}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
