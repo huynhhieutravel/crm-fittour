@@ -41,10 +41,10 @@ import {
   getCategoryBadgeStyle
 } from '../data/bu5MarketingMasterPlan';
 
-// Helper format tiền tệ VNĐ: 32.000.000 đ
+// Helper format tiền tệ VNĐ: 32.000.000 đ (dùng \u00A0 để chữ đ không bao giờ bị rớt hàng)
 const fmt = (val) => {
-  if (val === null || val === undefined || isNaN(val)) return '0 đ';
-  return Math.round(Number(val)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' đ';
+  if (val === null || val === undefined || isNaN(val)) return '0\u00A0đ';
+  return Math.round(Number(val)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '\u00A0đ';
 };
 
 // Format số tiền gọn gàng tiếng Việt: 1049 triệu, 2.1 triệu
@@ -1264,7 +1264,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                   <th style={{ padding: '12px 10px', width: '85px', textAlign: 'center', borderRight: '1px solid #1e293b' }}>Khởi Hành</th>
                   <th style={{ padding: '12px 8px', width: '55px', textAlign: 'center', borderRight: '1px solid #1e293b' }}>Đoàn</th>
                   <th style={{ padding: '12px 10px', width: '115px', textAlign: 'right', borderRight: '1px solid #1e293b', whiteSpace: 'nowrap' }}>Doanh Thu</th>
-                  <th style={{ padding: '12px 10px', width: '95px', textAlign: 'right', borderRight: '1px solid #1e293b', background: '#1e293b', color: '#38bdf8' }}>MKT 1%</th>
+                  <th style={{ padding: '12px 10px', minWidth: '120px', textAlign: 'right', borderRight: '1px solid #1e293b', background: '#1e293b', color: '#38bdf8', whiteSpace: 'nowrap' }}>MKT 1%</th>
                   <th style={{ padding: '12px 8px', width: '80px', textAlign: 'center', borderRight: '2px solid #334155' }}>Chạy Trước</th>
                   
                   {/* Cột Tháng (Phân biệt tháng chuẩn bị cuối 2026 vs dòng tiền 2027) */}
@@ -1362,7 +1362,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                         {dep.revenue > 0 ? fmtShort(dep.revenue) : '-'}
                       </td>
 
-                      <td style={{ padding: '10px 10px', textAlign: 'right', fontWeight: 700, color: isZeroGroup ? '#94a3b8' : '#0284c7', background: '#f8fafc', borderRight: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '10px 10px', textAlign: 'right', fontWeight: 700, color: isZeroGroup ? '#94a3b8' : '#0284c7', background: '#f8fafc', borderRight: '1px solid #f1f5f9', whiteSpace: 'nowrap' }}>
                         {dep.mktBudget > 0 ? fmt(dep.mktBudget) : '-'}
                       </td>
 

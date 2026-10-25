@@ -40,6 +40,11 @@ const formatMoney = (val) => {
   return Math.round(Number(val)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 };
 
+// Helper gắn chữ đ với non-breaking space (\u00A0) để chữ đ không bao giờ bị rớt hàng
+const formatVND = (val) => {
+  return `${formatMoney(val)}\u00A0đ`;
+};
+
 const BU5_ROUTES_2027 = {
   mongco: {
     id: 'mongco',
@@ -557,17 +562,17 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
                   <th style={{ padding: '10px 12px', textAlign: 'center' }}>STT</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'center' }}>Khởi Hành</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left' }}>Tên Tuyến / Đợt Khởi Hành</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'center' }}>Số Đoàn</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'center' }}>Số Khách</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'right' }}>Giá Bán / Pax</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'right' }}>Doanh Thu Kế Hoạch</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'right' }}>Lãi Gộp Kế Hoạch</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'right' }}>Ngân Sách MKT (1%)</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'center' }}>Chạy Trước</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'center' }}>Bắt Đầu MKT</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left' }}>Trạng Thái Sheet</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>Khởi Hành</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', minWidth: '180px' }}>Tên Tuyến / Đợt Khởi Hành</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>Số Đoàn</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>Số Khách</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>Giá Bán / Pax</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>Doanh Thu Kế Hoạch</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>Lãi Gộp Kế Hoạch</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>Ngân Sách MKT (1%)</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>Chạy Trước</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>Bắt Đầu MKT</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', whiteSpace: 'nowrap' }}>Trạng Thái Sheet</th>
                 </tr>
               </thead>
               <tbody>
@@ -595,17 +600,17 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
                       <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 700 }}>
                         {dep.totalPax} pax
                       </td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>
-                        {formatMoney(dep.pricePerPax)} đ
+                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        {formatVND(dep.pricePerPax)}
                       </td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#0284c7' }}>
-                        {formatMoney(dep.revenue)} đ
+                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#0284c7', whiteSpace: 'nowrap' }}>
+                        {formatVND(dep.revenue)}
                       </td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#16a34a' }}>
-                        {formatMoney(dep.grossProfit)} đ
+                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#16a34a', whiteSpace: 'nowrap' }}>
+                        {formatVND(dep.grossProfit)}
                       </td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#10b981' }}>
-                        {formatMoney(dep.mktBudget)} đ
+                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#10b981', whiteSpace: 'nowrap' }}>
+                        {formatVND(dep.mktBudget)}
                       </td>
                       <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600 }}>
                         {dep.leadMonths} tháng
@@ -641,18 +646,18 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
                   <td style={{ padding: '14px 12px', textAlign: 'center', color: '#0f172a' }}>
                     {kpis.totalPax} Pax
                   </td>
-                  <td style={{ padding: '14px 12px', textAlign: 'right' }}>—</td>
-                  <td style={{ padding: '14px 12px', textAlign: 'right', color: '#0284c7', fontSize: '0.94rem' }}>
-                    {formatMoney(kpis.totalRevenue)} đ
+                  <td style={{ padding: '14px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>—</td>
+                  <td style={{ padding: '14px 12px', textAlign: 'right', color: '#0284c7', fontSize: '0.94rem', whiteSpace: 'nowrap' }}>
+                    {formatVND(kpis.totalRevenue)}
                   </td>
-                  <td style={{ padding: '14px 12px', textAlign: 'right', color: '#16a34a', fontSize: '0.94rem' }}>
-                    {formatMoney(kpis.totalGrossProfit)} đ
+                  <td style={{ padding: '14px 12px', textAlign: 'right', color: '#16a34a', fontSize: '0.94rem', whiteSpace: 'nowrap' }}>
+                    {formatVND(kpis.totalGrossProfit)}
                   </td>
-                  <td style={{ padding: '14px 12px', textAlign: 'right', color: '#10b981', fontSize: '0.94rem' }}>
-                    {formatMoney(kpis.totalMktBudget)} đ
+                  <td style={{ padding: '14px 12px', textAlign: 'right', color: '#10b981', fontSize: '0.94rem', whiteSpace: 'nowrap' }}>
+                    {formatVND(kpis.totalMktBudget)}
                   </td>
-                  <td colSpan={3} style={{ padding: '14px 12px', textAlign: 'left', color: '#64748b', fontSize: '0.8rem' }}>
-                    Dòng tiền: <strong>{formatMoney(kpis.mktPrepIn2026)} đ</strong> (cuối 2026) + <strong>{formatMoney(kpis.mktIn2027Only)} đ</strong> (năm 2027)
+                  <td colSpan={3} style={{ padding: '14px 12px', textAlign: 'left', color: '#64748b', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                    Dòng tiền: <strong>{formatVND(kpis.mktPrepIn2026)}</strong> (cuối 2026) + <strong>{formatVND(kpis.mktIn2027Only)}</strong> (năm 2027)
                   </td>
                 </tr>
               </tbody>
@@ -686,14 +691,14 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
                   <th style={{ padding: '12px 14px', textAlign: 'center' }}>STT</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'left' }}>Tuyến Sản Phẩm</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>Số Đoàn</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>Target Pax</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Giá Bán / Pax</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Doanh Thu Kế Hoạch</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Lãi Gộp Kế Hoạch</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'right' }}>Kinh Phí MKT 1%</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>Chạy Trước</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', minWidth: '180px' }}>Tuyến Sản Phẩm</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>Số Đoàn</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>Target Pax</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>Giá Bán / Pax</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>Doanh Thu Kế Hoạch</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>Lãi Gộp Kế Hoạch</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>Kinh Phí MKT 1%</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>Chạy Trước</th>
                 </tr>
               </thead>
               <tbody>
@@ -706,11 +711,11 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
                     </td>
                     <td style={{ padding: '12px 14px', textAlign: 'center', fontWeight: 700 }}>{route.groups} đoàn</td>
                     <td style={{ padding: '12px 14px', textAlign: 'center' }}>{route.targetPax}p</td>
-                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 600 }}>{formatMoney(route.price)} đ</td>
-                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#0284c7' }}>{formatMoney(route.revenue)} đ</td>
-                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#16a34a' }}>{formatMoney(route.profit)} đ</td>
-                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#10b981' }}>{formatMoney(route.mktBudget)} đ</td>
-                    <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b' }}>{route.leadMonths} tháng</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 600, whiteSpace: 'nowrap' }}>{formatVND(route.price)}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#0284c7', whiteSpace: 'nowrap' }}>{formatVND(route.revenue)}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#16a34a', whiteSpace: 'nowrap' }}>{formatVND(route.profit)}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#10b981', whiteSpace: 'nowrap' }}>{formatVND(route.mktBudget)}</td>
+                    <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b', whiteSpace: 'nowrap' }}>{route.leadMonths} tháng</td>
                   </tr>
                 ))}
                 <tr style={{ background: '#f8fafc', fontWeight: 800, borderTop: '2px solid #0f172a' }}>
@@ -720,16 +725,16 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
                   <td style={{ padding: '14px', textAlign: 'center', color: '#0f172a' }}>27 đoàn</td>
                   <td style={{ padding: '14px', textAlign: 'center', color: '#0f172a' }}>270 Pax</td>
                   <td style={{ padding: '14px', textAlign: 'right' }}>—</td>
-                  <td style={{ padding: '14px', textAlign: 'right', color: '#0284c7', fontSize: '0.96rem' }}>
-                    31.646.000.000 đ
+                  <td style={{ padding: '14px', textAlign: 'right', color: '#0284c7', fontSize: '0.96rem', whiteSpace: 'nowrap' }}>
+                    {formatVND(kpis.totalRevenue)}
                   </td>
-                  <td style={{ padding: '14px', textAlign: 'right', color: '#16a34a', fontSize: '0.96rem' }}>
-                    4.482.282.380 đ
+                  <td style={{ padding: '14px', textAlign: 'right', color: '#16a34a', fontSize: '0.96rem', whiteSpace: 'nowrap' }}>
+                    {formatVND(kpis.totalGrossProfit)}
                   </td>
-                  <td style={{ padding: '14px', textAlign: 'right', color: '#10b981', fontSize: '0.96rem' }}>
-                    316.460.000 đ
+                  <td style={{ padding: '14px', textAlign: 'right', color: '#10b981', fontSize: '0.96rem', whiteSpace: 'nowrap' }}>
+                    {formatVND(kpis.totalMktBudget)}
                   </td>
-                  <td style={{ padding: '14px', textAlign: 'center', color: '#64748b', fontSize: '0.8rem' }}>
+                  <td style={{ padding: '14px', textAlign: 'center', color: '#64748b', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
                     1.00% Doanh Thu Kế Hoạch
                   </td>
                 </tr>
