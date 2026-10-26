@@ -75,9 +75,10 @@ app.use(cors());
 app.use(correlationIdMiddleware);
 app.use(express.json());
 
-// Serve static files for media uploads
+// Serve static files for media uploads & templates
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/templates', express.static(path.join(__dirname, 'public/templates')));
 
 // AUTO-HEALING: Symlink for Nginx
 // Recreate the symlink if it was accidentally deleted by frontend rsync deployments
@@ -92,9 +93,16 @@ try {
             console.log('🔄 [AUTO-HEALING] Recreating missing uploads symlink for Nginx...');
             execSync(`ln -sfn "${symlinkTarget}" "${symlinkPath}"`);
         }
+        
+        const templatesTarget = path.join(__dirname, 'public/templates');
+        const templatesPath = path.join(__dirname, '../client/dist/templates');
+        if (!fs.existsSync(templatesPath)) {
+            console.log('🔄 [AUTO-HEALING] Recreating missing templates symlink for Nginx...');
+            execSync(`ln -sfn "${templatesTarget}" "${templatesPath}"`);
+        }
     }
 } catch (symlinkErr) {
-    console.error('⚠️ [AUTO-HEALING] Failed to check or recreate uploads symlink:', symlinkErr.message);
+    console.error('⚠️ [AUTO-HEALING] Failed to check or recreate uploads/templates symlink:', symlinkErr.message);
 }
 
 // Request Logging Middleware & Fallback Data Recovery

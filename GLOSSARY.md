@@ -204,5 +204,14 @@ _Avoid_: Báo cáo 15 tháng manh mún gây khó khăn cho kế toán phân bổ
 A high-contrast executive information card permanently positioned inside the scenario chart area with interactive tab pills, ensuring key metrics (Revenue, Gross Profit, Margins, Pax, and Strategic Directives) remain immediately readable without requiring mouse hovering or leaving empty white space on display monitors.
 _Avoid_: Biểu đồ trống trơn khi không rê chuột, tooltip biến mất làm mất ngữ cảnh
 
+**Multi-BU Master Plan Template (Bản Mẫu Kế Hoạch Đa BU Chuẩn Hóa)**:
+The unified enterprise spreadsheet model distributed across all 5 Business Units (BU1 through BU5), integrating product P&L catalogs, 15-month lead-time marketing cashflows, and executive scenario sensitivity calculations in a single interconnected 4-tab workbook.
+_Avoid_: Sheet riêng rẽ từng phòng ban, bảng tính tự do không theo chuẩn
 
+**Single-Source Departure Flag (Cờ Phân Loại Đoàn Chính Thức & Mở Rộng)**:
+A mandatory binary classification attribute on tour departures categorizing groups into `[Chính thức]` (committed operational departures) and `[Mở rộng / Dự phòng]` (contingency capacity ceiling), ensuring Tab P&L and Tab Schedule draw from the exact same table without discrepancy.
+_Avoid_: Nhập 2 bảng riêng, lệch số liệu không giải trình được
 
+**Automated 4-Tab Planning Architecture (Kiến Trúc Kế Hoạch 4 Tab Tự Động Hóa)**:
+The standardized structure dividing annual commercial plans into (1) `SETUP_METADATA`, (2) `PRODUCT_PNL`, (3) `DEPARTURE_CASHFLOW`, and (4) `SCENARIOS_SUMMARY` with zero cross-tab manual retyping and full formula synchronization.
+_Avoid_: Bảng tính phẳng một tab nhồi nhét, bảng tính rời rạc thiếu công thức liên kết

@@ -374,7 +374,79 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           </div>
 
           {/* Nút hành động */}
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <a
+              href="/templates/FIT_TOUR_BU_MASTER_PLAN_TEMPLATE_2027.xlsx"
+              download="FIT_TOUR_BU_MASTER_PLAN_TEMPLATE_2027.xlsx"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#0284c7',
+                color: '#ffffff',
+                border: '1px solid #0284c7',
+                padding: '9px 14px',
+                borderRadius: '8px',
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                textDecoration: 'none',
+                boxShadow: '0 1px 3px rgba(2, 132, 199, 0.25)',
+                transition: 'all 0.15s ease'
+              }}
+              title="Tải template bảng tính chuẩn 4 Tab để các BU khác nhập liệu"
+            >
+              <Download size={14} color="#ffffff" />
+              <span>Tải Template Master Mẫu (.xlsx)</span>
+            </a>
+
+            <a
+              href="https://drive.google.com/drive/folders/1PrRGuJvoqABCPRDFSCOtompUUM-B1OgW?usp=drive_link"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#f8fafc',
+                color: '#334155',
+                border: '1px solid #cbd5e1',
+                padding: '9px 14px',
+                borderRadius: '8px',
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                textDecoration: 'none',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+              }}
+              title="Mở thư mục Google Drive chứa các file kế hoạch của các BU"
+            >
+              <Layers size={14} color="#64748b" />
+              <span>Mở Drive Kế Hoạch Các BU</span>
+              <ExternalLink size={12} color="#94a3b8" />
+            </a>
+
+            <a
+              href="/templates/FIT_TOUR_BU5_KE_HOACH_CHI_TIET_2027.xlsx"
+              download="FIT_TOUR_BU5_KE_HOACH_CHI_TIET_2027.xlsx"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#f0fdf4',
+                color: '#15803d',
+                border: '1px solid #bbf7d0',
+                padding: '9px 14px',
+                borderRadius: '8px',
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                textDecoration: 'none',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+              }}
+              title="Tải file Excel hoàn chỉnh của BU5 đã đối soát 100% công thức"
+            >
+              <FileSpreadsheet size={14} color="#15803d" />
+              <span>Tải File BU5 Chuẩn (.xlsx)</span>
+            </a>
+
             <a
               href="https://docs.google.com/spreadsheets/d/10kuQXdFgFLVSRS4CbKYa-ozuch6RnPJd8NTo36fFhrc/edit?usp=sharing"
               target="_blank"
@@ -386,19 +458,18 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
                 background: '#ecfdf5',
                 color: '#065f46',
                 border: '1px solid #a7f3d0',
-                padding: '9px 16px',
+                padding: '9px 14px',
                 borderRadius: '8px',
                 fontSize: '0.84rem',
                 fontWeight: 700,
                 textDecoration: 'none',
                 boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
               }}
+              title="Mở Google Sheet BU5 gốc trên trình duyệt"
             >
-              <span>Mở Google Sheet BU5</span>
-              <ExternalLink size={14} color="#059669" />
+              <span>Sheet Gốc</span>
+              <ExternalLink size={12} color="#059669" />
             </a>
-
-
           </div>
         </div>
       </div>
