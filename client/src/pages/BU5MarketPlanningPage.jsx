@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import BU5MonthlyMktReport from '../components/BU5MonthlyMktReport';
+import BU5ProductTimelineTable from '../components/BU5ProductTimelineTable';
 import {
   BU5_PRODUCTS_CATALOG,
   BU5_RAW_DEPARTURES,
@@ -265,6 +266,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
     setActiveSection(sectionId);
     const tabMap = {
       'sec-monthly-mkt': 'monthly-mkt',
+      'sec-timeline-tour': 'timeline-tour',
       'sec-departures': 'departures',
       'sec-pnl': 'overview'
     };
@@ -276,7 +278,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
   // Scrollspy: theo dõi vị trí cuộn chuột để highlight tab tương ứng ở đáy
   useEffect(() => {
     const handleScroll = () => {
-      const sectionIds = ['sec-monthly-mkt', 'sec-departures', 'sec-pnl'];
+      const sectionIds = ['sec-monthly-mkt', 'sec-timeline-tour', 'sec-departures', 'sec-pnl'];
       const scrollPos = window.scrollY + 250;
 
       for (let i = sectionIds.length - 1; i >= 0; i--) {
@@ -298,6 +300,8 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
     if (tabFromUrl) {
       if (tabFromUrl === 'monthly-mkt') {
         scrollToSection('sec-monthly-mkt');
+      } else if (tabFromUrl === 'timeline-tour') {
+        scrollToSection('sec-timeline-tour');
       } else if (tabFromUrl === 'departures') {
         scrollToSection('sec-departures');
       } else if (tabFromUrl === 'overview' || BU5_ROUTES_2027[tabFromUrl]) {
@@ -534,7 +538,12 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
         <BU5MonthlyMktReport />
       </section>
 
-      {/* ── PHẦN 2: LỊCH CHI TIẾT 27 ĐOÀN KHỞI HÀNH NĂM 2027 ── */}
+      {/* ── PHẦN 2: TIMELINE SẢN PHẨM THEO THÁNG (TIMELINE TOUR 11 TUYẾN CHUẨN GOOGLE SHEET) ── */}
+      <section id="sec-timeline-tour" style={{ marginBottom: '36px' }}>
+        <BU5ProductTimelineTable />
+      </section>
+
+      {/* ── PHẦN 3: LỊCH CHI TIẾT 27 ĐOÀN KHỞI HÀNH NĂM 2027 ── */}
       <section id="sec-departures" style={{ marginBottom: '36px' }}>
         <div style={{
           background: '#ffffff',
@@ -666,7 +675,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
         </div>
       </section>
 
-      {/* ── PHẦN 3: BẢNG TỔNG HỢP P&L & ĐỊNH MỨC 10 TUYẾN ── */}
+      {/* ── PHẦN 4: BẢNG TỔNG HỢP P&L & ĐỊNH MỨC 10 TUYẾN ── */}
       <section id="sec-pnl" style={{ marginBottom: '40px' }}>
         <div style={{
           background: '#ffffff',
@@ -781,8 +790,9 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
 
         {[
           { key: 'sec-monthly-mkt', label: '1. Ma Trận Dòng Tiền MKT 2027', icon: <Calendar size={13} />, target: 'sec-monthly-mkt' },
-          { key: 'sec-departures', label: '2. Lịch Khởi Hành 27 Đoàn', icon: <Layers size={13} />, target: 'sec-departures' },
-          { key: 'sec-pnl', label: '3. Bảng P&L 10 Tuyến Sản Phẩm', icon: <BarChart3 size={13} />, target: 'sec-pnl' }
+          { key: 'sec-timeline-tour', label: '2. Timeline Tour 11 Tuyến', icon: <Compass size={13} />, target: 'sec-timeline-tour' },
+          { key: 'sec-departures', label: '3. Lịch Khởi Hành 27 Đoàn', icon: <Layers size={13} />, target: 'sec-departures' },
+          { key: 'sec-pnl', label: '4. Bảng P&L 10 Tuyến Sản Phẩm', icon: <BarChart3 size={13} />, target: 'sec-pnl' }
         ].map(tab => {
           const isActive = activeSection === tab.key;
           return (
