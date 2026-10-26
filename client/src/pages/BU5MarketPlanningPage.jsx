@@ -28,6 +28,8 @@ import {
 import { Link, useSearchParams } from 'react-router-dom';
 import BU5MonthlyMktReport from '../components/BU5MonthlyMktReport';
 import BU5ProductTimelineTable from '../components/BU5ProductTimelineTable';
+import BU5PnLProductTable from '../components/BU5PnLProductTable';
+import BU5BusinessScenariosTable from '../components/BU5BusinessScenariosTable';
 import {
   BU5_PRODUCTS_CATALOG,
   BU5_RAW_DEPARTURES,
@@ -268,7 +270,8 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
       'sec-monthly-mkt': 'monthly-mkt',
       'sec-timeline-tour': 'timeline-tour',
       'sec-departures': 'departures',
-      'sec-pnl': 'overview'
+      'sec-pnl': 'pnl',
+      'sec-scenarios': 'scenarios'
     };
     if (tabMap[sectionId]) {
       setSearchParams({ tab: tabMap[sectionId] });
@@ -278,7 +281,7 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
   // Scrollspy: theo dõi vị trí cuộn chuột để highlight tab tương ứng ở đáy
   useEffect(() => {
     const handleScroll = () => {
-      const sectionIds = ['sec-monthly-mkt', 'sec-timeline-tour', 'sec-departures', 'sec-pnl'];
+      const sectionIds = ['sec-monthly-mkt', 'sec-timeline-tour', 'sec-departures', 'sec-pnl', 'sec-scenarios'];
       const scrollPos = window.scrollY + 250;
 
       for (let i = sectionIds.length - 1; i >= 0; i--) {
@@ -304,8 +307,10 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
         scrollToSection('sec-timeline-tour');
       } else if (tabFromUrl === 'departures') {
         scrollToSection('sec-departures');
-      } else if (tabFromUrl === 'overview' || BU5_ROUTES_2027[tabFromUrl]) {
+      } else if (tabFromUrl === 'pnl' || tabFromUrl === 'overview' || BU5_ROUTES_2027[tabFromUrl]) {
         scrollToSection('sec-pnl');
+      } else if (tabFromUrl === 'scenarios') {
+        scrollToSection('sec-scenarios');
       }
     }
   }, []);
@@ -675,82 +680,14 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
         </div>
       </section>
 
-      {/* ── PHẦN 4: BẢNG TỔNG HỢP P&L & ĐỊNH MỨC 10 TUYẾN ── */}
-      <section id="sec-pnl" style={{ marginBottom: '40px' }}>
-        <div style={{
-          background: '#ffffff',
-          borderRadius: '12px',
-          border: '1px solid #e2e8f0',
-          padding: '24px 28px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                Bảng Tổng Hợp P&amp;L 10 Tuyến Sản Phẩm Độc Bản BU5 Năm 2027
-              </h2>
-              <p style={{ margin: '4px 0 0', fontSize: '0.84rem', color: '#64748b' }}>
-                Cơ cấu doanh thu, lãi gộp và ngân sách Marketing chuẩn định mức 1.00% trên 10 tuyến sản phẩm kế hoạch năm 2027.
-              </p>
-            </div>
-          </div>
+      {/* ── PHẦN 4: BẢNG TỔNG HỢP P&L 11 TUYẾN SẢN PHẨM & BIÊN LỢI NHUẬN (BU5 - P&L SẢN PHẨM) ── */}
+      <section id="sec-pnl" style={{ marginBottom: '36px' }}>
+        <BU5PnLProductTable />
+      </section>
 
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.86rem' }}>
-              <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
-                  <th style={{ padding: '12px 14px', textAlign: 'center' }}>STT</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'left', minWidth: '180px' }}>Tuyến Sản Phẩm</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>Số Đoàn</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>Target Pax</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>Giá Bán / Pax</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>Doanh Thu Kế Hoạch</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>Lãi Gộp Kế Hoạch</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>Kinh Phí MKT 1%</th>
-                  <th style={{ padding: '12px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>Chạy Trước</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(BU5_ROUTES_2027).map(([key, route], idx) => (
-                  <tr key={key} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b' }}>{idx + 1}</td>
-                    <td style={{ padding: '12px 14px', fontWeight: 700, color: '#0f172a' }}>
-                      <span style={{ color: route.color }}>{route.name}</span>
-                      <div style={{ fontSize: '0.76rem', color: '#64748b', fontWeight: 400 }}>{route.departureMonths}</div>
-                    </td>
-                    <td style={{ padding: '12px 14px', textAlign: 'center', fontWeight: 700 }}>{route.groups} đoàn</td>
-                    <td style={{ padding: '12px 14px', textAlign: 'center' }}>{route.targetPax}p</td>
-                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 600, whiteSpace: 'nowrap' }}>{formatVND(route.price)}</td>
-                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#0284c7', whiteSpace: 'nowrap' }}>{formatVND(route.revenue)}</td>
-                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#16a34a', whiteSpace: 'nowrap' }}>{formatVND(route.profit)}</td>
-                    <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#10b981', whiteSpace: 'nowrap' }}>{formatVND(route.mktBudget)}</td>
-                    <td style={{ padding: '12px 14px', textAlign: 'center', color: '#64748b', whiteSpace: 'nowrap' }}>{route.leadMonths} tháng</td>
-                  </tr>
-                ))}
-                <tr style={{ background: '#f8fafc', fontWeight: 800, borderTop: '2px solid #0f172a' }}>
-                  <td colSpan={2} style={{ padding: '14px', color: '#0f172a' }}>
-                    TỔNG CỘNG NĂM 2027 (10 TUYẾN SẢN PHẨM)
-                  </td>
-                  <td style={{ padding: '14px', textAlign: 'center', color: '#0f172a' }}>27 đoàn</td>
-                  <td style={{ padding: '14px', textAlign: 'center', color: '#0f172a' }}>270 Pax</td>
-                  <td style={{ padding: '14px', textAlign: 'right' }}>—</td>
-                  <td style={{ padding: '14px', textAlign: 'right', color: '#0284c7', fontSize: '0.96rem', whiteSpace: 'nowrap' }}>
-                    {formatVND(kpis.totalRevenue)}
-                  </td>
-                  <td style={{ padding: '14px', textAlign: 'right', color: '#16a34a', fontSize: '0.96rem', whiteSpace: 'nowrap' }}>
-                    {formatVND(kpis.totalGrossProfit)}
-                  </td>
-                  <td style={{ padding: '14px', textAlign: 'right', color: '#10b981', fontSize: '0.96rem', whiteSpace: 'nowrap' }}>
-                    {formatVND(kpis.totalMktBudget)}
-                  </td>
-                  <td style={{ padding: '14px', textAlign: 'center', color: '#64748b', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
-                    1.00% Doanh Thu Kế Hoạch
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+      {/* ── PHẦN 5: KỊCH BẢN KINH DOANH (THẬN TRỌNG - CƠ SỞ - TĂNG TRƯỞNG) ── */}
+      <section id="sec-scenarios" style={{ marginBottom: '40px' }}>
+        <BU5BusinessScenariosTable />
       </section>
 
       {/* ── THANH TAB ĐIỀU HƯỚNG CUỘN (SCROLLSPY GOOGLE SHEETS STYLE FIXED Ở ĐÁY) ── */}
@@ -792,7 +729,8 @@ const BU5MarketPlanningPage = ({ isEmbedded = false, onBack = null }) => {
           { key: 'sec-monthly-mkt', label: '1. Ma Trận Dòng Tiền MKT 2027', icon: <Calendar size={13} />, target: 'sec-monthly-mkt' },
           { key: 'sec-timeline-tour', label: '2. Timeline Tour 11 Tuyến', icon: <Compass size={13} />, target: 'sec-timeline-tour' },
           { key: 'sec-departures', label: '3. Lịch Khởi Hành 27 Đoàn', icon: <Layers size={13} />, target: 'sec-departures' },
-          { key: 'sec-pnl', label: '4. Bảng P&L 10 Tuyến Sản Phẩm', icon: <BarChart3 size={13} />, target: 'sec-pnl' }
+          { key: 'sec-pnl', label: '4. Bảng P&L 11 Tuyến (Biên LN)', icon: <BarChart3 size={13} />, target: 'sec-pnl' },
+          { key: 'sec-scenarios', label: '5. Kịch Bản Kinh Doanh', icon: <TrendingUp size={13} />, target: 'sec-scenarios' }
         ].map(tab => {
           const isActive = activeSection === tab.key;
           return (
