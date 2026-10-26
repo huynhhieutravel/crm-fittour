@@ -255,7 +255,7 @@ const ZaloChatDrawer = ({ initialZaloUid, onClose, leads = [] }) => {
   const isWindowClosed = selectedUserProfile && (Date.now() - selectedUserProfile.lastIncomingTimestamp > 7 * 24 * 60 * 60 * 1000 || selectedUserProfile.lastIncomingTimestamp === 0);
 
   return (
-    <div style={{ height: '100%', height: '100dvh', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', fontFamily: 'Arial, sans-serif', overflow: 'hidden' }}>
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', fontFamily: 'Arial, sans-serif', overflow: 'hidden' }}>
       {/* Top Header */}
       <div style={{ 
         padding: isMobile ? '10px 14px' : '12px 20px', 
