@@ -1238,6 +1238,8 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
           fmt={fmt}
           fmtShort={fmtShort}
           getCategoryBadgeStyle={getCategoryBadgeStyle}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
         />
       )}
 
@@ -1250,7 +1252,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
           overflow: 'hidden'
         }}>
-          {/* Header giải thích */}
+          {/* Header giải thích kèm Nút Chuyển Đổi Tháng <-> Quý Trực Tiếp */}
           <div style={{
             padding: '16px 20px',
             borderBottom: '1px solid #e2e8f0',
@@ -1259,12 +1261,25 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '12px'
+            gap: '14px'
           }}>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>
-                Bảng Ma Trận Ngân Sách Marketing {yearScope === '2027' ? 'Kế Hoạch 2027 (Theo Tiến Độ Chiến Dịch)' : '15 Tháng (08/2026 – 10/2027)'}
-              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                  Bảng Ma Trận Ngân Sách Marketing {yearScope === '2027' ? 'Kế Hoạch 2027 (Theo Tiến Độ Chiến Dịch)' : '15 Tháng (08/2026 – 10/2027)'}
+                </h3>
+                <span style={{
+                  background: '#eff6ff',
+                  color: '#1d4ed8',
+                  border: '1px solid #bfdbfe',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700
+                }}>
+                  Tiến Độ 15 Tháng
+                </span>
+              </div>
               <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>
                 {yearScope === '2027'
                   ? `Tiến độ chiến dịch MKT cho ${kpis.totalGroups} đoàn năm 2027. Mỗi dải Gantt nối liền toàn bộ các tháng chạy trước và hiển thị tổng ngân sách 1% (linh hoạt điều phối theo thực tế cọc, không chia đều cơ học).`
@@ -1273,15 +1288,70 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
               </p>
             </div>
 
-            {/* Chú thích Dải Gantt & Khởi hành */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '0.76rem', color: '#475569', flexWrap: 'wrap' }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '24px', height: '12px', borderRadius: '3px', background: 'linear-gradient(90deg, #eff6ff 0%, #dbeafe 100%)', border: '1px solid #93c5fd', display: 'inline-block' }} />
-                <strong>Dải Gantt:</strong> Giai đoạn chạy MKT (Tổng ngân sách linh hoạt theo cọc)
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ color: '#10b981', fontWeight: 800 }}>✈️ Khởi hành:</span> Tháng tour cất cánh
-              </span>
+            {/* Nhóm Nút Chuyển Đổi Tháng <-> Quý & Chú Thích */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+              {/* Nút bấm chuyển trực tiếp giữa Tháng và Quý */}
+              <div style={{
+                display: 'inline-flex',
+                background: '#0f172a',
+                padding: '3px',
+                borderRadius: '8px',
+                border: '1px solid #334155',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+              }}>
+                <button
+                  onClick={() => setViewMode('matrix')}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    fontSize: '0.8rem',
+                    fontWeight: 800,
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: '#0284c7',
+                    color: '#ffffff',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                  }}
+                >
+                  <Layers size={13} />
+                  <span>Xem Theo Tháng (15T)</span>
+                </button>
+
+                <button
+                  onClick={() => setViewMode('quarterly')}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: 'transparent',
+                    color: '#94a3b8',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <CalendarRange size={13} />
+                  <span>Xem Theo Quý (Dễ Phân Tiền)</span>
+                </button>
+              </div>
+
+              {/* Chú thích Dải Gantt & Khởi hành */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.74rem', color: '#475569' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <span style={{ width: '20px', height: '10px', borderRadius: '2px', background: 'linear-gradient(90deg, #eff6ff 0%, #dbeafe 100%)', border: '1px solid #93c5fd', display: 'inline-block' }} />
+                  <strong>Dải Gantt:</strong> Chạy MKT
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ color: '#10b981', fontWeight: 800 }}>✈️ Khởi hành:</span> Cất cánh
+                </span>
+              </div>
             </div>
           </div>
 
@@ -1554,17 +1624,19 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                 })}
               </tbody>
 
-              {/* DÒNG TỔNG KẾT DÒNG TIỀN THEO THÁNG (STICKY FOOTER 3 TẦNG CHUẨN XÁC) */}
-              <tfoot style={{ position: 'sticky', bottom: 0, zIndex: 15, background: '#0f172a', color: '#ffffff' }}>
+              {/* DÒNG TỔNG KẾT DÒNG TIỀN THEO THÁNG (STICKY FOOTER LIỀN KHỐI 100% KHÔNG HỞ RÃNH) */}
+              <tfoot style={{
+                position: 'sticky',
+                bottom: 0,
+                zIndex: 30,
+                background: '#0f172a',
+                color: '#ffffff',
+                boxShadow: '0 -6px 20px rgba(0, 0, 0, 0.45)'
+              }}>
                 {/* 1. Tổng kinh phí MKT chi ra trong tháng */}
-                <tr style={{ height: '42px' }}>
+                <tr style={{ background: '#0f172a', borderTop: '2px solid #38bdf8' }}>
                   <td colSpan={6} style={{ 
-                    position: 'sticky',
-                    bottom: '60px',
-                    zIndex: 16,
                     background: '#0f172a',
-                    borderTop: '2px solid #38bdf8',
-                    boxShadow: '0 -3px 8px rgba(0,0,0,0.22)',
                     padding: '10px 14px', 
                     textAlign: 'right', 
                     fontWeight: 800, 
@@ -1576,12 +1648,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                     DỰ TOÁN DÒNG TIỀN MKT THEO THÁNG (Tham chiếu chuẩn bị quỹ):
                   </td>
                   <td style={{ 
-                    position: 'sticky',
-                    bottom: '60px',
-                    zIndex: 16,
                     background: '#0f172a',
-                    borderTop: '2px solid #38bdf8',
-                    boxShadow: '0 -3px 8px rgba(0,0,0,0.22)',
                     padding: '10px 8px', 
                     textAlign: 'center', 
                     fontWeight: 700, 
@@ -1598,12 +1665,7 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                       <td 
                         key={tm.key}
                         style={{
-                          position: 'sticky',
-                          bottom: '60px',
-                          zIndex: 16,
                           background: tm.key === selectedMonthDrilldown ? '#0284c7' : '#0f172a',
-                          borderTop: '2px solid #38bdf8',
-                          boxShadow: '0 -3px 8px rgba(0,0,0,0.22)',
                           padding: '10px 8px',
                           textAlign: 'right',
                           fontWeight: 800,
@@ -1621,14 +1683,10 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                 </tr>
 
                 {/* 2. Doanh thu khởi hành thực tế trong tháng để đối chiếu */}
-                <tr style={{ height: '32px' }}>
+                <tr style={{ background: '#1e293b', borderTop: '1px solid #334155' }}>
                   <td colSpan={6} style={{ 
-                    position: 'sticky',
-                    bottom: '28px',
-                    zIndex: 15,
                     background: '#1e293b',
-                    borderTop: '1px solid #334155',
-                    padding: '6px 14px', 
+                    padding: '7px 14px', 
                     textAlign: 'right', 
                     fontWeight: 600, 
                     fontSize: '0.76rem', 
@@ -1639,12 +1697,8 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                     Doanh thu các đoàn khởi hành trong tháng:
                   </td>
                   <td style={{ 
-                    position: 'sticky',
-                    bottom: '28px',
-                    zIndex: 15,
                     background: '#1e293b',
-                    borderTop: '1px solid #334155',
-                    padding: '6px 8px', 
+                    padding: '7px 8px', 
                     textAlign: 'center', 
                     color: '#94a3b8', 
                     fontSize: '0.72rem', 
@@ -1659,12 +1713,8 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                       <td 
                         key={tm.key}
                         style={{
-                          position: 'sticky',
-                          bottom: '28px',
-                          zIndex: 15,
                           background: '#1e293b',
-                          borderTop: '1px solid #334155',
-                          padding: '6px 8px',
+                          padding: '7px 8px',
                           textAlign: 'right',
                           fontWeight: 600,
                           fontSize: '0.75rem',
@@ -1681,14 +1731,10 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                 </tr>
 
                 {/* 3. Tỷ trọng MKT / Doanh thu khởi hành tháng */}
-                <tr style={{ height: '28px' }}>
+                <tr style={{ background: '#090d16', borderTop: '1px solid #1e293b' }}>
                   <td colSpan={7} style={{ 
-                    position: 'sticky',
-                    bottom: 0,
-                    zIndex: 15,
                     background: '#090d16',
-                    borderTop: '1px solid #1e293b',
-                    padding: '5px 14px', 
+                    padding: '6px 14px', 
                     textAlign: 'right', 
                     fontWeight: 500, 
                     fontSize: '0.72rem', 
@@ -1704,12 +1750,8 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
                       <td 
                         key={tm.key}
                         style={{
-                          position: 'sticky',
-                          bottom: 0,
-                          zIndex: 15,
                           background: '#090d16',
-                          borderTop: '1px solid #1e293b',
-                          padding: '5px 8px',
+                          padding: '6px 8px',
                           textAlign: 'right',
                           fontSize: '0.72rem',
                           color: activeCount > 0 ? '#93c5fd' : '#475569',

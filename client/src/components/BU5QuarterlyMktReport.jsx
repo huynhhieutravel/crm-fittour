@@ -90,7 +90,9 @@ export default function BU5QuarterlyMktReport({
   monthlyActiveTours = {},
   fmt = (v) => `${(v || 0).toLocaleString('vi-VN')}\u00A0đ`,
   fmtShort = (v) => `${((v || 0) / 1000000).toFixed(1)}\u00A0tr`,
-  getCategoryBadgeStyle = () => ({ bg: '#f1f5f9', text: '#475569', border: '#cbd5e1' })
+  getCategoryBadgeStyle = () => ({ bg: '#f1f5f9', text: '#475569', border: '#cbd5e1' }),
+  viewMode = 'quarterly',
+  setViewMode = () => {}
 }) {
   const [selectedQuarterKey, setSelectedQuarterKey] = useState('ALL');
 
@@ -374,8 +376,62 @@ export default function BU5QuarterlyMktReport({
             </span>
           </div>
 
-          <div style={{ fontSize: '0.76rem', color: '#64748b' }}>
-            Định mức MKT chuẩn: <strong>1% Doanh thu</strong> • Phân bổ theo số tháng Lead Time cọc thực tế
+          {/* Nhóm Nút Chuyển Đổi Tháng <-> Quý Trực Tiếp */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{
+              display: 'inline-flex',
+              background: '#0f172a',
+              padding: '3px',
+              borderRadius: '8px',
+              border: '1px solid #334155',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+            }}>
+              <button
+                onClick={() => setViewMode('matrix')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: 'transparent',
+                  color: '#94a3b8',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <Layers size={13} />
+                <span>Xem Theo Tháng (15T)</span>
+              </button>
+
+              <button
+                onClick={() => setViewMode('quarterly')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: '#0284c7',
+                  color: '#ffffff',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                }}
+              >
+                <CalendarRange size={13} />
+                <span>Xem Theo Quý (Dễ Phân Tiền)</span>
+              </button>
+            </div>
+
+            <div style={{ fontSize: '0.76rem', color: '#64748b' }}>
+              Định mức MKT: <strong>1% Doanh thu</strong>
+            </div>
           </div>
         </div>
 
@@ -566,39 +622,38 @@ export default function BU5QuarterlyMktReport({
               })}
             </tbody>
 
-            {/* ── STICKY FOOTER TỔNG HỢP TIỀN THEO QUÝ (3 TẦNG) ── */}
-            <tfoot style={{ position: 'sticky', bottom: 0, zIndex: 15, background: '#0f172a', color: '#ffffff' }}>
+            {/* ── STICKY FOOTER TỔNG HỢP TIỀN THEO QUÝ (LIỀN KHỐI 100% KHÔNG HỞ RÃNH) ── */}
+            <tfoot style={{
+              position: 'sticky',
+              bottom: 0,
+              zIndex: 30,
+              background: '#0f172a',
+              color: '#ffffff',
+              boxShadow: '0 -6px 20px rgba(0, 0, 0, 0.45)'
+            }}>
               {/* Tầng 1: Tổng tiền MKT chi ra mỗi quý */}
-              <tr style={{ height: '42px' }}>
+              <tr style={{ background: '#0f172a', borderTop: '2px solid #38bdf8' }}>
                 <td colSpan={6} style={{
-                  position: 'sticky',
-                  bottom: '64px',
-                  zIndex: 16,
                   background: '#0f172a',
-                  borderTop: '2px solid #38bdf8',
-                  boxShadow: '0 -3px 8px rgba(0,0,0,0.22)',
                   padding: '10px 14px',
                   textAlign: 'right',
                   fontWeight: 800,
                   fontSize: '0.86rem',
                   color: '#38bdf8',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  boxSizing: 'border-box'
                 }}>
                   DỰ TOÁN NGÂN SÁCH MKT CẦN PHÂN BỔ THEO QUÝ (VNĐ):
                 </td>
                 <td style={{
-                  position: 'sticky',
-                  bottom: '64px',
-                  zIndex: 16,
                   background: '#0f172a',
-                  borderTop: '2px solid #38bdf8',
-                  boxShadow: '0 -3px 8px rgba(0,0,0,0.22)',
                   padding: '10px 8px',
                   textAlign: 'center',
                   fontWeight: 700,
                   color: '#94a3b8',
                   fontSize: '0.75rem',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  boxSizing: 'border-box'
                 }}>
                   100%
                 </td>
@@ -607,19 +662,15 @@ export default function BU5QuarterlyMktReport({
                   <td
                     key={q.key}
                     style={{
-                      position: 'sticky',
-                      bottom: '64px',
-                      zIndex: 16,
                       background: '#0f172a',
-                      borderTop: '2px solid #38bdf8',
-                      boxShadow: '0 -3px 8px rgba(0,0,0,0.22)',
                       padding: '10px 12px',
                       textAlign: 'right',
                       fontWeight: 800,
                       fontSize: '0.88rem',
                       color: q.mkt >= 90000000 ? '#fde047' : '#38bdf8',
                       borderRight: '1px solid #1e293b',
-                      whiteSpace: 'nowrap'
+                      whiteSpace: 'nowrap',
+                      boxSizing: 'border-box'
                     }}
                   >
                     {fmtShort(q.mkt)}
@@ -627,48 +678,38 @@ export default function BU5QuarterlyMktReport({
                 ))}
 
                 <td style={{
-                  position: 'sticky',
-                  bottom: '64px',
-                  zIndex: 16,
                   background: '#0f172a',
-                  borderTop: '2px solid #38bdf8',
-                  boxShadow: '0 -3px 8px rgba(0,0,0,0.22)',
                   padding: '10px 8px',
                   textAlign: 'center',
                   fontWeight: 800,
-                  color: '#34d399'
+                  color: '#34d399',
+                  boxSizing: 'border-box'
                 }}>
                   {fmtShort(quarterSummaries.totalMkt)}
                 </td>
               </tr>
 
               {/* Tầng 2: Tỷ trọng % ngân sách MKT mỗi quý */}
-              <tr style={{ height: '32px' }}>
+              <tr style={{ background: '#1e293b', borderTop: '1px solid #334155' }}>
                 <td colSpan={6} style={{
-                  position: 'sticky',
-                  bottom: '32px',
-                  zIndex: 15,
                   background: '#1e293b',
-                  borderTop: '1px solid #334155',
-                  padding: '6px 14px',
+                  padding: '7px 14px',
                   textAlign: 'right',
                   fontWeight: 600,
                   fontSize: '0.76rem',
                   color: '#cbd5e1',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  boxSizing: 'border-box'
                 }}>
                   Tỷ trọng giải ngân Marketing (%):
                 </td>
                 <td style={{
-                  position: 'sticky',
-                  bottom: '32px',
-                  zIndex: 15,
                   background: '#1e293b',
-                  borderTop: '1px solid #334155',
-                  padding: '6px 8px',
+                  padding: '7px 8px',
                   textAlign: 'center',
                   fontSize: '0.72rem',
-                  color: '#94a3b8'
+                  color: '#94a3b8',
+                  boxSizing: 'border-box'
                 }}>
                   —
                 </td>
@@ -677,18 +718,15 @@ export default function BU5QuarterlyMktReport({
                   <td
                     key={q.key}
                     style={{
-                      position: 'sticky',
-                      bottom: '32px',
-                      zIndex: 15,
                       background: '#1e293b',
-                      borderTop: '1px solid #334155',
-                      padding: '6px 12px',
+                      padding: '7px 12px',
                       textAlign: 'right',
                       fontWeight: 700,
                       fontSize: '0.76rem',
                       color: q.color === '#475569' ? '#ffffff' : q.color,
                       borderRight: '1px solid #334155',
-                      whiteSpace: 'nowrap'
+                      whiteSpace: 'nowrap',
+                      boxSizing: 'border-box'
                     }}
                   >
                     {q.mktPct}%
@@ -696,48 +734,39 @@ export default function BU5QuarterlyMktReport({
                 ))}
 
                 <td style={{
-                  position: 'sticky',
-                  bottom: '32px',
-                  zIndex: 15,
                   background: '#1e293b',
-                  borderTop: '1px solid #334155',
-                  padding: '6px 8px',
+                  padding: '7px 8px',
                   textAlign: 'center',
                   fontWeight: 800,
                   color: '#34d399',
-                  fontSize: '0.76rem'
+                  fontSize: '0.76rem',
+                  boxSizing: 'border-box'
                 }}>
                   100%
                 </td>
               </tr>
 
               {/* Tầng 3: Doanh thu khởi hành thực tế trong quý */}
-              <tr style={{ height: '32px' }}>
+              <tr style={{ background: '#090d16', borderTop: '1px solid #1e293b' }}>
                 <td colSpan={6} style={{
-                  position: 'sticky',
-                  bottom: 0,
-                  zIndex: 15,
-                  background: '#0f172a',
-                  borderTop: '1px solid #334155',
-                  padding: '6px 14px',
+                  background: '#090d16',
+                  padding: '7px 14px',
                   textAlign: 'right',
                   fontWeight: 600,
                   fontSize: '0.76rem',
                   color: '#94a3b8',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  boxSizing: 'border-box'
                 }}>
                   Doanh thu các đoàn khởi hành trong quý:
                 </td>
                 <td style={{
-                  position: 'sticky',
-                  bottom: 0,
-                  zIndex: 15,
-                  background: '#0f172a',
-                  borderTop: '1px solid #334155',
-                  padding: '6px 8px',
+                  background: '#090d16',
+                  padding: '7px 8px',
                   textAlign: 'center',
                   fontSize: '0.72rem',
-                  color: '#64748b'
+                  color: '#64748b',
+                  boxSizing: 'border-box'
                 }}>
                   —
                 </td>
@@ -746,18 +775,15 @@ export default function BU5QuarterlyMktReport({
                   <td
                     key={q.key}
                     style={{
-                      position: 'sticky',
-                      bottom: 0,
-                      zIndex: 15,
-                      background: '#0f172a',
-                      borderTop: '1px solid #334155',
-                      padding: '6px 12px',
+                      background: '#090d16',
+                      padding: '7px 12px',
                       textAlign: 'right',
                       fontWeight: 700,
                       fontSize: '0.76rem',
                       color: q.rev > 0 ? '#34d399' : '#64748b',
                       borderRight: '1px solid #1e293b',
-                      whiteSpace: 'nowrap'
+                      whiteSpace: 'nowrap',
+                      boxSizing: 'border-box'
                     }}
                   >
                     {q.rev > 0 ? `${(q.rev / 1000000000).toFixed(2)} Tỷ` : '—'}
@@ -765,16 +791,13 @@ export default function BU5QuarterlyMktReport({
                 ))}
 
                 <td style={{
-                  position: 'sticky',
-                  bottom: 0,
-                  zIndex: 15,
-                  background: '#0f172a',
-                  borderTop: '1px solid #334155',
-                  padding: '6px 8px',
+                  background: '#090d16',
+                  padding: '7px 8px',
                   textAlign: 'center',
                   fontWeight: 800,
                   color: '#34d399',
-                  fontSize: '0.76rem'
+                  fontSize: '0.76rem',
+                  boxSizing: 'border-box'
                 }}>
                   {(quarterSummaries.totalRev / 1000000000).toFixed(2)} Tỷ
                 </td>
