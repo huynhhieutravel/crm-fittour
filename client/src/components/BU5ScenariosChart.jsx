@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -8,7 +8,8 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  Cell
+  Cell,
+  LabelList
 } from 'recharts';
 import { TrendingUp, ShieldAlert, CheckCircle2, Rocket, ArrowRight } from 'lucide-react';
 import { BU5_SCENARIOS } from './BU5BusinessScenariosTable';
@@ -18,47 +19,6 @@ const fmtVND = (num) => {
   return `${Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}\u00A0đ`;
 };
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload || !payload.length) return null;
-  const data = payload[0].payload;
-
-  return (
-    <div style={{
-      background: '#0f172a',
-      color: '#ffffff',
-      padding: '14px 16px',
-      borderRadius: '8px',
-      boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-      border: '1px solid #334155',
-      fontSize: '0.8rem',
-      minWidth: '240px'
-    }}>
-      <div style={{ fontWeight: 800, fontSize: '0.95rem', marginBottom: '8px', color: '#f8fafc', borderBottom: '1px solid #334155', paddingBottom: '6px' }}>
-        Kịch bản {data.name} ({data.runRate})
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <span style={{ color: '#94a3b8' }}>Doanh thu dự kiến:</span>
-        <strong style={{ color: '#38bdf8' }}>{fmtVND(data.revenue)}</strong>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <span style={{ color: '#94a3b8' }}>Lãi gộp dự kiến:</span>
-        <strong style={{ color: '#34d399' }}>{fmtVND(data.profit)}</strong>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <span style={{ color: '#94a3b8' }}>Biên lợi nhuận gộp:</span>
-        <strong style={{ color: '#10b981' }}>{data.margin}%</strong>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <span style={{ color: '#94a3b8' }}>Quy mô vận hành:</span>
-        <span style={{ color: '#f8fafc' }}>{data.groups} đoàn • {data.totalPax} pax</span>
-      </div>
-      <div style={{ borderTop: '1px dashed #334155', paddingTop: '6px', marginTop: '6px', fontSize: '0.72rem', color: '#cbd5e1' }}>
-        <em>{data.action}</em>
-      </div>
-    </div>
-  );
-};
-
 export default function BU5ScenariosChart() {
   const chartData = BU5_SCENARIOS.map(s => ({
     ...s,
@@ -66,6 +26,11 @@ export default function BU5ScenariosChart() {
     profitTỷ: +(s.profit / 1000000000).toFixed(2),
     marginPct: s.margin
   }));
+
+  const [selectedScenarioId, setSelectedScenarioId] = useState('base');
+  const [hoveredScenario, setHoveredScenario] = useState(null);
+
+  const activeScenario = hoveredScenario || chartData.find(s => s.id === selectedScenarioId) || chartData[1];
 
   return (
     <div style={{ padding: '24px', background: '#ffffff' }}>
@@ -77,14 +42,23 @@ export default function BU5ScenariosChart() {
         marginBottom: '22px'
       }}>
         {BU5_SCENARIOS.map((sc) => {
+          const isSelected = activeScenario.id === sc.id;
           return (
             <div
               key={sc.id}
+              onClick={() => {
+                setSelectedScenarioId(sc.id);
+                setHoveredScenario(null);
+              }}
               style={{
                 background: sc.accentBg,
-                border: `1.5px solid ${sc.borderColor}`,
+                border: isSelected ? `2px solid ${sc.color}` : `1.5px solid ${sc.borderColor}`,
                 borderRadius: '8px',
-                padding: '12px 16px'
+                padding: '12px 16px',
+                cursor: 'pointer',
+                boxShadow: isSelected ? `0 4px 12px rgba(0,0,0,0.08)` : 'none',
+                transform: isSelected ? 'translateY(-1px)' : 'none',
+                transition: 'all 0.15s ease'
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -113,12 +87,103 @@ export default function BU5ScenariosChart() {
         })}
       </div>
 
-      {/* ── BIỂU ĐỒ RECHARTS GROUPED BAR CHART ── */}
-      <div style={{ width: '100%', height: 350 }}>
+      {/* ── BIỂU ĐỒ RECHARTS GROUPED BAR CHART KÈM TOOLTIP CỐ ĐỊNH TỰ ĐỘNG ── */}
+      <div style={{ width: '100%', height: 380, position: 'relative' }}>
+        {/* CARD TOOLTIP LUÔN HIỂN THỊ (PERSISTENT EXECUTIVE CALLOUT) - TRÁNH TRỐNG BIỂU ĐỒ */}
+        <div style={{
+          position: 'absolute',
+          top: '8px',
+          left: '65px',
+          zIndex: 10,
+          background: 'rgba(15, 23, 42, 0.94)',
+          color: '#ffffff',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+          border: '1px solid #334155',
+          fontSize: '0.78rem',
+          minWidth: '275px',
+          maxWidth: '320px',
+          backdropFilter: 'blur(8px)',
+          pointerEvents: 'auto'
+        }}>
+          {/* Nút bấm chuyển kịch bản ngay trên Tooltip */}
+          <div style={{ display: 'flex', gap: '4px', marginBottom: '8px', paddingBottom: '6px', borderBottom: '1px solid #334155' }}>
+            {chartData.map(s => {
+              const isAct = activeScenario.id === s.id;
+              return (
+                <button
+                  key={s.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedScenarioId(s.id);
+                    setHoveredScenario(null);
+                  }}
+                  style={{
+                    background: isAct ? s.color : '#1e293b',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '3px 8px',
+                    fontSize: '0.7rem',
+                    fontWeight: isAct ? 800 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {s.name} ({s.runRate})
+                </button>
+              );
+            })}
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <span style={{ fontWeight: 800, fontSize: '0.92rem', color: '#f8fafc' }}>
+              Kịch bản {activeScenario.name} ({activeScenario.runRate})
+            </span>
+            <span style={{
+              background: activeScenario.color,
+              color: '#ffffff',
+              fontSize: '0.68rem',
+              fontWeight: 700,
+              padding: '1px 6px',
+              borderRadius: '8px'
+            }}>
+              Biên LN {activeScenario.margin}%
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+            <span style={{ color: '#94a3b8' }}>Doanh thu dự kiến:</span>
+            <strong style={{ color: '#38bdf8' }}>{fmtVND(activeScenario.revenue)}</strong>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+            <span style={{ color: '#94a3b8' }}>Lãi gộp dự kiến:</span>
+            <strong style={{ color: '#34d399' }}>{fmtVND(activeScenario.profit)}</strong>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+            <span style={{ color: '#94a3b8' }}>Biên lợi nhuận gộp:</span>
+            <strong style={{ color: '#10b981' }}>{activeScenario.margin}%</strong>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+            <span style={{ color: '#94a3b8' }}>Quy mô vận hành:</span>
+            <span style={{ color: '#f8fafc' }}>{activeScenario.groups} đoàn • {activeScenario.totalPax} pax</span>
+          </div>
+          <div style={{ borderTop: '1px dashed #334155', paddingTop: '5px', marginTop: '5px', fontSize: '0.72rem', color: '#cbd5e1', lineHeight: 1.35 }}>
+            <em>{activeScenario.action}</em>
+          </div>
+        </div>
+
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
-            margin={{ top: 20, right: 30, left: 10, bottom: 10 }}
+            margin={{ top: 25, right: 30, left: 10, bottom: 10 }}
+            onMouseMove={(state) => {
+              if (state && state.activePayload && state.activePayload.length) {
+                setHoveredScenario(state.activePayload[0].payload);
+              }
+            }}
+            onMouseLeave={() => setHoveredScenario(null)}
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
             
@@ -134,10 +199,8 @@ export default function BU5ScenariosChart() {
               axisLine={{ stroke: '#cbd5e1' }}
               tickLine={false}
               unit=" Tỷ"
-              domain={[0, 48]}
+              domain={[0, 52]}
             />
-
-            <Tooltip content={<CustomTooltip />} />
             
             <Legend
               verticalAlign="top"
@@ -145,25 +208,39 @@ export default function BU5ScenariosChart() {
               wrapperStyle={{ paddingBottom: '12px', fontSize: '0.8rem', fontWeight: 600 }}
             />
 
-            {/* Cột 1: Doanh thu dự kiến */}
+            {/* Cột 1: Doanh thu dự kiến với LabelList hiển thị số trên đầu cột */}
             <Bar
               dataKey="revenueTỷ"
               name="Doanh thu dự kiến (Tỷ đ)"
               radius={[6, 6, 0, 0]}
-              barSize={40}
+              barSize={42}
             >
+              <LabelList
+                dataKey="revenueTỷ"
+                position="top"
+                formatter={(val) => `${val}\u00A0Tỷ`}
+                style={{ fill: '#0f172a', fontSize: 11, fontWeight: 800 }}
+                offset={6}
+              />
               <Cell fill="#f59e0b" /> {/* Thận trọng */}
               <Cell fill="#0284c7" /> {/* Cơ sở */}
               <Cell fill="#16a34a" /> {/* Tăng trưởng */}
             </Bar>
 
-            {/* Cột 2: Lãi gộp dự kiến */}
+            {/* Cột 2: Lãi gộp dự kiến với LabelList */}
             <Bar
               dataKey="profitTỷ"
               name="Lãi gộp dự kiến (Tỷ đ)"
               radius={[6, 6, 0, 0]}
               barSize={32}
             >
+              <LabelList
+                dataKey="profitTỷ"
+                position="top"
+                formatter={(val) => `${val}\u00A0Tỷ`}
+                style={{ fill: '#0369a1', fontSize: 10, fontWeight: 700 }}
+                offset={6}
+              />
               <Cell fill="#d97706" /> {/* Thận trọng */}
               <Cell fill="#0369a1" /> {/* Cơ sở */}
               <Cell fill="#15803d" /> {/* Tăng trưởng */}

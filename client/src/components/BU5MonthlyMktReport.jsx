@@ -29,8 +29,10 @@ import {
   Eye,
   SlidersHorizontal,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  CalendarRange
 } from 'lucide-react';
+import BU5QuarterlyMktReport from './BU5QuarterlyMktReport';
 
 import {
   BU5_PRODUCTS_CATALOG,
@@ -486,6 +488,27 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
           >
             <Layers size={14} />
             Bảng Tính Ma Trận (15 Tháng)
+          </button>
+
+          <button
+            onClick={() => setViewMode('quarterly')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 14px',
+              borderRadius: '5px',
+              fontSize: '0.84rem',
+              fontWeight: viewMode === 'quarterly' ? 700 : 500,
+              border: 'none',
+              background: viewMode === 'quarterly' ? '#0f172a' : 'transparent',
+              color: viewMode === 'quarterly' ? '#ffffff' : '#475569',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <CalendarRange size={14} color={viewMode === 'quarterly' ? '#38bdf8' : '#64748b'} />
+            Phân Bổ Theo Quý (5 Quý)
           </button>
 
           <button
@@ -1202,6 +1225,20 @@ export default function BU5MonthlyMktReport({ currentUser = null }) {
           </div>
 
         </div>
+      )}
+
+      {/* ── 4B. VIEW: BẢNG MA TRẬN PHÂN BỔ MKT THEO QUÝ (DỄ PHÂN TIỀN) ── */}
+      {viewMode === 'quarterly' && (
+        <BU5QuarterlyMktReport
+          departures={filteredDepartures}
+          monthlyTotals={monthlyTotals}
+          monthlyDepartureRevenues={monthlyDepartureRevenues}
+          monthlyDeparturesCount={monthlyDeparturesCount}
+          monthlyActiveTours={monthlyActiveTours}
+          fmt={fmt}
+          fmtShort={fmtShort}
+          getCategoryBadgeStyle={getCategoryBadgeStyle}
+        />
       )}
 
       {/* ── 4. VIEW 1: BẢNG MA TRẬN 15 THÁNG (HEATMAP MATRIX) ── */}

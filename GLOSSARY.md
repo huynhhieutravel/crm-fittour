@@ -196,4 +196,13 @@ _Avoid_: Kịch bản con số rời rạc thiếu trực quan so sánh
 An interactive segmented control at the header of major financial and planning modules allowing users to toggle between dense tabular data (`Bảng Chi Tiết`) and executive charts (`Biểu Đồ Trực Quan`), preventing information overload while preserving deep-dive accessibility.
 _Avoid_: Nhồi nhét biểu đồ đè lên bảng, trang báo cáo quá dài gây mỏi mắt
 
+**Quarterly Budget Matrix (Ma Trận Ngân Sách Marketing Theo Quý)**:
+A dedicated financial allocation tab aggregating campaign marketing expenditures and tour revenues into 5 strategic quarters (Q4/2026 Seed/Chạy trước, Q1/2027 Peak MKT, Q2/2027 Hè, Q3/2027 Peak Revenue, and Q4/2027 Closing) to simplify cashflow authorization, quarterly fund disbursement, and CFO oversight.
+_Avoid_: Báo cáo 15 tháng manh mún gây khó khăn cho kế toán phân bổ dòng tiền mặt
+
+**Persistent Executive Callout (Hộp Chi Tiết Kịch Bản Cố Định & Tương Tác)**:
+A high-contrast executive information card permanently positioned inside the scenario chart area with interactive tab pills, ensuring key metrics (Revenue, Gross Profit, Margins, Pax, and Strategic Directives) remain immediately readable without requiring mouse hovering or leaving empty white space on display monitors.
+_Avoid_: Biểu đồ trống trơn khi không rê chuột, tooltip biến mất làm mất ngữ cảnh
+
+
 
