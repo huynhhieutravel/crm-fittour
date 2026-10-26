@@ -261,7 +261,10 @@ export default function BU5BusinessScenariosTable() {
               <th style={{ padding: '12px 12px', fontWeight: 700, whiteSpace: 'nowrap' }}>Hệ số giá bán</th>
               <th style={{ padding: '12px 12px', fontWeight: 700, whiteSpace: 'nowrap' }}>Hệ số chi phí</th>
               <th style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 800, whiteSpace: 'nowrap' }}>Doanh thu dự kiến</th>
-              <th style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 800, whiteSpace: 'nowrap' }}>Lợi nhuận dự kiến</th>
+              <th style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 800, whiteSpace: 'nowrap' }}>
+                <div>Lãi gộp dự kiến</div>
+                <div style={{ fontSize: '0.68rem', color: '#cbd5e1', fontWeight: 400 }}>(Gross Profit)</div>
+              </th>
               <th style={{ padding: '12px 16px', textAlign: 'left', minWidth: '240px', fontWeight: 700 }}>Hướng xử lý</th>
             </tr>
           </thead>

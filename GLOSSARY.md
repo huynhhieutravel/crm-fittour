@@ -159,3 +159,23 @@ _Avoid_: Zoom cận quá đà cắt mất phòng ban, mất tầm nhìn tổng t
 **Geometric SVG Speech Arrow (Mũi Tên Chỉ Xuất Phát Từ Đầu Nhân Vật)**:
 An unbroken geometric SVG leader tail and colored energy spine rooted at the character's head beacon pin `(0, 0)`, connecting directly into the dialogue card's left edge and dynamically angling to track vertically staggered cards without ever detaching from the speaker.
 _Avoid_: Thanh ngang lơ lửng giữa trời, que chỉ đứt rời không chạm người
+
+**Operational Departure Plan (Kế Hoạch Khởi Hành Thực Tế 2027)**:
+The operational schedule of 27 confirmed tour departures (24 departure dates, 270 pax, 31.646 Billion VND revenue) constrained by confirmed airline allotments, visa lead times, and ground operator capacity.
+_Avoid_: Số liệu ước lượng mơ hồ, chỉ tiêu lý thuyết chưa chốt vé
+
+**P&L Capacity Ceiling (Hạn Mức Kế Hoạch P&L 30 Đoàn)**:
+The theoretical full-year commercial target modeled in the P&L sheet (30 departures, 300 pax, 33.034 Billion VND revenue), which includes contingency expansion slots (e.g. +2 Egypt, +1 Morocco) activated when customer waitlists exceed standard group capacity.
+_Avoid_: Nhầm lẫn giữa trần năng lực thương mại và lịch khởi hành thực tế
+
+**Tour Gross Profit (Lãi Gộp Kế Hoạch Sản Phẩm)**:
+The direct operational surplus generated per tour before allocating marketing budgets and overhead (`Revenue - Total Direct Cost`).
+_Avoid_: Lợi nhuận ròng, lợi nhuận sau thuế, lợi nhuận hoạt động
+
+**Contribution Margin After MKT (Lãi Đóng Góp Sau Marketing)**:
+The operational margin remaining after deducting direct tour costs and the dedicated 1.00% Marketing customer acquisition budget (`Gross Profit - 1% MKT Budget`).
+_Avoid_: Lợi nhuận gộp thô không trừ chi phí thu hút khách
+
+**Tour Break-even Threshold (Điểm Hòa Vốn Đoàn)**:
+The minimum number of paying passengers required for a tour departure to cover fixed operating expenditures (Tour Leader airfare/visa, guide, chartered vehicles) without incurring an operational loss.
+_Avoid_: Chạy đoàn bất chấp sĩ số, thiếu ngưỡng an toàn tài chính
