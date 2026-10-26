@@ -179,3 +179,21 @@ _Avoid_: Lợi nhuận gộp thô không trừ chi phí thu hút khách
 **Tour Break-even Threshold (Điểm Hòa Vốn Đoàn)**:
 The minimum number of paying passengers required for a tour departure to cover fixed operating expenditures (Tour Leader airfare/visa, guide, chartered vehicles) without incurring an operational loss.
 _Avoid_: Chạy đoàn bất chấp sĩ số, thiếu ngưỡng an toàn tài chính
+
+**Seasonality Cashflow Curve (Biểu Đồ Dòng Tiền & Điểm Rơi Mùa Vụ)**:
+A dual-axis temporal visualization correlating early lead-time marketing cash disbursement with delayed revenue realization and tour departure peaks across a 15-month timeline.
+_Avoid_: Báo cáo chi tiêu tĩnh, biểu đồ thiếu tính mùa vụ
+
+**Product Margin Matrix (Ma Trận Doanh Thu vs Biên Lợi Nhuận)**:
+A strategic portfolio chart plotting total route revenue (Volume) against gross profit margin percentages to categorize products into Pillars (Bò sữa volume), High-Margin Stars (Ngôi sao lợi nhuận), and Experimental routes.
+_Avoid_: Bảng số liệu thô không phân nhóm danh mục sản phẩm
+
+**Scenario Sensitivity Model (Mô Hình Độ Nhạy 3 Kịch Bản)**:
+A comparative multi-bar visualization benchmarking downside risk (80% Cautious), approved baseline (100% Base Plan), and upside potential (109% Growth) across revenue and gross profit.
+_Avoid_: Kịch bản con số rời rạc thiếu trực quan so sánh
+
+**Executive View Switcher (Nút Chuyển Đổi Bảng / Biểu Đồ)**:
+An interactive segmented control at the header of major financial and planning modules allowing users to toggle between dense tabular data (`Bảng Chi Tiết`) and executive charts (`Biểu Đồ Trực Quan`), preventing information overload while preserving deep-dive accessibility.
+_Avoid_: Nhồi nhét biểu đồ đè lên bảng, trang báo cáo quá dài gây mỏi mắt
+
+

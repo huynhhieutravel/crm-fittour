@@ -1,5 +1,6 @@
-import React from 'react';
-import { Target, TrendingUp, AlertTriangle, CheckCircle2, Rocket, ExternalLink, Info, Compass, ShieldAlert } from 'lucide-react';
+import React, { useState } from 'react';
+import { Target, TrendingUp, AlertTriangle, CheckCircle2, Rocket, ExternalLink, Info, Compass, ShieldAlert, BarChart3, Table } from 'lucide-react';
+import BU5ScenariosChart from './BU5ScenariosChart';
 
 const fmtVND = (num) => {
   if (!num || isNaN(num) || num === 0) return '—';
@@ -95,6 +96,8 @@ export const BU5_SCENARIOS = [
 ];
 
 export default function BU5BusinessScenariosTable() {
+  const [viewMode, setViewMode] = useState('table'); // 'table' | 'chart'
+
   return (
     <div style={{
       background: '#ffffff',
@@ -138,33 +141,94 @@ export default function BU5BusinessScenariosTable() {
           </p>
         </div>
 
-        <a
-          href="https://docs.google.com/spreadsheets/d/10kuQXdFgFLVSRS4CbKYa-ozuch6RnPJd8NTo36fFhrc/edit#gid=1540002078"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* NÚT CHUYỂN ĐỔI BẢNG / BIỂU ĐỒ (EXECUTIVE VIEW SWITCHER) */}
+          <div style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '6px',
             background: 'rgba(255, 255, 255, 0.12)',
-            color: '#ffffff',
-            border: '1px solid rgba(255, 255, 255, 0.25)',
-            padding: '7px 14px',
-            borderRadius: '6px',
-            fontSize: '0.78rem',
-            fontWeight: 700,
-            textDecoration: 'none',
-            backdropFilter: 'blur(4px)',
-            transition: 'background 0.2s'
-          }}
-        >
-          <span>Mở Tab Kịch Bản Trên Sheet</span>
-          <ExternalLink size={13} color="#ffffff" />
-        </a>
+            border: '1px solid rgba(255, 255, 255, 0.22)',
+            borderRadius: '8px',
+            padding: '3px',
+            gap: '3px'
+          }}>
+            <button
+              onClick={() => setViewMode('table')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '6px',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                background: viewMode === 'table' ? '#0284c7' : 'transparent',
+                color: viewMode === 'table' ? '#ffffff' : '#cbd5e1',
+                boxShadow: viewMode === 'table' ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <Table size={13} />
+              <span>Bảng Kịch Bản</span>
+            </button>
+
+            <button
+              onClick={() => setViewMode('chart')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '6px',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                background: viewMode === 'chart' ? '#0284c7' : 'transparent',
+                color: viewMode === 'chart' ? '#ffffff' : '#cbd5e1',
+                boxShadow: viewMode === 'chart' ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <BarChart3 size={13} />
+              <span>Biểu Đồ So Sánh</span>
+            </button>
+          </div>
+
+          <a
+            href="https://docs.google.com/spreadsheets/d/10kuQXdFgFLVSRS4CbKYa-ozuch6RnPJd8NTo36fFhrc/edit#gid=1540002078"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(255, 255, 255, 0.12)',
+              color: '#ffffff',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+              padding: '7px 14px',
+              borderRadius: '6px',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              textDecoration: 'none',
+              backdropFilter: 'blur(4px)',
+              transition: 'background 0.2s'
+            }}
+          >
+            <span>Mở Tab Kịch Bản Trên Sheet</span>
+            <ExternalLink size={13} color="#ffffff" />
+          </a>
+        </div>
       </div>
 
-      {/* ── 3 THẺ TỔNG QUAN 3 KỊCH BẢN ── */}
-      <div style={{
+      {viewMode === 'chart' ? (
+        <BU5ScenariosChart />
+      ) : (
+        <>
+          {/* ── 3 THẺ TỔNG QUAN 3 KỊCH BẢN ── */}
+          <div style={{
         padding: '20px 24px 10px',
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -403,6 +467,8 @@ export default function BU5BusinessScenariosTable() {
           Trọng số Kế Hoạch 2027: <strong>Kịch Bản Cơ Sở (100% đoàn • 300 khách • DT 33.03 Tỷ)</strong>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
