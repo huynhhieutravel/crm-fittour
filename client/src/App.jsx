@@ -12,6 +12,7 @@ import {
 } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import PublicVisaPortalPage from './pages/PublicVisaPortalPage';
+import DebtD7PopupAlert from './components/common/DebtD7PopupAlert';
 
 const SettingsTab = lazy(() => import('./tabs/SettingsTab'));
 const MarketSettingsTab = lazy(() => import('./tabs/MarketSettingsTab'));
@@ -4900,6 +4901,9 @@ function AppContent() {
             </div>
         </div>
     )}
+
+    {/* SINGLE-FIRE DEBT D-7 NOTIFICATION POPUP */}
+    <DebtD7PopupAlert currentUser={user} isLoggedIn={isLoggedIn} />
   </>
 );
 }

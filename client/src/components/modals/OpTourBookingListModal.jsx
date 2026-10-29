@@ -10,7 +10,7 @@ import BookingVouchersModal from './BookingVouchersModal';
 import { exportBU245MembersXlsx } from '../../utils/bu245ExportHelper.js';
 import { useEscapeKey } from '../../hooks/useEscapeKey';
 
-export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAddCustomer, onEditBooking, onUpdateTour, onRefreshList, currentUser, refreshTrigger }) {
+export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAddCustomer, onEditBooking, onUpdateTour, onRefreshList, currentUser, refreshTrigger, highlightBookingId }) {
   const [hoveredQty, setHoveredQty] = useState({ id: null, rows: [], x: 0, y: 0 });
   const [viewingMembers, setViewingMembers] = useState(null); // { booking, members }
   const [bookings, setBookings] = useState([]);
@@ -76,6 +76,18 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
         });
      }
   }, [isOpen, tour?.id, refreshTrigger]);
+
+  React.useEffect(() => {
+    if (isOpen && highlightBookingId && bookings.length > 0) {
+      const timer = setTimeout(() => {
+        const targetRow = document.getElementById(`booking-row-${highlightBookingId}`);
+        if (targetRow) {
+          targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, highlightBookingId, bookings]);
 
   if (!isOpen) return null;
 
@@ -470,12 +482,28 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                         return '***';
                     };
                     
+                    const isHighlighted = highlightBookingId && Number(b.id) === Number(highlightBookingId);
+                    
                     return (
-                      <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0', background: 'white' }}>
+                      <tr 
+                        key={idx} 
+                        id={`booking-row-${b.id}`}
+                        style={{ 
+                          borderBottom: isHighlighted ? '2px solid #ea580c' : '1px solid #e2e8f0', 
+                          background: isHighlighted ? '#fff7ed' : 'white',
+                          boxShadow: isHighlighted ? 'inset 0 0 0 2px #ea580c' : 'none',
+                          transition: 'all 0.4s ease'
+                        }}
+                      >
                         <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'top' }}>{idx + 1}</td>
                         <td style={{ padding: '15px', verticalAlign: 'top', lineHeight: '1.6' }}>
                            <div style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '5px' }}>
                               <b>Tên:</b> {renderMasked(b.name || bInfo.name || firstMember.name, 'name')} 
+                              {isHighlighted && (
+                                <span style={{ background: '#ffedd5', color: '#c2410c', border: '1px solid #ea580c', borderRadius: '12px', padding: '2px 8px', fontSize: '10px', fontWeight: 'bold' }}>
+                                  🔥 Cần Thu Nợ D-Day
+                                </span>
+                              )}
                               <span style={{ border: '1px solid #f59e0b', color: '#f59e0b', borderRadius: '12px', padding: '2px 6px', fontSize: '10px' }}>Cá nhân</span>
                               {missingCount > 0 ? (
                                 <span style={{ background: '#fef3c7', color: '#92400e', borderRadius: '12px', padding: '2px 8px', fontSize: '10px', fontWeight: 'bold', border: '1px solid #f59e0b' }} title="Còn thành viên chưa có đầy đủ Họ tên / SĐT">⚠️ Thiếu TT: {missingCount} khách</span>

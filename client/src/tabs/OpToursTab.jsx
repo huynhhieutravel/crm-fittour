@@ -184,16 +184,42 @@ export default function OpToursTab({ currentUser }) {
     }
   }, [tours]);
   
-  // Auto-open booking list modal via sessionStorage event
+  // Auto-open booking list modal via sessionStorage event or URL query params
   useEffect(() => {
-    const pendingBookingListId = sessionStorage.getItem('pendingOpenBookingListId');
-    if (pendingBookingListId && tours.length > 0) {
-       const found = tours.find(t => t.id === Number(pendingBookingListId));
-       if (found) {
-          setSelectedCustomerTour(found);
-          setIsBookingListOpen(true);
-       }
-       sessionStorage.removeItem('pendingOpenBookingListId');
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetDepartureId = urlParams.get('open_departure_id') || sessionStorage.getItem('pendingOpenBookingListId');
+    const targetHighlightBookingId = urlParams.get('highlight_booking_id') || sessionStorage.getItem('pendingHighlightBookingId');
+
+    if (!targetDepartureId) return;
+
+    const openModalWithTour = (tourObj) => {
+      setSelectedBookingTour(tourObj);
+      setIsBookingListOpen(true);
+      if (targetHighlightBookingId) {
+        setHighlightBookingId(Number(targetHighlightBookingId));
+      }
+      sessionStorage.removeItem('pendingOpenBookingListId');
+      sessionStorage.removeItem('pendingHighlightBookingId');
+      if (urlParams.has('open_departure_id') || urlParams.has('highlight_booking_id')) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+
+    if (tours.length > 0) {
+      const found = tours.find(t => t.id === Number(targetDepartureId));
+      if (found) {
+        openModalWithTour(found);
+      } else {
+        axios.get(`/api/op-tours/${targetDepartureId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }).then(res => {
+          if (res.data) openModalWithTour(res.data);
+        }).catch(err => {
+          console.error("Không tìm thấy tour theo id:", targetDepartureId, err);
+          sessionStorage.removeItem('pendingOpenBookingListId');
+          sessionStorage.removeItem('pendingHighlightBookingId');
+        });
+      }
     }
   }, [tours]);
   
@@ -205,6 +231,7 @@ export default function OpToursTab({ currentUser }) {
   const [selectedCustomerTour, setSelectedCustomerTour] = useState(null);
   const [isBookingListOpen, setIsBookingListOpen] = useState(false);
   const [selectedBookingTour, setSelectedBookingTour] = useState(null);
+  const [highlightBookingId, setHighlightBookingId] = useState(null);
   const [refreshBookingsTrigger, setRefreshBookingsTrigger] = useState(0);
   const [viewingAllMembers, setViewingAllMembers] = useState(null); // { tour, allMembers }
   const [selectedTours, setSelectedTours] = useState([]);
@@ -1648,7 +1675,10 @@ export default function OpToursTab({ currentUser }) {
 
       <OpTourBookingListModal
         isOpen={isBookingListOpen}
-        onClose={() => setIsBookingListOpen(false)}
+        onClose={() => {
+          setIsBookingListOpen(false);
+          setHighlightBookingId(null);
+        }}
         tour={selectedBookingTour}
         onOpenAddCustomer={handleOpenCustomerModal}
         onEditBooking={handleEditBooking}
@@ -1656,6 +1686,7 @@ export default function OpToursTab({ currentUser }) {
         onRefreshList={fetchTours}
         currentUser={currentUser}
         refreshTrigger={refreshBookingsTrigger}
+        highlightBookingId={highlightBookingId}
       />
 
       <OpTourAddCustomerModal 

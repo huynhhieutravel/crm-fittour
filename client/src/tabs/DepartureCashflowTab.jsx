@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, 
@@ -56,6 +57,19 @@ const resolveAutoBU = (bus) => {
 };
 
 export default function DepartureCashflowTab({ currentUser }) {
+  const navigate = useNavigate();
+
+  const handleOpenDepartureBookings = (departureId, bookingId) => {
+    if (!departureId) {
+      toast.error('Không tìm thấy thông tin Lịch khởi hành cho booking này');
+      return;
+    }
+    sessionStorage.setItem('pendingOpenBookingListId', String(departureId));
+    if (bookingId) {
+      sessionStorage.setItem('pendingHighlightBookingId', String(bookingId));
+    }
+    navigate(`/op-tours?open_departure_id=${departureId}&highlight_booking_id=${bookingId || ''}`);
+  };
   // Responsive mobile state
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -1416,8 +1430,8 @@ export default function DepartureCashflowTab({ currentUser }) {
                         <td style={{ padding: isMobile ? '8px 8px' : '10px 12px', textAlign: 'center' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                             <button
-                              onClick={() => handleCopyReminder(b)}
-                              title="Sao chép mẫu tin nhắn nhắc nợ gửi khách"
+                              onClick={() => handleOpenDepartureBookings(b.departure_id, b.id)}
+                              title="Mở danh sách Khách đặt chỗ trong Lịch khởi hành"
                               style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -1425,14 +1439,31 @@ export default function DepartureCashflowTab({ currentUser }) {
                                 padding: '4px 8px',
                                 borderRadius: '6px',
                                 border: 'none',
-                                backgroundColor: '#ff4b2b',
+                                backgroundColor: '#0284c7',
                                 color: 'white',
                                 fontSize: '0.72rem',
                                 fontWeight: 700,
                                 cursor: 'pointer'
                               }}
                             >
-                              <MessageCircle size={12} /> Nhắc Zalo
+                              <Users size={12} /> Khách đặt chỗ
+                            </button>
+                            <button
+                              onClick={() => handleCopyReminder(b)}
+                              title="Sao chép mẫu tin nhắn nhắc nợ gửi khách"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                padding: '4px 6px',
+                                borderRadius: '6px',
+                                border: '1px solid var(--border, #cbd5e1)',
+                                backgroundColor: 'var(--card-bg, #fff)',
+                                color: 'var(--text-light, #64748b)',
+                                fontSize: '0.72rem',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <Copy size={12} />
                             </button>
                             {b.public_token && (
                               <a

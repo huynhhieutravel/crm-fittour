@@ -292,6 +292,7 @@ app.use('/api/ceo-dashboard', ceoDashboardRoutes);
 app.use('/api/customer-reviews', require('./routes/customerReviews'));
 app.use('/api/meeting-rooms', require('./routes/meetingRooms'));
 app.use('/api/search', require('./routes/search'));
+app.use('/api/debt-alerts', require('./routes/debtAlertRoutes'));
 
 app.get('/', (req, res) => {
     res.send('FIT Tour CRM API is running...');
@@ -383,8 +384,12 @@ server.listen(PORT, () => {
         // Start Zalo OA Token Auto-Refresh Cron Engine
         const { startZaloTokenRefreshCron } = require('./cron/zaloTokenRefreshEngine');
         startZaloTokenRefreshCron();
+
+        // Start D-7 Debt Warning Cron Engine (08:30 AM daily)
+        const { startDebtD7AlertCron } = require('./cron/debtD7AlertEngine');
+        startDebtD7AlertCron();
         
-        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, Monthly Reviews, Monthly Dashboard, Reservation Release, Idempotency Cleanup, Webhook Outbox, Meta CAPI Outbox, Zalo Token Refresh).');
+        console.log('Cron jobs started (Reminder, Audit Log Cleanup, CSKH, Monthly Reviews, Monthly Dashboard, Reservation Release, Idempotency Cleanup, Webhook Outbox, Meta CAPI Outbox, Zalo Token Refresh, Debt D-7 Alert).');
 
         // Start Email Listeners for Event-Driven Architecture
         const { registerEmailListeners } = require('./listeners/emailListener');

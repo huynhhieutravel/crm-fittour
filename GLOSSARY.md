@@ -48,6 +48,22 @@ _Avoid_: Rough status, vague payment state
 An inline-editable metadata layer on tour departures and bookings capturing operational counts per category (SIM types, rooming allocations, surcharges, and demographics) with quantity breakdown without forcing individual passenger-by-passenger entry into the core booking transaction table.
 _Avoid_: Hardcoded booking schema, separate paper notes, manual calculation
 
+**D-Day (Hạn Chót Khởi Hành)**:
+The scheduled departure date (`td.start_date`) of a tour departure serving as the hard operational milestone for finalizing passenger lists, tickets, and accounts receivable.
+_Avoid_: Deadline chung, ngày thanh toán, hạn chót mơ hồ
+
+**D-7 Debt Alert Milestone (Mốc Cảnh Báo Công Nợ D-7)**:
+An automated financial and operational early-warning triggered when a confirmed booking has an unpaid balance (`paid < total_price`) and the remaining duration to departure date is `<= 7 days`.
+_Avoid_: Cảnh báo nợ quá hạn, debt reminder, nhắc nợ ngẫu nhiên
+
+**Single-Fire Debt Warning (Cảnh Báo Công Nợ Một Lần)**:
+The non-intrusive alert policy where each debt booking triggers exactly one in-app ERP toast popup and one personal email notification to the assigned sales consultant upon reaching the D-7 milestone, persisting the alert timestamp in the database to prevent repetitive spam across devices.
+_Avoid_: Báo động lặp lại, spam thông báo, daily digest
+
+**Departure Booking Drawer Link (Liên Kết Danh Sách Khách Đặt Chỗ)**:
+The actionable deep-link (`/op-tours?open_departure_id=...`) embedded within debt alerts directing the consultant directly into the passenger booking roster modal (`OpTourBookingListModal`) of the relevant departure to inspect passenger details and payment statuses immediately.
+_Avoid_: Link Zalo ngoài, link sổ quỹ chung, trang nợ rời rạc
+
 **Dispatch 3D Twin (Trung Tâm Điều Phối 3D)**:
 A real-time, interactive 3D digital representation of FIT TOUR's sales operations center simulating consultants, leads, and customer flows.
 _Avoid_: Game 3D, mô hình trang trí, màn hình ảo
