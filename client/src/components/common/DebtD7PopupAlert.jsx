@@ -325,3 +325,4 @@ export default function DebtD7PopupAlert({ currentUser, isLoggedIn }) {
     </div>
   );
 }
+

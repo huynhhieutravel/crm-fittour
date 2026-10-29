@@ -3,6 +3,7 @@ import { getLocalDateString, formatDateVN } from '../utils/dateUtils';
 import { formatGenderVN, formatGenderEN, formatGenderCode } from '../utils/tourHelpers';
 import Swal from 'sweetalert2';
 import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useMarkets, getChildMarkets, getChildMarketIds } from '../hooks/useMarkets';
 import Select from 'react-select';
@@ -110,6 +111,7 @@ const MarketFilterBar = ({ activeMarket, setActiveMarket, marketOptions, childre
 };
 
 export default function OpToursTab({ currentUser }) {
+  const location = useLocation();
   const [tours, setTours] = useState([]);
   const marketOptions = useMarkets();
   const [loading, setLoading] = useState(true);
@@ -186,7 +188,7 @@ export default function OpToursTab({ currentUser }) {
   
   // Auto-open booking list modal via sessionStorage event or URL query params
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(location.search || window.location.search);
     const targetDepartureId = urlParams.get('open_departure_id') || sessionStorage.getItem('pendingOpenBookingListId');
     const targetHighlightBookingId = urlParams.get('highlight_booking_id') || sessionStorage.getItem('pendingHighlightBookingId');
 
@@ -221,7 +223,7 @@ export default function OpToursTab({ currentUser }) {
         });
       }
     }
-  }, [tours]);
+  }, [tours, location.search]);
   
   // Modal states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
