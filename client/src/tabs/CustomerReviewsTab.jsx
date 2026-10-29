@@ -9,6 +9,7 @@ import { Star, CheckCircle, XCircle, Clock, Image, Facebook, Globe, Plus, Trash2
 import { swalConfirm } from '../utils/swalHelpers';
 import { useLocation } from 'react-router-dom';
 import Select from 'react-select';
+import { removeVietnameseAccents } from '../utils/textUtils';
 import '../styles/customerReviews.css';
 
 const selectStyles = {
@@ -711,6 +712,12 @@ const CustomerReviewsTab = ({ isHDVView = false }) => {
                       options={[{ value: '', label: 'Không có HDV' }, ...guideList.map(g => ({ value: g.name, label: g.name }))]}
                       value={{ value: review.guide_name || '', label: review.guide_name || 'Không có HDV' }}
                       onChange={(option) => handleUpdateGuide(review.id, option.value)}
+                      filterOption={(candidate, input) => {
+                        if (!input) return true;
+                        const inputNorm = removeVietnameseAccents(input);
+                        const labelNorm = removeVietnameseAccents(candidate.label || '');
+                        return labelNorm.includes(inputNorm);
+                      }}
                       styles={{
                         ...selectStyles,
                         control: (base, state) => ({

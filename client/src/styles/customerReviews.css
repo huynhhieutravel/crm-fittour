@@ -51,8 +51,13 @@
 .cr-pagination { padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; }
 
 /* Modal Styles */
-.cr-modal-overlay { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); }
-.cr-modal-content { background: white; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; }
+.cr-modal-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); }
+.cr-modal-content { background: white; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; animation: crModalFadeIn 0.15s ease-out; }
+
+@keyframes crModalFadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
 .cr-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid #e2e8f0; }
 .cr-modal-body { padding: 24px; overflow-y: auto; flex: 1; }
 .cr-modal-footer { padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px; }

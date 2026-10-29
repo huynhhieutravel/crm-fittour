@@ -9,6 +9,17 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
+const normalizeVietnamese = (str) => {
+  if (!str) return '';
+  return str.toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
+    .trim();
+};
+
 exports.getReviews = async (req, res) => {
   try {
     const { page = 1, limit = 50, source, bu_id, status, search, guide_status } = req.query;
@@ -19,9 +30,18 @@ exports.getReviews = async (req, res) => {
     let paramIndex = 1;
 
     if (search) {
-      whereClause += ` AND (r.reviewer_name ILIKE $${paramIndex} OR r.comment ILIKE $${paramIndex} OR r.guide_name ILIKE $${paramIndex})`;
+      const searchNorm = normalizeVietnamese(search);
+      whereClause += ` AND (
+        r.reviewer_name ILIKE $${paramIndex} 
+        OR r.comment ILIKE $${paramIndex} 
+        OR r.guide_name ILIKE $${paramIndex}
+        OR immutable_unaccent(lower(coalesce(r.reviewer_name, ''))) ILIKE $${paramIndex + 1}
+        OR immutable_unaccent(lower(coalesce(r.comment, ''))) ILIKE $${paramIndex + 1}
+        OR immutable_unaccent(lower(coalesce(r.guide_name, ''))) ILIKE $${paramIndex + 1}
+      )`;
       values.push(`%${search}%`);
-      paramIndex++;
+      values.push(`%${searchNorm}%`);
+      paramIndex += 2;
     }
 
     if (source) {
