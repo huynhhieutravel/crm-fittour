@@ -13,7 +13,9 @@ function generateAccessToken(user) {
         id: user.id,
         username: user.username,
         full_name: user.full_name,
-        role: user.role_name,
+        role: user.role_name || user.role,
+        is_admin: Boolean(user.is_admin || user.role === 'admin' || user.role_name === 'admin'),
+        bus: user.bus || user.bus_assigned || [],
         iss: 'https://erp.fittour.vn',
         aud: 'fittour-api',
         typ: 'access+jwt', // Enforce type in payload as well

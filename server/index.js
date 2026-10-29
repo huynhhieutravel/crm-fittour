@@ -278,6 +278,9 @@ app.use('/api/marketing-ads', marketingAdsRoutes);
 const marketingBudgetPlanRoutes = require('./routes/marketingBudgetPlan');
 app.use('/api/marketing-budget-plan', marketingBudgetPlanRoutes);
 
+// BU Planning Studio — Multi-BU Commercial & Financial Master Plan Studio
+app.use('/api/bu-planning', require('./routes/buPlanningRoutes'));
+
 const googleAdsRoutes = require('./routes/googleAds');
 app.use('/api/google-ads', googleAdsRoutes);
 

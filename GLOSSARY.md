@@ -215,3 +215,32 @@ _Avoid_: Nhập 2 bảng riêng, lệch số liệu không giải trình đượ
 **Automated 4-Tab Planning Architecture (Kiến Trúc Kế Hoạch 4 Tab Tự Động Hóa)**:
 The standardized structure dividing annual commercial plans into (1) `SETUP_METADATA`, (2) `PRODUCT_PNL`, (3) `DEPARTURE_CASHFLOW`, and (4) `SCENARIOS_SUMMARY` with zero cross-tab manual retyping and full formula synchronization.
 _Avoid_: Bảng tính phẳng một tab nhồi nhét, bảng tính rời rạc thiếu công thức liên kết
+
+**BU Planning Studio (Không Gian Lập Kế Hoạch BU)**:
+The dedicated 5-stage interactive workspace in FIT TOUR CRM where Business Unit Managers (BUMs) and product leaders draft, simulate, schedule departures, allocate marketing cashflows, track delivery milestones, and submit annual commercial plans for executive approval.
+_Avoid_: Bảng tính phẳng nhồi nhét, file Excel rời rạc ngoài hệ thống, Google Sheet copy thủ công
+
+**Guided 5-Stage Planning Architecture (Kiến Trúc Lập Kế Hoạch 5 Chặng)**:
+The structured workflow dividing annual BU planning into: (1) Setup & Targets, (2) Product Catalog & Unit Economics, (3) Departure Batches & Schedule, (4) 12-Month Matrix & Marketing Cashflow, and (5) Delivery Tracker & Executive Review.
+_Avoid_: Nhập tự do một cục, bảng tính không có chỉ dẫn bước
+
+**Dedicated Planning Sandbox Layer (Lớp Dữ Liệu Kế Hoạch Độc Lập)**:
+The isolated database tables (`bu_plans`, `bu_plan_products`, `bu_plan_departures`, `bu_plan_tasks`, `bu_plan_versions`) storing exploratory and scenario data without polluting active operational `tour_departures` and booking transactions until formal BOD promotion.
+_Avoid_: Ghi đè vào bảng lịch tour vận hành, trộn lẫn khách thật và khách dự kiến
+
+**Per-BU Planning Privacy & Lock (Phân Quyền Lập Kế Hoạch Riêng Biệt Theo BU)**:
+The strict boundary where BUMs and BU staff can only edit and view their own BU's draft and submitted plans; cross-BU viewing is restricted to read-only mode strictly after formal BOD approval.
+_Avoid_: Sửa nhầm kế hoạch phòng ban khác, rò rỉ đề án nháp giữa các BU
+
+**Plan Approval State Machine (Quy Trình Duyệt Kế Hoạch 4 Trạng Thái)**:
+The formal lifecycle of a BU plan transitioning through `DRAFT` (Bản nháp), `SUBMITTED` (Chờ duyệt), `CHANGES_REQUESTED` (Yêu cầu chỉnh sửa), and `APPROVED` (Đã duyệt đóng băng thành Version Snapshot).
+_Avoid_: Trạng thái duyệt mập mờ, mất lịch sử phiên bản khi điều chỉnh
+
+**RPG Quest Briefing Modal (Bảng Hướng Dẫn Nhiệm Vụ Kiểu RPG)**:
+The single overview modal appearing at stage entry or via explicit manual button, presenting stage goals, sequential input instructions (Ghi gì & Tác dụng gì), and business policies. Once dismissed by the user, it remains completely quiet ("dừng luôn khi tắt"), ensuring zero intrusive popups during input.
+_Avoid_: Bong bóng tooltip nhảy ra khi focus, banner chữ tĩnh chiếm chỗ trên màn hình nhập
+
+**Minimalist Planning Canvas (Giao Diện Nhập Liệu Kế Hoạch Tối Giản)**:
+The ultra-clean form design consisting strictly of field labels, high-legibility numeric inputs, and real-time formatted previews, completely stripped of decorative text boxes or clutter to maximize user focus and speed.
+_Avoid_: Bảng form nhồi nhét ghi chú tĩnh, popover che lấp các ô nhập
+

@@ -67,6 +67,7 @@ const StaffPerformanceTab = lazy(() => import('./tabs/StaffPerformanceTab'));
 const GuidesTab = lazy(() => import('./tabs/GuidesTab'));
 const MarketingAdsTab = lazy(() => import('./tabs/MarketingAdsTab'));
 const MarketingBudgetPlanTab = lazy(() => import('./tabs/MarketingBudgetPlanTab'));
+const BUPlanningStudioTab = lazy(() => import('./tabs/BUPlanningStudioTab'));
 const GoogleAdsTab = lazy(() => import('./tabs/GoogleAdsTab'));
 const UsersTab = lazy(() => import('./tabs/UsersTab'));
 import StaffCalendarView from './components/StaffCalendarView';
@@ -206,7 +207,7 @@ function AppContent() {
   const location = useLocation();
   const pathParts = location.pathname.split('/').filter(Boolean);
   const { requestSubscription, isSubscribing } = usePushNotifications(localStorage.getItem('token'));
-  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'departure-cashflow', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'marketing-budget-plan', 'marketing-google-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'announcements', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'visa-form-templates', 'dispatch-schedule', 'notification-center', 'zns-demo'];
+  const VALID_TABS = ['workspace', 'visa-products', 'dashboard', 'management-dashboard', 'ceo-departures-dashboard', 'departure-cashflow', 'leads', 'leads-dashboard', 'zalo-sandbox', 'zalo-ai-settings', 'marketing-ads', 'marketing-budget-plan', 'bu-planning', 'marketing-google-ads', 'staff-performance', 'inbox', 'message-templates', 'tours', 'departures', 'guides', 'bookings', 'customers', 'settings', 'market-settings', 'media-settings', 'users', 'staff-calendar', 'teams', 'bus', 'costings', 'manual', 'hotels', 'restaurants', 'transports', 'visas', 'tickets', 'airlines', 'insurances', 'licenses', 'announcements', 'bu-rules', 'op-tours', 'vouchers', 'travel-support', 'leaves', 'meeting-rooms', 'group-dashboard', 'group-mice-leads', 'group-projects', 'group-leaders', 'b2b-companies', 'accountants', 'team-directory', 'org-chart', 'workflow', 'my-profile', 'audit-logs', 'passport-ocr', 'reminders', 'landtours', 'companies', 'cskh-board', 'cskh-todo', 'cskh-search', 'cskh-rules', 'payment-vouchers', 'agent-manager', 'tai-lieu', 'email-groups', 'notification-dashboard', 'email-rules', 'visa-providers', 'visa-form-templates', 'dispatch-schedule', 'notification-center', 'zns-demo'];
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = window.location.pathname.substring(1);
@@ -2904,9 +2905,6 @@ function AppContent() {
             className={`submenu-item ${activeTab === 'marketing-budget-plan' ? 'active' : ''}`} 
             onClick={() => { navigate('/marketing-budget-plan'); setHoveredMenu(null); }} 
             style={{ 
-              borderTop: '1px solid rgba(255, 255, 255, 0.1)', 
-              marginTop: '4px', 
-              paddingTop: '8px', 
               color: activeTab === 'marketing-budget-plan' ? '#38bdf8' : '#bae6fd', 
               fontWeight: 700 
             }}
@@ -3928,6 +3926,10 @@ function AppContent() {
               <MarketingAdsTab key={location.search} addToast={addToast} currentUser={user} bus={bus.filter(b => b.is_active !== false)} />
             )}
 
+            {activeTab === 'bu-planning' && (
+              <BUPlanningStudioTab addToast={addToast} currentUser={user} bus={bus.filter(b => b.is_active !== false)} />
+            )}
+
             {activeTab === 'marketing-budget-plan' && (
               <MarketingBudgetPlanTab addToast={addToast} currentUser={user} bus={bus.filter(b => b.is_active !== false)} />
             )}
@@ -4710,6 +4712,22 @@ function AppContent() {
       />
       <Route path="/admin-trip" element={<AdminTripDashboard />} />
       <Route path="/admin-trip/*" element={<AdminTripDashboard />} />
+      <Route 
+        path="/bu-planning" 
+        element={isLoggedIn ? (
+          <Suspense fallback={<div className="loading-spinner" style={{ padding: '40px', textAlign: 'center', color: '#0284c7', fontWeight: 600 }}>Đang nạp FIT TOUR | BU Planning Studio...</div>}>
+            <BUPlanningStudioTab currentUser={user} addToast={addToast} bus={bus} standalone={true} />
+          </Suspense>
+        ) : <Navigate to="/login" />} 
+      />
+      <Route 
+        path="/bu-planning-studio" 
+        element={isLoggedIn ? (
+          <Suspense fallback={<div className="loading-spinner" style={{ padding: '40px', textAlign: 'center', color: '#0284c7', fontWeight: 600 }}>Đang nạp FIT TOUR | BU Planning Studio...</div>}>
+            <BUPlanningStudioTab currentUser={user} addToast={addToast} bus={bus} standalone={true} />
+          </Suspense>
+        ) : <Navigate to="/login" />} 
+      />
       
       <Route 
         path="/:tab" 
