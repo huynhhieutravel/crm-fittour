@@ -77,17 +77,18 @@
         </div>
       </a>
 
-      <!-- Quick Nav Links -->
-      <nav class="hidden md:flex items-center space-x-1 text-[13px] font-medium text-neutral-600 dark:text-neutral-300">
-        <a href="./index.html#itinerary" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">Lịch trình</a>
-        <a href="./index.html#trekking" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">Trek D1-D2</a>
-        <a href="./index.html#packing" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">Hành trang</a>
-        <!-- Active Page: Chia 3 Đội -->
-        <a href="./teams.html" class="px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-sm flex items-center gap-1.5">
-          <span>🎲</span>
-          <span>Vòng Quay 3 Đội</span>
+      <!-- 2 Internal Pages Switcher (1 Trang Chính Lịch Trình & 1 Trang Xoay Đội Hình) -->
+      <nav class="flex items-center p-1 rounded-full bg-black/[0.05] dark:bg-white/[0.1] border border-black/[0.06] dark:border-white/[0.08] text-xs sm:text-[13px]">
+        <!-- Page 1 (Link): Lịch Trình -->
+        <a href="./index.html" class="flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition" title="Chuyển sang trang Lịch Trình Đoàn">
+          <span>📅</span>
+          <span>Lịch Trình</span>
         </a>
-        <a href="./index.html#members" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">32 Thành viên</a>
+        <!-- Page 2 (Active): Xoay & Chốt Đội -->
+        <a href="./teams.html" class="flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold shadow-sm">
+          <span>🎲</span>
+          <span>Xoay & Chốt Đội</span>
+        </a>
       </nav>
 
       <!-- Right controls: Dark Mode & Back Button -->
@@ -96,8 +97,8 @@
           <span class="dark:hidden">🌙</span>
           <span class="hidden dark:inline">☀️</span>
         </button>
-        <a href="./index.html" class="inline-flex items-center space-x-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-300 dark:hover:bg-neutral-700 transition">
-          <span>← Cẩm nang</span>
+        <a href="./index.html#members" class="hidden sm:inline-flex items-center space-x-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-apple-blue text-white hover:bg-apple-blueHover transition shadow-sm">
+          <span>📋 32 TV</span>
         </a>
       </div>
     </div>
@@ -260,34 +261,30 @@
     </div>
   </main>
 
-  <!-- ================= APPLE FLOATING DOCK ================= -->
+  <!-- ================= APPLE FLOATING DOCK (Trang Xoay Đội) ================= -->
   <aside aria-label="Quick Navigation Bar" class="fixed bottom-5 inset-x-0 z-40 flex justify-center pointer-events-none px-3">
-    <div class="pointer-events-auto apple-glass rounded-full shadow-2xl border border-black/10 dark:border-white/15 px-3 sm:px-4 py-2 flex items-center gap-1 sm:gap-3 backdrop-blur-xl transition-all duration-200">
-      <a href="./index.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95 group">
-        <span class="text-base group-hover:scale-110 transition-transform">📖</span>
-        <span class="text-xs sm:text-sm font-semibold tracking-tight">Cẩm Nang</span>
+    <div class="pointer-events-auto apple-glass rounded-full shadow-2xl border border-black/10 dark:border-white/15 px-3 sm:px-4 py-2 flex items-center gap-1.5 sm:gap-3 backdrop-blur-xl transition-all duration-200">
+      <!-- 1: Sang Trang Lịch Trình -->
+      <a href="./index.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95 group" title="Xem Cẩm nang & Lịch trình">
+        <span class="text-base group-hover:scale-110 transition-transform">📅</span>
+        <span class="text-xs sm:text-sm font-semibold tracking-tight">Trang Lịch Trình</span>
       </a>
 
-      <span class="w-px h-4 bg-black/10 dark:bg-white/15 hidden sm:block"></span>
+      <span class="w-px h-4 bg-black/10 dark:bg-white/15"></span>
 
-      <a href="./index.html#itinerary" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95 group">
-        <span class="text-base group-hover:scale-110 transition-transform">🗺️</span>
-        <span class="text-xs sm:text-sm font-semibold tracking-tight">Lịch trình</span>
+      <!-- 2: Trang Hiện Tại: Xoay Đội -->
+      <a href="#arena" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm font-bold tracking-tight">
+        <span class="text-base">🎲</span>
+        <span class="text-xs sm:text-sm">Vòng Quay 3 Đội</span>
       </a>
 
-      <span class="w-px h-4 bg-black/10 dark:bg-white/15 hidden sm:block"></span>
+      <span class="w-px h-4 bg-black/10 dark:bg-white/15"></span>
 
-      <a href="./index.html#members" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95 group">
-        <span class="text-base group-hover:scale-110 transition-transform">👥</span>
-        <span class="text-xs sm:text-sm font-semibold tracking-tight">32 TV</span>
-      </a>
-
-      <span class="w-px h-4 bg-black/10 dark:bg-white/15 hidden sm:block"></span>
-
-      <!-- Active: Chia 3 Đội -->
-      <a href="./teams.html" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm hover:brightness-110 transition active:scale-95 group">
-        <span class="text-base group-hover:rotate-12 transition-transform">🎲</span>
-        <span class="text-xs sm:text-sm font-bold tracking-tight">Xoay Đội</span>
+      <!-- 3: Admin Duyệt Quick Jump -->
+      <a href="#adminApprovalSection" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold text-xs sm:text-sm hover:bg-emerald-500/20 transition active:scale-95">
+        <span class="text-base">👑</span>
+        <span class="hidden sm:inline">Admin Duyệt</span>
+        <span class="sm:hidden">Duyệt</span>
       </a>
     </div>
   </aside>
