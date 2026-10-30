@@ -6,7 +6,15 @@ import * as XLSX from 'xlsx-js-style';
 import PrintDepositRetentionModal from '../components/modals/PrintDepositRetentionModal';
 
 export default function PaymentVouchersTab() {
-  const [activeSubTab, setActiveSubTab] = useState('vouchers'); // 'vouchers' | 'retention'
+  const getInitialTab = () => {
+    try {
+      const p = new URLSearchParams(window.location.search).get('subtab');
+      return p === 'retention' ? 'retention' : 'vouchers';
+    } catch (e) {
+      return 'vouchers';
+    }
+  };
+  const [activeSubTab, setActiveSubTab] = useState(getInitialTab);
 
   // Tab 1: Phiếu Thu Tiền
   const [vouchers, setVouchers] = useState([]);
@@ -155,73 +163,88 @@ export default function PaymentVouchersTab() {
   return (
     <div style={{ padding: '20px', background: '#f8fafc', minHeight: '100vh', fontFamily: 'Arial, sans-serif' }}>
       
-      {/* Page Title & Navigation Switcher */}
-      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px' }}>
-        <div>
-          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
-            {activeSubTab === 'vouchers' ? 'Phiếu Thu Tiền' : 'Sổ Quản Lý Bảo Lưu Tiền Cọc'}
-          </h2>
-          <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
-            {activeSubTab === 'vouchers' ? 'Quản lý toàn bộ chứng từ thanh toán tiền mặt & chuyển khoản' : 'Sổ theo dõi các khoản cọc khách bảo lưu (tối đa 12 tháng) và lịch sử cấn trừ'}
-          </p>
-        </div>
+      {/* Page Title & Main Navigation Switcher */}
+      <div style={{ marginBottom: '24px', background: '#ffffff', borderRadius: '12px', padding: '18px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+              Nghiệp Vụ Kế Toán & Dòng Tiền
+            </div>
+            <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+              {activeSubTab === 'vouchers' ? 'Phiếu Thu Tiền (PT-...)' : 'Sổ Quản Lý Bảo Lưu Tiền Cọc (BL-...)'}
+            </h1>
+            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
+              {activeSubTab === 'vouchers' 
+                ? 'Quản lý toàn bộ chứng từ thanh toán tiền mặt & chuyển khoản theo từng booking/tour' 
+                : 'Theo dõi các khoản tiền cọc bảo lưu (tối đa 12 tháng), tra cứu số dư và cấn trừ cho tour mới'}
+            </p>
+          </div>
 
-        {/* Sub-Tab Navigation */}
-        <div style={{ display: 'flex', gap: '10px', background: '#e2e8f0', padding: '4px', borderRadius: '10px' }}>
-          <button
-            onClick={() => setActiveSubTab('vouchers')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: activeSubTab === 'vouchers' ? '#ffffff' : 'transparent',
-              color: activeSubTab === 'vouchers' ? '#0f172a' : '#64748b',
-              fontWeight: 700,
-              fontSize: '13px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: activeSubTab === 'vouchers' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-            }}
-          >
-            <FileText size={16} color={activeSubTab === 'vouchers' ? '#0ea5e9' : '#64748b'} /> Phiếu Thu (PT-...)
-          </button>
+          {/* Sub-Tab Navigation Bar */}
+          <div style={{ display: 'flex', gap: '8px', background: '#f1f5f9', padding: '6px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+            <button
+              onClick={() => {
+                setActiveSubTab('vouchers');
+                try { window.history.replaceState(null, '', '/vouchers?subtab=vouchers'); } catch (e) {}
+              }}
+              style={{
+                padding: '10px 18px',
+                borderRadius: '8px',
+                border: 'none',
+                background: activeSubTab === 'vouchers' ? '#2563eb' : 'transparent',
+                color: activeSubTab === 'vouchers' ? '#ffffff' : '#475569',
+                fontWeight: 800,
+                fontSize: '14px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: activeSubTab === 'vouchers' ? '0 2px 6px rgba(37, 99, 235, 0.3)' : 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              <FileText size={18} color={activeSubTab === 'vouchers' ? '#ffffff' : '#64748b'} />
+              Phiếu Thu (PT-...)
+            </button>
 
-          <button
-            onClick={() => {
-              setActiveSubTab('retention');
-              fetchCredits();
-            }}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: activeSubTab === 'retention' ? '#ea580c' : 'transparent',
-              color: activeSubTab === 'retention' ? '#ffffff' : '#64748b',
-              fontWeight: 700,
-              fontSize: '13px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: activeSubTab === 'retention' ? '0 2px 4px rgba(234, 88, 12, 0.25)' : 'none'
-            }}
-          >
-            <ShieldAlert size={16} /> Sổ Bảo Lưu Tiền Cọc (BL-...)
-            {creditsSummary?.active_count > 0 && (
-              <span style={{
-                background: activeSubTab === 'retention' ? '#ffffff' : '#ea580c',
-                color: activeSubTab === 'retention' ? '#ea580c' : '#ffffff',
-                padding: '2px 7px',
-                borderRadius: '10px',
-                fontSize: '11px',
-                fontWeight: 800
-              }}>
-                {creditsSummary.active_count}
-              </span>
-            )}
-          </button>
+            <button
+              onClick={() => {
+                setActiveSubTab('retention');
+                try { window.history.replaceState(null, '', '/vouchers?subtab=retention'); } catch (e) {}
+                fetchCredits();
+              }}
+              style={{
+                padding: '10px 18px',
+                borderRadius: '8px',
+                border: 'none',
+                background: activeSubTab === 'retention' ? '#ea580c' : 'transparent',
+                color: activeSubTab === 'retention' ? '#ffffff' : '#475569',
+                fontWeight: 800,
+                fontSize: '14px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: activeSubTab === 'retention' ? '0 2px 6px rgba(234, 88, 12, 0.3)' : 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              <ShieldAlert size={18} color={activeSubTab === 'retention' ? '#ffffff' : '#ea580c'} />
+              Sổ Bảo Lưu Tiền Cọc (BL-...)
+              {creditsSummary?.active_count > 0 && (
+                <span style={{
+                  background: activeSubTab === 'retention' ? '#ffffff' : '#ea580c',
+                  color: activeSubTab === 'retention' ? '#ea580c' : '#ffffff',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  fontWeight: 800
+                }}>
+                  {creditsSummary.active_count}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
