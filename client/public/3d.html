@@ -1,0 +1,4633 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIT TOUR — Trung Tâm Điều Phối 3D Gamification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #1e40af;
+      --primary-light: #3b82f6;
+      --accent-zalo: #0068ff;
+      --accent-fb: #1877f2;
+      --accent-web: #f97316;
+      --sla-green: #10b981;
+      --sla-yellow: #f59e0b;
+      --sla-red: #ef4444;
+      --sla-critical: #dc2626;
+      --panel-bg: rgba(255, 255, 255, 0.94);
+      --panel-border: rgba(226, 232, 240, 0.9);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f1f5f9;
+      color: var(--text-main);
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #webgl-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    #css2d-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* UI Overlay Shell */
+    .ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px 20px;
+    }
+
+    .interactive {
+      pointer-events: auto;
+    }
+
+    /* Top Navigation Bar */
+    /* Sleek, Compact Top Navigation Bar */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--panel-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--panel-border);
+      padding: 6px 16px;
+      border-radius: 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      gap: 12px;
+      height: 48px;
+      box-sizing: border-box;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, #1e40af, #3b82f6);
+      color: white;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+    }
+
+    .brand-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+    }
+
+    /* Multi-Day Temporal Filter Ribbon & Search */
+    .filter-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      background: #f1f5f9;
+      padding: 3px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: none;
+      color: #475569;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 9px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      white-space: nowrap;
+    }
+
+    .filter-btn .f-icon {
+      margin-right: 4px;
+    }
+
+    .filter-btn:hover {
+      color: #0f172a;
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .filter-btn.active {
+      color: #1e40af;
+      background: #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .bu-select-pill {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+      outline: none;
+      height: 28px;
+      transition: all 0.2s ease;
+    }
+    .bu-select-pill:hover, .bu-select-pill:focus {
+      border-color: #3b82f6;
+    }
+
+    .search-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 4px 8px;
+      border-radius: 8px;
+      height: 28px;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+    .search-pill:focus-within {
+      border-color: #3b82f6;
+    }
+    .search-pill input {
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 11px;
+      width: 110px;
+      color: #0f172a;
+      background: transparent;
+    }
+
+    /* Locate Camera Button in Chat Dock */
+    .locate-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+    .locate-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Compact Top Stats Capsule */
+    .stats-compact {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      padding: 4px 12px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .stats-compact .stat-divider {
+      color: #cbd5e1;
+    }
+
+    .stat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .pulse {
+      animation: pulseAnim 1.8s infinite;
+    }
+
+    @keyframes pulseAnim {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    /* Sound Toggle Button */
+    .sound-toggle-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      font-size: 13px;
+      width: 32px;
+      height: 28px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .sound-toggle-btn:hover {
+      background: #f1f5f9;
+      border-color: #3b82f6;
+    }
+    .sound-toggle-btn.muted {
+      opacity: 0.6;
+      background: #f8fafc;
+    }
+
+    /* Operational Tool Buttons in Header */
+    .header-tool-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 9px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .header-tool-btn:hover {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      color: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    .header-tool-btn.active {
+      background: #1e40af;
+      border-color: #1d4ed8;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
+    }
+    .header-tool-btn.heatmap-active {
+      background: linear-gradient(135deg, #ea580c, #dc2626);
+      border-color: #b91c1c;
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(220, 38, 38, 0.45);
+      animation: pulseHeatmapBtn 1.5s infinite alternate;
+    }
+    @keyframes pulseHeatmapBtn {
+      0% { box-shadow: 0 0 8px rgba(220, 38, 38, 0.4); }
+      100% { box-shadow: 0 0 16px rgba(220, 38, 38, 0.75); }
+    }
+
+    .header-tool-btn.data-real-active {
+      background: #ecfdf5;
+      border-color: #10b981;
+      color: #047857;
+      font-weight: 800;
+      box-shadow: 0 1px 4px rgba(16, 185, 129, 0.2);
+    }
+    body.dark-theme .header-tool-btn.data-real-active {
+      background: rgba(6, 78, 59, 0.6);
+      border-color: #059669;
+      color: #6ee7b7;
+    }
+
+    /* Compact LOD Mode: Minimal badge view until hovered */
+    body.compact-lod-mode .desk-holo-pill {
+      width: 205px;
+      padding: 5px 9px;
+      gap: 3px;
+    }
+    body.compact-lod-mode .holo-chat-row {
+      display: none;
+    }
+    body.compact-lod-mode .desk-holo-pill:hover {
+      width: 340px;
+      padding: 6px 11px 7px 11px;
+      gap: 4px;
+    }
+    body.compact-lod-mode .desk-holo-pill:hover .holo-chat-row {
+      display: flex;
+    }
+
+    /* Executive Dark / Night Command Mode */
+    body.dark-theme {
+      background: #0b0f19;
+      color: #f8fafc;
+    }
+    body.dark-theme .header-bar,
+    body.dark-theme .camera-dock,
+    body.dark-theme .bottom-bar {
+      background: rgba(15, 23, 42, 0.92);
+      border-color: rgba(51, 65, 85, 0.75);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+      color: #f8fafc;
+    }
+    body.dark-theme .brand-title {
+      color: #f1f5f9;
+    }
+    body.dark-theme .filter-btn {
+      background: #1e293b;
+      border-color: #334155;
+      color: #94a3b8;
+    }
+    body.dark-theme .filter-btn:hover {
+      background: #334155;
+      color: #f8fafc;
+    }
+    body.dark-theme .filter-btn.active {
+      background: #2563eb;
+      border-color: #3b82f6;
+      color: #ffffff;
+    }
+    body.dark-theme .bu-select-pill,
+    body.dark-theme .search-pill,
+    body.dark-theme .search-pill input {
+      background: #1e293b;
+      border-color: #334155;
+      color: #f8fafc;
+    }
+    body.dark-theme .stats-compact {
+      background: #1e293b;
+      border-color: #334155;
+      color: #cbd5e1;
+    }
+    body.dark-theme .header-tool-btn {
+      background: #1e293b;
+      border-color: #334155;
+      color: #cbd5e1;
+    }
+    body.dark-theme .header-tool-btn:hover {
+      background: #334155;
+      color: #ffffff;
+    }
+    body.dark-theme .sound-toggle-btn {
+      background: #1e293b;
+      border-color: #334155;
+      color: #cbd5e1;
+    }
+    body.dark-theme .dock-btn {
+      color: #94a3b8;
+    }
+    body.dark-theme .dock-btn:hover {
+      background: #1e293b;
+      color: #f8fafc;
+    }
+    body.dark-theme .action-btn {
+      background: #1e293b;
+      border-color: #334155;
+      color: #f8fafc;
+    }
+    body.dark-theme .action-btn:hover {
+      background: #334155;
+    }
+    body.dark-theme .desk-holo-pill {
+      background: rgba(15, 23, 42, 0.95);
+      border-color: rgba(51, 65, 85, 0.9);
+      color: #f8fafc;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.6), 0 2px 10px rgba(0, 0, 0, 0.35);
+    }
+    body.dark-theme .holo-tour-row {
+      background: #1e293b;
+      border-color: #334155;
+    }
+    body.dark-theme .holo-tour-name {
+      color: #f8fafc;
+    }
+    body.dark-theme .holo-tour-tag {
+      background: #334155;
+      color: #94a3b8;
+    }
+    body.dark-theme .holo-chat-sender {
+      color: #38bdf8;
+    }
+    body.dark-theme .holo-chat-text {
+      color: #cbd5e1;
+    }
+    body.dark-theme .hover-chat-in {
+      background: #1e293b;
+      border-color: #334155;
+      color: #f8fafc;
+    }
+    body.dark-theme .hover-chat-out {
+      background: #172554;
+      border-color: #1e3a8a;
+      color: #bfdbfe;
+    }
+    body.dark-theme .hover-chat-footer-hint {
+      background: #1e293b;
+      color: #94a3b8;
+    }
+
+    /* Responsive Elastic Header Rules */
+    @media (max-width: 1440px) {
+      .header-bar {
+        padding: 5px 10px;
+        gap: 8px;
+      }
+      .filter-wrapper {
+        gap: 5px;
+      }
+      .filter-btn {
+        padding: 4px 7px;
+        font-size: 10.5px;
+      }
+      .stats-compact {
+        padding: 4px 8px;
+        font-size: 10.5px;
+        gap: 6px;
+      }
+      .search-pill input {
+        width: 85px;
+      }
+      .header-tool-btn .btn-text {
+        display: none;
+      }
+    }
+
+    @media (max-width: 1260px) {
+      .brand-title {
+        display: none;
+      }
+      .stat-text-label {
+        display: none;
+      }
+    }
+
+
+    /* ----------------------------------------------------------------- */
+    /* AVATAR CALLOUT SYSTEM: HEAD BEACON PIN + CRISP SVG SPEECH ARROW */
+    /* ----------------------------------------------------------------- */
+    .holo-entity-wrapper {
+      position: relative;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+      z-index: 10;
+      /* The origin (0, 0) is the exact 2D projection of character head */
+    }
+
+    .holo-entity-wrapper:hover,
+    .holo-entity-wrapper:has(.desk-holo-pill:hover) {
+      z-index: 99999 !important;
+    }
+
+    /* 1. Avatar Head Target Beacon Pin (Directly at 0, 0 on character head) */
+    .holo-head-anchor {
+      position: absolute;
+      left: -9px;
+      top: -9px;
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+      z-index: 20;
+    }
+    .holo-head-anchor .beacon-ring {
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      border: 2px solid var(--bu-color, #2563eb);
+      opacity: 0.85;
+      animation: beaconPulseRing 2.2s infinite ease-out;
+    }
+    .holo-head-anchor .beacon-core {
+      position: absolute;
+      inset: 2px;
+      border-radius: 50%;
+      background: var(--bu-color, #2563eb);
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 0 10px var(--bu-color, #2563eb), 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    @keyframes beaconPulseRing {
+      0% { transform: scale(0.6); opacity: 1; }
+      100% { transform: scale(2.0); opacity: 0; }
+    }
+
+    /* 2. SVG Speech Arrow / Directional Stem */
+    .holo-arrow-svg {
+      position: absolute;
+      left: 0px;
+      top: -30px;
+      width: 52px;
+      height: 60px;
+      overflow: visible;
+      pointer-events: none;
+      z-index: 18;
+    }
+
+    /* 3. Side-Callout Dialogue Card */
+    .desk-holo-pill {
+      pointer-events: auto;
+      cursor: pointer;
+      position: absolute;
+      left: 48px; /* Clean offset to the RIGHT of character */
+      top: -30px;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(226, 232, 240, 0.95);
+      border-radius: 13px;
+      padding: 6px 11px 7px 11px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 260px;
+      transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+      z-index: 19;
+    }
+
+    /* Hover Expansion: Expands to right smoothly, brought to top above all other cards */
+    .desk-holo-pill:hover {
+      width: 340px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), 0 0 0 2px var(--bu-accent, #3b82f6) !important;
+      border-color: #3b82f6;
+      z-index: 99999 !important;
+    }
+
+    .holo-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .holo-meta-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .holo-bu-badge {
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .holo-tour-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      background: #f1f5f9;
+      padding: 3px 7px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .holo-tour-tag {
+      font-size: 9px;
+      font-weight: 800;
+      color: #475569;
+      background: #e2e8f0;
+      padding: 1px 4px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+
+    .holo-tour-name {
+      color: #0f172a;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    .holo-sla-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .sla-badge-normal, .sla-badge-green { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+    .sla-badge-impatient, .sla-badge-yellow { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    .sla-badge-frustrated, .sla-badge-red { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .sla-badge-critical { background: #dc2626; color: white; animation: pulseAlarm 0.8s infinite; }
+
+    .holo-time-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .time-today {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+    }
+    .time-yesterday {
+      background: #eff6ff;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+    }
+    .time-week {
+      background: #f8fafc;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+
+    @keyframes pulseAlarm {
+      0%, 100% { box-shadow: 0 0 10px rgba(220, 38, 38, 0.8); }
+      50% { box-shadow: 0 0 2px rgba(220, 38, 38, 0.2); }
+    }
+
+    .holo-chat-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      background: #f8fafc;
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid #f1f5f9;
+      overflow: hidden;
+    }
+
+    .holo-chat-sender {
+      color: #2563eb;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .holo-chat-text {
+      color: #334155;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Full Chat Popover (Revealed on Hover) */
+    .hover-full-chat {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 6px;
+      padding-top: 8px;
+      border-top: 1px dashed #cbd5e1;
+      font-size: 11px;
+    }
+
+    .desk-holo-pill:hover .hover-full-chat {
+      display: flex;
+    }
+
+    .hover-chat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 5px 8px;
+      border-radius: 8px;
+    }
+
+    .hover-chat-in {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+    }
+
+    .hover-chat-out {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+    }
+
+    .hover-chat-footer-hint {
+      font-size: 10px;
+      color: #64748b;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 4px;
+      padding: 3px 0;
+      background: #f1f5f9;
+      border-radius: 6px;
+    }
+
+    /* Floating Speech Bubble (Right-Offset Above Holo Pill) */
+    .floating-dialogue-pill {
+      pointer-events: auto;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(226, 232, 240, 0.95);
+      padding: 8px 14px;
+      border-radius: 18px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(37, 99, 235, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 320px;
+      margin-left: 175px;
+      margin-top: -85px;
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: all 0.25s ease;
+      z-index: 20;
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.6); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .channel-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .badge-zalo { background: #0068ff; color: white; }
+    .badge-fb { background: #1877f2; color: white; }
+    .badge-web { background: #f97316; color: white; }
+    .badge-sale { background: #10b981; color: white; }
+
+    .dialogue-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+
+    .dialogue-author {
+      font-size: 11px;
+      font-weight: 800;
+      color: #64748b;
+    }
+
+    .dialogue-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Floating Camera Presets Dock */
+    .camera-dock {
+      position: absolute;
+      left: 20px;
+      top: 76px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 50;
+    }
+
+    .camera-dock.collapsed {
+      transform: translateX(-70px);
+      opacity: 0.85;
+    }
+    .camera-dock.collapsed:hover {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .camera-dock.collapsed .dock-toggle-btn {
+      transform: rotate(180deg);
+    }
+
+    .dock-toggle-btn {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .dock-toggle-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .dock-btn {
+      background: transparent;
+      border: none;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .dock-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .dock-btn.active {
+      background: #1e40af;
+      color: white;
+    }
+
+    /* Bottom Control Bar */
+    .bottom-bar {
+      align-self: center;
+      background: var(--panel-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--panel-border);
+      padding: 10px 18px;
+      border-radius: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+    }
+
+    .mock-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding-right: 12px;
+      border-right: 1px solid #cbd5e1;
+    }
+
+    .action-btn {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #1e293b;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .action-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-emerald { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+    .btn-emerald:hover { background: #10b981; color: white; }
+
+    .btn-amber { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+    .btn-amber:hover { background: #f59e0b; color: white; }
+
+    .btn-rose { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+    .btn-rose:hover { background: #ef4444; color: white; }
+
+    /* IN-SCENE LIVE CHAT MODAL (DIRECT GAMIFICATION) */
+    .live-chat-dock {
+      position: absolute;
+      bottom: 84px;
+      right: 24px;
+      width: 400px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      transform: translateY(120%);
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .live-chat-dock.active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .chat-dock-header {
+      background: linear-gradient(135deg, #1e40af, #2563eb);
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-header-info h4 {
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .chat-header-info p {
+      font-size: 12px;
+      opacity: 0.85;
+      font-weight: 500;
+    }
+
+    .close-chat-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+
+    .close-chat-btn:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    .sla-rescue-banner {
+      background: #fffbeb;
+      border-bottom: 1px solid #fde68a;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #b45309;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Interactive Live Dispatch Action Bar */
+    .dispatch-action-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 9px 16px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .dispatch-bar-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+    }
+    .dispatch-bu-buttons {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .dispatch-chip {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .dispatch-chip:hover {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      color: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.15);
+    }
+
+    .chat-dock-body {
+      padding: 16px;
+      height: 240px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #f8fafc;
+    }
+
+    .chat-row {
+      display: flex;
+      flex-direction: column;
+      max-width: 85%;
+      gap: 3px;
+    }
+
+    .chat-row.in { align-self: flex-start; }
+    .chat-row.out { align-self: flex-end; }
+
+    .bubble-in {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      padding: 10px 14px;
+      border-radius: 16px 16px 16px 4px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .bubble-out {
+      background: #2563eb;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 16px 16px 4px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .chat-time {
+      font-size: 10px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .quick-chips-wrapper {
+      padding: 8px 16px 4px 16px;
+      background: white;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .quick-chip {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .quick-chip:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+      border-color: #94a3b8;
+    }
+
+    .chat-dock-footer {
+      padding: 12px 16px;
+      background: white;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .chat-input:focus {
+      border-color: #2563eb;
+      background: white;
+    }
+
+    .send-btn {
+      background: #2563eb;
+      border: none;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .send-btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+  </style>
+
+  <!-- Import maps for Three.js ES Modules -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- WebGL Canvas Mount -->
+  <div id="webgl-container"></div>
+  <div id="css2d-container"></div>
+
+  <!-- UI Overlay -->
+  <div class="ui-layer">
+    <div>
+      <!-- Header -->
+      <header class="header-bar interactive">
+        <div class="brand-section">
+          <div class="brand-badge">
+            <span>✨</span> FIT Tour
+          </div>
+        </div>
+
+        <!-- Multi-Day Temporal Filter Ribbon & Controls -->
+        <div class="filter-wrapper">
+          <div class="filter-group" aria-label="Bộ lọc dòng thời gian">
+            <button class="filter-btn" data-filter="month"><span class="f-icon">🗓️</span>Tháng (<span id="count-month">2.617</span>)</button>
+            <button class="filter-btn active" data-filter="today"><span class="f-icon">⚡</span>Hôm nay (<span id="count-today">78</span>)</button>
+            <button class="filter-btn" data-filter="yesterday"><span class="f-icon">📅</span>Hôm qua (<span id="count-yesterday">70</span>)</button>
+            <button class="filter-btn" data-filter="this_week"><span class="f-icon">🗓️</span>Tuần này (<span id="count-week">520</span>)</button>
+            <button class="filter-btn" data-filter="breached" style="color: #dc2626;"><span class="f-icon">🔥</span>Quá hạn (<span id="count-breached">1.701</span>)</button>
+          </div>
+
+          <!-- BU Selector Dropdown -->
+          <select id="bu-filter-select" class="bu-select-pill" title="Lọc theo Đơn Vị Kinh Doanh">
+            <option value="all">🏢 Tất cả BU</option>
+            <option value="bu1">🏔️ BU1</option>
+            <option value="bu2">🐎 BU2</option>
+            <option value="bu3">🕌 BU3</option>
+            <option value="bu4">⛩️ BU4</option>
+            <option value="bu5">🦁 BU5</option>
+          </select>
+
+          <!-- Search Pill -->
+          <div class="search-pill">
+            <span>🔍</span>
+            <input type="text" id="filter-search-input" placeholder="Tìm khách, tour, sale..." />
+          </div>
+        </div>
+
+        <!-- Compact Stats + Sound Toggle -->
+        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+          <div class="stats-compact">
+            <span id="active-leads-count" style="color: #2563eb;">Đang hiển thị: <strong>78 Khách</strong> (Hôm nay)</span>
+            <span class="stat-divider">•</span>
+            <span id="satisfaction-score" style="color: #047857;">⚡ DB: 7ms <span class="stat-text-label">(PostgreSQL LIVE)</span></span>
+          </div>
+          <!-- Operational Power Toggles -->
+          <button class="header-tool-btn data-real-active" id="btn-toggle-data-mode" title="Chuyển đổi Dữ liệu Thật (API Database) / Mẫu Demo">📊 <span class="btn-text">Dữ Liệu Thật (API)</span></button>
+          <button class="header-tool-btn" id="btn-toggle-heatmap" title="Bật/Tắt Chế độ Nhiệt tải Phòng Điều Phối">🔥 <span class="btn-text">Nhiệt Tải</span></button>
+          <button class="header-tool-btn" id="btn-toggle-lod" title="Chuyển chế độ hiển thị Thẻ Tinh gọn / Đầy đủ">⚡ <span class="btn-text">Tinh Gọn</span></button>
+          <button class="header-tool-btn" id="btn-toggle-theme" title="Chế độ Ban đêm (Dark Executive Mode)">🌙 <span class="btn-text">Đêm</span></button>
+          <button class="sound-toggle-btn" id="btn-toggle-sound" title="Bật/Tắt âm thanh hiệu ứng (Web Audio)">🔊</button>
+        </div>
+      </header>
+
+
+    </div>
+
+    <!-- Camera Dock on Left (Toàn Cảnh + BU1 -> BU5) -->
+    <nav class="camera-dock interactive" id="camera-dock" aria-label="Chọn nhanh góc quay">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 4px 4px 4px;">
+        <span style="font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px;">GÓC QUAY</span>
+        <button class="dock-toggle-btn" id="btn-toggle-dock" title="Thu gọn / Mở rộng">◀</button>
+      </div>
+      <button class="dock-btn active" data-view="all">🌐 Toàn Cảnh</button>
+      <button class="dock-btn" data-view="bu1">🏔️ BU1</button>
+      <button class="dock-btn" data-view="bu2">🐎 BU2</button>
+      <button class="dock-btn" data-view="bu3">🕌 BU3</button>
+      <button class="dock-btn" data-view="bu4">⛩️ BU4</button>
+      <button class="dock-btn" data-view="bu5">🦁 BU5</button>
+    </nav>
+
+    <!-- Bottom Action Dock -->
+    <footer class="bottom-bar interactive">
+      <span class="mock-title">⚡ Mô Phỏng Tác Nghiệp</span>
+      <button class="action-btn" id="btn-trigger-chat">
+        <span>💬</span> Bắn Chat Mới
+      </button>
+      <button class="action-btn btn-amber" id="btn-fast-forward-4h">
+        <span>⏳</span> Tua Trễ 4h (Khách Sốt Ruột)
+      </button>
+      <button class="action-btn btn-rose" id="btn-fast-forward-12h">
+        <span>🔥</span> Bốc Khói > 12h (Cần Cứu Gấp!)
+      </button>
+      <button class="action-btn btn-emerald" id="btn-auto-dispatch">
+        <span>🔀</span> Điều Phối Khách Vào Bàn Trống
+      </button>
+      <button class="action-btn" id="btn-reset-scene" style="color: #64748b;">
+        <span>🔄</span> Reset
+      </button>
+    </footer>
+  </div>
+
+  <!-- IN-SCENE LIVE CHAT MODAL (DIRECT GAMIFICATION) -->
+  <div class="live-chat-dock interactive" id="live-chat-dock">
+    <div class="chat-dock-header">
+      <div class="chat-header-info">
+        <h4 id="chat-customer-name">Anh Trần Hùng (Zalo)</h4>
+        <p id="chat-customer-tour">Quan tâm: Tour Ladakh Mùa Thu 9N8Đ</p>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button class="locate-btn" id="btn-locate-station" title="Định vị camera lại vị trí bàn này (nếu muốn)">🎯 Định vị</button>
+        <button class="close-chat-btn" id="btn-close-chat">✕</button>
+      </div>
+    </div>
+
+    <div class="sla-rescue-banner" id="chat-sla-banner">
+      <span id="chat-sla-status">⚠️ Khách chờ 2.5 giờ chưa có ai nhắn tin!</span>
+      <span style="font-size: 11px; text-decoration: underline;">Nhắn tin để cứu SLA ➔</span>
+    </div>
+
+    <!-- Interactive Live Dispatch Action Bar -->
+    <div class="dispatch-action-bar" id="chat-dispatch-bar">
+      <div class="dispatch-bar-label">
+        <span>📍 Vị trí hiện tại: <strong id="chat-station-label">Sảnh Chờ Lounge</strong></span>
+      </div>
+      <div class="dispatch-bu-buttons">
+        <span style="font-size: 11px; font-weight: 700; color: #64748b;">Điều phối sang:</span>
+        <button class="dispatch-chip" data-bu="bu1">🏔️ BU1</button>
+        <button class="dispatch-chip" data-bu="bu2">🐎 BU2</button>
+        <button class="dispatch-chip" data-bu="bu3">🕌 BU3</button>
+        <button class="dispatch-chip" data-bu="bu4">⛩️ BU4</button>
+        <button class="dispatch-chip" data-bu="bu5">🦁 BU5</button>
+      </div>
+    </div>
+
+    <div class="chat-dock-body" id="chat-history-container">
+      <!-- Dynamic chat bubbles will appear here -->
+    </div>
+
+    <!-- Quick Reply Chips -->
+    <div class="quick-chips-wrapper">
+      <button class="quick-chip" data-reply="Dạ em chào anh ạ! Em gửi anh lịch trình chi tiết và bảng giá ngay đây ạ!">📋 Gửi lịch trình & giá</button>
+      <button class="quick-chip" data-reply="Dạ tour này bên em đang có ưu đãi giảm 1.5 triệu đăng ký sớm đó anh!">🎁 Báo ưu đãi 1.5M</button>
+      <button class="quick-chip" data-reply="Dạ đợt khởi hành này bên em chỉ còn đúng 3 suất cuối cùng thôi ạ!">⚡ Báo còn 3 suất cuối</button>
+      <button class="quick-chip" data-reply="Dạ anh kiểm tra Zalo em vừa kết bạn để tư vấn thủ tục visa nhé ạ!">📲 Nhắn qua Zalo</button>
+    </div>
+
+    <!-- Live Input Bar -->
+    <div class="chat-dock-footer">
+      <input type="text" class="chat-input" id="chat-text-input" placeholder="Nhập câu trả lời trực tiếp cho khách..." autocomplete="off">
+      <button class="send-btn" id="btn-send-message">
+        <span>Gửi</span> 💬
+      </button>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+    // -----------------------------------------------------------------
+    // 1. DATA CONFIGURATION & REALISTIC CAMPUS MASTERPLAN (120 x 85 UNITS)
+    // -----------------------------------------------------------------
+    const BU_DATA = {
+      bu1: { 
+        id: 'bu1', 
+        name: 'PHÒNG KINH DOANH BU1 — LADAKH & NAM Á', 
+        shortName: 'BU1 - LADAKH',
+        color: 0x1d4ed8, 
+        lightColor: 0xdbeafe, 
+        pos: [-40, 0, -22], 
+        roomWidth: 24,
+        roomDepth: 18,
+        doorSide: 'south',
+        consultants: ['Thu Thảo', 'Văn Nam'], 
+        desks: [
+          { x: -5.0, z: -2.0, sale: 'Thu Thảo' },
+          { x: 5.0, z: 2.0, sale: 'Văn Nam' }
+        ]
+      },
+      bu2: { 
+        id: 'bu2', 
+        name: 'PHÒNG KINH DOANH BU2 — MÔNG CỔ & TRUNG Á', 
+        shortName: 'BU2 - MÔNG CỔ',
+        color: 0xc2410c, 
+        lightColor: 0xffedd5, 
+        pos: [-40, 0, 20], 
+        roomWidth: 24,
+        roomDepth: 18,
+        doorSide: 'north',
+        consultants: ['Minh Hoàng', 'Ánh Tuyết'], 
+        desks: [
+          { x: -5.0, z: -2.0, sale: 'Minh Hoàng' },
+          { x: 5.0, z: 2.0, sale: 'Ánh Tuyết' }
+        ]
+      },
+      bu3: { 
+        id: 'bu3', 
+        name: 'PHÒNG KINH DOANH BU3 — THỔ NHĨ KỲ & CHÂU ÂU', 
+        shortName: 'BU3 - THỔ NHĨ KỲ',
+        color: 0x7e22ce, 
+        lightColor: 0xf3e8ff, 
+        pos: [40, 0, -22], 
+        roomWidth: 24,
+        roomDepth: 18,
+        doorSide: 'south',
+        consultants: ['Thanh Vân', 'Quốc Bảo'], 
+        desks: [
+          { x: -5.0, z: -2.0, sale: 'Thanh Vân' },
+          { x: 5.0, z: 2.0, sale: 'Quốc Bảo' }
+        ]
+      },
+      bu4: { 
+        id: 'bu4', 
+        name: 'PHÒNG KINH DOANH BU4 — ĐÔNG BẮC Á (NHẬT - HÀN)', 
+        shortName: 'BU4 - ĐÔNG BẮC Á',
+        color: 0x047857, 
+        lightColor: 0xd1fae5, 
+        pos: [20, 0, 20], 
+        roomWidth: 20,
+        roomDepth: 18,
+        doorSide: 'north',
+        consultants: ['Tuấn Khang', 'Hồng Ngọc'], 
+        desks: [
+          { x: -4.0, z: -2.0, sale: 'Tuấn Khang' },
+          { x: 4.0, z: 2.0, sale: 'Hồng Ngọc' }
+        ]
+      },
+      bu5: { 
+        id: 'bu5', 
+        name: 'PHÒNG KINH DOANH BU5 — KHÁM PHÁ & ĐỘC LẠ NAM MỸ', 
+        shortName: 'BU5 - ĐỘC LẠ',
+        color: 0xb45309, 
+        lightColor: 0xfef3c7, 
+        pos: [44, 0, 20], 
+        roomWidth: 20,
+        roomDepth: 18,
+        doorSide: 'north',
+        consultants: ['Hương Ly', 'Đức Duy'], 
+        desks: [
+          { x: -4.0, z: -2.0, sale: 'Hương Ly' },
+          { x: 4.0, z: 2.0, sale: 'Đức Duy' }
+        ]
+      }
+    };
+
+    const DEMO_CUSTOMERS_DATA = [
+      // BU1 Room (Spacious West Wing North)
+      { 
+        id: 'c1', 
+        name: 'Anh Trần Hùng', 
+        channel: 'zalo', 
+        tour: '🏔️ Ladakh Mùa Thu 9N8Đ', 
+        slaHours: 0.3, 
+        mood: 'normal', 
+        state: 'consulting', 
+        buId: 'bu1', 
+        consultant: 'Thu Thảo', 
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 10:18',
+        latestChat: 'Em gửi anh lịch trình chi tiết đoàn 4 người nhé!', 
+        pos: [-45.0, 0, -21.0], // Across Desk 1
+        chats: [
+          { from: 'customer', text: 'Chào em, mình quan tâm tour Ladakh tháng 9.', time: '10:15' },
+          { from: 'sale', text: 'Dạ em chào anh Hùng ạ, bên em đang có đợt khởi hành 15/9 đẹp nhất mùa thu.', time: '10:16' },
+          { from: 'customer', text: 'Em gửi anh lịch trình chi tiết đoàn 4 người nhé!', time: '10:18' }
+        ] 
+      },
+      { 
+        id: 'c2', 
+        name: 'Chị Lan Hương', 
+        channel: 'fb', 
+        tour: '🏔️ Kashmir Mùa Tuyết', 
+        slaHours: 0.7, 
+        mood: 'normal', 
+        state: 'consulting', 
+        buId: 'bu1', 
+        consultant: 'Văn Nam', 
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 09:45',
+        latestChat: 'Tour tháng 10 này thời tiết thế nào vậy em?', 
+        pos: [-35.0, 0, -17.0], // Across Desk 2
+        chats: [
+          { from: 'customer', text: 'Chào shop, Kashmir đi mùa nào đẹp nhất?', time: '09:40' },
+          { from: 'sale', text: 'Dạ mùa thu tháng 10 lá phong đỏ rực và tuyết bắt đầu rơi rất lãng mạn ạ.', time: '09:42' },
+          { from: 'customer', text: 'Tour tháng 10 này thời tiết thế nào vậy em?', time: '09:45' }
+        ] 
+      },
+      
+      // BU2 Room (Spacious West Wing South)
+      { 
+        id: 'c3', 
+        name: 'Chú Đức Thịnh', 
+        channel: 'zalo', 
+        tour: '🐎 Mông Cổ Cưỡi Ngựa', 
+        slaHours: 18.5, 
+        mood: 'frustrated', 
+        state: 'consulting', 
+        buId: 'bu2', 
+        consultant: 'Minh Hoàng', 
+        timeCategory: 'yesterday',
+        receivedTime: 'Hôm qua 16:30',
+        latestChat: 'Tháng 8 này đi có lạnh lắm không em ơi?', 
+        pos: [-45.0, 0, 21.0], 
+        chats: [
+          { from: 'customer', text: 'Chú muốn hỏi tour Mông Cổ ngủ lều Yurt.', time: 'Hôm qua 16:20' },
+          { from: 'sale', text: 'Dạ chào chú Thịnh, tour bên em có trải nghiệm ngủ lều truyền thống 5 sao.', time: 'Hôm qua 16:25' },
+          { from: 'customer', text: 'Tháng 8 này đi có lạnh lắm không em ơi?', time: 'Hôm qua 16:30' }
+        ] 
+      },
+      { 
+        id: 'c4', 
+        name: 'Chị Hà My', 
+        channel: 'fb', 
+        tour: '🐎 Con Đường Tơ Lụa', 
+        slaHours: 0.4, 
+        mood: 'normal', 
+        state: 'consulting', 
+        buId: 'bu2', 
+        consultant: 'Ánh Tuyết', 
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 10:05',
+        latestChat: 'Visa Uzbekistan cần chuẩn bị trước bao lâu?', 
+        pos: [-35.0, 0, 25.0], 
+        chats: [
+          { from: 'customer', text: 'Visa Uzbekistan cần chuẩn bị trước bao lâu?', time: '10:05' }
+        ] 
+      },
+      
+      // BU3 Room (Spacious East Wing North)
+      { 
+        id: 'c5', 
+        name: 'Bác Quang Dũng', 
+        channel: 'web', 
+        tour: '🕌 Thổ Nhĩ Kỳ Khí Cầu', 
+        slaHours: 20.0, 
+        mood: 'impatient', 
+        state: 'consulting', 
+        buId: 'bu3', 
+        consultant: 'Thanh Vân', 
+        timeCategory: 'yesterday',
+        receivedTime: 'Hôm qua 14:15',
+        latestChat: 'Bên mình có bay thẳng Turkish Airlines không?', 
+        pos: [35.0, 0, -21.0], 
+        chats: [
+          { from: 'customer', text: 'Bên mình có bay thẳng Turkish Airlines không?', time: 'Hôm qua 14:15' }
+        ] 
+      },
+      { 
+        id: 'c6', 
+        name: 'Cô Cẩm Tú', 
+        channel: 'zalo', 
+        tour: '🕌 Hy Lạp & Thổ Nhĩ Kỳ', 
+        slaHours: 52.0, 
+        mood: 'normal', 
+        state: 'consulting', 
+        buId: 'bu3', 
+        consultant: 'Quốc Bảo', 
+        timeCategory: 'this_week',
+        receivedTime: 'Thứ Ba 09:30',
+        latestChat: 'Chị muốn phòng đơn khách sạn 5 sao nhé em.', 
+        pos: [45.0, 0, -17.0], 
+        chats: [
+          { from: 'customer', text: 'Chị muốn phòng đơn khách sạn 5 sao nhé em.', time: 'Thứ Ba 09:30' }
+        ] 
+      },
+      
+      // BU4 Room (East Wing South)
+      { 
+        id: 'c7', 
+        name: 'Anh Vũ Phong', 
+        channel: 'fb', 
+        tour: '⛩️ Nhật Bản Cung Đường Vàng', 
+        slaHours: 0.2, 
+        mood: 'normal', 
+        state: 'consulting', 
+        buId: 'bu4', 
+        consultant: 'Tuấn Khang', 
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 10:20',
+        latestChat: 'Thủ tục visa Nhật cho gia đình gồm những gì?', 
+        pos: [16.0, 0, 21.0], 
+        chats: [
+          { from: 'customer', text: 'Thủ tục visa Nhật cho gia đình gồm những gì?', time: '10:20' }
+        ] 
+      },
+      { 
+        id: 'c8', 
+        name: 'Chị Thanh Nhàn', 
+        channel: 'zalo', 
+        tour: '⛩️ Hàn Quốc Mùa Thu', 
+        slaHours: 17.2, 
+        mood: 'impatient', 
+        state: 'consulting', 
+        buId: 'bu4', 
+        consultant: 'Hồng Ngọc', 
+        timeCategory: 'yesterday',
+        receivedTime: 'Hôm qua 17:00',
+        latestChat: 'Tour ngắm lá đỏ Seoul bay giờ nào vậy em?', 
+        pos: [24.0, 0, 25.0], 
+        chats: [
+          { from: 'customer', text: 'Tour ngắm lá đỏ Seoul bay giờ nào vậy em?', time: 'Hôm qua 17:00' }
+        ] 
+      },
+      
+      // BU5 Room (Far East Wing South)
+      { 
+        id: 'c9', 
+        name: 'Chị Bích Ngọc', 
+        channel: 'web', 
+        tour: '🦁 Patagonia Nam Mỹ', 
+        slaHours: 4.8, 
+        mood: 'critical', 
+        state: 'consulting', 
+        buId: 'bu5', 
+        consultant: 'Hương Ly', 
+        timeCategory: 'this_week',
+        receivedTime: '2 ngày trước',
+        latestChat: 'Sao nhắn 4 tiếng rồi chưa có ai báo giá tour?', 
+        pos: [40.0, 0, 21.0], 
+        chats: [
+          { from: 'customer', text: 'Cho mình xin lịch trình Patagonia', time: '05:30' },
+          { from: 'customer', text: 'Sao nhắn 4 tiếng rồi chưa có ai báo giá tour?', time: '09:40' }
+        ] 
+      },
+      { 
+        id: 'c10', 
+        name: 'Anh Trọng Nhân', 
+        channel: 'zalo', 
+        tour: '🦁 Safari Kenya Hoang Dã', 
+        slaHours: 0.4, 
+        mood: 'normal', 
+        state: 'consulting', 
+        buId: 'bu5', 
+        consultant: 'Đức Duy', 
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 10:00',
+        latestChat: 'Tháng 7 xem linh dương đầu bò vượt sông được ko?', 
+        pos: [48.0, 0, 25.0], 
+        chats: [
+          { from: 'customer', text: 'Tháng 7 xem linh dương đầu bò vượt sông được ko?', time: '10:00' }
+        ] 
+      },
+
+      // Lounge Cafe & Reception Area (Extra multi-day guests)
+      {
+        id: 'c11',
+        name: 'Chị Mai Phương',
+        channel: 'web',
+        tour: '❄️ Bắc Âu & Cực Quang',
+        slaHours: 1.8,
+        mood: 'impatient',
+        state: 'waiting',
+        buId: 'bu5',
+        consultant: 'Hương Ly',
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 08:30',
+        latestChat: 'Bên mình có tour săn Bắc Âu tháng 11 không em?',
+        pos: [-6.0, 0, -1.0], // Cafe Sofa Left
+        chats: [
+          { from: 'customer', text: 'Bên mình có tour săn Bắc Âu tháng 11 không em?', time: '08:30' }
+        ]
+      },
+      {
+        id: 'c12',
+        name: 'Bác Hoàng Tuấn',
+        channel: 'zalo',
+        tour: '🏔️ Bhutan Hạnh Phúc',
+        slaHours: 23.0,
+        mood: 'critical',
+        state: 'waiting',
+        buId: 'bu1',
+        consultant: 'Thu Thảo',
+        timeCategory: 'yesterday',
+        receivedTime: 'Hôm qua 11:20',
+        latestChat: 'Hôm qua anh hỏi tour Bhutan sao chưa gửi bảng phí visa?',
+        pos: [6.0, 0, -1.0], // Cafe Sofa Right
+        chats: [
+          { from: 'customer', text: 'Hôm qua anh hỏi tour Bhutan sao chưa gửi bảng phí visa?', time: 'Hôm qua 11:20' }
+        ]
+      },
+      {
+        id: 'c13',
+        name: 'Anh Đình Trọng',
+        channel: 'fb',
+        tour: '🕌 Ai Cập Kim Tự Tháp',
+        slaHours: 52.0,
+        mood: 'frustrated',
+        state: 'waiting',
+        buId: 'bu3',
+        consultant: 'Quốc Bảo',
+        timeCategory: 'this_week',
+        receivedTime: 'Thứ Hai 15:40',
+        latestChat: 'Anh vừa ghé cty xin brochure tour Ai Cập tháng 12',
+        pos: [6.0, 0, 22.0], // Reception Lounge Right
+        chats: [
+          { from: 'customer', text: 'Anh vừa ghé cty xin brochure tour Ai Cập tháng 12', time: 'Thứ Hai 15:40' }
+        ]
+      },
+      {
+        id: 'c14',
+        name: 'Chị Thảo Nguyên',
+        channel: 'zalo',
+        tour: '🐎 Tân Cương Mùa Vàng',
+        slaHours: 42.0,
+        mood: 'normal',
+        state: 'waiting',
+        buId: 'bu2',
+        consultant: 'Ánh Tuyết',
+        timeCategory: 'this_week',
+        receivedTime: '3 ngày trước',
+        latestChat: 'Lịch trình Tân Cương bay từ Hà Nội hay Sài Gòn em?',
+        pos: [-6.0, 0, 22.0], // Reception Lounge Left
+        chats: [
+          { from: 'customer', text: 'Lịch trình Tân Cương bay từ Hà Nội hay Sài Gòn em?', time: '3 ngày trước' }
+        ]
+      }
+    ];
+
+    // DỮ LIỆU THẬT TRÍCH XUẤT TỪ HỆ THỐNG POSTGRESQL CRM FIT TOUR (leads, tour_templates, users, conversations)
+    const REAL_CUSTOMERS_DATA = [
+      // BU1 Room (Spacious West Wing North - Tuyến Trung Quốc & Đông Á)
+      { 
+        id: 'real-c1', 
+        name: 'Trinh Phan', 
+        channel: 'fb', 
+        tour: '🏛️ Thiểm Tây - Cam Túc - Thanh Hải 9N8Đ', 
+        slaHours: 0.2, 
+        mood: 'normal', 
+        state: 'consulting', 
+        buId: 'bu1', 
+        consultant: 'Thu Thảo', 
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 10:31',
+        latestChat: 'Em có tour hàn no shopping đầu tháng 10 này không em?', 
+        pos: [-45.0, 0, -21.0], // Bàn 1 BU1 (Đối diện Thu Thảo)
+        chats: [
+          { from: 'customer', text: 'Em có tour hàn no shopping đầu thang 10nnày khong em', time: '10:31' },
+          { from: 'sale', text: 'Dạ chị Trinh ơi, FIT TOUR áp dụng tiêu chí No Shopping - No Optional Tour xuyên suốt ạ! Em gửi chị lịch trình chi tiết nhé.', time: '10:33' },
+          { from: 'customer', text: 'Chị đi 4 người lớn, tư vấn thêm phòng đơn giúp chị.', time: '10:35' }
+        ] 
+      },
+      { 
+        id: 'real-c2', 
+        name: 'Lê Thanh Thúy', 
+        channel: 'fb', 
+        tour: '🏔️ Tour Giang Nam 5N5Đ - No Shopping', 
+        slaHours: 0.6, 
+        mood: 'normal', 
+        state: 'consulting', 
+        buId: 'bu1', 
+        consultant: 'Văn Nam', 
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 09:45',
+        latestChat: '0912622489 - Em ơi cho chị xem ct này và giá gia đình', 
+        pos: [-35.0, 0, -17.0], // Bàn 2 BU1 (Đối diện Văn Nam)
+        chats: [
+          { from: 'customer', text: '0912622489 - Em ơi cho chị xem ct này', time: '09:40' },
+          { from: 'sale', text: 'Dạ em chào chị Thúy, Giang Nam 5N5Đ bên em đang có ưu đãi bay Vietnam Airlines ạ.', time: '09:42' },
+          { from: 'customer', text: 'Em ơi cho chị xem ct này và giá gia đình 4 khách', time: '09:45' }
+        ] 
+      },
+
+      // BU2 Room (Spacious West Wing South - Tuyến Trung Á & Mông Cổ)
+      { 
+        id: 'real-c3', 
+        name: 'Quý Lân', 
+        channel: 'zalo', 
+        tour: '🐎 Con Đường Tơ Lụa Trung Á: Kazakhstan - Uzbekistan 13N', 
+        slaHours: 1.2, 
+        mood: 'normal', 
+        state: 'consulting', 
+        buId: 'bu2', 
+        consultant: 'Minh Hoàng', 
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 10:03',
+        latestChat: '0935194779 - em cần tư vấn tour đi kazakhstan cuối năm ạ', 
+        pos: [-45.0, 0, 21.0], // Bàn 1 BU2 (Đối diện Minh Hoàng)
+        chats: [
+          { from: 'customer', text: '0935194779 - em cần tư vấn tour đi kazakhstan cuối năm ạ', time: '10:03' },
+          { from: 'sale', text: 'Chào Anh Lân, em là Minh Hoàng tư vấn viên chuyên tuyến Trung Á của FIT TOUR ạ.', time: '10:05' },
+          { from: 'customer', text: 'Tháng 11 này bên em còn chỗ bay Almaty không em ơi?', time: '10:08' }
+        ] 
+      },
+      { 
+        id: 'real-c4', 
+        name: 'Dao Thu Thuy', 
+        channel: 'fb', 
+        tour: '🐎 Tour Con Đường Tơ Lụa & Thảo Nguyên 12N', 
+        slaHours: 18.5, 
+        mood: 'impatient', 
+        state: 'consulting', 
+        buId: 'bu2', 
+        consultant: 'Ánh Tuyết', 
+        timeCategory: 'yesterday',
+        receivedTime: 'Hôm qua 16:30',
+        latestChat: 'Mình xin thông tin tour mùa thu khoảng 6N5Đ tháng 11 với', 
+        pos: [-35.0, 0, 25.0], // Bàn 2 BU2 (Đối diện Ánh Tuyết)
+        chats: [
+          { from: 'customer', text: 'Mình xin thông tin tour mùa thu khoảng 6N5Đ tháng 11 với', time: 'Hôm qua 16:30' },
+          { from: 'sale', text: 'Dạ chị Thuy, em cảm ơn chị đã quan tâm tour Trung Á của FIT TOUR ạ.', time: 'Hôm qua 16:45' },
+          { from: 'customer', text: 'Visa cần chuẩn bị trước bao lâu vậy em?', time: 'Hôm qua 17:10' }
+        ] 
+      },
+
+      // BU3 Room (Spacious East Wing North - Tuyến MICE Doanh Nghiệp, Châu Âu & Thổ Nhĩ Kỳ)
+      { 
+        id: 'real-c5', 
+        name: 'Hien Tran', 
+        channel: 'zalo', 
+        tour: '🏢 Tour MICE Doanh Nghiệp - No Shopping', 
+        slaHours: 20.0, 
+        mood: 'impatient', 
+        state: 'consulting', 
+        buId: 'bu3', 
+        consultant: 'Thanh Vân', 
+        timeCategory: 'yesterday',
+        receivedTime: 'Hôm qua 14:15',
+        latestChat: '0817637637 - Bên mình có bay thẳng và xuất hoá đơn VAT công ty không?', 
+        pos: [35.0, 0, -21.0], // Bàn 1 BU3 (Đối diện Thanh Vân)
+        chats: [
+          { from: 'customer', text: '0817637637 - Bên mình có bay thẳng và xuất hoá đơn VAT công ty không?', time: 'Hôm qua 14:15' },
+          { from: 'sale', text: 'Cảm ơn chị Hiền ạ. FIT TOUR cung cấp hợp đồng MICE và xuất hoá đơn VAT đầy đủ theo quy định doanh nghiệp ạ.', time: 'Hôm qua 14:25' }
+        ] 
+      },
+      { 
+        id: 'real-c6', 
+        name: 'Nhinn Vo (Chị Nhiên)', 
+        channel: 'web', 
+        tour: '🏢 Tour Đoàn Doanh Nghiệp 50 Khách - Thiết Kế Riêng', 
+        slaHours: 48.0, 
+        mood: 'frustrated', 
+        state: 'consulting', 
+        buId: 'bu3', 
+        consultant: 'Quốc Bảo', 
+        timeCategory: 'this_week',
+        receivedTime: '3 ngày trước',
+        latestChat: '0778625768 - Cần tour riêng cty 50 người no shopping bay từ HCM', 
+        pos: [45.0, 0, -17.0], // Bàn 2 BU3 (Đối diện Quốc Bảo)
+        chats: [
+          { from: 'customer', text: 'Nhiên - 0778625768. Mình cần tư vấn tour trung quốc cho công ty 50 người, no shop, bay thẳng từ HCM, dự kiến 5N4Đ.', time: '3 ngày trước 09:15' },
+          { from: 'sale', text: 'Dạ chào chị Nhiên, bên em đã lên phương án vé máy bay đoàn 50 khách và gửi vào email công ty chị rồi ạ.', time: '3 ngày trước 10:00' }
+        ] 
+      },
+
+      // BU4 Room (East Wing South - Tuyến Nam Á & Đông Bắc Á)
+      { 
+        id: 'real-c7', 
+        name: 'ThaiBinh Le', 
+        channel: 'fb', 
+        tour: '⛩️ Tour du lịch Ladakh 8N7Đ – Roadtrip Khám Phá', 
+        slaHours: 0.3, 
+        mood: 'normal', 
+        state: 'consulting', 
+        buId: 'bu4', 
+        consultant: 'Tuấn Khang', 
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 10:20',
+        latestChat: 'Thủ tục visa Ấn Độ và giấy phép nội địa Inner Line Permit cần gì em?', 
+        pos: [16.0, 0, 21.0], // Bàn 1 BU4 (Đối diện Tuấn Khang)
+        chats: [
+          { from: 'customer', text: 'Thủ tục visa Ấn Độ và giấy phép nội địa Inner Line Permit cần gì em?', time: '10:20' },
+          { from: 'sale', text: 'Dạ anh Bình, FIT TOUR lo trọn gói permit đèo Khardung La 5.359m và xe chuyên dụng địa hình Himalaya ạ!', time: '10:22' }
+        ] 
+      },
+      { 
+        id: 'real-c8', 
+        name: 'Diệu Hà', 
+        channel: 'zalo', 
+        tour: '⛩️ Tour Bhutan 5N4Đ – Bay Thẳng Drukair', 
+        slaHours: 17.5, 
+        mood: 'impatient', 
+        state: 'consulting', 
+        buId: 'bu4', 
+        consultant: 'Hồng Ngọc', 
+        timeCategory: 'yesterday',
+        receivedTime: 'Hôm qua 17:00',
+        latestChat: 'Phí phát triển bền vững SDF Bhutan hiện tại đã giảm chưa em?', 
+        pos: [24.0, 0, 25.0], // Bàn 2 BU4 (Đối diện Hồng Ngọc)
+        chats: [
+          { from: 'customer', text: 'Phí phát triển bền vững SDF Bhutan hiện tại đã giảm chưa em?', time: 'Hôm qua 17:00' },
+          { from: 'sale', text: 'Dạ chị Diệu Hà ơi, phí SDF hiện đang ưu đãi 100 USD/đêm, FIT TOUR đã tính trọn gói không phát sinh bất kỳ khoản nào ạ.', time: 'Hôm qua 17:08' }
+        ] 
+      },
+
+      // BU5 Room (Far East Wing South - Khám Phá & Độc Lạ Nam Mỹ, Bắc Cực, Bắc Phi)
+      { 
+        id: 'real-c9', 
+        name: 'Anh Vũ', 
+        channel: 'fb', 
+        tour: '🦁 Nước Nga Vĩ Đại & Cực Quang Murmansk 9N8Đ', 
+        slaHours: 3.5, 
+        mood: 'critical', 
+        state: 'consulting', 
+        buId: 'bu5', 
+        consultant: 'Hương Ly', 
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 07:15',
+        latestChat: 'Cho tôi hỏi thông tin tour Murmansk và thời gian săn Bắc Cực Quang', 
+        pos: [40.0, 0, 21.0], // Bàn 1 BU5 (Đối diện Hương Ly)
+        chats: [
+          { from: 'customer', text: 'Cho tôi hỏi thông tin tour Murmansk và thời gian săn Bắc Cực Quang', time: '07:15' },
+          { from: 'sale', text: 'Dạ Fit gửi anh thông tin tour Nga, do file lịch trình khá nặng, anh cho Fit xin SDT/Zalo để tư vấn chi tiết hơn ạ.', time: '07:45' },
+          { from: 'customer', text: 'Sao lâu có người gọi lại quá vậy?', time: '10:30' }
+        ] 
+      },
+      { 
+        id: 'real-c10', 
+        name: 'Mai Hương', 
+        channel: 'zalo', 
+        tour: '🦁 Tour Ma Rốc - Viên Ngọc Bắc Phi & Sa Mạc Sahara 10N9Đ', 
+        slaHours: 0.4, 
+        mood: 'normal', 
+        state: 'consulting', 
+        buId: 'bu5', 
+        consultant: 'Đức Duy', 
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 10:00',
+        latestChat: '0934569599 - Em gửi chị lịch trình lều Sahara cao cấp nhé', 
+        pos: [48.0, 0, 25.0], // Bàn 2 BU5 (Đối diện Đức Duy)
+        chats: [
+          { from: 'customer', text: '0934569599 - Chị quan tâm tour Ma Rốc ngủ đêm sa mạc Sahara', time: '09:55' },
+          { from: 'sale', text: 'Dạ chào chị Mai Hương, FIT TOUR có trại lều Glamping 5 sao giữa đụn cát Merzouga cực kỳ sang trọng ạ.', time: '10:00' }
+        ] 
+      },
+
+      // Lounge Cafe & Reception Area (Khu Sảnh Chờ Tiếp Đón Khách Mới)
+      {
+        id: 'real-c11',
+        name: 'Mây',
+        channel: 'fb',
+        tour: '❄️ Tour Lệ Giang 6N5Đ - No Shopping',
+        slaHours: 1.8,
+        mood: 'impatient',
+        state: 'waiting',
+        buId: 'bu1',
+        consultant: 'Thu Thảo',
+        timeCategory: 'today',
+        receivedTime: 'Hôm nay 08:30',
+        latestChat: 'Em gửi lịch khởi hành Đạo Thành Á Đinh từ đầu HCM nhé',
+        pos: [-6.0, 0, -1.0], // Cafe Sofa Trái
+        chats: [
+          { from: 'customer', text: 'Cho mình hỏi tour Lệ Giang - Đạo Thành Á Đinh từ đầu HCM', time: '08:30' }
+        ]
+      },
+      {
+        id: 'real-c12',
+        name: 'Thuận Dung Nguyễn',
+        channel: 'zalo',
+        tour: '❄️ Nước Nga Vĩ Đại & Vòng Bắc Cực 10N9Đ',
+        slaHours: 23.5,
+        mood: 'critical',
+        state: 'waiting',
+        buId: 'bu5',
+        consultant: 'Hương Ly',
+        timeCategory: 'yesterday',
+        receivedTime: 'Hôm qua 11:20',
+        latestChat: '0989311889 - Hôm qua gửi bài báo Nga sao chưa ai gọi lại điện thoại?',
+        pos: [6.0, 0, -1.0], // Cafe Sofa Phải
+        chats: [
+          { from: 'customer', text: '0989311889 - Chị quan tâm tour Nga ngắm cực quang', time: 'Hôm qua 11:20' },
+          { from: 'customer', text: 'Hôm qua gửi link sao chưa ai gọi lại điện thoại tư vấn?', time: 'Hôm nay 08:30' }
+        ]
+      },
+      {
+        id: 'real-c13',
+        name: 'Tâm Bình Thường',
+        channel: 'fb',
+        tour: '⛩️ Tour Bhutan 5N4Đ Khởi Hành Từ Hà Nội',
+        slaHours: 52.0,
+        mood: 'frustrated',
+        state: 'waiting',
+        buId: 'bu4',
+        consultant: 'Tuấn Khang',
+        timeCategory: 'this_week',
+        receivedTime: 'Thứ Hai 15:40',
+        latestChat: 'Giá tour Bhutan khởi hành từ Hà Nội trọn gói là bao nhiêu?',
+        pos: [6.0, 0, 22.0], // Sảnh Tiếp Tân Phải
+        chats: [
+          { from: 'customer', text: 'Giá tour Bhutan khởi hành từ Hà Nội trọn gói là bao nhiêu?', time: 'Thứ Hai 15:40' }
+        ]
+      },
+      {
+        id: 'real-c14',
+        name: 'Tuyen Vu',
+        channel: 'zalo',
+        tour: '🐎 Tour Con Đường Tơ Lụa Trung Á',
+        slaHours: 42.0,
+        mood: 'normal',
+        state: 'waiting',
+        buId: 'bu2',
+        consultant: 'Ánh Tuyết',
+        timeCategory: 'this_week',
+        receivedTime: '3 ngày trước',
+        latestChat: '0393243313 - Báo giá giúp tôi hành trình Trung Á mùa thu',
+        pos: [-6.0, 0, 22.0], // Sảnh Tiếp Tân Trái
+        chats: [
+          { from: 'customer', text: '0393243313 - Báo giá giúp tôi hành trình Trung Á mùa thu', time: '3 ngày trước 14:00' }
+        ]
+      }
+    ];
+
+    let activeDataMode = 'real';
+    let realApiMetrics = null;
+    let realApiLatency = null;
+    let REAL_CUSTOMERS_FROM_API = [];
+    let customers = JSON.parse(JSON.stringify(REAL_CUSTOMERS_DATA));
+
+    let activeCustomerForChat = null;
+
+    // -----------------------------------------------------------------
+    // 2. THREE.JS SCENE SETUP (DAYLIGHT ARCHITECTURE)
+    // -----------------------------------------------------------------
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf1f5f9);
+    scene.fog = new THREE.FogExp2(0xf1f5f9, 0.009);
+
+    const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(75, 58, 75);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.getElementById('webgl-container').appendChild(renderer.domElement);
+
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0px';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    document.getElementById('css2d-container').appendChild(labelRenderer.domElement);
+
+    // -----------------------------------------------------------------
+    // 3. RTS ROAMING CAMERA & WASD CONTROLS (EXPANDED TO 160M BOUNDS)
+    // -----------------------------------------------------------------
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.maxPolarAngle = Math.PI / 2.18;
+    controls.minDistance = 4;
+    controls.maxDistance = 160;
+    controls.enablePan = true;
+    controls.screenSpacePanning = true;
+    controls.zoomToCursor = true;
+    controls.mouseButtons = {
+      LEFT: THREE.MOUSE.ROTATE,
+      MIDDLE: THREE.MOUSE.DOLLY,
+      RIGHT: THREE.MOUSE.PAN
+    };
+    controls.target.set(0, 0, 2);
+
+    const keysPressed = {};
+    window.addEventListener('keydown', (e) => { keysPressed[e.code] = true; });
+    window.addEventListener('keyup', (e) => { keysPressed[e.code] = false; });
+
+    // -----------------------------------------------------------------
+    // 4. ARCHITECTURAL DAYLIGHT & SHADOW LIGHTING
+    // -----------------------------------------------------------------
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xf1f5f9, 1.15);
+    scene.add(hemiLight);
+
+    const sunLight = new THREE.DirectionalLight(0xfff7ed, 1.45);
+    sunLight.position.set(45, 65, 35);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.camera.near = 0.5;
+    sunLight.shadow.camera.far = 160;
+    const d = 68;
+    sunLight.shadow.camera.left = -d;
+    sunLight.shadow.camera.right = d;
+    sunLight.shadow.camera.top = d;
+    sunLight.shadow.camera.bottom = -d;
+    sunLight.shadow.bias = -0.0004;
+    scene.add(sunLight);
+
+    const skyFill = new THREE.DirectionalLight(0xe0f2fe, 0.45);
+    skyFill.position.set(-35, 35, -35);
+    scene.add(skyFill);
+
+    // -----------------------------------------------------------------
+    // 5. ARCHITECTURAL MATERIAL PALETTE
+    // -----------------------------------------------------------------
+    const glassClearMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.28,
+      roughness: 0.06,
+      transmission: 0.9,
+      thickness: 0.4
+    });
+
+    const glassFrostedMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.65,
+      roughness: 0.45,
+      transmission: 0.55,
+      thickness: 0.4
+    });
+
+    const blackMullionMat = new THREE.MeshStandardMaterial({
+      color: 0x1e293b,
+      roughness: 0.35,
+      metalness: 0.5
+    });
+
+    const screenGlowMat = new THREE.MeshStandardMaterial({
+      color: 0x38bdf8,
+      emissive: 0x0284c7,
+      emissiveIntensity: 0.6,
+      roughness: 0.2
+    });
+
+    const darkChairMat = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      roughness: 0.5
+    });
+
+    const lightOakMat = new THREE.MeshStandardMaterial({
+      color: 0xfef3c7,
+      roughness: 0.35
+    });
+
+    const walnutMat = new THREE.MeshStandardMaterial({
+      color: 0x78350f,
+      roughness: 0.35
+    });
+
+    const acousticFabricMat = new THREE.MeshStandardMaterial({
+      color: 0x334155,
+      roughness: 0.9
+    });
+
+    // -----------------------------------------------------------------
+    // 6. FLOOR DECAL TYPOGRAPHY GENERATOR (ZERO OCCLUSION)
+    // -----------------------------------------------------------------
+    function createFloorDecal(title, subtitle, width, height, textColor = '#1e3a8a') {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = textColor;
+      ctx.font = '800 44px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.letterSpacing = '1px';
+      ctx.fillText(title, 512, 100);
+
+      if (subtitle) {
+        ctx.fillStyle = '#64748b';
+        ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText(subtitle, 512, 165);
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.anisotropy = 16;
+      const mat = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        opacity: 0.88,
+        depthWrite: false
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, height), mat);
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.y = 0.03;
+      return mesh;
+    }
+
+    // -----------------------------------------------------------------
+    // 7. REALISTIC CAMPUS MASTERPLAN (120 x 85 UNITS) & WIDE CORRIDORS
+    // -----------------------------------------------------------------
+    const campusGroup = new THREE.Group();
+    scene.add(campusGroup);
+
+    // Foundation Base Floor (120m x 85m)
+    const baseFloor = new THREE.Mesh(
+      new THREE.BoxGeometry(120, 0.4, 85),
+      new THREE.MeshStandardMaterial({ color: 0xedebe8, roughness: 0.6, metalness: 0.04 })
+    );
+    baseFloor.position.y = -0.2;
+    baseFloor.receiveShadow = true;
+    campusGroup.add(baseFloor);
+
+    // Architectural Subtle Grid
+    const campusGrid = new THREE.GridHelper(120, 60, 0xd4cebd, 0xe2ded4);
+    campusGrid.position.y = 0.01;
+    campusGroup.add(campusGrid);
+
+    // Grand Central Promenade (10m wide North-South Corridor)
+    const grandCorridor = new THREE.Mesh(
+      new THREE.BoxGeometry(10, 0.02, 85),
+      new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.22, metalness: 0.05 })
+    );
+    grandCorridor.position.set(0, 0.02, 0);
+    grandCorridor.receiveShadow = true;
+    campusGroup.add(grandCorridor);
+
+    // Cross Boulevard (8m wide East-West Corridor)
+    const crossCorridor = new THREE.Mesh(
+      new THREE.BoxGeometry(120, 0.02, 8),
+      new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.22, metalness: 0.05 })
+    );
+    crossCorridor.position.set(0, 0.02, 0);
+    crossCorridor.receiveShadow = true;
+    campusGroup.add(crossCorridor);
+
+    // Architectural Perimeter Glass Envelope (Building Curtain Walls)
+    const exteriorGlassWallN = new THREE.Mesh(new THREE.BoxGeometry(120, 5, 0.3), glassClearMat);
+    exteriorGlassWallN.position.set(0, 2.5, -42.5);
+    campusGroup.add(exteriorGlassWallN);
+
+    const exteriorGlassWallS = new THREE.Mesh(new THREE.BoxGeometry(120, 5, 0.3), glassClearMat);
+    exteriorGlassWallS.position.set(0, 2.5, 42.5);
+    campusGroup.add(exteriorGlassWallS);
+
+    const exteriorGlassWallW = new THREE.Mesh(new THREE.BoxGeometry(0.3, 5, 85), glassClearMat);
+    exteriorGlassWallW.position.set(-60, 2.5, 0);
+    campusGroup.add(exteriorGlassWallW);
+
+    const exteriorGlassWallE = new THREE.Mesh(new THREE.BoxGeometry(0.3, 5, 85), glassClearMat);
+    exteriorGlassWallE.position.set(60, 2.5, 0);
+    campusGroup.add(exteriorGlassWallE);
+
+    // -----------------------------------------------------------------
+    // 8. TROPICAL INDOOR PLANTERS & GREENERY
+    // -----------------------------------------------------------------
+    function createIndoorPlanter(x, z, length = 3.6, width = 1.0) {
+      const planterGroup = new THREE.Group();
+      planterGroup.position.set(x, 0, z);
+
+      // Terrazzo Box
+      const box = new THREE.Mesh(
+        new THREE.BoxGeometry(length, 0.65, width),
+        new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4 })
+      );
+      box.position.y = 0.325;
+      box.castShadow = true;
+      box.receiveShadow = true;
+      planterGroup.add(box);
+
+      // Soil
+      const soil = new THREE.Mesh(
+        new THREE.BoxGeometry(length - 0.1, 0.05, width - 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x271c19, roughness: 0.9 })
+      );
+      soil.position.y = 0.64;
+      planterGroup.add(soil);
+
+      // Tropical Foliage (Ficus / Monstera clusters)
+      const plantLeavesMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.4 });
+      const foliageCount = Math.floor(length / 0.9);
+      for (let i = 0; i < foliageCount; i++) {
+        const px = -(length / 2) + 0.5 + i * 0.9;
+        const stem = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.04, 0.05, 0.8),
+          new THREE.MeshStandardMaterial({ color: 0x14532d })
+        );
+        stem.position.set(px, 0.8, 0);
+        planterGroup.add(stem);
+
+        const crown = new THREE.Mesh(
+          new THREE.SphereGeometry(0.45, 8, 8),
+          plantLeavesMat
+        );
+        crown.scale.set(1.2, 0.7, 1.2);
+        crown.position.set(px, 1.3, 0);
+        crown.castShadow = true;
+        planterGroup.add(crown);
+      }
+
+      return planterGroup;
+    }
+
+    // Place planters along the Central Promenade & Cross Boulevard
+    campusGroup.add(createIndoorPlanter(-5.8, -32, 4.0, 1.0));
+    campusGroup.add(createIndoorPlanter(5.8, -32, 4.0, 1.0));
+    campusGroup.add(createIndoorPlanter(-5.8, -14, 4.0, 1.0));
+    campusGroup.add(createIndoorPlanter(5.8, -14, 4.0, 1.0));
+    campusGroup.add(createIndoorPlanter(-5.8, 14, 4.0, 1.0));
+    campusGroup.add(createIndoorPlanter(5.8, 14, 4.0, 1.0));
+    campusGroup.add(createIndoorPlanter(-5.8, 32, 4.0, 1.0));
+    campusGroup.add(createIndoorPlanter(5.8, 32, 4.0, 1.0));
+
+    // -----------------------------------------------------------------
+    // 9. GRAND RECEPTION LOBBY (CENTER SOUTH: 22m x 16m)
+    // -----------------------------------------------------------------
+    function createReceptionLobby() {
+      const group = new THREE.Group();
+      group.position.set(0, 0, 26);
+
+      // Reception Floor Plate (Italian Calacatta Marble look)
+      const floorTile = new THREE.Mesh(
+        new THREE.BoxGeometry(22, 0.03, 16),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.18, metalness: 0.05 })
+      );
+      floorTile.position.y = 0.02;
+      floorTile.receiveShadow = true;
+      group.add(floorTile);
+
+      // Floor Decal
+      const recDecal = createFloorDecal('TIỀN SẢNH ĐÓN KHÁCH & ĐIỀU PHỐI DỊCH VỤ', 'FIT TOUR EXECUTIVE HEADQUARTERS • WELCOME', 16, 3.4, '#0f172a');
+      recDecal.position.set(0, 0.035, -5.5);
+      group.add(recDecal);
+
+      // Wood Batten Feature Accent Wall (Lam gỗ sồi)
+      const woodWall = new THREE.Mesh(
+        new THREE.BoxGeometry(16, 3.5, 0.3),
+        walnutMat
+      );
+      woodWall.position.set(0, 1.75, 7.8);
+      woodWall.castShadow = true;
+      group.add(woodWall);
+
+      // 3D Backlit FIT TOUR Logo Plate
+      const logoPlaque = new THREE.Mesh(
+        new THREE.BoxGeometry(6.5, 1.2, 0.15),
+        new THREE.MeshStandardMaterial({ color: 0x1e40af, roughness: 0.2, metalness: 0.6 })
+      );
+      logoPlaque.position.set(0, 2.5, 7.6);
+      group.add(logoPlaque);
+
+      // Curved Carrara Marble Reception Counter
+      const counterMesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(5.2, 5.2, 1.2, 32, 1, false, 0, Math.PI),
+        new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.15, metalness: 0.08 })
+      );
+      counterMesh.rotation.y = Math.PI;
+      counterMesh.position.set(0, 0.6, 3.8);
+      counterMesh.castShadow = true;
+      counterMesh.receiveShadow = true;
+      group.add(counterMesh);
+
+      // Gold Brass Counter Edge Trim
+      const brassTrim = new THREE.Mesh(
+        new THREE.CylinderGeometry(5.25, 5.25, 0.06, 32, 1, false, 0, Math.PI),
+        new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.25, metalness: 0.85 })
+      );
+      brassTrim.rotation.y = Math.PI;
+      brassTrim.position.set(0, 1.18, 3.8);
+      group.add(brassTrim);
+
+      // Waiting Lounge Armchairs & Coffee Table
+      function createArmchair(x, z, rotY) {
+        const chair = new THREE.Group();
+        chair.position.set(x, 0, z);
+        chair.rotation.y = rotY;
+
+        const seat = new THREE.Mesh(
+          new THREE.BoxGeometry(1.6, 0.35, 1.6),
+          new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.7 })
+        );
+        seat.position.y = 0.38;
+        seat.castShadow = true;
+        chair.add(seat);
+
+        const back = new THREE.Mesh(
+          new THREE.BoxGeometry(1.6, 0.8, 0.3),
+          new THREE.MeshStandardMaterial({ color: 0x0369a1, roughness: 0.7 })
+        );
+        back.position.set(0, 0.75, 0.65);
+        back.castShadow = true;
+        chair.add(back);
+
+        return chair;
+      }
+
+      group.add(createArmchair(-6.5, 0, Math.PI / 2));
+      group.add(createArmchair(-6.5, -3.5, Math.PI / 2));
+      group.add(createArmchair(6.5, 0, -Math.PI / 2));
+      group.add(createArmchair(6.5, -3.5, -Math.PI / 2));
+
+      // Glass Lounge Coffee Tables
+      const loungeTableL = new THREE.Mesh(
+        new THREE.CylinderGeometry(1.4, 1.4, 0.45, 24),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.15, metalness: 0.1 })
+      );
+      loungeTableL.position.set(-6.5, 0.225, -1.75);
+      loungeTableL.castShadow = true;
+      group.add(loungeTableL);
+
+      const loungeTableR = loungeTableL.clone();
+      loungeTableR.position.set(6.5, 0.225, -1.75);
+      group.add(loungeTableR);
+
+      return group;
+    }
+    campusGroup.add(createReceptionLobby());
+
+    // -----------------------------------------------------------------
+    // 10. CENTRAL CAFE, BARISTA & PANTRY ATRIUM (CENTER: 22m x 16m)
+    // -----------------------------------------------------------------
+    function createCafeHub() {
+      const group = new THREE.Group();
+      group.position.set(0, 0, 0);
+
+      // Warm Slate Floor Plate
+      const rug = new THREE.Mesh(
+        new THREE.BoxGeometry(22, 0.03, 16),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.85 })
+      );
+      rug.position.y = 0.02;
+      rug.receiveShadow = true;
+      group.add(rug);
+
+      // Floor Decal
+      const cafeDecal = createFloorDecal('☕ CAFE LOUNGE & EXECUTIVE PANTRY', 'KHU VỰC THƯ GIÃN, ĐÀM PHÁN & TÁM CHUYỆN KHÁCH', 16, 3.4, '#d97706');
+      cafeDecal.position.set(0, 0.035, 5.8);
+      group.add(cafeDecal);
+
+      // Barista Counter with Oak Top & Fluted Panel Base
+      const barCounter = new THREE.Mesh(
+        new THREE.BoxGeometry(11, 1.25, 2.0),
+        new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.4 })
+      );
+      barCounter.position.set(0, 0.625, -5.2);
+      barCounter.castShadow = true;
+      barCounter.receiveShadow = true;
+      group.add(barCounter);
+
+      const barTop = new THREE.Mesh(
+        new THREE.BoxGeometry(11.4, 0.1, 2.3),
+        lightOakMat
+      );
+      barTop.position.set(0, 1.3, -5.2);
+      barTop.castShadow = true;
+      group.add(barTop);
+
+      // Commercial Espresso Machine (Chrome Metal)
+      const espressoMachine = new THREE.Mesh(
+        new THREE.BoxGeometry(1.6, 0.7, 1.1),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.9, roughness: 0.15 })
+      );
+      espressoMachine.position.set(-2.5, 1.7, -5.2);
+      espressoMachine.castShadow = true;
+      group.add(espressoMachine);
+
+      // High Bar Stools
+      function createBarStool(x, z) {
+        const stool = new THREE.Group();
+        stool.position.set(x, 0, z);
+
+        const seat = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.4, 0.4, 0.12, 18),
+          new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.5 })
+        );
+        seat.position.y = 0.85;
+        seat.castShadow = true;
+        stool.add(seat);
+
+        const pole = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.04, 0.04, 0.8),
+          blackMullionMat
+        );
+        pole.position.y = 0.4;
+        stool.add(pole);
+
+        const base = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.35, 0.35, 0.03, 18),
+          blackMullionMat
+        );
+        base.position.y = 0.02;
+        stool.add(base);
+
+        return stool;
+      }
+
+      group.add(createBarStool(-3.5, -3.5));
+      group.add(createBarStool(-1.2, -3.5));
+      group.add(createBarStool(1.2, -3.5));
+      group.add(createBarStool(3.5, -3.5));
+
+      // Modular Sectional Lounge Sofas
+      function createSectionalSofa(x, z, rotY) {
+        const sofa = new THREE.Group();
+        sofa.position.set(x, 0, z);
+        sofa.rotation.y = rotY;
+
+        const seat = new THREE.Mesh(
+          new THREE.BoxGeometry(5.2, 0.55, 2.0),
+          new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 })
+        );
+        seat.position.y = 0.35;
+        seat.castShadow = true;
+        sofa.add(seat);
+
+        const back = new THREE.Mesh(
+          new THREE.BoxGeometry(5.2, 0.95, 0.45),
+          new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 })
+        );
+        back.position.set(0, 0.8, 0.8);
+        back.castShadow = true;
+        sofa.add(back);
+
+        return sofa;
+      }
+
+      group.add(createSectionalSofa(-6.2, 1.2, Math.PI / 2));
+      group.add(createSectionalSofa(6.2, 1.2, -Math.PI / 2));
+
+      // Central Coffee Table
+      const centerTable = new THREE.Mesh(
+        new THREE.CylinderGeometry(2.4, 2.4, 0.45, 28),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.15, metalness: 0.1 })
+      );
+      centerTable.position.set(0, 0.25, 1.2);
+      centerTable.castShadow = true;
+      group.add(centerTable);
+
+      return group;
+    }
+    campusGroup.add(createCafeHub());
+
+    // -----------------------------------------------------------------
+    // 11. CENTRAL EXECUTIVE GLASS BOARDROOM (CENTER NORTH: 20m x 16m)
+    // -----------------------------------------------------------------
+    function createBoardroom() {
+      const group = new THREE.Group();
+      group.position.set(0, 0, -26);
+
+      // Floor Tile (Executive Dark Carpet)
+      const floorTile = new THREE.Mesh(
+        new THREE.BoxGeometry(20, 0.03, 16),
+        new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.85 })
+      );
+      floorTile.position.y = 0.02;
+      floorTile.receiveShadow = true;
+      group.add(floorTile);
+
+      // Floor Decal
+      const roomDecal = createFloorDecal('PHÒNG HỌP KÍNH VIP — CHIẾN LƯỢC TOÀN CẦU', 'EXECUTIVE BOARDROOM • GLOBAL OPERATIONS', 16, 3.4, '#38bdf8');
+      roomDecal.position.set(0, 0.035, -5.8);
+      group.add(roomDecal);
+
+      // 4 Glass Perimeter Walls with Black Mullions & Frosted Privacy Band
+      function createGlassWallWithMullions(w, h, pos, rotY = 0) {
+        const wallGroup = new THREE.Group();
+        wallGroup.position.set(pos.x, pos.y, pos.z);
+        wallGroup.rotation.y = rotY;
+
+        // Base Curb
+        const curb = new THREE.Mesh(new THREE.BoxGeometry(w, 0.45, 0.12), blackMullionMat);
+        curb.position.y = 0.225;
+        wallGroup.add(curb);
+
+        // Clear Glass
+        const glass = new THREE.Mesh(new THREE.BoxGeometry(w, h - 0.55, 0.06), glassClearMat);
+        glass.position.y = (h + 0.35) / 2;
+        wallGroup.add(glass);
+
+        // Frosted Privacy Band (y = 1.15 to 1.7m)
+        const frost = new THREE.Mesh(new THREE.BoxGeometry(w, 0.55, 0.07), glassFrostedMat);
+        frost.position.y = 1.425;
+        wallGroup.add(frost);
+
+        // Top Rail
+        const topRail = new THREE.Mesh(new THREE.BoxGeometry(w, 0.1, 0.12), blackMullionMat);
+        topRail.position.y = h;
+        wallGroup.add(topRail);
+
+        // Vertical Mullions spaced every 3m
+        const mullionCount = Math.floor(w / 3);
+        for (let i = 0; i <= mullionCount; i++) {
+          const mx = -(w / 2) + i * (w / mullionCount);
+          const mullion = new THREE.Mesh(new THREE.BoxGeometry(0.08, h, 0.12), blackMullionMat);
+          mullion.position.set(mx, h / 2, 0);
+          wallGroup.add(mullion);
+        }
+
+        return wallGroup;
+      }
+
+      // North Wall
+      group.add(createGlassWallWithMullions(20, 3.2, { x: 0, y: 0, z: -8 }));
+      // West Wall
+      group.add(createGlassWallWithMullions(16, 3.2, { x: -10, y: 0, z: 0 }, Math.PI / 2));
+      // East Wall
+      group.add(createGlassWallWithMullions(16, 3.2, { x: 10, y: 0, z: 0 }, Math.PI / 2));
+      // South Wall with 3.5m Open Doorway
+      group.add(createGlassWallWithMullions(8.25, 3.2, { x: -5.875, y: 0, z: 8 }));
+      group.add(createGlassWallWithMullions(8.25, 3.2, { x: 5.875, y: 0, z: 8 }));
+
+      // Large Walnut Conference Table
+      const confTable = new THREE.Mesh(
+        new THREE.BoxGeometry(9.5, 0.12, 3.4),
+        walnutMat
+      );
+      confTable.position.set(0, 1.25, 0);
+      confTable.castShadow = true;
+      group.add(confTable);
+
+      const tableBaseL = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.2, 2.6), blackMullionMat);
+      tableBaseL.position.set(-3.5, 0.6, 0);
+      group.add(tableBaseL);
+
+      const tableBaseR = tableBaseL.clone();
+      tableBaseR.position.set(3.5, 0.6, 0);
+      group.add(tableBaseR);
+
+      // 8 Executive Leather Swivel Armchairs around table
+      function createBoardroomChair(x, z, rotY) {
+        const chair = new THREE.Group();
+        chair.position.set(x, 0, z);
+        chair.rotation.y = rotY;
+
+        const seat = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.15, 0.8), darkChairMat);
+        seat.position.y = 0.75;
+        seat.castShadow = true;
+        chair.add(seat);
+
+        const back = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.9, 0.15), darkChairMat);
+        back.position.set(0, 1.2, 0.35);
+        back.castShadow = true;
+        chair.add(back);
+
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.7), blackMullionMat);
+        pole.position.y = 0.35;
+        chair.add(pole);
+
+        const starBase = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.04, 5), blackMullionMat);
+        starBase.position.y = 0.04;
+        chair.add(starBase);
+
+        return chair;
+      }
+
+      for (let i = 0; i < 3; i++) {
+        const cx = -2.8 + i * 2.8;
+        group.add(createBoardroomChair(cx, -2.4, 0));
+        group.add(createBoardroomChair(cx, 2.4, Math.PI));
+      }
+      group.add(createBoardroomChair(-5.4, 0, Math.PI / 2));
+      group.add(createBoardroomChair(5.4, 0, -Math.PI / 2));
+
+      // Wall-mounted 85" Presentation Display
+      const wallScreen = new THREE.Mesh(
+        new THREE.BoxGeometry(6.2, 3.2, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x0284c7, emissive: 0x0369a1, emissiveIntensity: 0.5 })
+      );
+      wallScreen.position.set(0, 2.1, -7.8);
+      group.add(wallScreen);
+
+      return group;
+    }
+    campusGroup.add(createBoardroom());
+
+    // -----------------------------------------------------------------
+    // 12. STYLIZED CHIBI CHARACTER BUILDER (2.25X SCALE, HIGH VISIBILITY)
+    // -----------------------------------------------------------------
+    function createCharacterMesh({ isConsultant = false, shirtColor = 0x2563eb, skinTone = 0xffdfc4, hairColor = 0x1e293b }) {
+      const char = new THREE.Group();
+
+      // 1. Pedestal Ground Glow Disc (Under-feet grounding ring - eliminates ghost floating)
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: shirtColor,
+        transparent: true,
+        opacity: 0.65,
+        depthWrite: false
+      });
+      const pedestal = new THREE.Mesh(new THREE.RingGeometry(1.25, 1.85, 32), ringMat);
+      pedestal.rotation.x = -Math.PI / 2;
+      pedestal.position.y = 0.04;
+      char.add(pedestal);
+
+      // Inner subtle glow disc
+      const innerDiscMat = new THREE.MeshBasicMaterial({
+        color: shirtColor,
+        transparent: true,
+        opacity: 0.22,
+        depthWrite: false
+      });
+      const innerDisc = new THREE.Mesh(new THREE.CircleGeometry(1.25, 32), innerDiscMat);
+      innerDisc.rotation.x = -Math.PI / 2;
+      innerDisc.position.y = 0.035;
+      char.add(innerDisc);
+
+      // 2. Head (Large Stylized Chibi Sphere: r = 1.15m at y = 3.65m)
+      const head = new THREE.Mesh(
+        new THREE.SphereGeometry(1.15, 24, 24),
+        new THREE.MeshStandardMaterial({ color: skinTone, roughness: 0.55 })
+      );
+      head.position.y = 3.65;
+      head.castShadow = true;
+      char.add(head);
+
+      // Cute Stylized Eyes (Glossy Obsidian Spheres)
+      const eyeMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.1 });
+      const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 12), eyeMat);
+      eyeL.position.set(-0.42, 3.75, 1.05);
+      char.add(eyeL);
+
+      const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 12), eyeMat);
+      eyeR.position.set(0.42, 3.75, 1.05);
+      char.add(eyeR);
+
+      // Eye White Sparkle (Anime / Chibi style highlight)
+      const sparkleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const spL = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), sparkleMat);
+      spL.position.set(-0.38, 3.82, 1.15);
+      char.add(spL);
+      const spR = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), sparkleMat);
+      spR.position.set(0.46, 3.82, 1.15);
+      char.add(spR);
+
+      // 3. Hair (Lush Hair Cap: r = 1.22m)
+      const hair = new THREE.Mesh(
+        new THREE.SphereGeometry(1.22, 22, 22, 0, Math.PI * 2, 0, Math.PI / 1.7),
+        new THREE.MeshStandardMaterial({ color: hairColor, roughness: 0.85 })
+      );
+      hair.position.y = 3.85;
+      hair.castShadow = true;
+      char.add(hair);
+
+      // 4. Torso / Shirt / Suit Jacket
+      const torso = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.92, 1.15, 1.85, 20),
+        new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.45, metalness: 0.05 })
+      );
+      torso.position.y = 2.25;
+      torso.castShadow = true;
+      char.add(torso);
+
+      // White Shirt Collar Accent
+      const collar = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.65, 0.95, 0.35, 18),
+        new THREE.MeshStandardMaterial({ color: isConsultant ? 0xffffff : 0x334155, roughness: 0.6 })
+      );
+      collar.position.y = 3.0;
+      char.add(collar);
+
+      // 5. Lower body / Pants
+      const legs = new THREE.Mesh(
+        new THREE.BoxGeometry(1.3, 1.45, 1.0),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.75 })
+      );
+      legs.position.y = 0.85;
+      legs.castShadow = true;
+      char.add(legs);
+
+      // Left & Right Shoes
+      const shoeMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3 });
+      const shoeL = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.3, 0.9), shoeMat);
+      shoeL.position.set(-0.4, 0.16, 0.2);
+      char.add(shoeL);
+      const shoeR = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.3, 0.9), shoeMat);
+      shoeR.position.set(0.4, 0.16, 0.2);
+      char.add(shoeR);
+
+      // 6. ROLE-DISTINCT ACCESSORIES
+      if (isConsultant) {
+        // Sales Consultant: Headset with Mic Boom
+        const headsetMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.3, metalness: 0.6 });
+        const band = new THREE.Mesh(
+          new THREE.TorusGeometry(1.22, 0.08, 8, 24, Math.PI),
+          headsetMat
+        );
+        band.rotation.z = Math.PI;
+        band.position.set(0, 3.8, 0);
+        char.add(band);
+
+        const earL = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.22, 16), headsetMat);
+        earL.rotation.z = Math.PI / 2;
+        earL.position.set(-1.24, 3.75, 0);
+        char.add(earL);
+
+        const earR = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.22, 16), headsetMat);
+        earR.rotation.z = Math.PI / 2;
+        earR.position.set(1.24, 3.75, 0);
+        char.add(earR);
+
+        const micBoom = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.85), headsetMat);
+        micBoom.rotation.x = Math.PI / 3;
+        micBoom.rotation.z = -Math.PI / 4;
+        micBoom.position.set(-1.1, 3.5, 0.5);
+        char.add(micBoom);
+
+        const micTip = new THREE.Mesh(
+          new THREE.SphereGeometry(0.1, 10, 10),
+          new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xef4444, emissiveIntensity: 0.6 })
+        );
+        micTip.position.set(-0.75, 3.25, 0.85);
+        char.add(micTip);
+      } else {
+        // Customer: Travel Backpack (Balo Du Lịch) on back
+        const packMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.7 });
+        const backpack = new THREE.Mesh(new THREE.BoxGeometry(1.25, 1.45, 0.75), packMat);
+        backpack.position.set(0, 2.35, -0.95);
+        backpack.castShadow = true;
+        char.add(backpack);
+
+        const pouch = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.45, 0.65), packMat);
+        pouch.position.set(0, 2.85, -0.92);
+        char.add(pouch);
+      }
+
+      char.userData = {
+        baseY: 0,
+        bobSpeed: 1.4 + Math.random() * 0.6,
+        type: isConsultant ? 'consultant' : 'customer'
+      };
+
+      return char;
+    }
+
+    // -----------------------------------------------------------------
+    // 13. REALISTIC WORKSTATION (CANTILEVER DESK, DUAL MONITORS, MESH CHAIR)
+    // -----------------------------------------------------------------
+    function createRealisticWorkstation(deskCfg, bu) {
+      const deskGroup = new THREE.Group();
+      deskGroup.position.set(deskCfg.x, 0, deskCfg.z);
+
+      // Floor Interaction Aura Capsule
+      const auraGeo = new THREE.CylinderGeometry(2.4, 2.4, 0.02, 28);
+      const auraMat = new THREE.MeshBasicMaterial({
+        color: bu.color,
+        transparent: true,
+        opacity: 0.22,
+        depthWrite: false
+      });
+      const aura = new THREE.Mesh(auraGeo, auraMat);
+      aura.position.set(0, 0.02, 0);
+      deskGroup.add(aura);
+
+      // Executive Cantilever Table Top (Light Oak Finish)
+      const top = new THREE.Mesh(
+        new THREE.BoxGeometry(3.6, 0.08, 1.6),
+        lightOakMat
+      );
+      top.position.set(0, 1.25, 0);
+      top.castShadow = true;
+      top.receiveShadow = true;
+      deskGroup.add(top);
+
+      // Matte Black Metal Steel Legs
+      const legL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.21, 1.5), blackMullionMat);
+      legL.position.set(-1.72, 0.605, 0);
+      legL.castShadow = true;
+      deskGroup.add(legL);
+
+      const legR = legL.clone();
+      legR.position.set(1.72, 0.605, 0);
+      deskGroup.add(legR);
+
+      // Acoustic Fabric Modesty / Privacy Divider Screen
+      const acousticDivider = new THREE.Mesh(
+        new THREE.BoxGeometry(3.4, 0.5, 0.06),
+        acousticFabricMat
+      );
+      acousticDivider.position.set(0, 1.54, 0.05);
+      acousticDivider.castShadow = true;
+      deskGroup.add(acousticDivider);
+
+      // Under-desk Mobile 3-Drawer Pedestal (Hộc tủ di động)
+      const pedestal = new THREE.Mesh(
+        new THREE.BoxGeometry(0.75, 0.8, 1.1),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
+      );
+      pedestal.position.set(1.15, 0.42, 0);
+      pedestal.castShadow = true;
+      deskGroup.add(pedestal);
+
+      // Dual Ultra-Wide LED Monitors with Glowing CRM Dashboard Display
+      const monitorArm = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.45), blackMullionMat);
+      monitorArm.position.set(0, 1.48, -0.4);
+      deskGroup.add(monitorArm);
+
+      // Monitor 1 (Angled 10 deg)
+      const mon1 = new THREE.Group();
+      mon1.position.set(-0.6, 1.68, -0.35);
+      mon1.rotation.y = 0.16;
+
+      const bezel1 = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.62, 0.04), blackMullionMat);
+      mon1.add(bezel1);
+      const screen1 = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.58, 0.01), screenGlowMat);
+      screen1.position.z = 0.025;
+      mon1.add(screen1);
+      deskGroup.add(mon1);
+
+      // Monitor 2 (Angled -10 deg)
+      const mon2 = new THREE.Group();
+      mon2.position.set(0.6, 1.68, -0.35);
+      mon2.rotation.y = -0.16;
+
+      const bezel2 = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.62, 0.04), blackMullionMat);
+      mon2.add(bezel2);
+      const screen2 = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.58, 0.01), screenGlowMat);
+      screen2.position.z = 0.025;
+      mon2.add(screen2);
+      deskGroup.add(mon2);
+
+      // Mechanical Keyboard & Mousepad
+      const keyboard = new THREE.Mesh(
+        new THREE.BoxGeometry(0.75, 0.03, 0.25),
+        new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4 })
+      );
+      keyboard.position.set(0, 1.305, -0.15);
+      deskGroup.add(keyboard);
+
+      const mousePad = new THREE.Mesh(
+        new THREE.BoxGeometry(0.25, 0.01, 0.25),
+        new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.8 })
+      );
+      mousePad.position.set(0.65, 1.295, -0.15);
+      deskGroup.add(mousePad);
+
+      // Ergonomic Mesh Swivel Chair (for Consultant)
+      const chair = new THREE.Group();
+      chair.position.set(0, 0, -1.35);
+
+      const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.12, 0.75), darkChairMat);
+      chairSeat.position.y = 0.75;
+      chairSeat.castShadow = true;
+      chair.add(chairSeat);
+
+      const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.85, 0.1), darkChairMat);
+      chairBack.position.set(0, 1.2, -0.32);
+      chairBack.castShadow = true;
+      chair.add(chairBack);
+
+      const chairPole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.7), blackMullionMat);
+      chairPole.position.y = 0.35;
+      chair.add(chairPole);
+
+      const chairBase = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.04, 5), blackMullionMat);
+      chairBase.position.y = 0.04;
+      chair.add(chairBase);
+
+      deskGroup.add(chair);
+
+      // Seated Consultant Avatar
+      const consultantChar = createCharacterMesh({
+        isConsultant: true,
+        shirtColor: bu.color,
+        hairColor: 0x1e293b
+      });
+      consultantChar.position.set(0, 0.1, -1.35);
+      consultantChar.userData.consultantName = deskCfg.sale;
+      consultantChar.userData.buId = bu.id;
+      deskGroup.add(consultantChar);
+
+      return { deskGroup, aura, consultantChar };
+    }
+
+    // -----------------------------------------------------------------
+    // BIOPHILIC BOTANICAL ELEMENTS (Potted Office Plants)
+    // -----------------------------------------------------------------
+    function createPottedPlant(x, z, scale = 1.0) {
+      const plantGroup = new THREE.Group();
+      plantGroup.position.set(x, 0, z);
+      plantGroup.scale.set(scale, scale, scale);
+
+      // Ceramic Cylindrical Pot (Matt White with Metallic Rim)
+      const potMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25, metalness: 0.1 });
+      const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.42, 1.1, 18), potMat);
+      pot.position.y = 0.55;
+      pot.castShadow = true;
+      plantGroup.add(pot);
+
+      // Pot Rim Accent Ring
+      const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.58, 0.08, 18), potMat);
+      rim.position.y = 1.08;
+      plantGroup.add(rim);
+
+      // Soil Bed
+      const soil = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.52, 0.52, 0.1, 16),
+        new THREE.MeshStandardMaterial({ color: 0x2e1a14, roughness: 0.95 })
+      );
+      soil.position.y = 1.02;
+      plantGroup.add(soil);
+
+      // Lush Layered Foliage (Ficus / Monstera Leaves)
+      const leafMat = new THREE.MeshStandardMaterial({
+        color: 0x15803d,
+        roughness: 0.4,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      });
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2 + (i * 0.35);
+        const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.38, 12, 12), leafMat);
+        leaf.scale.set(1.4, 0.12, 0.85);
+        leaf.position.set(Math.cos(angle) * 0.36, 1.25 + (i * 0.11), Math.sin(angle) * 0.36);
+        leaf.rotation.x = 0.4;
+        leaf.rotation.y = angle;
+        leaf.rotation.z = 0.2;
+        leaf.castShadow = true;
+        plantGroup.add(leaf);
+      }
+
+      return plantGroup;
+    }
+
+    // -----------------------------------------------------------------
+    // 14. REALISTIC GLASS OFFICE SUITES FOR ALL 5 BUSINESS UNITS
+    // -----------------------------------------------------------------
+    const buStations = {};
+    const consultantMeshMap = {};
+
+    function createGlassOfficeSuite(bu) {
+      const suiteGroup = new THREE.Group();
+      suiteGroup.position.set(...bu.pos);
+
+      const W = bu.roomWidth;
+      const D = bu.roomDepth;
+      const H = 3.2;
+
+      // Suite Raised Luxury Carpet Plate & Thermal Trim
+      const carpetColorMap = {
+        bu1: 0x1e3a8a, // Deep Navy Blue
+        bu2: 0x9a3412, // Warm Terracotta
+        bu3: 0x581c87, // Royal Purple
+        bu4: 0x065f46, // Rich Emerald
+        bu5: 0x92400e  // Golden Amber
+      };
+      const carpetColor = carpetColorMap[bu.id] || bu.color;
+
+      const carpetPlate = new THREE.Mesh(
+        new THREE.BoxGeometry(W - 0.35, 0.04, D - 0.35),
+        new THREE.MeshStandardMaterial({ color: carpetColor, roughness: 0.88, metalness: 0.02 })
+      );
+      carpetPlate.position.y = 0.025;
+      carpetPlate.receiveShadow = true;
+      suiteGroup.add(carpetPlate);
+
+      // Brass / Walnut Perimeter Trim Frame
+      const trimFrame = new THREE.Mesh(
+        new THREE.BoxGeometry(W - 0.15, 0.035, D - 0.15),
+        new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.35, metalness: 0.6 })
+      );
+      trimFrame.position.y = 0.02;
+      suiteGroup.add(trimFrame);
+
+      // Operational Workload Heatmap Layer
+      const heatmapMat = new THREE.MeshBasicMaterial({
+        color: 0x10b981,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false
+      });
+      const heatmapMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(W - 0.6, D - 0.6),
+        heatmapMat
+      );
+      heatmapMesh.rotation.x = -Math.PI / 2;
+      heatmapMesh.position.y = 0.048;
+      suiteGroup.add(heatmapMesh);
+      bu.heatmapMesh = heatmapMesh;
+
+      // Suite Ceiling Warm Spotlight
+      const suiteSpot = new THREE.SpotLight(0xfef3c7, 0.85, 18, Math.PI / 3.8, 0.45, 1);
+      suiteSpot.position.set(0, 3.15, 0);
+      suiteSpot.target.position.set(0, 0, 0);
+      suiteGroup.add(suiteSpot);
+      suiteGroup.add(suiteSpot.target);
+      bu.suiteSpot = suiteSpot;
+
+      // Interior Corner Potted Plant
+      const plantCornerX = -(W / 2) + 1.2;
+      const plantCornerZ = bu.doorSide === 'south' ? -(D / 2) + 1.2 : (D / 2) - 1.2;
+      suiteGroup.add(createPottedPlant(plantCornerX, plantCornerZ, 0.85));
+
+      // Floor Decal Typography for the Department
+      const buDecal = createFloorDecal(
+        bu.name,
+        `ĐỘI NGŨ CHUYÊN VIÊN: ${bu.consultants.join(' • ')}`,
+        W - 3,
+        2.6,
+        `#${bu.color.toString(16).padStart(6, '0')}`
+      );
+      buDecal.position.set(0, 0.055, -(D / 2) + 2.8);
+      suiteGroup.add(buDecal);
+
+      // Glass Wall Builder Helper
+      function buildSuiteWall(length, isDoorWall = false) {
+        const wallGroup = new THREE.Group();
+
+        if (!isDoorWall) {
+          // Full continuous glass wall
+          const curb = new THREE.Mesh(new THREE.BoxGeometry(length, 0.45, 0.12), blackMullionMat);
+          curb.position.y = 0.225;
+          wallGroup.add(curb);
+
+          const glass = new THREE.Mesh(new THREE.BoxGeometry(length, H - 0.55, 0.06), glassClearMat);
+          glass.position.y = (H + 0.35) / 2;
+          wallGroup.add(glass);
+
+          const frost = new THREE.Mesh(new THREE.BoxGeometry(length, 0.55, 0.07), glassFrostedMat);
+          frost.position.y = 1.425;
+          wallGroup.add(frost);
+
+          const topRail = new THREE.Mesh(new THREE.BoxGeometry(length, 0.1, 0.12), blackMullionMat);
+          topRail.position.y = H;
+          wallGroup.add(topRail);
+
+          const mullions = Math.floor(length / 3);
+          for (let i = 0; i <= mullions; i++) {
+            const mx = -(length / 2) + i * (length / mullions);
+            const mullion = new THREE.Mesh(new THREE.BoxGeometry(0.08, H, 0.12), blackMullionMat);
+            mullion.position.set(mx, H / 2, 0);
+            wallGroup.add(mullion);
+          }
+        } else {
+          // Door wall: Left & Right glass segments with 3.2m open entrance in center
+          const segW = (length - 3.2) / 2;
+
+          [- (length / 2) + segW / 2, (length / 2) - segW / 2].forEach(cx => {
+            const curb = new THREE.Mesh(new THREE.BoxGeometry(segW, 0.45, 0.12), blackMullionMat);
+            curb.position.set(cx, 0.225, 0);
+            wallGroup.add(curb);
+
+            const glass = new THREE.Mesh(new THREE.BoxGeometry(segW, H - 0.55, 0.06), glassClearMat);
+            glass.position.set(cx, (H + 0.35) / 2, 0);
+            wallGroup.add(glass);
+
+            const frost = new THREE.Mesh(new THREE.BoxGeometry(segW, 0.55, 0.07), glassFrostedMat);
+            frost.position.set(cx, 1.425, 0);
+            wallGroup.add(frost);
+
+            const topRail = new THREE.Mesh(new THREE.BoxGeometry(segW, 0.1, 0.12), blackMullionMat);
+            topRail.position.set(cx, H, 0);
+            wallGroup.add(topRail);
+          });
+
+          // Overhead Illuminated Glass Signboard across the doorway
+          const signPlaque = new THREE.Mesh(
+            new THREE.BoxGeometry(3.4, 0.7, 0.15),
+            new THREE.MeshStandardMaterial({
+              color: bu.color,
+              roughness: 0.2,
+              metalness: 0.5
+            })
+          );
+          signPlaque.position.set(0, 2.75, 0);
+          signPlaque.castShadow = true;
+          wallGroup.add(signPlaque);
+        }
+
+        return wallGroup;
+      }
+
+      // Add 4 Walls based on doorSide
+      const isSouthDoor = bu.doorSide === 'south';
+      const isNorthDoor = bu.doorSide === 'north';
+
+      // North Wall
+      const northWall = buildSuiteWall(W, isNorthDoor);
+      northWall.position.set(0, 0, -(D / 2));
+      suiteGroup.add(northWall);
+
+      // South Wall
+      const southWall = buildSuiteWall(W, isSouthDoor);
+      southWall.position.set(0, 0, (D / 2));
+      suiteGroup.add(southWall);
+
+      // West Wall
+      const westWall = buildSuiteWall(D, false);
+      westWall.rotation.y = Math.PI / 2;
+      westWall.position.set(-(W / 2), 0, 0);
+      suiteGroup.add(westWall);
+
+      // East Wall
+      const eastWall = buildSuiteWall(D, false);
+      eastWall.rotation.y = Math.PI / 2;
+      eastWall.position.set((W / 2), 0, 0);
+      suiteGroup.add(eastWall);
+
+      // Place Workstations inside the Suite
+      bu.desks.forEach((deskCfg) => {
+        const { deskGroup, aura, consultantChar } = createRealisticWorkstation(deskCfg, bu);
+        suiteGroup.add(deskGroup);
+        consultantMeshMap[deskCfg.sale] = { mesh: consultantChar, aura, deskGroup };
+      });
+
+      campusGroup.add(suiteGroup);
+      buStations[bu.id] = { group: suiteGroup, config: bu };
+    }
+
+    Object.values(BU_DATA).forEach((bu) => {
+      createGlassOfficeSuite(bu);
+    });
+
+    // Biophilic Botanical Decor across Grand Promenade & Central Lounge
+    campusGroup.add(createPottedPlant(-6.5, 4.5, 1.1));
+    campusGroup.add(createPottedPlant(6.5, 4.5, 1.1));
+    campusGroup.add(createPottedPlant(-6.5, -4.5, 1.1));
+    campusGroup.add(createPottedPlant(6.5, -4.5, 1.1));
+    campusGroup.add(createPottedPlant(-12.5, 14, 1.0));
+    campusGroup.add(createPottedPlant(12.5, 14, 1.0));
+
+    // -----------------------------------------------------------------
+    // 10. ELEVATED DESK HOLOGRAM PILLS (Y=4.2M + HOVER FULL CHAT POPOVER)
+    // -----------------------------------------------------------------
+    function renderCustomerEntity(customer) {
+      const prevX = customer.mesh ? customer.mesh.position.x : customer.pos[0];
+      const prevY = customer.mesh ? customer.mesh.position.y : customer.pos[1];
+      const prevZ = customer.mesh ? customer.mesh.position.z : customer.pos[2];
+      const prevRotY = customer.mesh ? customer.mesh.rotation.y : (customer.state === 'consulting' ? Math.PI : 0);
+
+      if (customer.mesh) scene.remove(customer.mesh);
+
+      const group = new THREE.Group();
+      group.position.set(prevX, prevY, prevZ);
+      group.rotation.y = prevRotY;
+
+      let shirtColor = 0x3b82f6;
+      if (customer.mood === 'impatient') shirtColor = 0xf59e0b;
+      if (customer.mood === 'frustrated') shirtColor = 0xef4444;
+      if (customer.mood === 'critical') shirtColor = 0xdc2626;
+
+      const body = createCharacterMesh({
+        isConsultant: false,
+        shirtColor,
+        hairColor: 0x1e293b
+      });
+      group.add(body);
+      customer.bodyMesh = body;
+
+      // -----------------------------------------------------------------
+      // ANCHOR WRAPPER: Origin (0, 0) is EXACTLY the character's head!
+      // -----------------------------------------------------------------
+      const buConfig = customer.buId ? BU_DATA[customer.buId] : null;
+      const buColorHex = buConfig ? `#${buConfig.color.toString(16).padStart(6, '0')}` : '#2563eb';
+
+      const wrapperDiv = document.createElement('div');
+      wrapperDiv.className = 'holo-entity-wrapper';
+      wrapperDiv.style.setProperty('--bu-color', buColorHex);
+
+      // 1. Avatar Head Target Beacon Pin (Directly at 0, 0 on character head)
+      const pinDiv = document.createElement('div');
+      pinDiv.className = 'holo-head-anchor';
+      pinDiv.innerHTML = `
+        <span class="beacon-ring"></span>
+        <span class="beacon-core"></span>
+      `;
+      wrapperDiv.appendChild(pinDiv);
+
+      // 2. Crystal-Clear SVG Directional Speech Arrow
+      const svgNs = 'http://www.w3.org/2000/svg';
+      const arrowSvg = document.createElementNS(svgNs, 'svg');
+      arrowSvg.setAttribute('class', 'holo-arrow-svg');
+      arrowSvg.setAttribute('viewBox', '0 0 52 60');
+      arrowSvg.innerHTML = `
+        <polygon points="0,30 48,15 48,45" fill="rgba(255, 255, 255, 0.98)" stroke="rgba(226, 232, 240, 0.95)" stroke-width="1.5" />
+        <line x1="0" y1="30" x2="48" y2="30" stroke="${buColorHex}" stroke-width="3" stroke-linecap="round" />
+        <circle cx="0" cy="30" r="4.5" fill="${buColorHex}" stroke="#ffffff" stroke-width="2" />
+      `;
+      wrapperDiv.appendChild(arrowSvg);
+
+      // 3. Side-Callout Dialogue Card
+      const holoDiv = document.createElement('div');
+      holoDiv.className = 'desk-holo-pill';
+      holoDiv.style.borderLeft = `4px solid ${buColorHex}`;
+      holoDiv.style.setProperty('--bu-accent', buColorHex);
+
+      let slaBadgeClass = `sla-badge-${customer.mood}`;
+      let slaText = `${customer.slaHours.toFixed(1)}h`;
+
+      // Build recent chat history lines for hover popover
+      let chatHistoryHtml = '';
+      if (customer.chats && customer.chats.length > 0) {
+        customer.chats.forEach(chat => {
+          chatHistoryHtml += `
+            <div class="hover-chat-item ${chat.from === 'customer' ? 'hover-chat-in' : 'hover-chat-out'}">
+              <strong>${chat.from === 'customer' ? customer.name : (customer.consultant || 'Sale')}:</strong>
+              <span>"${chat.text}"</span>
+            </div>
+          `;
+        });
+      } else {
+        chatHistoryHtml = `
+          <div class="hover-chat-item hover-chat-in">
+            <strong>${customer.name}:</strong>
+            <span>"${customer.latestChat}"</span>
+          </div>
+        `;
+      }
+
+      let timeBadgeHtml = '';
+      if (customer.timeCategory === 'today') {
+        timeBadgeHtml = `<span class="holo-time-badge time-today">⚡ ${customer.receivedTime || 'Hôm nay'}</span>`;
+      } else if (customer.timeCategory === 'yesterday') {
+        timeBadgeHtml = `<span class="holo-time-badge time-yesterday">📅 ${customer.receivedTime || 'Hôm qua'}</span>`;
+      } else {
+        timeBadgeHtml = `<span class="holo-time-badge time-week">🗓️ ${customer.receivedTime || 'Tuần này'}</span>`;
+      }
+
+      holoDiv.innerHTML = `
+        <div class="holo-header">
+          <span class="holo-bu-badge" style="background: ${buColorHex}">${(customer.buId || 'CAFE').toUpperCase()}</span>
+          <div class="holo-meta-right">
+            ${timeBadgeHtml}
+            <span class="holo-sla-badge ${slaBadgeClass}">${slaText}</span>
+          </div>
+        </div>
+        <div class="holo-tour-row">
+          <span class="holo-tour-tag">TOUR</span>
+          <span class="holo-tour-name" title="${customer.tour}">${customer.tour}</span>
+        </div>
+        <div class="holo-chat-row">
+          <span class="holo-chat-sender">${customer.name}:</span>
+          <span class="holo-chat-text">"${customer.latestChat}"</span>
+        </div>
+        
+        <!-- HOVER-TO-EXPAND FULL CHAT POPOVER -->
+        <div class="hover-full-chat">
+          ${chatHistoryHtml}
+          <div class="hover-chat-footer-hint">💬 Nhấp chuột để mở khung chat trực tiếp (không giật góc quay)</div>
+        </div>
+      `;
+
+      holoDiv.onclick = (e) => {
+        e.stopPropagation();
+        openInteractiveChat(customer);
+      };
+
+      // Hover sync with consultant aura & bringing card to top of scene
+      holoDiv.onmouseenter = () => {
+        holoDiv.style.zIndex = '99999';
+        wrapperDiv.style.zIndex = '99999';
+        if (wrapperDiv.parentElement) {
+          wrapperDiv.parentElement.style.zIndex = '99999';
+        }
+        if (customer.consultant && consultantMeshMap[customer.consultant]) {
+          consultantMeshMap[customer.consultant].aura.material.opacity = 0.75;
+          consultantMeshMap[customer.consultant].aura.scale.set(1.2, 1, 1.2);
+        }
+      };
+      holoDiv.onmouseleave = () => {
+        holoDiv.style.zIndex = `${19 + (customer.collocateIndex || 0) * 3}`;
+        wrapperDiv.style.zIndex = `${10 + (customer.collocateIndex || 0) * 3}`;
+        if (wrapperDiv.parentElement) {
+          wrapperDiv.parentElement.style.zIndex = '';
+        }
+        if (customer.consultant && consultantMeshMap[customer.consultant]) {
+          consultantMeshMap[customer.consultant].aura.material.opacity = 0.25;
+          consultantMeshMap[customer.consultant].aura.scale.set(1, 1, 1);
+        }
+      };
+
+      wrapperDiv.appendChild(holoDiv);
+
+      // Side Callout Anchor locked to character crown (Y=4.15m)
+      const holoObj = new CSS2DObject(wrapperDiv);
+      holoObj.position.set(0, 4.15, 0);
+      group.add(holoObj);
+
+      // Raycast Click Hitbox (2.25x Stylized Chibi Scale)
+      const hitBox = new THREE.Mesh(
+        new THREE.BoxGeometry(3.6, 5.2, 3.6),
+        new THREE.MeshBasicMaterial({ visible: false })
+      );
+      hitBox.position.y = 2.4;
+      hitBox.userData = { customer };
+      group.add(hitBox);
+
+      customer.mesh = group;
+      customer.wrapperDiv = wrapperDiv;
+      customer.arrowSvg = arrowSvg;
+      customer.holoDiv = holoDiv;
+      customer.holoObj = holoObj;
+      scene.add(group);
+    }
+
+    // -----------------------------------------------------------------
+    // SMART AUTO-STAGGERING SYSTEM (EUCLIDEAN DISTANCE CLUSTERING < 5.0M)
+    // -----------------------------------------------------------------
+    function refreshHoloStaggering() {
+      const activeCustomers = customers.filter(c => c.visible !== false && c.holoDiv && c.arrowSvg && c.mesh);
+
+      // Spatial distance clustering (< 5.0m in XZ plane)
+      const clusters = [];
+      const visited = new Set();
+
+      activeCustomers.forEach(c => {
+        if (!c.mesh || !c.mesh.position) return;
+        if (visited.has(c.id)) return;
+        const cluster = [c];
+        visited.add(c.id);
+
+        const posA = c.mesh.position;
+        activeCustomers.forEach(other => {
+          if (!other.mesh || !other.mesh.position) return;
+          if (visited.has(other.id)) return;
+          const posB = other.mesh.position;
+          const dx = posA.x - posB.x;
+          const dz = posA.z - posB.z;
+          const dist = Math.sqrt(dx * dx + dz * dz);
+          if (dist < 5.0) {
+            cluster.push(other);
+            visited.add(other.id);
+          }
+        });
+        clusters.push(cluster);
+      });
+
+      clusters.forEach(cluster => {
+        cluster.forEach((c, idx) => {
+          c.collocateIndex = idx;
+          const buConfig = c.buId ? BU_DATA[c.buId] : null;
+          const buColorHex = buConfig ? `#${buConfig.color.toString(16).padStart(6, '0')}` : '#2563eb';
+
+          const verticalOffsets = [-30, -78, 20, -126, 68, -174, 116];
+          const topOffset = verticalOffsets[idx % verticalOffsets.length];
+          const zIndexVal = Math.max(10, 30 - idx);
+
+          c.holoDiv.style.top = `${topOffset}px`;
+          c.holoDiv.style.left = `${48 + (idx > 0 ? 4 : 0)}px`;
+          c.holoDiv.style.zIndex = `${zIndexVal}`;
+
+          if (idx === 0) {
+            c.arrowSvg.style.top = '-30px';
+            c.arrowSvg.style.height = '60px';
+            c.arrowSvg.setAttribute('viewBox', '0 0 52 60');
+            c.arrowSvg.innerHTML = `
+              <polygon points="0,30 48,15 48,45" fill="rgba(255, 255, 255, 0.98)" stroke="rgba(226, 232, 240, 0.95)" stroke-width="1.5" />
+              <line x1="0" y1="30" x2="48" y2="30" stroke="${buColorHex}" stroke-width="3" stroke-linecap="round" />
+              <circle cx="0" cy="30" r="4.5" fill="${buColorHex}" stroke="#ffffff" stroke-width="2" />
+            `;
+          } else if (topOffset < -30) {
+            const h = Math.abs(topOffset) + 30;
+            c.arrowSvg.style.top = `${topOffset}px`;
+            c.arrowSvg.style.height = `${h}px`;
+            c.arrowSvg.setAttribute('viewBox', `0 0 56 ${h}`);
+            c.arrowSvg.innerHTML = `
+              <polygon points="0,${h - 30} 52,15 52,45" fill="rgba(255, 255, 255, 0.98)" stroke="rgba(226, 232, 240, 0.95)" stroke-width="1.5" />
+              <line x1="0" y1="${h - 30}" x2="52" y2="30" stroke="${buColorHex}" stroke-width="3" stroke-linecap="round" />
+              <circle cx="0" cy="${h - 30}" r="4.5" fill="${buColorHex}" stroke="#ffffff" stroke-width="2" />
+            `;
+          } else {
+            const h = topOffset + 60;
+            c.arrowSvg.style.top = '-15px';
+            c.arrowSvg.style.height = `${h}px`;
+            c.arrowSvg.setAttribute('viewBox', `0 0 56 ${h}`);
+            c.arrowSvg.innerHTML = `
+              <polygon points="0,15 52,31 52,61" fill="rgba(255, 255, 255, 0.98)" stroke="rgba(226, 232, 240, 0.95)" stroke-width="1.5" />
+              <line x1="0" y1="15" x2="52" y2="46" stroke="${buColorHex}" stroke-width="3" stroke-linecap="round" />
+              <circle cx="0" cy="15" r="4.5" fill="${buColorHex}" stroke="#ffffff" stroke-width="2" />
+            `;
+          }
+        });
+      });
+    }
+
+    // -----------------------------------------------------------------
+    // WORKLOAD HEATMAP ENGINE
+    // -----------------------------------------------------------------
+    let isHeatmapActive = false;
+
+    function updateWorkloadHeatmap() {
+      if (!isHeatmapActive) {
+        Object.values(BU_DATA).forEach(bu => {
+          if (bu.heatmapMesh) bu.heatmapMesh.material.opacity = 0;
+        });
+        return;
+      }
+
+      Object.values(BU_DATA).forEach(bu => {
+        if (!bu.heatmapMesh) return;
+        const buCustomers = customers.filter(c => c.buId === bu.id && c.visible !== false);
+        const hasOverdue = buCustomers.some(c => c.mood === 'critical' || c.mood === 'frustrated' || c.slaHours >= 4);
+
+        if (buCustomers.length >= 3 || hasOverdue) {
+          // Overload / Bottleneck: Pulsing Red-Orange
+          bu.heatmapMesh.material.color.setHex(0xef4444);
+          bu.heatmapMesh.material.opacity = 0.55;
+        } else if (buCustomers.length === 2) {
+          // Moderate Load: Golden Amber
+          bu.heatmapMesh.material.color.setHex(0xf59e0b);
+          bu.heatmapMesh.material.opacity = 0.40;
+        } else {
+          // Idle / Available Capacity: Inviting Emerald Green
+          bu.heatmapMesh.material.color.setHex(0x10b981);
+          bu.heatmapMesh.material.opacity = 0.45;
+        }
+      });
+    }
+
+    // -----------------------------------------------------------------
+    // 11. MULTI-DAY TEMPORAL & BU FILTER SYSTEM
+    // -----------------------------------------------------------------
+    let currentFilter = 'today';
+    let currentBuFilter = 'all';
+    let searchKeyword = '';
+
+    const formatNum = n => (n === undefined || n === null) ? '0' : new Intl.NumberFormat('vi-VN').format(n);
+
+    function applyFilters() {
+      let visibleCount = 0;
+
+      customers.forEach(c => {
+        let isTimeMatch = false;
+        if (currentFilter === 'month' || currentFilter === 'all') {
+          isTimeMatch = true;
+        } else if (currentFilter === 'today') {
+          isTimeMatch = (c.timeCategory === 'today');
+        } else if (currentFilter === 'yesterday') {
+          isTimeMatch = (c.timeCategory === 'yesterday');
+        } else if (currentFilter === 'this_week') {
+          isTimeMatch = (c.timeCategory === 'this_week');
+        } else if (currentFilter === 'breached') {
+          isTimeMatch = (c.mood === 'frustrated' || c.mood === 'critical' || c.slaHours >= 4);
+        }
+
+        let isBuMatch = (currentBuFilter === 'all') || (c.buId === currentBuFilter);
+
+        let isSearchMatch = true;
+        if (searchKeyword.trim()) {
+          const kw = searchKeyword.toLowerCase();
+          const inName = c.name.toLowerCase().includes(kw);
+          const inTour = c.tour.toLowerCase().includes(kw);
+          const inSale = c.consultant && c.consultant.toLowerCase().includes(kw);
+          const inChat = c.latestChat && c.latestChat.toLowerCase().includes(kw);
+          isSearchMatch = (inName || inTour || inSale || inChat);
+        }
+
+        const isMatch = isTimeMatch && isBuMatch && isSearchMatch;
+        c.visible = isMatch;
+
+        if (c.mesh) {
+          c.mesh.visible = isMatch;
+        }
+        if (c.wrapperDiv) {
+          c.wrapperDiv.style.display = isMatch ? 'block' : 'none';
+        } else if (c.holoDiv) {
+          c.holoDiv.style.display = isMatch ? 'block' : 'none';
+        }
+
+        if (isMatch) visibleCount++;
+      });
+
+      // Re-stagger labels to prevent any visual overlap
+      refreshHoloStaggering();
+      updateWorkloadHeatmap();
+
+      // Update Header Satisfaction Stats
+      updateHeaderStats();
+
+      // Update Top Status Pill
+      const activeLeadsCountEl = document.getElementById('active-leads-count');
+      if (activeLeadsCountEl) {
+        let label = 'Tháng';
+        if (currentFilter === 'today') label = 'Hôm nay';
+        if (currentFilter === 'yesterday') label = 'Hôm qua';
+        if (currentFilter === 'this_week') label = 'Tuần này';
+        if (currentFilter === 'breached') label = 'Tồn đọng >4h';
+        activeLeadsCountEl.innerHTML = `Đang hiển thị: <strong>${formatNum(visibleCount)} Khách</strong> (${label})`;
+      }
+    }
+
+    function updateFilterBadgeCounts() {
+      const elMonth = document.getElementById('count-month');
+      const elToday = document.getElementById('count-today');
+      const elYesterday = document.getElementById('count-yesterday');
+      const elWeek = document.getElementById('count-week');
+      const elBreached = document.getElementById('count-breached');
+
+      if (realApiMetrics && activeDataMode === 'real') {
+        if (elMonth) elMonth.innerText = formatNum(realApiMetrics.count_month);
+        if (elToday) elToday.innerText = formatNum(realApiMetrics.count_today);
+        if (elYesterday) elYesterday.innerText = formatNum(realApiMetrics.count_yesterday);
+        if (elWeek) elWeek.innerText = formatNum(realApiMetrics.count_week);
+        if (elBreached) elBreached.innerText = formatNum(realApiMetrics.count_breached);
+      } else {
+        const monthCount = customers.length;
+        const todayCount = customers.filter(c => c.timeCategory === 'today').length;
+        const yesterdayCount = customers.filter(c => c.timeCategory === 'yesterday').length;
+        const weekCount = customers.filter(c => c.timeCategory === 'this_week').length;
+        const breachedCount = customers.filter(c => c.mood === 'frustrated' || c.mood === 'critical' || c.slaHours >= 4).length;
+
+        if (elMonth) elMonth.innerText = formatNum(monthCount);
+        if (elToday) elToday.innerText = formatNum(todayCount);
+        if (elYesterday) elYesterday.innerText = formatNum(yesterdayCount);
+        if (elWeek) elWeek.innerText = formatNum(weekCount);
+        if (elBreached) elBreached.innerText = formatNum(breachedCount);
+      }
+    }
+
+    function refreshAllCustomers() {
+      customers.forEach(c => renderCustomerEntity(c));
+      updateFilterBadgeCounts();
+      applyFilters();
+    }
+    refreshAllCustomers();
+
+    // Filter Button Event Listeners
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        applyFilters();
+      };
+    });
+
+    const buSelect = document.getElementById('bu-filter-select');
+    if (buSelect) {
+      buSelect.onchange = (e) => {
+        currentBuFilter = e.target.value;
+        applyFilters();
+      };
+    }
+
+    const searchInput = document.getElementById('filter-search-input');
+    if (searchInput) {
+      searchInput.oninput = (e) => {
+        searchKeyword = e.target.value;
+        applyFilters();
+      };
+    }
+
+    // -----------------------------------------------------------------
+    // 12. HEADER SATISFACTION STATS BUILDER (SYNCED WITH FILTER)
+    // -----------------------------------------------------------------
+    function updateHeaderStats() {
+      const visibleCustomers = customers.filter(c => c.mesh && c.mesh.visible);
+      const breached = visibleCustomers.filter(c => c.mood === 'frustrated' || c.mood === 'critical' || c.slaHours >= 4).length;
+      const satScore = Math.max(70, Math.round(100 - (breached * 8)));
+      const satEl = document.getElementById('satisfaction-score');
+      if (satEl) {
+        if (realApiLatency !== null && activeDataMode === 'real') {
+          satEl.innerHTML = `⚡ DB: <strong>${realApiLatency}ms</strong> <span class="stat-text-label">(PostgreSQL LIVE)</span>`;
+        } else {
+          satEl.innerHTML = `Điểm hài lòng: <strong style="color: ${satScore > 85 ? '#047857' : '#b45309'};">${satScore}%</strong>`;
+        }
+      }
+    }
+
+    // -----------------------------------------------------------------
+    // 12. FLOATING SPEECH BUBBLE GENERATOR
+    // -----------------------------------------------------------------
+    function showFloatingChatPill(customer, text, isFromSale = false) {
+      if (!customer.mesh) return;
+
+      const pillDiv = document.createElement('div');
+      pillDiv.className = 'floating-dialogue-pill';
+
+      const badgeClass = isFromSale ? 'badge-sale' : (customer.channel === 'zalo' ? 'badge-zalo' : (customer.channel === 'fb' ? 'badge-fb' : 'badge-web'));
+      const badgeIcon = isFromSale ? 'S' : (customer.channel === 'zalo' ? 'Z' : (customer.channel === 'fb' ? 'f' : 'W'));
+
+      pillDiv.innerHTML = `
+        <div class="channel-badge ${badgeClass}">${badgeIcon}</div>
+        <div class="dialogue-content">
+          <div class="dialogue-author">${isFromSale ? (customer.consultant || 'Sale') : customer.name}</div>
+          <div class="dialogue-text">${text}</div>
+        </div>
+      `;
+
+      pillDiv.onclick = () => openInteractiveChat(customer);
+
+      const pillObj = new CSS2DObject(pillDiv);
+      pillObj.position.set(0, 2.2, 0); // Aligned with character head level (offset handled via CSS)
+      customer.mesh.add(pillObj);
+
+      setTimeout(() => {
+        pillDiv.style.opacity = '0';
+        setTimeout(() => {
+          if (customer.mesh) customer.mesh.remove(pillObj);
+        }, 400);
+      }, 4500);
+    }
+
+    // -----------------------------------------------------------------
+    // ZERO-DEPENDENCY WEB AUDIO API SFX ENGINE
+    // -----------------------------------------------------------------
+    let audioCtx = null;
+    let isSoundMuted = false;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSfx(type) {
+      if (isSoundMuted) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        if (type === 'ding') {
+          // Soft bell chime for incoming chat (880Hz -> 1320Hz)
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, now);
+          osc.frequency.exponentialRampToValueAtTime(1320, now + 0.12);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        } else if (type === 'rescue') {
+          // Sparkling success arpeggio: C5 -> E5 -> G5 -> C6
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + i * 0.08);
+            gain.gain.setValueAtTime(0.14, now + i * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.32);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.08);
+            osc.stop(now + i * 0.08 + 0.32);
+          });
+        } else if (type === 'dispatch') {
+          // Purposeful upward swoosh chime
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.18);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.28);
+        }
+      } catch (e) {
+        // audio policy fallback
+      }
+    }
+
+    const btnToggleSound = document.getElementById('btn-toggle-sound');
+    if (btnToggleSound) {
+      btnToggleSound.onclick = () => {
+        isSoundMuted = !isSoundMuted;
+        btnToggleSound.innerText = isSoundMuted ? '🔇' : '🔊';
+        btnToggleSound.classList.toggle('muted', isSoundMuted);
+        if (!isSoundMuted) playSfx('ding');
+      };
+    }
+
+    // -----------------------------------------------------------------
+    // 13. IN-SCENE LIVE INTERACTIVE CHAT (CORE GAMIFICATION)
+    const chatDock = document.getElementById('live-chat-dock');
+    const chatContainer = document.getElementById('chat-history-container');
+    const chatInput = document.getElementById('chat-text-input');
+    let activeAuraMesh = null;
+
+    function openInteractiveChat(customer) {
+      activeCustomerForChat = customer;
+      chatDock.classList.add('active');
+
+      document.getElementById('chat-customer-name').innerText = `${customer.name} (${customer.channel.toUpperCase()})`;
+      document.getElementById('chat-customer-tour').innerText = `Quan tâm: ${customer.tour} • Phụ trách: ${customer.consultant || 'Chưa gán'} • Nhận lúc: ${customer.receivedTime || 'Hôm nay'}`;
+
+      const stationLabel = document.getElementById('chat-station-label');
+      if (stationLabel) {
+        if (customer.state === 'waiting') {
+          stationLabel.innerHTML = `<span style="color: #64748b;">🛋️ Sảnh Chờ Lounge / Cafe</span>`;
+        } else {
+          const buConfig = customer.buId ? BU_DATA[customer.buId] : null;
+          const buColor = buConfig ? `#${buConfig.color.toString(16).padStart(6, '0')}` : '#2563eb';
+          stationLabel.innerHTML = `<span style="color: ${buColor};">${(customer.buId || 'BU').toUpperCase()} • ${customer.consultant || 'Bàn làm việc'}</span>`;
+        }
+      }
+
+      const banner = document.getElementById('chat-sla-banner');
+      if (customer.mood === 'normal') {
+        banner.style.background = '#ecfdf5';
+        banner.style.color = '#047857';
+        banner.innerHTML = `<span>🟢 Khách gửi: ${customer.receivedTime || 'Hôm nay'} (${customer.slaHours.toFixed(1)}h) — Phản hồi ngay để chốt tour!</span>`;
+      } else {
+        banner.style.background = '#fef2f2';
+        banner.style.color = '#b91c1c';
+        banner.innerHTML = `<span>⚠️ Khách đã chờ ${customer.slaHours.toFixed(1)} giờ! (${customer.receivedTime}) Nhắn tin để CỨU SLA và nhận điểm hài lòng!</span>`;
+      }
+
+      renderChatMessages();
+
+      // Highlight active station aura WITHOUT zooming/moving camera! (User request 1)
+      if (activeAuraMesh) {
+        activeAuraMesh.material.opacity = 0.25;
+        activeAuraMesh.material.color.setHex(0x10b981);
+      }
+      if (customer.consultant && consultantMeshMap[customer.consultant]) {
+        activeAuraMesh = consultantMeshMap[customer.consultant].aura;
+        activeAuraMesh.material.opacity = 0.95;
+        activeAuraMesh.material.color.setHex(0x38bdf8); // Sky blue neon highlight
+      }
+
+      setTimeout(() => chatInput.focus(), 300);
+    }
+
+    function renderChatMessages() {
+      if (!activeCustomerForChat) return;
+
+      chatContainer.innerHTML = '';
+      if (!activeCustomerForChat.chats || activeCustomerForChat.chats.length === 0) {
+        activeCustomerForChat.chats = [
+          { from: 'customer', text: activeCustomerForChat.latestChat, time: 'Vừa xong' }
+        ];
+      }
+
+      activeCustomerForChat.chats.forEach(item => {
+        const row = document.createElement('div');
+        row.className = `chat-row ${item.from === 'customer' ? 'in' : 'out'}`;
+        row.innerHTML = `
+          <div class="${item.from === 'customer' ? 'bubble-in' : 'bubble-out'}">${item.text}</div>
+          <span class="chat-time">${item.time}</span>
+        `;
+        chatContainer.appendChild(row);
+      });
+
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function handleSendMessage(text) {
+      if (!text.trim() || !activeCustomerForChat) return;
+
+      activeCustomerForChat.chats.push({
+        from: 'sale',
+        text: text.trim(),
+        time: 'Vừa gửi'
+      });
+      activeCustomerForChat.latestChat = text.trim();
+      renderChatMessages();
+      chatInput.value = '';
+
+      // Update Desk Hologram Pill text immediately!
+      renderCustomerEntity(activeCustomerForChat);
+      updateFilterBadgeCounts();
+      applyFilters();
+
+      showFloatingChatPill(activeCustomerForChat, text.trim(), true);
+
+      // GAMIFICATION: RESCUE SLA
+      const wasAngry = activeCustomerForChat.mood === 'frustrated' || activeCustomerForChat.mood === 'critical';
+      activeCustomerForChat.slaHours = 0.1;
+      activeCustomerForChat.mood = 'normal';
+      renderCustomerEntity(activeCustomerForChat);
+      updateFilterBadgeCounts();
+      applyFilters();
+
+      playSfx('rescue');
+
+      const banner = document.getElementById('chat-sla-banner');
+      banner.style.background = '#ecfdf5';
+      banner.style.color = '#047857';
+      banner.innerHTML = `<span>🎉 ĐÃ CỨU SLA THÀNH CÔNG! Khách hàng đã vui vẻ trở lại!</span>`;
+
+      // Customer happy celebration bounce
+      if (activeCustomerForChat.bodyMesh) {
+        let hopCount = 0;
+        const hopInterval = setInterval(() => {
+          activeCustomerForChat.bodyMesh.position.y = (Math.sin(hopCount * 0.8) * 0.25);
+          hopCount++;
+          if (hopCount > 8) {
+            clearInterval(hopInterval);
+            activeCustomerForChat.bodyMesh.position.y = 0;
+          }
+        }, 50);
+      }
+
+      setTimeout(() => {
+        if (!activeCustomerForChat) return;
+        const ackText = wasAngry 
+          ? 'Cảm ơn em đã hỗ trợ nhanh nhé, để anh xem lịch trình liền!' 
+          : 'Dạ anh nhận được rồi, tư vấn nhiệt tình quá, để anh chốt cọc luôn nha!';
+        
+        activeCustomerForChat.chats.push({
+          from: 'customer',
+          text: ackText,
+          time: 'Vừa xong'
+        });
+        activeCustomerForChat.latestChat = ackText;
+        renderChatMessages();
+        renderCustomerEntity(activeCustomerForChat);
+        updateFilterBadgeCounts();
+        applyFilters();
+        showFloatingChatPill(activeCustomerForChat, ackText, false);
+        playSfx('ding');
+      }, 1400);
+    }
+
+    function dispatchCustomerToBu(customer, targetBuId) {
+      if (!customer || !BU_DATA[targetBuId]) return;
+
+      const buConfig = BU_DATA[targetBuId];
+      const targetDesk = buConfig.desks[0];
+      const worldX = buConfig.pos[0] + targetDesk.x;
+      const worldZ = buConfig.pos[2] + targetDesk.z + 1.2;
+
+      customer.buId = targetBuId;
+      customer.consultant = targetDesk.sale;
+      customer.state = 'consulting';
+
+      // Animate walking from current position to target desk
+      customer.baseX = worldX;
+      customer.baseZ = worldZ;
+      customer.targetX = worldX;
+      customer.targetZ = worldZ;
+      customer.isWalking = true;
+      customer.pauseTimer = 0;
+      customer.walkSpeed = 1.35;
+
+      playSfx('dispatch');
+
+      // Update location label in chat modal
+      const stationLabel = document.getElementById('chat-station-label');
+      if (stationLabel) {
+        stationLabel.innerHTML = `<span style="color: #${buConfig.color.toString(16).padStart(6, '0')}">${targetBuId.toUpperCase()} • ${targetDesk.sale}</span>`;
+      }
+
+      // Update banner
+      const banner = document.getElementById('chat-sla-banner');
+      if (banner) {
+        banner.style.background = '#eff6ff';
+        banner.style.color = '#1d4ed8';
+        banner.innerHTML = `<span>🚀 ĐÃ ĐIỀU PHỐI: Khách đang bước vào bàn ${targetBuId.toUpperCase()} (${targetDesk.sale})!</span>`;
+      }
+
+      // Highlight target consultation aura
+      if (activeAuraMesh) {
+        activeAuraMesh.material.opacity = 0.25;
+        activeAuraMesh.material.color.setHex(0x10b981);
+      }
+      if (consultantMeshMap[targetDesk.sale]) {
+        activeAuraMesh = consultantMeshMap[targetDesk.sale].aura;
+        activeAuraMesh.material.opacity = 0.95;
+        activeAuraMesh.material.color.setHex(0x38bdf8);
+      }
+
+      // Welcoming message from consultant
+      const welcomeText = `Dạ chào ${customer.name}, em ${targetDesk.sale} (${buConfig.shortName}) mời anh/chị qua bàn em tư vấn trực tiếp nhé ạ!`;
+      setTimeout(() => {
+        customer.chats.push({
+          from: 'sale',
+          text: welcomeText,
+          time: 'Vừa xong'
+        });
+        customer.latestChat = welcomeText;
+        renderChatMessages();
+        renderCustomerEntity(customer);
+        updateFilterBadgeCounts();
+        applyFilters();
+        showFloatingChatPill(customer, welcomeText, true);
+        playSfx('rescue');
+      }, 800);
+
+      renderCustomerEntity(customer);
+      updateFilterBadgeCounts();
+      applyFilters();
+    }
+
+    document.querySelectorAll('.dispatch-chip').forEach(chip => {
+      chip.onclick = () => {
+        if (activeCustomerForChat) {
+          dispatchCustomerToBu(activeCustomerForChat, chip.dataset.bu);
+        }
+      };
+    });
+
+    document.getElementById('btn-send-message').onclick = () => handleSendMessage(chatInput.value);
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleSendMessage(chatInput.value);
+    });
+
+    document.querySelectorAll('.quick-chip').forEach(chip => {
+      chip.onclick = () => handleSendMessage(chip.dataset.reply);
+    });
+
+    document.getElementById('btn-close-chat').onclick = () => {
+      chatDock.classList.remove('active');
+      if (activeAuraMesh) {
+        activeAuraMesh.material.opacity = 0.25;
+        activeAuraMesh.material.color.setHex(0x10b981);
+        activeAuraMesh = null;
+      }
+      activeCustomerForChat = null;
+    };
+
+    const btnLocateStation = document.getElementById('btn-locate-station');
+    if (btnLocateStation) {
+      btnLocateStation.onclick = () => {
+        if (activeCustomerForChat && activeCustomerForChat.mesh) {
+          const livePos = activeCustomerForChat.mesh.position;
+          smoothMoveCamera(
+            livePos.x + 6, 8, livePos.z + 8,
+            livePos.x, 1.5, livePos.z
+          );
+        }
+      };
+    }
+
+    const btnToggleDock = document.getElementById('btn-toggle-dock');
+    const cameraDockEl = document.getElementById('camera-dock');
+    if (btnToggleDock && cameraDockEl) {
+      btnToggleDock.onclick = () => {
+        cameraDockEl.classList.toggle('collapsed');
+      };
+    }
+
+    // -----------------------------------------------------------------
+    // 14. RAYCASTING INTERACTION
+    // -----------------------------------------------------------------
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    window.addEventListener('click', (e) => {
+      if (e.target.closest('.interactive') || e.target.closest('.desk-holo-pill') || e.target.closest('.floating-dialogue-pill')) {
+        return;
+      }
+
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children, true);
+
+      for (let hit of intersects) {
+        if (hit.object.userData && hit.object.userData.customer) {
+          openInteractiveChat(hit.object.userData.customer);
+          break;
+        }
+      }
+    });
+
+    // -----------------------------------------------------------------
+    // 15. CAMERA PRESETS & TWEENING
+    // -----------------------------------------------------------------
+    let camTween = null;
+
+    function smoothMoveCamera(px, py, pz, tx, ty, tz) {
+      camTween = {
+        fromPos: camera.position.clone(),
+        toPos: new THREE.Vector3(px, py, pz),
+        fromTarget: controls.target.clone(),
+        toTarget: new THREE.Vector3(tx, ty, tz),
+        progress: 0
+      };
+    }
+
+    document.querySelectorAll('.dock-btn').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const view = btn.dataset.view;
+        if (view === 'all') smoothMoveCamera(75, 58, 75, 0, 0, 2);
+        if (view === 'bu1') smoothMoveCamera(-26, 12, -10, -40, 1.8, -22);
+        if (view === 'bu2') smoothMoveCamera(-26, 12, 32, -40, 1.8, 20);
+        if (view === 'bu3') smoothMoveCamera(26, 12, -10, 40, 1.8, -22);
+        if (view === 'bu4') smoothMoveCamera(8, 12, 32, 20, 1.8, 20);
+        if (view === 'bu5') smoothMoveCamera(32, 12, 32, 44, 1.8, 20);
+      };
+    });
+
+    // -----------------------------------------------------------------
+    // 16. MOCK ACTION HANDLERS
+    // -----------------------------------------------------------------
+    const questionList = [
+      'Cho mình hỏi tour Ladakh tháng 9 còn bao nhiêu suất?',
+      'Thủ tục visa Thổ Nhĩ Kỳ cần những hồ sơ gì vậy em?',
+      'Bên mình có giảm giá khi đăng ký nhóm 5 người không?',
+      'Bay hãng nào vậy bạn? Có transit lâu không em?'
+    ];
+    document.getElementById('btn-trigger-chat').onclick = () => {
+      if (!customers.length) return;
+      const target = customers[Math.floor(Math.random() * customers.length)];
+      const q = questionList[Math.floor(Math.random() * questionList.length)];
+      target.latestChat = q;
+      target.chats.push({ from: 'customer', text: q, time: 'Vừa xong' });
+      renderCustomerEntity(target);
+      updateFilterBadgeCounts();
+      applyFilters();
+      showFloatingChatPill(target, q, false);
+      playSfx('ding');
+    };
+
+    document.getElementById('btn-fast-forward-4h').onclick = () => {
+      const target = customers.find(c => c.mood === 'normal');
+      if (target) {
+        target.slaHours = 4.2;
+        target.mood = 'impatient';
+        target.latestChat = 'Anh chờ hơn 4 tiếng rồi chưa thấy phản hồi giá?';
+        target.chats.push({ from: 'customer', text: target.latestChat, time: 'Vừa xong' });
+        renderCustomerEntity(target);
+        updateFilterBadgeCounts();
+        applyFilters();
+        showFloatingChatPill(target, target.latestChat, false);
+        playSfx('ding');
+      }
+    };
+
+    document.getElementById('btn-fast-forward-12h').onclick = () => {
+      const target = customers.find(c => c.mood !== 'critical') || customers[0];
+      if (target) {
+        target.slaHours = 13.8;
+        target.mood = 'critical';
+        target.latestChat = '🔥 HỦY YÊU CẦU ĐI! Hơn 13 tiếng không ai thèm trả lời!';
+        target.chats.push({ from: 'customer', text: target.latestChat, time: 'Vừa xong' });
+        renderCustomerEntity(target);
+        updateFilterBadgeCounts();
+        applyFilters();
+        showFloatingChatPill(target, target.latestChat, false);
+        playSfx('ding');
+      }
+    };
+
+    document.getElementById('btn-auto-dispatch').onclick = () => {
+      const waitingCustomer = customers.find(c => c.state === 'waiting') || customers[0];
+      const targetBu = waitingCustomer.buId || 'bu1';
+      openInteractiveChat(waitingCustomer);
+      dispatchCustomerToBu(waitingCustomer, targetBu);
+    };
+
+    document.getElementById('btn-reset-scene').onclick = () => {
+      smoothMoveCamera(75, 58, 75, 0, 0, 2);
+      document.querySelectorAll('.dock-btn').forEach(b => b.classList.toggle('active', b.dataset.view === 'all'));
+      currentFilter = 'month';
+      currentBuFilter = 'all';
+      searchKeyword = '';
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'month'));
+      const buSelect = document.getElementById('bu-filter-select');
+      if (buSelect) buSelect.value = 'all';
+      const searchInput = document.getElementById('filter-search-input');
+      if (searchInput) searchInput.value = '';
+
+      // Reset customers to pristine copy of active data mode
+      customers.forEach(c => {
+        if (c.mesh) {
+          scene.remove(c.mesh);
+          c.mesh = null;
+        }
+        if (c.wrapperDiv) {
+          if (c.wrapperDiv.parentElement) c.wrapperDiv.parentElement.remove();
+          else c.wrapperDiv.remove();
+          c.wrapperDiv = null;
+        }
+        c.holoDiv = null;
+        c.holoObj = null;
+      });
+      const source = (activeDataMode === 'real') 
+        ? (REAL_CUSTOMERS_FROM_API.length ? REAL_CUSTOMERS_FROM_API : REAL_CUSTOMERS_DATA) 
+        : DEMO_CUSTOMERS_DATA;
+      customers = JSON.parse(JSON.stringify(source));
+      refreshAllCustomers();
+      playSfx('ding');
+    };
+
+    // -----------------------------------------------------------------
+    // OPERATIONAL POWER CONTROLS (Heatmap, Compact LOD, Dark Executive)
+    // -----------------------------------------------------------------
+    const btnHeatmap = document.getElementById('btn-toggle-heatmap');
+    if (btnHeatmap) {
+      btnHeatmap.onclick = () => {
+        isHeatmapActive = !isHeatmapActive;
+        btnHeatmap.classList.toggle('heatmap-active', isHeatmapActive);
+        btnHeatmap.innerHTML = isHeatmapActive ? '🔥 <span class="btn-text">Nhiệt Tải: BẬT</span>' : '🔥 <span class="btn-text">Nhiệt Tải</span>';
+        updateWorkloadHeatmap();
+        playSfx('ding');
+      };
+    }
+
+    let isCompactLod = false;
+    const btnLod = document.getElementById('btn-toggle-lod');
+    if (btnLod) {
+      btnLod.onclick = () => {
+        isCompactLod = !isCompactLod;
+        document.body.classList.toggle('compact-lod-mode', isCompactLod);
+        btnLod.classList.toggle('active', isCompactLod);
+        btnLod.innerHTML = isCompactLod ? '💬 <span class="btn-text">Đầy Đủ</span>' : '⚡ <span class="btn-text">Tinh Gọn</span>';
+        playSfx('ding');
+      };
+    }
+
+    let isDarkMode = false;
+    const btnTheme = document.getElementById('btn-toggle-theme');
+    if (btnTheme) {
+      btnTheme.onclick = () => {
+        isDarkMode = !isDarkMode;
+        document.body.classList.toggle('dark-theme', isDarkMode);
+        btnTheme.classList.toggle('active', isDarkMode);
+        btnTheme.innerHTML = isDarkMode ? '☀️ <span class="btn-text">Ngày</span>' : '🌙 <span class="btn-text">Đêm</span>';
+
+        if (isDarkMode) {
+          scene.background = new THREE.Color(0x0b0f19);
+          baseFloor.material.color.setHex(0x0f172a);
+          grandCorridor.material.color.setHex(0x1e293b);
+          crossCorridor.material.color.setHex(0x1e293b);
+          campusGrid.material.color.setHex(0x334155);
+          hemiLight.color.setHex(0x38bdf8);
+          hemiLight.groundColor.setHex(0x0f172a);
+          hemiLight.intensity = 0.55;
+          sunLight.color.setHex(0x93c5fd);
+          sunLight.intensity = 0.75;
+          // Ignite warm amber task lights across all BU workstations
+          Object.values(BU_DATA).forEach(bu => {
+            if (bu.suiteSpot) bu.suiteSpot.intensity = 1.6;
+          });
+        } else {
+          scene.background = new THREE.Color(0xf8fafc);
+          baseFloor.material.color.setHex(0xedebe8);
+          grandCorridor.material.color.setHex(0xf8fafc);
+          crossCorridor.material.color.setHex(0xf8fafc);
+          campusGrid.material.color.setHex(0xd4cebd);
+          hemiLight.color.setHex(0xffffff);
+          hemiLight.groundColor.setHex(0xf1f5f9);
+          hemiLight.intensity = 1.15;
+          sunLight.color.setHex(0xfff7ed);
+          sunLight.intensity = 1.45;
+          Object.values(BU_DATA).forEach(bu => {
+            if (bu.suiteSpot) bu.suiteSpot.intensity = 0.85;
+          });
+        }
+        playSfx('ding');
+      };
+    }
+
+    // -----------------------------------------------------------------
+    // DATA SOURCE CONTROLLER (PostgreSQL CRM Data vs Demo Data)
+    // -----------------------------------------------------------------
+    function switchDataMode(mode) {
+      activeDataMode = mode;
+      const btnData = document.getElementById('btn-toggle-data-mode');
+      if (btnData) {
+        if (activeDataMode === 'real') {
+          btnData.innerHTML = '📊 <span class="btn-text">Dữ Liệu Thật</span>';
+          btnData.classList.add('data-real-active');
+          btnData.title = 'Đang hiển thị: Dữ liệu thật từ CRM FIT Tour (Click để chuyển sang Mẫu Demo)';
+        } else {
+          btnData.innerHTML = '🧪 <span class="btn-text">Dữ Liệu Demo</span>';
+          btnData.classList.remove('data-real-active');
+          btnData.title = 'Đang hiển thị: Dữ liệu Mẫu Demo (Click để chuyển sang Dữ liệu Thật CRM)';
+        }
+      }
+
+      // Close live chat dock if open
+      const chatDock = document.getElementById('live-chat-dock');
+      if (chatDock) chatDock.classList.remove('active');
+      activeCustomerForChat = null;
+
+      // Cleanly remove all existing customer meshes and CSS2D elements from scene and DOM
+      customers.forEach(c => {
+        if (c.mesh) {
+          scene.remove(c.mesh);
+          c.mesh = null;
+        }
+        if (c.wrapperDiv) {
+          if (c.wrapperDiv.parentElement) {
+            c.wrapperDiv.parentElement.remove();
+          } else {
+            c.wrapperDiv.remove();
+          }
+          c.wrapperDiv = null;
+        }
+        c.holoDiv = null;
+        c.holoObj = null;
+      });
+
+      // Clone fresh data set
+      const source = (activeDataMode === 'real') 
+        ? (REAL_CUSTOMERS_FROM_API.length ? REAL_CUSTOMERS_FROM_API : REAL_CUSTOMERS_DATA) 
+        : DEMO_CUSTOMERS_DATA;
+      customers = JSON.parse(JSON.stringify(source));
+
+      // Re-render all entities in 3D scene, recalculate badges, and re-apply filters
+      refreshAllCustomers();
+      playSfx('dispatch');
+    }
+
+    const btnToggleDataMode = document.getElementById('btn-toggle-data-mode');
+    if (btnToggleDataMode) {
+      btnToggleDataMode.onclick = () => {
+        const nextMode = (activeDataMode === 'real') ? 'demo' : 'real';
+        switchDataMode(nextMode);
+      };
+    }
+
+    // -----------------------------------------------------------------
+    // REAL-TIME API CLIENT ENGINE (PostgreSQL Database Stream)
+    // -----------------------------------------------------------------
+    async function loadRealDataFromApi() {
+      try {
+        const res = await fetch('/api/dispatch/twin-data');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.success && data.leads) {
+          realApiMetrics = data.metrics;
+          realApiLatency = data.latency_ms;
+
+          let maxTime = 0;
+          data.leads.forEach(l => {
+            const t = new Date(l.created_at).getTime();
+            if (t > maxTime) maxTime = t;
+          });
+          const latestBatchTime = maxTime || Date.now();
+
+          const buCounts = { bu1: 0, bu2: 0, bu3: 0, bu4: 0, bu5: 0, lounge: 0 };
+
+          REAL_CUSTOMERS_FROM_API = data.leads.map((lead) => {
+            const rawBu = (lead.bu_group || '').toLowerCase();
+            let buId = 'lounge';
+            if (rawBu.includes('bu1') || rawBu === 'bu1') buId = 'bu1';
+            else if (rawBu.includes('bu2') || rawBu === 'bu2') buId = 'bu2';
+            else if (rawBu.includes('bu3') || rawBu === 'bu3') buId = 'bu3';
+            else if (rawBu.includes('bu4') || rawBu === 'bu4') buId = 'bu4';
+            else if (rawBu.includes('bu5') || rawBu === 'bu5') buId = 'bu5';
+
+            const buIdx = buCounts[buId]++;
+
+            const src = (lead.source || '').toLowerCase();
+            let channel = 'fb';
+            if (src.includes('zalo')) channel = 'zalo';
+            else if (src.includes('web') || src.includes('site') || src.includes('form')) channel = 'web';
+
+            let tour = lead.tour_name || 'Hành Trình Khám Phá FIT Tour';
+            if (!tour.startsWith('🏛️') && !tour.startsWith('🏔️') && !tour.startsWith('🐎') && !tour.startsWith('🏢') && !tour.startsWith('⛩️') && !tour.startsWith('🦁') && !tour.startsWith('❄️')) {
+              let prefix = '✨';
+              if (buId === 'bu1') prefix = '🏛️';
+              else if (buId === 'bu2') prefix = '🐎';
+              else if (buId === 'bu3') prefix = '🏢';
+              else if (buId === 'bu4') prefix = '⛩️';
+              else if (buId === 'bu5') prefix = '🦁';
+              tour = `${prefix} ${tour}`;
+            }
+
+            const createdDate = new Date(lead.created_at);
+            const hoursAgo = Math.max(0.2, (latestBatchTime - createdDate.getTime()) / (1000 * 60 * 60));
+            const slaHours = Math.round(hoursAgo * 10) / 10;
+
+            let mood = 'normal';
+            if (lead.status === 'Chưa chăm sóc' || lead.status === 'Mới') {
+              if (slaHours > 24) mood = 'critical';
+              else if (slaHours > 4) mood = 'frustrated';
+              else if (slaHours > 1) mood = 'impatient';
+            } else if (slaHours > 48) {
+              mood = 'critical';
+            } else if (slaHours > 12) {
+              mood = 'frustrated';
+            }
+
+            let timeCategory = 'this_week';
+            let receivedTime = 'Tuần này';
+            if (hoursAgo <= 24) {
+              timeCategory = 'today';
+              receivedTime = `Hôm nay ${String(createdDate.getHours()).padStart(2, '0')}:${String(createdDate.getMinutes()).padStart(2, '0')}`;
+            } else if (hoursAgo <= 48) {
+              timeCategory = 'yesterday';
+              receivedTime = `Hôm qua ${String(createdDate.getHours()).padStart(2, '0')}:${String(createdDate.getMinutes()).padStart(2, '0')}`;
+            } else {
+              timeCategory = 'this_week';
+              receivedTime = `${Math.floor(hoursAgo / 24)} ngày trước`;
+            }
+
+            const bu = BU_DATA[buId];
+            const isDeskAssigned = (lead.status === 'Đang liên hệ' || lead.consultant_name) && (buIdx < 2);
+            const state = isDeskAssigned ? 'consulting' : 'waiting';
+
+            let pos = [0, 0, 0];
+            if (bu && isDeskAssigned) {
+              const deskPos = bu.desks[buIdx % 2];
+              pos = [bu.pos[0] + deskPos.x, 0, bu.pos[2] + deskPos.z + (buIdx === 0 ? -2.2 : 2.2)];
+            } else if (bu) {
+              const q = Math.max(0, buIdx - 2);
+              if (q < 6) {
+                // Inside suite waiting seats (2 rows of 3)
+                const col = q % 3;
+                const row = Math.floor(q / 3);
+                const xOff = -5.0 + col * 5.0 + (row % 2 ? 0.4 : -0.4);
+                const zOff = -5.5 + row * 4.2;
+                pos = [bu.pos[0] + xOff, 0, bu.pos[2] + zOff];
+              } else {
+                // Promenade & corridor executive waiting queue outside suite
+                const outQ = q - 6;
+                const doorDir = (bu.doorSide === 'south') ? 1 : -1;
+                const colOut = outQ % 4;
+                const rowOut = Math.floor(outQ / 4);
+                const xOff = -5.5 + colOut * 3.6;
+                const zOff = doorDir * (bu.roomDepth / 2 + 2.5 + rowOut * 2.8);
+                pos = [bu.pos[0] + xOff, 0, bu.pos[2] + zOff];
+              }
+            } else {
+              // Central Grand Promenade & Cafe Lounge
+              const col = buIdx % 5;
+              const row = Math.floor(buIdx / 5);
+              const lx = -7.5 + col * 3.8;
+              const lz = -12.0 + (row % 8) * 3.4;
+              pos = [lx, 0, lz];
+            }
+
+            const rawMsg = (lead.conv_message || lead.consultation_note || 'Khách liên hệ quan tâm chương trình tour').replace(/^Facebook Message:\s*\"?/i, '').replace(/\"$/, '');
+            const chats = [
+              { from: 'customer', text: rawMsg, time: receivedTime }
+            ];
+            if (lead.status === 'Đang liên hệ' && lead.consultant_name) {
+              chats.push({
+                from: 'sale',
+                text: `Dạ chào anh/chị, em là ${lead.consultant_name} phụ trách tuyến, em xin gửi lịch trình và ưu đãi ạ.`,
+                time: 'Vừa xong'
+              });
+            }
+
+            return {
+              id: `real-${lead.id}`,
+              name: lead.name,
+              phone: lead.phone,
+              channel,
+              tour,
+              slaHours,
+              mood,
+              state,
+              buId: buId === 'lounge' ? null : buId,
+              consultant: lead.consultant_name || (bu ? bu.consultants[buIdx % bu.consultants.length] : 'Chưa gán'),
+              timeCategory,
+              receivedTime,
+              latestChat: rawMsg.slice(0, 95) + (rawMsg.length > 95 ? '...' : ''),
+              pos,
+              chats
+            };
+          });
+
+          if (activeDataMode === 'real') {
+            customers.forEach(c => {
+              if (c.mesh) {
+                scene.remove(c.mesh);
+                c.mesh = null;
+              }
+              if (c.wrapperDiv) {
+                if (c.wrapperDiv.parentElement) c.wrapperDiv.parentElement.remove();
+                else c.wrapperDiv.remove();
+                c.wrapperDiv = null;
+              }
+              c.holoDiv = null;
+              c.holoObj = null;
+            });
+
+            customers = JSON.parse(JSON.stringify(REAL_CUSTOMERS_FROM_API));
+            refreshAllCustomers();
+          }
+        }
+      } catch (err) {
+        console.warn('Twin API load failed, keeping local dataset:', err);
+      }
+    }
+    loadRealDataFromApi();
+
+    // -----------------------------------------------------------------
+    // 17. ANIMATION LOOP & RTS CAMERA WASD MOVEMENT
+    // -----------------------------------------------------------------
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      try {
+        const delta = Math.min(clock.getDelta(), 0.05);
+        const elapsed = clock.getElapsedTime();
+
+        // Camera tween
+        if (camTween) {
+          camTween.progress += 0.038;
+          camera.position.lerpVectors(camTween.fromPos, camTween.toPos, camTween.progress);
+          controls.target.lerpVectors(camTween.fromTarget, camTween.toTarget, camTween.progress);
+          if (camTween.progress >= 1) camTween = null;
+        }
+
+        // RTS WASD Movement
+        const moveSpeed = 0.65;
+        const forward = new THREE.Vector3();
+        camera.getWorldDirection(forward);
+        forward.y = 0;
+        forward.normalize();
+
+        const right = new THREE.Vector3();
+        right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+
+        if (keysPressed['KeyW'] || keysPressed['ArrowUp']) {
+          camera.position.addScaledVector(forward, moveSpeed);
+          controls.target.addScaledVector(forward, moveSpeed);
+        }
+        if (keysPressed['KeyS'] || keysPressed['ArrowDown']) {
+          camera.position.addScaledVector(forward, -moveSpeed);
+          controls.target.addScaledVector(forward, -moveSpeed);
+        }
+        if (keysPressed['KeyA'] || keysPressed['ArrowLeft']) {
+          camera.position.addScaledVector(right, -moveSpeed);
+          controls.target.addScaledVector(right, -moveSpeed);
+        }
+        if (keysPressed['KeyD'] || keysPressed['ArrowRight']) {
+          camera.position.addScaledVector(right, moveSpeed);
+          controls.target.addScaledVector(right, moveSpeed);
+        }
+
+        // Gentle customer walking / pacing locomotion (Nhẹ nhàng, sống động)
+        customers.forEach((c, idx) => {
+          if (!c.mesh || !c.mesh.visible || !c.pos) return;
+
+          if (c.baseX === undefined) {
+            c.baseX = c.pos[0];
+            c.baseZ = c.pos[2];
+            c.targetX = c.pos[0];
+            c.targetZ = c.pos[2];
+            // Khách chờ đi dạo bán kính rộng hơn (~2.6m); khách đang bàn tư vấn bước nhẹ quanh bàn (~0.7m)
+            c.wanderRadius = (c.state === 'waiting') ? 2.6 : 0.7;
+            c.walkSpeed = (c.state === 'waiting' ? 0.7 : 0.32) + ((idx % 3) * 0.08);
+            c.pauseTimer = 1.0 + (idx % 4) * 0.9;
+            c.isWalking = false;
+            c.walkStep = idx * 1.5;
+          }
+
+          if (c.pauseTimer > 0) {
+            c.pauseTimer -= delta;
+            c.isWalking = false;
+
+            // Thở nhẹ tự nhiên khi đứng yên
+            if (c.bodyMesh) {
+              c.bodyMesh.position.y = Math.sin(elapsed * 1.8 + idx) * 0.02;
+              c.bodyMesh.rotation.z = 0;
+            }
+
+            // Khách bàn tư vấn quay mặt nhẹ nhàng về phía bàn tư vấn
+            if (c.state === 'consulting') {
+              const faceDeskAngle = Math.PI;
+              let diffAngle = faceDeskAngle - c.mesh.rotation.y;
+              while (diffAngle < -Math.PI) diffAngle += Math.PI * 2;
+              while (diffAngle > Math.PI) diffAngle -= Math.PI * 2;
+              c.mesh.rotation.y += diffAngle * Math.min(1.0, delta * 3.0);
+            }
+
+            // Khi hết thời gian dừng, chọn điểm đến mới quanh vị trí gốc
+            if (c.pauseTimer <= 0) {
+              const angle = Math.random() * Math.PI * 2;
+              const dist = 0.25 + Math.random() * (c.wanderRadius - 0.25);
+              c.targetX = c.baseX + Math.cos(angle) * dist;
+              c.targetZ = c.baseZ + Math.sin(angle) * dist;
+              c.isWalking = true;
+            }
+          } else if (c.isWalking) {
+            const dx = c.targetX - c.mesh.position.x;
+            const dz = c.targetZ - c.mesh.position.z;
+            const distToTarget = Math.sqrt(dx * dx + dz * dz);
+
+            if (distToTarget < 0.12) {
+              c.isWalking = false;
+              c.pauseTimer = 2.5 + Math.random() * 3.5; // Đứng nghỉ 2.5 - 6s
+            } else {
+              const step = Math.min(distToTarget, c.walkSpeed * delta);
+              c.mesh.position.x += (dx / distToTarget) * step;
+              c.mesh.position.z += (dz / distToTarget) * step;
+
+              // Xoay nhân vật êm mượt theo hướng đang bước đi
+              const targetAngle = Math.atan2(dx, dz);
+              let diffAngle = targetAngle - c.mesh.rotation.y;
+              while (diffAngle < -Math.PI) diffAngle += Math.PI * 2;
+              while (diffAngle > Math.PI) diffAngle -= Math.PI * 2;
+              c.mesh.rotation.y += diffAngle * Math.min(1.0, delta * 5.0);
+
+              // Nhịp bước chân nhấp nhô và nghiêng vai nhẹ
+              c.walkStep += delta * 5.5;
+              if (c.bodyMesh) {
+                c.bodyMesh.position.y = Math.abs(Math.sin(c.walkStep)) * 0.06;
+                c.bodyMesh.rotation.z = Math.sin(c.walkStep) * 0.03;
+              }
+            }
+          }
+        });
+
+        // Consultant idle breathing
+        Object.values(consultantMeshMap).forEach(item => {
+          if (item.mesh && item.mesh.userData && item.mesh.userData.bobSpeed) {
+            item.mesh.position.y = (Math.sin(elapsed * item.mesh.userData.bobSpeed) * 0.02);
+          }
+        });
+
+        // Workload Heatmap Breathing Pulse
+        if (isHeatmapActive) {
+          Object.values(BU_DATA).forEach(bu => {
+            if (bu.heatmapMesh && bu.heatmapMesh.material.opacity > 0) {
+              bu.heatmapMesh.material.opacity = 0.42 + Math.sin(elapsed * 4.0) * 0.14;
+            }
+          });
+        }
+
+        controls.update();
+        renderer.render(scene, camera);
+        labelRenderer.render(scene, camera);
+      } catch (err) {
+        console.error('Animation loop error:', err);
+      }
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+  </script>
+</body>
+</html>
