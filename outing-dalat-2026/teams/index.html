@@ -121,24 +121,6 @@
     <!-- Master Box Container -->
     <div class="p-6 sm:p-8 rounded-3xl bg-white dark:bg-apple-cardDark shadow-apple border border-black/[0.06] dark:border-white/[0.08]">
       
-      <!-- Top Status Card -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-black/[0.06] dark:border-white/[0.08] pb-6 mb-6">
-        <div>
-          <div class="text-xs font-bold uppercase text-apple-textMuted dark:text-apple-textMutedDark tracking-wider">Trạng Thái Đội Hình</div>
-          <div id="teamApprovalBadge" class="mt-1.5 flex items-center gap-2">
-            <!-- Injected via JS -->
-          </div>
-        </div>
-
-        <!-- Quick copy button when approved -->
-        <div id="quickCopyContainer" class="hidden">
-          <button onclick="copyTeamsToClipboard()" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-apple-blue hover:bg-apple-blueHover text-white font-bold text-xs shadow-sm transition active:scale-95">
-            <span>📋</span>
-            <span>Sao Chép Danh Sách (Zalo)</span>
-          </button>
-        </div>
-      </div>
-
       <!-- Quick Metrics & Formula -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 text-xs">
         <div class="p-3.5 rounded-2xl bg-neutral-50 dark:bg-white/[0.03] border border-black/[0.05] dark:border-white/[0.06]">
@@ -147,15 +129,15 @@
         </div>
         <div class="p-3.5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300">
           <div class="font-medium">Tham Gia Thi Đấu</div>
-          <div id="statActiveCount" class="text-lg font-extrabold mt-0.5">27 Người</div>
+          <div id="statActiveCount" class="text-lg font-extrabold mt-0.5">28 Người</div>
         </div>
         <div class="p-3.5 rounded-2xl bg-rose-500/5 border border-rose-500/20 text-rose-800 dark:text-rose-300">
           <div class="font-medium">Loại Trừ (BTC / Đi Riêng)</div>
-          <div id="statExcludedCount" class="text-lg font-extrabold mt-0.5">5 Người</div>
+          <div id="statExcludedCount" class="text-lg font-extrabold mt-0.5">4 Người</div>
         </div>
         <div class="p-3.5 rounded-2xl bg-sky-500/5 border border-sky-500/20 text-sky-800 dark:text-sky-300">
           <div class="font-medium">Quy Tắc Phân Bổ</div>
-          <div id="statFormula" class="text-xs font-bold mt-1 leading-snug">9 - 9 - 9 người / đội</div>
+          <div id="statFormula" class="text-xs font-bold mt-1 leading-snug">1 đội 10 người + 2 đội 9 người (+1 người)</div>
         </div>
       </div>
 
@@ -190,55 +172,14 @@
         </div>
       </div>
 
-      <!-- ================= LUCKY DRAW SPINNER ARENA ================= -->
-      <div id="spinnerArena" class="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-neutral-50 to-neutral-100 dark:from-neutral-900/60 dark:to-neutral-900/30 border border-black/[0.08] dark:border-white/[0.1] text-center mb-8">
-        
-        <!-- Slot / Wheel Display Box -->
-        <div class="relative max-w-md mx-auto py-5 px-6 rounded-2xl bg-white dark:bg-apple-cardDark shadow-lg border border-black/[0.08] dark:border-white/[0.1] mb-5 overflow-hidden">
-          <div class="text-[11px] font-bold uppercase tracking-wider text-apple-textMuted dark:text-apple-textMutedDark mb-2 flex items-center justify-center gap-1.5">
-            <span>🎡 VÒNG XOAY MAY MẮN • BỐC THĂM ĐỘI HÌNH</span>
-          </div>
-
-          <!-- Live Spinning Avatar & Name Stage -->
-          <div id="spinDisplayStage" class="h-20 flex items-center justify-center gap-3">
-            <div id="spinAvatar" class="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-2xl font-extrabold text-neutral-500 shadow-inner overflow-hidden border border-black/10 dark:border-white/10 flex-shrink-0">
-              🎲
-            </div>
-            <div class="text-left min-w-0">
-              <div id="spinName" class="text-lg sm:text-xl font-extrabold text-[#1d1d1f] dark:text-white leading-tight truncate">
-                Sẵn Sàng Bốc Thăm
-              </div>
-              <div id="spinMeta" class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-0.5 truncate">
-                Nhấn xoay để bắt đầu chia đội
-              </div>
-            </div>
-          </div>
-
-          <!-- Live Banner Result -->
-          <div id="spinLiveBanner" class="mt-2 text-xs font-bold text-amber-600 dark:text-amber-400 min-h-[1.25rem]">
-            Đang chờ lệnh xoay từ Ban Tổ Chức
-          </div>
-        </div>
-
-        <!-- Spin Action Controls -->
-        <div class="flex flex-wrap items-center justify-center gap-3">
-          <!-- Button: Spin All Balanced -->
-          <button id="btnSpinAll" onclick="startSpinAllTeams()" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-white font-bold text-sm shadow-md hover:shadow-lg transition active:scale-95">
-            <span class="text-base">🎰</span>
-            <span>Xoay Toàn Đoàn (Chuẩn Tỷ Lệ)</span>
-          </button>
-
-          <!-- Button: Spin Single Member -->
-          <button id="btnSpinSingle" onclick="startSpinSingleMember()" class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[#1d1d1f] dark:text-white border border-black/10 dark:border-white/10 font-semibold text-sm shadow-sm transition active:scale-95">
-            <span class="text-base">🎡</span>
-            <span>Xoay 1 Người Vào Đội</span>
-          </button>
-
-          <!-- Button: Reset Draft -->
-          <button onclick="resetTeamDraft()" class="inline-flex items-center gap-1.5 px-4 py-3 rounded-full text-xs font-medium text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition">
-            <span>🔄</span>
-            <span>Chia Lại Mới</span>
-          </button>
+      <!-- ================= NÚT XOAY RANDOM ĐỘI HÌNH ================= -->
+      <div id="spinArea" class="flex flex-col items-center justify-center my-6">
+        <button id="btnSpinTeams" onclick="spinRandomTeams()" class="inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:brightness-110 text-white font-extrabold text-base shadow-lg hover:shadow-xl transition-all active:scale-95 cursor-pointer">
+          <span id="spinDiceIcon" class="text-2xl inline-block transition-transform duration-300">🎲</span>
+          <span id="spinBtnText">Xoay Bốc Thăm Chia Đội</span>
+        </button>
+        <div id="spinStatusMessage" class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-2.5 font-medium min-h-[1.25rem]">
+          Bấm để bốc thăm ngẫu nhiên &amp; cân bằng đội hình
         </div>
       </div>
 
@@ -267,9 +208,9 @@
       <span class="w-px h-4 bg-black/10 dark:bg-white/15"></span>
 
       <!-- 2: Trang Hiện Tại: Xoay Đội -->
-      <a href="#arena" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm font-bold tracking-tight">
+      <a href="#spinArea" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm font-bold tracking-tight">
         <span class="text-base">🎲</span>
-        <span class="text-xs sm:text-sm">Vòng Quay 3 Đội</span>
+        <span class="text-xs sm:text-sm">Xoay 3 Đội</span>
       </a>
 
       <span class="w-px h-4 bg-black/10 dark:bg-white/15"></span>
@@ -563,10 +504,10 @@
       assignedTeams = teams;
     }
 
-    function startSpinAllTeams() {
+    function spinRandomTeams() {
       if (isSpinning) return;
       if (isApproved) {
-        alert('Đội hình hiện đã được duyệt. Hãy nhấn "Mở Khóa Chỉnh Sửa" để quay bốc thăm lại.');
+        alert('Đội hình hiện đã được Admin duyệt chính thức. Hãy bấm "Mở Khóa Chỉnh Sửa" ở bên dưới nếu muốn xoay bốc thăm lại.');
         return;
       }
 
@@ -577,127 +518,37 @@
       }
 
       isSpinning = true;
-      document.getElementById('btnSpinAll').disabled = true;
-      document.getElementById('btnSpinSingle').disabled = true;
+      const btn = document.getElementById('btnSpinTeams');
+      const icon = document.getElementById('spinDiceIcon');
+      const text = document.getElementById('spinBtnText');
+      const statusMsg = document.getElementById('spinStatusMessage');
 
-      const banner = document.getElementById('spinLiveBanner');
-      banner.textContent = '🎰 Đang quay số ngẫu nhiên & tối ưu cân bằng đội hình...';
+      if (btn) btn.disabled = true;
+      if (icon) icon.classList.add('animate-spin');
+      if (text) text.textContent = 'Đang Xoay Bốc Thăm...';
+      if (statusMsg) statusMsg.innerHTML = '<span class="text-amber-600 dark:text-amber-400 font-bold">🎲 Đang bốc thăm ngẫu nhiên &amp; cân bằng đội hình...</span>';
 
       let count = 0;
-      const totalTicks = 24;
+      const totalTicks = 10;
       const interval = setInterval(() => {
         count++;
         playSpinTick();
-        const randMember = activeMembers[Math.floor(Math.random() * activeMembers.length)];
-        renderSpinStage(randMember, `Bốc thăm lượt ${count}...`);
 
         if (count >= totalTicks) {
           clearInterval(interval);
           generateBalancedDraft();
+          saveTeamsToStorage();
           isSpinning = false;
-          document.getElementById('btnSpinAll').disabled = false;
-          document.getElementById('btnSpinSingle').disabled = false;
+
+          if (btn) btn.disabled = false;
+          if (icon) icon.classList.remove('animate-spin');
+          if (text) text.textContent = 'Xoay Bốc Thăm Chia Đội';
+          if (statusMsg) statusMsg.innerHTML = '🎉 <span class="text-emerald-600 dark:text-emerald-400 font-extrabold">Đã bốc thăm ngẫu nhiên &amp; cân bằng đội hình!</span>';
+
           playFanfare();
-          banner.innerHTML = '🎉 <span class="text-emerald-600 dark:text-emerald-400 font-extrabold">BỐC THĂM TOÀN ĐOÀN HOÀN TẤT!</span> Vui lòng kiểm tra và duyệt bên dưới.';
           renderAll();
         }
-      }, 70);
-    }
-
-    function startSpinSingleMember() {
-      if (isSpinning) return;
-      if (isApproved) {
-        alert('Đội hình hiện đã được duyệt. Hãy nhấn "Mở Khóa Chỉnh Sửa" để quay bốc thăm lại.');
-        return;
-      }
-
-      const activeMembers = allMembers.filter(m => !excludedStts.has(String(m.stt)));
-      if (activeMembers.length === 0) {
-        alert('Vui lòng chọn ít nhất 1 thành viên thi đấu.');
-        return;
-      }
-
-      const assignedIds = new Set(assignedTeams.flat().map(p => String(p.stt)));
-      let unassigned = activeMembers.filter(m => !assignedIds.has(String(m.stt)));
-
-      if (unassigned.length === 0) {
-        if (confirm('Tất cả thành viên đã được xếp đội. Bạn có muốn xóa sạch để bốc thăm lại từng người từ đầu không?')) {
-          assignedTeams = [[], [], []];
-          unassigned = [...activeMembers];
-        } else {
-          return;
-        }
-      }
-
-      isSpinning = true;
-      document.getElementById('btnSpinAll').disabled = true;
-      document.getElementById('btnSpinSingle').disabled = true;
-
-      let count = 0;
-      const totalTicks = 16;
-      const interval = setInterval(() => {
-        count++;
-        playSpinTick();
-        const randMember = unassigned[Math.floor(Math.random() * unassigned.length)];
-        renderSpinStage(randMember, 'Đang chọn thành viên...');
-
-        if (count >= totalTicks) {
-          clearInterval(interval);
-          const winnerIndex = Math.floor(Math.random() * unassigned.length);
-          const chosenMember = unassigned[winnerIndex];
-
-          const N = activeMembers.length;
-          const base = Math.floor(N / 3);
-          const rem = N % 3;
-          const capacities = [base + (rem > 0 ? 1 : 0), base + (rem > 1 ? 1 : 0), base];
-
-          const candidateTeams = assignedTeams
-            .map((t, idx) => ({ t, idx, cap: capacities[idx] }))
-            .filter(item => item.t.length < item.cap);
-          
-          candidateTeams.sort((a, b) => a.t.length - b.t.length);
-          const targetTeam = candidateTeams[0] || { t: assignedTeams[0], idx: 0 };
-          targetTeam.t.push(chosenMember);
-
-          isSpinning = false;
-          document.getElementById('btnSpinAll').disabled = false;
-          document.getElementById('btnSpinSingle').disabled = false;
-          playFanfare();
-
-          const teamMeta = TEAM_METADATA[targetTeam.idx];
-          renderSpinStage(chosenMember, `ĐÃ VÀO: ${teamMeta.shortName}!`);
-          document.getElementById('spinLiveBanner').innerHTML = `🎉 <strong>${chosenMember.ho_ten}</strong> (@${chosenMember.nickname || 'TV'}) đã gia nhập <strong class="${teamMeta.accentText}">${teamMeta.name}</strong>!`;
-
-          renderAll();
-        }
-      }, 70);
-    }
-
-    function renderSpinStage(member, subText) {
-      const avatarEl = document.getElementById('spinAvatar');
-      const nameEl = document.getElementById('spinName');
-      const metaEl = document.getElementById('spinMeta');
-
-      if (!member) return;
-
-      if (member.avatar) {
-        avatarEl.innerHTML = `<img src="${member.avatar}" alt="${member.ho_ten}" class="w-full h-full object-cover">`;
-      } else {
-        avatarEl.innerHTML = `<span class="text-sm font-bold text-apple-blue">${(member.ho_ten || 'TV').substring(0, 2).toUpperCase()}</span>`;
-      }
-      nameEl.textContent = `${member.ho_ten} (@${member.nickname || member.stt})`;
-      metaEl.textContent = `${member.gioi_tinh} • PB: ${member.phong_ban || 'FIT'} • ${subText}`;
-    }
-
-    function resetTeamDraft() {
-      if (isApproved) {
-        if (!confirm('Đội hình đang ĐÃ DUYỆT. Bạn có chắc muốn mở khóa để bốc thăm chia lại từ đầu?')) return;
-        isApproved = false;
-      }
-      generateBalancedDraft();
-      playFanfare();
-      document.getElementById('spinLiveBanner').textContent = 'Đã đặt lại và tạo đội hình cân bằng mới.';
-      renderAll();
+      }, 60);
     }
 
     function moveMemberToTeam(sttStr, targetTeamIdx) {
@@ -801,31 +652,19 @@
         }
       }
 
-      const badgeContainer = document.getElementById('teamApprovalBadge');
-      const quickCopy = document.getElementById('quickCopyContainer');
-      if (badgeContainer) {
+      const spinBtn = document.getElementById('btnSpinTeams');
+      const spinStatusMsg = document.getElementById('spinStatusMessage');
+      if (spinBtn) {
         if (isApproved) {
-          badgeContainer.innerHTML = `
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500 text-white font-bold text-xs shadow-md animate-pulse">
-              <span>✅</span>
-              <span>ĐÃ ĐƯỢC ADMIN DUYỆT CHÍNH THỨC</span>
-            </div>
-            <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark">
-              Ban hành lúc: <strong>${approvedTimestamp || 'Vừa xong'}</strong>
-            </div>
-          `;
-          if (quickCopy) quickCopy.classList.remove('hidden');
+          spinBtn.classList.add('opacity-70', 'grayscale-[30%]');
+          if (spinStatusMsg) {
+            spinStatusMsg.innerHTML = '<span class="text-emerald-600 dark:text-emerald-400 font-bold">🔒 Đội hình đã được duyệt chính thức. Bấm "Mở Khóa Chỉnh Sửa" bên dưới nếu muốn xoay lại.</span>';
+          }
         } else {
-          badgeContainer.innerHTML = `
-            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 font-bold text-xs">
-              <span>🟡</span>
-              <span>BẢN DỰ THẢO (Chưa Duyệt)</span>
-            </div>
-            <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark">
-              Chờ Admin bấm duyệt bên dưới
-            </div>
-          `;
-          if (quickCopy) quickCopy.classList.add('hidden');
+          spinBtn.classList.remove('opacity-70', 'grayscale-[30%]');
+          if (spinStatusMsg && !isSpinning) {
+            spinStatusMsg.textContent = 'Bấm để bốc thăm ngẫu nhiên & cân bằng đội hình';
+          }
         }
       }
 
