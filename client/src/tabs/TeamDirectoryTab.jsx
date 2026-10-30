@@ -42,6 +42,7 @@ const TeamDirectoryTab = ({ users }) => {
       const matchBU = selectedBU === 'ALL' || (u.bus || []).includes(selectedBU);
       const matchSearch = !searchTerm || 
         u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.nickname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.phone?.includes(searchTerm);
       return matchBU && matchSearch;
@@ -270,7 +271,14 @@ const TeamDirectoryTab = ({ users }) => {
                         {!u.avatar_url && u.full_name?.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#1e293b' }}>{u.full_name}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#1e293b' }}>{u.full_name}</span>
+                          {u.nickname && (
+                            <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '1px 6px', borderRadius: '6px', background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe' }}>
+                              @{u.nickname}
+                            </span>
+                          )}
+                        </div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>{u.position || '-'}</div>
                       </div>
                     </div>

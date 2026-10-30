@@ -35,6 +35,7 @@ const UsersTab = ({
 
   const filteredUsers = users.filter(u => {
     const matchSearch = u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        u.nickname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         u.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         u.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -71,7 +72,7 @@ const UsersTab = ({
               <input 
                 className="filter-input" 
                 style={{ paddingLeft: '36px', width: '100%' }} 
-                placeholder="Tên, username, email..." 
+                placeholder="Tên, biệt danh, username, email..." 
                 value={searchTerm} 
                 onChange={e => setSearchTerm(e.target.value)} 
                 autoComplete="off"
@@ -195,6 +196,11 @@ const UsersTab = ({
                       <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                         <span style={{ fontWeight: 700, fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           {u.full_name}
+                          {u.nickname && (
+                            <span style={{ fontSize: '0.72rem', background: '#eff6ff', color: '#2563eb', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, border: '1px solid #bfdbfe' }}>
+                              @{u.nickname}
+                            </span>
+                          )}
                           {u.is_active === false && <span style={{ fontSize: '0.65rem', background: '#e2e8f0', color: '#475569', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>TẠM DỪNG</span>}
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: '#64748b' }}>

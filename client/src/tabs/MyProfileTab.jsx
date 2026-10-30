@@ -31,7 +31,8 @@ const MyProfileTab = ({ currentUser, addToast, onUpdateUser }) => {
         facebook_url: res.data.facebook_url || '',
         created_at: res.data.created_at ? new Date(res.data.created_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
         position: res.data.position || '',
-        avatar_url: res.data.avatar_url || ''
+        avatar_url: res.data.avatar_url || '',
+        nickname: res.data.nickname || ''
       });
     } catch (err) {
       console.error('Error fetching profile:', err);
@@ -192,9 +193,14 @@ const MyProfileTab = ({ currentUser, addToast, onUpdateUser }) => {
           </h3>
 
           <div className="mobile-stack-grid mobile-stack-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-            <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="modal-form-group">
               <label>HỌ VÀ TÊN</label>
               <input className="modal-input" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} style={{ fontWeight: 700 }} />
+            </div>
+
+            <div className="modal-form-group">
+              <label>BIỆT DANH (NICKNAME NỘI BỘ)</label>
+              <input className="modal-input" value={formData.nickname || ''} onChange={e => setFormData({...formData, nickname: e.target.value})} placeholder="VD: Max Vu, Loki, Phunnie..." style={{ fontWeight: 600, color: '#2563eb' }} />
             </div>
             
             <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>

@@ -14,6 +14,7 @@ export const AddUserModal = ({
     username: '',
     password: '',
     full_name: '',
+    nickname: '',
     email: '',
     phone: '',
     role_id: '',
@@ -38,7 +39,7 @@ export const AddUserModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(formData);
-    setFormData({ username: '', password: '', full_name: '', email: '', phone: '', role_id: '', bus: [] });
+    setFormData({ username: '', password: '', full_name: '', nickname: '', email: '', phone: '', role_id: '', bus: [] });
   };
 
   return (
@@ -64,6 +65,10 @@ export const AddUserModal = ({
           <div className="modal-form-group">
             <label>HỌ VÀ TÊN *</label>
             <input className="modal-input" required value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} placeholder="Nguyễn Văn A" />
+          </div>
+          <div className="modal-form-group">
+            <label>BIỆT DANH (NICKNAME NỘI BỘ)</label>
+            <input className="modal-input" value={formData.nickname} onChange={e => setFormData({...formData, nickname: e.target.value})} placeholder="Ví dụ: Loki, Max Vu, Phunnie..." />
           </div>
           <div className="modal-form-group">
             <label><Mail size={14} style={{ marginRight: '4px' }}/> SỐ ĐIỆN THOẠI</label>
@@ -111,7 +116,7 @@ export const EditUserModal = ({
   roles 
 }) => {
   const [formData, setFormData] = useState({
-    full_name: '', email: '', phone: '', role_id: '', is_active: true, permissions: {}, bus: [],
+    full_name: '', nickname: '', email: '', phone: '', role_id: '', is_active: true, permissions: {}, bus: [],
     birth_date: '', gender: '', id_card: '', passport_url: '', id_expiry: '', address: '', facebook_url: '', created_at: '', position: '', avatar_url: '', telegram_user_id: ''
   });
   const [activeTab, setActiveTab] = useState('personal');
@@ -146,7 +151,7 @@ export const EditUserModal = ({
         .catch(err => console.error("Error fetching BUs:", err));
 
       setFormData({
-        full_name: user.full_name || '', email: user.email || '', phone: user.phone || '',
+        full_name: user.full_name || '', nickname: user.nickname || '', email: user.email || '', phone: user.phone || '',
         role_id: user.role_id || '', is_active: user.is_active !== false, permissions: user.permissions || {},
         bus: user.bus || [],
         birth_date: user.birth_date ? new Date(user.birth_date).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', }) : '',
@@ -207,7 +212,14 @@ export const EditUserModal = ({
                 {!formData.avatar_url && user.full_name?.charAt(0).toUpperCase()}
               </div>
               <div style={{ flex: 1 }}>
-                <h3 style={{ margin: '0 0 4px', fontSize: '1.25rem', color: '#1e293b' }}>{user.full_name}</h3>
+                <h3 style={{ margin: '0 0 4px', fontSize: '1.25rem', color: '#1e293b' }}>
+                  {user.full_name}
+                  {(formData.nickname || user.nickname) && (
+                    <span style={{ marginLeft: '8px', fontSize: '0.85rem', fontWeight: 600, color: '#2563eb', background: '#eff6ff', border: '1px solid #bfdbfe', padding: '2px 8px', borderRadius: '6px' }}>
+                      @{formData.nickname || user.nickname}
+                    </span>
+                  )}
+                </h3>
                 <div style={{ display: 'flex', gap: '12px', fontSize: '0.85rem', color: '#64748b' }}>
                   <span>@{user.username}</span>
                   <span>•</span>
@@ -246,6 +258,10 @@ export const EditUserModal = ({
               <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
                 <label>HỌ VÀ TÊN *</label>
                 <input className="modal-input" required value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} />
+              </div>
+              <div className="modal-form-group" style={{ gridColumn: 'span 2' }}>
+                <label>BIỆT DANH (NICKNAME NỘI BỘ)</label>
+                <input className="modal-input" value={formData.nickname} onChange={e => setFormData({...formData, nickname: e.target.value})} placeholder="Ví dụ: Loki, Max Vu, Phunnie..." />
               </div>
               <div className="modal-form-group">
                 <label>SỐ ĐIỆN THOẠI</label>

@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FIT TOGETHER ĐÀ LẠT 2026 — Cẩm Nang Outing Trip</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="FIT Outing">
+  <meta name="theme-color" content="#f5f5f7">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Plus Jakarta Sans"', '"SF Pro Display"', '"SF Pro Text"', 'sans-serif'],
+          },
+          colors: {
+            apple: {
+              bg: '#f5f5f7',
+              darkBg: '#000000',
+              card: '#ffffff',
+              cardDark: '#1c1c1e',
+              cardDarker: '#161618',
+              border: 'rgba(0, 0, 0, 0.08)',
+              borderDark: 'rgba(255, 255, 255, 0.12)',
+              blue: '#0071e3',
+              blueHover: '#0077ed',
+              green: '#34c759',
+              orange: '#ff9500',
+              red: '#ff3b30',
+              purple: '#af52de',
+              textMuted: '#86868b',
+              textMutedDark: '#a1a1a6',
+            }
+          },
+          boxShadow: {
+            'apple': '0 4px 24px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04)',
+            'apple-hover': '0 20px 40px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -2px rgba(0, 0, 0, 0.06)',
+            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.08)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .apple-glass {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .dark .apple-glass {
+      background: rgba(22, 22, 24, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .lightbox-open {
+      overflow: hidden;
+    }
+    /* Sticky Excel columns ONLY on mobile screens (prevents overlapping on laptop) */
+    @media (max-width: 767px) {
+      .col-sticky-stt {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+      }
+      .col-sticky-name {
+        position: sticky;
+        left: 44px;
+        z-index: 10;
+        box-shadow: 2px 0 6px -2px rgba(0, 0, 0, 0.08);
+      }
+      .dark .col-sticky-name {
+        box-shadow: 2px 0 6px -2px rgba(255, 255, 255, 0.05);
+      }
+      thead .col-sticky-stt, thead .col-sticky-name {
+        z-index: 20;
+      }
+    }
+  </style>
+</head>
+<body class="bg-apple-bg text-[#1d1d1f] dark:bg-apple-darkBg dark:text-[#f5f5f7] transition-colors duration-300 min-h-screen font-sans selection:bg-apple-blue selection:text-white pb-28 sm:pb-28">
+
+  <!-- ================= TOP NAV (Apple Frosted Glass) ================= -->
+  <header class="fixed top-0 inset-x-0 z-50 apple-glass border-b border-black/[0.06] dark:border-white/[0.08] transition-all">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-sm shadow-sm">
+          🌲
+        </span>
+        <div class="flex flex-col">
+          <span class="font-bold text-sm tracking-tight leading-none text-[#1d1d1f] dark:text-white">FIT TOGETHER</span>
+          <span class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark tracking-normal">Đà Lạt Outing 2026</span>
+        </div>
+      </div>
+
+      <!-- Quick Nav Links -->
+      <nav class="hidden md:flex items-center space-x-1 text-[13px] font-medium text-neutral-600 dark:text-neutral-300">
+        <a href="#itinerary" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">Lịch trình</a>
+        <a href="#trekking" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">Trek D1-D2</a>
+        <a href="#packing" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">Hành trang</a>
+        <a href="#members" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">Danh sách thành viên</a>
+      </nav>
+
+      <!-- Right controls: Dark Mode Toggle -->
+      <div class="flex items-center space-x-2">
+        <button id="themeToggle" aria-label="Đổi giao diện" class="w-9 h-9 flex items-center justify-center rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition text-sm">
+          <span class="dark:hidden">🌙</span>
+          <span class="hidden dark:inline">☀️</span>
+        </button>
+        <a href="#members" class="inline-flex items-center space-x-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-apple-blue text-white hover:bg-apple-blueHover transition shadow-sm">
+          <span>Danh sách</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section class="pt-24 pb-10 px-4 sm:px-6 max-w-5xl mx-auto text-center">
+    <!-- Super Tag -->
+    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider mb-3">
+      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span>Company Trip 2026 • FIT Tour International</span>
+    </div>
+
+    <!-- Main Title -->
+    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#1d1d1f] dark:text-white leading-[1.15] mb-4">
+      FIT Together. <br class="hidden sm:block">
+      <span class="bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 via-teal-500 to-sky-600 dark:from-emerald-400 dark:via-teal-300 dark:to-sky-400">
+        Đà Lạt 4 Ngày 3 Đêm
+      </span>
+    </h1>
+
+    <!-- Key Meta Badges -->
+    <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium mb-6">
+      <span class="px-3.5 py-1.5 rounded-2xl bg-white dark:bg-apple-cardDark shadow-sm border border-black/[0.05] dark:border-white/[0.08] flex items-center gap-1.5">
+        <span>📅</span> <strong>11/11 – 14/11/2026</strong>
+      </span>
+      <span class="px-3.5 py-1.5 rounded-2xl bg-white dark:bg-apple-cardDark shadow-sm border border-black/[0.05] dark:border-white/[0.08] flex items-center gap-1.5">
+        <span>📍</span> <strong>Đà Lạt & Hồ Tuyền Lâm</strong>
+      </span>
+      <span class="px-3.5 py-1.5 rounded-2xl bg-white dark:bg-apple-cardDark shadow-sm border border-black/[0.05] dark:border-white/[0.08] flex items-center gap-1.5">
+        <span>👥</span> <strong>32 Thành viên</strong>
+      </span>
+    </div>
+
+    <!-- LAPTOP / DESKTOP CTA (Apple Standard Dual Actions) -->
+    <div class="hidden md:flex items-center justify-center gap-4 mt-7">
+      <!-- Primary Action: Open Full Infographic Poster Lightbox -->
+      <button onclick="openLightbox()" class="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-apple-blue hover:bg-apple-blueHover text-white text-sm font-bold shadow-md hover:shadow-lg transition-all active:scale-95 group">
+        <span class="text-base">🗺️</span>
+        <span>Xem Poster Lịch Trình (Infographic)</span>
+        <span class="opacity-75 group-hover:translate-x-0.5 transition-transform text-xs">↗</span>
+      </button>
+
+      <!-- Secondary Action: Jump to Member List & Directory -->
+      <a href="#members" class="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-white dark:bg-apple-cardDark hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[#1d1d1f] dark:text-[#f5f5f7] border border-black/[0.1] dark:border-white/[0.12] text-sm font-semibold shadow-sm hover:shadow transition-all active:scale-95">
+        <span class="text-base">👥</span>
+        <span>Danh Sách & Email (32 TV)</span>
+        <span class="opacity-50 text-xs">↓</span>
+      </a>
+    </div>
+
+    <!-- MOBILE CTA BUTTONS (Fast 1-Tap Thumb-Friendly) -->
+    <div class="flex md:hidden flex-col gap-2 max-w-sm mx-auto mt-4 px-1">
+      <!-- Main Mobile CTA: Show Lịch Trình Image & Save -->
+      <button onclick="openLightbox()" class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-apple-blue hover:bg-apple-blueHover text-white font-bold text-sm shadow-md transition active:scale-95">
+        <span class="text-base">🗺️</span>
+        <span>Xem Ảnh Lịch Trình (Lưu về máy)</span>
+        <span class="opacity-80">↗</span>
+      </button>
+
+      <!-- Sub Mobile CTAs -->
+      <div class="grid grid-cols-3 gap-1.5 text-xs">
+        <a href="#trekking" class="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-white dark:bg-apple-cardDark border border-black/[0.06] dark:border-white/[0.08] shadow-sm active:scale-95 text-center">
+          <span class="text-base mb-0.5">⛺</span>
+          <span class="font-bold text-[11px] leading-tight">Trek D1-D2</span>
+        </a>
+        <a href="#packing" class="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-white dark:bg-apple-cardDark border border-black/[0.06] dark:border-white/[0.08] shadow-sm active:scale-95 text-center">
+          <span class="text-base mb-0.5">🎒</span>
+          <span class="font-bold text-[11px] leading-tight">Hành Trang</span>
+        </a>
+        <a href="#members" class="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-white dark:bg-apple-cardDark border border-black/[0.06] dark:border-white/[0.08] shadow-sm active:scale-95 text-center">
+          <span class="text-base mb-0.5">👥</span>
+          <span class="font-bold text-[11px] leading-tight">32 Người</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LỊCH TRÌNH CHI TIẾT KÈM INFOGRAPHIC ================= -->
+  <section id="itinerary" class="max-w-5xl mx-auto px-4 sm:px-6 mb-16 scroll-mt-20">
+    
+    <!-- Header of Itinerary -->
+    <div class="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-black/[0.06] dark:border-white/[0.08]">
+      <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight text-[#1d1d1f] dark:text-white flex items-center gap-2">
+        <span>🗓️</span> Lịch Trình Chi Tiết 4 Ngày 3 Đêm
+      </h2>
+    </div>
+
+    <!-- Integrated Infographic Banner (Clickable & Compact) -->
+    <div class="relative bg-white dark:bg-apple-cardDark rounded-3xl p-4 sm:p-5 shadow-apple border border-black/[0.06] dark:border-white/[0.08] mb-8 overflow-hidden group cursor-pointer" onclick="openLightbox()">
+      <div class="flex items-center justify-between mb-3 px-1">
+        <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+          <span>🌲</span> Poster Lịch Trình Toàn Đoàn
+        </span>
+        <span class="text-xs text-apple-blue font-semibold group-hover:underline">Bấm để xem ảnh lớn ↗</span>
+      </div>
+      <div class="relative rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-900 border border-black/[0.04] dark:border-white/[0.06] max-h-[320px] sm:max-h-[380px]">
+        <img src="./assets/lich-trinh.png" alt="Infographic Lịch trình FIT Đà Lạt 2026" class="w-full h-full object-cover object-top transform transition duration-500 group-hover:scale-[1.01]">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
+          <span class="px-3.5 py-1.5 rounded-full apple-glass text-xs font-bold text-neutral-900 dark:text-white shadow-lg flex items-center gap-1.5">
+            🔍 Bấm để xem toàn màn hình (Full HD)
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Apple iOS Segmented Tabs: NGÀY 1 - 2 - 3 - 4 ONLY -->
+    <div class="flex justify-center mb-6">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1.5 rounded-2xl bg-black/[0.05] dark:bg-white/[0.08] backdrop-blur-lg border border-black/[0.04] dark:border-white/[0.06] w-full max-w-xl">
+        <button onclick="switchDay('day1')" id="tab-day1" class="day-tab p-2.5 rounded-xl text-center transition-all duration-200 bg-white dark:bg-apple-cardDark shadow-sm text-neutral-900 dark:text-white">
+          <span class="block text-xs sm:text-sm font-bold">Ngày 1 (11/11)</span>
+          <span class="block text-[10px] text-amber-600 dark:text-amber-400 font-medium">Trekking & BBQ</span>
+        </button>
+        <button onclick="switchDay('day2')" id="tab-day2" class="day-tab p-2.5 rounded-xl text-center transition-all duration-200 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">
+          <span class="block text-xs sm:text-sm font-bold">Ngày 2 (12/11)</span>
+          <span class="block text-[10px] text-sky-600 dark:text-sky-400 font-medium">SUP & Nhạc</span>
+        </button>
+        <button onclick="switchDay('day3')" id="tab-day3" class="day-tab p-2.5 rounded-xl text-center transition-all duration-200 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">
+          <span class="block text-xs sm:text-sm font-bold">Ngày 3 (13/11)</span>
+          <span class="block text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Freeday & Villa</span>
+        </button>
+        <button onclick="switchDay('day4')" id="tab-day4" class="day-tab p-2.5 rounded-xl text-center transition-all duration-200 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">
+          <span class="block text-xs sm:text-sm font-bold">Ngày 4 (14/11)</span>
+          <span class="block text-[10px] text-indigo-600 dark:text-indigo-400 font-medium">Chợ & Về lại</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Day Container (Shows ONLY 1 day at a time) -->
+    <div id="daysContainer">
+
+      <!-- DAY 1 (Default Active) -->
+      <div class="day-card bg-white dark:bg-apple-cardDark rounded-3xl p-6 sm:p-7 shadow-apple border border-black/[0.06] dark:border-white/[0.08]" id="view-day1">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-black/[0.06] dark:border-white/[0.08] gap-3">
+          <div class="flex items-center gap-3">
+            <span class="w-11 h-11 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg font-bold">
+              01
+            </span>
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">Thứ Tư • 11/11/2026</span>
+              <h3 class="text-lg sm:text-xl font-bold text-[#1d1d1f] dark:text-white">
+                Khởi Hành — Trekking — Camping — Lửa Trại BBQ
+              </h3>
+            </div>
+          </div>
+          <span class="inline-flex self-start sm:self-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            Khám Phá Rừng & Cắm Trại
+          </span>
+        </div>
+
+        <div class="mt-5 space-y-3.5">
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition">
+            <span class="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300">05:30</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm">Tập trung 19 Lương Hữu Khánh, Q.1</p>
+              <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Khởi hành di chuyển qua KDL Văn Thánh.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition">
+            <span class="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300">06:30</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm">Tập trung Văn Thánh — Dùng bữa sáng</p>
+              <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Điểm danh đầy đủ thành viên trước khi lên xe cao tốc.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition">
+            <span class="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300">07:30</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm">Khởi hành đi Đà Lạt — Ăn trưa tại Bảo Lộc</p>
+              <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Nghỉ chân và dùng cơm trưa tại Bảo Lộc.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/30">
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-200 dark:bg-emerald-900 text-xs font-mono font-bold text-emerald-900 dark:text-emerald-200">14:00</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm text-emerald-800 dark:text-emerald-300">Đến Đà Lạt — Trekking 2km vào khu cắm trại</p>
+              <p class="text-xs text-neutral-600 dark:text-neutral-300 mt-0.5">
+                Đi bộ nhẹ 2km đường rừng thông hít thở không khí se lạnh. Dựng lều Camping (Lều 2 - 3 - 4 người) đã có sẵn túi ngủ, tấm cách nhiệt.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30">
+            <span class="px-2.5 py-1 rounded-lg bg-amber-200 dark:bg-amber-900 text-xs font-mono font-bold text-amber-900 dark:text-amber-200">18:00</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm text-amber-800 dark:text-amber-300">Ăn tối BBQ / Lửa trại / Sinh hoạt chung</p>
+              <p class="text-xs text-neutral-600 dark:text-neutral-300 mt-0.5">
+                Thực đơn: Gà nướng, thịt heo nướng, cơm lam, xà lách trộn, cháo lòng mề gà nóng, 2 loại trái cây. Quây quần bên lửa trại.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY 2 -->
+      <div class="day-card hidden bg-white dark:bg-apple-cardDark rounded-3xl p-6 sm:p-7 shadow-apple border border-black/[0.06] dark:border-white/[0.08]" id="view-day2">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-black/[0.06] dark:border-white/[0.08] gap-3">
+          <div class="flex items-center gap-3">
+            <span class="w-11 h-11 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center text-lg font-bold">
+              02
+            </span>
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">Thứ Năm • 12/11/2026</span>
+              <h3 class="text-lg sm:text-xl font-bold text-[#1d1d1f] dark:text-white">
+                Huấn Luyện SUP — Trekking Rừng — Villa — Đêm Nhạc
+              </h3>
+            </div>
+          </div>
+          <span class="inline-flex self-start sm:self-center px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+            Chèo SUP & Đêm Nhạc
+          </span>
+        </div>
+
+        <div class="mt-5 space-y-3.5">
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition">
+            <span class="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300">06:00</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm">Thức dậy — Cà phê sáng & Ăn sáng</p>
+              <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Mỳ ly sườn + xúc xích, rau tươi, cà phê / atiso.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl bg-sky-50/70 dark:bg-sky-950/20 border border-sky-200/50 dark:border-sky-800/30">
+            <span class="px-2.5 py-1 rounded-lg bg-sky-200 dark:bg-sky-900 text-xs font-mono font-bold text-sky-900 dark:text-sky-200">08:00</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm text-sky-800 dark:text-sky-300">Huấn luyện chèo SUP / Chia đội thi (02 người/cái)</p>
+              <p class="text-xs text-neutral-600 dark:text-neutral-300 mt-0.5">Tập huấn an toàn, trang bị áo phao và trải nghiệm đua SUP trên hồ Tuyền Lâm.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition">
+            <span class="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300">10:00</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm">Trekking 02 km đường rừng</p>
+              <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Hành trình đi bộ ngắm thiên nhiên rừng thông và bờ hồ.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition">
+            <span class="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300">11:30</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm">Ăn trưa bên rừng (Picnic) & Trả lều</p>
+              <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Bánh mì, chả lụa, phô-mai, cà chua + dưa leo, 3 loại trái cây.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition">
+            <span class="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300">14:00</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm">Nhận phòng Villa & Nghỉ ngơi</p>
+              <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Check-in khu biệt thự riêng tiện nghi, tắm rửa hồi phục năng lượng.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl bg-purple-50/70 dark:bg-purple-950/20 border border-purple-200/50 dark:border-purple-800/30">
+            <span class="px-2.5 py-1 rounded-lg bg-purple-200 dark:bg-purple-900 text-xs font-mono font-bold text-purple-900 dark:text-purple-200">18:00</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm text-purple-800 dark:text-purple-300">Ăn tối & Thưởng thức đêm nhạc “Bình Minh Ơi” (19:00)</p>
+              <p class="text-xs text-neutral-600 dark:text-neutral-300 mt-0.5">Không gian âm nhạc acoustic lãng mạn ngoài trời tại Đà Lạt.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY 3 -->
+      <div class="day-card hidden bg-white dark:bg-apple-cardDark rounded-3xl p-6 sm:p-7 shadow-apple border border-black/[0.06] dark:border-white/[0.08]" id="view-day3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-black/[0.06] dark:border-white/[0.08] gap-3">
+          <div class="flex items-center gap-3">
+            <span class="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg font-bold">
+              03
+            </span>
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Thứ Sáu • 13/11/2026</span>
+              <h3 class="text-lg sm:text-xl font-bold text-[#1d1d1f] dark:text-white">
+                Freeday — Tự Do Khám Phá — BBQ Villa Riêng
+              </h3>
+            </div>
+          </div>
+          <span class="inline-flex self-start sm:self-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            Tự Do Thư Giãn
+          </span>
+        </div>
+
+        <div class="mt-5 space-y-4">
+          <div class="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/60 dark:border-neutral-700/60">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-xl">📸</span>
+              <h4 class="font-bold text-sm sm:text-base">Cả Ngày Tự Do Theo Sở Thích</h4>
+            </div>
+            <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark leading-relaxed">
+              Tự do nghỉ dưỡng tại villa hoặc khám phá Đà Lạt theo sở thích (quán cà phê săn mây, dạo Hồ Xuân Hương, ẩm thực phố núi...).
+            </p>
+            <div class="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
+              <span>💳 FIT gửi chi phí đúng bữa:</span>
+              <span>Sáng & Trưa: 200.000đ / thành viên</span>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30">
+            <span class="px-2.5 py-1 rounded-lg bg-amber-200 dark:bg-amber-900 text-xs font-mono font-bold text-amber-900 dark:text-amber-200">18:00</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm text-amber-800 dark:text-amber-300">BBQ Tiệc Nướng tại Villa riêng</p>
+              <p class="text-xs text-neutral-600 dark:text-neutral-300 mt-0.5">Tiệc nướng ấm cúng, nâng ly và tâm sự tổng kết chuyến đi.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY 4 -->
+      <div class="day-card hidden bg-white dark:bg-apple-cardDark rounded-3xl p-6 sm:p-7 shadow-apple border border-black/[0.06] dark:border-white/[0.08]" id="view-day4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-black/[0.06] dark:border-white/[0.08] gap-3">
+          <div class="flex items-center gap-3">
+            <span class="w-11 h-11 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg font-bold">
+              04
+            </span>
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Thứ Bảy • 14/11/2026</span>
+              <h3 class="text-lg sm:text-xl font-bold text-[#1d1d1f] dark:text-white">
+                Ăn Sáng — Chợ Đà Lạt — Trở Về TP.HCM
+              </h3>
+            </div>
+          </div>
+          <span class="inline-flex self-start sm:self-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+            Mua Quà & Về Lại
+          </span>
+        </div>
+
+        <div class="mt-5 space-y-3.5">
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition">
+            <span class="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300">07:00</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm">Ăn sáng đặc sản Bún Bò & Dạo chợ Đà Lạt</p>
+              <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Mua đặc sản làm quà (dâu tây, mứt, rau củ sấy...).</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition">
+            <span class="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300">09:30</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm">Check Out Villa — Lên xe về lại TPHCM</p>
+              <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Kiểm tra tư trang hành lý trước khi xuất phát.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3.5 p-3 rounded-2xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition">
+            <span class="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs font-mono font-bold text-neutral-700 dark:text-neutral-300">16:30</span>
+            <div class="flex-1">
+              <p class="font-semibold text-sm">Ăn nhẹ tại Bảo Lộc & Về đến FIT TOUR</p>
+              <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Kết thúc chuyến đi Outing Đà Lạt 2026!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= LIGHTBOX MODAL ================= -->
+  <div id="lightboxModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-6" onclick="closeLightbox(event)">
+    <div class="relative max-w-6xl w-full max-h-[96vh] flex flex-col items-center justify-center" onclick="event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="w-full flex justify-between items-center text-white mb-2 px-2 gap-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs sm:text-sm font-bold tracking-tight">🗺️ Lịch Trình Chi Tiết 4N3Đ</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="./assets/lich-trinh.png" download="FIT-TOUR-Lich-Trinh-Da-Lat-2026.png" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-apple-blue hover:bg-apple-blueHover text-white text-xs font-bold shadow-lg transition active:scale-95">
+            <span>📥</span>
+            <span>Lưu ảnh về điện thoại</span>
+          </a>
+          <button onclick="closeLightbox()" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-base font-bold transition">✕</button>
+        </div>
+      </div>
+      <!-- Modal Image Container -->
+      <div class="overflow-auto max-h-[82vh] rounded-2xl border border-white/10 shadow-2xl">
+        <img src="./assets/lich-trinh.png" alt="Lịch trình chi tiết" class="max-w-full h-auto rounded-2xl">
+      </div>
+      <!-- Modal Mobile Bottom Save Pill -->
+      <div class="mt-2.5 flex justify-center w-full">
+        <a href="./assets/lich-trinh.png" download="FIT-TOUR-Lich-Trinh-Da-Lat-2026.png" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition active:scale-95">
+          <span>📥 Tải ảnh về album ảnh</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TREK D1-D2 & CAMPING FOCUS ================= -->
+  <section id="trekking" class="max-w-5xl mx-auto px-4 sm:px-6 mb-16 scroll-mt-20">
+    <div class="text-center max-w-2xl mx-auto mb-8">
+      <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight text-[#1d1d1f] dark:text-white">
+        ⛺ Trek D1-D2: Cắm Trại & Hoạt Động Rừng
+      </h2>
+      <p class="text-xs sm:text-sm text-apple-textMuted dark:text-apple-textMutedDark mt-1">
+        Thực đơn ẩm thực dã ngoại và cơ sở hỗ trợ đã bao gồm
+      </p>
+    </div>
+        Thông Tin Trekking & Cắm Trại (N1 & N2)
+      </h2>
+      <p class="text-xs sm:text-sm text-apple-textMuted dark:text-apple-textMutedDark mt-1">
+        Thực đơn ẩm thực dã ngoại và cơ sở hỗ trợ đã bao gồm
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Thực đơn ẩm thực -->
+      <div class="bg-white dark:bg-apple-cardDark rounded-3xl p-6 shadow-apple border border-black/[0.06] dark:border-white/[0.08]">
+        <h3 class="text-base font-bold text-[#1d1d1f] dark:text-white mb-4 flex items-center gap-2">
+          <span>🍖</span> Thực Đơn Dã Ngoại
+        </h3>
+        <ul class="space-y-3 text-xs sm:text-sm text-neutral-600 dark:text-neutral-300">
+          <li class="pb-2.5 border-b border-black/[0.05] dark:border-white/[0.06]">
+            <strong class="text-amber-600 dark:text-amber-400 block font-semibold mb-0.5">Ăn tối Ngày 1 — BBQ Lửa Trại:</strong>
+            Gà nướng, Thịt heo nướng, Cơm Lam, xà lách trộn, cháo lòng mề gà, 2 loại trái cây.
+          </li>
+          <li class="pb-2.5 border-b border-black/[0.05] dark:border-white/[0.06]">
+            <strong class="text-sky-600 dark:text-sky-400 block font-semibold mb-0.5">Ăn sáng Ngày 2:</strong>
+            Mỳ ly sườn + xúc xích, rau tươi, cà phê / trà atiso.
+          </li>
+          <li>
+            <strong class="text-emerald-600 dark:text-emerald-400 block font-semibold mb-0.5">Ăn trưa Ngày 2 — Picnic Dã Ngoại:</strong>
+            Bánh mì, chả lụa, phô-mai, cà chua + dưa leo, 3 loại trái cây.
+          </li>
+        </ul>
+      </div>
+
+      <!-- Hỗ trợ & Trang bị -->
+      <div class="bg-white dark:bg-apple-cardDark rounded-3xl p-6 shadow-apple border border-black/[0.06] dark:border-white/[0.08] flex flex-col justify-between">
+        <div>
+          <h3 class="text-base font-bold text-[#1d1d1f] dark:text-white mb-4 flex items-center gap-2">
+            <span>⛺</span> Cơ Sở Hỗ Trợ Đã Bao Gồm
+          </h3>
+          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs sm:text-sm text-neutral-600 dark:text-neutral-300">
+            <li class="flex items-center gap-2"><span class="text-emerald-500 font-bold">✓</span> Lều trại cao cấp</li>
+            <li class="flex items-center gap-2"><span class="text-emerald-500 font-bold">✓</span> Túi ngủ riêng 01 người/túi</li>
+            <li class="flex items-center gap-2"><span class="text-emerald-500 font-bold">✓</span> Tấm cách nhiệt chống ẩm</li>
+            <li class="flex items-center gap-2"><span class="text-emerald-500 font-bold">✓</span> Dụng cụ y tế, cứu thương</li>
+            <li class="flex items-center gap-2"><span class="text-emerald-500 font-bold">✓</span> Hướng dẫn viên & Porter</li>
+            <li class="flex items-center gap-2"><span class="text-emerald-500 font-bold">✓</span> Bảo hiểm du lịch toàn đoàn</li>
+          </ul>
+        </div>
+        <div class="mt-4 p-3 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-[11px] text-neutral-500">
+          * Không bao gồm: Các chi phí phát sinh cá nhân ngoài chương trình.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PACKING & NOTES ================= -->
+  <section id="packing" class="max-w-5xl mx-auto px-4 sm:px-6 mb-16 scroll-mt-20">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Interactive Checklist -->
+      <div class="bg-white dark:bg-apple-cardDark rounded-3xl p-6 shadow-apple border border-black/[0.06] dark:border-white/[0.08]">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
+          <h3 class="font-bold text-base text-[#1d1d1f] dark:text-white flex items-center gap-2">
+            <span>🎒</span> Hành Trang Phải Mang Theo
+          </h3>
+          <span id="packProgress" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            0/7 món
+          </span>
+        </div>
+        <div class="space-y-2.5" id="checklistItems">
+          <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] cursor-pointer transition text-xs sm:text-sm select-none">
+            <input type="checkbox" class="pack-checkbox w-4 h-4 rounded text-apple-blue focus:ring-0">
+            <span>Giày tốt cho đi bộ / leo núi</span>
+          </label>
+          <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] cursor-pointer transition text-xs sm:text-sm select-none">
+            <input type="checkbox" class="pack-checkbox w-4 h-4 rounded text-apple-blue focus:ring-0">
+            <span>Mũ nón che nắng & Kem chống nắng</span>
+          </label>
+          <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] cursor-pointer transition text-xs sm:text-sm select-none">
+            <input type="checkbox" class="pack-checkbox w-4 h-4 rounded text-apple-blue focus:ring-0">
+            <span>Bộ đồ mặc khô (thay sau khi chèo SUP)</span>
+          </label>
+          <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] cursor-pointer transition text-xs sm:text-sm select-none">
+            <input type="checkbox" class="pack-checkbox w-4 h-4 rounded text-apple-blue focus:ring-0">
+            <span>Quần áo ấm, dài tay, vớ dài, găng tay</span>
+          </label>
+          <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] cursor-pointer transition text-xs sm:text-sm select-none">
+            <input type="checkbox" class="pack-checkbox w-4 h-4 rounded text-apple-blue focus:ring-0">
+            <span>Dụng cụ vệ sinh cá nhân, thuốc chống côn trùng, dầu gió</span>
+          </label>
+          <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] cursor-pointer transition text-xs sm:text-sm select-none">
+            <input type="checkbox" class="pack-checkbox w-4 h-4 rounded text-apple-blue focus:ring-0">
+            <span>Túi nylon / túi khô chống nước cho thiết bị điện tử</span>
+          </label>
+          <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-black/[0.02] dark:hover:bg-white/[0.02] cursor-pointer transition text-xs sm:text-sm select-none">
+            <input type="checkbox" class="pack-checkbox w-4 h-4 rounded text-apple-blue focus:ring-0">
+            <span>Dép đi lại buổi tối quanh lều / Áo mưa nhẹ</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Critical Warnings -->
+      <div class="bg-red-500/10 border border-red-500/20 rounded-3xl p-6 flex flex-col justify-between">
+        <div>
+          <h3 class="text-base font-bold text-red-600 dark:text-red-400 mb-3 flex items-center gap-2">
+            <span>⚠️</span> Lưu Ý Quan Trọng
+          </h3>
+          <ul class="space-y-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300">
+            <li>• <strong>Hành lý gọn nhẹ:</strong> Không mang vali cồng kềnh vào khu lều ngày 1.</li>
+            <li>• <strong>KHÔNG đi giày da, KHÔNG dùng balo dây rút.</strong></li>
+            <li>• <strong>Sức khỏe:</strong> Đảm bảo thể lực, không có tiền sử tim mạch, huyết áp.</li>
+            <li>• <strong>Phụ nữ có thai:</strong> Không được tham gia chặng trekking.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= DANH SÁCH 32 THÀNH VIÊN (EXCEL SPREADSHEET STYLE) ================= -->
+  <section id="members" class="max-w-5xl mx-auto px-4 sm:px-6 mb-8 scroll-mt-20">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
+      <div>
+        <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight text-[#1d1d1f] dark:text-white flex items-center gap-2">
+          <span>📋</span> Danh Sách Thành Viên (32)
+        </h2>
+        <p class="text-xs sm:text-sm text-apple-textMuted dark:text-apple-textMutedDark mt-0.5">
+          Hiển thị dạng bảng bảng tính • Tra cứu số điện thoại và ghi chú hành trình
+        </p>
+      </div>
+
+      <!-- Live Count Stats -->
+      <div class="flex items-center gap-2 text-xs">
+        <span class="px-2.5 py-1 rounded-xl bg-white dark:bg-apple-cardDark shadow-sm border border-black/[0.05] dark:border-white/[0.08]">
+          👨 Nam: <strong>16</strong>
+        </span>
+        <span class="px-2.5 py-1 rounded-xl bg-white dark:bg-apple-cardDark shadow-sm border border-black/[0.05] dark:border-white/[0.08]">
+          👩 Nữ: <strong>16</strong>
+        </span>
+        <span id="filteredCount" class="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold">
+          32 / 32
+        </span>
+      </div>
+    </div>
+
+    <!-- Quick BU Filter Pills (Mobile friendly) -->
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2 mb-2 text-xs">
+      <button onclick="setBuFilter('ALL')" class="bu-pill active-pill whitespace-nowrap px-3 py-1.5 rounded-full font-semibold transition bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm" data-bu="ALL">Tất cả (32)</button>
+      <button onclick="setBuFilter('BOD')" class="bu-pill whitespace-nowrap px-3 py-1.5 rounded-full font-medium transition bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300" data-bu="BOD">BOD / CEO</button>
+      <button onclick="setBuFilter('1')" class="bu-pill whitespace-nowrap px-3 py-1.5 rounded-full font-medium transition bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300" data-bu="1">BU 1</button>
+      <button onclick="setBuFilter('2')" class="bu-pill whitespace-nowrap px-3 py-1.5 rounded-full font-medium transition bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300" data-bu="2">BU 2</button>
+      <button onclick="setBuFilter('3')" class="bu-pill whitespace-nowrap px-3 py-1.5 rounded-full font-medium transition bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300" data-bu="3">BU 3</button>
+      <button onclick="setBuFilter('4')" class="bu-pill whitespace-nowrap px-3 py-1.5 rounded-full font-medium transition bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300" data-bu="4">BU 4</button>
+      <button onclick="setBuFilter('5')" class="bu-pill whitespace-nowrap px-3 py-1.5 rounded-full font-medium transition bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300" data-bu="5">BU 5</button>
+      <button onclick="setBuFilter('Marketing')" class="bu-pill whitespace-nowrap px-3 py-1.5 rounded-full font-medium transition bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300" data-bu="Marketing">Marketing</button>
+      <button onclick="setBuFilter('Kế toán')" class="bu-pill whitespace-nowrap px-3 py-1.5 rounded-full font-medium transition bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300" data-bu="Kế toán">Kế Toán</button>
+      <button onclick="setBuFilter('Visa')" class="bu-pill whitespace-nowrap px-3 py-1.5 rounded-full font-medium transition bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300" data-bu="Visa">Visa</button>
+    </div>
+
+    <!-- Excel Filter & Search Toolbar -->
+    <div class="bg-white dark:bg-apple-cardDark rounded-2xl p-3 shadow-apple border border-black/[0.06] dark:border-white/[0.08] mb-3 flex flex-col sm:flex-row items-center gap-2.5">
+      <div class="relative w-full sm:flex-1">
+        <span class="absolute inset-y-0 left-3 flex items-center text-neutral-400 text-xs">🔍</span>
+        <input type="text" id="memberSearch" placeholder="Tìm tên, nickname, nghề nghiệp, số điện thoại..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-xs sm:text-sm border-none focus:ring-2 focus:ring-apple-blue outline-none transition">
+      </div>
+      
+      <!-- BU Filter (Hidden on small screens since pills exist, visible on desktop) -->
+      <div class="hidden sm:block">
+        <select id="buFilter" class="px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-xs sm:text-sm border-none font-medium text-neutral-700 dark:text-neutral-300 focus:ring-2 focus:ring-apple-blue outline-none cursor-pointer">
+          <option value="ALL">Tất cả Phòng Ban</option>
+          <option value="BOD">BOD / CEO</option>
+          <option value="1">BU 1</option>
+          <option value="2">BU 2</option>
+          <option value="3">BU 3</option>
+          <option value="4">BU 4</option>
+          <option value="5">BU 5</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Kế toán">Kế Toán</option>
+          <option value="Visa">Visa</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Mobile Swipe Hint (Chỉ hiện trên điện thoại) -->
+    <div class="flex md:hidden items-center justify-between text-[11px] text-apple-textMuted dark:text-apple-textMutedDark mb-2 px-1">
+      <span>💡 Vuốt ngang để xem SĐT, Email & Ghi chú</span>
+      <span class="text-apple-blue font-semibold">Họ Tên ghim cố định 📌</span>
+    </div>
+
+    <!-- Excel Spreadsheet Table Container -->
+    <div class="bg-white dark:bg-apple-cardDark rounded-2xl shadow-apple border border-black/[0.08] dark:border-white/[0.1] overflow-hidden">
+      <div class="overflow-x-auto max-h-[600px] no-scrollbar">
+        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+          <!-- Excel Table Header -->
+          <thead class="sticky top-0 z-20 bg-neutral-100 dark:bg-neutral-800 border-b border-black/[0.08] dark:border-white/[0.1] text-neutral-600 dark:text-neutral-300 uppercase tracking-wider text-[11px] font-bold">
+            <tr>
+              <th scope="col" class="col-sticky-stt py-2.5 px-2.5 text-center w-11 bg-neutral-100 dark:bg-neutral-800">STT</th>
+              <th scope="col" class="col-sticky-name py-2.5 px-3 min-w-[180px] bg-neutral-100 dark:bg-neutral-800">Thành viên</th>
+              <th scope="col" class="py-2.5 px-3 min-w-[110px]">NICK NAME</th>
+              <th scope="col" class="py-2.5 px-2.5 text-center w-16">Giới tính</th>
+              <th scope="col" class="py-2.5 px-3 min-w-[90px]">Phòng Ban</th>
+              <th scope="col" class="py-2.5 px-3 min-w-[140px]">Nghề nghiệp</th>
+              <th scope="col" class="py-2.5 px-3 min-w-[125px]">Số điện thoại</th>
+              <th scope="col" class="py-2.5 px-3 min-w-[195px]">Email</th>
+              <th scope="col" class="py-2.5 px-4 min-w-[200px]">Ghi chú riêng</th>
+            </tr>
+          </thead>
+          <!-- Excel Table Body -->
+          <tbody id="membersTableBody" class="divide-y divide-black/[0.04] dark:divide-white/[0.06] text-neutral-800 dark:text-neutral-200">
+            <!-- Injected via JavaScript from members.json -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div id="noResults" class="hidden text-center py-8 text-xs text-apple-textMuted">
+      Không tìm thấy thành viên nào phù hợp với từ khóa.
+    </div>
+  </section>
+
+  <!-- ================= APPLE FLOATING DOCK / CTA BAR (LAPTOP + MOBILE) ================= -->
+  <aside aria-label="Quick Navigation Bar" class="fixed bottom-5 inset-x-0 z-40 flex justify-center pointer-events-none px-3">
+    <div class="pointer-events-auto apple-glass rounded-full shadow-2xl border border-black/10 dark:border-white/15 px-3 sm:px-4 py-2 flex items-center gap-1 sm:gap-3 backdrop-blur-xl transition-all duration-200">
+      <!-- 1: Lịch trình (Nhấn mở Infographic Poster Full HD) -->
+      <button onclick="openLightbox()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95 group" title="Xem ảnh Infographic Lịch trình">
+        <span class="text-base group-hover:scale-110 transition-transform">🗺️</span>
+        <span class="text-xs sm:text-sm font-semibold tracking-tight">Lịch trình</span>
+      </button>
+
+      <span class="w-px h-4 bg-black/10 dark:bg-white/15 hidden sm:block"></span>
+
+      <!-- 2: Trek D1-D2 & Camping -->
+      <a href="#trekking" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95 group" title="Xem chi tiết Trekking & Cắm trại">
+        <span class="text-base group-hover:scale-110 transition-transform">⛺</span>
+        <span class="text-xs sm:text-sm font-semibold tracking-tight">Trek D1-D2</span>
+      </a>
+
+      <span class="w-px h-4 bg-black/10 dark:bg-white/15 hidden sm:block"></span>
+
+      <!-- 3: Hành trang -->
+      <a href="#packing" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95 group" title="Checklist hành trang chuẩn bị">
+        <span class="text-base group-hover:scale-110 transition-transform">🎒</span>
+        <span class="text-xs sm:text-sm font-semibold tracking-tight">Hành trang</span>
+      </a>
+
+      <span class="w-px h-4 bg-black/10 dark:bg-white/15 hidden sm:block"></span>
+
+      <!-- 4: 32 Thành viên & Email -->
+      <a href="#members" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-apple-blue text-white hover:bg-apple-blueHover shadow-sm transition active:scale-95 group" title="Xem danh sách 32 thành viên & Email">
+        <span class="text-base group-hover:scale-110 transition-transform">👥</span>
+        <span class="text-xs sm:text-sm font-bold tracking-tight">32 Thành viên</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    // 1. Theme toggle
+    const themeToggleBtn = document.getElementById('themeToggle');
+    function applyTheme() {
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+    applyTheme();
+
+    themeToggleBtn.addEventListener('click', () => {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+    });
+
+    // 2. Lightbox controls
+    function openLightbox() {
+      const modal = document.getElementById('lightboxModal');
+      modal.classList.remove('hidden');
+      document.body.classList.add('lightbox-open');
+    }
+    function closeLightbox(e) {
+      const modal = document.getElementById('lightboxModal');
+      modal.classList.add('hidden');
+      document.body.classList.remove('lightbox-open');
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    // 3. Switch Day (Shows ONLY 1 day at a time)
+    function switchDay(dayKey) {
+      const tabs = ['day1', 'day2', 'day3', 'day4'];
+      tabs.forEach(key => {
+        const tabEl = document.getElementById('tab-' + key);
+        const viewEl = document.getElementById('view-' + key);
+
+        if (key === dayKey) {
+          tabEl.classList.add('bg-white', 'dark:bg-apple-cardDark', 'shadow-sm', 'text-neutral-900', 'dark:text-white', 'font-semibold');
+          tabEl.classList.remove('text-neutral-600', 'dark:text-neutral-400', 'font-medium');
+          viewEl.classList.remove('hidden');
+        } else {
+          tabEl.classList.remove('bg-white', 'dark:bg-apple-cardDark', 'shadow-sm', 'text-neutral-900', 'dark:text-white', 'font-semibold');
+          tabEl.classList.add('text-neutral-600', 'dark:text-neutral-400', 'font-medium');
+          viewEl.classList.add('hidden');
+        }
+      });
+    }
+
+    // 4. Checklist Progress & LocalStorage
+    const checkboxes = document.querySelectorAll('.pack-checkbox');
+    const packProgressText = document.getElementById('packProgress');
+
+    function updatePackProgress() {
+      const total = checkboxes.length;
+      let checked = 0;
+      const state = [];
+      checkboxes.forEach((cb) => {
+        if (cb.checked) checked++;
+        state.push(cb.checked);
+      });
+      packProgressText.textContent = `${checked}/${total} món`;
+      localStorage.setItem('fit_dalat_packing_compact', JSON.stringify(state));
+    }
+
+    const savedState = localStorage.getItem('fit_dalat_packing_compact');
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        checkboxes.forEach((cb, idx) => {
+          if (parsed[idx] !== undefined) cb.checked = parsed[idx];
+        });
+      } catch (e) {}
+    }
+    updatePackProgress();
+
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', updatePackProgress);
+    });
+
+    // 5. Load Members Data & Render Excel Table
+    let allMembers = [];
+
+    fetch('./assets/members.json')
+      .then(res => res.json())
+      .then(data => {
+        allMembers = data;
+        renderMembersTable(allMembers);
+      })
+      .catch(err => {
+        console.error('Lỗi tải dữ liệu thành viên:', err);
+      });
+
+    function getDepartmentBadge(dept) {
+      const d = (dept || '').trim();
+      const upper = d.toUpperCase();
+      if (upper === 'CEO' || upper === 'BOD') {
+        return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">${d}</span>`;
+      }
+      if (d === '1' || d === '2' || d === '3' || d === '4' || d === '5') {
+        return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">BU ${d}</span>`;
+      }
+      if (upper.startsWith('BU')) {
+        return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">${d}</span>`;
+      }
+      if (upper.includes('MARKETING')) {
+        return '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300">Marketing</span>';
+      }
+      if (upper.includes('KẾ TOÁN')) {
+        return '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">Kế Toán</span>';
+      }
+      if (upper.includes('VISA')) {
+        return '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300">Visa</span>';
+      }
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">${d}</span>`;
+    }
+
+    function getInitials(name) {
+      if (!name) return 'FIT';
+      const parts = name.trim().split(/\s+/);
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[parts.length - 2][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function renderMembersTable(members) {
+      const tbody = document.getElementById('membersTableBody');
+      const noResults = document.getElementById('noResults');
+      const filteredCount = document.getElementById('filteredCount');
+      
+      filteredCount.textContent = `${members.length} / ${allMembers.length}`;
+
+      if (!members || members.length === 0) {
+        tbody.innerHTML = '';
+        noResults.classList.remove('hidden');
+        return;
+      }
+
+      noResults.classList.add('hidden');
+      tbody.innerHTML = members.map(m => {
+        const isMale = m.gioi_tinh === 'Nam';
+        const hasNote = m.ghi_chu && m.ghi_chu.trim().length > 0;
+        const phone = (m.sdt || '').trim();
+        const initials = getInitials(m.ho_ten);
+
+        return `
+          <tr class="hover:bg-blue-50/40 dark:hover:bg-blue-950/20 transition-colors">
+            <!-- STT (Sticky) -->
+            <td class="col-sticky-stt py-2.5 px-2.5 text-center font-mono text-neutral-400 dark:text-neutral-500 font-semibold bg-white dark:bg-apple-cardDark">
+              ${m.stt}
+            </td>
+
+            <!-- Thành viên: Avatar + Họ và Tên (Sticky) -->
+            <td class="col-sticky-name py-2.5 px-3 font-bold text-neutral-900 dark:text-white leading-tight bg-white dark:bg-apple-cardDark">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-extrabold text-neutral-700 dark:text-neutral-200 shadow-sm border border-black/5 dark:border-white/10 ring-1 ring-black/5">
+                  ${m.avatar ? `
+                    <img src="${m.avatar}" alt="${m.ho_ten}" class="w-full h-full object-cover" loading="lazy" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerText='${initials}';">
+                  ` : initials}
+                </div>
+                <span class="whitespace-nowrap font-bold">${m.ho_ten}</span>
+              </div>
+            </td>
+
+            <!-- NICK NAME -->
+            <td class="py-2.5 px-3 font-medium text-apple-blue dark:text-sky-400 whitespace-nowrap">
+              ${m.nickname ? m.nickname : '<span class="text-neutral-300 dark:text-neutral-600">—</span>'}
+            </td>
+
+            <!-- Giới tính -->
+            <td class="py-2.5 px-2.5 text-center">
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold ${isMale ? 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'}">
+                ${isMale ? 'Nam' : 'Nữ'}
+              </span>
+            </td>
+
+            <!-- Phòng Ban -->
+            <td class="py-2.5 px-3 whitespace-nowrap">
+              ${getDepartmentBadge(m.phong_ban)}
+            </td>
+
+            <!-- Nghề nghiệp -->
+            <td class="py-2.5 px-3 text-neutral-700 dark:text-neutral-300 font-medium whitespace-nowrap">
+              ${m.nghe_nghiep || ''}
+            </td>
+
+            <!-- Số điện thoại -->
+            <td class="py-2.5 px-3 font-mono whitespace-nowrap">
+              ${phone ? `
+                <a href="tel:${phone}" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-apple-blue/10 dark:bg-apple-blue/20 text-apple-blue font-semibold hover:bg-apple-blue hover:text-white transition">
+                  <span>📞</span>
+                  <span>${phone}</span>
+                </a>
+              ` : '<span class="text-neutral-400">—</span>'}
+            </td>
+
+            <!-- Email -->
+            <td class="py-2.5 px-3 font-mono text-xs whitespace-nowrap">
+              ${m.email ? `
+                <a href="mailto:${m.email}" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 hover:bg-apple-blue hover:text-white dark:hover:bg-apple-blue text-neutral-700 dark:text-neutral-300 transition text-[11px] font-medium" title="Gửi email cho ${m.ho_ten}">
+                  <span>✉️</span>
+                  <span>${m.email}</span>
+                </a>
+              ` : '<span class="text-neutral-400 dark:text-neutral-600">—</span>'}
+            </td>
+
+            <!-- Ghi chú riêng -->
+            <td class="py-2.5 px-4 text-xs">
+              ${hasNote ? `
+                <span class="inline-block px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300 font-medium leading-tight">
+                  ${m.ghi_chu}
+                </span>
+              ` : '<span class="text-neutral-400 dark:text-neutral-600">—</span>'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Quick BU Pill Filter
+    function setBuFilter(buKey) {
+      document.getElementById('buFilter').value = buKey;
+      
+      const pills = document.querySelectorAll('.bu-pill');
+      pills.forEach(p => {
+        if (p.dataset.bu === buKey) {
+          p.classList.add('bg-neutral-900', 'text-white', 'dark:bg-white', 'dark:text-neutral-900', 'shadow-sm', 'font-semibold');
+          p.classList.remove('bg-neutral-100', 'hover:bg-neutral-200', 'dark:bg-neutral-800', 'dark:hover:bg-neutral-700', 'text-neutral-700', 'dark:text-neutral-300', 'font-medium');
+        } else {
+          p.classList.remove('bg-neutral-900', 'text-white', 'dark:bg-white', 'dark:text-neutral-900', 'shadow-sm', 'font-semibold');
+          p.classList.add('bg-neutral-100', 'hover:bg-neutral-200', 'dark:bg-neutral-800', 'dark:hover:bg-neutral-700', 'text-neutral-700', 'dark:text-neutral-300', 'font-medium');
+        }
+      });
+
+      applyFilters();
+    }
+
+    // Search and filter logic
+    function applyFilters() {
+      const query = document.getElementById('memberSearch').value.toLowerCase().trim();
+      const bu = document.getElementById('buFilter').value;
+
+      const filtered = allMembers.filter(m => {
+        const matchesQuery = !query || 
+          (m.ho_ten && m.ho_ten.toLowerCase().includes(query)) ||
+          (m.nickname && m.nickname.toLowerCase().includes(query)) ||
+          (m.email && m.email.toLowerCase().includes(query)) ||
+          (m.sdt && m.sdt.includes(query)) ||
+          (m.nghe_nghiep && m.nghe_nghiep.toLowerCase().includes(query)) ||
+          (m.ghi_chu && m.ghi_chu.toLowerCase().includes(query));
+
+        const dept = (m.phong_ban || '').trim();
+        let matchesBu = true;
+        if (bu !== 'ALL') {
+          if (bu === 'BOD') {
+            matchesBu = (dept.toUpperCase() === 'CEO' || dept.toUpperCase() === 'BOD');
+          } else if (bu === 'Marketing') {
+            matchesBu = dept.toLowerCase().includes('marketing');
+          } else if (bu === 'Kế toán') {
+            matchesBu = dept.toLowerCase().includes('kế toán');
+          } else if (bu === 'Visa') {
+            matchesBu = dept.toLowerCase().includes('visa');
+          } else {
+            // BU 1, 2, 3, 4, 5
+            matchesBu = (dept === bu || dept.toUpperCase() === ('BU' + bu) || dept.toUpperCase() === ('BU ' + bu));
+          }
+        }
+
+        return matchesQuery && matchesBu;
+      });
+
+      renderMembersTable(filtered);
+    }
+
+    document.getElementById('memberSearch').addEventListener('input', applyFilters);
+    document.getElementById('buFilter').addEventListener('change', (e) => {
+      setBuFilter(e.target.value);
+    });
+
+    // 6. Service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

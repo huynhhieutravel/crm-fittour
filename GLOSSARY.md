@@ -296,4 +296,30 @@ _Avoid_: Legacy standalone SSE transport, raw WebSocket bridge
 The mandatory data protection policy stripping or masking sensitive customer identifiers (phone numbers, national IDs, passports) before transmitting payloads to external LLM providers.
 _Avoid_: Raw PII export, client-side data mask
 
+## Outing & Company Operations
+
+**Company Outing (Chuyến Đi Gắn Kết Doanh Nghiệp)**:
+The annual internal expedition of FIT TOUR combining nature exploration, sports activities (trekking, SUP), and collective retreat for all internal team members.
+_Avoid_: Team building thông thường, tour khách, dã ngoại tự phát
+
+**Trekking Expedition (Hành Trình Đi Bộ Địa Hình Rừng)**:
+A structured trail walking journey through pine forests and lake shores requiring proper sports footwear, physical health compliance, and local logistics support.
+_Avoid_: Dạo chơi nhẹ nhàng, leo núi mạo hiểm cực hạn
+
+**Porter (Đội Ngũ Hỗ Trợ Hậu Cần Dã Ngoại)**:
+Dedicated field logistics personnel responsible for transporting group camping infrastructure (tents, sleeping mats, BBQ provisions, emergency kits) and trail safety escort.
+_Avoid_: Cửu vạn, người khiêng vác tự do, hướng dẫn viên chính
+
+**SUP Session (Hoạt Động Chèo Thuyền Ván Đứng)**:
+A team water sport activity conducted on calm inland lake waters (Tuyen Lam Lake) with mandatory 100% life-vest compliance and pair team racing.
+_Avoid_: Bơi lội tự do, chèo thuyền vượt thác
+
+**Teambuilding Game Teams (3 Đội Chơi Outing)**:
+The planned balanced squad distribution dividing 32 expedition members across departments into 3 distinct teams for interactive outing games, outdoor challenges, and SUP racing points.
+_Avoid_: Chia phòng nghỉ cá nhân, nhóm tự phát
+
+**Employee Nickname (Biệt Danh Nội Bộ)**:
+An informal workplace alias adopted by or assigned to an employee within FIT TOUR ERP for company culture, team directory, and outings (e.g., "Max Vu", "Loki", "Phunnie"), distinct from the employee's legal name (`full_name`) and system login handle (`username`).
+_Avoid_: Bí danh, tên giả, alias pháp lý, username đăng nhập
+
 

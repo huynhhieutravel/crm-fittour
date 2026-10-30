@@ -28,7 +28,7 @@ exports.getAllUsers = async (req, res) => {
         const usersRes = await db.query(`
             SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active, u.created_at,
                    u.birth_date, u.gender, u.id_card, u.passport_url, u.id_expiry, u.address, u.facebook_url,
-                   u.position, u.avatar_url, u.bus,
+                   u.position, u.avatar_url, u.bus, u.nickname,
                    r.name as role_name, r.id as role_id,
                    COALESCE(
                        (SELECT json_agg(json_build_object('id', t.id, 'name', t.name, 'code', t.code) ORDER BY t.name)
@@ -154,7 +154,7 @@ exports.getRoles = async (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
-    const { username, password, full_name, email, role_id, phone, is_active, team_id, bus } = req.body;
+    const { username, password, full_name, email, role_id, phone, is_active, team_id, bus, nickname } = req.body;
     try {
         // Validate email format
         if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -192,8 +192,8 @@ exports.createUser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await db.query(
-            'INSERT INTO users (username, password, full_name, email, role_id, phone, is_active, team_id, bus) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
-            [username, hashedPassword, full_name, email, role_id, phone || null, is_active !== false, finalTeamId, bus || []]
+            'INSERT INTO users (username, password, full_name, email, role_id, phone, is_active, team_id, bus, nickname) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
+            [username, hashedPassword, full_name, email, role_id, phone || null, is_active !== false, finalTeamId, bus || [], nickname || null]
         );
 
         // EMAIL EVENT
@@ -214,7 +214,7 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
     const { id } = req.params;
     const { full_name, email, role_id, phone, is_active, permissions,
-            birth_date, gender, id_card, passport_url, id_expiry, address, facebook_url, created_at, position, avatar_url, bus, telegram_user_id } = req.body;
+            birth_date, gender, id_card, passport_url, id_expiry, address, facebook_url, created_at, position, avatar_url, bus, telegram_user_id, nickname } = req.body;
     console.log(`[UPDATE USER ${id}] Payload:`, JSON.stringify(req.body));
     
     const client = await db.pool.connect();
@@ -268,11 +268,11 @@ exports.updateUser = async (req, res) => {
             `UPDATE users SET full_name = $1, email = $2, role_id = $3, phone = $4, is_active = $5,
              birth_date = $7, gender = $8, id_card = $9, passport_url = $10, id_expiry = $11, address = $12, facebook_url = $13,
              created_at = COALESCE($14, created_at), position = $15, avatar_url = COALESCE($16, avatar_url),
-             bus = COALESCE($17, bus), telegram_user_id = $18
+             bus = COALESCE($17, bus), telegram_user_id = $18, nickname = COALESCE($19, nickname)
              WHERE id = $6`,
             [full_name, email || null, role_id, phone || null, is_active !== false, id,
              birth_date || null, gender || null, id_card || null, passport_url || null, id_expiry || null, address || null, facebook_url || null,
-             created_at || null, position || null, avatar_url || null, bus || null, telegram_user_id || null]
+             created_at || null, position || null, avatar_url || null, bus || null, telegram_user_id || null, nickname || null]
         );
         
         if (updateRes.rowCount === 0) {
@@ -563,7 +563,7 @@ exports.getMyProfile = async (req, res) => {
         const result = await db.query(`
             SELECT u.id, u.username, u.full_name, u.email, u.phone, u.is_active, u.created_at,
                    u.birth_date, u.gender, u.id_card, u.passport_url, u.id_expiry, u.address, u.facebook_url,
-                   u.position, u.avatar_url, u.google_email, u.bus, u.notification_preferences,
+                   u.position, u.avatar_url, u.google_email, u.bus, u.notification_preferences, u.nickname,
                    r.name as role_name, r.id as role_id,
                    COALESCE(
                        (SELECT json_agg(json_build_object('id', t.id, 'name', t.name, 'code', t.code) ORDER BY t.name)
@@ -588,7 +588,7 @@ exports.getMyProfile = async (req, res) => {
 
 exports.updateMyProfile = async (req, res) => {
     try {
-        const { full_name, email, phone, birth_date, gender, id_card, passport_url, id_expiry, address, facebook_url, created_at, position, avatar_url } = req.body;
+        const { full_name, email, phone, birth_date, gender, id_card, passport_url, id_expiry, address, facebook_url, created_at, position, avatar_url, nickname } = req.body;
         
         if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             return res.status(400).json({ message: 'Định dạng email không hợp lệ.' });
@@ -618,13 +618,14 @@ exports.updateMyProfile = async (req, res) => {
                 created_at = COALESCE($12, created_at),
                 position = $13,
                 avatar_url = COALESCE($14, avatar_url),
+                nickname = COALESCE($15, nickname),
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = $11
         `, [
             full_name, email || null, phone || null,
             birth_date || null, gender || null, id_card || null,
             passport_url || null, id_expiry || null, address || null, facebook_url || null,
-            req.user.id, created_at || null, position || null, avatar_url || null
+            req.user.id, created_at || null, position || null, avatar_url || null, nickname || null
         ]);
         
         res.json({ message: 'Cập nhật hồ sơ cá nhân thành công.' });
