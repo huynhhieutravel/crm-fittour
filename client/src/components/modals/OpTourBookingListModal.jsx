@@ -669,6 +669,22 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                                   <button onClick={() => setShowTransferModal(b)} style={{ width: '100%', background: '#f59e0b', color: 'white', padding: '6px 10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                                      <ArrowRight size={14} /> Chuyển tour
                                   </button>
+                                  {Number(b.paid || 0) > 0 && b.status !== 'Huỷ' && b.status !== 'Hủy' && (
+                                    <button 
+                                      onClick={() => {
+                                        const bMembers = (raw.members && raw.members.length > 0) ? raw.members : [{
+                                          id: b.id || 1,
+                                          name: b.name || bInfo.name || 'Khách Vãng Lai',
+                                          phone: b.phone || bInfo.phone || ''
+                                        }];
+                                        setSelectedMemberToRetain({ booking: b, member: bMembers[0], index: 0 });
+                                      }} 
+                                      style={{ width: '100%', background: '#fff7ed', color: '#ea580c', border: '1px solid #ea580c', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                                      title="Tách khách hủy hoặc bảo lưu tiền cọc cho booking này"
+                                    >
+                                       <ShieldAlert size={14} /> Bảo lưu cọc
+                                    </button>
+                                  )}
                                   <div style={{ display: 'flex', gap: '15px', marginTop: '8px', justifyContent: 'center', alignItems: 'center' }}>
                                      <Edit2 size={18} color="#475569" cursor="pointer" onClick={() => onEditBooking(b)} title="Chỉnh sửa Booking"/>
                                      <Users size={18} color="#475569" cursor="pointer" title="Danh sách thành viên" onClick={() => {

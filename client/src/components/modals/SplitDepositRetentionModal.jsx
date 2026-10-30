@@ -13,10 +13,15 @@ export default function SplitDepositRetentionModal({
   tour,
   onSuccess
 }) {
-  if (!isOpen || !booking || !member) return null;
+  if (!isOpen || !booking) return null;
 
   const raw = booking.raw_details || {};
-  const members = Array.isArray(raw.members) ? raw.members : [];
+  const members = (Array.isArray(raw.members) && raw.members.length > 0)
+    ? raw.members
+    : (member ? [member] : [{ name: booking.name || 'Hành khách', phone: booking.phone || '' }]);
+
+  const [selectedIdx, setSelectedIdx] = useState(memberIndex !== undefined && memberIndex !== null ? memberIndex : 0);
+  const currentMember = members[selectedIdx] || members[0] || {};
   const totalSlots = members.length || Number(booking.pax_count) || 1;
   const totalPaid = Number(booking.paid || 0);
 
@@ -93,7 +98,7 @@ export default function SplitDepositRetentionModal({
     try {
       const payload = {
         bookingId: booking.id,
-        passengerIndex: memberIndex,
+        passengerIndex: selectedIdx,
         allocatedDeposit: Number(allocatedDeposit),
         deductionFee: Number(deductionFee),
         validityMonths: Math.min(12, Math.max(1, parseInt(validityMonths) || 12)),
@@ -148,6 +153,26 @@ export default function SplitDepositRetentionModal({
         {/* Form Body */}
         <form onSubmit={handleSubmit} style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
+          {/* Lựa chọn hành khách hủy nếu booking có nhiều người */}
+          {members.length > 1 && (
+            <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '10px', padding: '12px 16px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#9a3412', marginBottom: '6px' }}>
+                👥 Chọn hành khách hủy cần bảo lưu cọc ({members.length} khách trong đoàn):
+              </label>
+              <select
+                value={selectedIdx}
+                onChange={e => setSelectedIdx(Number(e.target.value))}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #fdba74', fontSize: '13px', fontWeight: 700, color: '#0f172a', background: '#ffffff', outline: 'none' }}
+              >
+                {members.map((m, idx) => (
+                  <option key={idx} value={idx}>
+                    Khách #{idx + 1}: {m.name || 'Chưa đặt tên'} {m.phone ? `(${m.phone})` : ''} — {m.ageType || 'Người lớn'}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Box tóm tắt thông tin Booking */}
           <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px 16px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', fontSize: '12px' }}>
             <div>

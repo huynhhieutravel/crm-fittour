@@ -1,7 +1,7 @@
 import { swalConfirm } from '../../utils/swalHelpers';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { X, Search, Plus } from 'lucide-react';
+import { X, Search, Plus, ShieldAlert } from 'lucide-react';
 import AsyncSelect from 'react-select/async';
 import CustomerProfileSlider from '../CustomerProfileSlider';
 import { scanPassportImage } from '../../utils/passportOcr';
@@ -1156,8 +1156,36 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
         
         {/* Modal Header */}
         <div style={{ padding: '15px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, textAlign: 'center', flex: 1, fontSize: '18px', fontWeight: 'bold' }}>{initialData ? `CẬP NHẬT BOOKING / GIỮ CHỖ (${initialData.booking_code || initialData.id})` : 'THÊM BOOKING (GIỮ CHỖ)'}</h3>
-          <button onClick={onClose} title="Đóng (ESC)" style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>{initialData ? `CẬP NHẬT BOOKING / GIỮ CHỖ (${initialData.booking_code || initialData.id})` : 'THÊM BOOKING (GIỮ CHỖ)'}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {initialData?.id && Number(initialData?.paid || 0) > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const m = members[0] || { name: bookingInfo.name, phone: bookingInfo.phone };
+                  setSelectedMemberToRetain({ member: m, index: 0, booking: initialData });
+                }}
+                style={{
+                  background: '#fff7ed',
+                  border: '1px solid #ea580c',
+                  color: '#ea580c',
+                  borderRadius: '6px',
+                  padding: '6px 14px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 1px 3px rgba(234, 88, 12, 0.15)'
+                }}
+                title="Bảo lưu tiền cọc cho khách hủy tour này"
+              >
+                <ShieldAlert size={15} /> Bảo lưu cọc
+              </button>
+            )}
+            <button onClick={onClose} title="Đóng (ESC)" style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+          </div>
         </div>
 
         {/* Modal Body (Scrollable) */}
@@ -2005,7 +2033,32 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                 </div>
              </div>
              
-             <div>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {initialData?.id && Number(initialData?.paid || 0) > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const m = members[0] || { name: bookingInfo.name, phone: bookingInfo.phone };
+                      setSelectedMemberToRetain({ member: m, index: 0, booking: initialData });
+                    }}
+                    style={{
+                      background: '#fff7ed',
+                      border: '1px solid #ea580c',
+                      color: '#ea580c',
+                      padding: '10px 18px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      fontWeight: 'bold',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                    title="Bảo lưu tiền cọc cho khách hủy tour này"
+                  >
+                    <ShieldAlert size={15} /> Bảo lưu cọc
+                  </button>
+                )}
                 <button onClick={handleSubmit} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '10px 25px', borderRadius: '4px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
                    {initialData ? 'Lưu Cập Nhật' : 'Lưu / Thêm vào tour'}
                 </button>
