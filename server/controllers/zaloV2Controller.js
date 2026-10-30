@@ -309,10 +309,14 @@ const executeAiReply = async (senderId) => {
   }
 
   queueItem.isProcessing = true;
+  let debounceWaitMs = 10000;
 
   try {
     // 1. Kiểm tra cấu hình AI Agent toàn cục
     const aiConfig = await zaloAiService.getAiConfig();
+    const debounceSec = Number(aiConfig?.system_config?.debounce_seconds) || 10;
+    debounceWaitMs = Math.max(2000, Math.min(20000, debounceSec * 1000));
+
     if (!aiConfig || aiConfig.system_config?.is_sandbox_bot_enabled === false) {
       console.log(`[AI Agent] Bot đang tắt trong Cài đặt Zalo AI. Bỏ qua Auto-Reply.`);
       return;
@@ -447,7 +451,7 @@ const executeAiReply = async (senderId) => {
       queueItem.firstMessageAt = Date.now();
       queueItem.timer = setTimeout(() => {
         executeAiReply(senderId);
-      }, 4000);
+      }, debounceWaitMs);
     } else {
       if (queueItem.messages.length === 0) {
         aiQueue.delete(senderId);
@@ -475,10 +479,10 @@ const enqueueAiMessage = async (senderId, text) => {
       return;
     }
 
-    // Thời gian debounce (giây): lấy từ cấu hình, mặc định 5s (min 2s, max 15s)
-    const debounceSec = Number(aiConfig.system_config?.debounce_seconds) || 5;
-    const debounceMs = Math.max(2000, Math.min(15000, debounceSec * 1000));
-    const maxWaitMs = 15000; // Không chờ quá 15s nếu khách gửi liên tục
+    // Thời gian debounce (giây): lấy từ cấu hình, mặc định 10s (min 2s, max 20s)
+    const debounceSec = Number(aiConfig.system_config?.debounce_seconds) || 10;
+    const debounceMs = Math.max(2000, Math.min(20000, debounceSec * 1000));
+    const maxWaitMs = Math.max(25000, debounceMs * 2); // Không chờ quá 25s - 30s nếu khách gửi liên tục
 
     let queueItem = aiQueue.get(senderId);
     if (!queueItem) {

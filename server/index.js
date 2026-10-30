@@ -193,6 +193,7 @@ app.use('/api/public/contracts', publicContractsRoutes);
 app.use('/api/public/departures', publicDeparturesRoutes);
 app.use('/api/public/reviews', require('./routes/publicReviews'));
 app.use('/api/vouchers', require('./routes/vouchers'));
+app.use('/api/customer-credits', require('./routes/customerCreditRoutes'));
 app.use('/api/leaves', require('./routes/leaves'));
 app.use('/api/departures', departureRoutes);
 app.use('/api/departure-card-guides', require('./routes/departureCardGuides'));
@@ -293,6 +294,9 @@ app.use('/api/customer-reviews', require('./routes/customerReviews'));
 app.use('/api/meeting-rooms', require('./routes/meetingRooms'));
 app.use('/api/search', require('./routes/search'));
 app.use('/api/debt-alerts', require('./routes/debtAlertRoutes'));
+app.use('/api/executive-ai/tokens', require('./routes/executiveAiTokenRoutes'));
+app.use('/api/ai-gateway', require('./routes/aiGatewayRoutes'));
+app.use('/mcp', require('./routes/aiGatewayRoutes'));
 
 app.get('/', (req, res) => {
     res.send('FIT Tour CRM API is running...');

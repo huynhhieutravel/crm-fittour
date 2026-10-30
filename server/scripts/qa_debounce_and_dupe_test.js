@@ -236,19 +236,19 @@ async function runTests() {
   // --- TEST GROUP 4: CẤU HÌNH DEBOUNCE CLAMP ---
   console.log('\n--- TEST GROUP 4: THAM SỐ CẤU HÌNH (DEBOUNCE CLAMP) ---');
 
-  it('Giá trị debounce_seconds được kẹp an toàn giữa [2s, 15s]', () => {
+  it('Giá trị debounce_seconds được kẹp an toàn giữa [2s, 20s]', () => {
     const getClampedMs = (sec) => {
-      const s = Number(sec) || 5;
-      return Math.max(2000, Math.min(15000, s * 1000));
+      const s = Number(sec) || 10;
+      return Math.max(2000, Math.min(20000, s * 1000));
     };
 
-    assert.strictEqual(getClampedMs(undefined), 5000, 'Mặc định 5s nếu không cấu hình');
-    assert.strictEqual(getClampedMs(null), 5000, 'Mặc định 5s nếu null');
-    assert.strictEqual(getClampedMs(0), 5000, 'Mặc định 5s nếu 0');
+    assert.strictEqual(getClampedMs(undefined), 10000, 'Mặc định 10s nếu không cấu hình');
+    assert.strictEqual(getClampedMs(null), 10000, 'Mặc định 10s nếu null');
+    assert.strictEqual(getClampedMs(0), 10000, 'Mặc định 10s nếu 0');
     assert.strictEqual(getClampedMs(1), 2000, 'Kẹp tối thiểu 2s nếu truyền 1s');
     assert.strictEqual(getClampedMs(5), 5000, '5s chuẩn');
     assert.strictEqual(getClampedMs(10), 10000, '10s chuẩn');
-    assert.strictEqual(getClampedMs(30), 15000, 'Kẹp tối đa 15s nếu truyền 30s');
+    assert.strictEqual(getClampedMs(30), 20000, 'Kẹp tối đa 20s nếu truyền 30s');
   });
 
   console.log('\n================================================================');

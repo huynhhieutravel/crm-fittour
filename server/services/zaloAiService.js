@@ -37,9 +37,11 @@ class ZaloAiService {
           purchase_info: 'Sử dụng link website (fittour.vn) để gửi lịch trình chi tiết nếu khách yêu cầu. Nếu Lịch khởi hành không có link website, khéo léo xin số điện thoại để Chuyên viên tư vấn chuyên Tour đó gửi. CHỈ khéo léo xin số điện thoại/Zalo để tư vấn thêm khi khách hàng có các hành động chốt rõ ràng: 1. Khách yêu cầu báo giá cụ thể hoặc tính chi phí cho nhóm. 2. Khách hỏi thủ tục đăng ký, đặt cọc, thanh toán. 3. Khách chốt số lượng người đi và ngày đi cụ thể để giữ chỗ.',
           promotion_info: 'Các chương trình khuyến mãi của FIT Tour luôn áp dụng với khách đăng ký sớm và đăng ký số lượng theo nhóm hay từ 2-4 khách trở lên, để biết thêm Quý khách vui lòng chờ nhân viên của FIT Tour tư vấn cho mình nhé ạ.'
         },
-        system_config: config.system_config || {
+        system_config: {
           is_sandbox_bot_enabled: true,
-          mute_on_sales_assigned: true
+          mute_on_sales_assigned: true,
+          debounce_seconds: 10,
+          ...(config.system_config || {})
         }
       };
     } catch (err) {

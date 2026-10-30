@@ -16,6 +16,22 @@ _Avoid_: Client, buyer, account, guest
 A reservation for tour seats, whether in HELD (Giữ chỗ), CONFIRMED (Xác nhận), or COMPLETED (Hoàn thành) state.
 _Avoid_: Order, invoice, ticket
 
+**Partial Cancellation (Hủy Chỗ Một Phần)**:
+The business event where one or more passengers within a multi-pax Booking withdraw from the tour departure, releasing seats back to inventory while remaining passengers continue their journey.
+_Avoid_: Hủy booking, giảm khách tự do, drop pax
+
+**Split Booking (Tách Đơn Đặt Chỗ)**:
+The operation of dividing a single multi-passenger Booking into distinct parent-child bookings to isolate individual finances, passenger rosters, and cancellation records without cross-contaminating debt or deposits.
+_Avoid_: Tạo booking ảo mới, sửa đè booking cũ, duplicate booking
+
+**Deposit Retention (Bảo Lưu Tiền Cọc)**:
+The financial status of customer funds retained by FIT TOUR after a cancellation, earmarked as a prepaid credit for a future tour departure rather than refunded to bank or applied to a companion's balance. Strictly subject to a hard expiration cap of maximum 12 months.
+_Avoid_: Treo tiền, cấn cọc chung, cọc bơ vơ
+
+**Customer Credit (Hạn Mức Tín Dụng Khách Hàng)**:
+A customer-level balance ledger recording funds held by FIT TOUR (from deposit retentions, overpayments, or compensation vouchers) that can be drawn down to settle future bookings.
+_Avoid_: Ví tiền ảo, tiền khuyến mãi, coupon giảm giá
+
 **QualifiedLead**:
 A business milestone where Sales confirms a Lead has genuine tour interest, assigned consultant, and verified contact identity.
 _Avoid_: Hot lead, potential customer, verified contact
@@ -259,4 +275,25 @@ _Avoid_: Bong bóng tooltip nhảy ra khi focus, banner chữ tĩnh chiếm ch�
 **Minimalist Planning Canvas (Giao Diện Nhập Liệu Kế Hoạch Tối Giản)**:
 The ultra-clean form design consisting strictly of field labels, high-legibility numeric inputs, and real-time formatted previews, completely stripped of decorative text boxes or clutter to maximize user focus and speed.
 _Avoid_: Bảng form nhồi nhét ghi chú tĩnh, popover che lấp các ô nhập
+
+**Executive AI Gateway (Cổng Dữ Liệu Điều Hành Cho AI)**:
+The unified, strictly read-only API and protocol bridge within FIT TOUR CRM providing live, scoped ERP operational and financial intelligence to external LLM assistants (Claude, ChatGPT, etc.) via OpenAPI 3.0 Actions and Remote MCP Streamable HTTP.
+_Avoid_: Direct DB bridge, raw SQL chatbot, separate AI microservice
+
+**Curated Semantic Tools (Bộ Công Cụ Nghiệp Vụ Định Sẵn Cho AI)**:
+Standardized, backend-computed domain functions exposing strictly validated metrics (KPI, Cashflow, Debt, Bookings, Marketing) with deterministic formulas and timezone consistency instead of allowing arbitrary database querying.
+_Avoid_: Text-to-SQL, dynamic ORM queries, unvalidated data dumps
+
+**Personal Executive Token (Mã Định Danh API Cá Nhân Sếp)**:
+A cryptographically hashed (SHA-256), revocable Bearer token linked directly to an executive user account, automatically inheriting their ERP Role, BU scope, and permission boundaries with full audit trail and zero plaintext persistence.
+_Avoid_: Shared static .env API key, hardcoded bot secret
+
+**MCP Streamable HTTP Transport (Giao Thức MCP Streamable HTTP)**:
+The modern Model Context Protocol transport standard using bidirectional HTTP chunked streaming/post (superseding legacy standalone SSE) allowing AI agents like Claude Desktop to discover and execute ERP tools seamlessly.
+_Avoid_: Legacy standalone SSE transport, raw WebSocket bridge
+
+**PII Redaction Fence (Hàng Rào Che Mờ Dữ Liệu Cá Nhân)**:
+The mandatory data protection policy stripping or masking sensitive customer identifiers (phone numbers, national IDs, passports) before transmitting payloads to external LLM providers.
+_Avoid_: Raw PII export, client-side data mask
+
 

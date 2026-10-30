@@ -79,6 +79,8 @@ ssh ${VPS_USER}@${VPS_IP} << 'EOF'
     (cd /var/www/fittour-crm/server && node migrations/20261024_insert_company_trip_announcement.js || true)
     (cd /var/www/fittour-crm/server && node migrations/20261024_sync_employee_profiles_from_excel.js || true)
     (cd /var/www/fittour-crm/server && node migrations/20261029_create_booking_debt_d7_alerts_table.js || true)
+    (cd /var/www/fittour-crm/server && node migrations/20261030_update_zalo_ai_debounce_10s.js || true)
+    (cd /var/www/fittour-crm/server && node migrations/20261030_create_customer_deposit_retentions.js || true)
 
     echo "🔒 Đảm bảo 2 feature flag CAPI ở trạng thái kiểm soát..."
     PGPASSFILE=/root/.pgpass psql -U postgres -h 127.0.0.1 -d fittour_crm -c "INSERT INTO settings (key, value) VALUES ('meta_capi_crm_enabled', 'false'), ('meta_capi_business_messaging_v3_enabled', 'false') ON CONFLICT (key) DO NOTHING;"

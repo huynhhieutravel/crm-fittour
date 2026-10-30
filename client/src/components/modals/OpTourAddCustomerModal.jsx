@@ -661,6 +661,33 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   const [members, setMembers] = useState([]);
   const [paidAmount, setPaidAmount] = useState(0);
 
+  // ADR 0011: Quản lý tiền cọc bảo lưu khả dụng
+  const [availableCredits, setAvailableCredits] = useState([]);
+  const [drawdownModalData, setDrawdownModalData] = useState(null);
+  const [drawdownInputAmount, setDrawdownInputAmount] = useState(0);
+  const [isDrawingDown, setIsDrawingDown] = useState(false);
+
+  const loadAvailableCredits = (phone) => {
+    if (!phone || phone.trim().length < 8) {
+      setAvailableCredits([]);
+      return;
+    }
+    axios.get(`/api/customer-credits/active?phone=${encodeURIComponent(phone.trim())}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    }).then(res => {
+      if (res.data?.success) {
+        setAvailableCredits(res.data.data || []);
+      }
+    }).catch(err => console.warn('Lỗi kiểm tra bảo lưu cọc:', err));
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      const p = bookingInfo.phone || initialData?.phone || '';
+      loadAvailableCredits(p);
+    }
+  }, [isOpen, bookingInfo.phone, initialData]);
+
   useEffect(() => {
     if (isOpen) {
        if (initialData) {
@@ -1133,6 +1160,41 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
           
           <h4 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#1e293b', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px' }}>#1 Thông tin chung</h4>
+          
+          {/* BANNER BẢO LƯU TIỀN CỌC (ADR 0011) */}
+          {availableCredits.length > 0 && (
+            <div style={{ background: '#f5f3ff', border: '1px solid #c084fc', borderRadius: '10px', padding: '14px 18px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 4px rgba(147, 51, 234, 0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '24px' }}>💳</span>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#6b21a8' }}>
+                    Khách hàng có {availableCredits.length} khoản tiền cọc đang bảo lưu (Tổng khả dụng: {availableCredits.reduce((s, c) => s + Number(c.remaining_balance || 0), 0).toLocaleString()} đ)
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#7e22ce', marginTop: '2px' }}>
+                    {availableCredits.map(c => `Phiếu ${c.credit_code}: ${Number(c.remaining_balance).toLocaleString()} đ (Hạn: ${new Date(c.expiry_date).toLocaleDateString('vi-VN')})`).join(' | ')}
+                  </div>
+                </div>
+              </div>
+
+              {initialData?.id ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const firstCred = availableCredits[0];
+                    setDrawdownModalData(firstCred);
+                    setDrawdownInputAmount(Math.min(Number(firstCred.remaining_balance || 0), Math.max(0, totalPrice - paidAmount)));
+                  }}
+                  style={{ background: '#9333ea', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 4px rgba(147, 51, 234, 0.2)' }}
+                >
+                  ⚡ Cấn trừ vào Booking này
+                </button>
+              ) : (
+                <span style={{ fontSize: '11px', color: '#7e22ce', fontStyle: 'italic', background: '#ede9fe', padding: '4px 8px', borderRadius: '4px' }}>
+                  (Lưu Giữ chỗ xong có thể bấm Sửa Booking để cấn trừ)
+                </span>
+              )}
+            </div>
+          )}
           
              <div style={{ marginBottom: '20px', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px dashed #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
@@ -1922,6 +1984,91 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                onAddNote={() => {}} 
                users={[]}
             />
+         )}
+
+         {/* SUB-MODAL CẤN TRỪ TIỀN BẢO LƯU (ADR 0011) */}
+         {drawdownModalData && (
+           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.7)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px' }}>
+             <div style={{ background: '#ffffff', borderRadius: '14px', width: '100%', maxWidth: '480px', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)', border: '1px solid #e2e8f0' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                 <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                   💳 Cấn Trừ Tiền Cọc Bảo Lưu
+                 </h4>
+                 <button onClick={() => setDrawdownModalData(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+                   <X size={20} />
+                 </button>
+               </div>
+
+               <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '13px', marginBottom: '16px', border: '1px solid #e2e8f0' }}>
+                 <div>Mã phiếu: <b>{drawdownModalData.credit_code}</b></div>
+                 <div>Chủ bảo lưu: <b>{drawdownModalData.credited_to_name}</b> ({drawdownModalData.credited_to_phone || '---'})</div>
+                 <div style={{ color: '#16a34a', fontWeight: 700, marginTop: '4px' }}>
+                   Số dư khả dụng: {Number(drawdownModalData.remaining_balance).toLocaleString('vi-VN')} đ
+                 </div>
+               </div>
+
+               <div style={{ marginBottom: '16px' }}>
+                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                   Số tiền cần cấn trừ vào đơn này (đ):
+                 </label>
+                 <input
+                   type="number"
+                   min="1"
+                   max={Number(drawdownModalData.remaining_balance)}
+                   value={drawdownInputAmount}
+                   onChange={e => setDrawdownInputAmount(Number(e.target.value) || 0)}
+                   style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '10px 12px', fontSize: '15px', fontWeight: 700, color: '#9333ea', outline: 'none' }}
+                 />
+                 <span style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                   Hệ thống cho phép cấn trừ 1 phần (số dư còn lại tiếp tục được bảo lưu).
+                 </span>
+               </div>
+
+               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                 <button
+                   type="button"
+                   onClick={() => setDrawdownModalData(null)}
+                   disabled={isDrawingDown}
+                   style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                 >
+                   Đóng
+                 </button>
+                 <button
+                   type="button"
+                   disabled={isDrawingDown || drawdownInputAmount <= 0}
+                   onClick={async () => {
+                     if (drawdownInputAmount > Number(drawdownModalData.remaining_balance)) {
+                       return toast.error('Số tiền cấn trừ vượt quá số dư khả dụng của phiếu.');
+                     }
+                     setIsDrawingDown(true);
+                     try {
+                       const res = await axios.post('/api/customer-credits/drawdown', {
+                         creditId: drawdownModalData.id,
+                         targetBookingId: initialData.id,
+                         amount: Number(drawdownInputAmount),
+                         notes: `Cấn trừ tiền cọc từ phiếu bảo lưu ${drawdownModalData.credit_code}`
+                       }, {
+                         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                       });
+                       if (res.data?.success) {
+                         toast.success(res.data.message || 'Cấn trừ thành công!');
+                         setPaidAmount(res.data.targetBooking?.paid || (paidAmount + Number(drawdownInputAmount)));
+                         setDrawdownModalData(null);
+                         loadAvailableCredits(bookingInfo.phone);
+                       }
+                     } catch (err) {
+                       toast.error(err.response?.data?.error || err.message || 'Lỗi khi cấn trừ');
+                     } finally {
+                       setIsDrawingDown(false);
+                     }
+                   }}
+                   style={{ padding: '8px 18px', background: '#9333ea', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+                 >
+                   {isDrawingDown ? 'Đang cấn trừ...' : 'Xác Nhận Cấn Trừ'}
+                 </button>
+               </div>
+             </div>
+           </div>
          )}
         </div>
       </div>

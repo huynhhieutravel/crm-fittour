@@ -72,7 +72,7 @@ const ZaloAISettingsTab = ({ currentUser, addToast }) => {
   const [systemConfig, setSystemConfig] = useState({
     is_sandbox_bot_enabled: true,
     mute_on_sales_assigned: true,
-    debounce_seconds: 5,
+    debounce_seconds: 10,
     gemini_api_key: '',
     gemini_model: 'gemini-3.8-flash'
   });
@@ -686,18 +686,18 @@ const ZaloAISettingsTab = ({ currentUser, addToast }) => {
 
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
-                      Thời gian chờ gom tin nhắn (Debounce - giây, mặc định: 5s)
+                      Thời gian chờ gom tin nhắn (Debounce - giây, mặc định: 10s)
                     </label>
                     <input
                       type="number"
                       min="2"
-                      max="15"
-                      value={systemConfig.debounce_seconds ?? 5}
-                      onChange={e => setSystemConfig({ ...systemConfig, debounce_seconds: parseInt(e.target.value) || 5 })}
+                      max="20"
+                      value={systemConfig.debounce_seconds ?? 10}
+                      onChange={e => setSystemConfig({ ...systemConfig, debounce_seconds: parseInt(e.target.value) || 10 })}
                       style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', backgroundColor: '#f8fafc', color: '#0f172a', outline: 'none' }}
                     />
                     <span style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>
-                      Khi khách nhắn nhiều câu ngắn liên tiếp, AI sẽ chờ {systemConfig.debounce_seconds ?? 5} giây để gom thành một nội dung hoàn chỉnh trước khi trả lời, tránh bị trả lời lặp hoặc rời rạc.
+                      Khi khách nhắn nhiều câu ngắn liên tiếp, AI sẽ chờ {systemConfig.debounce_seconds ?? 10} giây để gom thành một nội dung hoàn chỉnh trước khi trả lời, tránh bị trả lời lặp hoặc rời rạc.
                     </span>
                   </div>
                 </div>

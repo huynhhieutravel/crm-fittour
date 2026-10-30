@@ -1,12 +1,14 @@
 import { swalConfirm } from '../../utils/swalHelpers';
 import React, { useState } from 'react';
-import { X, Trash2, Edit2, CheckCircle, Mail, DollarSign, RefreshCw, FileText, UserPlus, Users, Download, ArrowRight, AlertTriangle, Search, FileDown, MapPin, Calendar, Clock } from 'lucide-react';
+import { X, Trash2, Edit2, CheckCircle, Mail, DollarSign, RefreshCw, FileText, UserPlus, Users, Download, ArrowRight, AlertTriangle, Search, FileDown, MapPin, Calendar, Clock, ShieldAlert } from 'lucide-react';
 import { getLocalDateString, formatDateVN } from '../../utils/dateUtils';
 import { formatGenderVN, formatGenderEN, formatGenderCode } from '../../utils/tourHelpers';
 import Select from 'react-select';
 import axios from 'axios';
 import * as XLSX from 'xlsx-js-style';
 import BookingVouchersModal from './BookingVouchersModal';
+import SplitDepositRetentionModal from './SplitDepositRetentionModal';
+import PrintDepositRetentionModal from './PrintDepositRetentionModal';
 import { exportBU245MembersXlsx } from '../../utils/bu245ExportHelper.js';
 import { useEscapeKey } from '../../hooks/useEscapeKey';
 
@@ -21,12 +23,16 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
   const [isTransferring, setIsTransferring] = useState(false);
   const [activeTours, setActiveTours] = useState([]);
   const [confirmTransferModal, setConfirmTransferModal] = useState(false);
+  const [selectedMemberToRetain, setSelectedMemberToRetain] = useState(null); // { member, index, booking }
+  const [createdCreditToPrint, setCreatedCreditToPrint] = useState(null);
 
+  useEscapeKey(() => setCreatedCreditToPrint(null), !!createdCreditToPrint);
+  useEscapeKey(() => setSelectedMemberToRetain(null), !createdCreditToPrint && !!selectedMemberToRetain);
   useEscapeKey(() => setConfirmTransferModal(false), confirmTransferModal);
   useEscapeKey(() => setShowTransferModal(null), !confirmTransferModal && !!showTransferModal);
   useEscapeKey(() => setShowVouchersModal(null), !!showVouchersModal);
-  useEscapeKey(() => setViewingMembers(null), !!viewingMembers);
-  useEscapeKey(onClose, isOpen && !confirmTransferModal && !showTransferModal && !showVouchersModal && !viewingMembers);
+  useEscapeKey(() => setViewingMembers(null), !selectedMemberToRetain && !createdCreditToPrint && !!viewingMembers);
+  useEscapeKey(onClose, isOpen && !confirmTransferModal && !showTransferModal && !showVouchersModal && !viewingMembers && !selectedMemberToRetain && !createdCreditToPrint);
 
   const executeTransfer = async () => {
     setIsTransferring(true);
@@ -544,6 +550,42 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                               <div style={{ marginBottom: '4px' }}><b>Ghi chú:</b> ---</div>
                            )}
                            <div style={{ marginBottom: '4px' }}><b>Giá NL:</b> {formatMoney(raw.pricingRows?.[0]?.price || 0)}</div>
+
+                           {raw.depositRetentionHistory && raw.depositRetentionHistory.length > 0 && (
+                             <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                               {raw.depositRetentionHistory.map((h, hIdx) => (
+                                 <span
+                                   key={hIdx}
+                                   onClick={async () => {
+                                     try {
+                                       const res = await axios.get(`/api/customer-credits/${h.credit_id || h.credit_code}/voucher`, {
+                                         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                                       });
+                                       if (res.data?.data) setCreatedCreditToPrint(res.data.data);
+                                     } catch (e) {
+                                       alert('Lỗi tải phiếu bảo lưu');
+                                     }
+                                   }}
+                                   style={{
+                                     background: '#fff7ed',
+                                     border: '1px solid #fdba74',
+                                     color: '#c2410c',
+                                     borderRadius: '4px',
+                                     padding: '2px 6px',
+                                     fontSize: '10px',
+                                     fontWeight: 600,
+                                     cursor: 'pointer',
+                                     display: 'inline-flex',
+                                     alignItems: 'center',
+                                     gap: '3px'
+                                   }}
+                                   title="Bấm để xem và in lại Phiếu bảo lưu tiền cọc"
+                                 >
+                                   🛡️ {h.credit_code} ({formatMoney(h.net_retained || h.deposit_split)})
+                                 </span>
+                               ))}
+                             </div>
+                           )}
                         </td>
                         <td style={{ padding: '15px', textAlign: 'center', verticalAlign: 'middle', fontSize: '12px' }}>
                            <div style={{ color: '#1d4ed8', fontWeight: 'bold' }}>T.Gian đặt: {bdt.toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} {bdt.toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute:'2-digit'})}</div>
@@ -799,12 +841,13 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                       <th style={{ padding: '10px 8px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Ngày cấp</th>
                       <th style={{ padding: '10px 8px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Ngày hết hạn</th>
                       <th style={{ padding: '10px 8px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Mã phòng</th>
-                      <th style={{ padding: '10px 8px', textAlign: 'center' }}>Ghi chú</th>
+                      <th style={{ padding: '10px 8px', borderRight: '1px solid #e2e8f0', textAlign: 'center' }}>Ghi chú</th>
+                      <th style={{ padding: '10px 8px', textAlign: 'center', minWidth: '130px' }}>Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
                     {viewingMembers.members.length === 0 ? (
-                      <tr><td colSpan="11" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Chưa có thành viên nào.</td></tr>
+                      <tr><td colSpan="12" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Chưa có thành viên nào.</td></tr>
                     ) : viewingMembers.members.map((m, i) => (
                       <tr key={m.id || i} style={{ borderBottom: '1px solid #f1f5f9', background: i % 2 === 0 ? 'white' : '#fafbfc' }}>
                         <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 'bold', color: '#64748b' }}>{i + 1}</td>
@@ -839,6 +882,34 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
                               const combined = [inNote, cuNote].filter(Boolean).join(' | ');
                               return combined + (m.note ? ` - ${m.note}` : '');
                           })() : (m.note || '---')}
+                      </td>
+                      <td style={{ padding: '10px 8px', textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedMemberToRetain({
+                              member: m,
+                              index: i,
+                              booking: viewingMembers.booking
+                            });
+                          }}
+                          style={{
+                            background: '#fff7ed',
+                            border: '1px solid #ea580c',
+                            color: '#ea580c',
+                            borderRadius: '6px',
+                            padding: '4px 8px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                          title="Tách khách này ra khỏi đoàn và bảo lưu tiền cọc tối đa 12 tháng"
+                        >
+                          <ShieldAlert size={12} /> Bảo lưu cọc
+                        </button>
                       </td>
                     </tr>
                     ))}
@@ -977,6 +1048,41 @@ export default function OpTourBookingListModal({ isOpen, onClose, tour, onOpenAd
             }).then(res => setBookings(res.data || []));
             if (onRefreshList) onRefreshList();
           }}
+        />
+      )}
+
+      {/* MODAL TÁCH HÀNH KHÁCH & BẢO LƯU TIỀN CỌC (ADR 0011) */}
+      {selectedMemberToRetain && (
+        <SplitDepositRetentionModal
+          isOpen={!!selectedMemberToRetain}
+          onClose={() => setSelectedMemberToRetain(null)}
+          booking={selectedMemberToRetain.booking}
+          member={selectedMemberToRetain.member}
+          memberIndex={selectedMemberToRetain.index}
+          tour={tour}
+          onSuccess={(newCredit, updatedBooking) => {
+            setSelectedMemberToRetain(null);
+            setViewingMembers(null);
+            setCreatedCreditToPrint(newCredit);
+            // Làm mới danh sách booking
+            axios.get(`/api/op-tours/${tour.id}/bookings`, {
+              headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            }).then(res => setBookings(res.data || []));
+            if (onRefreshList) onRefreshList();
+            if (onUpdateTour) {
+              axios.get(`/api/op-tours/${tour.id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }})
+                .then(r => onUpdateTour(r.data));
+            }
+          }}
+        />
+      )}
+
+      {/* MODAL IN PHIẾU XÁC NHẬN BẢO LƯU TIỀN CỌC */}
+      {createdCreditToPrint && (
+        <PrintDepositRetentionModal
+          isOpen={!!createdCreditToPrint}
+          onClose={() => setCreatedCreditToPrint(null)}
+          credit={createdCreditToPrint}
         />
       )}
     </div>
