@@ -243,6 +243,114 @@ async function runTestSuite() {
       assert.strictEqual(voucher.transactions[2].transaction_type, 'DRAWDOWN');
     });
 
+    // TEST 5: TÁCH KHÁCH TRÊN ĐƠN KHÔNG CÓ BẢNG PRICING_ROWS (FALLBACK UNIT PRICING)
+    console.log('\n--- TEST GROUP 5: FALLBACK UNIT PRICING (NO PRICING ROWS) ---');
+    let noPricingBookingId = null;
+    let noPricingCreditId = null;
+    try {
+      const npRes = await db.query(`
+        INSERT INTO bookings_raw (
+          booking_code, customer_id, pax_count, total_price, paid, payment_status, booking_status,
+          raw_details, notes, created_at, updated_at
+        ) VALUES (
+          'BK-QA-NOPRICE-01', NULL, 2, 40000000, 16000000, 'partial', 'Đã cọc',
+          $1, 'Test booking không có pricingRows', NOW(), NOW()
+        ) RETURNING id
+      `, [JSON.stringify({
+        members: [
+          { id: 101, name: 'Khách Ở Lại', phone: '0911000111' },
+          { id: 102, name: 'Khách Huỷ Đơn', phone: '0911000222' }
+        ]
+      })]);
+      noPricingBookingId = npRes.rows[0].id;
+
+      await itAsync('Tách khách khi không có bảng pricingRows -> Giá tour giảm chuẩn xác 50% (từ 40tr về 20tr)', async () => {
+        let resp = null;
+        const req = {
+          user: { id: 1, full_name: 'Tester' },
+          body: {
+            bookingId: noPricingBookingId,
+            passengerIndex: 1,
+            allocatedDeposit: 8000000,
+            deductionFee: 0,
+            validityMonths: 6,
+            creditToOption: 'canceling_passenger'
+          }
+        };
+        const res = {
+          status: (code) => ({ json: (data) => { resp = { code, data }; } }),
+          json: (data) => { resp = { code: 200, data }; }
+        };
+
+        await controller.splitAndRetainDeposit(req, res);
+        assert.strictEqual(resp.code, 200);
+        assert.strictEqual(resp.data.success, true);
+        noPricingCreditId = resp.data.credit.id;
+
+        const ub = resp.data.updatedBooking;
+        assert.strictEqual(ub.pax_count, 1, 'Số khách co về 1');
+        assert.strictEqual(Number(ub.total_price), 20000000, 'Giá tour giảm từ 40tr về 20tr theo đơn giá bình quân');
+        assert.strictEqual(Number(ub.paid), 8000000, 'Tiền cọc booking gốc còn 8tr');
+        assert.strictEqual(Number(ub.remaining), 12000000, 'Còn nợ đúng 12tr');
+      });
+    } finally {
+      if (noPricingBookingId) await db.query('DELETE FROM bookings_raw WHERE id = $1', [noPricingBookingId]);
+      if (noPricingCreditId) await db.query('DELETE FROM customer_credits WHERE id = $1', [noPricingCreditId]);
+    }
+
+    // TEST 6: CHẶN CẤN TRỪ VƯỢT DƯ NỢ CỦA BOOKING ĐÍCH (OVERDRAW GUARD)
+    console.log('\n--- TEST GROUP 6: CHẶN CẤN TRỪ VƯỢT DƯ NỢ (OVERDRAW & CANCELLED GUARD) ---');
+    let overdrawBookingId = null;
+    let overdrawCreditId = null;
+    try {
+      const ocRes = await db.query(`
+        INSERT INTO customer_credits (
+          credit_code, original_booking_id, passenger_name, credited_to_name, credited_to_phone,
+          original_deposit, deduction_fee, retention_amount, remaining_balance,
+          currency, status, retention_date, expiry_date, validity_months
+        ) VALUES (
+          'BL-TEST-OVERDRAW', 9999, 'Khách Thử', 'Khách Thử', '0999999999',
+          10000000, 0, 10000000, 10000000,
+          'VND', 'ACTIVE', CURRENT_DATE, CURRENT_DATE + INTERVAL '180 days', 6
+        ) RETURNING id
+      `);
+      overdrawCreditId = ocRes.rows[0].id;
+
+      const obRes = await db.query(`
+        INSERT INTO bookings_raw (
+          booking_code, customer_id, pax_count, total_price, paid, payment_status, booking_status,
+          raw_details, notes, created_at, updated_at
+        ) VALUES (
+          'BK-QA-OVERDRAW', NULL, 1, 5000000, 3000000, 'partial', 'Mới',
+          '{}', 'Tour đích nợ 2tr', NOW(), NOW()
+        ) RETURNING id
+      `);
+      overdrawBookingId = obRes.rows[0].id;
+
+      await itAsync('Chặn cấn trừ 5.000.000đ khi Booking đích chỉ còn nợ 2.000.000đ', async () => {
+        let resp = null;
+        const req = {
+          user: { id: 1, full_name: 'Tester' },
+          body: {
+            creditId: overdrawCreditId,
+            targetBookingId: overdrawBookingId,
+            amount: 5000000
+          }
+        };
+        const res = {
+          status: (code) => ({ json: (data) => { resp = { code, data }; } }),
+          json: (data) => { resp = { code: 200, data }; }
+        };
+
+        await controller.drawdownCredit(req, res);
+        assert.strictEqual(resp.code, 400, 'Bị chặn với mã 400');
+        assert.ok(resp.data.error.includes('vượt quá số tiền nợ còn lại'), 'Trả về thông báo lỗi vượt dư nợ');
+      });
+    } finally {
+      if (overdrawBookingId) await db.query('DELETE FROM bookings_raw WHERE id = $1', [overdrawBookingId]);
+      if (overdrawCreditId) await db.query('DELETE FROM customer_credits WHERE id = $1', [overdrawCreditId]);
+    }
+
   } finally {
     // CLEANUP
     if (testBookingId) {

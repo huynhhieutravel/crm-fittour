@@ -187,36 +187,61 @@ exports.splitAndRetainDeposit = async (req, res) => {
 
     // 7. CẬP NHẬT BOOKING GỐC (Co về số khách còn lại & điều chỉnh số tiền cọc)
     const updatedMembers = members.filter((_, idx) => idx !== pIdx);
+    const originalPax = Math.max(1, parseInt(booking.pax_count) || members.length);
+    const newPaxCount = Math.max(0, originalPax - 1);
 
-    // Điều chỉnh bảng giá Pricing Rows: giảm 1 vé
+    // Điều chỉnh bảng giá Pricing Rows: khớp ageType của khách huỷ nếu có
     let pricingRows = Array.isArray(rawDetails.pricingRows) ? rawDetails.pricingRows : [];
-    let reduced = false;
-    let rowUnitPrice = 0;
-
-    for (let r of pricingRows) {
-      const q = Number(r.qty || 0);
-      if (q > 0 && !reduced) {
-        r.qty = q - 1;
-        rowUnitPrice = Number(r.price || 0);
-        r.total = Math.max(0, (r.qty * rowUnitPrice) + Number(r.surcharge || 0) - Number(r.discount || 0));
-        reduced = true;
-      }
+    const cancelingAgeType = (cancelingPassenger.ageType || cancelingPassenger.age_type || '').trim().toLowerCase();
+    
+    let matchedRow = pricingRows.find(r => 
+      Number(r.qty || 0) > 0 && 
+      r.ageType && 
+      r.ageType.trim().toLowerCase() === cancelingAgeType
+    );
+    if (!matchedRow) {
+      matchedRow = pricingRows.find(r => Number(r.qty || 0) > 0);
     }
 
-    // Tính lại Tổng tiền mới của Booking
-    const newTotalPrice = pricingRows.length > 0 
-      ? pricingRows.reduce((sum, r) => sum + Number(r.total || 0), 0)
-      : Math.max(0, Number(booking.total_price || 0) - rowUnitPrice);
+    let rowUnitPrice = 0;
+    if (matchedRow) {
+      const oldQty = Number(matchedRow.qty || 0);
+      matchedRow.qty = Math.max(0, oldQty - 1);
+      rowUnitPrice = Number(matchedRow.price || 0);
+
+      // Điều chỉnh discount nếu có theo tỷ lệ số khách giảm
+      if (Number(matchedRow.discount || 0) > 0 && oldQty > 0) {
+        matchedRow.discount = Math.round(Number(matchedRow.discount) * (matchedRow.qty / oldQty));
+      }
+      matchedRow.total = Math.max(0, (matchedRow.qty * rowUnitPrice) + Number(matchedRow.surcharge || 0) - Number(matchedRow.discount || 0));
+    }
+
+    // Tính lại Tổng tiền mới của Booking:
+    // Nếu có pricingRows thì tính theo SUM(pricingRows.total).
+    // Nếu KHÔNG có pricingRows (hoặc pricingRows rỗng), tính fallback theo đơn giá trung bình mỗi khách (total_price / originalPax)
+    let newTotalPrice;
+    if (pricingRows.length > 0 && matchedRow) {
+      newTotalPrice = pricingRows.reduce((sum, r) => sum + Number(r.total || 0), 0);
+    } else {
+      const avgPricePerPax = Number(booking.total_price || 0) / originalPax;
+      newTotalPrice = Math.max(0, Math.round(Number(booking.total_price || 0) - avgPricePerPax));
+    }
 
     const newPaidAmount = Math.max(0, currentPaid - depositToSplit);
-    const newPaxCount = Math.max(1, (parseInt(booking.pax_count) || members.length) - 1);
 
-    // Xác định trạng thái thanh toán mới
+    // Xác định trạng thái thanh toán và trạng thái booking mới
     let newPaymentStatus = 'unpaid';
     if (newPaidAmount >= newTotalPrice && newTotalPrice > 0) {
       newPaymentStatus = 'paid';
     } else if (newPaidAmount > 0) {
       newPaymentStatus = 'partial';
+    }
+
+    // Nếu toàn bộ khách đã bị huỷ/tách (pax = 0), chuyển trạng thái Booking thành Huỷ
+    let newBookingStatus = booking.booking_status;
+    if (newPaxCount === 0 || updatedMembers.length === 0) {
+      newBookingStatus = 'Huỷ';
+      newPaymentStatus = newPaidAmount === 0 ? 'unpaid' : newPaymentStatus;
     }
 
     // Ghi nhận lịch sử bảo lưu vào booking gốc
@@ -236,7 +261,8 @@ exports.splitAndRetainDeposit = async (req, res) => {
     });
 
     const updatedNote = (booking.notes ? booking.notes + '\n' : '') + 
-      `[BẢO LƯU ${creditCode}] Đã tách 1 khách (${passengerName}) hủy tour. Bảo lưu ${netRetention.toLocaleString()} đ (Hạn: ${expiryDate.toLocaleDateString('vi-VN')}).`;
+      `[BẢO LƯU ${creditCode}] Đã tách 1 khách (${passengerName}) hủy tour. Bảo lưu ${netRetention.toLocaleString()} đ (Hạn: ${expiryDate.toLocaleDateString('vi-VN')}).` +
+      (newPaxCount === 0 ? ' Đơn hàng không còn khách, tự động chuyển trạng thái Huỷ.' : '');
 
     await client.query(`
       UPDATE bookings SET
@@ -244,15 +270,17 @@ exports.splitAndRetainDeposit = async (req, res) => {
         total_price = $2,
         paid = $3,
         payment_status = $4,
-        raw_details = $5,
-        notes = $6,
+        booking_status = $5,
+        raw_details = $6,
+        notes = $7,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $7
+      WHERE id = $8
     `, [
       newPaxCount,
       newTotalPrice,
       newPaidAmount,
       newPaymentStatus,
+      newBookingStatus,
       JSON.stringify(rawDetails),
       updatedNote,
       booking.id
@@ -380,6 +408,31 @@ exports.drawdownCredit = async (req, res) => {
     }
     const targetBooking = bCheck.rows[0];
 
+    // Chặn cấn trừ vào booking đã huỷ
+    if (['Huỷ', 'Hủy', 'CANCELLED', 'EXPIRED'].includes(targetBooking.booking_status)) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Không thể cấn trừ vào Booking đã bị huỷ hoặc hết hạn.' });
+    }
+
+    // Kiểm tra dư nợ của Booking đích, chặn overdraw
+    const currentTargetPaid = Number(targetBooking.paid || 0);
+    const targetTotalPrice = Number(targetBooking.total_price || 0);
+    const targetRemainingDebt = Math.max(0, targetTotalPrice - currentTargetPaid);
+
+    if (targetTotalPrice > 0 && targetRemainingDebt <= 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ 
+        error: `Booking đích đã được thanh toán đủ 100% (${currentTargetPaid.toLocaleString()} đ), không còn dư nợ để cấn trừ.` 
+      });
+    }
+
+    if (targetTotalPrice > 0 && drawdownAmt > targetRemainingDebt) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ 
+        error: `Số tiền muốn cấn trừ (${drawdownAmt.toLocaleString()} đ) vượt quá số tiền nợ còn lại của Booking đích (${targetRemainingDebt.toLocaleString()} đ). Vui lòng cấn trừ tối đa ${targetRemainingDebt.toLocaleString()} đ.` 
+      });
+    }
+
     // Lấy thông tin tour đích
     let targetTourName = 'Tour FIT TOUR';
     if (targetBooking.tour_departure_id) {
@@ -423,9 +476,7 @@ exports.drawdownCredit = async (req, res) => {
     ]);
 
     // 5. Cập nhật tiền cọc đã thu trên Booking đích
-    const currentTargetPaid = Number(targetBooking.paid || 0);
     const newTargetPaid = currentTargetPaid + drawdownAmt;
-    const targetTotalPrice = Number(targetBooking.total_price || 0);
 
     let newTargetPaymentStatus = targetBooking.payment_status;
     if (newTargetPaid >= targetTotalPrice && targetTotalPrice > 0) {

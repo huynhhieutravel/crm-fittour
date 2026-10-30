@@ -191,3 +191,4 @@ export default function PrintDepositRetentionModal({ isOpen, onClose, credit }) 
     </div>
   );
 }
+
