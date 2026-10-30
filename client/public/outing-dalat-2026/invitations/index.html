@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <base href="../">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KIỂM TRA THƯ MỜI & FILE ĐÍNH KÈM (32 THÀNH VIÊN) — FIT Together Đà Lạt 2026</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="FIT Invitations">
+  <meta name="theme-color" content="#f5f5f7">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Plus Jakarta Sans"', '"SF Pro Display"', '"SF Pro Text"', 'sans-serif'],
+          },
+          colors: {
+            apple: {
+              bg: '#f5f5f7',
+              darkBg: '#000000',
+              card: '#ffffff',
+              cardDark: '#1c1c1e',
+              cardDarker: '#161618',
+              border: 'rgba(0, 0, 0, 0.08)',
+              borderDark: 'rgba(255, 255, 255, 0.12)',
+              blue: '#0071e3',
+              blueHover: '#0077ed',
+              green: '#34c759',
+              orange: '#ff9500',
+              red: '#ff3b30',
+              purple: '#af52de',
+              textMuted: '#86868b',
+              textMutedDark: '#a1a1a6',
+            }
+          },
+          boxShadow: {
+            'apple': '0 4px 24px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04)',
+            'apple-hover': '0 20px 40px -4px rgba(0, 0, 0, 0.12), 0 8px 16px -2px rgba(0, 0, 0, 0.06)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .apple-glass {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .dark .apple-glass {
+      background: rgba(28, 28, 30, 0.85);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 9999px;
+    }
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-apple-bg dark:bg-apple-darkBg text-[#1d1d1f] dark:text-[#f5f5f7] antialiased min-h-screen pb-28">
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="sticky top-0 z-40 apple-glass border-b border-black/[0.06] dark:border-white/[0.08] transition-colors duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center gap-3">
+        <a href="./index.html" class="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl shadow-sm hover:scale-105 transition-transform" title="Trang Lịch Trình">
+          🌲
+        </a>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs uppercase tracking-wider font-extrabold text-amber-600 dark:text-amber-400">FIT TOGETHER 2026</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20">
+              🔒 CHẾ ĐỘ XEM TRƯỚC (CHƯA GỬI)
+            </span>
+          </div>
+          <h1 class="text-base sm:text-lg font-black tracking-tight leading-tight">
+            Kiểm Tra Thư Mời &amp; File Đính Kèm (32 TV)
+          </h1>
+        </div>
+      </div>
+
+      <!-- Action & Links -->
+      <div class="flex items-center gap-2">
+        <button onclick="toggleSummaryModal()" class="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-neutral-800 border border-black/10 dark:border-white/10 hover:bg-neutral-50 dark:hover:bg-neutral-700 font-bold text-xs shadow-sm transition active:scale-95">
+          <span>📊</span>
+          <span>Bảng Đối Soát (32/32)</span>
+        </button>
+
+        <a href="./index.html" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 font-semibold text-xs transition active:scale-95">
+          <span>📅 Lịch Trình</span>
+        </a>
+
+        <a href="./teams.html" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 font-semibold text-xs transition active:scale-95">
+          <span>🎲 Xoay 3 Đội</span>
+        </a>
+
+        <!-- Dark mode toggle -->
+        <button id="themeToggle" class="w-9 h-9 rounded-full bg-white dark:bg-apple-cardDark border border-black/10 dark:border-white/10 flex items-center justify-center text-sm shadow-sm transition active:scale-90" aria-label="Đổi giao diện">
+          <span class="dark:hidden">🌙</span>
+          <span class="hidden dark:inline">☀️</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
+
+    <!-- Overview Notification Banner -->
+    <div class="mb-6 p-4 sm:p-5 rounded-3xl bg-amber-500/10 border border-amber-500/25 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-start gap-3">
+        <span class="text-2xl mt-0.5">⚠️</span>
+        <div class="text-xs sm:text-sm">
+          <div class="font-extrabold text-amber-900 dark:text-amber-200">
+            KHOAN HẢ GỬI EMAIL — ĐANG Ở BƯỚC ĐỐI SOÁT &amp; DUYỆT THƯ MỜI
+          </div>
+          <div class="text-amber-800/80 dark:text-amber-300/80 mt-0.5">
+            Admin kiểm tra từng thư mời để xác nhận <strong>Họ tên</strong>, <strong>Email</strong>, <strong>Thời gian gia nhập &amp; thâm niên</strong> và <strong>Ảnh thẻ thư mời đính kèm</strong> từ folder <code>company-outing</code> đã khớp 100% trước khi gửi hàng loạt.
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <div class="text-right">
+          <div class="text-xs text-apple-textMuted dark:text-apple-textMutedDark font-medium">Tiến độ kiểm tra</div>
+          <div id="verifiedCounter" class="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">0 / 32 Đã Duyệt</div>
+        </div>
+        <div class="w-24 bg-neutral-200 dark:bg-neutral-700 h-2.5 rounded-full overflow-hidden">
+          <div id="verifiedProgressBar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2-COLUMN LAYOUT: MEMBERS SELECTOR & EMAIL PREVIEW -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- LEFT COLUMN: MEMBER LIST (4 COLUMNS ON LG) -->
+      <div class="lg:col-span-4 flex flex-col gap-4">
+        
+        <!-- Search & Filter Bar -->
+        <div class="p-4 rounded-3xl bg-white dark:bg-apple-cardDark border border-black/[0.06] dark:border-white/[0.08] shadow-apple">
+          <div class="relative mb-3">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400 text-sm">
+              🔍
+            </span>
+            <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Tìm tên, nickname, email, BU..." class="w-full pl-9 pr-3 py-2 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border-none text-xs sm:text-sm font-medium focus:ring-2 focus:ring-apple-blue outline-none transition">
+          </div>
+
+          <!-- Department Filters -->
+          <div class="flex flex-wrap gap-1.5 custom-scrollbar max-h-24 overflow-y-auto">
+            <button onclick="setFilter('ALL')" class="filter-btn active px-2.5 py-1 rounded-full text-xs font-bold bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 transition" data-filter="ALL">Tất cả (32)</button>
+            <button onclick="setFilter('BOD')" class="filter-btn px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition" data-filter="BOD">BOD</button>
+            <button onclick="setFilter('1')" class="filter-btn px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition" data-filter="1">BU 1</button>
+            <button onclick="setFilter('2')" class="filter-btn px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition" data-filter="2">BU 2</button>
+            <button onclick="setFilter('3')" class="filter-btn px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition" data-filter="3">BU 3</button>
+            <button onclick="setFilter('4')" class="filter-btn px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition" data-filter="4">BU 4</button>
+            <button onclick="setFilter('5')" class="filter-btn px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition" data-filter="5">BU 5</button>
+            <button onclick="setFilter('Kế toán')" class="filter-btn px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition" data-filter="Kế toán">Kế Toán</button>
+            <button onclick="setFilter('Marketing')" class="filter-btn px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition" data-filter="Marketing">MKT</button>
+            <button onclick="setFilter('Visa')" class="filter-btn px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition" data-filter="Visa">Visa</button>
+          </div>
+        </div>
+
+        <!-- Scrollable Member Cards List -->
+        <div id="membersListContainer" class="flex flex-col gap-2 max-h-[calc(100vh-280px)] overflow-y-auto custom-scrollbar pr-1">
+          <!-- Injected via JavaScript -->
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: DETAILED INVITATION & ATTACHMENT PREVIEW (8 COLUMNS ON LG) -->
+      <div class="lg:col-span-8 flex flex-col gap-6">
+
+        <!-- Selected Member Top Action Header -->
+        <div class="p-5 sm:p-6 rounded-3xl bg-white dark:bg-apple-cardDark border border-black/[0.06] dark:border-white/[0.08] shadow-apple flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div id="previewAvatar" class="w-14 h-14 rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 border border-black/10 dark:border-white/10 flex-shrink-0 flex items-center justify-center font-black text-xl text-apple-blue shadow-inner">
+              <!-- Avatar -->
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="previewSttBadge" class="text-[10px] px-2 py-0.5 rounded-full font-extrabold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                  STT 1
+                </span>
+                <span id="previewDepartmentBadge" class="text-[10px] px-2 py-0.5 rounded-full font-extrabold bg-sky-500/10 text-sky-700 dark:text-sky-300">
+                  Phòng Ban: CEO
+                </span>
+                <span id="previewVerifiedBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full font-extrabold bg-emerald-500 text-white">
+                  ✓ Đã Khớp Chuẩn
+                </span>
+              </div>
+              <h2 id="previewFullName" class="text-xl sm:text-2xl font-black text-[#1d1d1f] dark:text-white mt-0.5 leading-tight">
+                Nguyễn Nhất Vũ
+              </h2>
+              <div id="previewRoleAndTenure" class="text-xs text-apple-textMuted dark:text-apple-textMutedDark font-medium mt-0.5">
+                Giám Đốc • Gia nhập: 16/09/2020 (6 năm 1 tháng)
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Navigation Buttons & Verification Checkbox -->
+          <div class="flex items-center gap-2 sm:self-center">
+            <button onclick="prevMember()" class="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center justify-center font-bold text-sm transition active:scale-95" title="Người trước (Mũi tên trái)">
+              ←
+            </button>
+            <button onclick="nextMember()" class="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center justify-center font-bold text-sm transition active:scale-95" title="Người tiếp theo (Mũi tên phải)">
+              →
+            </button>
+            <button id="btnToggleVerified" onclick="toggleCurrentVerified()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 font-bold text-xs border border-emerald-500/25 transition active:scale-95 cursor-pointer">
+              <span id="verifyCheckIcon">⬜</span>
+              <span id="verifyBtnText">Xác nhận khớp ảnh &amp; thư</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Attachment Check Card -->
+        <div class="p-5 rounded-3xl bg-neutral-50 dark:bg-neutral-900/60 border border-black/[0.08] dark:border-white/[0.1]">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-black/[0.06] dark:border-white/[0.08]">
+            <div class="flex items-center gap-2.5">
+              <span class="text-xl">📎</span>
+              <div>
+                <div class="text-xs font-bold uppercase tracking-wider text-apple-textMuted dark:text-apple-textMutedDark">Tệp Đính Kèm Email</div>
+                <div id="previewCardFileName" class="text-sm font-extrabold text-[#1d1d1f] dark:text-white font-mono">
+                  BOD/CEO.png
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <a id="btnDownloadCard" href="#" download class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-neutral-800 border border-black/10 dark:border-white/10 hover:bg-neutral-100 dark:hover:bg-neutral-700 font-bold text-xs transition active:scale-95">
+                <span>⬇️</span>
+                <span>Tải Ảnh Gốc</span>
+              </a>
+              <button onclick="openModalImageViewer()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-apple-blue hover:bg-apple-blueHover text-white font-bold text-xs shadow-sm transition active:scale-95">
+                <span>🔍</span>
+                <span>Phóng To Ảnh Thư Mời</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Attachment Visual Card (Click to Zoom) -->
+          <div class="mt-4 flex flex-col items-center justify-center cursor-pointer group" onclick="openModalImageViewer()">
+            <div class="relative max-w-md w-full rounded-2xl overflow-hidden shadow-lg border border-black/10 dark:border-white/10 group-hover:shadow-2xl group-hover:scale-[1.01] transition-all duration-300">
+              <img id="previewCardImg" src="" alt="Thư mời FIT TOUR" class="w-full h-auto object-cover">
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-bold text-sm">
+                <span>🔍 Bấm để xem ảnh phóng to</span>
+              </div>
+            </div>
+            <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark mt-2 italic">
+              * Ảnh thư mời cá nhân hóa sẽ được đính kèm trực tiếp trong email gửi đến thành viên.
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= WYSIWYG EMAIL CLIENT PREVIEW ================= -->
+        <div class="rounded-3xl bg-white dark:bg-apple-cardDark border border-black/[0.08] dark:border-white/[0.1] shadow-apple overflow-hidden">
+          
+          <!-- Mock Email Header (macOS Mail style) -->
+          <div class="p-5 border-b border-black/[0.06] dark:border-white/[0.08] bg-neutral-50/70 dark:bg-neutral-900/50 space-y-2 text-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <span class="w-20 font-bold text-apple-textMuted dark:text-apple-textMutedDark">Người gửi:</span>
+              <span class="font-semibold text-neutral-800 dark:text-neutral-200">
+                Ban Tổ Chức Company Trip 2026 &lt;trip2026@fittour.com.vn&gt;
+              </span>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <span class="w-20 font-bold text-apple-textMuted dark:text-apple-textMutedDark">Người nhận:</span>
+              <span id="previewEmailTo" class="font-bold text-apple-blue font-mono">
+                ceo@fittour.com.vn
+              </span>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <span class="w-20 font-bold text-apple-textMuted dark:text-apple-textMutedDark">Tiêu đề:</span>
+              <span id="previewEmailSubject" class="font-extrabold text-sm text-[#1d1d1f] dark:text-white">
+                Thư mời Nguyễn Nhất Vũ tham dự FIT TOUR Company Trip 2026
+              </span>
+            </div>
+          </div>
+
+          <!-- Mock Email Body -->
+          <div class="p-6 sm:p-8 space-y-6 text-[#2c2c2e] dark:text-[#d1d1d6] leading-relaxed text-sm sm:text-base">
+            
+            <!-- Greeting & Tenure Milestone Card -->
+            <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+              <div class="font-extrabold text-base text-amber-900 dark:text-amber-200">
+                Gửi <span id="emailBodyMemberName" class="text-amber-600 dark:text-amber-400 font-black">Nguyễn Nhất Vũ</span> thân mến,
+              </div>
+              <div class="text-xs text-amber-800/80 dark:text-amber-300/80 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span>🗓️ Ngày gia nhập FIT TOUR: <strong id="emailBodyJoinDate">16/09/2020</strong></span>
+                <span>•</span>
+                <span>⭐ Hành trình gắn bó cùng đại gia đình: <strong id="emailBodyTenure">6 năm 1 tháng</strong></span>
+              </div>
+            </div>
+
+            <p>
+              Sau những ngày cùng nhau chạy tour, xử lý công việc, chăm sóc khách hàng và đôi khi là những deadline nối tiếp nhau, cuối cùng cũng đến lúc chúng ta tạm gác lại công việc để dành một chút thời gian cho chính mình!
+            </p>
+
+            <p>
+              Tháng 11 này, <strong class="text-[#1d1d1f] dark:text-white">FIT TOUR sẽ cùng nhau lên đường đến Đà Lạt với Company Trip 2026 – Beyond Ordinary Journeys!</strong>
+            </p>
+
+            <p>
+              Không chỉ đơn giản là một chuyến đi chơi, đây còn là dịp để mọi người cùng trải nghiệm những điều mới mẻ, có thêm thời gian trò chuyện, hiểu nhau hơn và tạo nên những kỷ niệm thật vui bên nhau.
+            </p>
+
+            <p>
+              FIT TOUR thân mời <strong id="emailBodyMemberName2" class="text-apple-blue font-extrabold">Nguyễn Nhất Vũ</strong> cùng tham gia hành trình lần này!
+            </p>
+
+            <!-- Section: Thông tin chuyến đi -->
+            <div class="p-4 sm:p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-black/[0.05] dark:border-white/[0.06] space-y-2">
+              <h3 class="text-base font-extrabold text-[#1d1d1f] dark:text-white flex items-center gap-2">
+                <span>🌿</span>
+                <span>THÔNG TIN CHUYẾN ĐI</span>
+              </h3>
+              <ul class="space-y-1.5 text-xs sm:text-sm pl-1">
+                <li>• <strong>Thời gian:</strong> 11 – 14/11/2026 (4 ngày 3 đêm)</li>
+                <li>• <strong>Địa điểm:</strong> Đà Lạt – Lâm Đồng</li>
+                <li>• <strong>Chủ đề:</strong> BEYOND ORDINARY JOURNEYS</li>
+                <li>• <strong>Thành phần:</strong> Đại gia đình FIT TOUR (32 Thành viên)</li>
+              </ul>
+            </div>
+
+            <!-- Section: Chúng ta sẽ cùng nhau làm gì? -->
+            <div class="space-y-3">
+              <h3 class="text-base font-extrabold text-[#1d1d1f] dark:text-white flex items-center gap-2">
+                <span>🎯</span>
+                <span>CHÚNG TA SẼ CÙNG NHAU LÀM GÌ?</span>
+              </h3>
+
+              <div class="space-y-2.5 text-xs sm:text-sm pl-1">
+                <div>
+                  🏕️ <strong>Camping giữa thiên nhiên Đà Lạt:</strong> Tận hưởng không khí se lạnh, những bữa ăn ngoài trời và những câu chuyện mà ngày thường ở văn phòng chưa có dịp kể nhau nghe.
+                </div>
+                <div>
+                  🥾 <strong>Chinh phục cung trekking 8 km:</strong> Một chút thử thách, một chút mệt, nhưng chắc chắn sẽ có nhiều chuyện vui để kể sau khi về đích. Quan trọng không phải ai đi nhanh nhất, mà là cả nhóm cùng đồng hành trên chặng đường ấy.
+                </div>
+                <div>
+                  🛶 <strong>Trải nghiệm chèo SUP:</strong> Thêm một hoạt động thú vị để cùng nhau thử sức, thư giãn và lưu lại những khoảnh khắc đáng nhớ.
+                </div>
+                <div>
+                  ☕ <strong>Tự do khám phá Đà Lạt:</strong> Dành thời gian thưởng thức cà phê, dạo phố, ăn uống hoặc đơn giản là tận hưởng một ngày không phải vội vàng với công việc.
+                </div>
+                <div>
+                  🍢 <strong>BBQ &amp; Acoustic Night:</strong> Cùng ăn uống, nghe nhạc, trò chuyện và tận hưởng những buổi tối Đà Lạt theo cách thoải mái nhất.
+                </div>
+              </div>
+
+              <p class="text-xs sm:text-sm italic text-apple-textMuted dark:text-apple-textMutedDark pt-1">
+                Và tất nhiên, không thể thiếu những tấm hình tập thể, những khoảnh khắc ngẫu hứng và vài câu chuyện mà có lẽ sau chuyến đi sẽ còn được nhắc lại rất lâu!
+              </p>
+            </div>
+
+            <!-- Section: Beyond Ordinary Journeys -->
+            <div class="space-y-2 border-l-4 border-amber-500 pl-4 py-1">
+              <h3 class="text-base font-extrabold text-[#1d1d1f] dark:text-white">
+                BEYOND ORDINARY JOURNEYS – HƠN CẢ NHỮNG HÀNH TRÌNH THÔNG THƯỜNG
+              </h3>
+              <p>
+                Chúng ta vẫn thường cùng nhau tạo nên những chuyến đi đáng nhớ cho khách hàng. Nhưng lần này sẽ hơi khác một chút: <strong class="text-[#1d1d1f] dark:text-white">chính chúng ta sẽ là những người tận hưởng hành trình ấy.</strong>
+              </p>
+              <p>
+                Không còn những cuộc họp, những lịch trình công việc dày đặc hay những việc cần xử lý ngay lập tức. Chỉ là vài ngày để mọi người được nghỉ ngơi, vui chơi và dành thời gian cho nhau nhiều hơn.
+              </p>
+              <p class="font-medium text-amber-700 dark:text-amber-300">
+                Bởi đôi khi, điều khiến một chuyến đi trở nên đáng nhớ không hẳn là nơi chúng ta đến, mà là những người đã cùng mình trải qua hành trình đó.
+              </p>
+            </div>
+
+            <!-- Section: Hẹn gặp bạn tại Đà Lạt -->
+            <div class="space-y-3">
+              <h3 class="text-base font-extrabold text-[#1d1d1f] dark:text-white">
+                HẸN GẶP BẠN TẠI ĐÀ LẠT!
+              </h3>
+              <p>
+                FIT TOUR rất mong <strong id="emailBodyMemberName3" class="text-apple-blue font-bold">Nguyễn Nhất Vũ</strong> sẽ có mặt trong chuyến đi này, để cùng mọi người tận hưởng những ngày Đà Lạt thật vui và có thêm những kỷ niệm đẹp với đại gia đình FIT TOUR.
+              </p>
+              <p>
+                Hãy chuẩn bị một chút hành lý, một đôi giày thật thoải mái, một chiếc điện thoại đầy pin để chụp ảnh và quan trọng nhất là một tinh thần thật nhiều năng lượng nhé!
+              </p>
+              <p>
+                Lịch trình chi tiết cùng các thông tin cần chuẩn bị sẽ được Ban Tổ chức gửi đến trước ngày khởi hành.
+              </p>
+            </div>
+
+            <!-- Prominent Link to Full Itinerary Page -->
+            <div class="my-6 p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-rose-500/15 border border-amber-500/30 text-center">
+              <div class="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-2">
+                📖 CẨM NANG &amp; LỊCH TRÌNH CHI TIẾT TRỰC TUYẾN
+              </div>
+              <a href="https://erp.fittour.vn/outing-dalat-2026/index.html" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-white font-extrabold text-sm shadow-md transition active:scale-95">
+                <span>👉 Bấm Để Xem Chi Tiết Lịch Trình &amp; Hành Trang</span>
+                <span>↗</span>
+              </a>
+              <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark mt-2">
+                Link trực tiếp: <a href="https://erp.fittour.vn/outing-dalat-2026/index.html" target="_blank" class="underline text-apple-blue">https://erp.fittour.vn/outing-dalat-2026/index.html</a>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-black/[0.06] dark:border-white/[0.08] space-y-1">
+              <div class="text-base font-black text-amber-600 dark:text-amber-400">
+                11/11/2026 – Đà Lạt, chúng ta đến đây! 🧡
+              </div>
+              <div class="pt-2 text-xs text-apple-textMuted dark:text-apple-textMutedDark">
+                Thân mến,<br>
+                <strong class="text-[#1d1d1f] dark:text-white">Ban Tổ chức Company Trip 2026</strong><br>
+                <span class="font-bold text-amber-600 dark:text-amber-400">FIT TOUR – Du lịch có GUU</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= MODAL: ZOOM IMAGE VIEWER ================= -->
+  <div id="imageModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeModalImageViewer()">
+    <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center justify-center" onclick="event.stopPropagation()">
+      <button onclick="closeModalImageViewer()" class="absolute -top-12 right-0 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/30 transition">
+        ✕ Đóng (ESC)
+      </button>
+      <img id="modalImgTag" src="" alt="Ảnh Thư Mời" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain border border-white/20">
+      <div id="modalImgCaption" class="text-white text-xs font-semibold mt-3 text-center">
+        <!-- Caption -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: SUMMARY TABLE OF 32 INVITATIONS ================= -->
+  <div id="summaryModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-apple-cardDark rounded-3xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden" onclick="event.stopPropagation()">
+      <div class="p-5 border-b border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-black text-[#1d1d1f] dark:text-white">Bảng Đối Soát 32 Thư Mời &amp; File Ảnh</h3>
+          <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Xem tổng quan tất cả nhân sự, email, ngày gia nhập và tệp đính kèm tương ứng</p>
+        </div>
+        <button onclick="toggleSummaryModal()" class="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition">
+          ✕
+        </button>
+      </div>
+
+      <div class="p-4 overflow-y-auto custom-scrollbar flex-1">
+        <table class="w-full text-left text-xs">
+          <thead class="sticky top-0 bg-neutral-50 dark:bg-neutral-800 text-[11px] font-bold text-apple-textMuted uppercase border-b border-black/[0.06] dark:border-white/[0.08]">
+            <tr>
+              <th class="p-2.5">STT</th>
+              <th class="p-2.5">Họ Và Tên</th>
+              <th class="p-2.5">Nickname</th>
+              <th class="p-2.5">Email Gửi</th>
+              <th class="p-2.5">Gia Nhập (Thâm Niên)</th>
+              <th class="p-2.5">File Ảnh Đính Kèm</th>
+              <th class="p-2.5 text-center">Khớp</th>
+            </tr>
+          </thead>
+          <tbody id="summaryTableBody" class="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
+            <!-- Injected via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="p-4 bg-neutral-50 dark:bg-neutral-900 border-t border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between">
+        <span class="text-xs text-apple-textMuted dark:text-apple-textMutedDark font-medium">
+          Dữ liệu đồng bộ trực tiếp từ Database PostgreSQL &amp; Thư mục <code>company-outing</code>
+        </span>
+        <button onclick="toggleSummaryModal()" class="px-5 py-2 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-bold text-xs">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= APPLE FLOATING DOCK ================= -->
+  <aside aria-label="Quick Navigation Bar" class="fixed bottom-5 inset-x-0 z-40 flex justify-center pointer-events-none px-3">
+    <div class="pointer-events-auto apple-glass rounded-full shadow-2xl border border-black/10 dark:border-white/15 px-3 sm:px-4 py-2 flex items-center gap-1.5 sm:gap-3 backdrop-blur-xl transition-all duration-200">
+      
+      <!-- 1: Sang Trang Lịch Trình -->
+      <a href="./index.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95 group" title="Xem Cẩm nang & Lịch trình">
+        <span class="text-base group-hover:scale-110 transition-transform">📅</span>
+        <span class="text-xs sm:text-sm font-semibold tracking-tight">Lịch Trình</span>
+      </a>
+
+      <span class="w-px h-4 bg-black/10 dark:bg-white/15"></span>
+
+      <!-- 2: Sang Trang Xoay Đội -->
+      <a href="./teams.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95 group" title="Vòng Quay & Danh Sách 3 Đội">
+        <span class="text-base group-hover:scale-110 transition-transform">🎲</span>
+        <span class="text-xs sm:text-sm font-semibold tracking-tight">Xoay 3 Đội</span>
+      </a>
+
+      <span class="w-px h-4 bg-black/10 dark:bg-white/15"></span>
+
+      <!-- 3: Trang Hiện Tại: Thư Mời -->
+      <a href="#top" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm font-bold tracking-tight">
+        <span class="text-base">💌</span>
+        <span class="text-xs sm:text-sm">Thư Mời (32 TV)</span>
+      </a>
+
+      <span class="w-px h-4 bg-black/10 dark:bg-white/15"></span>
+
+      <!-- 4: Bảng Đối Soát Tổng Hợp -->
+      <button onclick="toggleSummaryModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold text-xs sm:text-sm hover:bg-emerald-500/20 transition active:scale-95">
+        <span class="text-base">📊</span>
+        <span class="hidden sm:inline">Đối Soát</span>
+      </button>
+
+    </div>
+  </aside>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    // 1. Theme toggle
+    const themeToggleBtn = document.getElementById('themeToggle');
+    function applyTheme() {
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+    applyTheme();
+
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        if (document.documentElement.classList.contains('dark')) {
+          document.documentElement.classList.remove('dark');
+          localStorage.theme = 'light';
+        } else {
+          document.documentElement.classList.add('dark');
+          localStorage.theme = 'dark';
+        }
+      });
+    }
+
+    // 2. Data & State
+    let invitations = [];
+    let currentIndex = 0;
+    let currentFilter = 'ALL';
+    let searchQuery = '';
+    let verifiedSet = new Set();
+
+    const STORAGE_KEY_VERIFIED = 'fit_invitations_verified_status_v1';
+
+    // Load verified IDs from localStorage
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_VERIFIED);
+      if (saved) {
+        verifiedSet = new Set(JSON.parse(saved));
+      }
+    } catch (e) {}
+
+    function saveVerifiedToStorage() {
+      localStorage.setItem(STORAGE_KEY_VERIFIED, JSON.stringify(Array.from(verifiedSet)));
+      updateProgressBar();
+    }
+
+    // 3. Fetch Data
+    fetch('./assets/invitations_data.json')
+      .then(res => res.json())
+      .then(data => {
+        invitations = data;
+        renderMemberList();
+        selectMember(0);
+        renderSummaryTable();
+        updateProgressBar();
+      })
+      .catch(err => {
+        console.error('Lỗi tải danh sách thư mời:', err);
+      });
+
+    // 4. Search & Filter Handlers
+    function handleSearch(val) {
+      searchQuery = (val || '').toLowerCase().trim();
+      renderMemberList();
+    }
+
+    function setFilter(dep) {
+      currentFilter = dep;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-filter') === dep) {
+          btn.classList.add('active', 'bg-neutral-900', 'text-white', 'dark:bg-white', 'dark:text-neutral-900');
+          btn.classList.remove('bg-neutral-100', 'dark:bg-neutral-800');
+        } else {
+          btn.classList.remove('active', 'bg-neutral-900', 'text-white', 'dark:bg-white', 'dark:text-neutral-900');
+          btn.classList.add('bg-neutral-100', 'dark:bg-neutral-800');
+        }
+      });
+      renderMemberList();
+    }
+
+    function getFilteredList() {
+      return invitations.filter(item => {
+        const matchSearch = !searchQuery || 
+          item.ho_ten.toLowerCase().includes(searchQuery) ||
+          (item.nickname && item.nickname.toLowerCase().includes(searchQuery)) ||
+          (item.email && item.email.toLowerCase().includes(searchQuery)) ||
+          (item.phong_ban && item.phong_ban.toLowerCase().includes(searchQuery));
+        
+        let matchFilter = true;
+        if (currentFilter !== 'ALL') {
+          if (currentFilter === 'BOD') {
+            matchFilter = item.phong_ban === 'BOD' || item.phong_ban === 'CEO';
+          } else if (currentFilter === 'Kế toán') {
+            matchFilter = item.phong_ban.includes('Kế toán');
+          } else if (currentFilter === 'Marketing') {
+            matchFilter = item.phong_ban.includes('Marketing');
+          } else if (currentFilter === 'Visa') {
+            matchFilter = item.phong_ban.includes('Visa');
+          } else {
+            matchFilter = item.phong_ban === currentFilter;
+          }
+        }
+
+        return matchSearch && matchFilter;
+      });
+    }
+
+    // 5. Render Member List (Left Column)
+    function renderMemberList() {
+      const container = document.getElementById('membersListContainer');
+      const filtered = getFilteredList();
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-xs text-apple-textMuted dark:text-apple-textMutedDark">
+            Không tìm thấy nhân sự nào khớp với điều kiện tìm kiếm.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => {
+        const globalIdx = invitations.findIndex(x => x.stt === item.stt);
+        const isSelected = globalIdx === currentIndex;
+        const isVerified = verifiedSet.has(item.stt);
+
+        return `
+          <div onclick="selectMember(${globalIdx})" class="p-3 rounded-2xl border flex items-center justify-between gap-3 cursor-pointer transition-all ${
+            isSelected 
+              ? 'bg-amber-500/10 border-amber-500/50 shadow-sm ring-1 ring-amber-500/30' 
+              : 'bg-white dark:bg-apple-cardDark border-black/[0.06] dark:border-white/[0.08] hover:border-black/20 dark:hover:border-white/20'
+          }">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <!-- Avatar or thumbnail -->
+              <div class="w-10 h-10 rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 flex items-center justify-center font-bold text-xs text-apple-blue border border-black/5 shadow-inner">
+                ${item.avatar ? `<img src="${item.avatar}" class="w-full h-full object-cover">` : item.ho_ten.substring(0, 2).toUpperCase()}
+              </div>
+
+              <!-- Name & Meta -->
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] font-bold text-neutral-400">#${item.stt}</span>
+                  <span class="font-extrabold text-xs sm:text-[13px] truncate text-[#1d1d1f] dark:text-white">
+                    ${item.ho_ten}
+                  </span>
+                </div>
+                <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark truncate">
+                  <span class="text-apple-blue font-semibold">@${item.nickname || 'TV'}</span>
+                  <span>•</span>
+                  <span>PB ${item.phong_ban}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Verified indicator -->
+            <div class="flex items-center gap-1 flex-shrink-0">
+              ${isVerified ? `
+                <span class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-black shadow-sm" title="Đã khớp chuẩn">
+                  ✓
+                </span>
+              ` : `
+                <span class="w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-400 flex items-center justify-center text-xs" title="Chưa kiểm tra">
+                  ○
+                </span>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 6. Select Member & Populate View
+    function selectMember(idx) {
+      if (idx < 0 || idx >= invitations.length) return;
+      currentIndex = idx;
+      const m = invitations[idx];
+
+      // Update Header info
+      const avatarEl = document.getElementById('previewAvatar');
+      if (m.avatar) {
+        avatarEl.innerHTML = `<img src="${m.avatar}" class="w-full h-full object-cover">`;
+      } else {
+        avatarEl.innerHTML = `<span>${m.ho_ten.substring(0, 2).toUpperCase()}</span>`;
+      }
+
+      document.getElementById('previewSttBadge').textContent = `STT ${m.stt} / 32`;
+      document.getElementById('previewDepartmentBadge').textContent = `Phòng Ban: ${m.phong_ban}`;
+      document.getElementById('previewFullName').textContent = `${m.ho_ten} (@${m.nickname || 'TV'})`;
+      document.getElementById('previewRoleAndTenure').innerHTML = `
+        <strong>${m.nghe_nghiep || 'Nhân sự FIT'}</strong> • Gia nhập: <strong>${m.join_date}</strong> (Đã đồng hành: <strong>${m.tenure}</strong>)
+      `;
+
+      // Update Attachment View
+      document.getElementById('previewCardFileName').textContent = m.company_outing_file || `card-${m.stt}.png`;
+      const cardImg = document.getElementById('previewCardImg');
+      cardImg.src = m.card_image;
+      document.getElementById('btnDownloadCard').href = m.card_image;
+      document.getElementById('btnDownloadCard').setAttribute('download', `Thu-Moi-FIT-Trip-${m.stt}-${m.ho_ten}.png`);
+
+      // Update Email Client Fields
+      document.getElementById('previewEmailTo').textContent = `${m.ho_ten} <${m.email || 'chưa có email'}>`;
+      document.getElementById('previewEmailSubject').textContent = `Thư mời ${m.ho_ten} tham dự FIT TOUR Company Trip 2026`;
+      
+      document.getElementById('emailBodyMemberName').textContent = m.ho_ten;
+      document.getElementById('emailBodyMemberName2').textContent = m.ho_ten;
+      document.getElementById('emailBodyMemberName3').textContent = m.ho_ten;
+      document.getElementById('emailBodyJoinDate').textContent = m.join_date;
+      document.getElementById('emailBodyTenure').textContent = m.tenure;
+
+      // Update Verified Button state
+      updateVerifyButtonState();
+
+      // Refresh left column active selection
+      renderMemberList();
+    }
+
+    function updateVerifyButtonState() {
+      const m = invitations[currentIndex];
+      if (!m) return;
+      const isVer = verifiedSet.has(m.stt);
+      const btn = document.getElementById('btnToggleVerified');
+      const icon = document.getElementById('verifyCheckIcon');
+      const text = document.getElementById('verifyBtnText');
+      const badge = document.getElementById('previewVerifiedBadge');
+
+      if (isVer) {
+        icon.textContent = '✅';
+        text.textContent = 'Đã Khớp Chuẩn (Bấm để hủy)';
+        btn.classList.add('bg-emerald-500', 'text-white');
+        btn.classList.remove('bg-emerald-500/10', 'text-emerald-700', 'dark:text-emerald-400');
+        badge.classList.remove('hidden');
+      } else {
+        icon.textContent = '⬜';
+        text.textContent = 'Xác nhận khớp ảnh & thư';
+        btn.classList.remove('bg-emerald-500', 'text-white');
+        btn.classList.add('bg-emerald-500/10', 'text-emerald-700', 'dark:text-emerald-400');
+        badge.classList.add('hidden');
+      }
+    }
+
+    function toggleCurrentVerified() {
+      const m = invitations[currentIndex];
+      if (!m) return;
+      if (verifiedSet.has(m.stt)) {
+        verifiedSet.delete(m.stt);
+      } else {
+        verifiedSet.add(m.stt);
+      }
+      saveVerifiedToStorage();
+      updateVerifyButtonState();
+      renderMemberList();
+      renderSummaryTable();
+    }
+
+    function updateProgressBar() {
+      const count = verifiedSet.size;
+      const total = invitations.length || 32;
+      const pct = Math.round((count / total) * 100);
+
+      const counter = document.getElementById('verifiedCounter');
+      const bar = document.getElementById('verifiedProgressBar');
+      if (counter) counter.textContent = `${count} / ${total} Đã Duyệt (${pct}%)`;
+      if (bar) bar.style.width = `${pct}%`;
+    }
+
+    function prevMember() {
+      if (currentIndex > 0) {
+        selectMember(currentIndex - 1);
+      } else {
+        selectMember(invitations.length - 1);
+      }
+    }
+
+    function nextMember() {
+      if (currentIndex < invitations.length - 1) {
+        selectMember(currentIndex + 1);
+      } else {
+        selectMember(0);
+      }
+    }
+
+    // Keyboard navigation (Arrow keys)
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT') return;
+      if (e.key === 'ArrowLeft') prevMember();
+      if (e.key === 'ArrowRight') nextMember();
+      if (e.key === 'Escape') {
+        closeModalImageViewer();
+        const sm = document.getElementById('summaryModal');
+        if (sm) sm.classList.add('hidden');
+      }
+    });
+
+    // 7. Modal Image Zoom
+    function openModalImageViewer() {
+      const m = invitations[currentIndex];
+      if (!m) return;
+      const modal = document.getElementById('imageModal');
+      const img = document.getElementById('modalImgTag');
+      const cap = document.getElementById('modalImgCaption');
+      img.src = m.card_image;
+      cap.textContent = `Thư mời tham dự FIT TOUR Company Trip 2026: ${m.ho_ten} (${m.company_outing_file})`;
+      modal.classList.remove('hidden');
+    }
+
+    function closeModalImageViewer() {
+      const modal = document.getElementById('imageModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // 8. Summary Table Modal
+    function toggleSummaryModal() {
+      const sm = document.getElementById('summaryModal');
+      if (sm.classList.contains('hidden')) {
+        renderSummaryTable();
+        sm.classList.remove('hidden');
+      } else {
+        sm.classList.add('hidden');
+      }
+    }
+
+    function renderSummaryTable() {
+      const tbody = document.getElementById('summaryTableBody');
+      if (!tbody || invitations.length === 0) return;
+
+      tbody.innerHTML = invitations.map(m => {
+        const isVer = verifiedSet.has(m.stt);
+        return `
+          <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition cursor-pointer" onclick="selectMember(${m.stt - 1}); toggleSummaryModal();">
+            <td class="p-2.5 font-bold text-neutral-400">#${m.stt}</td>
+            <td class="p-2.5 font-extrabold text-[#1d1d1f] dark:text-white flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0 flex items-center justify-center text-[10px]">
+                ${m.avatar ? `<img src="${m.avatar}" class="w-full h-full object-cover">` : m.ho_ten.charAt(0)}
+              </div>
+              <span>${m.ho_ten}</span>
+            </td>
+            <td class="p-2.5 font-semibold text-apple-blue">@${m.nickname || 'TV'}</td>
+            <td class="p-2.5 font-mono text-[11px] text-neutral-600 dark:text-neutral-300">${m.email}</td>
+            <td class="p-2.5">
+              <span class="font-bold">${m.join_date}</span>
+              <span class="text-apple-textMuted text-[10px]">(${m.tenure})</span>
+            </td>
+            <td class="p-2.5 font-mono text-[11px] text-amber-600 dark:text-amber-400">
+              ${m.company_outing_file}
+            </td>
+            <td class="p-2.5 text-center">
+              ${isVer ? `<span class="text-emerald-500 font-extrabold">✓ Đã duyệt</span>` : `<span class="text-neutral-400">Chờ xem</span>`}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  </script>
+</body>
+</html>
