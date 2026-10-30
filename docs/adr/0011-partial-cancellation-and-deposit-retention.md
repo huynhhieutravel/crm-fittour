@@ -26,10 +26,13 @@ We establish a formalized 3-tier domain architecture for Partial Cancellations a
   - `CREDIT`: Inflow from split booking retention.
   - `DEBIT`: Drawdown applied toward a future tour booking deposit.
   - `EXPIRED`: Written off to other revenue upon reaching expiration milestone.
-- **3-Way Credit Beneficiary Attribution (Phân Quyền Thụ Hưởng 3 Chiều)**:
+- **Multi-Way Credit Beneficiary Attribution (Phân Quyền Thụ Hưởng Đa Chiều)**:
   1. `canceling_passenger`: Ghi nhận cho chính hành khách hủy.
-  2. `booker`: Ủy quyền cho người đại diện / người thanh toán booking.
-  3. `custom_customer`: Gán / chuyển nhượng trực tiếp cho một Khách hàng bất kỳ trên CRM (tìm kiếm theo Tên hoặc Số điện thoại qua Customer Autocomplete, hoặc nhập nhanh thông tin nếu là khách hàng mới). Hệ thống tự động liên kết khóa ngoại `credited_to_customer_id` để khi khách này đặt tour mới, khoản bảo lưu sẽ tự động nhận diện và sẵn sàng cấn trừ.
+  2. `companion_members`: Chuyển cọc trực tiếp 1-click cho bất kỳ người đồng hành nào trong cùng booking (ví dụ: khách A hủy thì cọc có thể chuyển ngay cho khách B đi cùng tour mà không cần gõ lại thông tin).
+  3. `booker`: Ủy quyền cho người đại diện / người thanh toán booking (chỉ hiển thị khi người đại diện khác với khách hủy và khác các người đồng hành).
+  4. `custom_customer`: Gán / chuyển nhượng cho Khách hàng khác trên CRM hoặc Tạo mới. Hệ thống áp dụng mô hình Search-First (tìm kiếm khách hàng CRM bằng `AsyncSelect` với `menuPortalTarget={document.body}` và z-index cao để chống tràn layout modal) kết hợp On-Demand Quick Add (chỉ hiển thị ô nhập họ tên và SĐT khi người dùng chủ động bấm "+ Khách hàng chưa có trong CRM? Bấm vào đây để tạo nhanh").
+- **Unnested Form Controls Architecture**:
+  Toàn bộ cụm tìm kiếm và nhập liệu người thụ hưởng được bọc trong container `<div>` thay vì thẻ `<label>` của radio button, loại bỏ hoàn toàn lỗi chuẩn HTML click bubbling (nơi click vào search input bị đẩy lên thẻ label cha khiến menu tìm kiếm bị đóng ngay lập tức).
 - **Thousand-Separator Currency Input Masking (Định Dạng Tiền Tệ Tránh Nhầm Số 0)**:
   Tất cả các trường nhập liệu số tiền phân bổ và phí phạt phát sinh áp dụng cơ chế tự động chèn dấu chấm phân cách hàng nghìn (ví dụ: `15.000.000`), ngăn chặn triệt để rủi ro nhân sự gõ nhầm thừa/thiếu số 0.
 - **Strict 12-Month Hard Cap (Trần Thời Hạn Tối Đa 12 Tháng)**: Sales staff are strictly constrained to choosing a validity period of `<= 12 months` (e.g., 3, 6, 9, or maximum 12 months from the cancellation date). System UI enforces `max="12"` and backend rejects any expiration date exceeding `cancellation_date + 365 days`.

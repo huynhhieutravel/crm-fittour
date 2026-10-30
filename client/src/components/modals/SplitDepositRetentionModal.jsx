@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { X, ShieldAlert, CheckCircle2, UserCheck, Calendar, DollarSign, FileText, UserPlus, Search } from 'lucide-react';
+import { X, ShieldAlert, CheckCircle2, UserCheck, Calendar, DollarSign, FileText, UserPlus, Search, ArrowRightLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import AsyncSelect from 'react-select/async';
 
@@ -20,8 +20,24 @@ export default function SplitDepositRetentionModal({
     ? raw.members
     : (member ? [member] : [{ name: booking.name || 'Hành khách', phone: booking.phone || '' }]);
 
-  const [selectedIdx, setSelectedIdx] = useState(memberIndex !== undefined && memberIndex !== null ? memberIndex : 0);
+  const [selectedIdx, setSelectedIdx] = useState(
+    memberIndex !== undefined && memberIndex !== null ? Number(memberIndex) : 0
+  );
   const currentMember = members[selectedIdx] || members[0] || {};
+  const cancelingName = currentMember.name || 'Hành khách';
+  const cancelingPhone = currentMember.phone || '';
+
+  const companionMembers = members
+    .map((m, idx) => ({ ...m, origIdx: idx }))
+    .filter(m => m.origIdx !== selectedIdx);
+
+  const bookerName = booking.name || raw.bookingInfo?.name || '';
+  const bookerPhone = booking.phone || raw.bookingInfo?.phone || '';
+
+  const isBookerSameAsCanceling = bookerName && (bookerName.toLowerCase().trim() === cancelingName.toLowerCase().trim());
+  const isBookerInCompanions = bookerName && companionMembers.some(c => (c.name || '').toLowerCase().trim() === bookerName.toLowerCase().trim());
+  const showBookerOption = bookerName && !isBookerSameAsCanceling && !isBookerInCompanions;
+
   const totalSlots = members.length || Number(booking.pax_count) || 1;
   const totalPaid = Number(booking.paid || 0);
 
@@ -31,10 +47,11 @@ export default function SplitDepositRetentionModal({
   const [allocatedDeposit, setAllocatedDeposit] = useState(defaultAllocated);
   const [deductionFee, setDeductionFee] = useState(0);
   const [validityMonths, setValidityMonths] = useState(12); // Khóa cứng trần tối đa 12 tháng
-  const [creditToOption, setCreditToOption] = useState('canceling_passenger'); // 'canceling_passenger' | 'booker' | 'custom_customer'
+  const [creditToOption, setCreditToOption] = useState('canceling_passenger');
   const [selectedCustomCustomer, setSelectedCustomCustomer] = useState(null);
   const [customName, setCustomName] = useState('');
   const [customPhone, setCustomPhone] = useState('');
+  const [isQuickAdd, setIsQuickAdd] = useState(false);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,9 +75,6 @@ export default function SplitDepositRetentionModal({
 
   const netRetention = Math.max(0, Number(allocatedDeposit || 0) - Number(deductionFee || 0));
 
-  const bookerName = booking.name || raw.bookingInfo?.name || 'Người đại diện';
-  const cancelingName = member.name || 'Hành khách';
-
   const loadCustomerOptions = async (inputValue) => {
     if (!inputValue || inputValue.trim().length < 1) return [];
     try {
@@ -70,7 +84,7 @@ export default function SplitDepositRetentionModal({
       const data = res.data?.data || res.data;
       return Array.isArray(data) ? data.map(c => ({
         value: c.id,
-        label: `${c.name}${c.phone ? ' - ' + c.phone : (c.id_card ? ' - HC:' + c.id_card : '')}`,
+        label: `${c.name}${c.phone ? ' - ' + c.phone : (c.id_card ? ' - HC/CCCD:' + c.id_card : '')}`,
         customer: c
       })) : [];
     } catch (err) {
@@ -79,19 +93,57 @@ export default function SplitDepositRetentionModal({
     }
   };
 
+  const handlePassengerChange = (newIdx) => {
+    setSelectedIdx(newIdx);
+    setCreditToOption('canceling_passenger');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (allocatedDeposit > totalPaid) {
       return toast.error(`Số tiền cọc phân bổ không được lớn hơn tổng cọc của booking (${formatMoney(totalPaid)})`);
     }
 
-    if (creditToOption === 'custom_customer') {
-      if (!customName.trim()) {
-        return toast.error('Vui lòng nhập họ tên người thụ hưởng khoản bảo lưu.');
+    let finalCreditToOption = creditToOption;
+    let finalCreditedCustomerId = null;
+    let finalCreditedName = '';
+    let finalCreditedPhone = '';
+
+    if (creditToOption.startsWith('companion_')) {
+      const compIdx = parseInt(creditToOption.replace('companion_', ''), 10);
+      const companion = members[compIdx];
+      if (!companion) {
+        return toast.error('Không tìm thấy thông tin người đồng hành đã chọn.');
       }
-      if (!customPhone.trim()) {
-        return toast.error('Vui lòng nhập số điện thoại người thụ hưởng để hệ thống nhận diện khi đặt tour mới.');
+      finalCreditToOption = 'custom';
+      finalCreditedName = (companion.name || '').trim();
+      finalCreditedPhone = (companion.phone || '').trim();
+      finalCreditedCustomerId = companion.customerId || companion.id || null;
+    } else if (creditToOption === 'custom_customer') {
+      if (selectedCustomCustomer) {
+        finalCreditToOption = 'custom';
+        finalCreditedCustomerId = selectedCustomCustomer.id;
+        finalCreditedName = (selectedCustomCustomer.name || '').trim();
+        finalCreditedPhone = (selectedCustomCustomer.phone || '').trim();
+      } else {
+        if (!customName.trim()) {
+          return toast.error('Vui lòng tìm chọn khách hàng CRM hoặc bấm Tạo nhanh để nhập họ tên.');
+        }
+        if (!customPhone.trim()) {
+          return toast.error('Vui lòng nhập số điện thoại người thụ hưởng để hệ thống nhận diện khi đặt tour mới.');
+        }
+        finalCreditToOption = 'custom';
+        finalCreditedName = customName.trim();
+        finalCreditedPhone = customPhone.trim();
+        finalCreditedCustomerId = null;
       }
+    } else if (creditToOption === 'canceling_passenger') {
+      finalCreditToOption = 'canceling_passenger';
+      finalCreditedName = (cancelingName || '').trim();
+      finalCreditedPhone = (cancelingPhone || '').trim();
+      finalCreditedCustomerId = currentMember.customerId || null;
+    } else if (creditToOption === 'booker') {
+      finalCreditToOption = 'booker';
     }
 
     setIsSubmitting(true);
@@ -102,10 +154,10 @@ export default function SplitDepositRetentionModal({
         allocatedDeposit: Number(allocatedDeposit),
         deductionFee: Number(deductionFee),
         validityMonths: Math.min(12, Math.max(1, parseInt(validityMonths) || 12)),
-        creditToOption: creditToOption === 'custom_customer' ? 'custom' : creditToOption,
-        customCreditedCustomerId: selectedCustomCustomer?.id || null,
-        customCreditedName: customName.trim(),
-        customCreditedPhone: customPhone.trim(),
+        creditToOption: finalCreditToOption,
+        customCreditedCustomerId: finalCreditedCustomerId,
+        customCreditedName: finalCreditedName,
+        customCreditedPhone: finalCreditedPhone,
         notes: notes.trim()
       };
 
@@ -161,7 +213,7 @@ export default function SplitDepositRetentionModal({
               </label>
               <select
                 value={selectedIdx}
-                onChange={e => setSelectedIdx(Number(e.target.value))}
+                onChange={e => handlePassengerChange(Number(e.target.value))}
                 style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #fdba74', fontSize: '13px', fontWeight: 700, color: '#0f172a', background: '#ffffff', outline: 'none' }}
               >
                 {members.map((m, idx) => (
@@ -262,105 +314,242 @@ export default function SplitDepositRetentionModal({
                   checked={creditToOption === 'canceling_passenger'}
                   onChange={e => setCreditToOption(e.target.value)}
                 />
-                <span>Ghi nhận cho <b>Khách hủy: {cancelingName}</b> {member.phone ? `(${member.phone})` : ''}</span>
+                <span>Ghi nhận cho <b>Khách hủy: {cancelingName}</b> {cancelingPhone ? `(${cancelingPhone})` : ''}</span>
               </label>
 
-              {/* Lựa chọn 2: Người đại diện thanh toán */}
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', padding: '10px 12px', border: `1px solid ${creditToOption === 'booker' ? '#ea580c' : '#e2e8f0'}`, borderRadius: '8px', background: creditToOption === 'booker' ? '#fff7ed' : '#ffffff' }}>
-                <input
-                  type="radio"
-                  name="creditToOption"
-                  value="booker"
-                  checked={creditToOption === 'booker'}
-                  onChange={e => setCreditToOption(e.target.value)}
-                />
-                <span>Ủy quyền cho <b>Người thanh toán / Đại diện booking: {bookerName}</b></span>
-              </label>
-
-              {/* Lựa chọn 3: Gán / Chuyển nhượng cho Khách hàng khác trên CRM */}
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px', cursor: 'pointer', padding: '10px 12px', border: `1px solid ${creditToOption === 'custom_customer' ? '#ea580c' : '#e2e8f0'}`, borderRadius: '8px', background: creditToOption === 'custom_customer' ? '#fff7ed' : '#ffffff' }}>
-                <input
-                  type="radio"
-                  name="creditToOption"
-                  value="custom_customer"
-                  checked={creditToOption === 'custom_customer'}
-                  onChange={e => setCreditToOption(e.target.value)}
-                  style={{ marginTop: '3px' }}
-                />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, color: '#0f172a' }}>
-                    Gán / Chuyển nhượng cho Khách hàng khác trong CRM (Ví dụ: VUU MINH THONG)
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                    Số tiền cọc bảo lưu sẽ được gán trực tiếp vào hồ sơ khách hàng mới để cấn trừ vào các booking tiếp theo
-                  </div>
-
-                  {creditToOption === 'custom_customer' && (
-                    <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px', background: '#ffffff', padding: '12px', borderRadius: '8px', border: '1px solid #fed7aa' }}>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#9a3412', marginBottom: '4px' }}>
-                          🔍 Tìm kiếm khách hàng trong CRM (Gõ tên hoặc SĐT):
-                        </label>
-                        <AsyncSelect
-                          cacheOptions
-                          loadOptions={loadCustomerOptions}
-                          defaultOptions={false}
-                          placeholder="Gõ tên khách (vd: VUU MINH THONG) hoặc SĐT để tìm..."
-                          value={selectedCustomCustomer ? { value: selectedCustomCustomer.id, label: `${selectedCustomCustomer.name}${selectedCustomCustomer.phone ? ' - ' + selectedCustomCustomer.phone : ''}` } : null}
-                          onChange={(opt) => {
-                            if (opt && opt.customer) {
-                              setSelectedCustomCustomer(opt.customer);
-                              setCustomName(opt.customer.name || '');
-                              setCustomPhone(opt.customer.phone || '');
-                            } else {
-                              setSelectedCustomCustomer(null);
-                            }
-                          }}
-                          isClearable
-                          styles={{
-                            control: (base) => ({
-                              ...base,
-                              borderRadius: '6px',
-                              borderColor: '#fdba74',
-                              fontSize: '13px'
-                            })
-                          }}
-                        />
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '10px' }}>
-                        <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
-                            Họ và tên người thụ hưởng *:
-                          </label>
-                          <input
-                            type="text"
-                            value={customName}
-                            onChange={e => setCustomName(e.target.value)}
-                            placeholder="Nhập họ tên (vd: VUU MINH THONG)"
-                            style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px 10px', fontSize: '13px', fontWeight: 700, color: '#0f172a' }}
-                            required={creditToOption === 'custom_customer'}
-                          />
-                        </div>
-
-                        <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
-                            Số điện thoại *:
-                          </label>
-                          <input
-                            type="tel"
-                            value={customPhone}
-                            onChange={e => setCustomPhone(e.target.value)}
-                            placeholder="Nhập SĐT nhận bảo lưu"
-                            style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px 10px', fontSize: '13px', fontWeight: 700, color: '#0f172a' }}
-                            required={creditToOption === 'custom_customer'}
-                          />
-                        </div>
-                      </div>
+              {/* Lựa chọn 2: Người đồng hành trong cùng booking (nếu có) */}
+              {companionMembers.map(comp => {
+                const optKey = `companion_${comp.origIdx}`;
+                const isSelected = creditToOption === optKey;
+                return (
+                  <label
+                    key={optKey}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      padding: '10px 12px',
+                      border: `1px solid ${isSelected ? '#ea580c' : '#e2e8f0'}`,
+                      borderRadius: '8px',
+                      background: isSelected ? '#fff7ed' : '#ffffff'
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="creditToOption"
+                      value={optKey}
+                      checked={isSelected}
+                      onChange={e => setCreditToOption(e.target.value)}
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <ArrowRightLeft size={14} color="#ea580c" />
+                      <span>
+                        Chuyển cọc cho người đồng hành: <b>{comp.name || 'Hành khách'}</b> {comp.phone ? `(${comp.phone})` : ''} {comp.ageType ? `— ${comp.ageType}` : ''}
+                      </span>
                     </div>
-                  )}
-                </div>
-              </label>
+                  </label>
+                );
+              })}
+
+              {/* Lựa chọn 3: Người đại diện thanh toán (chỉ hiển thị nếu khác khách hủy & khác đồng hành) */}
+              {showBookerOption && (
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', padding: '10px 12px', border: `1px solid ${creditToOption === 'booker' ? '#ea580c' : '#e2e8f0'}`, borderRadius: '8px', background: creditToOption === 'booker' ? '#fff7ed' : '#ffffff' }}>
+                  <input
+                    type="radio"
+                    name="creditToOption"
+                    value="booker"
+                    checked={creditToOption === 'booker'}
+                    onChange={e => setCreditToOption(e.target.value)}
+                  />
+                  <span>Ủy quyền cho <b>Người thanh toán / Đại diện booking: {bookerName}</b> {bookerPhone ? `(${bookerPhone})` : ''}</span>
+                </label>
+              )}
+
+              {/* Lựa chọn 4: Gán / Chuyển nhượng cho Khách hàng khác trên CRM hoặc Tạo mới (DIV wrapper, un-nested label) */}
+              <div
+                style={{
+                  border: `1px solid ${creditToOption === 'custom_customer' ? '#ea580c' : '#e2e8f0'}`,
+                  borderRadius: '8px',
+                  background: creditToOption === 'custom_customer' ? '#fff7ed' : '#ffffff',
+                  padding: '12px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="creditToOption"
+                    value="custom_customer"
+                    checked={creditToOption === 'custom_customer'}
+                    onChange={e => setCreditToOption(e.target.value)}
+                    style={{ marginTop: '3px' }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, color: '#0f172a' }}>
+                      Gán / Chuyển nhượng cho Khách hàng khác trong CRM (hoặc Tạo mới)
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                      Số tiền cọc bảo lưu sẽ được gán trực tiếp vào hồ sơ khách hàng để cấn trừ vào các booking tiếp theo
+                    </div>
+                  </div>
+                </label>
+
+                {creditToOption === 'custom_customer' && (
+                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px', background: '#ffffff', padding: '14px', borderRadius: '8px', border: '1px solid #fed7aa' }}>
+                    
+                    {/* Phần Tìm kiếm CRM */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#9a3412', marginBottom: '6px' }}>
+                        🔍 Tìm kiếm khách hàng trong CRM (Gõ tên hoặc SĐT):
+                      </label>
+                      <AsyncSelect
+                        cacheOptions
+                        loadOptions={loadCustomerOptions}
+                        defaultOptions={false}
+                        placeholder="Gõ tên khách (vd: VUU MINH THONG) hoặc SĐT để tìm..."
+                        value={selectedCustomCustomer ? { value: selectedCustomCustomer.id, label: `${selectedCustomCustomer.name}${selectedCustomCustomer.phone ? ' - ' + selectedCustomCustomer.phone : ''}` } : null}
+                        onChange={(opt) => {
+                          if (opt && opt.customer) {
+                            setSelectedCustomCustomer(opt.customer);
+                            setCustomName(opt.customer.name || '');
+                            setCustomPhone(opt.customer.phone || '');
+                            setIsQuickAdd(false);
+                          } else {
+                            setSelectedCustomCustomer(null);
+                            setCustomName('');
+                            setCustomPhone('');
+                          }
+                        }}
+                        isClearable
+                        menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+                        menuPosition="fixed"
+                        noOptionsMessage={({ inputValue }) => !inputValue ? "Nhập ít nhất 1 ký tự để tìm kiếm..." : "Không tìm thấy khách hàng. Hãy bấm '+ Tạo nhanh' bên dưới."}
+                        loadingMessage={() => "Đang tìm kiếm trong CRM..."}
+                        styles={{
+                          menuPortal: (base) => ({ ...base, zIndex: 999999 }),
+                          control: (base, state) => ({
+                            ...base,
+                            borderRadius: '6px',
+                            borderColor: state.isFocused ? '#ea580c' : '#fdba74',
+                            boxShadow: state.isFocused ? '0 0 0 1px #ea580c' : 'none',
+                            fontSize: '13px',
+                            minHeight: '38px'
+                          }),
+                          option: (base, state) => ({
+                            ...base,
+                            fontSize: '13px',
+                            backgroundColor: state.isSelected ? '#ea580c' : state.isFocused ? '#fff7ed' : '#ffffff',
+                            color: state.isSelected ? '#ffffff' : '#0f172a',
+                            cursor: 'pointer'
+                          })
+                        }}
+                      />
+                    </div>
+
+                    {/* Khách hàng đã chọn từ CRM */}
+                    {selectedCustomCustomer ? (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <UserCheck size={20} color="#16a34a" />
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: '#166534' }}>
+                              {selectedCustomCustomer.name}
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#15803d' }}>
+                              SĐT: {selectedCustomCustomer.phone || 'Chưa có SĐT'} {selectedCustomCustomer.id_card ? `| CCCD/HC: ${selectedCustomCustomer.id_card}` : ''}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedCustomCustomer(null);
+                            setCustomName('');
+                            setCustomPhone('');
+                          }}
+                          style={{ fontSize: '11px', color: '#dc2626', background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '4px', padding: '4px 10px', cursor: 'pointer', fontWeight: 600 }}
+                        >
+                          ✕ Đổi khách khác
+                        </button>
+                      </div>
+                    ) : (
+                      /* Trường hợp chưa chọn khách từ CRM: Cho phép tạo nhanh nếu cần */
+                      <div>
+                        {!isQuickAdd ? (
+                          <button
+                            type="button"
+                            onClick={() => setIsQuickAdd(true)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              padding: '4px 0',
+                              color: '#ea580c',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <UserPlus size={15} /> + Khách hàng chưa có trong CRM? Bấm vào đây để tạo nhanh
+                          </button>
+                        ) : (
+                          <div style={{ background: '#f8fafc', border: '1px dashed #fdba74', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '12px', fontWeight: 700, color: '#9a3412', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <UserPlus size={15} color="#ea580c" /> Tạo nhanh hồ sơ khách hàng mới:
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsQuickAdd(false);
+                                  setCustomName('');
+                                  setCustomPhone('');
+                                }}
+                                style={{ fontSize: '11px', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                              >
+                                Đóng tạo nhanh
+                              </button>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '10px' }}>
+                              <div>
+                                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                                  Họ và tên khách mới *:
+                                </label>
+                                <input
+                                  type="text"
+                                  value={customName}
+                                  onChange={e => setCustomName(e.target.value)}
+                                  placeholder="Nhập họ tên (vd: VUU MINH THONG)"
+                                  style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px 10px', fontSize: '13px', fontWeight: 700, color: '#0f172a' }}
+                                  required={creditToOption === 'custom_customer' && !selectedCustomCustomer}
+                                />
+                              </div>
+                              <div>
+                                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                                  Số điện thoại *:
+                                </label>
+                                <input
+                                  type="tel"
+                                  value={customPhone}
+                                  onChange={e => setCustomPhone(e.target.value)}
+                                  placeholder="Nhập SĐT nhận bảo lưu"
+                                  style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px 10px', fontSize: '13px', fontWeight: 700, color: '#0f172a' }}
+                                  required={creditToOption === 'custom_customer' && !selectedCustomCustomer}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                  </div>
+                )}
+              </div>
 
             </div>
           </div>
