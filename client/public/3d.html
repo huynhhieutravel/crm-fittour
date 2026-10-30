@@ -2037,7 +2037,7 @@
     // -----------------------------------------------------------------
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf1f5f9);
-    scene.fog = new THREE.FogExp2(0xf1f5f9, 0.009);
+    scene.fog = new THREE.Fog(0xf1f5f9, 140, 360);
 
     const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(75, 58, 75);
@@ -2047,6 +2047,8 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
     document.getElementById('webgl-container').appendChild(renderer.domElement);
 
     const labelRenderer = new CSS2DRenderer();
@@ -2082,10 +2084,10 @@
     // -----------------------------------------------------------------
     // 4. ARCHITECTURAL DAYLIGHT & SHADOW LIGHTING
     // -----------------------------------------------------------------
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xf1f5f9, 1.15);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcfd8dc, 0.85);
     scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfff7ed, 1.45);
+    const sunLight = new THREE.DirectionalLight(0xfff9e6, 1.15);
     sunLight.position.set(45, 65, 35);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 2048;
@@ -2100,7 +2102,7 @@
     sunLight.shadow.bias = -0.0004;
     scene.add(sunLight);
 
-    const skyFill = new THREE.DirectionalLight(0xe0f2fe, 0.45);
+    const skyFill = new THREE.DirectionalLight(0xbfdbfe, 0.35);
     skyFill.position.set(-35, 35, -35);
     scene.add(skyFill);
 
@@ -2185,7 +2187,7 @@
       const mat = new THREE.MeshBasicMaterial({
         map: texture,
         transparent: true,
-        opacity: 0.88,
+        opacity: 1.0,
         depthWrite: false
       });
       const mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, height), mat);
@@ -4162,8 +4164,7 @@
           c.mesh = null;
         }
         if (c.wrapperDiv) {
-          if (c.wrapperDiv.parentElement) c.wrapperDiv.parentElement.remove();
-          else c.wrapperDiv.remove();
+          c.wrapperDiv.remove();
           c.wrapperDiv = null;
         }
         c.holoDiv = null;
@@ -4276,11 +4277,7 @@
           c.mesh = null;
         }
         if (c.wrapperDiv) {
-          if (c.wrapperDiv.parentElement) {
-            c.wrapperDiv.parentElement.remove();
-          } else {
-            c.wrapperDiv.remove();
-          }
+          c.wrapperDiv.remove();
           c.wrapperDiv = null;
         }
         c.holoDiv = null;
@@ -4456,8 +4453,7 @@
                 c.mesh = null;
               }
               if (c.wrapperDiv) {
-                if (c.wrapperDiv.parentElement) c.wrapperDiv.parentElement.remove();
-                else c.wrapperDiv.remove();
+                c.wrapperDiv.remove();
                 c.wrapperDiv = null;
               }
               c.holoDiv = null;
@@ -4613,6 +4609,10 @@
 
         controls.update();
         renderer.render(scene, camera);
+        const cssContainer = document.getElementById('css2d-container');
+        if (cssContainer && labelRenderer.domElement.parentNode !== cssContainer) {
+          cssContainer.appendChild(labelRenderer.domElement);
+        }
         labelRenderer.render(scene, camera);
       } catch (err) {
         console.error('Animation loop error:', err);
