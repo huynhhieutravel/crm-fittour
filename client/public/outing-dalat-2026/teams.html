@@ -105,23 +105,16 @@
   </header>
 
   <!-- ================= MAIN TEAMBUILDING CONTENT ================= -->
-  <main class="pt-24 pb-8 px-4 sm:px-6 max-w-5xl mx-auto">
+  <main class="pt-24 pb-8 px-4 sm:px-6 max-w-6xl mx-auto">
     
     <!-- Hero Header of Teams Page -->
-    <div class="text-center max-w-2xl mx-auto mb-8">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-xs font-bold uppercase tracking-wider mb-3">
-        <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-        <span>Hoạt Động Teambuilding & Chèo SUP Hồ Tuyền Lâm</span>
-      </div>
-      <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#1d1d1f] dark:text-white leading-[1.15] mb-3">
+    <div class="text-center max-w-2xl mx-auto mb-6">
+      <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#1d1d1f] dark:text-white leading-[1.15]">
         Vòng Quay May Mắn <br class="hidden sm:block">
         <span class="bg-clip-text text-transparent bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500">
           Phân Chia 3 Đội Thi Đấu
         </span>
       </h1>
-      <p class="text-xs sm:text-sm text-apple-textMuted dark:text-apple-textMutedDark">
-        Cân bằng thể lực Nam/Nữ và phá vỡ silo phòng ban. Admin có toàn quyền chọn thành viên loại trừ, xoay bốc thăm và <strong>duyệt chính thức</strong> trước khi ban hành cho toàn đoàn.
-      </p>
     </div>
 
     <!-- Master Box Container -->
@@ -423,6 +416,14 @@
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
+          if (parsed.customTeamNames && Array.isArray(parsed.customTeamNames)) {
+            parsed.customTeamNames.forEach((n, idx) => {
+              if (n && TEAM_METADATA[idx]) {
+                TEAM_METADATA[idx].name = n;
+                TEAM_METADATA[idx].shortName = n;
+              }
+            });
+          }
           if (parsed.teams && Array.isArray(parsed.teams) && parsed.teams.length === 3) {
             assignedTeams = parsed.teams;
             excludedStts = new Set(parsed.excludedStts || DEFAULT_EXCLUDED_STTS);
@@ -438,6 +439,32 @@
 
       generateBalancedDraft();
       renderAll();
+    }
+
+    function saveTeamsToStorage() {
+      const payload = {
+        isApproved,
+        approvedTimestamp,
+        teams: assignedTeams,
+        excludedStts: Array.from(excludedStts),
+        customTeamNames: TEAM_METADATA.map(m => m.name)
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }
+
+    function editTeamName(idx) {
+      if (isApproved) {
+        alert('Đội hình hiện đang ĐÃ DUYỆT. Vui lòng bấm "Mở Khóa Chỉnh Sửa" ở bên dưới trước khi đổi tên đội.');
+        return;
+      }
+      const current = TEAM_METADATA[idx].name;
+      const newName = prompt(`Nhập tên mới cho Đội ${idx + 1}:`, current);
+      if (newName !== null && newName.trim() !== '') {
+        TEAM_METADATA[idx].name = newName.trim();
+        TEAM_METADATA[idx].shortName = newName.trim();
+        saveTeamsToStorage();
+        renderAll();
+      }
     }
 
     function toggleExcludeSection() {
@@ -712,14 +739,7 @@
       isApproved = true;
       const now = new Date();
       approvedTimestamp = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + now.toLocaleDateString('vi-VN');
-      
-      const payload = {
-        isApproved: true,
-        approvedTimestamp,
-        teams: assignedTeams,
-        excludedStts: Array.from(excludedStts)
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      saveTeamsToStorage();
       playFanfare();
       renderAll();
     }
@@ -729,13 +749,7 @@
       if (!ok) return;
 
       isApproved = false;
-      const payload = {
-        isApproved: false,
-        approvedTimestamp,
-        teams: assignedTeams,
-        excludedStts: Array.from(excludedStts)
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      saveTeamsToStorage();
       renderAll();
     }
 
@@ -870,16 +884,23 @@
 
           return `
             <div class="rounded-3xl border ${meta.borderClass} ${meta.bgClass} p-5 flex flex-col shadow-apple transition-all">
-              <!-- Header Ô chia đội: Badge đưa lên trên, bỏ Đội 1/2/3, bỏ icon khỏi tên đội -->
+              <!-- Header Ô chia đội: Badge đưa lên trên, tên đội click sửa được ✏️ -->
               <div class="border-b border-black/[0.06] dark:border-white/[0.08] pb-3.5 mb-3.5">
                 <div class="flex items-center justify-between gap-2 mb-2">
                   <span class="px-3 py-1 rounded-full text-xs font-extrabold ${meta.badgeClass} shadow-sm whitespace-nowrap">
                     ${team.length} TV (${mCount}N • ${fCount}Nữ)
                   </span>
+                  ${!isApproved ? `
+                    <button onclick="editTeamName(${idx})" class="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer">
+                      <span>✏️ Đổi tên đội</span>
+                    </button>
+                  ` : ''}
                 </div>
-                <h3 class="text-xl sm:text-2xl font-black text-[#1d1d1f] dark:text-white tracking-tight leading-tight">
-                  ${meta.name}
-                </h3>
+                <div class="flex items-center gap-2 group">
+                  <h3 onclick="${!isApproved ? `editTeamName(${idx})` : ''}" class="text-xl sm:text-2xl font-black text-[#1d1d1f] dark:text-white tracking-tight leading-tight ${!isApproved ? 'cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 transition' : ''}" title="${!isApproved ? 'Bấm để đổi tên đội' : ''}">
+                    ${meta.name}
+                  </h3>
+                </div>
                 <div class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-1 font-medium">
                   ${meta.tagline}
                 </div>
@@ -903,44 +924,48 @@
                   const isLeader = (p.nghe_nghiep || '').includes('Trưởng') || (p.nghe_nghiep || '').includes('Phó');
                   return `
                     <div class="p-2.5 rounded-2xl bg-white dark:bg-apple-cardDark border border-black/[0.05] dark:border-white/[0.06] shadow-sm hover:shadow transition">
-                      <div class="flex items-center justify-between gap-2">
-                        <!-- Left: STT, Avatar tròn, Họ tên & Nickname -->
-                        <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                          <span class="w-4 text-center font-bold text-neutral-400 text-xs flex-shrink-0">${pIdx + 1}</span>
-                          <div class="w-8 h-8 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 flex items-center justify-center font-extrabold text-apple-blue border border-black/5 shadow-sm">
-                            ${p.avatar ? `<img src="${p.avatar}" class="w-full h-full object-cover">` : p.ho_ten.charAt(0)}
+                      <div class="flex items-center gap-2.5">
+                        <!-- STT -->
+                        <span class="w-4 text-center font-bold text-neutral-400 text-xs flex-shrink-0">${pIdx + 1}</span>
+                        
+                        <!-- Avatar tròn -->
+                        <div class="w-8 h-8 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 flex items-center justify-center font-extrabold text-apple-blue border border-black/5 shadow-sm">
+                          ${p.avatar ? `<img src="${p.avatar}" class="w-full h-full object-cover">` : p.ho_ten.charAt(0)}
+                        </div>
+
+                        <!-- Cụm thông tin: Dòng 1 Tên + Giới tính; Dòng 2 Nickname + Đổi đội -->
+                        <div class="min-w-0 flex-1">
+                          <!-- DÒNG 1: Họ tên đầy đủ (KHÔNG CẮT NGẮN) + Giới tính -->
+                          <div class="flex items-center justify-between gap-1.5">
+                            <span class="font-extrabold text-xs sm:text-[13px] text-[#1d1d1f] dark:text-white leading-tight">
+                              ${p.ho_ten} ${isLeader ? '<span class="text-amber-500 font-extrabold text-xs" title="Trưởng/Phó phòng">★</span>' : ''}
+                            </span>
+                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${
+                              p.gioi_tinh === 'Nam' 
+                                ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300' 
+                                : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                            }">
+                              ${p.gioi_tinh}
+                            </span>
                           </div>
-                          <div class="min-w-0 flex-1">
-                            <div class="font-bold text-xs sm:text-[13px] text-[#1d1d1f] dark:text-white truncate flex items-center gap-1">
-                              <span>${p.ho_ten}</span>
-                              ${isLeader ? '<span class="text-amber-500 font-extrabold text-xs" title="Trưởng/Phó phòng">★</span>' : ''}
-                            </div>
-                            <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark truncate flex items-center gap-1.5">
+
+                          <!-- DÒNG 2: Nickname • Phòng ban + Đổi đội (đặt ở dòng 2 để giải phóng dòng 1) -->
+                          <div class="flex items-center justify-between gap-1 text-[11px] text-apple-textMuted dark:text-apple-textMutedDark mt-0.5">
+                            <div class="truncate">
                               <span class="text-apple-blue font-semibold">@${p.nickname || 'TV'}</span>
                               <span>•</span>
                               <span>${p.phong_ban || 'FIT'}</span>
                             </div>
+
+                            ${!isApproved ? `
+                              <select onchange="moveMemberToTeam('${p.stt}', this.value)" class="text-[10px] font-bold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border-none rounded-md py-0.5 px-1.5 cursor-pointer transition flex-shrink-0" title="Chuyển sang đội khác">
+                                <option value="${idx}">Đội này</option>
+                                <option value="0">Qua Đ1</option>
+                                <option value="1">Qua Đ2</option>
+                                <option value="2">Qua Đ3</option>
+                              </select>
+                            ` : ''}
                           </div>
-                        </div>
-
-                        <!-- Right: Giới tính & Điều chuyển đội (nếu chưa duyệt) -->
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            p.gioi_tinh === 'Nam' 
-                              ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300' 
-                              : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
-                          }">
-                            ${p.gioi_tinh}
-                          </span>
-
-                          ${!isApproved ? `
-                            <select onchange="moveMemberToTeam('${p.stt}', this.value)" class="text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border-none rounded-lg py-1 px-1.5 cursor-pointer transition" title="Chuyển sang đội khác">
-                              <option value="${idx}">Đội này</option>
-                              <option value="0">Qua Đ1</option>
-                              <option value="1">Qua Đ2</option>
-                              <option value="2">Qua Đ3</option>
-                            </select>
-                          ` : ''}
                         </div>
                       </div>
                     </div>
@@ -983,22 +1008,16 @@
           `;
         } else {
           adminSection.innerHTML = `
-            <div class="flex items-center gap-3">
-              <span class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl font-bold flex-shrink-0">
-                👑
-              </span>
-              <div>
-                <div class="font-extrabold text-sm text-[#1d1d1f] dark:text-white">
-                  Khu Vực Phê Duyệt Của Ban Lãnh Đạo / Admin
-                </div>
-                <div class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">
-                  Admin kiểm tra lại 3 đội bên trên. Khi thấy ưng ý, bấm <strong>Duyệt & Ban Hành</strong> để chốt danh sách.
-                </div>
+            <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg font-bold flex-shrink-0">
+                  👑
+                </span>
+                <span class="font-extrabold text-xs sm:text-sm text-[#1d1d1f] dark:text-white">
+                  Phê Duyệt Đội Hình (Bản Dự Thảo)
+                </span>
               </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <button onclick="approveTeams()" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white font-extrabold text-xs sm:text-sm shadow-md transition active:scale-95">
+              <button onclick="approveTeams()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white font-extrabold text-xs sm:text-sm shadow-md transition active:scale-95">
                 <span>👑</span>
                 <span>Admin Duyệt & Ban Hành Đội Hình</span>
               </button>
