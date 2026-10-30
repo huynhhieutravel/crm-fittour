@@ -1078,7 +1078,7 @@
     // Team badge helper (checks if teams are approved in localStorage)
     function getMemberTeamBadge(sttStr) {
       try {
-        const saved = localStorage.getItem('fit_dalat_approved_teams_v2');
+        const saved = localStorage.getItem('fit_dalat_approved_teams_v3') || localStorage.getItem('fit_dalat_approved_teams_v2');
         if (!saved) return '';
         const parsed = JSON.parse(saved);
         if (!parsed.isApproved || !parsed.teams) return '';
@@ -1087,7 +1087,7 @@
           'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
           'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30'
         ];
-        const teamNames = ['Đội 1 (Lửa)', 'Đội 2 (Thông)', 'Đội 3 (SUP)'];
+        const teamNames = ['Phượng Hoàng Lửa', 'Đại Ngàn Xanh', 'Vượt Sóng Tuyền Lâm'];
         for (let i = 0; i < 3; i++) {
           if (parsed.teams[i].some(p => String(p.stt) === String(sttStr))) {
             return `<a href="./teams.html" class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold border ${teamColors[i]} ml-1 hover:brightness-95 transition" title="Bấm để mở trang Vòng Quay & Danh Sách Đội">${teamNames[i]}</a>`;

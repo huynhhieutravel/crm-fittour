@@ -182,7 +182,7 @@
           <div class="flex flex-wrap items-center gap-2 mb-4 pb-3 border-b border-black/[0.05] dark:border-white/[0.06]">
             <span class="text-xs text-apple-textMuted dark:text-apple-textMutedDark font-medium">Chọn nhanh:</span>
             <button onclick="setExcludePreset('btc')" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 transition">
-              👑 Gợi ý BTC (Loại trừ 5 người: Max Vu, Vy Phan, Loki, Grace Lam, Thu Xuân)
+              👑 Gợi ý loại trừ (4 người: Vy Phan, Huỳnh Trọng Hiếu, Hồ Quang Hưng, Trần Quốc Thịnh)
             </button>
             <button onclick="setExcludePreset('all_play')" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition">
               👥 Cả 32 người cùng thi đấu
@@ -355,44 +355,45 @@
       } catch (e) {}
     }
 
-    // Default Excluded Members (BTC / BOD / Media / Early departure / Treasury):
-    const DEFAULT_EXCLUDED_STTS = ['1', '9', '27', '5', '23'];
+    // Default Excluded Members (Vy Phan, Huỳnh Trọng Hiếu, Hồ Quang Hưng, Trần Quốc Thịnh):
+    // STT 9: Phan Hoàng Trúc Vy (@Vy Phan)
+    // STT 27: Huỳnh Trọng Hiếu (@Loki)
+    // STT 11: Hầu Quang Hưng (@Joseph Hau)
+    // STT 2: Trần Quốc Thịnh (@Darius Tran)
+    const DEFAULT_EXCLUDED_STTS = ['9', '27', '11', '2'];
 
     const TEAM_METADATA = [
       {
         id: 1,
-        name: 'ĐỘI 1: Phượng Hoàng Lửa',
-        shortName: 'Đội 1',
+        name: 'Phượng Hoàng Lửa',
+        shortName: 'Phượng Hoàng Lửa',
         tagline: 'Nhiệt huyết • Bứt phá • Dẫn đầu',
         themeColor: '#ef4444',
         bgClass: 'bg-rose-500/5 dark:bg-rose-500/10',
         borderClass: 'border-rose-500/30',
         badgeClass: 'bg-rose-500 text-white',
-        bannerIcon: '🔥',
         accentText: 'text-rose-600 dark:text-rose-400'
       },
       {
         id: 2,
-        name: 'ĐỘI 2: Đại Ngàn Xanh',
-        shortName: 'Đội 2',
+        name: 'Đại Ngàn Xanh',
+        shortName: 'Đại Ngàn Xanh',
         tagline: 'Bền bỉ • Vững chãi • Xuyên rừng thông',
         themeColor: '#10b981',
         bgClass: 'bg-emerald-500/5 dark:bg-emerald-500/10',
         borderClass: 'border-emerald-500/30',
         badgeClass: 'bg-emerald-600 text-white',
-        bannerIcon: '🌲',
         accentText: 'text-emerald-600 dark:text-emerald-400'
       },
       {
         id: 3,
-        name: 'ĐỘI 3: Vượt Sóng Tuyền Lâm',
-        shortName: 'Đội 3',
+        name: 'Vượt Sóng Tuyền Lâm',
+        shortName: 'Vượt Sóng Tuyền Lâm',
         tagline: 'Đoàn kết • Thần tốc • Chèo SUP vô địch',
         themeColor: '#0ea5e9',
         bgClass: 'bg-sky-500/5 dark:bg-sky-500/10',
         borderClass: 'border-sky-500/30',
         badgeClass: 'bg-sky-500 text-white',
-        bannerIcon: '🌊',
         accentText: 'text-sky-600 dark:text-sky-400'
       }
     ];
@@ -404,7 +405,7 @@
     let approvedTimestamp = null;
     let isSpinning = false;
 
-    const STORAGE_KEY = 'fit_dalat_approved_teams_v2';
+    const STORAGE_KEY = 'fit_dalat_approved_teams_v3';
 
     // 3. Load Members
     fetch('./assets/members.json')
@@ -869,31 +870,31 @@
 
           return `
             <div class="rounded-3xl border ${meta.borderClass} ${meta.bgClass} p-5 flex flex-col shadow-apple transition-all">
-              <div class="flex items-start justify-between gap-2 border-b border-black/[0.06] dark:border-white/[0.08] pb-3 mb-3">
-                <div>
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-xl">${meta.bannerIcon}</span>
-                    <h3 class="font-extrabold text-base sm:text-lg text-[#1d1d1f] dark:text-white leading-tight">
-                      ${meta.name}
-                    </h3>
-                  </div>
-                  <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark mt-0.5 font-medium">
-                    ${meta.tagline}
-                  </div>
+              <!-- Header Ô chia đội: Badge đưa lên trên, bỏ Đội 1/2/3, bỏ icon khỏi tên đội -->
+              <div class="border-b border-black/[0.06] dark:border-white/[0.08] pb-3.5 mb-3.5">
+                <div class="flex items-center justify-between gap-2 mb-2">
+                  <span class="px-3 py-1 rounded-full text-xs font-extrabold ${meta.badgeClass} shadow-sm whitespace-nowrap">
+                    ${team.length} TV (${mCount}N • ${fCount}Nữ)
+                  </span>
                 </div>
-                <span class="px-2.5 py-1 rounded-full text-xs font-bold ${meta.badgeClass} shadow-sm whitespace-nowrap">
-                  ${team.length} TV (${mCount}N • ${fCount}Nữ)
-                </span>
+                <h3 class="text-xl sm:text-2xl font-black text-[#1d1d1f] dark:text-white tracking-tight leading-tight">
+                  ${meta.name}
+                </h3>
+                <div class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-1 font-medium">
+                  ${meta.tagline}
+                </div>
               </div>
 
-              <div class="mb-3 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-black/40 border border-black/[0.05] dark:border-white/[0.06] flex items-center justify-between text-xs">
+              <!-- Đội trưởng đề xuất -->
+              <div class="mb-3.5 px-3.5 py-2 rounded-xl bg-white/80 dark:bg-black/40 border border-black/[0.05] dark:border-white/[0.06] flex items-center justify-between text-xs">
                 <span class="text-apple-textMuted dark:text-apple-textMutedDark font-medium">👑 Đội trưởng:</span>
                 <span class="font-bold text-neutral-800 dark:text-neutral-100 truncate ml-2">
                   ${leader ? `${leader.ho_ten} (@${leader.nickname || 'TV'})` : 'Chưa có'}
                 </span>
               </div>
 
-              <div class="flex-1 space-y-2 overflow-y-auto max-h-[380px] pr-1">
+              <!-- Danh sách thành viên hiển thị FULL (Không cuộn / scroll) -->
+              <div class="space-y-2">
                 ${team.length === 0 ? `
                   <div class="text-center py-8 text-xs text-apple-textMuted">
                     Chưa có thành viên nào. Hãy nhấn xoay bốc thăm.
@@ -901,44 +902,46 @@
                 ` : team.map((p, pIdx) => {
                   const isLeader = (p.nghe_nghiep || '').includes('Trưởng') || (p.nghe_nghiep || '').includes('Phó');
                   return `
-                    <div class="p-2 rounded-2xl bg-white dark:bg-apple-cardDark border border-black/[0.05] dark:border-white/[0.06] flex items-center justify-between gap-2 shadow-sm text-xs">
-                      <div class="flex items-center gap-2 min-w-0">
-                        <span class="w-5 text-center font-bold text-neutral-400 text-[11px]">${pIdx + 1}</span>
-                        <div class="w-8 h-8 rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 flex items-center justify-center font-extrabold text-apple-blue border border-black/5">
-                          ${p.avatar ? `<img src="${p.avatar}" class="w-full h-full object-cover">` : p.ho_ten.charAt(0)}
-                        </div>
-                        <div class="min-w-0">
-                          <div class="font-bold text-neutral-800 dark:text-neutral-100 truncate flex items-center gap-1">
-                            <span>${p.ho_ten}</span>
-                            ${isLeader ? '<span class="text-amber-500 font-extrabold" title="Trưởng/Phó phòng">★</span>' : ''}
+                    <div class="p-2.5 rounded-2xl bg-white dark:bg-apple-cardDark border border-black/[0.05] dark:border-white/[0.06] shadow-sm hover:shadow transition">
+                      <div class="flex items-center justify-between gap-2">
+                        <!-- Left: STT, Avatar tròn, Họ tên & Nickname -->
+                        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                          <span class="w-4 text-center font-bold text-neutral-400 text-xs flex-shrink-0">${pIdx + 1}</span>
+                          <div class="w-8 h-8 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 flex items-center justify-center font-extrabold text-apple-blue border border-black/5 shadow-sm">
+                            ${p.avatar ? `<img src="${p.avatar}" class="w-full h-full object-cover">` : p.ho_ten.charAt(0)}
                           </div>
-                          <div class="text-[11px] text-apple-blue font-semibold truncate">
-                            @${p.nickname || p.phong_ban}
+                          <div class="min-w-0 flex-1">
+                            <div class="font-bold text-xs sm:text-[13px] text-[#1d1d1f] dark:text-white truncate flex items-center gap-1">
+                              <span>${p.ho_ten}</span>
+                              ${isLeader ? '<span class="text-amber-500 font-extrabold text-xs" title="Trưởng/Phó phòng">★</span>' : ''}
+                            </div>
+                            <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark truncate flex items-center gap-1.5">
+                              <span class="text-apple-blue font-semibold">@${p.nickname || 'TV'}</span>
+                              <span>•</span>
+                              <span>${p.phong_ban || 'FIT'}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div class="flex items-center gap-1 flex-shrink-0">
-                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                          p.gioi_tinh === 'Nam' 
-                            ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300' 
-                            : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
-                        }">
-                          ${p.gioi_tinh}
-                        </span>
+                        <!-- Right: Giới tính & Điều chuyển đội (nếu chưa duyệt) -->
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            p.gioi_tinh === 'Nam' 
+                              ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300' 
+                              : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                          }">
+                            ${p.gioi_tinh}
+                          </span>
 
-                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
-                          ${p.phong_ban || 'FIT'}
-                        </span>
-
-                        ${!isApproved ? `
-                          <select onchange="moveMemberToTeam('${p.stt}', this.value)" class="text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 border-none rounded py-0.5 px-1 cursor-pointer" title="Chuyển sang đội khác">
-                            <option value="${idx}">Đội ${idx + 1}</option>
-                            <option value="0">Sang Đ1</option>
-                            <option value="1">Sang Đ2</option>
-                            <option value="2">Sang Đ3</option>
-                          </select>
-                        ` : ''}
+                          ${!isApproved ? `
+                            <select onchange="moveMemberToTeam('${p.stt}', this.value)" class="text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border-none rounded-lg py-1 px-1.5 cursor-pointer transition" title="Chuyển sang đội khác">
+                              <option value="${idx}">Đội này</option>
+                              <option value="0">Qua Đ1</option>
+                              <option value="1">Qua Đ2</option>
+                              <option value="2">Qua Đ3</option>
+                            </select>
+                          ` : ''}
+                        </div>
                       </div>
                     </div>
                   `;
