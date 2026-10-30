@@ -117,7 +117,11 @@
         <a href="#itinerary" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">Lịch trình</a>
         <a href="#trekking" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">Trek D1-D2</a>
         <a href="#packing" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">Hành trang</a>
-        <a href="#members" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">Danh sách thành viên</a>
+        <a href="#teams" class="px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 font-bold hover:bg-amber-500/20 transition flex items-center gap-1.5">
+          <span>🎲</span>
+          <span>Chia 3 Đội</span>
+        </a>
+        <a href="#members" class="px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">32 Thành viên</a>
       </nav>
 
       <!-- Right controls: Dark Mode Toggle -->
@@ -163,16 +167,23 @@
     </div>
 
     <!-- LAPTOP / DESKTOP CTA (Apple Standard Dual Actions) -->
-    <div class="hidden md:flex items-center justify-center gap-4 mt-7">
+    <div class="hidden md:flex items-center justify-center gap-3 mt-7">
       <!-- Primary Action: Open Full Infographic Poster Lightbox -->
-      <button onclick="openLightbox()" class="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-apple-blue hover:bg-apple-blueHover text-white text-sm font-bold shadow-md hover:shadow-lg transition-all active:scale-95 group">
+      <button onclick="openLightbox()" class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-apple-blue hover:bg-apple-blueHover text-white text-sm font-bold shadow-md hover:shadow-lg transition-all active:scale-95 group">
         <span class="text-base">🗺️</span>
-        <span>Xem Poster Lịch Trình (Infographic)</span>
+        <span>Xem Poster Lịch Trình</span>
         <span class="opacity-75 group-hover:translate-x-0.5 transition-transform text-xs">↗</span>
       </button>
 
+      <!-- Action 2: Team division -->
+      <a href="#teams" class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all active:scale-95">
+        <span class="text-base">🎲</span>
+        <span>Chia 3 Đội (Admin Duyệt)</span>
+        <span class="opacity-75 text-xs">↓</span>
+      </a>
+
       <!-- Secondary Action: Jump to Member List & Directory -->
-      <a href="#members" class="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-white dark:bg-apple-cardDark hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[#1d1d1f] dark:text-[#f5f5f7] border border-black/[0.1] dark:border-white/[0.12] text-sm font-semibold shadow-sm hover:shadow transition-all active:scale-95">
+      <a href="#members" class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white dark:bg-apple-cardDark hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[#1d1d1f] dark:text-[#f5f5f7] border border-black/[0.1] dark:border-white/[0.12] text-sm font-semibold shadow-sm hover:shadow transition-all active:scale-95">
         <span class="text-base">👥</span>
         <span>Danh Sách & Email (32 TV)</span>
         <span class="opacity-50 text-xs">↓</span>
@@ -189,18 +200,22 @@
       </button>
 
       <!-- Sub Mobile CTAs -->
-      <div class="grid grid-cols-3 gap-1.5 text-xs">
+      <div class="grid grid-cols-4 gap-1 text-xs">
         <a href="#trekking" class="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-white dark:bg-apple-cardDark border border-black/[0.06] dark:border-white/[0.08] shadow-sm active:scale-95 text-center">
           <span class="text-base mb-0.5">⛺</span>
-          <span class="font-bold text-[11px] leading-tight">Trek D1-D2</span>
+          <span class="font-bold text-[10px] leading-tight">Trek D1-D2</span>
         </a>
         <a href="#packing" class="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-white dark:bg-apple-cardDark border border-black/[0.06] dark:border-white/[0.08] shadow-sm active:scale-95 text-center">
           <span class="text-base mb-0.5">🎒</span>
-          <span class="font-bold text-[11px] leading-tight">Hành Trang</span>
+          <span class="font-bold text-[10px] leading-tight">Hành Trang</span>
+        </a>
+        <a href="#teams" class="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 shadow-sm active:scale-95 text-center">
+          <span class="text-base mb-0.5">🎲</span>
+          <span class="font-bold text-[10px] leading-tight">Chia Đội</span>
         </a>
         <a href="#members" class="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-white dark:bg-apple-cardDark border border-black/[0.06] dark:border-white/[0.08] shadow-sm active:scale-95 text-center">
           <span class="text-base mb-0.5">👥</span>
-          <span class="font-bold text-[11px] leading-tight">32 Người</span>
+          <span class="font-bold text-[10px] leading-tight">32 Người</span>
         </a>
       </div>
     </div>
@@ -631,6 +646,147 @@
     </div>
   </section>
 
+  <!-- ================= CHIA 3 ĐỘI TEAMBUILDING (VÒNG XOAY & ADMIN DUYỆT) ================= -->
+  <section id="teams" class="max-w-5xl mx-auto px-4 sm:px-6 mb-16 scroll-mt-20">
+    <div class="p-6 sm:p-8 rounded-3xl bg-white dark:bg-apple-cardDark shadow-apple border border-black/[0.06] dark:border-white/[0.08]">
+      
+      <!-- Top Title & Approval Badge -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-black/[0.06] dark:border-white/[0.08] pb-6 mb-6">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-xs font-bold uppercase tracking-wider mb-2">
+            <span>🎲</span>
+            <span>Teambuilding & Chèo SUP • Bốc Thăm 3 Đội</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1d1d1f] dark:text-white flex items-center gap-2.5">
+            <span>Bốc Thăm & Chia 3 Đội Thi Đấu</span>
+          </h2>
+          <p class="text-xs sm:text-sm text-apple-textMuted dark:text-apple-textMutedDark mt-1 max-w-xl">
+            Cân đối tự động Nam/Nữ & phòng ban. Admin có toàn quyền loại trừ thành viên, quay bốc thăm và <strong>duyệt chính thức</strong> trước khi công bố cho đoàn.
+          </p>
+        </div>
+
+        <!-- Approval Status Badge (Dynamic) -->
+        <div id="teamApprovalBadge" class="flex flex-col sm:items-end gap-1.5">
+          <!-- Filled by JS: Draft vs Approved -->
+        </div>
+      </div>
+
+      <!-- Quick Metrics & Formula -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 text-xs">
+        <div class="p-3.5 rounded-2xl bg-neutral-50 dark:bg-white/[0.03] border border-black/[0.05] dark:border-white/[0.06]">
+          <div class="text-apple-textMuted dark:text-apple-textMutedDark font-medium">Tổng Nhân Sự</div>
+          <div class="text-lg font-extrabold mt-0.5 text-[#1d1d1f] dark:text-white">32 Thành viên</div>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300">
+          <div class="font-medium">Tham Gia Thi Đấu</div>
+          <div id="statActiveCount" class="text-lg font-extrabold mt-0.5">27 Người</div>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-rose-500/5 border border-rose-500/20 text-rose-800 dark:text-rose-300">
+          <div class="font-medium">Loại Trừ (BTC / Đi Riêng)</div>
+          <div id="statExcludedCount" class="text-lg font-extrabold mt-0.5">5 Người</div>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-sky-500/5 border border-sky-500/20 text-sky-800 dark:text-sky-300">
+          <div class="font-medium">Quy Tắc Phân Bổ</div>
+          <div id="statFormula" class="text-xs font-bold mt-1 leading-snug">9 - 9 - 9 người / đội</div>
+        </div>
+      </div>
+
+      <!-- Collapsible: Exclude Selector (32 Members) -->
+      <div class="rounded-2xl border border-black/[0.08] dark:border-white/[0.1] overflow-hidden mb-8 transition-all">
+        <button id="toggleExcludeBtn" onclick="toggleExcludeSection()" class="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-between text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 transition">
+          <div class="flex items-center gap-2">
+            <span class="text-base">⚙️</span>
+            <span class="font-bold text-xs sm:text-sm text-neutral-800 dark:text-neutral-100">Bấm Vào Đây Để Chọn Thành Viên THAM GIA Hoặc LOẠI TRỪ (BTC / Đi Riêng)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="excludeChevron" class="text-xs text-neutral-400 font-bold transition-transform">▼ Mở</span>
+          </div>
+        </button>
+
+        <div id="excludeSectionBody" class="p-4 bg-white dark:bg-apple-cardDarker border-t border-black/[0.06] dark:border-white/[0.08] hidden">
+          <!-- Preset buttons -->
+          <div class="flex flex-wrap items-center gap-2 mb-4 pb-3 border-b border-black/[0.05] dark:border-white/[0.06]">
+            <span class="text-xs text-apple-textMuted dark:text-apple-textMutedDark font-medium">Chọn nhanh:</span>
+            <button onclick="setExcludePreset('btc')" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 transition">
+              👑 Gợi ý BTC (Loại trừ 5 người: Max Vu, Vy Phan, Loki, Grace Lam, Thu Xuân)
+            </button>
+            <button onclick="setExcludePreset('all_play')" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition">
+              👥 Cả 32 người cùng thi đấu
+            </button>
+          </div>
+
+          <!-- Members Grid (Clickable Chips) -->
+          <div id="excludeMembersGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            <!-- Dynamically populated 32 member chips -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= LUCKY DRAW SPINNER ARENA ================= -->
+      <div id="spinnerArena" class="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-neutral-50 to-neutral-100 dark:from-neutral-900/60 dark:to-neutral-900/30 border border-black/[0.08] dark:border-white/[0.1] text-center mb-8">
+        
+        <!-- Slot / Wheel Display Box -->
+        <div class="relative max-w-md mx-auto py-5 px-6 rounded-2xl bg-white dark:bg-apple-cardDark shadow-lg border border-black/[0.08] dark:border-white/[0.1] mb-5 overflow-hidden">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-apple-textMuted dark:text-apple-textMutedDark mb-2 flex items-center justify-center gap-1.5">
+            <span>🎡 VÒNG XOAY MAY MẮN • BỐC THĂM ĐỘI HÌNH</span>
+          </div>
+
+          <!-- Live Spinning Avatar & Name Stage -->
+          <div id="spinDisplayStage" class="h-20 flex items-center justify-center gap-3">
+            <div id="spinAvatar" class="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-2xl font-extrabold text-neutral-500 shadow-inner overflow-hidden border border-black/10 dark:border-white/10 flex-shrink-0">
+              🎲
+            </div>
+            <div class="text-left min-w-0">
+              <div id="spinName" class="text-lg sm:text-xl font-extrabold text-[#1d1d1f] dark:text-white leading-tight truncate">
+                Sẵn Sàng Bốc Thăm
+              </div>
+              <div id="spinMeta" class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-0.5 truncate">
+                Nhấn xoay để bắt đầu chia đội
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Banner Result -->
+          <div id="spinLiveBanner" class="mt-2 text-xs font-bold text-amber-600 dark:text-amber-400 min-h-[1.25rem]">
+            Đang chờ lệnh xoay từ Ban Tổ Chức
+          </div>
+        </div>
+
+        <!-- Spin Action Controls -->
+        <div class="flex flex-wrap items-center justify-center gap-3">
+          <!-- Button: Spin All Balanced -->
+          <button id="btnSpinAll" onclick="startSpinAllTeams()" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-white font-bold text-sm shadow-md hover:shadow-lg transition active:scale-95">
+            <span class="text-base">🎰</span>
+            <span>Xoay Toàn Đoàn (Chuẩn Tỷ Lệ)</span>
+          </button>
+
+          <!-- Button: Spin Single Member -->
+          <button id="btnSpinSingle" onclick="startSpinSingleMember()" class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[#1d1d1f] dark:text-white border border-black/10 dark:border-white/10 font-semibold text-sm shadow-sm transition active:scale-95">
+            <span class="text-base">🎡</span>
+            <span>Xoay 1 Người Vào Đội</span>
+          </button>
+
+          <!-- Button: Reset Draft -->
+          <button onclick="resetTeamDraft()" class="inline-flex items-center gap-1.5 px-4 py-3 rounded-full text-xs font-medium text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition">
+            <span>🔄</span>
+            <span>Chia Lại Mới</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 3 TEAMS DISPLAY GRID ================= -->
+      <div id="teamsCardsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        <!-- Team 1, Team 2, Team 3 will be rendered here dynamically -->
+      </div>
+
+      <!-- ================= ADMIN APPROVAL & ACTION BAR ================= -->
+      <div id="adminApprovalSection" class="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-900/50 border border-black/[0.08] dark:border-white/[0.1] flex flex-col sm:flex-row items-center justify-between gap-4">
+        <!-- Dynamically rendered according to isApproved -->
+      </div>
+
+    </div>
+  </section>
+
   <!-- ================= DANH SÁCH 32 THÀNH VIÊN (EXCEL SPREADSHEET STYLE) ================= -->
   <section id="members" class="max-w-5xl mx-auto px-4 sm:px-6 mb-8 scroll-mt-20">
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
@@ -760,9 +916,17 @@
       <span class="w-px h-4 bg-black/10 dark:bg-white/15 hidden sm:block"></span>
 
       <!-- 4: 32 Thành viên & Email -->
-      <a href="#members" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-apple-blue text-white hover:bg-apple-blueHover shadow-sm transition active:scale-95 group" title="Xem danh sách 32 thành viên & Email">
+      <a href="#members" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95 group" title="Xem danh sách 32 thành viên & Email">
         <span class="text-base group-hover:scale-110 transition-transform">👥</span>
-        <span class="text-xs sm:text-sm font-bold tracking-tight">32 Thành viên</span>
+        <span class="text-xs sm:text-sm font-semibold tracking-tight">32 TV</span>
+      </a>
+
+      <span class="w-px h-4 bg-black/10 dark:bg-white/15 hidden sm:block"></span>
+
+      <!-- 5: Chia 3 Đội Teambuilding -->
+      <a href="#teams" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm hover:brightness-110 transition active:scale-95 group" title="Bốc Thăm & Chia 3 Đội (Admin Duyệt)">
+        <span class="text-base group-hover:rotate-12 transition-transform">🎲</span>
+        <span class="text-xs sm:text-sm font-bold tracking-tight">Chia Đội</span>
       </a>
     </div>
   </aside>
@@ -863,6 +1027,7 @@
       .then(data => {
         allMembers = data;
         renderMembersTable(allMembers);
+        initTeamsModule();
       })
       .catch(err => {
         console.error('Lỗi tải dữ liệu thành viên:', err);
@@ -1053,7 +1218,721 @@
       setBuFilter(e.target.value);
     });
 
-    // 6. Service worker
+    // =========================================================================
+    // 6. TEAMS MODULE: LUCKY DRAW SPINNER & ADMIN APPROVAL
+    // =========================================================================
+    
+    // Web Audio API Sound Synthesizer
+    function playSpinTick() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(350 + Math.random() * 250, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.04);
+      } catch (e) {}
+    }
+
+    function playFanfare() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const chord = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        chord.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
+          gain.gain.setValueAtTime(0.18, ctx.currentTime + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + idx * 0.08);
+          osc.stop(ctx.currentTime + idx * 0.08 + 0.35);
+        });
+      } catch (e) {}
+    }
+
+    // Default 5 Excluded Members (BTC / BOD / Media / Early departure / Treasury):
+    // STT 1: Max Vu (CEO/Judge)
+    // STT 9: Vy Phan (BOD/Judge)
+    // STT 27: Loki (MKT Head/Media/Organizer)
+    // STT 5: Grace Lam (Departs Thursday noon)
+    // STT 23: Nguyễn Xuân (Accountant Head/Treasurer)
+    const DEFAULT_EXCLUDED_STTS = ['1', '9', '27', '5', '23'];
+
+    const TEAM_METADATA = [
+      {
+        id: 1,
+        name: 'ĐỘI 1: Phượng Hoàng Lửa',
+        shortName: 'Đội 1',
+        tagline: 'Nhiệt huyết • Bứt phá • Dẫn đầu',
+        themeColor: '#ef4444',
+        bgClass: 'bg-rose-500/5 dark:bg-rose-500/10',
+        borderClass: 'border-rose-500/30',
+        badgeClass: 'bg-rose-500 text-white',
+        bannerIcon: '🔥',
+        accentText: 'text-rose-600 dark:text-rose-400'
+      },
+      {
+        id: 2,
+        name: 'ĐỘI 2: Đại Ngàn Xanh',
+        shortName: 'Đội 2',
+        tagline: 'Bền bỉ • Vững chãi • Xuyên rừng thông',
+        themeColor: '#10b981',
+        bgClass: 'bg-emerald-500/5 dark:bg-emerald-500/10',
+        borderClass: 'border-emerald-500/30',
+        badgeClass: 'bg-emerald-600 text-white',
+        bannerIcon: '🌲',
+        accentText: 'text-emerald-600 dark:text-emerald-400'
+      },
+      {
+        id: 3,
+        name: 'ĐỘI 3: Vượt Sóng Tuyền Lâm',
+        shortName: 'Đội 3',
+        tagline: 'Đoàn kết • Thần tốc • Chèo SUP vô địch',
+        themeColor: '#0ea5e9',
+        bgClass: 'bg-sky-500/5 dark:bg-sky-500/10',
+        borderClass: 'border-sky-500/30',
+        badgeClass: 'bg-sky-500 text-white',
+        bannerIcon: '🌊',
+        accentText: 'text-sky-600 dark:text-sky-400'
+      }
+    ];
+
+    let excludedStts = new Set(DEFAULT_EXCLUDED_STTS);
+    let assignedTeams = [[], [], []];
+    let isApproved = false;
+    let approvedTimestamp = null;
+    let isSpinning = false;
+
+    const STORAGE_KEY = 'fit_dalat_approved_teams_v2';
+
+    function initTeamsModule() {
+      // 1. Try to load from localStorage
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          if (parsed.teams && Array.isArray(parsed.teams) && parsed.teams.length === 3) {
+            assignedTeams = parsed.teams;
+            excludedStts = new Set(parsed.excludedStts || DEFAULT_EXCLUDED_STTS);
+            isApproved = !!parsed.isApproved;
+            approvedTimestamp = parsed.approvedTimestamp || null;
+            renderAllTeamsComponents();
+            return;
+          }
+        } catch (e) {
+          console.warn('Failed to parse saved teams data:', e);
+        }
+      }
+
+      // 2. If no saved data, generate initial balanced draft
+      generateBalancedDraft();
+      renderAllTeamsComponents();
+    }
+
+    function toggleExcludeSection() {
+      const body = document.getElementById('excludeSectionBody');
+      const chevron = document.getElementById('excludeChevron');
+      if (body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        chevron.textContent = '▲ Thu gọn';
+      } else {
+        body.classList.add('hidden');
+        chevron.textContent = '▼ Mở';
+      }
+    }
+
+    function setExcludePreset(preset) {
+      if (isApproved) {
+        alert('Đội hình hiện đang ĐÃ DUYỆT. Vui lòng bấm "Mở Khóa Chỉnh Sửa" ở bên dưới trước khi thay đổi thành viên.');
+        return;
+      }
+      if (preset === 'btc') {
+        excludedStts = new Set(DEFAULT_EXCLUDED_STTS);
+      } else if (preset === 'all_play') {
+        excludedStts = new Set();
+      }
+      generateBalancedDraft();
+      renderAllTeamsComponents();
+    }
+
+    function toggleExcludeMember(sttStr) {
+      if (isApproved) {
+        alert('Đội hình hiện đang ĐÃ DUYỆT. Vui lòng bấm "Mở Khóa Chỉnh Sửa" ở bên dưới trước khi thay đổi thành viên.');
+        return;
+      }
+      if (excludedStts.has(sttStr)) {
+        excludedStts.delete(sttStr);
+      } else {
+        excludedStts.add(sttStr);
+      }
+      generateBalancedDraft();
+      renderAllTeamsComponents();
+    }
+
+    // Dynamic Sizing & Balance Algorithm
+    function generateBalancedDraft() {
+      const activeMembers = allMembers.filter(m => !excludedStts.has(String(m.stt)));
+      const N = activeMembers.length;
+      if (N === 0) {
+        assignedTeams = [[], [], []];
+        return;
+      }
+
+      const base = Math.floor(N / 3);
+      const rem = N % 3;
+      // Capacities: [base + 1, base, base] or [base + 1, base + 1, base] or [base, base, base]
+      const capacities = [
+        base + (rem > 0 ? 1 : 0),
+        base + (rem > 1 ? 1 : 0),
+        base
+      ];
+
+      const teams = [[], [], []];
+
+      // Separate leaders vs regular
+      const leaders = activeMembers.filter(m => (m.nghe_nghiep || '').includes('Trưởng') || (m.nghe_nghiep || '').includes('Phó'));
+      const nonLeaders = activeMembers.filter(m => !leaders.includes(m));
+
+      // Shuffle arrays
+      const shuffledLeaders = [...leaders].sort(() => Math.random() - 0.5);
+      const shuffledNonLeaders = [...nonLeaders].sort(() => Math.random() - 0.5);
+
+      // Distribute leaders first (1 per team)
+      shuffledLeaders.forEach((l, idx) => {
+        teams[idx % 3].push(l);
+      });
+
+      // Split non-leaders by gender
+      const males = shuffledNonLeaders.filter(m => m.gioi_tinh === 'Nam');
+      const females = shuffledNonLeaders.filter(m => m.gioi_tinh === 'Nữ');
+
+      // Add males to team with fewest males (that still has capacity)
+      males.forEach(m => {
+        const available = teams
+          .map((t, idx) => ({ t, idx, cap: capacities[idx] }))
+          .filter(item => item.t.length < item.cap);
+        if (available.length > 0) {
+          available.sort((a, b) => {
+            const aM = a.t.filter(p => p.gioi_tinh === 'Nam').length;
+            const bM = b.t.filter(p => p.gioi_tinh === 'Nam').length;
+            if (aM !== bM) return aM - bM;
+            return a.t.length - b.t.length;
+          });
+          available[0].t.push(m);
+        }
+      });
+
+      // Add females to team with fewest females (that still has capacity)
+      females.forEach(f => {
+        const available = teams
+          .map((t, idx) => ({ t, idx, cap: capacities[idx] }))
+          .filter(item => item.t.length < item.cap);
+        if (available.length > 0) {
+          available.sort((a, b) => {
+            const aF = a.t.filter(p => p.gioi_tinh === 'Nữ').length;
+            const bF = b.t.filter(p => p.gioi_tinh === 'Nữ').length;
+            if (aF !== bF) return aF - bF;
+            return a.t.length - b.t.length;
+          });
+          available[0].t.push(f);
+        }
+      });
+
+      assignedTeams = teams;
+    }
+
+    // Spin Animation: Full Balanced Shuffle
+    function startSpinAllTeams() {
+      if (isSpinning) return;
+      if (isApproved) {
+        alert('Đội hình hiện đã được duyệt. Hãy nhấn "Mở Khóa Chỉnh Sửa" để quay bốc thăm lại.');
+        return;
+      }
+
+      const activeMembers = allMembers.filter(m => !excludedStts.has(String(m.stt)));
+      if (activeMembers.length === 0) {
+        alert('Vui lòng chọn ít nhất 1 thành viên tham gia thi đấu.');
+        return;
+      }
+
+      isSpinning = true;
+      document.getElementById('btnSpinAll').disabled = true;
+      document.getElementById('btnSpinSingle').disabled = true;
+
+      const banner = document.getElementById('spinLiveBanner');
+      banner.textContent = '🎰 Đang quay số ngẫu nhiên & tối ưu cân bằng đội hình...';
+
+      let count = 0;
+      const totalTicks = 24;
+      const interval = setInterval(() => {
+        count++;
+        playSpinTick();
+        const randMember = activeMembers[Math.floor(Math.random() * activeMembers.length)];
+        renderSpinStage(randMember, `Bốc thăm lượt ${count}...`);
+
+        if (count >= totalTicks) {
+          clearInterval(interval);
+          generateBalancedDraft();
+          isSpinning = false;
+          document.getElementById('btnSpinAll').disabled = false;
+          document.getElementById('btnSpinSingle').disabled = false;
+          playFanfare();
+          banner.innerHTML = '🎉 <span class="text-emerald-600 dark:text-emerald-400 font-extrabold">BỐC THĂM TOÀN ĐOÀN HOÀN TẤT!</span> Vui lòng kiểm tra và duyệt bên dưới.';
+          renderAllTeamsComponents();
+        }
+      }, 70);
+    }
+
+    // Spin Animation: Single Member into Next Team
+    function startSpinSingleMember() {
+      if (isSpinning) return;
+      if (isApproved) {
+        alert('Đội hình hiện đã được duyệt. Hãy nhấn "Mở Khóa Chỉnh Sửa" để quay bốc thăm lại.');
+        return;
+      }
+
+      const activeMembers = allMembers.filter(m => !excludedStts.has(String(m.stt)));
+      if (activeMembers.length === 0) {
+        alert('Vui lòng chọn ít nhất 1 thành viên thi đấu.');
+        return;
+      }
+
+      // Check who is already in teams vs unassigned
+      const assignedIds = new Set(assignedTeams.flat().map(p => String(p.stt)));
+      let unassigned = activeMembers.filter(m => !assignedIds.has(String(m.stt)));
+
+      // If all are already assigned, reset single queue and clear teams to start fresh single draw
+      if (unassigned.length === 0) {
+        if (confirm('Tất cả thành viên đã được xếp đội. Bạn có muốn xóa sạch để bốc thăm lại từng người từ đầu không?')) {
+          assignedTeams = [[], [], []];
+          unassigned = [...activeMembers];
+        } else {
+          return;
+        }
+      }
+
+      isSpinning = true;
+      document.getElementById('btnSpinAll').disabled = true;
+      document.getElementById('btnSpinSingle').disabled = true;
+
+      let count = 0;
+      const totalTicks = 16;
+      const interval = setInterval(() => {
+        count++;
+        playSpinTick();
+        const randMember = unassigned[Math.floor(Math.random() * unassigned.length)];
+        renderSpinStage(randMember, 'Đang chọn thành viên...');
+
+        if (count >= totalTicks) {
+          clearInterval(interval);
+          const winnerIndex = Math.floor(Math.random() * unassigned.length);
+          const chosenMember = unassigned[winnerIndex];
+
+          const N = activeMembers.length;
+          const base = Math.floor(N / 3);
+          const rem = N % 3;
+          const capacities = [base + (rem > 0 ? 1 : 0), base + (rem > 1 ? 1 : 0), base];
+
+          const candidateTeams = assignedTeams
+            .map((t, idx) => ({ t, idx, cap: capacities[idx] }))
+            .filter(item => item.t.length < item.cap);
+          
+          candidateTeams.sort((a, b) => a.t.length - b.t.length);
+          const targetTeam = candidateTeams[0] || { t: assignedTeams[0], idx: 0 };
+          targetTeam.t.push(chosenMember);
+
+          isSpinning = false;
+          document.getElementById('btnSpinAll').disabled = false;
+          document.getElementById('btnSpinSingle').disabled = false;
+          playFanfare();
+
+          const teamMeta = TEAM_METADATA[targetTeam.idx];
+          renderSpinStage(chosenMember, `ĐÃ VÀO: ${teamMeta.shortName}!`);
+          document.getElementById('spinLiveBanner').innerHTML = `🎉 <strong>${chosenMember.ho_ten}</strong> (@${chosenMember.nickname || 'TV'}) đã gia nhập <strong class="${teamMeta.accentText}">${teamMeta.name}</strong>!`;
+
+          renderAllTeamsComponents();
+        }
+      }, 70);
+    }
+
+    function renderSpinStage(member, subText) {
+      const avatarEl = document.getElementById('spinAvatar');
+      const nameEl = document.getElementById('spinName');
+      const metaEl = document.getElementById('spinMeta');
+
+      if (!member) return;
+
+      if (member.avatar) {
+        avatarEl.innerHTML = `<img src="${member.avatar}" alt="${member.ho_ten}" class="w-full h-full object-cover">`;
+      } else {
+        avatarEl.innerHTML = `<span class="text-sm font-bold text-apple-blue">${(member.ho_ten || 'TV').substring(0, 2).toUpperCase()}</span>`;
+      }
+      nameEl.textContent = `${member.ho_ten} (@${member.nickname || member.stt})`;
+      metaEl.textContent = `${member.gioi_tinh} • PB: ${member.phong_ban || 'FIT'} • ${subText}`;
+    }
+
+    function resetTeamDraft() {
+      if (isApproved) {
+        if (!confirm('Đội hình đang ĐÃ DUYỆT. Bạn có chắc muốn mở khóa để bốc thăm chia lại từ đầu?')) return;
+        isApproved = false;
+      }
+      generateBalancedDraft();
+      playFanfare();
+      document.getElementById('spinLiveBanner').textContent = 'Đã đặt lại và tạo đội hình cân bằng mới.';
+      renderAllTeamsComponents();
+    }
+
+    // Admin Move Member manually between teams
+    function moveMemberToTeam(sttStr, targetTeamIdx) {
+      if (isApproved) {
+        alert('Đội hình hiện đang ĐÃ DUYỆT. Vui lòng bấm "Mở Khóa Chỉnh Sửa" ở bên dưới trước khi đổi đội.');
+        return;
+      }
+      targetTeamIdx = parseInt(targetTeamIdx, 10);
+      let foundMember = null;
+      for (let i = 0; i < 3; i++) {
+        const idx = assignedTeams[i].findIndex(p => String(p.stt) === String(sttStr));
+        if (idx !== -1) {
+          foundMember = assignedTeams[i].splice(idx, 1)[0];
+          break;
+        }
+      }
+      if (foundMember && targetTeamIdx >= 0 && targetTeamIdx < 3) {
+        assignedTeams[targetTeamIdx].push(foundMember);
+      }
+      renderAllTeamsComponents();
+    }
+
+    // Admin Approval
+    function approveTeams() {
+      if (assignedTeams.flat().length === 0) {
+        alert('Chưa có thành viên nào trong đội hình để duyệt.');
+        return;
+      }
+      const ok = confirm('XÁC NHẬN PHÊ DUYỆT:\nBạn có chắc chắn muốn CHÍNH THỨC DUYỆT và ban hành đội hình 3 đội này cho toàn công ty?\n\nSau khi duyệt, kết quả sẽ được khóa và công bố chính thức.');
+      if (!ok) return;
+
+      isApproved = true;
+      const now = new Date();
+      approvedTimestamp = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + now.toLocaleDateString('vi-VN');
+      
+      const payload = {
+        isApproved: true,
+        approvedTimestamp,
+        teams: assignedTeams,
+        excludedStts: Array.from(excludedStts)
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      playFanfare();
+      renderAllTeamsComponents();
+    }
+
+    function unlockTeams() {
+      const ok = confirm('MỞ KHÓA CHỈNH SỬA:\nBạn có chắc chắn muốn mở khóa để Admin có thể bốc thăm hoặc điều chuyển lại thành viên?');
+      if (!ok) return;
+
+      isApproved = false;
+      const payload = {
+        isApproved: false,
+        approvedTimestamp,
+        teams: assignedTeams,
+        excludedStts: Array.from(excludedStts)
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      renderAllTeamsComponents();
+    }
+
+    // Copy to clipboard for Zalo
+    function copyTeamsToClipboard() {
+      let text = `🏆 DANH SÁCH 3 ĐỘI TEAMBUILDING — FIT TOGETHER ĐÀ LẠT 2026 🏆\n`;
+      text += `📅 Ngày khởi hành: 11/11 - 14/11/2026\n`;
+      text += `🔒 Trạng thái: ${isApproved ? 'ĐÃ ĐƯỢC ADMIN DUYỆT CHÍNH THỨC' : 'Bản Dự Thảo'}\n\n`;
+
+      TEAM_METADATA.forEach((meta, idx) => {
+        const team = assignedTeams[idx] || [];
+        const mCount = team.filter(p => p.gioi_tinh === 'Nam').length;
+        const fCount = team.filter(p => p.gioi_tinh === 'Nữ').length;
+        const leader = team.find(p => (p.nghe_nghiep || '').includes('Trưởng') || (p.nghe_nghiep || '').includes('Phó'));
+
+        text += `${meta.bannerIcon} ${meta.name.toUpperCase()} (${team.length} Thành viên: ${mCount} Nam - ${fCount} Nữ)\n`;
+        text += `   Khẩu hiệu: "${meta.tagline}"\n`;
+        if (leader) {
+          text += `   👑 Đội trưởng đề xuất: ${leader.ho_ten} (@${leader.nickname || 'TV'})\n`;
+        }
+        team.forEach((p, i) => {
+          text += `   ${i + 1}. ${p.ho_ten} (@${p.nickname || 'TV'}) - ${p.gioi_tinh} | PB: ${p.phong_ban || 'FIT'} | ${p.nghe_nghiep || ''}\n`;
+        });
+        text += `\n`;
+      });
+
+      const excluded = allMembers.filter(m => excludedStts.has(String(m.stt)));
+      if (excluded.length > 0) {
+        text += `👑 BAN TỔ CHỨC / TRỌNG TÀI / ĐI RIÊNG (${excluded.length} người):\n`;
+        excluded.forEach((p, i) => {
+          text += `   • ${p.ho_ten} (@${p.nickname || 'TV'}) - ${p.nghe_nghiep || p.phong_ban || 'BTC'}\n`;
+        });
+      }
+
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Đã sao chép danh sách 3 đội vào bộ nhớ tạm!\nBạn có thể dán (Paste) ngay vào nhóm Zalo công ty.');
+      }).catch(() => {
+        alert('Không thể tự động sao chép. Vui lòng thử lại trên trình duyệt được cấp quyền.');
+      });
+    }
+
+    // Render Master UI
+    function renderAllTeamsComponents() {
+      const activeMembers = allMembers.filter(m => !excludedStts.has(String(m.stt)));
+      const N = activeMembers.length;
+      const excludedCount = excludedStts.size;
+
+      // 1. Render Metrics
+      const activeCountEl = document.getElementById('statActiveCount');
+      const excludedCountEl = document.getElementById('statExcludedCount');
+      const formulaEl = document.getElementById('statFormula');
+      if (activeCountEl) activeCountEl.textContent = `${N} Người`;
+      if (excludedCountEl) excludedCountEl.textContent = `${excludedCount} Người`;
+
+      if (formulaEl) {
+        const base = Math.floor(N / 3);
+        const rem = N % 3;
+        if (rem === 0) {
+          formulaEl.textContent = `${base} - ${base} - ${base} người/đội (Cân bằng tuyệt đối)`;
+        } else if (rem === 1) {
+          formulaEl.textContent = `1 đội ${base + 1} người + 2 đội ${base} người (+1 người)`;
+        } else {
+          formulaEl.textContent = `2 đội ${base + 1} người + 1 đội ${base} người (+2 người)`;
+        }
+      }
+
+      // 2. Render Approval Badge
+      const badgeContainer = document.getElementById('teamApprovalBadge');
+      if (badgeContainer) {
+        if (isApproved) {
+          badgeContainer.innerHTML = `
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500 text-white font-bold text-xs shadow-md animate-pulse">
+              <span>✅</span>
+              <span>ĐÃ ĐƯỢC ADMIN DUYỆT CHÍNH THỨC</span>
+            </div>
+            <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark">
+              Ban hành lúc: <strong>${approvedTimestamp || 'Vừa xong'}</strong>
+            </div>
+          `;
+        } else {
+          badgeContainer.innerHTML = `
+            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 font-bold text-xs">
+              <span>🟡</span>
+              <span>BẢN DỰ THẢO (Chưa Duyệt)</span>
+            </div>
+            <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark">
+              Chờ Admin bấm duyệt bên dưới
+            </div>
+          `;
+        }
+      }
+
+      // 3. Render Exclude Chips Grid
+      const excludeGrid = document.getElementById('excludeMembersGrid');
+      if (excludeGrid && allMembers.length > 0) {
+        excludeGrid.innerHTML = allMembers.map(m => {
+          const isExcl = excludedStts.has(String(m.stt));
+          return `
+            <div onclick="toggleExcludeMember('${m.stt}')" class="p-2 rounded-xl border flex items-center justify-between gap-2 cursor-pointer select-none transition-all ${
+              isExcl 
+                ? 'bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-300' 
+                : 'bg-white dark:bg-neutral-800/80 border-black/[0.08] dark:border-white/[0.08] hover:border-apple-blue'
+            }">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0 flex items-center justify-center text-xs font-bold">
+                  ${m.avatar ? `<img src="${m.avatar}" class="w-full h-full object-cover">` : m.ho_ten.charAt(0)}
+                </div>
+                <div class="min-w-0">
+                  <div class="font-bold text-xs truncate ${isExcl ? 'line-through opacity-70' : 'text-neutral-800 dark:text-neutral-100'}">
+                    ${m.ho_ten}
+                  </div>
+                  <div class="text-[10px] text-apple-textMuted dark:text-apple-textMutedDark truncate">
+                    @${m.nickname || m.phong_ban}
+                  </div>
+                </div>
+              </div>
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-extrabold flex-shrink-0 ${
+                isExcl ? 'bg-rose-500 text-white' : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+              }">
+                ${isExcl ? 'BTC' : 'Chơi'}
+              </span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 4. Render 3 Teams Cards
+      const teamsContainer = document.getElementById('teamsCardsContainer');
+      if (teamsContainer) {
+        teamsContainer.innerHTML = TEAM_METADATA.map((meta, idx) => {
+          const team = assignedTeams[idx] || [];
+          const mCount = team.filter(p => p.gioi_tinh === 'Nam').length;
+          const fCount = team.filter(p => p.gioi_tinh === 'Nữ').length;
+          const leader = team.find(p => (p.nghe_nghiep || '').includes('Trưởng') || (p.nghe_nghiep || '').includes('Phó'));
+
+          return `
+            <div class="rounded-3xl border ${meta.borderClass} ${meta.bgClass} p-5 flex flex-col shadow-apple transition-all">
+              <!-- Team Header -->
+              <div class="flex items-start justify-between gap-2 border-b border-black/[0.06] dark:border-white/[0.08] pb-3 mb-3">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xl">${meta.bannerIcon}</span>
+                    <h3 class="font-extrabold text-base sm:text-lg text-[#1d1d1f] dark:text-white leading-tight">
+                      ${meta.name}
+                    </h3>
+                  </div>
+                  <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark mt-0.5 font-medium">
+                    ${meta.tagline}
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-bold ${meta.badgeClass} shadow-sm whitespace-nowrap">
+                  ${team.length} TV (${mCount}N • ${fCount}Nữ)
+                </span>
+              </div>
+
+              <!-- Proposed Captain -->
+              <div class="mb-3 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-black/40 border border-black/[0.05] dark:border-white/[0.06] flex items-center justify-between text-xs">
+                <span class="text-apple-textMuted dark:text-apple-textMutedDark font-medium">👑 Đội trưởng đề xuất:</span>
+                <span class="font-bold text-neutral-800 dark:text-neutral-100 truncate ml-2">
+                  ${leader ? `${leader.ho_ten} (@${leader.nickname || 'TV'})` : 'Chưa có'}
+                </span>
+              </div>
+
+              <!-- Members List -->
+              <div class="flex-1 space-y-2 overflow-y-auto max-h-[380px] pr-1">
+                ${team.length === 0 ? `
+                  <div class="text-center py-8 text-xs text-apple-textMuted">
+                    Chưa có thành viên nào. Hãy nhấn xoay bốc thăm.
+                  </div>
+                ` : team.map((p, pIdx) => {
+                  const isLeader = (p.nghe_nghiep || '').includes('Trưởng') || (p.nghe_nghiep || '').includes('Phó');
+                  return `
+                    <div class="p-2 rounded-2xl bg-white dark:bg-apple-cardDark border border-black/[0.05] dark:border-white/[0.06] flex items-center justify-between gap-2 shadow-sm text-xs">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <span class="w-5 text-center font-bold text-neutral-400 text-[11px]">${pIdx + 1}</span>
+                        <div class="w-8 h-8 rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 flex items-center justify-center font-extrabold text-apple-blue border border-black/5">
+                          ${p.avatar ? `<img src="${p.avatar}" class="w-full h-full object-cover">` : p.ho_ten.charAt(0)}
+                        </div>
+                        <div class="min-w-0">
+                          <div class="font-bold text-neutral-800 dark:text-neutral-100 truncate flex items-center gap-1">
+                            <span>${p.ho_ten}</span>
+                            ${isLeader ? '<span class="text-amber-500 font-extrabold" title="Trưởng/Phó phòng">★</span>' : ''}
+                          </div>
+                          <div class="text-[11px] text-apple-blue font-semibold truncate">
+                            @${p.nickname || p.phong_ban}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-1 flex-shrink-0">
+                        <!-- Gender badge -->
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                          p.gioi_tinh === 'Nam' 
+                            ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300' 
+                            : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                        }">
+                          ${p.gioi_tinh}
+                        </span>
+
+                        <!-- Dept badge -->
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+                          ${p.phong_ban || 'FIT'}
+                        </span>
+
+                        <!-- Move button (Only if not approved) -->
+                        ${!isApproved ? `
+                          <select onchange="moveMemberToTeam('${p.stt}', this.value)" class="text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 border-none rounded py-0.5 px-1 cursor-pointer" title="Chuyển sang đội khác">
+                            <option value="${idx}">Đội ${idx + 1}</option>
+                            <option value="0">Sang Đ1</option>
+                            <option value="1">Sang Đ2</option>
+                            <option value="2">Sang Đ3</option>
+                          </select>
+                        ` : ''}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 5. Render Admin Action Bar
+      const adminSection = document.getElementById('adminApprovalSection');
+      if (adminSection) {
+        if (isApproved) {
+          adminSection.innerHTML = `
+            <div class="flex items-center gap-3">
+              <span class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl font-bold flex-shrink-0">
+                ✅
+              </span>
+              <div>
+                <div class="font-extrabold text-sm text-[#1d1d1f] dark:text-white">
+                  Đội Hình Đã Được Phê Duyệt & Khóa Chính Thức
+                </div>
+                <div class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">
+                  Thời gian duyệt: <strong>${approvedTimestamp || 'Gần đây'}</strong> • Kết quả đã sẵn sàng thi đấu.
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="copyTeamsToClipboard()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-apple-blue hover:bg-apple-blueHover text-white font-bold text-xs shadow-md transition active:scale-95">
+                <span>📋</span>
+                <span>Sao Chép Danh Sách 3 Đội (Gửi Zalo)</span>
+              </button>
+              <button onclick="unlockTeams()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold text-xs transition">
+                <span>🔓</span>
+                <span>Mở Khóa Chỉnh Sửa / Xoay Lại (Admin)</span>
+              </button>
+            </div>
+          `;
+        } else {
+          adminSection.innerHTML = `
+            <div class="flex items-center gap-3">
+              <span class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl font-bold flex-shrink-0">
+                👑
+              </span>
+              <div>
+                <div class="font-extrabold text-sm text-[#1d1d1f] dark:text-white">
+                  Khu Vực Phê Duyệt Của Ban Lãnh Đạo / Admin
+                </div>
+                <div class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">
+                  Admin kiểm tra lại 3 đội bên trên. Khi thấy ưng ý, bấm <strong>Duyệt & Ban Hành</strong> để chốt danh sách.
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="approveTeams()" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white font-extrabold text-xs sm:text-sm shadow-md transition active:scale-95">
+                <span>👑</span>
+                <span>Admin Duyệt & Ban Hành Đội Hình</span>
+              </button>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // 7. Service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
