@@ -3,6 +3,28 @@
  * ADR 0011: Hỗ trợ Split Booking, Hủy 1 phần, Bảo lưu tối đa 12 tháng, Cấn trừ linh hoạt.
  */
 const db = require('../db');
+const { logActivity } = require('../utils/logger');
+
+// Helper: Gửi thông báo đến Kế toán và Ban Giám Đốc/Leads
+async function notifyAccountantsAndLeads({ title, message, link, referenceId }) {
+  try {
+    const accUsers = await db.query(`
+      SELECT DISTINCT u.id FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE r.name IN ('accountant', 'accountant_lead', 'admin', 'manager', 'sales_lead')
+    `);
+    const promises = accUsers.rows.map(u => 
+      db.query(
+        `INSERT INTO user_notifications (user_id, title, message, link, type, reference_id)
+         VALUES ($1, $2, $3, $4, 'CREDIT_RETENTION', $5)`,
+        [u.id, title, message, link || '/op-tours', referenceId]
+      )
+    );
+    await Promise.all(promises);
+  } catch (err) {
+    console.error('Lỗi khi gửi thông báo nội bộ cho bảo lưu tiền cọc:', err.message);
+  }
+}
 
 // Helper: Định dạng mã phiếu bảo lưu BL-YYYYMM-XXXX
 const generateCreditCode = () => {
@@ -300,6 +322,27 @@ exports.splitAndRetainDeposit = async (req, res) => {
 
     await client.query('COMMIT');
 
+    // 9. Ghi Audit Log & Gửi thông báo đến Kế toán và Quản lý
+    try {
+      await logActivity({
+        user_id: req.user?.id || null,
+        action_type: 'DEPOSIT_RETENTION_SPLIT',
+        entity_type: 'BOOKING',
+        entity_id: booking.id,
+        details: `Tách cọc ${netRetention.toLocaleString()} đ từ đơn ${booking.booking_code || booking.id} sang Phiếu bảo lưu ${creditCode} cho khách ${creditedName} (Hạn: ${expiryDate.toLocaleDateString('vi-VN')})`,
+        new_data: newCredit
+      });
+
+      notifyAccountantsAndLeads({
+        title: `[Bảo lưu tiền cọc] Phiếu ${creditCode}`,
+        message: `${req.user?.full_name || 'Sale'} đã tách & bảo lưu ${netRetention.toLocaleString()} đ cho khách ${creditedName} từ đơn ${booking.booking_code || booking.id}. Hạn dùng: ${expiryDate.toLocaleDateString('vi-VN')}.`,
+        link: '/op-tours',
+        referenceId: newCredit.id
+      });
+    } catch (logErr) {
+      console.warn('Lỗi ghi log/thông báo bảo lưu cọc:', logErr.message);
+    }
+
     res.json({
       success: true,
       message: `Đã tách và bảo lưu thành công ${netRetention.toLocaleString()} đ cho khách ${creditedName} (Mã phiếu: ${creditCode})!`,
@@ -328,6 +371,13 @@ exports.splitAndRetainDeposit = async (req, res) => {
  */
 exports.getActiveCredits = async (req, res) => {
   try {
+    // Tự động quét và khóa các phiếu đã hết hạn quá 12 tháng sang EXPIRED
+    await db.query(`
+      UPDATE customer_credits 
+      SET status = 'EXPIRED', updated_at = CURRENT_TIMESTAMP
+      WHERE status IN ('ACTIVE', 'PARTIALLY_USED') AND expiry_date < CURRENT_DATE
+    `);
+
     const { phone, customer_id, search } = req.query;
     let query = `
       SELECT * FROM customer_credits 
@@ -510,6 +560,27 @@ exports.drawdownCredit = async (req, res) => {
     ]);
 
     await client.query('COMMIT');
+
+    // 7. Ghi Audit Log & Gửi thông báo đến Kế toán và Quản lý khi cấn trừ
+    try {
+      await logActivity({
+        user_id: req.user?.id || null,
+        action_type: 'DEPOSIT_RETENTION_DRAWDOWN',
+        entity_type: 'BOOKING',
+        entity_id: targetBooking.id,
+        details: `Cấn trừ ${drawdownAmt.toLocaleString()} đ từ Phiếu ${credit.credit_code} (${credit.credited_to_name}) vào đơn ${targetBooking.booking_code || targetBooking.id}`,
+        new_data: { credit_id: credit.id, amount: drawdownAmt, target_booking_id: targetBooking.id }
+      });
+
+      notifyAccountantsAndLeads({
+        title: `[Cấn trừ tiền cọc] Phiếu ${credit.credit_code}`,
+        message: `${req.user?.full_name || 'Sale'} đã cấn trừ ${drawdownAmt.toLocaleString()} đ từ Phiếu ${credit.credit_code} vào booking ${targetBooking.booking_code || targetBooking.id}. Số dư phiếu còn: ${newCreditBalance.toLocaleString()} đ.`,
+        link: '/op-tours',
+        referenceId: targetBooking.id
+      });
+    } catch (logErr) {
+      console.warn('Lỗi ghi log/thông báo cấn trừ cọc:', logErr.message);
+    }
 
     res.json({
       success: true,
