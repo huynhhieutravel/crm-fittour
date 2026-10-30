@@ -1078,7 +1078,7 @@
     // Team badge helper (checks if teams are approved in localStorage)
     function getMemberTeamBadge(sttStr) {
       try {
-        const saved = localStorage.getItem('fit_dalat_approved_teams_v3') || localStorage.getItem('fit_dalat_approved_teams_v2');
+        const saved = localStorage.getItem('fit_dalat_approved_teams_v4') || localStorage.getItem('fit_dalat_approved_teams_v3') || localStorage.getItem('fit_dalat_approved_teams_v2');
         if (!saved) return '';
         const parsed = JSON.parse(saved);
         if (!parsed.isApproved || !parsed.teams) return '';

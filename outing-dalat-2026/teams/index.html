@@ -399,7 +399,7 @@
     let approvedTimestamp = null;
     let isSpinning = false;
 
-    const STORAGE_KEY = 'fit_dalat_approved_teams_v3';
+    const STORAGE_KEY = 'fit_dalat_approved_teams_v4';
 
     // 3. Load Members
     fetch('./assets/members.json')
@@ -526,18 +526,9 @@
 
       const teams = [[], [], []];
 
-      const leaders = activeMembers.filter(m => (m.nghe_nghiep || '').includes('Trưởng') || (m.nghe_nghiep || '').includes('Phó'));
-      const nonLeaders = activeMembers.filter(m => !leaders.includes(m));
-
-      const shuffledLeaders = [...leaders].sort(() => Math.random() - 0.5);
-      const shuffledNonLeaders = [...nonLeaders].sort(() => Math.random() - 0.5);
-
-      shuffledLeaders.forEach((l, idx) => {
-        teams[idx % 3].push(l);
-      });
-
-      const males = shuffledNonLeaders.filter(m => m.gioi_tinh === 'Nam');
-      const females = shuffledNonLeaders.filter(m => m.gioi_tinh === 'Nữ');
+      const shuffledMembers = [...activeMembers].sort(() => Math.random() - 0.5);
+      const males = shuffledMembers.filter(m => m.gioi_tinh === 'Nam');
+      const females = shuffledMembers.filter(m => m.gioi_tinh === 'Nữ');
 
       males.forEach(m => {
         const available = teams
@@ -763,13 +754,9 @@
         const team = assignedTeams[idx] || [];
         const mCount = team.filter(p => p.gioi_tinh === 'Nam').length;
         const fCount = team.filter(p => p.gioi_tinh === 'Nữ').length;
-        const leader = team.find(p => (p.nghe_nghiep || '').includes('Trưởng') || (p.nghe_nghiep || '').includes('Phó'));
 
         text += `${meta.bannerIcon} ${meta.name.toUpperCase()} (${team.length} Thành viên: ${mCount} Nam - ${fCount} Nữ)\n`;
         text += `   Khẩu hiệu: "${meta.tagline}"\n`;
-        if (leader) {
-          text += `   👑 Đội trưởng đề xuất: ${leader.ho_ten} (@${leader.nickname || 'TV'})\n`;
-        }
         team.forEach((p, i) => {
           text += `   ${i + 1}. ${p.ho_ten} (@${p.nickname || 'TV'}) - ${p.gioi_tinh} | PB: ${p.phong_ban || 'FIT'} | ${p.nghe_nghiep || ''}\n`;
         });
@@ -881,7 +868,6 @@
           const team = assignedTeams[idx] || [];
           const mCount = team.filter(p => p.gioi_tinh === 'Nam').length;
           const fCount = team.filter(p => p.gioi_tinh === 'Nữ').length;
-          const leader = team.find(p => (p.nghe_nghiep || '').includes('Trưởng') || (p.nghe_nghiep || '').includes('Phó'));
 
           return `
             <div class="rounded-3xl border ${meta.borderClass} ${meta.bgClass} p-5 flex flex-col shadow-apple transition-all">
@@ -907,14 +893,6 @@
                 </div>
               </div>
 
-              <!-- Đội trưởng đề xuất -->
-              <div class="mb-3.5 px-3.5 py-2 rounded-xl bg-white/80 dark:bg-black/40 border border-black/[0.05] dark:border-white/[0.06] flex items-center justify-between text-xs">
-                <span class="text-apple-textMuted dark:text-apple-textMutedDark font-medium">👑 Đội trưởng:</span>
-                <span class="font-bold text-neutral-800 dark:text-neutral-100 truncate ml-2">
-                  ${leader ? `${leader.ho_ten} (@${leader.nickname || 'TV'})` : 'Chưa có'}
-                </span>
-              </div>
-
               <!-- Danh sách thành viên hiển thị FULL (Không cuộn / scroll) -->
               <div class="space-y-2">
                 ${team.length === 0 ? `
@@ -922,7 +900,6 @@
                     Chưa có thành viên nào. Hãy nhấn xoay bốc thăm.
                   </div>
                 ` : team.map((p, pIdx) => {
-                  const isLeader = (p.nghe_nghiep || '').includes('Trưởng') || (p.nghe_nghiep || '').includes('Phó');
                   return `
                     <div class="p-2.5 rounded-2xl bg-white dark:bg-apple-cardDark border border-black/[0.05] dark:border-white/[0.06] shadow-sm hover:shadow transition">
                       <div class="flex items-center gap-2.5">
@@ -939,7 +916,7 @@
                           <!-- DÒNG 1: Họ tên đầy đủ (KHÔNG CẮT NGẮN) + Giới tính -->
                           <div class="flex items-center justify-between gap-1.5">
                             <span class="font-extrabold text-xs sm:text-[13px] text-[#1d1d1f] dark:text-white leading-tight">
-                              ${p.ho_ten} ${isLeader ? '<span class="text-amber-500 font-extrabold text-xs" title="Trưởng/Phó phòng">★</span>' : ''}
+                              ${p.ho_ten}
                             </span>
                             <span class="px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${
                               p.gioi_tinh === 'Nam' 
