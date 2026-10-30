@@ -10,6 +10,8 @@ import * as XLSX from 'xlsx';
 import { toast } from 'react-hot-toast';
 import { formatGenderVN } from '../../utils/tourHelpers';
 import { useEscapeKey } from '../../hooks/useEscapeKey';
+import SplitDepositRetentionModal from './SplitDepositRetentionModal';
+import PrintDepositRetentionModal from './PrintDepositRetentionModal';
 
 export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initialData, currentUser, tour }) {
   // Auto-generate B-XXXX (4-5 digits) for a new booking code
@@ -666,6 +668,8 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
   const [drawdownModalData, setDrawdownModalData] = useState(null);
   const [drawdownInputAmount, setDrawdownInputAmount] = useState(0);
   const [isDrawingDown, setIsDrawingDown] = useState(false);
+  const [selectedMemberToRetain, setSelectedMemberToRetain] = useState(null);
+  const [createdCreditToPrint, setCreatedCreditToPrint] = useState(null);
 
   const loadAvailableCredits = (phone) => {
     if (!phone || phone.trim().length < 8) {
@@ -1152,7 +1156,22 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
         
         {/* Modal Header */}
         <div style={{ padding: '15px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, textAlign: 'center', flex: 1, fontSize: '18px', fontWeight: 'bold' }}>{initialData ? `CẬP NHẬT BOOKING / GIỮ CHỖ (${initialData.booking_code || initialData.id})` : 'THÊM BOOKING (GIỮ CHỖ)'}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>{initialData ? `CẬP NHẬT BOOKING / GIỮ CHỖ (${initialData.booking_code || initialData.id})` : 'THÊM BOOKING (GIỮ CHỖ)'}</h3>
+            {initialData?.id && Number(initialData?.paid || 0) > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const m = members[0] || { name: bookingInfo.name, phone: bookingInfo.phone };
+                  setSelectedMemberToRetain({ member: m, index: 0, booking: initialData });
+                }}
+                style={{ background: '#fff7ed', border: '1px solid #ea580c', color: '#ea580c', borderRadius: '6px', padding: '6px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 1px 3px rgba(234, 88, 12, 0.15)' }}
+                title="Tách khách hủy hoặc bảo lưu tiền cọc cho booking này"
+              >
+                🛡️ Bảo lưu tiền cọc / Tách khách hủy
+              </button>
+            )}
+          </div>
           <button onClick={onClose} title="Đóng (ESC)" style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
         </div>
 
@@ -1946,6 +1965,36 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
                      <label style={{ fontSize: '10px' }}>Ghi chú hiện tại:</label>
                      <input type="text" value={m.note || ''} onChange={e => handleMemberChange(m.id, 'note', e.target.value)} style={{ width: '100%', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }} />
                   </div>
+
+                  {initialData?.id && Number(initialData?.paid || 0) > 0 && (
+                    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'flex-end', height: '100%', paddingBottom: '2px' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const idx = members.findIndex(mem => mem.id === m.id);
+                          setSelectedMemberToRetain({ member: m, index: idx >= 0 ? idx : 0, booking: initialData });
+                        }}
+                        style={{
+                          background: '#fff7ed',
+                          border: '1px solid #ea580c',
+                          color: '#ea580c',
+                          borderRadius: '4px',
+                          padding: '4px 8px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          height: '28px',
+                          whiteSpace: 'nowrap'
+                        }}
+                        title="Tách khách này và bảo lưu tiền cọc"
+                      >
+                        🛡️ Bảo lưu cọc
+                      </button>
+                    </div>
+                  )}
                </div>
              ))}
           </div>
@@ -2072,6 +2121,32 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
          )}
         </div>
       </div>
+
+      {/* Modal Tách khách & Bảo lưu tiền cọc */}
+      {selectedMemberToRetain && (
+        <SplitDepositRetentionModal
+          isOpen={!!selectedMemberToRetain}
+          onClose={() => setSelectedMemberToRetain(null)}
+          booking={selectedMemberToRetain.booking}
+          member={selectedMemberToRetain.member}
+          memberIndex={selectedMemberToRetain.index}
+          tour={tour}
+          onSuccess={(credit) => {
+            setCreatedCreditToPrint(credit);
+            setSelectedMemberToRetain(null);
+            onClose();
+          }}
+        />
+      )}
+
+      {/* Modal In phiếu xác nhận bảo lưu tiền cọc */}
+      {createdCreditToPrint && (
+        <PrintDepositRetentionModal
+          isOpen={!!createdCreditToPrint}
+          onClose={() => setCreatedCreditToPrint(null)}
+          credit={createdCreditToPrint}
+        />
+      )}
     </div>
   );
 }
