@@ -367,7 +367,64 @@ exports.splitAndRetainDeposit = async (req, res) => {
 };
 
 /**
- * 2. Lấy danh sách phiếu bảo lưu tiền cọc còn hiệu lực (để cấn trừ)
+ * 2. Lấy danh sách toàn bộ phiếu bảo lưu tiền cọc (cho Sổ Quản Lý / Kế toán)
+ */
+exports.getAllCredits = async (req, res) => {
+  try {
+    // Quét tự động các phiếu quá hạn
+    await db.query(`
+      UPDATE customer_credits 
+      SET status = 'EXPIRED', updated_at = CURRENT_TIMESTAMP
+      WHERE status IN ('ACTIVE', 'PARTIALLY_USED') AND expiry_date < CURRENT_DATE
+    `);
+
+    const { status, search, page = 1, limit = 50 } = req.query;
+    let query = `
+      SELECT c.*,
+        (SELECT COUNT(*)::int FROM customer_credit_transactions WHERE credit_id = c.id) as tx_count
+      FROM customer_credits c
+      WHERE 1=1
+    `;
+    const params = [];
+    if (status && status !== 'ALL') {
+      params.push(status);
+      query += ` AND c.status = $${params.length}`;
+    }
+    if (search && search.trim()) {
+      params.push(`%${search.trim()}%`);
+      query += ` AND (c.credit_code ILIKE $${params.length} OR c.credited_to_name ILIKE $${params.length} OR c.credited_to_phone ILIKE $${params.length} OR c.passenger_name ILIKE $${params.length} OR c.original_booking_code ILIKE $${params.length})`;
+    }
+    const pLimit = parseInt(limit) || 50;
+    const pOffset = (Math.max(1, parseInt(page) || 1) - 1) * pLimit;
+    params.push(pLimit, pOffset);
+    query += ` ORDER BY c.id DESC LIMIT $${params.length - 1} OFFSET $${params.length}`;
+
+    const result = await db.query(query, params);
+
+    // Summary counts
+    const summaryRes = await db.query(`
+      SELECT 
+        COUNT(*)::int as total_count,
+        COALESCE(SUM(remaining_balance) FILTER (WHERE status IN ('ACTIVE', 'PARTIALLY_USED') AND expiry_date >= CURRENT_DATE), 0) as total_active_balance,
+        COUNT(*) FILTER (WHERE status IN ('ACTIVE', 'PARTIALLY_USED') AND expiry_date >= CURRENT_DATE)::int as active_count,
+        COUNT(*) FILTER (WHERE status = 'FULLY_USED')::int as fully_used_count,
+        COUNT(*) FILTER (WHERE status = 'EXPIRED' OR (status IN ('ACTIVE', 'PARTIALLY_USED') AND expiry_date < CURRENT_DATE))::int as expired_count
+      FROM customer_credits
+    `);
+
+    res.json({
+      success: true,
+      data: result.rows,
+      summary: summaryRes.rows[0]
+    });
+  } catch (error) {
+    console.error('Lỗi getAllCredits:', error);
+    res.status(500).json({ error: error.message || 'Lỗi tải danh sách bảo lưu.' });
+  }
+};
+
+/**
+ * 3. Lấy danh sách phiếu bảo lưu tiền cọc còn hiệu lực (để cấn trừ)
  */
 exports.getActiveCredits = async (req, res) => {
   try {

@@ -6,6 +6,9 @@ const router = express.Router();
 const controller = require('../controllers/customerCreditController');
 const auth = require('../middleware/auth');
 
+// 0. Lấy toàn bộ danh sách phiếu bảo lưu (cho Sổ Quản Lý / Kế toán)
+router.get('/', auth, controller.getAllCredits);
+
 // 1. Tách Booking & Bảo lưu tiền cọc cho hành khách hủy
 router.post('/split-and-retain', auth, controller.splitAndRetainDeposit);
 
