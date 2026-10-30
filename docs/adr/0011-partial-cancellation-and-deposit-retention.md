@@ -26,11 +26,17 @@ We establish a formalized 3-tier domain architecture for Partial Cancellations a
   - `CREDIT`: Inflow from split booking retention.
   - `DEBIT`: Drawdown applied toward a future tour booking deposit.
   - `EXPIRED`: Written off to other revenue upon reaching expiration milestone.
-- **Credit Ownership Flexibility**: Default credited to the canceling passenger, with an optional toggle to assign credit to the booking's lead payer.
+- **3-Way Credit Beneficiary Attribution (Phân Quyền Thụ Hưởng 3 Chiều)**:
+  1. `canceling_passenger`: Ghi nhận cho chính hành khách hủy.
+  2. `booker`: Ủy quyền cho người đại diện / người thanh toán booking.
+  3. `custom_customer`: Gán / chuyển nhượng trực tiếp cho một Khách hàng bất kỳ trên CRM (tìm kiếm theo Tên hoặc Số điện thoại qua Customer Autocomplete, hoặc nhập nhanh thông tin nếu là khách hàng mới). Hệ thống tự động liên kết khóa ngoại `credited_to_customer_id` để khi khách này đặt tour mới, khoản bảo lưu sẽ tự động nhận diện và sẵn sàng cấn trừ.
+- **Thousand-Separator Currency Input Masking (Định Dạng Tiền Tệ Tránh Nhầm Số 0)**:
+  Tất cả các trường nhập liệu số tiền phân bổ và phí phạt phát sinh áp dụng cơ chế tự động chèn dấu chấm phân cách hàng nghìn (ví dụ: `15.000.000`), ngăn chặn triệt để rủi ro nhân sự gõ nhầm thừa/thiếu số 0.
 - **Strict 12-Month Hard Cap (Trần Thời Hạn Tối Đa 12 Tháng)**: Sales staff are strictly constrained to choosing a validity period of `<= 12 months` (e.g., 3, 6, 9, or maximum 12 months from the cancellation date). System UI enforces `max="12"` and backend rejects any expiration date exceeding `cancellation_date + 365 days`.
 - **Partial Drawdown**: The ledger supports partial drawdowns (e.g., drawing 6M from a 10M credit note leaves 4M remaining until the original expiry date).
 
 ### 3. Integrated ERP UI & 1-Click Credit Drawdown
+- **Clean Separation Between Booking Editing & Deposit Retention (Tách Bạch Rõ Ràng)**: Màn hình Cập nhật Booking / Giữ chỗ giữ nguyên 100% bản chất nghiệp vụ là form quản lý, chỉnh sửa booking thông thường; hành động Bảo lưu cọc chỉ đóng vai trò nút nghiệp vụ theo từng thành viên hủy cụ thể, không xâm lấn tiêu đề hay luồng thao tác giữ chỗ.
 - **Operational List**: A dedicated `[Bảo lưu & Hủy chỗ]` action per member in `OpTourBookingListModal`.
 - **New Booking Creation**: When entering a customer's phone or ID, the system detects active retained credits and surfaces a visual badge with a 1-click `[Cấn trừ tiền bảo lưu]` action.
 - **Formal Voucher**: Generates a standardized printable/downloadable "Phiếu Xác Nhận Bảo Lưu Tiền Cọc" for transparency and client reassurance.

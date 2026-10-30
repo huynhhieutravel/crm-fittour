@@ -1156,22 +1156,7 @@ export default function OpTourAddCustomerModal({ isOpen, onClose, onSave, initia
         
         {/* Modal Header */}
         <div style={{ padding: '15px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>{initialData ? `CẬP NHẬT BOOKING / GIỮ CHỖ (${initialData.booking_code || initialData.id})` : 'THÊM BOOKING (GIỮ CHỖ)'}</h3>
-            {initialData?.id && Number(initialData?.paid || 0) > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  const m = members[0] || { name: bookingInfo.name, phone: bookingInfo.phone };
-                  setSelectedMemberToRetain({ member: m, index: 0, booking: initialData });
-                }}
-                style={{ background: '#fff7ed', border: '1px solid #ea580c', color: '#ea580c', borderRadius: '6px', padding: '6px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 1px 3px rgba(234, 88, 12, 0.15)' }}
-                title="Tách khách hủy hoặc bảo lưu tiền cọc cho booking này"
-              >
-                🛡️ Bảo lưu tiền cọc / Tách khách hủy
-              </button>
-            )}
-          </div>
+          <h3 style={{ margin: 0, textAlign: 'center', flex: 1, fontSize: '18px', fontWeight: 'bold' }}>{initialData ? `CẬP NHẬT BOOKING / GIỮ CHỖ (${initialData.booking_code || initialData.id})` : 'THÊM BOOKING (GIỮ CHỖ)'}</h3>
           <button onClick={onClose} title="Đóng (ESC)" style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
         </div>
 

@@ -146,6 +146,14 @@ export default function PrintDepositRetentionModal({ isOpen, onClose, credit }) 
                   Có giá trị sử dụng đến hết ngày {formatDate(credit.expiry_date)} ({credit.validity_months || 12} tháng)
                 </td>
               </tr>
+              {credit.notes && (
+                <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                  <td style={{ padding: '8px 0', color: '#64748b', fontWeight: 600 }}>Ghi chú / Thỏa thuận:</td>
+                  <td style={{ padding: '8px 0', color: '#334155', fontStyle: 'italic' }}>
+                    {credit.notes}
+                  </td>
+                </tr>
+              )}
               <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
                 <td style={{ padding: '10px 0', color: '#64748b', fontWeight: 600 }}>Số dư khả dụng hiện tại:</td>
                 <td style={{ padding: '10px 0', fontWeight: 800, color: '#0f172a' }}>

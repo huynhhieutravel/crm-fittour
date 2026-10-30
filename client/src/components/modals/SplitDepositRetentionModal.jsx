@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { X, ShieldAlert, CheckCircle2, UserCheck, Calendar, DollarSign, FileText } from 'lucide-react';
+import { X, ShieldAlert, CheckCircle2, UserCheck, Calendar, DollarSign, FileText, UserPlus, Search } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import AsyncSelect from 'react-select/async';
 
 export default function SplitDepositRetentionModal({
   isOpen,
@@ -25,7 +26,10 @@ export default function SplitDepositRetentionModal({
   const [allocatedDeposit, setAllocatedDeposit] = useState(defaultAllocated);
   const [deductionFee, setDeductionFee] = useState(0);
   const [validityMonths, setValidityMonths] = useState(12); // Khóa cứng trần tối đa 12 tháng
-  const [creditToOption, setCreditToOption] = useState('canceling_passenger');
+  const [creditToOption, setCreditToOption] = useState('canceling_passenger'); // 'canceling_passenger' | 'booker' | 'custom_customer'
+  const [selectedCustomCustomer, setSelectedCustomCustomer] = useState(null);
+  const [customName, setCustomName] = useState('');
+  const [customPhone, setCustomPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,15 +38,55 @@ export default function SplitDepositRetentionModal({
     return Number(val).toLocaleString('vi-VN') + ' đ';
   };
 
+  const formatNumberWithDots = (val) => {
+    if (val === undefined || val === null || val === '') return '';
+    const num = Number(String(val).replace(/\D/g, ''));
+    if (isNaN(num)) return '';
+    return num.toLocaleString('vi-VN');
+  };
+
+  const parseNumberFromDots = (str) => {
+    if (!str) return 0;
+    const clean = String(str).replace(/\D/g, '');
+    return Number(clean) || 0;
+  };
+
   const netRetention = Math.max(0, Number(allocatedDeposit || 0) - Number(deductionFee || 0));
 
   const bookerName = booking.name || raw.bookingInfo?.name || 'Người đại diện';
   const cancelingName = member.name || 'Hành khách';
 
+  const loadCustomerOptions = async (inputValue) => {
+    if (!inputValue || inputValue.trim().length < 1) return [];
+    try {
+      const res = await axios.get('/api/customers?search=' + encodeURIComponent(inputValue.trim()), {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = res.data?.data || res.data;
+      return Array.isArray(data) ? data.map(c => ({
+        value: c.id,
+        label: `${c.name}${c.phone ? ' - ' + c.phone : (c.id_card ? ' - HC:' + c.id_card : '')}`,
+        customer: c
+      })) : [];
+    } catch (err) {
+      console.error("Lỗi tìm kiếm khách hàng:", err);
+      return [];
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (allocatedDeposit > totalPaid) {
       return toast.error(`Số tiền cọc phân bổ không được lớn hơn tổng cọc của booking (${formatMoney(totalPaid)})`);
+    }
+
+    if (creditToOption === 'custom_customer') {
+      if (!customName.trim()) {
+        return toast.error('Vui lòng nhập họ tên người thụ hưởng khoản bảo lưu.');
+      }
+      if (!customPhone.trim()) {
+        return toast.error('Vui lòng nhập số điện thoại người thụ hưởng để hệ thống nhận diện khi đặt tour mới.');
+      }
     }
 
     setIsSubmitting(true);
@@ -53,7 +97,10 @@ export default function SplitDepositRetentionModal({
         allocatedDeposit: Number(allocatedDeposit),
         deductionFee: Number(deductionFee),
         validityMonths: Math.min(12, Math.max(1, parseInt(validityMonths) || 12)),
-        creditToOption,
+        creditToOption: creditToOption === 'custom_customer' ? 'custom' : creditToOption,
+        customCreditedCustomerId: selectedCustomCustomer?.id || null,
+        customCreditedName: customName.trim(),
+        customCreditedPhone: customPhone.trim(),
         notes: notes.trim()
       };
 
@@ -80,7 +127,7 @@ export default function SplitDepositRetentionModal({
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.7)', zIndex: 1900, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px' }}>
-      <div style={{ background: '#ffffff', borderRadius: '16px', width: '100%', maxWidth: '650px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: '#ffffff', borderRadius: '16px', width: '100%', maxWidth: '680px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
         
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, #fff7ed 0%, #ffffff 100%)' }}>
@@ -117,21 +164,25 @@ export default function SplitDepositRetentionModal({
             </div>
           </div>
 
-          {/* Phân bổ số tiền cọc */}
+          {/* Phân bổ số tiền cọc (Định dạng dấu . phân cách hàng nghìn) */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
                 Số tiền cọc phân bổ (đ) *
               </label>
-              <input
-                type="number"
-                min="0"
-                max={totalPaid}
-                value={allocatedDeposit}
-                onChange={e => setAllocatedDeposit(Number(e.target.value) || 0)}
-                style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '10px 12px', fontSize: '14px', fontWeight: 700, color: '#0f172a', outline: 'none' }}
-                required
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  value={formatNumberWithDots(allocatedDeposit)}
+                  onChange={e => {
+                    const val = parseNumberFromDots(e.target.value);
+                    setAllocatedDeposit(Math.min(totalPaid, val));
+                  }}
+                  placeholder="0"
+                  style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '10px 12px', fontSize: '15px', fontWeight: 700, color: '#0f172a', outline: 'none' }}
+                  required
+                />
+              </div>
               <span style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>
                 Gợi ý chia đều: {formatMoney(defaultAllocated)}
               </span>
@@ -141,14 +192,18 @@ export default function SplitDepositRetentionModal({
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
                 Phí phạt / chi phí đã phát sinh (đ)
               </label>
-              <input
-                type="number"
-                min="0"
-                value={deductionFee}
-                onChange={e => setDeductionFee(Number(e.target.value) || 0)}
-                placeholder="0"
-                style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '10px 12px', fontSize: '14px', fontWeight: 700, color: '#dc2626', outline: 'none' }}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  value={formatNumberWithDots(deductionFee)}
+                  onChange={e => {
+                    const val = parseNumberFromDots(e.target.value);
+                    setDeductionFee(val);
+                  }}
+                  placeholder="0"
+                  style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '10px 12px', fontSize: '15px', fontWeight: 700, color: '#dc2626', outline: 'none' }}
+                />
+              </div>
               <span style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>
                 Ví dụ: vé máy bay hoặc visa không hoàn hủy
               </span>
@@ -172,7 +227,9 @@ export default function SplitDepositRetentionModal({
               Quyền sở hữu khoản tiền bảo lưu *
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', padding: '8px 12px', border: `1px solid ${creditToOption === 'canceling_passenger' ? '#ea580c' : '#e2e8f0'}`, borderRadius: '8px', background: creditToOption === 'canceling_passenger' ? '#fff7ed' : '#ffffff' }}>
+              
+              {/* Lựa chọn 1: Khách hủy */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', padding: '10px 12px', border: `1px solid ${creditToOption === 'canceling_passenger' ? '#ea580c' : '#e2e8f0'}`, borderRadius: '8px', background: creditToOption === 'canceling_passenger' ? '#fff7ed' : '#ffffff' }}>
                 <input
                   type="radio"
                   name="creditToOption"
@@ -183,7 +240,8 @@ export default function SplitDepositRetentionModal({
                 <span>Ghi nhận cho <b>Khách hủy: {cancelingName}</b> {member.phone ? `(${member.phone})` : ''}</span>
               </label>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', padding: '8px 12px', border: `1px solid ${creditToOption === 'booker' ? '#ea580c' : '#e2e8f0'}`, borderRadius: '8px', background: creditToOption === 'booker' ? '#fff7ed' : '#ffffff' }}>
+              {/* Lựa chọn 2: Người đại diện thanh toán */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', padding: '10px 12px', border: `1px solid ${creditToOption === 'booker' ? '#ea580c' : '#e2e8f0'}`, borderRadius: '8px', background: creditToOption === 'booker' ? '#fff7ed' : '#ffffff' }}>
                 <input
                   type="radio"
                   name="creditToOption"
@@ -191,8 +249,94 @@ export default function SplitDepositRetentionModal({
                   checked={creditToOption === 'booker'}
                   onChange={e => setCreditToOption(e.target.value)}
                 />
-                <span>Ủy quyền cho <b>Người thanh toán / Đại diện: {bookerName}</b></span>
+                <span>Ủy quyền cho <b>Người thanh toán / Đại diện booking: {bookerName}</b></span>
               </label>
+
+              {/* Lựa chọn 3: Gán / Chuyển nhượng cho Khách hàng khác trên CRM */}
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px', cursor: 'pointer', padding: '10px 12px', border: `1px solid ${creditToOption === 'custom_customer' ? '#ea580c' : '#e2e8f0'}`, borderRadius: '8px', background: creditToOption === 'custom_customer' ? '#fff7ed' : '#ffffff' }}>
+                <input
+                  type="radio"
+                  name="creditToOption"
+                  value="custom_customer"
+                  checked={creditToOption === 'custom_customer'}
+                  onChange={e => setCreditToOption(e.target.value)}
+                  style={{ marginTop: '3px' }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, color: '#0f172a' }}>
+                    Gán / Chuyển nhượng cho Khách hàng khác trong CRM (Ví dụ: VUU MINH THONG)
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                    Số tiền cọc bảo lưu sẽ được gán trực tiếp vào hồ sơ khách hàng mới để cấn trừ vào các booking tiếp theo
+                  </div>
+
+                  {creditToOption === 'custom_customer' && (
+                    <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px', background: '#ffffff', padding: '12px', borderRadius: '8px', border: '1px solid #fed7aa' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#9a3412', marginBottom: '4px' }}>
+                          🔍 Tìm kiếm khách hàng trong CRM (Gõ tên hoặc SĐT):
+                        </label>
+                        <AsyncSelect
+                          cacheOptions
+                          loadOptions={loadCustomerOptions}
+                          defaultOptions={false}
+                          placeholder="Gõ tên khách (vd: VUU MINH THONG) hoặc SĐT để tìm..."
+                          value={selectedCustomCustomer ? { value: selectedCustomCustomer.id, label: `${selectedCustomCustomer.name}${selectedCustomCustomer.phone ? ' - ' + selectedCustomCustomer.phone : ''}` } : null}
+                          onChange={(opt) => {
+                            if (opt && opt.customer) {
+                              setSelectedCustomCustomer(opt.customer);
+                              setCustomName(opt.customer.name || '');
+                              setCustomPhone(opt.customer.phone || '');
+                            } else {
+                              setSelectedCustomCustomer(null);
+                            }
+                          }}
+                          isClearable
+                          styles={{
+                            control: (base) => ({
+                              ...base,
+                              borderRadius: '6px',
+                              borderColor: '#fdba74',
+                              fontSize: '13px'
+                            })
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '10px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                            Họ và tên người thụ hưởng *:
+                          </label>
+                          <input
+                            type="text"
+                            value={customName}
+                            onChange={e => setCustomName(e.target.value)}
+                            placeholder="Nhập họ tên (vd: VUU MINH THONG)"
+                            style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px 10px', fontSize: '13px', fontWeight: 700, color: '#0f172a' }}
+                            required={creditToOption === 'custom_customer'}
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                            Số điện thoại *:
+                          </label>
+                          <input
+                            type="tel"
+                            value={customPhone}
+                            onChange={e => setCustomPhone(e.target.value)}
+                            placeholder="Nhập SĐT nhận bảo lưu"
+                            style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px 10px', fontSize: '13px', fontWeight: 700, color: '#0f172a' }}
+                            required={creditToOption === 'custom_customer'}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </label>
+
             </div>
           </div>
 
@@ -254,4 +398,3 @@ export default function SplitDepositRetentionModal({
     </div>
   );
 }
-

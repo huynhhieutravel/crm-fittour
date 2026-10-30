@@ -48,6 +48,7 @@ exports.splitAndRetainDeposit = async (req, res) => {
       deductionFee = 0,
       validityMonths = 12,
       creditToOption = 'canceling_passenger',
+      customCreditedCustomerId,
       customCreditedName,
       customCreditedPhone,
       notes = ''
@@ -127,6 +128,25 @@ exports.splitAndRetainDeposit = async (req, res) => {
     } else if (creditToOption === 'custom') {
       if (customCreditedName) creditedName = customCreditedName.trim();
       if (customCreditedPhone) creditedPhone = customCreditedPhone.trim();
+      if (customCreditedCustomerId) creditedCustomerId = customCreditedCustomerId;
+
+      // Nếu chưa có customerId nhưng có SĐT, tự động liên kết hoặc tạo hồ sơ khách hàng
+      if (!creditedCustomerId && creditedPhone) {
+        try {
+          const custCheck = await client.query('SELECT id FROM customers WHERE phone = $1 LIMIT 1', [creditedPhone]);
+          if (custCheck.rows.length > 0) {
+            creditedCustomerId = custCheck.rows[0].id;
+          } else if (creditedName) {
+            const newCust = await client.query(
+              `INSERT INTO customers (name, phone, created_at, updated_at) VALUES ($1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id`,
+              [creditedName, creditedPhone]
+            );
+            creditedCustomerId = newCust.rows[0].id;
+          }
+        } catch (cErr) {
+          console.warn('Lỗi auto-link customer khi bảo lưu cọc:', cErr.message);
+        }
+      }
     }
 
     // 4. Tính toán ngày hiệu lực và ngày hết hạn (Khóa cứng trần <= 365 ngày)
