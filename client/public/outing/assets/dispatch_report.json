@@ -1,0 +1,297 @@
+{
+  "startedAt": "2026-10-31T01:24:51.404Z",
+  "total": 32,
+  "successCount": 32,
+  "failCount": 0,
+  "results": [
+    {
+      "stt": 1,
+      "ho_ten": "Nguyễn Nhất Vũ",
+      "nickname": "Max Vu",
+      "email": "ceo@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<0cfb65be-375c-8da5-fefe-5470b355b1b7@fittour.vn>",
+      "sentAt": "2026-10-31T01:25:01.031Z"
+    },
+    {
+      "stt": 2,
+      "ho_ten": "Trần Quốc Thịnh",
+      "nickname": "Darius Tran",
+      "email": "quocthinh.tran@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<34ada538-dfbc-6fb8-1050-5909f90b5ac7@fittour.vn>",
+      "sentAt": "2026-10-31T01:25:08.685Z"
+    },
+    {
+      "stt": 3,
+      "ho_ten": "Nguyễn Quỳnh Phương",
+      "nickname": "Phunnie",
+      "email": "phuong.nq@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<0d48d328-ac30-b4b2-a785-c0d92efca488@fittour.vn>",
+      "sentAt": "2026-10-31T01:25:16.196Z"
+    },
+    {
+      "stt": 4,
+      "ho_ten": "Đoàn Thúy An",
+      "nickname": "An April",
+      "email": "tq2.sale@fittour.com",
+      "status": "SENT",
+      "messageId": "<7cdf44e5-fbf8-deef-5e50-508052324aab@fittour.vn>",
+      "sentAt": "2026-10-31T01:25:23.665Z"
+    },
+    {
+      "stt": 5,
+      "ho_ten": "Lâm Mỹ Duyên",
+      "nickname": "Grace Lam",
+      "email": "duyenlam@fittour.vn",
+      "status": "SENT",
+      "messageId": "<27f85684-ff4f-b34a-c001-e65bc889e5a6@fittour.vn>",
+      "sentAt": "2026-10-31T01:25:30.808Z"
+    },
+    {
+      "stt": 6,
+      "ho_ten": "Nguyễn Hưng Thịnh",
+      "nickname": "Hung Thinh",
+      "email": "hungthinh.tourism@gmail.com",
+      "status": "SENT",
+      "messageId": "<bcfc84a7-7753-2d72-766e-898fee2877bd@fittour.vn>",
+      "sentAt": "2026-10-31T01:25:40.602Z"
+    },
+    {
+      "stt": 7,
+      "ho_ten": "Lê Minh Tuấn",
+      "nickname": "Meishun",
+      "email": "obm@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<c390ce8d-a27d-2c53-8408-b462b2b9834d@fittour.vn>",
+      "sentAt": "2026-10-31T01:25:47.829Z"
+    },
+    {
+      "stt": 8,
+      "ho_ten": "Bùi Ngọc Hiếu",
+      "nickname": "BÙI NGỌC HIÊU",
+      "email": "gu2.sale@fittour.com",
+      "status": "SENT",
+      "messageId": "<b4f29d8c-82b7-fc5e-464d-cae7398c2909@fittour.vn>",
+      "sentAt": "2026-10-31T01:25:54.485Z"
+    },
+    {
+      "stt": 9,
+      "ho_ten": "Phan Hoàng Trúc Vy",
+      "nickname": "Vy Phan",
+      "email": "vyphan@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<e71852c9-fe86-2f59-e274-9b21baa80d60@fittour.vn>",
+      "sentAt": "2026-10-31T01:26:03.768Z"
+    },
+    {
+      "stt": 10,
+      "ho_ten": "Nguyễn Huỳnh Hồng Trang",
+      "nickname": "Pinkchan",
+      "email": "trang.kd3@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<18891557-76ef-b8f6-ba4f-c6e7317959b0@fittour.vn>",
+      "sentAt": "2026-10-31T01:26:13.596Z"
+    },
+    {
+      "stt": 11,
+      "ho_ten": "Hầu Quang Hưng",
+      "nickname": "Joseph Hau",
+      "email": "hauhung@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<d4bd0786-860f-e258-7969-f1f3b2b6fe34@fittour.vn>",
+      "sentAt": "2026-10-31T01:26:27.277Z"
+    },
+    {
+      "stt": 12,
+      "ho_ten": "Lê Thị Trang",
+      "nickname": "Trang Lê",
+      "email": "trangle@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<cc683549-7818-9e1b-00d2-3e812ff257d8@fittour.vn>",
+      "sentAt": "2026-10-31T01:26:35.281Z"
+    },
+    {
+      "stt": 13,
+      "ho_ten": "Lê Văn Tâm",
+      "nickname": "Vantenz",
+      "email": "visa1@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<877477d8-7c78-af7c-3e2b-4a5c77c0c459@fittour.vn>",
+      "sentAt": "2026-10-31T01:26:44.343Z"
+    },
+    {
+      "stt": 14,
+      "ho_ten": "Võ Thị Hồng Trang",
+      "nickname": "Katie Vo",
+      "email": "fittour@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<4a3a56ed-675d-6306-4b74-e9bf8370b49a@fittour.vn>",
+      "sentAt": "2026-10-31T01:26:53.530Z"
+    },
+    {
+      "stt": 15,
+      "ho_ten": "Ngô Ngọc Đăng Huy",
+      "nickname": "HUY NGO",
+      "email": "huy.nnd@fittour.com",
+      "status": "SENT",
+      "messageId": "<de166da7-ed5a-faac-01e4-8c4baa57e89e@fittour.vn>",
+      "sentAt": "2026-10-31T01:27:01.679Z"
+    },
+    {
+      "stt": 16,
+      "ho_ten": "Lê Thanh Hà",
+      "nickname": "Thanh Ha",
+      "email": "operation@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<b3ec6887-44e4-8ab5-d512-97751bf8b80f@fittour.vn>",
+      "sentAt": "2026-10-31T01:27:10.748Z"
+    },
+    {
+      "stt": 17,
+      "ho_ten": "Dương Quỳnh Như",
+      "nickname": "JO",
+      "email": "jo@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<ac0efc0c-d07a-1da4-6b8e-facd7a789bad@fittour.vn>",
+      "sentAt": "2026-10-31T01:27:18.129Z"
+    },
+    {
+      "stt": 18,
+      "ho_ten": "Nguyễn Thị Hằng",
+      "nickname": "Hana",
+      "email": "hang.dh@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<e2bae878-79d1-a81e-dbba-1edc6786be63@fittour.vn>",
+      "sentAt": "2026-10-31T01:27:27.471Z"
+    },
+    {
+      "stt": 19,
+      "ho_ten": "Trần Đức Mẫn",
+      "nickname": "Mẫn Nhi",
+      "email": "ducman@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<25ff32ac-2e87-5425-9822-43699ea2bef1@fittour.vn>",
+      "sentAt": "2026-10-31T01:27:36.602Z"
+    },
+    {
+      "stt": 20,
+      "ho_ten": "Nguyễn Hồ Đông Hải",
+      "nickname": "Hani",
+      "email": "donghai@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<2a57ac0c-9fc6-e245-e10d-ed8872205062@fittour.vn>",
+      "sentAt": "2026-10-31T01:27:45.518Z"
+    },
+    {
+      "stt": 21,
+      "ho_ten": "Trần Minh Dũng",
+      "nickname": "MIDU",
+      "email": "dung.tm@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<bc91acc4-a676-f906-7660-02f1aca1bd5e@fittour.vn>",
+      "sentAt": "2026-10-31T01:27:53.654Z"
+    },
+    {
+      "stt": 22,
+      "ho_ten": "Phạm Nguyễn Phương Thụy",
+      "nickname": "Joyce Phạm",
+      "email": "thuypham@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<946c9047-f540-e0aa-642b-2b4ca0fab23d@fittour.vn>",
+      "sentAt": "2026-10-31T01:28:03.102Z"
+    },
+    {
+      "stt": 23,
+      "ho_ten": "Nguyễn Thị Thu Xuân",
+      "nickname": "Nguyễn Xuân",
+      "email": "acc@fittour.com.vn",
+      "status": "SENT",
+      "messageId": "<478d4b81-bbf0-27d8-59cf-7d04463ae81b@fittour.vn>",
+      "sentAt": "2026-10-31T01:28:09.961Z"
+    },
+    {
+      "stt": 24,
+      "ho_ten": "Đoàn Bảo Ngọc",
+      "nickname": "Ngọc Đoàn",
+      "email": "doanbaongoc2509@gmail.com",
+      "status": "SENT",
+      "messageId": "<58c40360-1223-d831-76b0-c572329ddeb3@fittour.vn>",
+      "sentAt": "2026-10-31T01:28:17.841Z"
+    },
+    {
+      "stt": 25,
+      "ho_ten": "Trần Hiếu Thảo",
+      "nickname": "HIEU THAO",
+      "email": "hieuuthaoo10@gmail.com",
+      "status": "SENT",
+      "messageId": "<14938d17-cb37-55d6-692e-df3fda973125@fittour.vn>",
+      "sentAt": "2026-10-31T01:28:27.262Z"
+    },
+    {
+      "stt": 26,
+      "ho_ten": "Hồ Hải Long",
+      "nickname": "long Rey",
+      "email": "long301197@gmail.com",
+      "status": "SENT",
+      "messageId": "<dbe42bbf-5f20-1527-2a71-2f5d4a09d327@fittour.vn>",
+      "sentAt": "2026-10-31T01:28:34.936Z"
+    },
+    {
+      "stt": 27,
+      "ho_ten": "Huỳnh Trọng Hiếu",
+      "nickname": "Loki",
+      "email": "huynhhieutravel@gmail.com",
+      "status": "SENT",
+      "messageId": "<154e9567-9b0c-0db5-050d-2f56208acce0@fittour.vn>",
+      "sentAt": "2026-10-31T01:28:44.038Z"
+    },
+    {
+      "stt": 28,
+      "ho_ten": "Châu Quốc Kiệt",
+      "nickname": "KIET CHAU",
+      "email": "kietchauforworks0801@gmail.com",
+      "status": "SENT",
+      "messageId": "<111430f0-ad31-8ffb-0690-d0ffa4073bb1@fittour.vn>",
+      "sentAt": "2026-10-31T01:28:53.455Z"
+    },
+    {
+      "stt": 29,
+      "ho_ten": "Phan Trọng Trí",
+      "nickname": "Cachua_den",
+      "email": "phantrongtri.1022@gmail.com",
+      "status": "SENT",
+      "messageId": "<e6b60d34-cd15-0547-9996-0426968acd96@fittour.vn>",
+      "sentAt": "2026-10-31T01:29:00.952Z"
+    },
+    {
+      "stt": 30,
+      "ho_ten": "Trương Huy Hoàng",
+      "nickname": "HoangTun",
+      "email": "huyhoang@fittour.vn",
+      "status": "SENT",
+      "messageId": "<2ee4c097-60a8-9863-1cc8-7123011835e1@fittour.vn>",
+      "sentAt": "2026-10-31T01:29:08.745Z"
+    },
+    {
+      "stt": 31,
+      "ho_ten": "Lê Đoàn Khánh Giao",
+      "nickname": "VuCatTuong",
+      "email": "khanhgiaoledoan0324@gmail.com",
+      "status": "SENT",
+      "messageId": "<3eb3ebf4-11cf-9bf8-e690-0542cfdd36fe@fittour.vn>",
+      "sentAt": "2026-10-31T01:29:16.010Z"
+    },
+    {
+      "stt": 32,
+      "ho_ten": "Trần Gia Tuệ",
+      "nickname": "GIA TUE",
+      "email": "tuetran@fittour.vn",
+      "status": "SENT",
+      "messageId": "<500dbfa1-fd18-0cb8-25f9-71dacdf13677@fittour.vn>",
+      "sentAt": "2026-10-31T01:29:23.449Z"
+    }
+  ],
+  "completedAt": "2026-10-31T01:29:23.449Z"
+}
