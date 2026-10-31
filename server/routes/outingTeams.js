@@ -478,5 +478,69 @@ router.post('/remove', async (req, res) => {
   }
 });
 
+// 8. POST /api/outing/teams/exclude: Thêm hoặc gỡ thành viên khỏi Ban Hậu Cần
+router.post('/exclude', async (req, res) => {
+  try {
+    const { memberStt, action } = req.body;
+    if (!memberStt) {
+      return res.status(400).json({ success: false, error: 'Thiếu memberStt' });
+    }
+
+    const state = await loadCurrentState();
+    if (state.isApproved) {
+      return res.status(400).json({ success: false, error: 'Đội hình đã được duyệt chính thức, không thể thay đổi nhân sự hậu cần.' });
+    }
+
+    const allMembers = getMembers();
+    const targetMember = allMembers.find(m => String(m.stt) === String(memberStt));
+    if (!targetMember) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy thành viên STT ' + memberStt });
+    }
+
+    const sttStr = String(memberStt);
+
+    if (action === 'remove') {
+      // Gỡ khỏi Hậu Cần -> quay lại danh sách thi đấu
+      state.excludedStts = (state.excludedStts || []).filter(s => String(s) !== sttStr);
+      await persistState(state);
+      return res.json({
+        success: true,
+        message: `Đã đưa ${targetMember.ho_ten} trở lại danh sách thi đấu bốc thăm!`,
+        excludedStts: state.excludedStts,
+        teams: state.teams
+      });
+    } else {
+      // Thêm vào Hậu Cần -> loại trừ khỏi bốc thăm thi đấu
+      // Nếu thành viên đang ở trong 1 đội nào đó thì gỡ ra khỏi đội đó
+      for (let i = 0; i < 3; i++) {
+        const idx = state.teams[i].findIndex(p => String(p.stt) === sttStr);
+        if (idx !== -1) {
+          state.teams[i].splice(idx, 1);
+          break;
+        }
+      }
+
+      if (!state.excludedStts.includes(sttStr)) {
+        state.excludedStts.push(sttStr);
+      }
+
+      if (state.lastSpin && String(state.lastSpin.memberStt) === sttStr) {
+        state.lastSpin = null;
+      }
+
+      await persistState(state);
+      return res.json({
+        success: true,
+        message: `Đã thêm ${targetMember.ho_ten} vào Ban Tổ Chức • Hậu Cần!`,
+        excludedStts: state.excludedStts,
+        teams: state.teams
+      });
+    }
+  } catch (err) {
+    console.error('[outingTeams] Error exclude member:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;
 

@@ -253,18 +253,24 @@
       </div>
 
       
-      <!-- ================= SECTION 4.5: BAN TỔ CHỨC & ĐIỀU HÀNH ================= -->
+      <!-- ================= SECTION 4.5: BAN TỔ CHỨC & HẬU CẦN ================= -->
       <div class="border-t border-black/[0.06] dark:border-white/[0.08] pt-6 mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div class="flex items-center gap-2">
             <span class="text-xl">👑</span>
-            <h2 class="text-lg sm:text-xl font-black text-[#1d1d1f] dark:text-white">
-              Ban Tổ Chức & Điều Hành (Không Tham Gia Bốc Thăm - 4 người)
+            <h2 id="btcSectionTitle" class="text-lg sm:text-xl font-black text-[#1d1d1f] dark:text-white">
+              Ban Tổ Chức & Hậu Cần (Không Tham Gia Bốc Thăm)
             </h2>
           </div>
-          <span class="text-xs px-3 py-1 rounded-full font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 self-start sm:self-auto">
-            Ban Trọng Tài & Hậu Cần
-          </span>
+          <div class="flex items-center gap-2">
+            <button id="btnAddHauCanBtn" onclick="openAddHauCanModal()" class="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-white font-extrabold text-xs shadow-md transition active:scale-95 flex items-center gap-1.5 cursor-pointer">
+              <span>➕</span>
+              <span>Thêm Vào Hậu Cần</span>
+            </button>
+            <span class="text-xs px-3 py-1.5 rounded-full font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300">
+              Điều Hành • Hậu Cần
+            </span>
+          </div>
         </div>
 
         <div id="excludedBtcContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -279,6 +285,40 @@
 
     </div>
   </main>
+
+  
+  <!-- ================= MODAL THÊM VÀO HẬU CẦN ================= -->
+  <div id="addHauCanModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-apple-cardDark rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 flex flex-col max-h-[85vh]">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
+        <div>
+          <h3 class="text-base sm:text-lg font-black text-[#1d1d1f] dark:text-white">Thêm Người Vào Ban Hậu Cần</h3>
+          <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Thành viên này sẽ không tham gia thi đấu bốc thăm chia đội</p>
+        </div>
+        <button onclick="closeAddHauCanModal()" class="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center justify-center text-xs font-bold transition cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <!-- Search Input -->
+      <div class="my-3">
+        <input id="addHauCanSearchInput" oninput="filterAddHauCanList()" type="text" placeholder="Tìm tên, nickname hoặc BU..." class="w-full px-3.5 py-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-none text-xs sm:text-sm font-semibold text-neutral-800 dark:text-neutral-100 focus:ring-2 focus:ring-amber-500 outline-none">
+      </div>
+
+      <!-- Danh sách thành viên có thể thêm vào hậu cần -->
+      <div id="addHauCanList" class="flex-1 overflow-y-auto space-y-2 pr-1 my-1">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="pt-3 border-t border-black/[0.06] dark:border-white/[0.08] flex justify-end">
+        <button onclick="closeAddHauCanModal()" class="px-5 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 font-bold text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 transition cursor-pointer">
+          Đóng
+        </button>
+      </div>
+
+    </div>
+  </div>
 
   <!-- ================= MODAL CHỌN THÀNH VIÊN ================= -->
   <div id="memberPickerModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
@@ -1276,34 +1316,43 @@
         }
       }
 
-      // Render Ban Tổ Chức (4 thành viên)
+      // Render Ban Tổ Chức & Hậu Cần (Vy Phan là Trưởng BTC, còn lại là Tổ Chức • Hậu Cần)
       const btcContainer = document.getElementById('excludedBtcContainer');
+      const btcTitleEl = document.getElementById('btcSectionTitle');
+      if (btcTitleEl) {
+        btcTitleEl.textContent = `Ban Tổ Chức & Hậu Cần (Không Tham Gia Bốc Thăm - ${excludedStts.size} người)`;
+      }
+
       if (btcContainer) {
         const btcList = allMembers.filter(m => excludedStts.has(String(m.stt)));
         btcContainer.innerHTML = btcList.map(m => {
           const isMe = currentErpMember && String(currentErpMember.stt) === String(m.stt);
-          let btcRoleTitle = 'Ban Tổ Chức';
-          if (String(m.stt) === '27') btcRoleTitle = 'Trưởng Ban Tổ Chức';
-          else if (String(m.stt) === '9') btcRoleTitle = 'BOD • Điều Hành';
-          else if (String(m.stt) === '11') btcRoleTitle = 'Ban Tổ Chức • Hậu Cần';
-          else if (String(m.stt) === '2') btcRoleTitle = 'Trọng Tài • Đi Riêng';
+          const isLeader = String(m.stt) === '9'; // Vy Phan là Trưởng Ban Tổ Chức
+          const btcRoleTitle = isLeader ? 'Trưởng Ban Tổ Chức' : 'Tổ Chức • Hậu Cần';
 
           return `
             <div class="p-3.5 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 flex items-center gap-3 relative overflow-hidden shadow-sm">
-              ${isMe ? `
-                <span class="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-orange-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-bl-lg shadow-sm">
-                  Bạn 👑
-                </span>
-              ` : ''}
+              <div class="absolute top-0 right-0 flex items-center">
+                ${isMe ? `
+                  <span class="bg-gradient-to-l from-amber-500 to-orange-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-bl-lg shadow-sm">
+                    Bạn 👑
+                  </span>
+                ` : ''}
+                ${isBTC && !isApproved && !isLeader ? `
+                  <button onclick="removeMemberFromHauCan('${m.stt}', '${(m.ho_ten || '').replace(/'/g, "\\'")}')" class="ml-1 p-1 text-neutral-400 hover:text-rose-500 transition cursor-pointer text-xs" title="Gỡ khỏi Hậu Cần, đưa về danh sách thi đấu">
+                    ✕
+                  </button>
+                ` : ''}
+              </div>
               <div class="w-11 h-11 rounded-xl overflow-hidden bg-neutral-200 dark:bg-neutral-800 flex-shrink-0 flex items-center justify-center font-bold text-amber-600 text-sm shadow-sm border border-amber-500/30">
                 ${m.avatar ? `<img src="${m.avatar}" class="w-full h-full object-cover">` : m.ho_ten.charAt(0)}
               </div>
-              <div class="min-w-0">
+              <div class="min-w-0 pr-4">
                 <div class="font-extrabold text-sm text-[#1d1d1f] dark:text-white truncate">
                   ${m.ho_ten}
                 </div>
-                <div class="text-[11px] text-amber-700 dark:text-amber-400 font-bold truncate">
-                  ${btcRoleTitle}
+                <div class="text-[11px] ${isLeader ? 'text-amber-800 dark:text-amber-300 font-black' : 'text-amber-700 dark:text-amber-400 font-bold'} truncate">
+                  ${isLeader ? '👑 ' : ''}${btcRoleTitle}
                 </div>
                 <div class="text-[10px] text-apple-textMuted dark:text-apple-textMutedDark truncate">
                   @${m.nickname || 'BTC'} • ${m.phong_ban || 'FIT'}
@@ -1477,6 +1526,127 @@
           alert(`✅ Đã xóa "${memberName}" khỏi đội thành công!\nThành viên đã được đưa lên ô chuẩn bị quay lại.`);
         } else {
           alert('Không thể xóa: ' + (json.error || 'Lỗi server'));
+        }
+      } catch (err) {
+        alert('Lỗi kết nối máy chủ: ' + err.message);
+      }
+    }
+
+    
+    // 12. Modal & API Thêm / Gỡ Ban Hậu Cần
+    function openAddHauCanModal() {
+      if (!isBTCUser()) {
+        alert('Chỉ Ban Tổ Chức / Admin mới có quyền thêm người vào Hậu Cần.');
+        return;
+      }
+      if (isApproved) {
+        alert('Đội hình đã được khóa chính thức.');
+        return;
+      }
+      const modal = document.getElementById('addHauCanModal');
+      if (!modal) return;
+      renderAddHauCanList();
+      modal.classList.remove('hidden');
+    }
+
+    function closeAddHauCanModal() {
+      const modal = document.getElementById('addHauCanModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function renderAddHauCanList(customList = null) {
+      const listEl = document.getElementById('addHauCanList');
+      if (!listEl) return;
+
+      const candidates = customList || allMembers.filter(m => !excludedStts.has(String(m.stt)));
+      if (candidates.length === 0) {
+        listEl.innerHTML = '<div class="text-center py-6 text-xs text-apple-textMuted">Không có thành viên nào khả dụng.</div>';
+        return;
+      }
+
+      listEl.innerHTML = candidates.map(m => {
+        const inTeam = assignedTeams.flat().some(p => String(p.stt) === String(m.stt));
+        return `
+          <div onclick="addMemberToHauCan('${m.stt}', '${(m.ho_ten || '').replace(/'/g, "\\'")}')" class="p-3 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] hover:border-amber-500 bg-white dark:bg-neutral-800/80 hover:bg-amber-500/5 flex items-center justify-between gap-3 cursor-pointer transition select-none">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-9 h-9 rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-700 flex-shrink-0 flex items-center justify-center font-bold text-xs">
+                ${m.avatar ? `<img src="${m.avatar}" class="w-full h-full object-cover">` : m.ho_ten.charAt(0)}
+              </div>
+              <div class="min-w-0">
+                <div class="font-bold text-xs sm:text-sm text-neutral-800 dark:text-neutral-100 truncate">
+                  ${m.ho_ten}
+                </div>
+                <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark truncate">
+                  @${m.nickname || 'TV'} • BU ${m.phong_ban || 'FIT'} ${inTeam ? '<span class="text-amber-600 font-bold">(Đang trong đội)</span>' : ''}
+                </div>
+              </div>
+            </div>
+            <button class="px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-300 font-extrabold text-xs flex-shrink-0 hover:bg-amber-500 hover:text-white transition">
+              + Chọn
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterAddHauCanList() {
+      const q = (document.getElementById('addHauCanSearchInput')?.value || '').trim().toLowerCase();
+      const candidates = allMembers.filter(m => !excludedStts.has(String(m.stt)));
+      if (!q) {
+        renderAddHauCanList(candidates);
+        return;
+      }
+      const filtered = candidates.filter(m => {
+        return (m.ho_ten && m.ho_ten.toLowerCase().includes(q)) ||
+               (m.nickname && m.nickname.toLowerCase().includes(q)) ||
+               (m.phong_ban && String(m.phong_ban).toLowerCase().includes(q));
+      });
+      renderAddHauCanList(filtered);
+    }
+
+    async function addMemberToHauCan(stt, name) {
+      const ok = confirm(`XÁC NHẬN:\n\nBạn có chắc chắn muốn thêm "${name}" vào Ban Tổ Chức • Hậu Cần?\n(Thành viên này sẽ không tham gia bốc thăm thi đấu nữa)`);
+      if (!ok) return;
+
+      try {
+        const res = await fetch('/api/outing/teams/exclude', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ memberStt: stt, action: 'add' })
+        });
+        const json = await res.json();
+        if (json.success) {
+          closeAddHauCanModal();
+          await fetchRemoteState(true);
+          alert(`✅ Đã thêm "${name}" vào Ban Hậu Cần thành công!`);
+        } else {
+          alert('Lỗi: ' + (json.error || 'Không thể thêm'));
+        }
+      } catch (err) {
+        alert('Lỗi kết nối máy chủ: ' + err.message);
+      }
+    }
+
+    async function removeMemberFromHauCan(stt, name) {
+      if (String(stt) === '9') {
+        alert('Không thể gỡ Trưởng Ban Tổ Chức (Vy Phan)!');
+        return;
+      }
+      const ok = confirm(`XÁC NHẬN:\n\nBạn có chắc chắn muốn đưa "${name}" rời khỏi Hậu Cần để tham gia bốc thăm thi đấu lại?`);
+      if (!ok) return;
+
+      try {
+        const res = await fetch('/api/outing/teams/exclude', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ memberStt: stt, action: 'remove' })
+        });
+        const json = await res.json();
+        if (json.success) {
+          await fetchRemoteState(true);
+          alert(`✅ Đã đưa "${name}" trở lại danh sách thi đấu bốc thăm thành công!`);
+        } else {
+          alert('Lỗi: ' + (json.error || 'Không thể gỡ'));
         }
       } catch (err) {
         alert('Lỗi kết nối máy chủ: ' + err.message);
