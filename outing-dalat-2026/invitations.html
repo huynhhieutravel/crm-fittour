@@ -288,7 +288,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
               <span class="w-20 font-bold text-apple-textMuted dark:text-apple-textMutedDark">Tiêu đề:</span>
               <span id="previewEmailSubject" class="font-extrabold text-sm text-[#1d1d1f] dark:text-white">
-                Thư mời Nguyễn Nhất Vũ tham dự FIT TOUR Company Trip 2026
+                Thư mời Max Vu tham dự FIT TOUR Company Trip 2026
               </span>
             </div>
           </div>
@@ -299,7 +299,7 @@
             <!-- Greeting & Tenure Milestone Card -->
             <div class="p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-2">
               <div class="font-black text-base sm:text-lg text-[#1d1d1f] dark:text-white">
-                Gửi <span id="emailBodyMemberName" class="text-amber-600 dark:text-amber-400">Nguyễn Nhất Vũ</span> thân mến,
+                Gửi <span id="emailBodyMemberName" class="text-amber-600 dark:text-amber-400">Max Vu</span> thân mến,
               </div>
               <div id="emailBodyTenureTribute" class="text-xs sm:text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed font-medium">
                 ⭐ <strong class="text-amber-700 dark:text-amber-300">Hành trình gắn bó cùng đại gia đình FIT TOUR:</strong> 
@@ -320,7 +320,7 @@
             </p>
 
             <p>
-              FIT TOUR trân trọng mời <strong id="emailBodyMemberName2" class="text-apple-blue font-extrabold">Nguyễn Nhất Vũ</strong> cùng đồng hành trên chuyến xe đặc biệt lần này!
+              FIT TOUR trân trọng mời <strong id="emailBodyMemberName2" class="text-apple-blue font-extrabold">Max Vu</strong> cùng đồng hành trên chuyến xe đặc biệt lần này!
             </p>
 
             <!-- Section: Thông tin chuyến đi & Button Lịch trình trực tuyến ngay bên dưới -->
@@ -395,7 +395,7 @@
                 HẸN GẶP BẠN TẠI ĐÀ LẠT!
               </h3>
               <p>
-                FIT TOUR rất mong sẽ thấy nụ cười của <strong id="emailBodyMemberName3" class="text-apple-blue font-bold">Nguyễn Nhất Vũ</strong> trong chuyến đi lần này. Sự hiện diện đầy đủ của từng thành viên chính là điều làm nên trọn vẹn ý nghĩa của Company Trip 2026.
+                FIT TOUR rất mong sẽ thấy nụ cười của <strong id="emailBodyMemberName3" class="text-apple-blue font-bold">Max Vu</strong> trong chuyến đi lần này. Sự hiện diện đầy đủ của từng thành viên chính là điều làm nên trọn vẹn ý nghĩa của Company Trip 2026.
               </p>
               <p>
                 Bạn hãy chuẩn bị hành trang gọn nhẹ, một đôi giày đi bộ thật êm, sạc đầy pin điện thoại và mang theo một tinh thần thật thoải mái nhé!
@@ -720,12 +720,13 @@
       document.getElementById('btnDownloadCard').setAttribute('download', `Thu-Moi-FIT-Trip-${m.stt}-${m.ho_ten}.png`);
 
       // Update Email Client Fields
-      document.getElementById('previewEmailTo').textContent = `${m.ho_ten} <${m.email || 'chưa có email'}>`;
-      document.getElementById('previewEmailSubject').textContent = `Thư mời ${m.ho_ten} tham dự FIT TOUR Company Trip 2026`;
+      const displayName = m.nickname || m.ho_ten;
+      document.getElementById('previewEmailTo').textContent = `${m.ho_ten} (${displayName}) <${m.email || 'chưa có email'}>`;
+      document.getElementById('previewEmailSubject').textContent = `Thư mời ${displayName} tham dự FIT TOUR Company Trip 2026`;
       
-      document.getElementById('emailBodyMemberName').textContent = m.ho_ten;
-      document.getElementById('emailBodyMemberName2').textContent = m.ho_ten;
-      document.getElementById('emailBodyMemberName3').textContent = m.ho_ten;
+      document.getElementById('emailBodyMemberName').textContent = displayName;
+      document.getElementById('emailBodyMemberName2').textContent = displayName;
+      document.getElementById('emailBodyMemberName3').textContent = displayName;
       document.getElementById('emailBodyJoinDate').textContent = m.join_date;
       document.getElementById('emailBodyTenure').textContent = m.tenure;
 
