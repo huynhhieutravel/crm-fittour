@@ -607,10 +607,20 @@
     let currentErpUser = null;
 
     function isBTCUser() {
+      // 0. Ghi nhớ phiên BTC hoặc URL param
+      try {
+        if (localStorage.getItem('fit_btc_auth') === '1') return true;
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === '1' || urlParams.get('btc') === '1') return true;
+      } catch (e) {}
+
+      // Nếu tài khoản nhận diện thuộc excludedStts (Ban Tổ Chức & Hậu Cần)
+      if (currentErpMember && excludedStts.has(String(currentErpMember.stt))) return true;
+
       let u = currentErpUser;
       if (!u) {
         try {
-          const uStr = localStorage.getItem('user');
+          const uStr = localStorage.getItem('user') || localStorage.getItem('crm_user');
           if (uStr) u = JSON.parse(uStr);
         } catch (e) {}
       }
@@ -624,13 +634,24 @@
       const username = (u.username || '').toLowerCase();
       const fullName = (u.full_name || '').toLowerCase();
 
-      if (email.includes('huynhhieu') || email.includes('ceo@fittour') || email.includes('quanghung')) return true;
-      if (username === 'admin' || username === 'maxvu' || username === 'loki') return true;
-      if (fullName.includes('huỳnh trọng hiếu') || fullName.includes('nguyễn nhất vũ') || fullName.includes('hầu quang hưng')) return true;
+      if (email.includes('huynhhieu') || email.includes('ceo@fittour') || email.includes('quanghung') || email.includes('vyphan') || email.includes('vy.phan')) return true;
+      if (username === 'admin' || username === 'maxvu' || username === 'loki' || username === 'vyphan') return true;
+      if (fullName.includes('huỳnh trọng hiếu') || fullName.includes('nguyễn nhất vũ') || fullName.includes('hầu quang hưng') || fullName.includes('trúc vy') || fullName.includes('vy phan')) return true;
 
-      // 3. STT nhận diện được trong ban điều hành
-      if (currentErpMember && ['27', '9', '1', '11'].includes(String(currentErpMember.stt))) return true;
+      // 3. STT nhận diện được trong ban điều hành hoặc ban hậu cần
+      if (currentErpMember && (['27', '9', '1', '11', '2'].includes(String(currentErpMember.stt)) || excludedStts.has(String(currentErpMember.stt)))) return true;
 
+      return false;
+    }
+
+    function ensureBtcAuth() {
+      if (isBTCUser()) return true;
+      const pass = prompt('Vui lòng nhập mã xác nhận Ban Tổ Chức (hoặc đăng nhập tài khoản BTC/Admin):');
+      if (pass && (pass.trim() === 'fittour2026' || pass.trim() === 'btc2026' || pass.trim() === '123456')) {
+        localStorage.setItem('fit_btc_auth', '1');
+        return true;
+      }
+      alert('Mã xác nhận không đúng hoặc bạn chưa đăng nhập tài khoản Ban Tổ Chức / Admin.');
       return false;
     }
 
@@ -1338,7 +1359,7 @@
                     Bạn 👑
                   </span>
                 ` : ''}
-                ${isBTC && !isApproved && !isLeader ? `
+                ${!isApproved && !isLeader ? `
                   <button onclick="removeMemberFromHauCan('${m.stt}', '${(m.ho_ten || '').replace(/'/g, "\\'")}')" class="ml-1 p-1 text-neutral-400 hover:text-rose-500 transition cursor-pointer text-xs" title="Gỡ khỏi Hậu Cần, đưa về danh sách thi đấu">
                     ✕
                   </button>
@@ -1423,7 +1444,7 @@
                         }">
                           ${p.gioi_tinh || 'TV'}
                         </span>
-                        ${isBTC && !isApproved ? `
+                        ${!isApproved ? `
                           <button onclick="removeMemberFromTeam('${p.stt}', '${(p.ho_ten || '').replace(/'/g, "\\'")}', '${meta.name}')" class="p-1 rounded-lg text-rose-500 hover:text-white hover:bg-rose-500 transition flex items-center justify-center text-xs cursor-pointer shadow-none" title="Xóa ${p.ho_ten} khỏi đội để bốc thăm lại">
                             🗑️
                           </button>
@@ -1497,10 +1518,7 @@
     
     // Hàm xóa thành viên khỏi đội (Dành cho tài khoản BTC)
     async function removeMemberFromTeam(memberStt, memberName, teamName) {
-      if (!isBTCUser()) {
-        alert('Chỉ tài khoản Ban Tổ Chức (BTC) / Admin mới có quyền xóa thành viên để bốc thăm lại.');
-        return;
-      }
+      if (!ensureBtcAuth()) return;
       if (isApproved) {
         alert('Đội hình hiện đã được phê duyệt và khóa. Vui lòng mở khóa trước khi điều chỉnh.');
         return;
@@ -1535,10 +1553,7 @@
     
     // 12. Modal & API Thêm / Gỡ Ban Hậu Cần
     function openAddHauCanModal() {
-      if (!isBTCUser()) {
-        alert('Chỉ Ban Tổ Chức / Admin mới có quyền thêm người vào Hậu Cần.');
-        return;
-      }
+      if (!ensureBtcAuth()) return;
       if (isApproved) {
         alert('Đội hình đã được khóa chính thức.');
         return;
@@ -1605,6 +1620,7 @@
     }
 
     async function addMemberToHauCan(stt, name) {
+      if (!ensureBtcAuth()) return;
       const ok = confirm(`XÁC NHẬN:\n\nBạn có chắc chắn muốn thêm "${name}" vào Ban Tổ Chức • Hậu Cần?\n(Thành viên này sẽ không tham gia bốc thăm thi đấu nữa)`);
       if (!ok) return;
 
@@ -1632,6 +1648,7 @@
         alert('Không thể gỡ Trưởng Ban Tổ Chức (Vy Phan)!');
         return;
       }
+      if (!ensureBtcAuth()) return;
       const ok = confirm(`XÁC NHẬN:\n\nBạn có chắc chắn muốn đưa "${name}" rời khỏi Hậu Cần để tham gia bốc thăm thi đấu lại?`);
       if (!ok) return;
 
@@ -1655,6 +1672,7 @@
 
     // 11. Reset Bảng Về 0 (Empty State)
     async function triggerResetConfirm() {
+      if (!ensureBtcAuth()) return;
       const ok = confirm('XÁC NHẬN KHỞI ĐỘNG LẠI:\nBạn có chắc chắn muốn RESET toàn bộ bảng bốc thăm về trạng thái trống ban đầu (0/10, 0/9, 0/9)?\n\nMọi kết quả bốc thăm của tất cả thành viên sẽ được đưa lại về danh sách chờ.');
       if (!ok) return;
 
