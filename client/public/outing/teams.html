@@ -133,46 +133,59 @@
     <div class="p-4 sm:p-8 rounded-3xl bg-white dark:bg-apple-cardDark shadow-apple border border-black/[0.06] dark:border-white/[0.08] mb-8">
       
       <!-- ================= SECTION 1: NHẬN DIỆN & CHỌN THÀNH VIÊN XOAY ================= -->
-      <div class="p-4 sm:p-5 rounded-2xl bg-neutral-50 dark:bg-apple-cardDarker border border-black/[0.06] dark:border-white/[0.08] mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="p-5 sm:p-6 rounded-3xl bg-neutral-50 dark:bg-apple-cardDarker border border-black/[0.06] dark:border-white/[0.08] mb-6 shadow-sm">
+        <div class="flex flex-col gap-4">
           
-          <!-- Cụm thông tin người đang được chọn -->
-          <div class="flex items-center gap-3.5">
-            <div id="currentUserAvatar" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 text-neutral-400 border-2 border-dashed border-amber-400 flex-shrink-0 flex items-center justify-center font-black text-2xl shadow-sm">
-              👤
+          <!-- Hàng 1: Avatar + Tên + Badge + Nút Chọn người khác -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+              <div id="currentUserAvatar" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 text-neutral-400 border-2 border-dashed border-amber-400 flex-shrink-0 flex items-center justify-center font-black text-2xl shadow-sm">
+                👤
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-apple-textMuted dark:text-apple-textMutedDark font-medium">Người chuẩn bị bốc thăm:</span>
+                  <span id="erpBadge" class="hidden text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                    Tài khoản của bạn
+                  </span>
+                </div>
+                <div id="currentUserName" class="text-xl sm:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight mt-0.5">
+                  Chưa Chọn Người Bốc Thăm
+                </div>
+                <div id="currentUserMeta" class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-0.5 font-medium">
+                  Vui lòng nhấn nút chọn thành viên để bắt đầu lượt quay
+                </div>
+              </div>
             </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-apple-textMuted dark:text-apple-textMutedDark font-medium">Người chuẩn bị bốc thăm:</span>
-                <span id="erpBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-                  Đã nhận diện ERP
-                </span>
-              </div>
-              <div id="currentUserName" class="text-lg sm:text-xl font-black text-neutral-400 dark:text-neutral-500 leading-tight mt-0.5">
-                Chưa Chọn Người Bốc Thăm
-              </div>
-              <div id="currentUserMeta" class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-0.5 font-medium">
-                Vui lòng nhấn nút bên cạnh để chọn thành viên lên quay
-              </div>
+
+            <!-- Nút chọn người khác / quay giùm -->
+            <div class="flex items-center gap-2 self-start sm:self-center">
+              <button id="btnPickMember" onclick="openMemberPickerModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border border-black/10 dark:border-white/10 font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer">
+                <span>👥</span>
+                <span id="btnPickText">Chọn Người Khác / Quay Giùm</span>
+              </button>
             </div>
           </div>
 
-          <!-- Nút chọn người khác / quay giùm -->
-          <div class="flex items-center gap-2">
-            <button id="btnPickMember" onclick="openMemberPickerModal()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:brightness-110 text-white font-black text-xs sm:text-sm shadow-lg hover:shadow-xl transition active:scale-95 cursor-pointer animate-pulse">
-              <span class="text-base">🎯</span>
-              <span id="btnPickText">CHỌN NGƯỜI LÊN QUAY</span>
+          <!-- Hàng 2: Nút CTA Bốc Thăm NẰM NGAY BÊN DƯỚI TÊN (Theo đúng yêu cầu!) -->
+          <div class="pt-3 border-t border-black/[0.05] dark:border-white/[0.06]">
+            <button id="btnSpin" onclick="handleSpinButtonClick()" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:brightness-110 active:scale-95 text-white font-black text-base sm:text-lg shadow-xl hover:shadow-2xl transition-all cursor-pointer flex items-center justify-center gap-3">
+              <span id="btnSpinIcon" class="text-2xl">🎲</span>
+              <span id="btnSpinText">👉 BẤM ĐÂY ĐỂ CHỌN NGƯỜI LÊN QUAY</span>
             </button>
+            <div id="spinStatusMsg" class="text-xs text-center text-apple-textMuted dark:text-apple-textMutedDark mt-2 font-medium min-h-[1.25rem]">
+              Nhấn nút trên để kích hoạt vòng quay bốc thăm
+            </div>
           </div>
 
         </div>
       </div>
 
       <!-- ================= SECTION 2: VÒNG QUAY MAY MẮN 3 ĐỘI ================= -->
-      <div id="spinArea" class="flex flex-col items-center justify-center py-4 my-2">
+      <div id="spinArea" class="flex flex-col items-center justify-center py-2 my-2">
         
         <!-- Vòng quay Canvas Container -->
-        <div class="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center mb-6">
+        <div class="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center mb-2">
           
           <!-- Kim chỉ cố định ở đỉnh -->
           <div class="absolute -top-3 z-30 flex flex-col items-center">
@@ -192,18 +205,6 @@
             </span>
           </div>
 
-        </div>
-
-        <!-- Nút bấm xoay lớn -->
-        <div class="flex flex-col items-center w-full max-w-sm">
-          <button id="btnSpin" onclick="handleSpinButtonClick()" class="w-full py-4 px-6 rounded-2xl bg-neutral-200 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 font-black text-sm sm:text-base shadow-sm transition-all cursor-pointer flex items-center justify-center gap-3 border border-dashed border-neutral-300 dark:border-neutral-700 hover:border-amber-400">
-            <span id="btnSpinIcon" class="text-2xl">👆</span>
-            <span id="btnSpinText">👉 BẤM ĐÂY ĐỂ CHỌN NGƯỜI LÊN QUAY</span>
-          </button>
-          
-          <div id="spinStatusMsg" class="text-xs text-center text-apple-textMuted dark:text-apple-textMutedDark mt-2.5 font-medium min-h-[1.5rem]">
-            Bấm "Bấm Chọn Người Lên Quay" ở trên để chọn thành viên
-          </div>
         </div>
 
       </div>
@@ -418,7 +419,7 @@
     }
 
     // 3. Constants & Team Meta
-    const DEFAULT_EXCLUDED_STTS = ['9', '27', '11', '2'];
+    const DEFAULT_EXCLUDED_STTS = ['9', '11', '2'];
     const TEAM_METADATA = [
       {
         id: 1,
@@ -541,30 +542,79 @@
       localStorage.setItem('fit_dalat_turn_teams_v1', JSON.stringify(payload));
     }
 
-    // 6. Nhận diện tài khoản ERP đăng nhập (Ưu tiên nhận diện nhưng để trống nếu chưa có)
+    // 6. Nhận diện tài khoản ERP đăng nhập & Quyền BTC
     let currentErpMember = null;
+    let currentErpUser = null;
+
+    function isBTCUser() {
+      let u = currentErpUser;
+      if (!u) {
+        try {
+          const uStr = localStorage.getItem('user');
+          if (uStr) u = JSON.parse(uStr);
+        } catch (e) {}
+      }
+      if (!u) return false;
+
+      // 1. Role admin / superadmin
+      if (u.role === 'admin' || u.role === 'superadmin' || u.is_admin) return true;
+
+      // 2. Email hoặc username hoặc fullname
+      const email = (u.email || '').toLowerCase();
+      const username = (u.username || '').toLowerCase();
+      const fullName = (u.full_name || '').toLowerCase();
+
+      if (email.includes('huynhhieu') || email.includes('ceo@fittour') || email.includes('quanghung')) return true;
+      if (username === 'admin' || username === 'maxvu' || username === 'loki') return true;
+      if (fullName.includes('huỳnh trọng hiếu') || fullName.includes('nguyễn nhất vũ') || fullName.includes('hầu quang hưng')) return true;
+
+      // 3. STT nhận diện được trong ban điều hành
+      if (currentErpMember && ['27', '9', '1', '11'].includes(String(currentErpMember.stt))) return true;
+
+      return false;
+    }
 
     function detectErpUser() {
-      let erpUser = null;
+      currentErpUser = null;
       try {
         const uStr = localStorage.getItem('user');
-        if (uStr) erpUser = JSON.parse(uStr);
+        if (uStr) currentErpUser = JSON.parse(uStr);
       } catch (e) {}
 
-      if (erpUser && (erpUser.email || erpUser.username || erpUser.full_name)) {
+      if (currentErpUser && (currentErpUser.email || currentErpUser.username || currentErpUser.full_name)) {
         const match = allMembers.find(m => {
-          if (erpUser.email && m.email && erpUser.email.toLowerCase() === m.email.toLowerCase()) return true;
-          if (erpUser.phone && m.sdt && erpUser.phone === m.sdt) return true;
-          if (erpUser.full_name && m.ho_ten && erpUser.full_name.trim().toLowerCase() === m.ho_ten.trim().toLowerCase()) return true;
+          if (currentErpUser.email && m.email && currentErpUser.email.toLowerCase() === m.email.toLowerCase()) return true;
+          if (currentErpUser.phone && m.sdt && currentErpUser.phone === m.sdt) return true;
+          if (currentErpUser.full_name && m.ho_ten && currentErpUser.full_name.trim().toLowerCase() === m.ho_ten.trim().toLowerCase()) return true;
           return false;
         });
 
         if (match) {
           currentErpMember = match;
+          const hasTeam = assignedTeams.flat().some(p => String(p.stt) === String(match.stt));
+
+          if (!hasTeam) {
+            // TỰ ĐỘNG CHỌN NGƯỜI ĐĂNG NHẬP (Ví dụ: Huỳnh Trọng Hiếu) RA ĐỂ QUAY!
+            selectMemberForSpin(match);
+            const erpBadge = document.getElementById('erpBadge');
+            if (erpBadge) {
+              erpBadge.classList.remove('hidden');
+              erpBadge.textContent = 'Tài khoản của bạn';
+            }
+            return;
+          } else {
+            // Người này đã có trong đội rồi -> hiển thị trạng thái trống và thông báo
+            renderEmptySelection();
+            const erpBadge = document.getElementById('erpBadge');
+            if (erpBadge) {
+              erpBadge.classList.remove('hidden');
+              erpBadge.textContent = `Tài khoản: ${match.ho_ten} (Đã có đội)`;
+            }
+            return;
+          }
         }
       }
 
-      // TUYỆT ĐỐI ĐỂ TRỐNG BAN ĐẦU - Không tự gán bất kỳ ai khi mở trang
       renderEmptySelection();
     }
 
@@ -580,11 +630,6 @@
       const btnSpinIcon = document.getElementById('btnSpinIcon');
       const statusMsg = document.getElementById('spinStatusMsg');
       const erpBadge = document.getElementById('erpBadge');
-      const btnPick = document.getElementById('btnPickMember');
-
-      if (btnPick) {
-        btnPick.classList.add('animate-pulse');
-      }
 
       if (erpBadge) {
         if (currentErpMember) {
@@ -600,11 +645,11 @@
         avatarEl.innerHTML = '👤';
       }
       if (nameEl) {
-        nameEl.className = "text-lg sm:text-xl font-black text-neutral-400 dark:text-neutral-500 leading-tight mt-0.5";
+        nameEl.className = "text-xl sm:text-2xl font-black text-neutral-400 dark:text-neutral-500 leading-tight mt-0.5";
         nameEl.textContent = 'Chưa Chọn Người Bốc Thăm';
       }
       if (metaEl) {
-        metaEl.textContent = 'Vui lòng nhấn nút "CHỌN NGƯỜI LÊN QUAY" để chọn thành viên';
+        metaEl.textContent = 'Vui lòng nhấn nút "Chọn Người Khác" ở trên để chọn thành viên';
       }
       if (hubAvatar) {
         hubAvatar.innerHTML = '🎲';
@@ -652,11 +697,6 @@
       const btnSpinText = document.getElementById('btnSpinText');
       const btnSpinIcon = document.getElementById('btnSpinIcon');
       const statusMsg = document.getElementById('spinStatusMsg');
-      const btnPick = document.getElementById('btnPickMember');
-
-      if (btnPick) {
-        btnPick.classList.remove('animate-pulse');
-      }
 
       if (avatarEl) {
         avatarEl.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex-shrink-0 flex items-center justify-center font-black text-xl shadow-md border-2 border-white dark:border-neutral-700";
@@ -665,7 +705,7 @@
           : (member.ho_ten ? member.ho_ten.charAt(0) : '?');
       }
       if (nameEl) {
-        nameEl.className = "text-lg sm:text-xl font-black text-[#1d1d1f] dark:text-white leading-tight mt-0.5";
+        nameEl.className = "text-xl sm:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight mt-0.5";
         nameEl.textContent = member.ho_ten;
       }
       if (metaEl) {
@@ -688,10 +728,10 @@
         btnSpinIcon.textContent = '🎲';
       }
       if (btnSpinText) {
-        btnSpinText.textContent = `🎲 XOAY ĐỘI CHO ${member.nickname ? member.nickname.toUpperCase() : member.ho_ten.toUpperCase()}`;
+        btnSpinText.textContent = `🎲 BẮT ĐẦU BỐC THĂM CHO ${(member.nickname || member.ho_ten).toUpperCase()}`;
       }
       if (statusMsg) {
-        statusMsg.innerHTML = `<span class="text-amber-600 dark:text-amber-400 font-bold">Đã sẵn sàng! Nhấn nút trên để bốc thăm đưa ${member.ho_ten} vào đội.</span>`;
+        statusMsg.innerHTML = `<span class="text-amber-600 dark:text-amber-400 font-bold">Đã sẵn sàng! Bấm nút bên trên để bắt đầu quay bánh xe.</span>`;
       }
 
       closeMemberPickerModal();
@@ -1155,6 +1195,7 @@
 
     // 10. Render Roster Cards & Progress
     function renderAll() {
+      const isBTC = isBTCUser();
       const assignedCount = assignedTeams.flat().length;
       const totalCompetition = 32 - excludedStts.size; // 28
       const unassigned = getUnassignedMembers();
@@ -1247,11 +1288,18 @@
                           </div>
                         </div>
                       </div>
-                      <span class="px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${
-                        (p.gioi_tinh || '').includes('Nam') ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300' : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
-                      }">
-                        ${p.gioi_tinh || 'TV'}
-                      </span>
+                      <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                          (p.gioi_tinh || '').includes('Nam') ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300' : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                        }">
+                          ${p.gioi_tinh || 'TV'}
+                        </span>
+                        ${isBTC && !isApproved ? `
+                          <button onclick="removeMemberFromTeam('${p.stt}', '${(p.ho_ten || '').replace(/'/g, "\\'")}', '${meta.name}')" class="p-1 rounded-lg text-rose-500 hover:text-white hover:bg-rose-500 transition flex items-center justify-center text-xs cursor-pointer shadow-none" title="Xóa ${p.ho_ten} khỏi đội để bốc thăm lại">
+                            🗑️
+                          </button>
+                        ` : ''}
+                      </div>
                     </div>
                   `;
                 }).join('')}
@@ -1314,6 +1362,44 @@
             </div>
           `;
         }
+      }
+    }
+
+    
+    // Hàm xóa thành viên khỏi đội (Dành cho tài khoản BTC)
+    async function removeMemberFromTeam(memberStt, memberName, teamName) {
+      if (!isBTCUser()) {
+        alert('Chỉ tài khoản Ban Tổ Chức (BTC) / Admin mới có quyền xóa thành viên để bốc thăm lại.');
+        return;
+      }
+      if (isApproved) {
+        alert('Đội hình hiện đã được phê duyệt và khóa. Vui lòng mở khóa trước khi điều chỉnh.');
+        return;
+      }
+
+      const ok = confirm(`XÁC NHẬN BỐC LẠI:\n\nBạn có chắc chắn muốn xóa "${memberName}" khỏi "${teamName}" để thành viên này được bốc thăm lại không?`);
+      if (!ok) return;
+
+      try {
+        const res = await fetch('/api/outing/teams/remove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ memberStt })
+        });
+        const json = await res.json();
+        if (json.success) {
+          await fetchRemoteState(true);
+          // Tự động chọn luôn người vừa bị xóa ra làm người quay tiếp theo!
+          const mem = allMembers.find(m => String(m.stt) === String(memberStt));
+          if (mem) {
+            selectMemberForSpin(mem);
+          }
+          alert(`✅ Đã xóa "${memberName}" khỏi đội thành công!\nThành viên đã được đưa lên ô chuẩn bị quay lại.`);
+        } else {
+          alert('Không thể xóa: ' + (json.error || 'Lỗi server'));
+        }
+      } catch (err) {
+        alert('Lỗi kết nối máy chủ: ' + err.message);
       }
     }
 

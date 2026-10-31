@@ -7,7 +7,7 @@ const db = require('../db');
 const STATE_FILE = path.resolve(__dirname, '../data/outing_teams_state.json');
 const MEMBERS_FILE = path.resolve(__dirname, '../../outing-dalat-2026/assets/members.json');
 
-const DEFAULT_EXCLUDED_STTS = ['9', '27', '11', '2'];
+const DEFAULT_EXCLUDED_STTS = ['9', '11', '2'];
 const DEFAULT_TEAM_NAMES = [
   'Phượng Hoàng Lửa',
   'Đại Ngàn Xanh',
@@ -94,6 +94,11 @@ async function loadCurrentState() {
       lastSpin: null,
       updatedAt: new Date().toISOString()
     };
+  }
+
+  // Đảm bảo không loại trừ STT 27 (Huỳnh Trọng Hiếu) khỏi danh sách thi đấu
+  if (Array.isArray(state.excludedStts)) {
+    state.excludedStts = state.excludedStts.filter(s => String(s) !== '27');
   }
   return state;
 }
@@ -314,6 +319,7 @@ router.post('/reset', async (req, res) => {
   try {
     const state = await loadCurrentState();
     state.teams = [[], [], []];
+    state.excludedStts = DEFAULT_EXCLUDED_STTS;
     state.isApproved = false;
     state.approvedTimestamp = null;
     state.lastSpin = null;
@@ -416,6 +422,54 @@ router.post('/approve', async (req, res) => {
     });
   } catch (err) {
     console.error('[outingTeams] Error approve:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 7. POST /api/outing/teams/remove: Xóa thành viên khỏi đội (Dành cho BTC bốc thăm lại)
+router.post('/remove', async (req, res) => {
+  try {
+    const { memberStt } = req.body;
+    if (!memberStt) {
+      return res.status(400).json({ success: false, error: 'Thiếu memberStt' });
+    }
+
+    const state = await loadCurrentState();
+    if (state.isApproved) {
+      return res.status(400).json({ success: false, error: 'Đội hình đã được duyệt, không thể xóa thành viên.' });
+    }
+
+    let removedMember = null;
+    let fromTeamIdx = -1;
+
+    for (let i = 0; i < 3; i++) {
+      const idx = state.teams[i].findIndex(p => String(p.stt) === String(memberStt));
+      if (idx !== -1) {
+        removedMember = state.teams[i].splice(idx, 1)[0];
+        fromTeamIdx = i;
+        break;
+      }
+    }
+
+    if (!removedMember) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy thành viên trong bất kỳ đội nào' });
+    }
+
+    // Nếu member vừa xóa trùng với lastSpin thì clear lastSpin
+    if (state.lastSpin && String(state.lastSpin.memberStt) === String(memberStt)) {
+      state.lastSpin = null;
+    }
+
+    await persistState(state);
+
+    res.json({
+      success: true,
+      message: `Đã xóa ${removedMember.ho_ten} khỏi đội ${state.customTeamNames[fromTeamIdx]} để bốc thăm lại!`,
+      teams: state.teams,
+      removedMember
+    });
+  } catch (err) {
+    console.error('[outingTeams] Error remove member:', err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
