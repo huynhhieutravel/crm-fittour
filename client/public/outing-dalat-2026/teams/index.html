@@ -139,8 +139,8 @@
           
           <!-- Cụm thông tin người đang được chọn -->
           <div class="flex items-center gap-3.5">
-            <div id="currentUserAvatar" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex-shrink-0 flex items-center justify-center font-black text-xl shadow-md border-2 border-white dark:border-neutral-700">
-              ?
+            <div id="currentUserAvatar" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 text-neutral-400 border-2 border-dashed border-amber-400 flex-shrink-0 flex items-center justify-center font-black text-2xl shadow-sm">
+              👤
             </div>
             <div>
               <div class="flex items-center gap-2">
@@ -149,20 +149,20 @@
                   Đã nhận diện ERP
                 </span>
               </div>
-              <div id="currentUserName" class="text-lg sm:text-xl font-black text-[#1d1d1f] dark:text-white leading-tight mt-0.5">
-                Chưa chọn ai
+              <div id="currentUserName" class="text-lg sm:text-xl font-black text-neutral-400 dark:text-neutral-500 leading-tight mt-0.5">
+                Chưa Chọn Người Bốc Thăm
               </div>
               <div id="currentUserMeta" class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-0.5 font-medium">
-                Vui lòng chọn tên để bắt đầu quay
+                Vui lòng nhấn nút bên cạnh để chọn thành viên lên quay
               </div>
             </div>
           </div>
 
           <!-- Nút chọn người khác / quay giùm -->
           <div class="flex items-center gap-2">
-            <button onclick="openMemberPickerModal()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-100 font-bold text-xs border border-black/10 dark:border-white/10 shadow-sm transition active:scale-95 cursor-pointer">
-              <span>👥</span>
-              <span id="btnPickText">Chọn Người / Quay Giùm</span>
+            <button id="btnPickMember" onclick="openMemberPickerModal()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:brightness-110 text-white font-black text-xs sm:text-sm shadow-lg hover:shadow-xl transition active:scale-95 cursor-pointer animate-pulse">
+              <span class="text-base">🎯</span>
+              <span id="btnPickText">CHỌN NGƯỜI LÊN QUAY</span>
             </button>
           </div>
 
@@ -173,7 +173,7 @@
       <div id="spinArea" class="flex flex-col items-center justify-center py-4 my-2">
         
         <!-- Vòng quay Canvas Container -->
-        <div class="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center mb-6">
+        <div class="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center mb-6">
           
           <!-- Kim chỉ cố định ở đỉnh -->
           <div class="absolute -top-3 z-30 flex flex-col items-center">
@@ -181,14 +181,14 @@
           </div>
 
           <!-- Canvas Bánh Xe -->
-          <canvas id="wheelCanvas" width="300" height="300" class="w-full h-full rounded-full shadow-2xl transition-transform duration-75"></canvas>
+          <canvas id="wheelCanvas" width="400" height="400" class="w-full h-full rounded-full shadow-2xl transition-transform duration-75"></canvas>
 
           <!-- Center Hub (Tâm vòng quay) -->
-          <div class="absolute inset-0 m-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white dark:bg-neutral-900 border-4 border-amber-400 shadow-xl flex flex-col items-center justify-center text-center p-1 z-20 pointer-events-none">
-            <div id="hubAvatar" class="w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-black text-amber-600 text-sm shadow-inner mb-0.5">
+          <div class="absolute inset-0 m-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white dark:bg-neutral-900 border-4 border-amber-400 shadow-xl flex flex-col items-center justify-center text-center p-1 z-20 pointer-events-none">
+            <div id="hubAvatar" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-black text-amber-600 text-sm shadow-inner mb-0.5">
               🎲
             </div>
-            <span id="hubNickname" class="text-[10px] sm:text-[11px] font-black text-neutral-800 dark:text-neutral-100 truncate max-w-[70px]">
+            <span id="hubNickname" class="text-[9px] sm:text-[10px] font-black text-neutral-800 dark:text-neutral-100 truncate max-w-[60px]">
               FIT Tour
             </span>
           </div>
@@ -197,13 +197,13 @@
 
         <!-- Nút bấm xoay lớn -->
         <div class="flex flex-col items-center w-full max-w-sm">
-          <button id="btnSpin" onclick="executeSpin()" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:brightness-110 active:scale-95 text-white font-black text-base sm:text-lg shadow-xl hover:shadow-2xl transition-all cursor-pointer flex items-center justify-center gap-3">
-            <span id="btnSpinIcon" class="text-2xl">🎲</span>
-            <span id="btnSpinText">BẮT ĐẦU XOAY VÀO ĐỘI</span>
+          <button id="btnSpin" onclick="handleSpinButtonClick()" class="w-full py-4 px-6 rounded-2xl bg-neutral-200 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 font-black text-sm sm:text-base shadow-sm transition-all cursor-pointer flex items-center justify-center gap-3 border border-dashed border-neutral-300 dark:border-neutral-700 hover:border-amber-400">
+            <span id="btnSpinIcon" class="text-2xl">👆</span>
+            <span id="btnSpinText">👉 BẤM ĐÂY ĐỂ CHỌN NGƯỜI LÊN QUAY</span>
           </button>
           
           <div id="spinStatusMsg" class="text-xs text-center text-apple-textMuted dark:text-apple-textMutedDark mt-2.5 font-medium min-h-[1.5rem]">
-            Nhấn để bốc thăm ngẫu nhiên và phân bổ cân bằng
+            Bấm "Bấm Chọn Người Lên Quay" ở trên để chọn thành viên
           </div>
         </div>
 
@@ -280,6 +280,7 @@
       </div>
 
       <!-- Danh sách thành viên chưa vào đội -->
+      <div id="pickerErpBanner" class="hidden mb-3"></div>
       <div id="pickerMembersList" class="flex-1 overflow-y-auto space-y-2 pr-1 my-1">
         <!-- Injected via JS -->
       </div>
@@ -541,7 +542,9 @@
       localStorage.setItem('fit_dalat_turn_teams_v1', JSON.stringify(payload));
     }
 
-    // 6. Nhận diện tài khoản ERP đăng nhập
+    // 6. Nhận diện tài khoản ERP đăng nhập (Ưu tiên nhận diện nhưng để trống nếu chưa có)
+    let currentErpMember = null;
+
     function detectErpUser() {
       let erpUser = null;
       try {
@@ -558,25 +561,70 @@
         });
 
         if (match) {
-          const isExcl = excludedStts.has(String(match.stt));
-          const hasTeam = assignedTeams.flat().some(p => String(p.stt) === String(match.stt));
-
-          const erpBadge = document.getElementById('erpBadge');
-          if (erpBadge) erpBadge.classList.remove('hidden');
-
-          if (!isExcl && !hasTeam) {
-            selectMemberForSpin(match);
-            return;
-          }
+          currentErpMember = match;
         }
       }
 
-      // Nếu chưa có ai được chọn, tự động chọn người đầu tiên trong unassigned
-      if (!selectedMember) {
-        const unassigned = getUnassignedMembers();
-        if (unassigned.length > 0) {
-          selectMemberForSpin(unassigned[0]);
+      // TUYỆT ĐỐI ĐỂ TRỐNG BAN ĐẦU - Không tự gán bất kỳ ai khi mở trang
+      renderEmptySelection();
+    }
+
+    function renderEmptySelection() {
+      selectedMember = null;
+      const avatarEl = document.getElementById('currentUserAvatar');
+      const nameEl = document.getElementById('currentUserName');
+      const metaEl = document.getElementById('currentUserMeta');
+      const hubAvatar = document.getElementById('hubAvatar');
+      const hubNickname = document.getElementById('hubNickname');
+      const btnSpin = document.getElementById('btnSpin');
+      const btnSpinText = document.getElementById('btnSpinText');
+      const btnSpinIcon = document.getElementById('btnSpinIcon');
+      const statusMsg = document.getElementById('spinStatusMsg');
+      const erpBadge = document.getElementById('erpBadge');
+      const btnPick = document.getElementById('btnPickMember');
+
+      if (btnPick) {
+        btnPick.classList.add('animate-pulse');
+      }
+
+      if (erpBadge) {
+        if (currentErpMember) {
+          erpBadge.classList.remove('hidden');
+          erpBadge.textContent = 'Tài khoản: ' + currentErpMember.ho_ten;
+        } else {
+          erpBadge.classList.add('hidden');
         }
+      }
+
+      if (avatarEl) {
+        avatarEl.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 text-neutral-400 border-2 border-dashed border-amber-400 flex-shrink-0 flex items-center justify-center font-black text-2xl shadow-sm";
+        avatarEl.innerHTML = '👤';
+      }
+      if (nameEl) {
+        nameEl.className = "text-lg sm:text-xl font-black text-neutral-400 dark:text-neutral-500 leading-tight mt-0.5";
+        nameEl.textContent = 'Chưa Chọn Người Bốc Thăm';
+      }
+      if (metaEl) {
+        metaEl.textContent = 'Vui lòng nhấn nút "CHỌN NGƯỜI LÊN QUAY" để chọn thành viên';
+      }
+      if (hubAvatar) {
+        hubAvatar.innerHTML = '🎲';
+      }
+      if (hubNickname) {
+        hubNickname.textContent = 'FIT Tour';
+      }
+      if (btnSpin) {
+        btnSpin.className = "w-full py-4 px-6 rounded-2xl bg-neutral-200 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 font-black text-sm sm:text-base shadow-sm transition-all cursor-pointer flex items-center justify-center gap-3 border border-dashed border-neutral-300 dark:border-neutral-700 hover:border-amber-400";
+      }
+      if (btnSpinText) {
+        btnSpinText.textContent = '👉 BẤM ĐÂY ĐỂ CHỌN NGƯỜI LÊN QUAY';
+      }
+      if (btnSpinIcon) {
+        btnSpinIcon.className = 'text-2xl';
+        btnSpinIcon.textContent = '👆';
+      }
+      if (statusMsg) {
+        statusMsg.innerHTML = '<span class="text-neutral-400 dark:text-neutral-500">Đang chờ chọn thành viên lên bốc thăm. Bấm nút phía trên để chọn người.</span>';
       }
     }
 
@@ -585,20 +633,42 @@
       return allMembers.filter(m => !excludedStts.has(String(m.stt)) && !assignedStts.has(String(m.stt)));
     }
 
+    function handleSpinButtonClick() {
+      if (!selectedMember) {
+        openMemberPickerModal();
+        return;
+      }
+      executeSpin();
+    }
+
     function selectMemberForSpin(member) {
+      if (!member) return;
       selectedMember = member;
       const avatarEl = document.getElementById('currentUserAvatar');
       const nameEl = document.getElementById('currentUserName');
       const metaEl = document.getElementById('currentUserMeta');
       const hubAvatar = document.getElementById('hubAvatar');
       const hubNickname = document.getElementById('hubNickname');
+      const btnSpin = document.getElementById('btnSpin');
+      const btnSpinText = document.getElementById('btnSpinText');
+      const btnSpinIcon = document.getElementById('btnSpinIcon');
+      const statusMsg = document.getElementById('spinStatusMsg');
+      const btnPick = document.getElementById('btnPickMember');
+
+      if (btnPick) {
+        btnPick.classList.remove('animate-pulse');
+      }
 
       if (avatarEl) {
+        avatarEl.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex-shrink-0 flex items-center justify-center font-black text-xl shadow-md border-2 border-white dark:border-neutral-700";
         avatarEl.innerHTML = member.avatar 
           ? `<img src="${member.avatar}" class="w-full h-full object-cover">`
           : (member.ho_ten ? member.ho_ten.charAt(0) : '?');
       }
-      if (nameEl) nameEl.textContent = member.ho_ten;
+      if (nameEl) {
+        nameEl.className = "text-lg sm:text-xl font-black text-[#1d1d1f] dark:text-white leading-tight mt-0.5";
+        nameEl.textContent = member.ho_ten;
+      }
       if (metaEl) {
         metaEl.textContent = `@${member.nickname || 'TV'} • ${member.gioi_tinh || 'TV'} • BU: ${member.phong_ban || 'FIT'}`;
       }
@@ -611,57 +681,143 @@
         hubNickname.textContent = member.nickname || member.ho_ten.split(' ').pop();
       }
 
-      const btnSpinText = document.getElementById('btnSpinText');
+      if (btnSpin) {
+        btnSpin.className = "w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:brightness-110 active:scale-95 text-white font-black text-base sm:text-lg shadow-xl hover:shadow-2xl transition-all cursor-pointer flex items-center justify-center gap-3";
+      }
+      if (btnSpinIcon) {
+        btnSpinIcon.className = 'text-2xl';
+        btnSpinIcon.textContent = '🎲';
+      }
       if (btnSpinText) {
-        btnSpinText.textContent = `XOAY ĐỘI CHO ${member.nickname ? member.nickname.toUpperCase() : member.ho_ten.toUpperCase()}`;
+        btnSpinText.textContent = `🎲 XOAY ĐỘI CHO ${member.nickname ? member.nickname.toUpperCase() : member.ho_ten.toUpperCase()}`;
+      }
+      if (statusMsg) {
+        statusMsg.innerHTML = `<span class="text-amber-600 dark:text-amber-400 font-bold">Đã sẵn sàng! Nhấn nút trên để bốc thăm đưa ${member.ho_ten} vào đội.</span>`;
       }
 
       closeMemberPickerModal();
     }
 
-    // 7. Vẽ Vòng Quay May Mắn (3 Đội) bằng Canvas
+    // 7. Vẽ Vòng Quay May Mắn (3 Đội) bằng Canvas - Tên to rõ, 2 dòng, không bao giờ lộn ngược
     function drawWheel(angle = currentWheelAngle) {
       if (!canvas || !ctx) return;
       const width = canvas.width;
       const height = canvas.height;
-      const center = width / 2;
-      const radius = center - 8;
+      const center = width / 2; // 200
+      const radius = center - 8; // 192
 
       ctx.clearRect(0, 0, width, height);
 
       const numSlices = 3;
       const sliceAngle = (Math.PI * 2) / numSlices;
 
+      const TEAM_DRAW_INFO = [
+        {
+          name: TEAM_METADATA[0].name,
+          icon: '🔥',
+          line1: 'PHƯỢNG HOÀNG',
+          line2: 'LỬA',
+          color: TEAM_METADATA[0].color || '#ef4444'
+        },
+        {
+          name: TEAM_METADATA[1].name,
+          icon: '🌲',
+          line1: 'ĐẠI NGÀN',
+          line2: 'XANH',
+          color: TEAM_METADATA[1].color || '#10b981'
+        },
+        {
+          name: TEAM_METADATA[2].name,
+          icon: '🛶',
+          line1: 'VƯỢT SÓNG',
+          line2: 'TUYỀN LÂM',
+          color: TEAM_METADATA[2].color || '#0ea5e9'
+        }
+      ];
+
+      // Format tên nếu có đổi tên tùy chỉnh
+      TEAM_DRAW_INFO.forEach((td, idx) => {
+        const customName = TEAM_METADATA[idx]?.name;
+        if (customName) {
+          const parts = customName.trim().toUpperCase().split(/\s+/);
+          if (parts.length === 1) {
+            td.line1 = parts[0];
+            td.line2 = '';
+          } else if (parts.length === 2) {
+            td.line1 = parts[0];
+            td.line2 = parts[1];
+          } else if (parts.length === 3) {
+            td.line1 = parts[0] + ' ' + parts[1];
+            td.line2 = parts[2];
+          } else {
+            const mid = Math.ceil(parts.length / 2);
+            td.line1 = parts.slice(0, mid).join(' ');
+            td.line2 = parts.slice(mid).join(' ');
+          }
+        }
+      });
+
       for (let i = 0; i < numSlices; i++) {
         const start = angle + i * sliceAngle;
         const end = start + sliceAngle;
+        const info = TEAM_DRAW_INFO[i];
 
+        // 1. Vẽ lát cắt
         ctx.beginPath();
         ctx.moveTo(center, center);
         ctx.arc(center, center, radius, start, end);
         ctx.closePath();
 
-        ctx.fillStyle = TEAM_METADATA[i].color;
+        ctx.fillStyle = info.color;
         ctx.fill();
 
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 4;
         ctx.stroke();
 
-        // Vẽ Tên Đội
+        // 2. Tính góc chính giữa lát cắt
+        const midAngle = start + sliceAngle / 2;
+        const textRadius = 116; // Vị trí tâm chữ lý tưởng cách tâm bánh xe 116px
+
         ctx.save();
         ctx.translate(center, center);
-        ctx.rotate(start + sliceAngle / 2);
-        ctx.textAlign = 'right';
+        ctx.rotate(midAngle);
+        ctx.translate(textRadius, 0);
+
+        // Chuẩn hóa góc để kiểm tra hướng chữ không bị lộn ngược đầu
+        const normAngle = ((midAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+        const isFlipped = normAngle > Math.PI / 2 && normAngle < (3 * Math.PI) / 2;
+
+        if (isFlipped) {
+          ctx.rotate(Math.PI); // Lật 180 độ để chữ luôn xuôi chiều mắt đọc
+        }
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 15px -apple-system, sans-serif';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-        ctx.shadowBlur = 4;
-        ctx.fillText(TEAM_METADATA[i].name, radius - 20, 5);
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 2;
+
+        // Icon Biểu Tượng
+        ctx.font = '24px sans-serif';
+        ctx.fillText(info.icon, 0, -26);
+
+        // Dòng 1 Tên Đội
+        ctx.font = '900 15px -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", sans-serif';
+        ctx.fillText(info.line1, 0, 2);
+
+        // Dòng 2 Tên Đội
+        if (info.line2) {
+          ctx.font = '900 18px -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", sans-serif';
+          ctx.fillText(info.line2, 0, 24);
+        }
+
         ctx.restore();
       }
 
-      // Viền ngoài
+      // Viền tròn ngoài cùng
       ctx.beginPath();
       ctx.arc(center, center, radius, 0, Math.PI * 2);
       ctx.strokeStyle = '#ffffff';
@@ -793,14 +949,18 @@
             renderAll();
           }
 
-          // Tự động chuyển sang thành viên tiếp theo chưa có đội
+          // Bốc thăm xong -> Đưa về trạng thái trống để chủ động chọn người tiếp theo
           const nextMembers = getUnassignedMembers();
           if (nextMembers.length > 0) {
-            selectMemberForSpin(nextMembers[0]);
+            renderEmptySelection();
           } else {
             selectedMember = null;
             document.getElementById('currentUserName').textContent = '🎉 ĐÃ HOÀN TẤT CHIA 3 ĐỘI!';
-            document.getElementById('currentUserMeta').textContent = 'Tất cả 28 thành viên đều đã vào đội';
+            document.getElementById('currentUserMeta').textContent = 'Tất cả 28 thành viên thi đấu đều đã vào đội';
+            const btnSpin = document.getElementById('btnSpin');
+            const btnSpinText = document.getElementById('btnSpinText');
+            if (btnSpin) btnSpin.className = "w-full py-4 px-6 rounded-2xl bg-emerald-600 text-white font-black text-sm sm:text-base shadow-md cursor-default flex items-center justify-center gap-3";
+            if (btnSpinText) btnSpinText.textContent = '🎉 3 ĐỘI HÌNH ĐÃ ĐẦY ĐỦ';
           }
         }
       }
@@ -885,15 +1045,45 @@
     function closeWinnerModal() {
       const modal = document.getElementById('winnerModal');
       if (modal) modal.classList.add('hidden');
+      renderEmptySelection();
     }
 
     // 9. Member Picker Modal Handlers
     function openMemberPickerModal() {
       const modal = document.getElementById('memberPickerModal');
-      const listEl = document.getElementById('pickerMembersList');
-      if (!modal || !listEl) return;
+      if (!modal) return;
 
       const unassigned = getUnassignedMembers();
+      
+      // Render quick ERP self-select banner if logged in and not yet assigned
+      const erpBanner = document.getElementById('pickerErpBanner');
+      if (erpBanner) {
+        if (currentErpMember && unassigned.some(p => String(p.stt) === String(currentErpMember.stt))) {
+          erpBanner.classList.remove('hidden');
+          erpBanner.innerHTML = `
+            <div onclick="selectMemberForSpinByStt('${currentErpMember.stt}')" class="p-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-rose-500/15 border-2 border-amber-500/40 hover:border-amber-500 flex items-center justify-between gap-3 cursor-pointer transition shadow-sm mb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl overflow-hidden bg-amber-500 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
+                  ${currentErpMember.avatar ? `<img src="${currentErpMember.avatar}" class="w-full h-full object-cover">` : currentErpMember.ho_ten.charAt(0)}
+                </div>
+                <div>
+                  <div class="text-[10px] font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-300">Tài khoản của bạn</div>
+                  <div class="font-black text-sm text-[#1d1d1f] dark:text-white leading-tight">
+                    ${currentErpMember.ho_ten} <span class="text-xs text-neutral-500 font-medium">(@${currentErpMember.nickname || 'TV'})</span>
+                  </div>
+                </div>
+              </div>
+              <button class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold text-xs shadow-sm hover:brightness-110 flex-shrink-0">
+                Chọn Tôi 🎯
+              </button>
+            </div>
+          `;
+        } else {
+          erpBanner.classList.add('hidden');
+          erpBanner.innerHTML = '';
+        }
+      }
+
       renderPickerList(unassigned);
       modal.classList.remove('hidden');
     }
