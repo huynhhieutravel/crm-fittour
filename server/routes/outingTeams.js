@@ -48,6 +48,13 @@ async function getStateFromDB() {
   return null;
 }
 
+let routeLock = Promise.resolve();
+function runWithLock(fn) {
+  const run = routeLock.then(fn, fn);
+  routeLock = run.catch(() => {});
+  return run;
+}
+
 async function saveStateToDB(state) {
   try {
     const val = JSON.stringify(state);
@@ -246,7 +253,7 @@ router.get('/state', async (req, res) => {
 });
 
 // 2. POST /api/outing/teams/spin: Bốc thăm cho 1 thành viên
-router.post('/spin', async (req, res) => {
+router.post('/spin', (req, res) => runWithLock(async () => {
   try {
     const { memberStt } = req.body;
     if (!memberStt) {
@@ -316,10 +323,10 @@ router.post('/spin', async (req, res) => {
     console.error('[outingTeams] Error during spin:', err);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+}));
 
 // 3. POST /api/outing/teams/reset: Khởi động lại toàn bộ bảng bốc thăm về 0 (Empty State)
-router.post('/reset', async (req, res) => {
+router.post('/reset', (req, res) => runWithLock(async () => {
   try {
     const state = await loadCurrentState();
     state.teams = [[], [], []];
@@ -339,10 +346,10 @@ router.post('/reset', async (req, res) => {
     console.error('[outingTeams] Error reset:', err);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+}));
 
 // 4. POST /api/outing/teams/rename: Đổi tên đội
-router.post('/rename', async (req, res) => {
+router.post('/rename', (req, res) => runWithLock(async () => {
   try {
     const { teamIdx, newName } = req.body;
     if (teamIdx === undefined || !newName || !newName.trim()) {
@@ -362,10 +369,10 @@ router.post('/rename', async (req, res) => {
     console.error('[outingTeams] Error rename team:', err);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+}));
 
 // 5. POST /api/outing/teams/move: Điều chuyển thành viên giữa các đội
-router.post('/move', async (req, res) => {
+router.post('/move', (req, res) => runWithLock(async () => {
   try {
     const { memberStt, targetTeamIdx } = req.body;
     const destIdx = parseInt(targetTeamIdx, 10);
@@ -401,10 +408,10 @@ router.post('/move', async (req, res) => {
     console.error('[outingTeams] Error move member:', err);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+}));
 
 // 6. POST /api/outing/teams/approve: Duyệt chính thức hoặc mở khóa
-router.post('/approve', async (req, res) => {
+router.post('/approve', (req, res) => runWithLock(async () => {
   try {
     const { approved } = req.body;
     const state = await loadCurrentState();
@@ -428,10 +435,10 @@ router.post('/approve', async (req, res) => {
     console.error('[outingTeams] Error approve:', err);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+}));
 
 // 7. POST /api/outing/teams/remove: Xóa thành viên khỏi đội (Dành cho BTC bốc thăm lại)
-router.post('/remove', async (req, res) => {
+router.post('/remove', (req, res) => runWithLock(async () => {
   try {
     const { memberStt } = req.body;
     if (!memberStt) {
@@ -476,10 +483,10 @@ router.post('/remove', async (req, res) => {
     console.error('[outingTeams] Error remove member:', err);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+}));
 
 // 8. POST /api/outing/teams/exclude: Thêm hoặc gỡ thành viên khỏi Ban Hậu Cần
-router.post('/exclude', async (req, res) => {
+router.post('/exclude', (req, res) => runWithLock(async () => {
   try {
     const { memberStt, action } = req.body;
     if (!memberStt) {
@@ -540,7 +547,7 @@ router.post('/exclude', async (req, res) => {
     console.error('[outingTeams] Error exclude member:', err);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+}));
 
 module.exports = router;
 
