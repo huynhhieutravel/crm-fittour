@@ -211,14 +211,8 @@ function generateEmailHtml(member) {
               </div>
 
               <!-- Attached Card Preview Inside Email -->
-              <div style="margin: 22px 0; padding: 18px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 14px; text-align: center;">
-                <div style="font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;">
-                  📎 TẤM THẺ THƯ MỜI ĐÍNH KÈM DÀNH RIÊNG CHO ${displayName.toUpperCase()}
-                </div>
-                <img src="cid:invitationCard" alt="Thẻ Thư Mời ${displayName}" style="width: 100%; max-width: 520px; height: auto; border-radius: 12px; display: block; margin: 0 auto; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); border: 1px solid #e5e7eb;">
-                <div style="margin-top: 10px; font-size: 12px; color: #9ca3af; font-style: italic;">
-                  (Tập tin ảnh gốc chất lượng cao được đính kèm cùng email này)
-                </div>
+              <div style="margin: 26px 0; text-align: center;">
+                <img src="cid:invitationCard" alt="Thẻ Thư Mời ${displayName}" style="width: 100%; max-width: 540px; height: auto; border-radius: 16px; display: block; margin: 0 auto; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08); border: 1px solid #e5e7eb;">
               </div>
 
               <!-- Sign-off -->
