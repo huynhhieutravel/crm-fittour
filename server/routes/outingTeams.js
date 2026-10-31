@@ -15,12 +15,23 @@ const DEFAULT_TEAM_NAMES = [
 ];
 
 function getMembers() {
-  if (fs.existsSync(MEMBERS_FILE)) {
-    return JSON.parse(fs.readFileSync(MEMBERS_FILE, 'utf8'));
-  }
-  const alt = path.resolve(__dirname, '../public/members.json');
-  if (fs.existsSync(alt)) {
-    return JSON.parse(fs.readFileSync(alt, 'utf8'));
+  const candidatePaths = [
+    path.resolve(__dirname, '../../outing-dalat-2026/assets/members.json'),
+    path.resolve(__dirname, '../outing-dalat-2026/assets/members.json'),
+    path.resolve(__dirname, '../client/dist/outing-dalat-2026/assets/members.json'),
+    path.resolve(__dirname, '../client/public/outing-dalat-2026/assets/members.json'),
+    path.resolve(__dirname, '../../client/dist/outing-dalat-2026/assets/members.json'),
+    path.resolve(__dirname, '../../client/public/outing-dalat-2026/assets/members.json'),
+    path.resolve(__dirname, '../public/members.json')
+  ];
+
+  for (const p of candidatePaths) {
+    if (fs.existsSync(p)) {
+      try {
+        const data = JSON.parse(fs.readFileSync(p, 'utf8'));
+        if (Array.isArray(data) && data.length > 0) return data;
+      } catch (e) {}
+    }
   }
   return [];
 }
@@ -410,3 +421,4 @@ router.post('/approve', async (req, res) => {
 });
 
 module.exports = router;
+
