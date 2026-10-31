@@ -297,90 +297,95 @@
           <div class="p-6 sm:p-8 space-y-6 text-[#2c2c2e] dark:text-[#d1d1d6] leading-relaxed text-sm sm:text-base">
             
             <!-- Greeting & Tenure Milestone Card -->
-            <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-              <div class="font-extrabold text-base text-amber-900 dark:text-amber-200">
-                Gửi <span id="emailBodyMemberName" class="text-amber-600 dark:text-amber-400 font-black">Nguyễn Nhất Vũ</span> thân mến,
+            <div class="p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-2">
+              <div class="font-black text-base sm:text-lg text-[#1d1d1f] dark:text-white">
+                Gửi <span id="emailBodyMemberName" class="text-amber-600 dark:text-amber-400">Nguyễn Nhất Vũ</span> thân mến,
               </div>
-              <div class="text-xs text-amber-800/80 dark:text-amber-300/80 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span>🗓️ Ngày gia nhập FIT TOUR: <strong id="emailBodyJoinDate">16/09/2020</strong></span>
-                <span>•</span>
-                <span>⭐ Hành trình gắn bó cùng đại gia đình: <strong id="emailBodyTenure">6 năm 1 tháng</strong></span>
+              <div id="emailBodyTenureTribute" class="text-xs sm:text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed font-medium">
+                ⭐ <strong class="text-amber-700 dark:text-amber-300">Hành trình gắn bó cùng đại gia đình FIT TOUR:</strong> 
+                Bạn gia nhập từ ngày <strong id="emailBodyJoinDate">16/09/2020</strong> — tính đến nay đã là <strong id="emailBodyTenure" class="text-[#1d1d1f] dark:text-white underline decoration-amber-500 underline-offset-2">6 năm 1 tháng</strong> bền bỉ đồng hành, cống hiến và vượt qua bao mùa tour cùng công ty. FIT TOUR thật sự trân trọng và biết ơn sự gắn bó của bạn!
               </div>
             </div>
 
             <p>
-              Sau những ngày cùng nhau chạy tour, xử lý công việc, chăm sóc khách hàng và đôi khi là những deadline nối tiếp nhau, cuối cùng cũng đến lúc chúng ta tạm gác lại công việc để dành một chút thời gian cho chính mình!
+              Sau những tháng ngày cùng nhau bận rộn với từng đoàn khách, xử lý từng phát sinh và dốc sức cho công việc, cuối cùng cũng đến lúc chúng ta cùng tạm gác lại bộn bề để dành trọn vẹn vài ngày cho chính mình.
             </p>
 
             <p>
-              Tháng 11 này, <strong class="text-[#1d1d1f] dark:text-white">FIT TOUR sẽ cùng nhau lên đường đến Đà Lạt với Company Trip 2026 – Beyond Ordinary Journeys!</strong>
+              Tháng 11 này, <strong class="text-[#1d1d1f] dark:text-white">đại gia đình FIT TOUR sẽ cùng nhau lên đường đến Đà Lạt với chuyến đi Company Trip 2026 – Beyond Ordinary Journeys!</strong>
             </p>
 
             <p>
-              Không chỉ đơn giản là một chuyến đi chơi, đây còn là dịp để mọi người cùng trải nghiệm những điều mới mẻ, có thêm thời gian trò chuyện, hiểu nhau hơn và tạo nên những kỷ niệm thật vui bên nhau.
+              Chuyến đi này là dịp để anh chị em chúng ta được chậm lại một nhịp, ngồi lại cùng nhau chia sẻ những câu chuyện đời thường ngoài công việc, cùng khám phá những trải nghiệm mới và lưu giữ thêm thật nhiều kỷ niệm gắn kết.
             </p>
 
             <p>
-              FIT TOUR thân mời <strong id="emailBodyMemberName2" class="text-apple-blue font-extrabold">Nguyễn Nhất Vũ</strong> cùng tham gia hành trình lần này!
+              FIT TOUR trân trọng mời <strong id="emailBodyMemberName2" class="text-apple-blue font-extrabold">Nguyễn Nhất Vũ</strong> cùng đồng hành trên chuyến xe đặc biệt lần này!
             </p>
 
-            <!-- Section: Thông tin chuyến đi -->
-            <div class="p-4 sm:p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-black/[0.05] dark:border-white/[0.06] space-y-2">
-              <h3 class="text-base font-extrabold text-[#1d1d1f] dark:text-white flex items-center gap-2">
-                <span>🌿</span>
-                <span>THÔNG TIN CHUYẾN ĐI</span>
+            <!-- Section: Thông tin chuyến đi & Button Lịch trình trực tuyến ngay bên dưới -->
+            <div class="p-4 sm:p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-black/[0.05] dark:border-white/[0.06] space-y-3">
+              <h3 class="text-base font-extrabold text-[#1d1d1f] dark:text-white uppercase tracking-tight">
+                THÔNG TIN CHUYẾN ĐI
               </h3>
-              <ul class="space-y-1.5 text-xs sm:text-sm pl-1">
+              <ul class="space-y-1.5 text-xs sm:text-sm pl-1 text-neutral-700 dark:text-neutral-300">
                 <li>• <strong>Thời gian:</strong> 11 – 14/11/2026 (4 ngày 3 đêm)</li>
                 <li>• <strong>Địa điểm:</strong> Đà Lạt – Lâm Đồng</li>
                 <li>• <strong>Chủ đề:</strong> BEYOND ORDINARY JOURNEYS</li>
                 <li>• <strong>Thành phần:</strong> Đại gia đình FIT TOUR (32 Thành viên)</li>
               </ul>
+
+              <!-- Nút xem lịch trình đơn giản, tinh tế ngay dưới thông tin chuyến đi -->
+              <div class="pt-2">
+                <a href="https://erp.fittour.vn/outing-dalat-2026/index.html" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-apple-blue hover:bg-apple-blueHover text-white text-xs sm:text-sm font-bold shadow-sm transition active:scale-95">
+                  <span>📖 Xem Lịch Trình Chi Tiết &amp; Chuẩn Bị Hành Trang</span>
+                  <span>→</span>
+                </a>
+              </div>
             </div>
 
-            <!-- Section: Chúng ta sẽ cùng nhau làm gì? -->
+            <!-- Section: Chúng ta sẽ cùng nhau làm gì? (Bỏ icon tiêu đề) -->
             <div class="space-y-3">
-              <h3 class="text-base font-extrabold text-[#1d1d1f] dark:text-white flex items-center gap-2">
-                <span>🎯</span>
-                <span>CHÚNG TA SẼ CÙNG NHAU LÀM GÌ?</span>
+              <h3 class="text-base font-extrabold text-[#1d1d1f] dark:text-white uppercase tracking-tight">
+                CHÚNG TA SẼ CÙNG NHAU LÀM GÌ?
               </h3>
 
-              <div class="space-y-2.5 text-xs sm:text-sm pl-1">
+              <div class="space-y-2.5 text-xs sm:text-sm pl-1 leading-relaxed text-neutral-700 dark:text-neutral-300">
                 <div>
-                  🏕️ <strong>Camping giữa thiên nhiên Đà Lạt:</strong> Tận hưởng không khí se lạnh, những bữa ăn ngoài trời và những câu chuyện mà ngày thường ở văn phòng chưa có dịp kể nhau nghe.
+                  🏕️ <strong>Camping giữa thiên nhiên Đà Lạt:</strong> Cùng đón cái lạnh trong veo của cao nguyên, quây quần bên bữa ăn ngoài trời và chia sẻ những câu chuyện mà ngày thường ở văn phòng ít khi có dịp tỉ tê.
                 </div>
                 <div>
-                  🥾 <strong>Chinh phục cung trekking 8 km:</strong> Một chút thử thách, một chút mệt, nhưng chắc chắn sẽ có nhiều chuyện vui để kể sau khi về đích. Quan trọng không phải ai đi nhanh nhất, mà là cả nhóm cùng đồng hành trên chặng đường ấy.
+                  🥾 <strong>Chinh phục cung trekking 8 km:</strong> Một chút thử thách đôi chân, một chút mệt nhoài, nhưng trên hết là cảm giác cùng nhau đi chung một con đường và về đích trọn vẹn cả đội.
                 </div>
                 <div>
-                  🛶 <strong>Trải nghiệm chèo SUP:</strong> Thêm một hoạt động thú vị để cùng nhau thử sức, thư giãn và lưu lại những khoảnh khắc đáng nhớ.
+                  🛶 <strong>Trải nghiệm chèo SUP Hồ Tuyền Lâm:</strong> Thả mình lướt nhẹ trên mặt hồ tĩnh lặng, chụp những khung hình đẹp và cùng thử sức với hoạt động dưới nước cực kỳ thư giãn.
                 </div>
                 <div>
-                  ☕ <strong>Tự do khám phá Đà Lạt:</strong> Dành thời gian thưởng thức cà phê, dạo phố, ăn uống hoặc đơn giản là tận hưởng một ngày không phải vội vàng với công việc.
+                  ☕ <strong>Một ngày tự do khám phá:</strong> Nhâm nhi ly cà phê sáng, dạo những góc phố quen, thưởng thức ẩm thực phố núi mà không cần phải vội vã với deadline hay lịch họp.
                 </div>
                 <div>
-                  🍢 <strong>BBQ &amp; Acoustic Night:</strong> Cùng ăn uống, nghe nhạc, trò chuyện và tận hưởng những buổi tối Đà Lạt theo cách thoải mái nhất.
+                  🍢 <strong>BBQ &amp; Acoustic Night:</strong> Đêm lửa ấm, thịt nướng thơm lừng, tiếng đàn guitar mộc mạc và những giọng hát mộc của chính anh chị em nhà mình.
                 </div>
               </div>
 
               <p class="text-xs sm:text-sm italic text-apple-textMuted dark:text-apple-textMutedDark pt-1">
-                Và tất nhiên, không thể thiếu những tấm hình tập thể, những khoảnh khắc ngẫu hứng và vài câu chuyện mà có lẽ sau chuyến đi sẽ còn được nhắc lại rất lâu!
+                Và chắc chắn không thể thiếu những bức hình tập thể rạng rỡ, những tiếng cười ngẫu hứng và những mẩu chuyện vui mà sau chuyến đi sẽ còn được nhắc nhớ rất lâu!
               </p>
             </div>
 
             <!-- Section: Beyond Ordinary Journeys -->
-            <div class="space-y-2 border-l-4 border-amber-500 pl-4 py-1">
+            <div class="space-y-2.5 border-l-4 border-amber-500 pl-4 py-1">
               <h3 class="text-base font-extrabold text-[#1d1d1f] dark:text-white">
-                BEYOND ORDINARY JOURNEYS – HƠN CẢ NHỮNG HÀNH TRÌNH THÔNG THƯỜNG
+                BEYOND ORDINARY JOURNEYS – HƠN CẢ MỘT HÀNH TRÌNH
               </h3>
               <p>
-                Chúng ta vẫn thường cùng nhau tạo nên những chuyến đi đáng nhớ cho khách hàng. Nhưng lần này sẽ hơi khác một chút: <strong class="text-[#1d1d1f] dark:text-white">chính chúng ta sẽ là những người tận hưởng hành trình ấy.</strong>
+                Suốt cả năm qua, chúng ta đã cùng nhau chăm chút cho từng trải nghiệm của khách hàng. Nhưng trong chuyến đi này, <strong class="text-[#1d1d1f] dark:text-white">chính mỗi chúng ta mới là những người được tận hưởng trọn vẹn từng khoảnh khắc ấy.</strong>
               </p>
               <p>
-                Không còn những cuộc họp, những lịch trình công việc dày đặc hay những việc cần xử lý ngay lập tức. Chỉ là vài ngày để mọi người được nghỉ ngơi, vui chơi và dành thời gian cho nhau nhiều hơn.
+                Tạm cất lại những áp lực công việc thường nhật, đây là khoảng thời gian để nạp lại năng lượng, chăm sóc bản thân và kết nối sâu sắc hơn với những người đồng đội thân thương.
               </p>
               <p class="font-medium text-amber-700 dark:text-amber-300">
-                Bởi đôi khi, điều khiến một chuyến đi trở nên đáng nhớ không hẳn là nơi chúng ta đến, mà là những người đã cùng mình trải qua hành trình đó.
+                Bởi vì điều làm nên một chuyến đi đáng nhớ, sau cùng, luôn là những con người đã cùng ta đồng hành suốt chặng đường.
               </p>
             </div>
 
@@ -390,33 +395,19 @@
                 HẸN GẶP BẠN TẠI ĐÀ LẠT!
               </h3>
               <p>
-                FIT TOUR rất mong <strong id="emailBodyMemberName3" class="text-apple-blue font-bold">Nguyễn Nhất Vũ</strong> sẽ có mặt trong chuyến đi này, để cùng mọi người tận hưởng những ngày Đà Lạt thật vui và có thêm những kỷ niệm đẹp với đại gia đình FIT TOUR.
+                FIT TOUR rất mong sẽ thấy nụ cười của <strong id="emailBodyMemberName3" class="text-apple-blue font-bold">Nguyễn Nhất Vũ</strong> trong chuyến đi lần này. Sự hiện diện đầy đủ của từng thành viên chính là điều làm nên trọn vẹn ý nghĩa của Company Trip 2026.
               </p>
               <p>
-                Hãy chuẩn bị một chút hành lý, một đôi giày thật thoải mái, một chiếc điện thoại đầy pin để chụp ảnh và quan trọng nhất là một tinh thần thật nhiều năng lượng nhé!
+                Bạn hãy chuẩn bị hành trang gọn nhẹ, một đôi giày đi bộ thật êm, sạc đầy pin điện thoại và mang theo một tinh thần thật thoải mái nhé!
               </p>
-              <p>
+              <p class="text-xs sm:text-sm text-apple-textMuted dark:text-apple-textMutedDark">
                 Lịch trình chi tiết cùng các thông tin cần chuẩn bị sẽ được Ban Tổ chức gửi đến trước ngày khởi hành.
               </p>
             </div>
 
-            <!-- Prominent Link to Full Itinerary Page -->
-            <div class="my-6 p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-rose-500/15 border border-amber-500/30 text-center">
-              <div class="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-2">
-                📖 CẨM NANG &amp; LỊCH TRÌNH CHI TIẾT TRỰC TUYẾN
-              </div>
-              <a href="https://erp.fittour.vn/outing-dalat-2026/index.html" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-white font-extrabold text-sm shadow-md transition active:scale-95">
-                <span>👉 Bấm Để Xem Chi Tiết Lịch Trình &amp; Hành Trang</span>
-                <span>↗</span>
-              </a>
-              <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark mt-2">
-                Link trực tiếp: <a href="https://erp.fittour.vn/outing-dalat-2026/index.html" target="_blank" class="underline text-apple-blue">https://erp.fittour.vn/outing-dalat-2026/index.html</a>
-              </div>
-            </div>
-
             <div class="pt-4 border-t border-black/[0.06] dark:border-white/[0.08] space-y-1">
               <div class="text-base font-black text-amber-600 dark:text-amber-400">
-                11/11/2026 – Đà Lạt, chúng ta đến đây! 🧡
+                11/11/2026 – Đà Lạt, chúng ta cùng lên đường! 🧡
               </div>
               <div class="pt-2 text-xs text-apple-textMuted dark:text-apple-textMutedDark">
                 Thân mến,<br>
@@ -738,6 +729,16 @@
       document.getElementById('emailBodyJoinDate').textContent = m.join_date;
       document.getElementById('emailBodyTenure').textContent = m.tenure;
 
+      const tenureTributeEl = document.getElementById('emailBodyTenureTribute');
+      if (tenureTributeEl) {
+        const hasYears = m.tenure && m.tenure.includes('năm');
+        if (hasYears) {
+          tenureTributeEl.innerHTML = `⭐ <strong class="text-amber-700 dark:text-amber-300">Hành trình gắn bó cùng đại gia đình FIT TOUR:</strong> Bạn chính thức gia nhập từ ngày <strong>${m.join_date}</strong> — tính đến nay đã là <strong class="text-[#1d1d1f] dark:text-white underline decoration-amber-500 underline-offset-2">${m.tenure}</strong> bền bỉ đồng hành, cống hiến và vượt qua bao mùa tour cùng công ty. FIT TOUR thật sự trân trọng và biết ơn sự gắn bó của bạn!`;
+        } else {
+          tenureTributeEl.innerHTML = `⭐ <strong class="text-amber-700 dark:text-amber-300">Hành trình gắn bó cùng đại gia đình FIT TOUR:</strong> Bạn gia nhập từ ngày <strong>${m.join_date}</strong> — dù mới đồng hành được <strong class="text-[#1d1d1f] dark:text-white underline decoration-amber-500 underline-offset-2">${m.tenure}</strong>, bạn đã là một mảnh ghép nhiệt huyết và không thể thiếu của đại gia đình FIT TOUR. Cảm ơn năng lượng tích cực và sự đồng hành của bạn!`;
+        }
+      }
+
       // Update Verified Button state
       updateVerifyButtonState();
 
@@ -884,3 +885,4 @@
   </script>
 </body>
 </html>
+
