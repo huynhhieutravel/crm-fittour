@@ -293,15 +293,16 @@ async function resendMemberInvitation(targetStt, targetEmail) {
   return result;
 }
 
-const targetStt = 18;
-const targetEmail = 'Nguyenhang@fittour.com.vn';
+const targetStt = process.argv[2] ? parseInt(process.argv[2], 10) : 30;
+const targetEmail = process.argv[3] || 'hoangtuntun8@gmail.com';
 
 resendMemberInvitation(targetStt, targetEmail)
   .then((res) => {
-    console.log('🎉 Hoàn tất gửi thư mời lại cho bạn Hằng!');
+    console.log(`🎉 Hoàn tất gửi thư mời lại cho thành viên STT ${targetStt} (${targetEmail})!`);
     process.exit(0);
   })
   .catch(err => {
     console.error('❌ Lỗi gửi email:', err);
     process.exit(1);
   });
+
