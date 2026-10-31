@@ -322,4 +322,16 @@ _Avoid_: Chia phòng nghỉ cá nhân, nhóm tự phát
 An informal workplace alias adopted by or assigned to an employee within FIT TOUR ERP for company culture, team directory, and outings (e.g., "Max Vu", "Loki", "Phunnie"), distinct from the employee's legal name (`full_name`) and system login handle (`username`).
 _Avoid_: Bí danh, tên giả, alias pháp lý, username đăng nhập
 
+**Empty State Roster (Đội Hình Trống Khởi Điểm)**:
+The initial state of the 3 competition squads on the teambuilding dashboard prior to any lottery allocation (0/10, 0/9, 0/9 members). Squad slots are populated incrementally as individual turn-based draws execute.
+_Avoid_: Đội hình mặc định, bản nháp tự sinh
+
+**Turn-based Member Lottery (Bốc Thăm Xoay Đội Từng Thành Viên)**:
+An interactive stage workflow where a specific active member is selected from the unassigned roster (or identified via their active ERP session), and a dedicated spin wheel resolves which eligible squad they join.
+_Avoid_: Bốc thăm hàng loạt 1 chạm, bốc thăm thủ công giấy
+
+**Dynamic Balancing Constraint (Ràng Buộc Cân Bằng Động)**:
+The real-time algorithmic lottery rule preventing squad imbalances during incremental turns: enforcing hard gender ceilings (Nam/Nữ caps), soft business unit (BU) cross-pollination, and name-collision penalties to prevent duplicate first names within the same squad.
+_Avoid_: Xoay hoàn toàn ngẫu nhiên không kiểm soát, bốc thăm đồng xác suất
+
 

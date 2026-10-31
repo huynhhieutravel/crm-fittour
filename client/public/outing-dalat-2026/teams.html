@@ -11,9 +11,11 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -51,18 +53,26 @@
   </script>
   <style>
     .apple-glass {
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.88);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
     }
     .dark .apple-glass {
-      background: rgba(22, 22, 24, 0.85);
+      background: rgba(22, 22, 24, 0.88);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
     }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .wheel-glow {
+      animation: pulse-ring 3s ease-in-out infinite;
+    }
   </style>
 </head>
-<body class="bg-apple-bg text-[#1d1d1f] dark:bg-apple-darkBg dark:text-[#f5f5f7] transition-colors duration-300 min-h-screen font-sans selection:bg-amber-500 selection:text-white pb-28 sm:pb-28">
+<body class="bg-apple-bg text-[#1d1d1f] dark:bg-apple-darkBg dark:text-[#f5f5f7] transition-colors duration-300 min-h-screen font-sans selection:bg-amber-500 selection:text-white pb-32">
 
   <!-- ================= TOP NAV ================= -->
   <header class="fixed top-0 inset-x-0 z-50 apple-glass border-b border-black/[0.06] dark:border-white/[0.08] transition-all">
@@ -77,169 +87,275 @@
         </div>
       </a>
 
-      <!-- 3 Internal Pages Switcher (Lịch Trình, Xoay Đội, Thư Mời) -->
+      <!-- 3 Internal Pages Switcher -->
       <nav class="flex items-center p-1 rounded-full bg-black/[0.05] dark:bg-white/[0.1] border border-black/[0.06] dark:border-white/[0.08] text-xs sm:text-[13px]">
-        <!-- Page 1 (Link): Lịch Trình -->
-        <a href="./index.html" class="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition" title="Chuyển sang trang Lịch Trình Đoàn">
+        <a href="./index.html" class="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition">
           <span>📅</span>
           <span>Lịch Trình</span>
         </a>
-        <!-- Page 2 (Active): Xoay & Chốt Đội -->
         <a href="./teams.html" class="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold shadow-sm">
           <span>🎲</span>
           <span>Xoay Đội</span>
         </a>
-        <!-- Page 3 (Link): Thư Mời -->
-        <a href="./invitations.html" class="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition" title="Kiểm Tra Thư Mời 32 TV">
+        <a href="./invitations.html" class="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition">
           <span>💌</span>
           <span>Thư Mời</span>
         </a>
       </nav>
 
-      <!-- Right controls: Dark Mode & Back Button -->
+      <!-- Right controls -->
       <div class="flex items-center space-x-2">
         <button id="themeToggle" aria-label="Đổi giao diện" class="w-9 h-9 flex items-center justify-center rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition text-sm">
           <span class="dark:hidden">🌙</span>
           <span class="hidden dark:inline">☀️</span>
         </button>
-        <a href="./index.html#members" class="hidden sm:inline-flex items-center space-x-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-apple-blue text-white hover:bg-apple-blueHover transition shadow-sm">
-          <span>📋 32 TV</span>
-        </a>
       </div>
     </div>
   </header>
 
-  <!-- ================= MAIN TEAMBUILDING CONTENT ================= -->
-  <main class="pt-24 pb-8 px-4 sm:px-6 max-w-6xl mx-auto">
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="pt-20 pb-12 px-4 sm:px-6 max-w-6xl mx-auto">
     
-    <!-- Hero Header of Teams Page -->
+    <!-- Hero Title -->
     <div class="text-center max-w-2xl mx-auto mb-6">
-      <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#1d1d1f] dark:text-white leading-[1.15]">
-        Vòng Quay May Mắn <br class="hidden sm:block">
-        <span class="bg-clip-text text-transparent bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500">
-          Phân Chia 3 Đội Thi Đấu
-        </span>
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 font-bold text-xs uppercase tracking-wider mb-2">
+        <span>🎲 Bốc Thăm Từng Người Trực Tiếp</span>
+      </div>
+      <h1 class="text-2xl sm:text-4xl font-black tracking-tight text-[#1d1d1f] dark:text-white leading-tight">
+        Vòng Quay May Mắn 3 Đội
       </h1>
+      <p class="text-xs sm:text-sm text-apple-textMuted dark:text-apple-textMutedDark mt-1">
+        Cân bằng tỷ lệ Nam/Nữ • Chia đều BU • Không trùng tên trong 1 đội
+      </p>
     </div>
 
     <!-- Master Box Container -->
-    <div class="p-6 sm:p-8 rounded-3xl bg-white dark:bg-apple-cardDark shadow-apple border border-black/[0.06] dark:border-white/[0.08]">
+    <div class="p-4 sm:p-8 rounded-3xl bg-white dark:bg-apple-cardDark shadow-apple border border-black/[0.06] dark:border-white/[0.08] mb-8">
       
-      <!-- Quick Metrics & Formula -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 text-xs">
-        <div class="p-3.5 rounded-2xl bg-neutral-50 dark:bg-white/[0.03] border border-black/[0.05] dark:border-white/[0.06]">
-          <div class="text-apple-textMuted dark:text-apple-textMutedDark font-medium">Tổng Đoàn FIT</div>
-          <div class="text-lg font-extrabold mt-0.5 text-[#1d1d1f] dark:text-white">32 Thành viên</div>
-        </div>
-        <div class="p-3.5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300">
-          <div class="font-medium">Tham Gia Thi Đấu</div>
-          <div id="statActiveCount" class="text-lg font-extrabold mt-0.5">28 Người</div>
-        </div>
-        <div class="p-3.5 rounded-2xl bg-rose-500/5 border border-rose-500/20 text-rose-800 dark:text-rose-300">
-          <div class="font-medium">Loại Trừ (BTC / Đi Riêng)</div>
-          <div id="statExcludedCount" class="text-lg font-extrabold mt-0.5">4 Người</div>
-        </div>
-        <div class="p-3.5 rounded-2xl bg-sky-500/5 border border-sky-500/20 text-sky-800 dark:text-sky-300">
-          <div class="font-medium">Quy Tắc Phân Bổ</div>
-          <div id="statFormula" class="text-xs font-bold mt-1 leading-snug">1 đội 10 người + 2 đội 9 người (+1 người)</div>
-        </div>
-      </div>
-
-      <!-- Collapsible: Exclude Selector (32 Members) -->
-      <div class="rounded-2xl border border-black/[0.08] dark:border-white/[0.1] overflow-hidden mb-8 transition-all">
-        <button id="toggleExcludeBtn" onclick="toggleExcludeSection()" class="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-between text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 transition">
-          <div class="flex items-center gap-2">
-            <span class="text-base">⚙️</span>
-            <span class="font-bold text-xs sm:text-sm text-neutral-800 dark:text-neutral-100">Bấm Vào Đây Để Chọn Ai Tham Gia Hoặc Loại Trừ (BTC / Đi Riêng)</span>
+      <!-- ================= SECTION 1: NHẬN DIỆN & CHỌN THÀNH VIÊN XOAY ================= -->
+      <div class="p-4 sm:p-5 rounded-2xl bg-neutral-50 dark:bg-apple-cardDarker border border-black/[0.06] dark:border-white/[0.08] mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          
+          <!-- Cụm thông tin người đang được chọn -->
+          <div class="flex items-center gap-3.5">
+            <div id="currentUserAvatar" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex-shrink-0 flex items-center justify-center font-black text-xl shadow-md border-2 border-white dark:border-neutral-700">
+              ?
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-apple-textMuted dark:text-apple-textMutedDark font-medium">Người chuẩn bị bốc thăm:</span>
+                <span id="erpBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                  Đã nhận diện ERP
+                </span>
+              </div>
+              <div id="currentUserName" class="text-lg sm:text-xl font-black text-[#1d1d1f] dark:text-white leading-tight mt-0.5">
+                Chưa chọn ai
+              </div>
+              <div id="currentUserMeta" class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-0.5 font-medium">
+                Vui lòng chọn tên để bắt đầu quay
+              </div>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <span id="excludeChevron" class="text-xs text-neutral-400 font-bold transition-transform">▼ Mở danh sách 32 người</span>
-          </div>
-        </button>
 
-        <div id="excludeSectionBody" class="p-4 bg-white dark:bg-apple-cardDarker border-t border-black/[0.06] dark:border-white/[0.08] hidden">
-          <!-- Preset buttons -->
-          <div class="flex flex-wrap items-center gap-2 mb-4 pb-3 border-b border-black/[0.05] dark:border-white/[0.06]">
-            <span class="text-xs text-apple-textMuted dark:text-apple-textMutedDark font-medium">Chọn nhanh:</span>
-            <button onclick="setExcludePreset('btc')" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 transition">
-              👑 Gợi ý loại trừ (4 người: Vy Phan, Huỳnh Trọng Hiếu, Hầu Quang Hưng, Trần Quốc Thịnh)
-            </button>
-            <button onclick="setExcludePreset('all_play')" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition">
-              👥 Cả 32 người cùng thi đấu
+          <!-- Nút chọn người khác / quay giùm -->
+          <div class="flex items-center gap-2">
+            <button onclick="openMemberPickerModal()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-100 font-bold text-xs border border-black/10 dark:border-white/10 shadow-sm transition active:scale-95 cursor-pointer">
+              <span>👥</span>
+              <span id="btnPickText">Chọn Người / Quay Giùm</span>
             </button>
           </div>
 
-          <!-- Members Grid (Clickable Chips) -->
-          <div id="excludeMembersGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <!-- ================= SECTION 2: VÒNG QUAY MAY MẮN 3 ĐỘI ================= -->
+      <div id="spinArea" class="flex flex-col items-center justify-center py-4 my-2">
+        
+        <!-- Vòng quay Canvas Container -->
+        <div class="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center mb-6">
+          
+          <!-- Kim chỉ cố định ở đỉnh -->
+          <div class="absolute -top-3 z-30 flex flex-col items-center">
+            <div class="w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[24px] border-t-amber-500 drop-shadow-md"></div>
+          </div>
+
+          <!-- Canvas Bánh Xe -->
+          <canvas id="wheelCanvas" width="300" height="300" class="w-full h-full rounded-full shadow-2xl transition-transform duration-75"></canvas>
+
+          <!-- Center Hub (Tâm vòng quay) -->
+          <div class="absolute inset-0 m-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white dark:bg-neutral-900 border-4 border-amber-400 shadow-xl flex flex-col items-center justify-center text-center p-1 z-20 pointer-events-none">
+            <div id="hubAvatar" class="w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-black text-amber-600 text-sm shadow-inner mb-0.5">
+              🎲
+            </div>
+            <span id="hubNickname" class="text-[10px] sm:text-[11px] font-black text-neutral-800 dark:text-neutral-100 truncate max-w-[70px]">
+              FIT Tour
+            </span>
+          </div>
+
+        </div>
+
+        <!-- Nút bấm xoay lớn -->
+        <div class="flex flex-col items-center w-full max-w-sm">
+          <button id="btnSpin" onclick="executeSpin()" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:brightness-110 active:scale-95 text-white font-black text-base sm:text-lg shadow-xl hover:shadow-2xl transition-all cursor-pointer flex items-center justify-center gap-3">
+            <span id="btnSpinIcon" class="text-2xl">🎲</span>
+            <span id="btnSpinText">BẮT ĐẦU XOAY VÀO ĐỘI</span>
+          </button>
+          
+          <div id="spinStatusMsg" class="text-xs text-center text-apple-textMuted dark:text-apple-textMutedDark mt-2.5 font-medium min-h-[1.5rem]">
+            Nhấn để bốc thăm ngẫu nhiên và phân bổ cân bằng
           </div>
         </div>
+
       </div>
 
-      <!-- ================= NÚT XOAY RANDOM ĐỘI HÌNH ================= -->
-      <div id="spinArea" class="flex flex-col items-center justify-center my-6">
-        <button id="btnSpinTeams" onclick="spinRandomTeams()" class="inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:brightness-110 text-white font-extrabold text-base shadow-lg hover:shadow-xl transition-all active:scale-95 cursor-pointer">
-          <span id="spinDiceIcon" class="text-2xl inline-block transition-transform duration-300">🎲</span>
-          <span id="spinBtnText">Xoay Bốc Thăm Chia Đội</span>
-        </button>
-        <div id="spinStatusMessage" class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-2.5 font-medium min-h-[1.25rem]">
-          Bấm để bốc thăm ngẫu nhiên &amp; cân bằng đội hình
+      <!-- ================= SECTION 3: TIẾN ĐỘ & DANH SÁCH CHƯA VÀO ĐỘI ================= -->
+      <div class="border-t border-black/[0.06] dark:border-white/[0.08] pt-6 mb-8">
+        
+        <!-- Header Thanh Tiến Độ -->
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-base">⏳</span>
+            <span class="font-extrabold text-xs sm:text-sm text-[#1d1d1f] dark:text-white">
+              Thành Viên Chưa Vào Đội (<span id="unassignedCountLabel">28</span> người)
+            </span>
+          </div>
+          <span id="progressPercent" class="text-xs font-black text-amber-600 dark:text-amber-400">
+            0 / 28 (0%)
+          </span>
+        </div>
+
+        <!-- Thanh Bar Tiến Độ -->
+        <div class="w-full h-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden mb-4">
+          <div id="progressBar" class="h-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500" style="width: 0%"></div>
+        </div>
+
+        <!-- Chips các thành viên chưa vào đội (Click để chọn nhanh người xoay) -->
+        <div id="unassignedChipsContainer" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto pr-1">
+          <!-- Injected via JS -->
+        </div>
+
+      </div>
+
+      <!-- ================= SECTION 4: 3 TEAMS DISPLAY GRID ================= -->
+      <div class="border-t border-black/[0.06] dark:border-white/[0.08] pt-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg sm:text-xl font-black text-[#1d1d1f] dark:text-white flex items-center gap-2">
+            <span>🏆</span>
+            <span>Đội Hình 3 Đội Thi Đấu</span>
+          </h2>
+          <span class="text-xs text-apple-textMuted font-medium">1 Đội 10 TV • 2 Đội 9 TV</span>
+        </div>
+
+        <div id="teamsCardsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+          <!-- Team 1, Team 2, Team 3 will be rendered here dynamically -->
         </div>
       </div>
 
-      <!-- ================= 3 TEAMS DISPLAY GRID ================= -->
-      <div id="teamsCardsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-        <!-- Team 1, Team 2, Team 3 will be rendered here dynamically -->
-      </div>
-
-      <!-- ================= ADMIN APPROVAL & ACTION BAR ================= -->
+      <!-- ================= SECTION 5: ADMIN CONTROLS & DUYỆT ================= -->
       <div id="adminApprovalSection" class="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-900/50 border border-black/[0.08] dark:border-white/[0.1] flex flex-col sm:flex-row items-center justify-between gap-4">
-        <!-- Dynamically rendered according to isApproved -->
+        <!-- Rendered via JS -->
       </div>
 
     </div>
   </main>
 
-  <!-- ================= APPLE FLOATING DOCK (Trang Xoay Đội) ================= -->
+  <!-- ================= MODAL CHỌN THÀNH VIÊN ================= -->
+  <div id="memberPickerModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-apple-cardDark rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-black/10 dark:border-white/10 flex flex-col max-h-[85vh]">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
+        <div>
+          <h3 class="text-base sm:text-lg font-black text-[#1d1d1f] dark:text-white">Chọn Thành Viên Xoay Đội</h3>
+          <p class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">Bấm vào tên để chọn làm người quay lượt tiếp theo</p>
+        </div>
+        <button onclick="closeMemberPickerModal()" class="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center justify-center text-xs font-bold transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Search Input -->
+      <div class="my-3">
+        <input id="pickerSearchInput" oninput="filterPickerMembers()" type="text" placeholder="Tìm tên, nickname hoặc BU..." class="w-full px-3.5 py-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-none text-xs sm:text-sm font-semibold text-neutral-800 dark:text-neutral-100 focus:ring-2 focus:ring-amber-500 outline-none">
+      </div>
+
+      <!-- Danh sách thành viên chưa vào đội -->
+      <div id="pickerMembersList" class="flex-1 overflow-y-auto space-y-2 pr-1 my-1">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="pt-3 border-t border-black/[0.06] dark:border-white/[0.08] flex justify-end">
+        <button onclick="closeMemberPickerModal()" class="px-5 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 font-bold text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 transition">
+          Đóng
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL CHÚC MỪNG TRÚNG ĐỘI ================= -->
+  <div id="winnerModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-apple-cardDark rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-black/10 dark:border-white/10 transform transition-all scale-100 animate-in fade-in zoom-in duration-200">
+      
+      <div id="winnerBadge" class="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-3xl shadow-xl border-4 border-white dark:border-neutral-800 mb-4 animate-bounce">
+        🎉
+      </div>
+
+      <div class="text-xs uppercase font-extrabold tracking-widest text-amber-600 dark:text-amber-400 mb-1">
+        Chúc Mừng Thành Viên
+      </div>
+
+      <h3 id="winnerName" class="text-xl sm:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight mb-2">
+        Nguyễn Nhất Vũ
+      </h3>
+
+      <div class="p-3.5 rounded-2xl mb-5" id="winnerTeamBox">
+        <div class="text-xs text-apple-textMuted dark:text-apple-textMutedDark font-medium">Chính thức gia nhập:</div>
+        <div id="winnerTeamName" class="text-lg font-black mt-0.5">
+          PHƯỢNG HOÀNG LỬA
+        </div>
+      </div>
+
+      <button onclick="closeWinnerModal()" class="w-full py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold text-sm shadow-md hover:brightness-110 active:scale-95 transition cursor-pointer">
+        Tiếp Tục Bốc Thăm →
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ================= FLOATING DOCK ================= -->
   <aside aria-label="Quick Navigation Bar" class="fixed bottom-5 inset-x-0 z-40 flex justify-center pointer-events-none px-3">
     <div class="pointer-events-auto apple-glass rounded-full shadow-2xl border border-black/10 dark:border-white/15 px-3 sm:px-4 py-2 flex items-center gap-1.5 sm:gap-3 backdrop-blur-xl transition-all duration-200">
-      <!-- 1: Sang Trang Lịch Trình -->
-      <a href="./index.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95 group" title="Xem Cẩm nang & Lịch trình">
-        <span class="text-base group-hover:scale-110 transition-transform">📅</span>
-        <span class="text-xs sm:text-sm font-semibold tracking-tight">Trang Lịch Trình</span>
+      <a href="./index.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95">
+        <span class="text-base">📅</span>
+        <span class="text-xs sm:text-sm font-semibold">Lịch Trình</span>
       </a>
 
       <span class="w-px h-4 bg-black/10 dark:bg-white/15"></span>
 
-      <!-- 2: Trang Hiện Tại: Xoay Đội -->
-      <a href="#spinArea" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm font-bold tracking-tight">
+      <a href="#spinArea" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm font-bold">
         <span class="text-base">🎲</span>
-        <span class="text-xs sm:text-sm">Xoay 3 Đội</span>
+        <span class="text-xs sm:text-sm">Xoay Đội</span>
       </a>
 
       <span class="w-px h-4 bg-black/10 dark:bg-white/15"></span>
 
-      <!-- 3: Sang Trang Thư Mời -->
-      <a href="./invitations.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95 group" title="Xem & Đối Soát Thư Mời 32 TV">
-        <span class="text-base group-hover:scale-110 transition-transform">💌</span>
-        <span class="text-xs sm:text-sm font-semibold tracking-tight">Thư Mời</span>
+      <a href="./invitations.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95">
+        <span class="text-base">💌</span>
+        <span class="text-xs sm:text-sm font-semibold">Thư Mời</span>
       </a>
 
       <span class="w-px h-4 bg-black/10 dark:bg-white/15"></span>
 
-      <!-- 4: Admin Duyệt Quick Jump -->
-      <a href="#adminApprovalSection" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold text-xs sm:text-sm hover:bg-emerald-500/20 transition active:scale-95">
-        <span class="text-base">👑</span>
-        <span class="hidden sm:inline">Admin Duyệt</span>
-        <span class="sm:hidden">Duyệt</span>
-      </a>
+      <button onclick="triggerResetConfirm()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-200/80 dark:bg-neutral-800 hover:bg-rose-500/20 text-neutral-700 dark:text-neutral-200 hover:text-rose-600 transition text-xs font-bold cursor-pointer" title="Khởi động lại toàn bộ bảng bốc thăm về 0">
+        <span>🔄</span>
+        <span class="hidden sm:inline">Reset</span>
+      </button>
     </div>
   </aside>
 
-  <!-- ================= JAVASCRIPT ================= -->
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
   <script>
-    // 1. Theme toggle
-    const themeToggleBtn = document.getElementById('themeToggle');
+    // 1. Theme handler
     function applyTheme() {
       if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
@@ -248,20 +364,18 @@
       }
     }
     applyTheme();
+    document.getElementById('themeToggle')?.addEventListener('click', () => {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      drawWheel();
+    });
 
-    if (themeToggleBtn) {
-      themeToggleBtn.addEventListener('click', () => {
-        if (document.documentElement.classList.contains('dark')) {
-          document.documentElement.classList.remove('dark');
-          localStorage.theme = 'light';
-        } else {
-          document.documentElement.classList.add('dark');
-          localStorage.theme = 'dark';
-        }
-      });
-    }
-
-    // 2. Sound synthesis (Web Audio API)
+    // 2. Web Audio Sound Synthesis
     function playSpinTick() {
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -270,14 +384,14 @@
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(350 + Math.random() * 250, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.04);
+        osc.frequency.setValueAtTime(320 + Math.random() * 200, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.035);
         gain.gain.setValueAtTime(0.12, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.035);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start();
-        osc.stop(ctx.currentTime + 0.04);
+        osc.stop(ctx.currentTime + 0.035);
       } catch (e) {}
     }
 
@@ -286,36 +400,29 @@
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtx) return;
         const ctx = new AudioCtx();
-        const chord = [523.25, 659.25, 783.99, 1046.50];
+        const chord = [523.25, 659.25, 783.99, 1046.50, 1318.51];
         chord.forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
-          gain.gain.setValueAtTime(0.18, ctx.currentTime + idx * 0.08);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.35);
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.09);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime + idx * 0.09);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.09 + 0.4);
           osc.connect(gain);
           gain.connect(ctx.destination);
-          osc.start(ctx.currentTime + idx * 0.08);
-          osc.stop(ctx.currentTime + idx * 0.08 + 0.35);
+          osc.start(ctx.currentTime + idx * 0.09);
+          osc.stop(ctx.currentTime + idx * 0.09 + 0.4);
         });
       } catch (e) {}
     }
 
-    // Default Excluded Members (Vy Phan, Huỳnh Trọng Hiếu, Hầu Quang Hưng, Trần Quốc Thịnh):
-    // STT 9: Phan Hoàng Trúc Vy (@Vy Phan)
-    // STT 27: Huỳnh Trọng Hiếu (@Loki)
-    // STT 11: Hầu Quang Hưng (@Joseph Hau)
-    // STT 2: Trần Quốc Thịnh (@Darius Tran)
+    // 3. Constants & Team Meta
     const DEFAULT_EXCLUDED_STTS = ['9', '27', '11', '2'];
-
     const TEAM_METADATA = [
       {
         id: 1,
         name: 'Phượng Hoàng Lửa',
-        shortName: 'Phượng Hoàng Lửa',
-        tagline: 'Nhiệt huyết • Bứt phá • Dẫn đầu',
-        themeColor: '#ef4444',
+        color: '#ef4444',
         bgClass: 'bg-rose-500/5 dark:bg-rose-500/10',
         borderClass: 'border-rose-500/30',
         badgeClass: 'bg-rose-500 text-white',
@@ -324,9 +431,7 @@
       {
         id: 2,
         name: 'Đại Ngàn Xanh',
-        shortName: 'Đại Ngàn Xanh',
-        tagline: 'Bền bỉ • Vững chãi • Xuyên rừng thông',
-        themeColor: '#10b981',
+        color: '#10b981',
         bgClass: 'bg-emerald-500/5 dark:bg-emerald-500/10',
         borderClass: 'border-emerald-500/30',
         badgeClass: 'bg-emerald-600 text-white',
@@ -335,9 +440,7 @@
       {
         id: 3,
         name: 'Vượt Sóng Tuyền Lâm',
-        shortName: 'Vượt Sóng Tuyền Lâm',
-        tagline: 'Đoàn kết • Thần tốc • Chèo SUP vô địch',
-        themeColor: '#0ea5e9',
+        color: '#0ea5e9',
         bgClass: 'bg-sky-500/5 dark:bg-sky-500/10',
         borderClass: 'border-sky-500/30',
         badgeClass: 'bg-sky-500 text-white',
@@ -345,471 +448,635 @@
       }
     ];
 
+    // Global State
     let allMembers = [];
-    let excludedStts = new Set(DEFAULT_EXCLUDED_STTS);
     let assignedTeams = [[], [], []];
+    let excludedStts = new Set(DEFAULT_EXCLUDED_STTS);
+    let selectedMember = null;
     let isApproved = false;
     let approvedTimestamp = null;
     let isSpinning = false;
+    let currentWheelAngle = 0;
+    let pollInterval = null;
 
-    const STORAGE_KEY = 'fit_dalat_approved_teams_v4';
+    // Canvas Wheel Setup
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas ? canvas.getContext('2d') : null;
 
-    // 3. Load Members
-    fetch('./assets/members.json')
-      .then(res => res.json())
-      .then(data => {
-        allMembers = data;
-        initTeams();
-      })
-      .catch(err => {
-        console.error('Lỗi tải dữ liệu thành viên:', err);
-      });
+    // 4. Initialize Data
+    async function init() {
+      try {
+        const memRes = await fetch('./assets/members.json');
+        allMembers = await memRes.json();
+      } catch (err) {
+        console.error('Không tải được members.json:', err);
+      }
 
-    function initTeams() {
-      const savedData = localStorage.getItem(STORAGE_KEY);
-      if (savedData) {
-        try {
-          const parsed = JSON.parse(savedData);
-          if (parsed.customTeamNames && Array.isArray(parsed.customTeamNames)) {
-            parsed.customTeamNames.forEach((n, idx) => {
-              if (n && TEAM_METADATA[idx]) {
-                TEAM_METADATA[idx].name = n;
-                TEAM_METADATA[idx].shortName = n;
-              }
-            });
-          }
-          if (parsed.teams && Array.isArray(parsed.teams) && parsed.teams.length === 3) {
-            assignedTeams = parsed.teams;
-            excludedStts = new Set(parsed.excludedStts || DEFAULT_EXCLUDED_STTS);
-            isApproved = !!parsed.isApproved;
-            approvedTimestamp = parsed.approvedTimestamp || null;
+      await fetchRemoteState();
+      detectErpUser();
+      renderAll();
+      drawWheel();
+
+      // Start periodic sync polling (every 3.5 seconds)
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(() => {
+        if (!isSpinning) {
+          fetchRemoteState(true);
+        }
+      }, 3500);
+    }
+
+    // 5. Fetch State from Server (Fallback to localStorage)
+    async function fetchRemoteState(silent = false) {
+      try {
+        const res = await fetch('/api/outing/teams/state');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            const data = json.data;
+            assignedTeams = data.teams || [[], [], []];
+            excludedStts = new Set(data.excludedStts || DEFAULT_EXCLUDED_STTS);
+            isApproved = !!data.isApproved;
+            approvedTimestamp = data.approvedTimestamp || null;
+
+            if (data.customTeamNames && Array.isArray(data.customTeamNames)) {
+              data.customTeamNames.forEach((n, idx) => {
+                if (n && TEAM_METADATA[idx]) TEAM_METADATA[idx].name = n;
+              });
+            }
+
             renderAll();
+            drawWheel();
             return;
           }
-        } catch (e) {
-          console.warn('Failed to parse saved teams data:', e);
         }
+      } catch (e) {
+        if (!silent) console.warn('Không kết nối được API /api/outing/teams/state, dùng local state:', e.message);
       }
 
-      generateBalancedDraft();
-      renderAll();
+      // Fallback localStorage
+      const localData = localStorage.getItem('fit_dalat_turn_teams_v1');
+      if (localData) {
+        try {
+          const parsed = JSON.parse(localData);
+          assignedTeams = parsed.teams || [[], [], []];
+          excludedStts = new Set(parsed.excludedStts || DEFAULT_EXCLUDED_STTS);
+          isApproved = !!parsed.isApproved;
+          approvedTimestamp = parsed.approvedTimestamp || null;
+          renderAll();
+          drawWheel();
+        } catch (e) {}
+      }
     }
 
-    function saveTeamsToStorage() {
+    function saveLocalState() {
       const payload = {
-        isApproved,
-        approvedTimestamp,
         teams: assignedTeams,
         excludedStts: Array.from(excludedStts),
+        isApproved,
+        approvedTimestamp,
         customTeamNames: TEAM_METADATA.map(m => m.name)
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      localStorage.setItem('fit_dalat_turn_teams_v1', JSON.stringify(payload));
     }
 
-    function editTeamName(idx) {
-      if (isApproved) {
-        alert('Đội hình hiện đang ĐÃ DUYỆT. Vui lòng bấm "Mở Khóa Chỉnh Sửa" ở bên dưới trước khi đổi tên đội.');
-        return;
-      }
-      const current = TEAM_METADATA[idx].name;
-      const newName = prompt(`Nhập tên mới cho Đội ${idx + 1}:`, current);
-      if (newName !== null && newName.trim() !== '') {
-        TEAM_METADATA[idx].name = newName.trim();
-        TEAM_METADATA[idx].shortName = newName.trim();
-        saveTeamsToStorage();
-        renderAll();
-      }
-    }
+    // 6. Nhận diện tài khoản ERP đăng nhập
+    function detectErpUser() {
+      let erpUser = null;
+      try {
+        const uStr = localStorage.getItem('user');
+        if (uStr) erpUser = JSON.parse(uStr);
+      } catch (e) {}
 
-    function toggleExcludeSection() {
-      const body = document.getElementById('excludeSectionBody');
-      const chevron = document.getElementById('excludeChevron');
-      if (body.classList.contains('hidden')) {
-        body.classList.remove('hidden');
-        chevron.textContent = '▲ Thu gọn';
-      } else {
-        body.classList.add('hidden');
-        chevron.textContent = '▼ Mở danh sách 32 người';
-      }
-    }
+      if (erpUser && (erpUser.email || erpUser.username || erpUser.full_name)) {
+        const match = allMembers.find(m => {
+          if (erpUser.email && m.email && erpUser.email.toLowerCase() === m.email.toLowerCase()) return true;
+          if (erpUser.phone && m.sdt && erpUser.phone === m.sdt) return true;
+          if (erpUser.full_name && m.ho_ten && erpUser.full_name.trim().toLowerCase() === m.ho_ten.trim().toLowerCase()) return true;
+          return false;
+        });
 
-    function setExcludePreset(preset) {
-      if (isApproved) {
-        alert('Đội hình hiện đang ĐÃ DUYỆT. Vui lòng bấm "Mở Khóa Chỉnh Sửa" ở bên dưới trước khi thay đổi thành viên.');
-        return;
-      }
-      if (preset === 'btc') {
-        excludedStts = new Set(DEFAULT_EXCLUDED_STTS);
-      } else if (preset === 'all_play') {
-        excludedStts = new Set();
-      }
-      generateBalancedDraft();
-      renderAll();
-    }
+        if (match) {
+          const isExcl = excludedStts.has(String(match.stt));
+          const hasTeam = assignedTeams.flat().some(p => String(p.stt) === String(match.stt));
 
-    function toggleExcludeMember(sttStr) {
-      if (isApproved) {
-        alert('Đội hình hiện đang ĐÃ DUYỆT. Vui lòng bấm "Mở Khóa Chỉnh Sửa" ở bên dưới trước khi thay đổi thành viên.');
-        return;
-      }
-      if (excludedStts.has(sttStr)) {
-        excludedStts.delete(sttStr);
-      } else {
-        excludedStts.add(sttStr);
-      }
-      generateBalancedDraft();
-      renderAll();
-    }
+          const erpBadge = document.getElementById('erpBadge');
+          if (erpBadge) erpBadge.classList.remove('hidden');
 
-    function generateBalancedDraft() {
-      const activeMembers = allMembers.filter(m => !excludedStts.has(String(m.stt)));
-      const N = activeMembers.length;
-      if (N === 0) {
-        assignedTeams = [[], [], []];
-        return;
-      }
-
-      const base = Math.floor(N / 3);
-      const rem = N % 3;
-      const capacities = [
-        base + (rem > 0 ? 1 : 0),
-        base + (rem > 1 ? 1 : 0),
-        base
-      ];
-
-      const teams = [[], [], []];
-
-      const shuffledMembers = [...activeMembers].sort(() => Math.random() - 0.5);
-      const males = shuffledMembers.filter(m => m.gioi_tinh === 'Nam');
-      const females = shuffledMembers.filter(m => m.gioi_tinh === 'Nữ');
-
-      males.forEach(m => {
-        const available = teams
-          .map((t, idx) => ({ t, idx, cap: capacities[idx] }))
-          .filter(item => item.t.length < item.cap);
-        if (available.length > 0) {
-          available.sort((a, b) => {
-            const aM = a.t.filter(p => p.gioi_tinh === 'Nam').length;
-            const bM = b.t.filter(p => p.gioi_tinh === 'Nam').length;
-            if (aM !== bM) return aM - bM;
-            return a.t.length - b.t.length;
-          });
-          available[0].t.push(m);
+          if (!isExcl && !hasTeam) {
+            selectMemberForSpin(match);
+            return;
+          }
         }
-      });
+      }
 
-      females.forEach(f => {
-        const available = teams
-          .map((t, idx) => ({ t, idx, cap: capacities[idx] }))
-          .filter(item => item.t.length < item.cap);
-        if (available.length > 0) {
-          available.sort((a, b) => {
-            const aF = a.t.filter(p => p.gioi_tinh === 'Nữ').length;
-            const bF = b.t.filter(p => p.gioi_tinh === 'Nữ').length;
-            if (aF !== bF) return aF - bF;
-            return a.t.length - b.t.length;
-          });
-          available[0].t.push(f);
+      // Nếu chưa có ai được chọn, tự động chọn người đầu tiên trong unassigned
+      if (!selectedMember) {
+        const unassigned = getUnassignedMembers();
+        if (unassigned.length > 0) {
+          selectMemberForSpin(unassigned[0]);
         }
-      });
-
-      assignedTeams = teams;
+      }
     }
 
-    function spinRandomTeams() {
+    function getUnassignedMembers() {
+      const assignedStts = new Set(assignedTeams.flat().map(p => String(p.stt)));
+      return allMembers.filter(m => !excludedStts.has(String(m.stt)) && !assignedStts.has(String(m.stt)));
+    }
+
+    function selectMemberForSpin(member) {
+      selectedMember = member;
+      const avatarEl = document.getElementById('currentUserAvatar');
+      const nameEl = document.getElementById('currentUserName');
+      const metaEl = document.getElementById('currentUserMeta');
+      const hubAvatar = document.getElementById('hubAvatar');
+      const hubNickname = document.getElementById('hubNickname');
+
+      if (avatarEl) {
+        avatarEl.innerHTML = member.avatar 
+          ? `<img src="${member.avatar}" class="w-full h-full object-cover">`
+          : (member.ho_ten ? member.ho_ten.charAt(0) : '?');
+      }
+      if (nameEl) nameEl.textContent = member.ho_ten;
+      if (metaEl) {
+        metaEl.textContent = `@${member.nickname || 'TV'} • ${member.gioi_tinh || 'TV'} • BU: ${member.phong_ban || 'FIT'}`;
+      }
+      if (hubAvatar) {
+        hubAvatar.innerHTML = member.avatar 
+          ? `<img src="${member.avatar}" class="w-full h-full object-cover">`
+          : (member.nickname ? member.nickname.charAt(0) : '🎲');
+      }
+      if (hubNickname) {
+        hubNickname.textContent = member.nickname || member.ho_ten.split(' ').pop();
+      }
+
+      const btnSpinText = document.getElementById('btnSpinText');
+      if (btnSpinText) {
+        btnSpinText.textContent = `XOAY ĐỘI CHO ${member.nickname ? member.nickname.toUpperCase() : member.ho_ten.toUpperCase()}`;
+      }
+
+      closeMemberPickerModal();
+    }
+
+    // 7. Vẽ Vòng Quay May Mắn (3 Đội) bằng Canvas
+    function drawWheel(angle = currentWheelAngle) {
+      if (!canvas || !ctx) return;
+      const width = canvas.width;
+      const height = canvas.height;
+      const center = width / 2;
+      const radius = center - 8;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const numSlices = 3;
+      const sliceAngle = (Math.PI * 2) / numSlices;
+
+      for (let i = 0; i < numSlices; i++) {
+        const start = angle + i * sliceAngle;
+        const end = start + sliceAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, start, end);
+        ctx.closePath();
+
+        ctx.fillStyle = TEAM_METADATA[i].color;
+        ctx.fill();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Vẽ Tên Đội
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(start + sliceAngle / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 15px -apple-system, sans-serif';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        ctx.shadowBlur = 4;
+        ctx.fillText(TEAM_METADATA[i].name, radius - 20, 5);
+        ctx.restore();
+      }
+
+      // Viền ngoài
+      ctx.beginPath();
+      ctx.arc(center, center, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 6;
+      ctx.stroke();
+    }
+
+    // 8. Thực thi Bốc Thăm (Execute Spin)
+    async function executeSpin() {
       if (isSpinning) return;
       if (isApproved) {
-        alert('Đội hình hiện đã được Admin duyệt chính thức. Hãy bấm "Mở Khóa Chỉnh Sửa" ở bên dưới nếu muốn xoay bốc thăm lại.');
+        alert('Đội hình hiện đã được Admin duyệt chính thức. Hãy bấm mở khóa nếu muốn bốc thăm tiếp.');
+        return;
+      }
+      if (!selectedMember) {
+        alert('Vui lòng chọn 1 thành viên trước khi xoay.');
+        openMemberPickerModal();
         return;
       }
 
-      const activeMembers = allMembers.filter(m => !excludedStts.has(String(m.stt)));
-      if (activeMembers.length === 0) {
-        alert('Vui lòng chọn ít nhất 1 thành viên tham gia thi đấu.');
+      // Kiểm tra thành viên đã vào đội chưa
+      const hasTeam = assignedTeams.flat().some(p => String(p.stt) === String(selectedMember.stt));
+      if (hasTeam) {
+        alert(`Thành viên ${selectedMember.ho_ten} đã có đội rồi! Vui lòng chọn thành viên khác.`);
+        const unassigned = getUnassignedMembers();
+        if (unassigned.length > 0) selectMemberForSpin(unassigned[0]);
         return;
       }
 
       isSpinning = true;
-      const btn = document.getElementById('btnSpinTeams');
-      const icon = document.getElementById('spinDiceIcon');
-      const text = document.getElementById('spinBtnText');
-      const statusMsg = document.getElementById('spinStatusMessage');
+      const btn = document.getElementById('btnSpin');
+      const btnText = document.getElementById('btnSpinText');
+      const btnIcon = document.getElementById('btnSpinIcon');
+      const statusMsg = document.getElementById('spinStatusMsg');
 
       if (btn) btn.disabled = true;
-      if (icon) icon.classList.add('animate-spin');
-      if (text) text.textContent = 'Đang Xoay Bốc Thăm...';
-      if (statusMsg) statusMsg.innerHTML = '<span class="text-amber-600 dark:text-amber-400 font-bold">🎲 Đang bốc thăm ngẫu nhiên &amp; cân bằng đội hình...</span>';
+      if (btnIcon) btnIcon.classList.add('animate-spin');
+      if (btnText) btnText.textContent = 'Đang Xoay Bốc Thăm...';
+      if (statusMsg) {
+        statusMsg.innerHTML = `<span class="text-amber-600 dark:text-amber-400 font-bold">🎲 Đang tính toán cân bằng đội cho ${selectedMember.ho_ten}...</span>`;
+      }
 
-      let count = 0;
-      const totalTicks = 10;
-      const interval = setInterval(() => {
-        count++;
-        playSpinTick();
+      // 1. Gọi Server API để lấy targetTeamIdx (có thuật toán cân bằng động)
+      let targetTeamIdx = 0;
+      let memberRecord = null;
+      let usedApi = false;
 
-        if (count >= totalTicks) {
-          clearInterval(interval);
-          generateBalancedDraft();
-          saveTeamsToStorage();
+      try {
+        const res = await fetch('/api/outing/teams/spin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ memberStt: selectedMember.stt })
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            targetTeamIdx = json.data.targetTeamIdx;
+            memberRecord = json.data.member;
+            usedApi = true;
+          }
+        }
+      } catch (err) {
+        console.warn('API /api/outing/teams/spin không phản hồi, fallback thuật toán offline:', err);
+      }
+
+      // Fallback thuật toán offline nếu API không khả dụng
+      if (!usedApi) {
+        targetTeamIdx = computeLocalTargetTeam(selectedMember);
+        memberRecord = {
+          ...selectedMember,
+          assignedAt: new Date().toISOString(),
+          assignedTeamIdx: targetTeamIdx
+        };
+        assignedTeams[targetTeamIdx].push(memberRecord);
+        saveLocalState();
+      }
+
+      // 2. Tính toán góc quay đích của Bánh Xe
+      // Kim chỉ ở đỉnh (-PI/2). Lát cắt i nằm ở: currentWheelAngle + i * sliceAngle
+      const sliceAngle = (Math.PI * 2) / 3;
+      // Để kim (-PI/2) chỉ vào giữa lát cắt targetTeamIdx:
+      // angle + targetTeamIdx * sliceAngle + sliceAngle / 2 = -PI/2 + 2*PI*k
+      const targetMiddle = -Math.PI / 2;
+      const targetSliceOffset = targetTeamIdx * sliceAngle + sliceAngle / 2;
+      const desiredFinalAngle = targetMiddle - targetSliceOffset;
+
+      const extraSpins = 5 + Math.floor(Math.random() * 3); // Quay từ 5 - 7 vòng
+      const totalRotation = extraSpins * Math.PI * 2 + (desiredFinalAngle - (currentWheelAngle % (Math.PI * 2)));
+
+      const startAngle = currentWheelAngle;
+      const startTime = performance.now();
+      const duration = 3800; // 3.8s
+
+      let lastTickAngle = startAngle;
+
+      function animateWheel(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing cubic ease-out
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        currentWheelAngle = startAngle + totalRotation * easeOut;
+
+        // Âm thanh tick khi kim đi qua từng lát cắt
+        if (Math.abs(currentWheelAngle - lastTickAngle) >= sliceAngle) {
+          playSpinTick();
+          lastTickAngle = currentWheelAngle;
+        }
+
+        drawWheel(currentWheelAngle);
+
+        if (progress < 1) {
+          requestAnimationFrame(animateWheel);
+        } else {
+          // Kết thúc quay bánh xe
           isSpinning = false;
-
           if (btn) btn.disabled = false;
-          if (icon) icon.classList.remove('animate-spin');
-          if (text) text.textContent = 'Xoay Bốc Thăm Chia Đội';
-          if (statusMsg) statusMsg.innerHTML = '🎉 <span class="text-emerald-600 dark:text-emerald-400 font-extrabold">Đã bốc thăm ngẫu nhiên &amp; cân bằng đội hình!</span>';
-
+          if (btnIcon) btnIcon.classList.remove('animate-spin');
+          if (btnText) btnText.textContent = 'BẮT ĐẦU XOAY VÀO ĐỘI';
+          
           playFanfare();
-          renderAll();
+          triggerConfetti();
+
+          showWinnerPopup(selectedMember, targetTeamIdx);
+
+          if (usedApi) {
+            fetchRemoteState(true);
+          } else {
+            renderAll();
+          }
+
+          // Tự động chuyển sang thành viên tiếp theo chưa có đội
+          const nextMembers = getUnassignedMembers();
+          if (nextMembers.length > 0) {
+            selectMemberForSpin(nextMembers[0]);
+          } else {
+            selectedMember = null;
+            document.getElementById('currentUserName').textContent = '🎉 ĐÃ HOÀN TẤT CHIA 3 ĐỘI!';
+            document.getElementById('currentUserMeta').textContent = 'Tất cả 28 thành viên đều đã vào đội';
+          }
         }
-      }, 60);
+      }
+
+      requestAnimationFrame(animateWheel);
     }
 
-    function moveMemberToTeam(sttStr, targetTeamIdx) {
-      if (isApproved) {
-        alert('Đội hình hiện đang ĐÃ DUYỆT. Vui lòng bấm "Mở Khóa Chỉnh Sửa" ở bên dưới trước khi đổi đội.');
-        return;
+    // Thuật toán cân bằng offline (nếu mất mạng)
+    function computeLocalTargetTeam(member) {
+      const isMale = (member.gioi_tinh || '').includes('Nam');
+      const capacities = [10, 9, 9];
+      let eligible = [0, 1, 2].filter(i => {
+        const t = assignedTeams[i] || [];
+        const genderCount = t.filter(p => (p.gioi_tinh || '').includes('Nam') === isMale).length;
+        return t.length < capacities[i] && genderCount < 5;
+      });
+
+      if (eligible.length === 0) {
+        eligible = [0, 1, 2].filter(i => (assignedTeams[i] || []).length < capacities[i]);
       }
-      targetTeamIdx = parseInt(targetTeamIdx, 10);
-      let foundMember = null;
-      for (let i = 0; i < 3; i++) {
-        const idx = assignedTeams[i].findIndex(p => String(p.stt) === String(sttStr));
-        if (idx !== -1) {
-          foundMember = assignedTeams[i].splice(idx, 1)[0];
-          break;
-        }
-      }
-      if (foundMember && targetTeamIdx >= 0 && targetTeamIdx < 3) {
-        assignedTeams[targetTeamIdx].push(foundMember);
-      }
-      renderAll();
-    }
+      if (eligible.length === 0) eligible = [0, 1, 2];
 
-    function approveTeams() {
-      if (assignedTeams.flat().length === 0) {
-        alert('Chưa có thành viên nào trong đội hình để duyệt.');
-        return;
-      }
-      const ok = confirm('XÁC NHẬN PHÊ DUYỆT:\nBạn có chắc chắn muốn CHÍNH THỨC DUYỆT và ban hành đội hình 3 đội này cho toàn công ty?\n\nSau khi duyệt, kết quả sẽ được khóa và công bố chính thức.');
-      if (!ok) return;
+      const memberFirstName = (member.ho_ten || '').trim().split(/\s+/).pop().toLowerCase();
+      const memberBU = String(member.phong_ban || '');
 
-      isApproved = true;
-      const now = new Date();
-      approvedTimestamp = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + now.toLocaleDateString('vi-VN');
-      saveTeamsToStorage();
-      playFanfare();
-      renderAll();
-    }
-
-    function unlockTeams() {
-      const ok = confirm('MỞ KHÓA CHỈNH SỬA:\nBạn có chắc chắn muốn mở khóa để Admin có thể bốc thăm hoặc điều chuyển lại thành viên?');
-      if (!ok) return;
-
-      isApproved = false;
-      saveTeamsToStorage();
-      renderAll();
-    }
-
-    function copyTeamsToClipboard() {
-      let text = `🏆 DANH SÁCH 3 ĐỘI TEAMBUILDING — FIT TOGETHER ĐÀ LẠT 2026 🏆\n`;
-      text += `📅 Ngày khởi hành: 11/11 - 14/11/2026\n`;
-      text += `🔒 Trạng thái: ${isApproved ? 'ĐÃ ĐƯỢC ADMIN DUYỆT CHÍNH THỨC' : 'Bản Dự Thảo'}\n\n`;
-
-      TEAM_METADATA.forEach((meta, idx) => {
+      const weights = eligible.map(idx => {
+        let w = 100;
         const team = assignedTeams[idx] || [];
-        const mCount = team.filter(p => p.gioi_tinh === 'Nam').length;
-        const fCount = team.filter(p => p.gioi_tinh === 'Nữ').length;
-
-        text += `${meta.bannerIcon} ${meta.name.toUpperCase()} (${team.length} Thành viên: ${mCount} Nam - ${fCount} Nữ)\n`;
-        text += `   Khẩu hiệu: "${meta.tagline}"\n`;
-        team.forEach((p, i) => {
-          text += `   ${i + 1}. ${p.ho_ten} (@${p.nickname || 'TV'}) - ${p.gioi_tinh} | PB: ${p.phong_ban || 'FIT'} | ${p.nghe_nghiep || ''}\n`;
-        });
-        text += `\n`;
+        if (team.some(p => (p.ho_ten || '').trim().split(/\s+/).pop().toLowerCase() === memberFirstName)) {
+          w *= 0.05;
+        }
+        const buCount = team.filter(p => String(p.phong_ban) === memberBU).length;
+        if (buCount >= 2) w *= 0.2;
+        else if (buCount === 1) w *= 0.6;
+        else w *= 1.5;
+        w += (capacities[idx] - team.length) * 20;
+        return Math.max(w, 1);
       });
 
-      const excluded = allMembers.filter(m => excludedStts.has(String(m.stt)));
-      if (excluded.length > 0) {
-        text += `👑 BAN TỔ CHỨC / TRỌNG TÀI / ĐI RIÊNG (${excluded.length} người):\n`;
-        excluded.forEach((p, i) => {
-          text += `   • ${p.ho_ten} (@${p.nickname || 'TV'}) - ${p.nghe_nghiep || p.phong_ban || 'BTC'}\n`;
-        });
+      const totalW = weights.reduce((a, b) => a + b, 0);
+      let rand = Math.random() * totalW;
+      for (let k = 0; k < eligible.length; k++) {
+        if (rand < weights[k]) return eligible[k];
+        rand -= weights[k];
       }
-
-      navigator.clipboard.writeText(text).then(() => {
-        alert('✅ Đã sao chép danh sách 3 đội vào bộ nhớ tạm!\nBạn có thể dán (Paste) ngay vào nhóm Zalo công ty.');
-      }).catch(() => {
-        alert('Không thể tự động sao chép. Vui lòng thử lại trên trình duyệt được cấp quyền.');
-      });
+      return eligible[0];
     }
 
-    function renderAll() {
-      const activeMembers = allMembers.filter(m => !excludedStts.has(String(m.stt)));
-      const N = activeMembers.length;
-      const excludedCount = excludedStts.size;
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    }
 
-      const activeCountEl = document.getElementById('statActiveCount');
-      const excludedCountEl = document.getElementById('statExcludedCount');
-      const formulaEl = document.getElementById('statFormula');
-      if (activeCountEl) activeCountEl.textContent = `${N} Người`;
-      if (excludedCountEl) excludedCountEl.textContent = `${excludedCount} Người`;
+    function showWinnerPopup(member, teamIdx) {
+      const meta = TEAM_METADATA[teamIdx];
+      const modal = document.getElementById('winnerModal');
+      const nameEl = document.getElementById('winnerName');
+      const teamNameEl = document.getElementById('winnerTeamName');
+      const teamBoxEl = document.getElementById('winnerTeamBox');
+      const badgeEl = document.getElementById('winnerBadge');
 
-      if (formulaEl) {
-        const base = Math.floor(N / 3);
-        const rem = N % 3;
-        if (rem === 0) {
-          formulaEl.textContent = `${base} - ${base} - ${base} người/đội (Cân bằng)`;
-        } else if (rem === 1) {
-          formulaEl.textContent = `1 đội ${base + 1} người + 2 đội ${base} người (+1 người)`;
-        } else {
-          formulaEl.textContent = `2 đội ${base + 1} người + 1 đội ${base} người (+2 người)`;
-        }
+      if (nameEl) nameEl.textContent = `${member.ho_ten} (@${member.nickname || 'TV'})`;
+      if (teamNameEl) {
+        teamNameEl.textContent = meta.name.toUpperCase();
+        teamNameEl.style.color = meta.color;
+      }
+      if (teamBoxEl) {
+        teamBoxEl.className = `p-4 rounded-2xl mb-5 ${meta.bgClass} border ${meta.borderClass}`;
+      }
+      if (badgeEl) {
+        badgeEl.style.backgroundColor = meta.color;
+        badgeEl.style.color = '#ffffff';
+      }
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeWinnerModal() {
+      const modal = document.getElementById('winnerModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // 9. Member Picker Modal Handlers
+    function openMemberPickerModal() {
+      const modal = document.getElementById('memberPickerModal');
+      const listEl = document.getElementById('pickerMembersList');
+      if (!modal || !listEl) return;
+
+      const unassigned = getUnassignedMembers();
+      renderPickerList(unassigned);
+      modal.classList.remove('hidden');
+    }
+
+    function closeMemberPickerModal() {
+      const modal = document.getElementById('memberPickerModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function renderPickerList(list) {
+      const listEl = document.getElementById('pickerMembersList');
+      if (!listEl) return;
+
+      if (list.length === 0) {
+        listEl.innerHTML = `
+          <div class="text-center py-8 text-xs text-apple-textMuted">
+            Tất cả thành viên thi đấu đã được bốc thăm vào đội!
+          </div>
+        `;
+        return;
       }
 
-      const spinBtn = document.getElementById('btnSpinTeams');
-      const spinStatusMsg = document.getElementById('spinStatusMessage');
-      if (spinBtn) {
-        if (isApproved) {
-          spinBtn.classList.add('opacity-70', 'grayscale-[30%]');
-          if (spinStatusMsg) {
-            spinStatusMsg.innerHTML = '<span class="text-emerald-600 dark:text-emerald-400 font-bold">🔒 Đội hình đã được duyệt chính thức. Bấm "Mở Khóa Chỉnh Sửa" bên dưới nếu muốn xoay lại.</span>';
-          }
-        } else {
-          spinBtn.classList.remove('opacity-70', 'grayscale-[30%]');
-          if (spinStatusMsg && !isSpinning) {
-            spinStatusMsg.textContent = 'Bấm để bốc thăm ngẫu nhiên & cân bằng đội hình';
-          }
-        }
-      }
-
-      const excludeGrid = document.getElementById('excludeMembersGrid');
-      if (excludeGrid && allMembers.length > 0) {
-        excludeGrid.innerHTML = allMembers.map(m => {
-          const isExcl = excludedStts.has(String(m.stt));
-          return `
-            <div onclick="toggleExcludeMember('${m.stt}')" class="p-2 rounded-xl border flex items-center justify-between gap-2 cursor-pointer select-none transition-all ${
-              isExcl 
-                ? 'bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-300' 
-                : 'bg-white dark:bg-neutral-800/80 border-black/[0.08] dark:border-white/[0.08] hover:border-apple-blue'
-            }">
-              <div class="flex items-center gap-2 min-w-0">
-                <div class="w-7 h-7 rounded-lg overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex-shrink-0 flex items-center justify-center text-xs font-bold">
-                  ${m.avatar ? `<img src="${m.avatar}" class="w-full h-full object-cover">` : m.ho_ten.charAt(0)}
+      listEl.innerHTML = list.map(m => {
+        return `
+          <div onclick="selectMemberForSpinByStt('${m.stt}')" class="p-2.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08] hover:border-amber-500 bg-white dark:bg-neutral-800/80 hover:bg-amber-500/5 flex items-center justify-between gap-3 cursor-pointer transition select-none">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-700 flex-shrink-0 flex items-center justify-center font-bold text-xs">
+                ${m.avatar ? `<img src="${m.avatar}" class="w-full h-full object-cover">` : m.ho_ten.charAt(0)}
+              </div>
+              <div class="min-w-0">
+                <div class="font-bold text-xs sm:text-sm text-neutral-800 dark:text-neutral-100 truncate">
+                  ${m.ho_ten}
                 </div>
-                <div class="min-w-0">
-                  <div class="font-bold text-xs truncate ${isExcl ? 'line-through opacity-70' : 'text-neutral-800 dark:text-neutral-100'}">
-                    ${m.ho_ten}
-                  </div>
-                  <div class="text-[10px] text-apple-textMuted dark:text-apple-textMutedDark truncate">
-                    @${m.nickname || m.phong_ban}
-                  </div>
+                <div class="text-[11px] text-apple-textMuted dark:text-apple-textMutedDark truncate">
+                  @${m.nickname || 'TV'} • BU ${m.phong_ban || 'FIT'}
                 </div>
               </div>
-              <span class="text-[10px] px-1.5 py-0.5 rounded font-extrabold flex-shrink-0 ${
-                isExcl ? 'bg-rose-500 text-white' : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
-              }">
-                ${isExcl ? 'BTC' : 'Chơi'}
-              </span>
             </div>
-          `;
-        }).join('');
+            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold flex-shrink-0 ${
+              m.gioi_tinh === 'Nam' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300' : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+            }">
+              ${m.gioi_tinh}
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectMemberForSpinByStt(sttStr) {
+      const member = allMembers.find(m => String(m.stt) === String(sttStr));
+      if (member) {
+        selectMemberForSpin(member);
+      }
+    }
+
+    function filterPickerMembers() {
+      const q = (document.getElementById('pickerSearchInput')?.value || '').trim().toLowerCase();
+      const unassigned = getUnassignedMembers();
+      if (!q) {
+        renderPickerList(unassigned);
+        return;
+      }
+      const filtered = unassigned.filter(m => {
+        return (m.ho_ten && m.ho_ten.toLowerCase().includes(q)) ||
+               (m.nickname && m.nickname.toLowerCase().includes(q)) ||
+               (m.phong_ban && String(m.phong_ban).toLowerCase().includes(q));
+      });
+      renderPickerList(filtered);
+    }
+
+    // 10. Render Roster Cards & Progress
+    function renderAll() {
+      const assignedCount = assignedTeams.flat().length;
+      const totalCompetition = 32 - excludedStts.size; // 28
+      const unassigned = getUnassignedMembers();
+
+      // Tiến độ
+      const label = document.getElementById('unassignedCountLabel');
+      const percentEl = document.getElementById('progressPercent');
+      const barEl = document.getElementById('progressBar');
+      if (label) label.textContent = unassigned.length;
+      if (percentEl) {
+        const pct = Math.round((assignedCount / totalCompetition) * 100);
+        percentEl.textContent = `${assignedCount} / ${totalCompetition} (${pct}%)`;
+        if (barEl) barEl.style.width = `${pct}%`;
       }
 
-      const teamsContainer = document.getElementById('teamsCardsContainer');
-      if (teamsContainer) {
-        teamsContainer.innerHTML = TEAM_METADATA.map((meta, idx) => {
+      // Chips unassigned
+      const chipsEl = document.getElementById('unassignedChipsContainer');
+      if (chipsEl) {
+        if (unassigned.length === 0) {
+          chipsEl.innerHTML = `<span class="text-xs text-emerald-600 dark:text-emerald-400 font-bold py-1">🎉 Toàn bộ 28 thành viên đã hoàn thành bốc thăm vào đội!</span>`;
+        } else {
+          chipsEl.innerHTML = unassigned.map(m => {
+            const isCur = selectedMember && String(selectedMember.stt) === String(m.stt);
+            return `
+              <button onclick="selectMemberForSpinByStt('${m.stt}')" class="px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition select-none ${
+                isCur 
+                  ? 'bg-amber-500 text-white font-extrabold shadow-sm scale-105' 
+                  : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200'
+              }">
+                <span>${m.avatar ? `<img src="${m.avatar}" class="w-3.5 h-3.5 rounded-full inline object-cover">` : '👤'}</span>
+                <span>${m.ho_ten}</span>
+                <span class="opacity-60 text-[10px]">(@${m.nickname || m.phong_ban})</span>
+              </button>
+            `;
+          }).join('');
+        }
+      }
+
+      // 3 Team Cards
+      const container = document.getElementById('teamsCardsContainer');
+      if (container) {
+        container.innerHTML = TEAM_METADATA.map((meta, idx) => {
           const team = assignedTeams[idx] || [];
-          const mCount = team.filter(p => p.gioi_tinh === 'Nam').length;
-          const fCount = team.filter(p => p.gioi_tinh === 'Nữ').length;
+          const mCount = team.filter(p => (p.gioi_tinh || '').includes('Nam')).length;
+          const fCount = team.filter(p => (p.gioi_tinh || '').includes('Nữ')).length;
+          const targetCap = idx === 0 ? 10 : 9;
 
           return `
             <div class="rounded-3xl border ${meta.borderClass} ${meta.bgClass} p-5 flex flex-col shadow-apple transition-all">
-              <!-- Header Ô chia đội: Badge đưa lên trên, tên đội click sửa được ✏️ -->
-              <div class="border-b border-black/[0.06] dark:border-white/[0.08] pb-3.5 mb-3.5">
+              
+              <!-- Card Header -->
+              <div class="border-b border-black/[0.06] dark:border-white/[0.08] pb-3 mb-3">
                 <div class="flex items-center justify-between gap-2 mb-2">
-                  <span class="px-3 py-1 rounded-full text-xs font-extrabold ${meta.badgeClass} shadow-sm whitespace-nowrap">
-                    ${team.length} TV (${mCount}N • ${fCount}Nữ)
+                  <span class="px-3 py-1 rounded-full text-xs font-extrabold ${meta.badgeClass} shadow-sm">
+                    ${team.length} / ${targetCap} TV (${mCount}N • ${fCount}Nữ)
                   </span>
                   ${!isApproved ? `
-                    <button onclick="editTeamName(${idx})" class="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer">
-                      <span>✏️ Đổi tên đội</span>
+                    <button onclick="editTeamName(${idx})" class="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer">
+                      ✏️ Đổi tên
                     </button>
                   ` : ''}
                 </div>
-                <div class="flex items-center gap-2 group">
-                  <h3 onclick="${!isApproved ? `editTeamName(${idx})` : ''}" class="text-xl sm:text-2xl font-black text-[#1d1d1f] dark:text-white tracking-tight leading-tight ${!isApproved ? 'cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 transition' : ''}" title="${!isApproved ? 'Bấm để đổi tên đội' : ''}">
-                    ${meta.name}
-                  </h3>
-                </div>
-                <div class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-1 font-medium">
-                  ${meta.tagline}
-                </div>
+                <h3 class="text-xl sm:text-2xl font-black text-[#1d1d1f] dark:text-white tracking-tight">
+                  ${meta.name}
+                </h3>
               </div>
 
-              <!-- Danh sách thành viên hiển thị FULL (Không cuộn / scroll) -->
-              <div class="space-y-2">
+              <!-- Member List -->
+              <div class="space-y-2 flex-1">
                 ${team.length === 0 ? `
-                  <div class="text-center py-8 text-xs text-apple-textMuted">
-                    Chưa có thành viên nào. Hãy nhấn xoay bốc thăm.
+                  <div class="py-10 text-center text-xs text-apple-textMuted flex flex-col items-center justify-center gap-1.5 opacity-60">
+                    <span class="text-2xl">⏳</span>
+                    <span>Chưa có thành viên nào.</span>
+                    <span class="text-[11px]">Bấm xoay để đưa người đầu tiên vào đội!</span>
                   </div>
                 ` : team.map((p, pIdx) => {
                   return `
-                    <div class="p-2.5 rounded-2xl bg-white dark:bg-apple-cardDark border border-black/[0.05] dark:border-white/[0.06] shadow-sm hover:shadow transition">
-                      <div class="flex items-center gap-2.5">
-                        <!-- STT -->
+                    <div class="p-2.5 rounded-2xl bg-white dark:bg-apple-cardDark border border-black/[0.05] dark:border-white/[0.06] shadow-sm flex items-center justify-between gap-2 animate-in fade-in duration-200">
+                      <div class="flex items-center gap-2.5 min-w-0">
                         <span class="w-4 text-center font-bold text-neutral-400 text-xs flex-shrink-0">${pIdx + 1}</span>
-                        
-                        <!-- Avatar tròn -->
-                        <div class="w-8 h-8 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 flex items-center justify-center font-extrabold text-apple-blue border border-black/5 shadow-sm">
+                        <div class="w-8 h-8 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 flex items-center justify-center font-bold text-apple-blue border border-black/5 shadow-sm text-xs">
                           ${p.avatar ? `<img src="${p.avatar}" class="w-full h-full object-cover">` : p.ho_ten.charAt(0)}
                         </div>
-
-                        <!-- Cụm thông tin: Dòng 1 Tên + Giới tính; Dòng 2 Nickname + Đổi đội -->
-                        <div class="min-w-0 flex-1">
-                          <!-- DÒNG 1: Họ tên đầy đủ (KHÔNG CẮT NGẮN) + Giới tính -->
-                          <div class="flex items-center justify-between gap-1.5">
-                            <span class="font-extrabold text-xs sm:text-[13px] text-[#1d1d1f] dark:text-white leading-tight">
-                              ${p.ho_ten}
-                            </span>
-                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${
-                              p.gioi_tinh === 'Nam' 
-                                ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300' 
-                                : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
-                            }">
-                              ${p.gioi_tinh}
-                            </span>
+                        <div class="min-w-0">
+                          <div class="font-extrabold text-xs sm:text-[13px] text-[#1d1d1f] dark:text-white truncate">
+                            ${p.ho_ten}
                           </div>
-
-                          <!-- DÒNG 2: Nickname • Phòng ban + Đổi đội (đặt ở dòng 2 để giải phóng dòng 1) -->
-                          <div class="flex items-center justify-between gap-1 text-[11px] text-apple-textMuted dark:text-apple-textMutedDark mt-0.5">
-                            <div class="truncate">
-                              <span class="text-apple-blue font-semibold">@${p.nickname || 'TV'}</span>
-                              <span>•</span>
-                              <span>${p.phong_ban || 'FIT'}</span>
-                            </div>
-
-                            ${!isApproved ? `
-                              <select onchange="moveMemberToTeam('${p.stt}', this.value)" class="text-[10px] font-bold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border-none rounded-md py-0.5 px-1.5 cursor-pointer transition flex-shrink-0" title="Chuyển sang đội khác">
-                                <option value="${idx}">Đội này</option>
-                                <option value="0">Qua Đ1</option>
-                                <option value="1">Qua Đ2</option>
-                                <option value="2">Qua Đ3</option>
-                              </select>
-                            ` : ''}
+                          <div class="text-[10px] text-apple-textMuted dark:text-apple-textMutedDark truncate">
+                            @${p.nickname || 'TV'} • BU ${p.phong_ban || 'FIT'}
                           </div>
                         </div>
                       </div>
+                      <span class="px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${
+                        (p.gioi_tinh || '').includes('Nam') ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300' : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                      }">
+                        ${p.gioi_tinh || 'TV'}
+                      </span>
                     </div>
                   `;
                 }).join('')}
               </div>
+
             </div>
           `;
         }).join('');
       }
 
-      const adminSection = document.getElementById('adminApprovalSection');
-      if (adminSection) {
+      // Admin Controls
+      const adminEl = document.getElementById('adminApprovalSection');
+      if (adminEl) {
         if (isApproved) {
-          adminSection.innerHTML = `
+          adminEl.innerHTML = `
             <div class="flex items-center gap-3">
               <span class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl font-bold flex-shrink-0">
                 ✅
@@ -819,36 +1086,40 @@
                   Đội Hình Đã Được Phê Duyệt & Khóa Chính Thức
                 </div>
                 <div class="text-xs text-apple-textMuted dark:text-apple-textMutedDark">
-                  Thời gian duyệt: <strong>${approvedTimestamp || 'Gần đây'}</strong> • Kết quả đã sẵn sàng thi đấu.
+                  Thời gian duyệt: <strong>${approvedTimestamp || 'Gần đây'}</strong> • Sẵn sàng cho Teambuilding Đà Lạt.
                 </div>
               </div>
             </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <button onclick="copyTeamsToClipboard()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-apple-blue hover:bg-apple-blueHover text-white font-bold text-xs shadow-md transition active:scale-95">
-                <span>📋</span>
-                <span>Sao Chép Danh Sách 3 Đội (Gửi Zalo)</span>
+            <div class="flex items-center gap-2">
+              <button onclick="copyTeamsList()" class="px-5 py-2.5 rounded-full bg-apple-blue hover:bg-apple-blueHover text-white font-bold text-xs shadow-md transition">
+                📋 Sao Chép Gửi Zalo
               </button>
-              <button onclick="unlockTeams()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold text-xs transition">
-                <span>🔓</span>
-                <span>Mở Khóa Chỉnh Sửa / Xoay Lại (Admin)</span>
+              <button onclick="toggleApprove(false)" class="px-4 py-2.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold text-xs transition">
+                🔓 Mở Khóa
               </button>
             </div>
           `;
         } else {
-          adminSection.innerHTML = `
-            <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div class="flex items-center gap-2.5">
-                <span class="w-9 h-9 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg font-bold flex-shrink-0">
-                  👑
-                </span>
-                <span class="font-extrabold text-xs sm:text-sm text-[#1d1d1f] dark:text-white">
-                  Phê Duyệt Đội Hình (Bản Dự Thảo)
-                </span>
+          adminEl.innerHTML = `
+            <div class="flex items-center gap-2.5">
+              <span class="w-9 h-9 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg font-bold flex-shrink-0">
+                👑
+              </span>
+              <div>
+                <div class="font-extrabold text-xs sm:text-sm text-[#1d1d1f] dark:text-white">
+                  Chốt & Phê Duyệt Đội Hình
+                </div>
+                <div class="text-[11px] text-apple-textMuted">
+                  Đã bốc thăm ${assignedCount}/28 thành viên
+                </div>
               </div>
-              <button onclick="approveTeams()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white font-extrabold text-xs sm:text-sm shadow-md transition active:scale-95">
-                <span>👑</span>
-                <span>Admin Duyệt & Ban Hành Đội Hình</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="copyTeamsList()" class="px-4 py-2.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-bold text-xs transition">
+                📋 Sao Chép Tạm
+              </button>
+              <button onclick="toggleApprove(true)" class="px-6 py-2.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white font-black text-xs sm:text-sm shadow-md transition">
+                👑 Phê Duyệt Đội Hình
               </button>
             </div>
           `;
@@ -856,11 +1127,107 @@
       }
     }
 
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    // 11. Reset Bảng Về 0 (Empty State)
+    async function triggerResetConfirm() {
+      const ok = confirm('XÁC NHẬN KHỞI ĐỘNG LẠI:\nBạn có chắc chắn muốn RESET toàn bộ bảng bốc thăm về trạng thái trống ban đầu (0/10, 0/9, 0/9)?\n\nMọi kết quả bốc thăm của tất cả thành viên sẽ được đưa lại về danh sách chờ.');
+      if (!ok) return;
+
+      try {
+        const res = await fetch('/api/outing/teams/reset', { method: 'POST' });
+        if (res.ok) {
+          await fetchRemoteState();
+          alert('✅ Đã reset toàn bộ bảng bốc thăm về 0!');
+          return;
+        }
+      } catch (e) {}
+
+      // Fallback local
+      assignedTeams = [[], [], []];
+      isApproved = false;
+      approvedTimestamp = null;
+      saveLocalState();
+      renderAll();
+      detectErpUser();
+      alert('✅ Đã reset toàn bộ bảng bốc thăm về 0!');
+    }
+
+    async function editTeamName(idx) {
+      const current = TEAM_METADATA[idx].name;
+      const newName = prompt(`Nhập tên mới cho Đội ${idx + 1}:`, current);
+      if (newName && newName.trim()) {
+        try {
+          await fetch('/api/outing/teams/rename', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ teamIdx: idx, newName: newName.trim() })
+          });
+        } catch (e) {}
+        TEAM_METADATA[idx].name = newName.trim();
+        saveLocalState();
+        renderAll();
+        drawWheel();
+      }
+    }
+
+    async function toggleApprove(val) {
+      if (val && assignedTeams.flat().length === 0) {
+        alert('Chưa có thành viên nào trong đội hình để duyệt.');
+        return;
+      }
+      try {
+        const res = await fetch('/api/outing/teams/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ approved: val })
+        });
+        if (res.ok) {
+          const json = await res.json();
+          isApproved = json.isApproved;
+          approvedTimestamp = json.approvedTimestamp;
+          renderAll();
+          return;
+        }
+      } catch (e) {}
+
+      isApproved = val;
+      const now = new Date();
+      approvedTimestamp = val ? now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + now.toLocaleDateString('vi-VN') : null;
+      saveLocalState();
+      renderAll();
+    }
+
+    function copyTeamsList() {
+      let text = `🏆 KẾT QUẢ BỐC THĂM 3 ĐỘI — FIT TOGETHER ĐÀ LẠT 2026 🏆\n`;
+      text += `📅 Khởi hành: 11/11 - 14/11/2026\n\n`;
+
+      TEAM_METADATA.forEach((meta, idx) => {
+        const team = assignedTeams[idx] || [];
+        const m = team.filter(p => (p.gioi_tinh || '').includes('Nam')).length;
+        const f = team.filter(p => (p.gioi_tinh || '').includes('Nữ')).length;
+        text += `🔥 ${meta.name.toUpperCase()} (${team.length} TV: ${m} Nam - ${f} Nữ)\n`;
+        team.forEach((p, i) => {
+          text += `   ${i + 1}. ${p.ho_ten} (@${p.nickname || 'TV'}) - ${p.gioi_tinh} | BU ${p.phong_ban || 'FIT'}\n`;
+        });
+        text += `\n`;
+      });
+
+      const unassigned = getUnassignedMembers();
+      if (unassigned.length > 0) {
+        text += `⏳ Chưa vào đội (${unassigned.length} người):\n`;
+        unassigned.forEach(p => {
+          text += `   • ${p.ho_ten} (@${p.nickname || 'TV'})\n`;
+        });
+      }
+
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Đã sao chép danh sách 3 đội vào Clipboard để dán Zalo!');
+      }).catch(() => {
+        alert('Vui lòng sao chép thủ công.');
       });
     }
+
+    // Run
+    window.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>

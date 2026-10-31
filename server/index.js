@@ -257,6 +257,7 @@ app.use('/api/departure-cashflow', require('./routes/departureCashflowRoutes'));
 const licenseRoutes = require('./routes/licenses');
 app.use('/api/licenses', licenseRoutes);
 app.use('/api/announcements', require('./routes/announcements'));
+app.use('/api/outing/teams', require('./routes/outingTeams'));
 app.use('/api/rag', require('./routes/rag'));
 
 const permissionRoutes = require('./routes/permissions');
