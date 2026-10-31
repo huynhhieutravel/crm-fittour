@@ -1,0 +1,15 @@
+CONFIRMED 1: Production dev-login grants admin for attacker-controlled localhost Host
+[MEDIA] Called bulk-delete: { filenames: [ 'audit-fake.txt' ] }
+CONFIRMED 2: Unauthenticated media bulk-delete reaches filesystem deletion
+CONFIRMED 3: Unauthenticated public contract exposes fake customer and voucher data by IDs
+CONFIRMED 4: Zalo router permits unauthenticated read/send/delete controller dispatch (controllers stubbed)
+[UPDATE USER 1] Payload: {"full_name":"FAKE ADMIN","email":"fake@example.invalid","role_id":1,"is_active":false}
+CONFIRMED 5: Sales user can update another user with unchanged admin role_id
+CONFIRMED 6: permCheckAny ignores explicit user deny when role grants same permission
+CONFIRMED 7: view_own user reads fake booking belonging to another sale_id
+CONFIRMED 8: Valid signed admin JWT accepted without checking disabled/deleted account in DB
+CONFIRMED 9: Signed JWT without expiry or typ accepted
+CONFIRMED 10: RAG uses publicly known default credential when env secret missing
+CONFIRMED 11: RAG sotay path escapes document directory and reads mocked server secret file
+
+11 isolated probes confirmed current behavior. This is evidence of defects, NOT a security PASS.

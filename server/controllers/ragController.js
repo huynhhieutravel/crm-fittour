@@ -234,11 +234,25 @@ exports.getDocContent = async (req, res) => {
 
     // Trường hợp là Sổ tay vận hành
     if (id.startsWith('sotay_')) {
-      const filename = id.replace('sotay_', '');
-      const filePath = path.join(__dirname, '../../So_Tay_Van_Hanh', filename);
+      const rawFilename = id.replace('sotay_', '');
+      const safeFilename = path.basename(rawFilename);
+
+      // Chống Path Traversal (S03): Chỉ nhận tên file chuẩn, cấm tuyệt đối ../ hoặc ký tự đường dẫn, bắt buộc đuôi .md
+      if (!safeFilename || safeFilename !== rawFilename || !safeFilename.endsWith('.md')) {
+        return res.status(400).json({ error: 'Định dạng tên tài liệu không hợp lệ' });
+      }
+
+      const baseDir = path.resolve(__dirname, '../../So_Tay_Van_Hanh');
+      const filePath = path.resolve(baseDir, safeFilename);
+
+      // Đảm bảo nghiêm ngặt file nằm trong thư mục So_Tay_Van_Hanh (Strict Containment)
+      if (!filePath.startsWith(baseDir + path.sep)) {
+        return res.status(403).json({ error: 'Truy cập ngoài phạm vi cho phép' });
+      }
+
       if (fs.existsSync(filePath)) {
          return res.json({
-            title: filename.replace('.md', ''),
+            title: safeFilename.replace('.md', ''),
             content: fs.readFileSync(filePath, 'utf8'),
             url: 'https://erp.fittour.vn/tai-lieu'
          });

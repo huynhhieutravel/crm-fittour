@@ -57,8 +57,13 @@ exports.login = async (req, res) => {
 
 // Đăng nhập nhanh 1-Click cho môi trường Local Development (Admin bypass)
 exports.devLogin = async (req, res) => {
+    // Chốt chặn tuyệt đối S01: Môi trường Production luôn từ chối 404 (bất kể Host header hay IP giả mạo)
+    if (process.env.NODE_ENV === 'production') {
+        return res.status(404).json({ message: 'Không tìm thấy trang yêu cầu' });
+    }
+
     const isLocalhost = req.hostname === 'localhost' || req.hostname === '127.0.0.1' || req.ip === '127.0.0.1' || req.ip === '::1';
-    if (process.env.NODE_ENV === 'production' && !isLocalhost) {
+    if (!isLocalhost) {
         return res.status(403).json({ message: 'Dev login chỉ được phép chạy trên localhost' });
     }
 

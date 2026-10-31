@@ -42,8 +42,8 @@ REMOTE_SQL_GZ="/tmp/${DB_NAME}_live_${TIMESTAMP}.sql.gz"
 REMOTE_DUMP_FC="/tmp/${DB_NAME}_live_${TIMESTAMP}.dump"
 
 ssh "${VPS_USER}@${VPS_IP}" "
-  PGPASSWORD=fittour2026 pg_dump -U postgres -h 127.0.0.1 ${DB_NAME} | gzip > ${REMOTE_SQL_GZ}
-  PGPASSWORD=fittour2026 pg_dump -U postgres -h 127.0.0.1 -Fc ${DB_NAME} > ${REMOTE_DUMP_FC}
+  sudo -u postgres pg_dump ${DB_NAME} | gzip > ${REMOTE_SQL_GZ}
+  sudo -u postgres pg_dump -Fc ${DB_NAME} > ${REMOTE_DUMP_FC}
 "
 
 echo "   📥 Đang tải các bản dump Database về local..."
@@ -53,6 +53,12 @@ scp "${VPS_USER}@${VPS_IP}:${REMOTE_DUMP_FC}" "${BACKUP_PATH}/database/fittour_c
 # Dọn dẹp trên VPS
 ssh "${VPS_USER}@${VPS_IP}" "rm -f ${REMOTE_SQL_GZ} ${REMOTE_DUMP_FC}"
 echo "   ✅ Database backup hoàn tất (gồm cả .sql.gz và .dump)."
+
+mkdir -p "${BACKUP_PATH}/local_database"
+cp -f fittour.db "${BACKUP_PATH}/local_database/" 2>/dev/null || true
+cp -f server/database.sqlite "${BACKUP_PATH}/local_database/" 2>/dev/null || true
+cp -f server/crm.db "${BACKUP_PATH}/local_database/" 2>/dev/null || true
+echo "   ✅ Đã sao lưu các SQLite Database ở môi trường Local."
 
 # ------------------------------------------------------------------------------
 # BƯỚC 2: TẢI TOÀN BỘ FILE UPLOADS, ẢNH, HỘ CHIẾU, PHIẾU THU TỪ SERVER
@@ -80,6 +86,10 @@ echo "⚙️  [3/5] Đang thu thập các file cấu hình và biến môi trư�
 # .env server & root
 scp "${VPS_USER}@${VPS_IP}:${VPS_PATH}/server/.env" "${BACKUP_PATH}/server_configs/server.env" 2>/dev/null || true
 scp "${VPS_USER}@${VPS_IP}:${VPS_PATH}/.env" "${BACKUP_PATH}/server_configs/root.env" 2>/dev/null || true
+
+mkdir -p "${BACKUP_PATH}/local_configs"
+cp -f .env "${BACKUP_PATH}/local_configs/root.env" 2>/dev/null || true
+cp -f server/.env "${BACKUP_PATH}/local_configs/server.env" 2>/dev/null || true
 
 # Token Zalo & Sandbox
 scp "${VPS_USER}@${VPS_IP}:${VPS_PATH}/zalo_tokens.json" "${BACKUP_PATH}/server_configs/zalo_tokens.json" 2>/dev/null || true

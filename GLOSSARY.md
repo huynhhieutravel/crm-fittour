@@ -334,4 +334,16 @@ _Avoid_: Bốc thăm hàng loạt 1 chạm, bốc thăm thủ công giấy
 The real-time algorithmic lottery rule preventing squad imbalances during incremental turns: enforcing hard gender ceilings (Nam/Nữ caps), soft business unit (BU) cross-pollination, and name-collision penalties to prevent duplicate first names within the same squad.
 _Avoid_: Xoay hoàn toàn ngẫu nhiên không kiểm soát, bốc thăm đồng xác suất
 
+**Zero-Regression Patching (Vá An Toàn Tuyệt Đối)**:
+A security remediation paradigm that targets only isolated technical entrypoints (such as disabling developer backdoors, preventing path traversal in helper tools, or restricting unauthorized delete endpoints) without modifying core business entities, active marketing webhooks, or existing database records.
+_Avoid_: Vá đại trà, refactor diện rộng, sửa liều lĩnh
+
+**Full Master Backup (Bản Sao Lưu Toàn Diện)**:
+A complete disaster-recovery package containing the live PostgreSQL database dump (including all user accounts, credentials, bookings, and financial ledgers), media upload assets, system environment configurations, clean application source code, and automated one-click restoration scripts.
+_Avoid_: Backup cục bộ, sao lưu thủ công rải rác, backup thiếu database
+
+**Guarded Media Operation (Bảo Vệ Thao Tác Đa Phương Tiện)**:
+The access control strategy of enforcing strict authentication and authorization exclusively on destructive or administrative media actions (uploading, single deletion, bulk deletion) while intentionally preserving unrestricted public GET access to `/uploads` to guarantee zero UI image breakage for active tour brochures and financial documents.
+_Avoid_: Khóa kho ảnh, bắt buộc signed URL mù quáng, private hóa uploads gây vỡ ảnh
+
 

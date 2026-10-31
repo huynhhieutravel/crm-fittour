@@ -225,12 +225,32 @@ exports.updateUser = async (req, res) => {
 
         await client.query('BEGIN');
         
-        // Safeguard: Managers cannot edit Admins
-        if (req.user.role === 'manager') {
-            const targetUser = await client.query('SELECT r.name as role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = $1', [id]);
-            if (targetUser.rows.length > 0 && targetUser.rows[0].role_name === 'admin') {
-                await client.query('ROLLBACK');
-                return res.status(403).json({ message: 'Quản lý không có quyền chỉnh sửa tài khoản Quản trị viên.' });
+        // Chốt chặn bảo mật S04: Kiểm soát quyền hạn sửa tài khoản
+        const actorId = parseInt(req.user?.id);
+        const targetId = parseInt(id);
+        const actorRole = req.user?.role;
+
+        if (actorRole !== 'admin') {
+            // Nhân viên thường (sales/staff/hdv) tuyệt đối KHÔNG được sửa tài khoản người khác
+            if (actorRole !== 'manager') {
+                if (actorId !== targetId) {
+                    await client.query('ROLLBACK');
+                    return res.status(403).json({ message: 'Bạn không có quyền chỉnh sửa tài khoản của người khác.' });
+                }
+                // Nếu tự sửa chính mình qua endpoint này, cấm tự nâng quyền hoặc thay đổi trạng thái hoạt động
+                if (role_id !== undefined || is_active !== undefined) {
+                    await client.query('ROLLBACK');
+                    return res.status(403).json({ message: 'Bạn không có quyền tự thay đổi vai trò hoặc trạng thái tài khoản của chính mình.' });
+                }
+            }
+
+            // Quản lý (Manager): Tuyệt đối không được sửa tài khoản Admin
+            if (actorRole === 'manager') {
+                const targetUser = await client.query('SELECT r.name as role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = $1', [id]);
+                if (targetUser.rows.length > 0 && targetUser.rows[0].role_name === 'admin') {
+                    await client.query('ROLLBACK');
+                    return res.status(403).json({ message: 'Quản lý không có quyền chỉnh sửa tài khoản Quản trị viên.' });
+                }
             }
         }
 

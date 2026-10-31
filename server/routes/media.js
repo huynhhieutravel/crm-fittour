@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const db = require('../db');
+const auth = require('../middleware/auth');
 
 // Ensure upload directories exist
 const baseUploadDir = path.join(__dirname, '../public/uploads');
@@ -11,6 +12,17 @@ const receiptUploadDir = path.join(baseUploadDir, 'receipts');
 if (!fs.existsSync(receiptUploadDir)) {
     fs.mkdirSync(receiptUploadDir, { recursive: true });
 }
+
+// Middleware: Require Admin or Manager role
+const requireAdminOrManager = (req, res, next) => {
+    const role = req.user?.role || req.user?.role_name;
+    const isAdmin = Boolean(req.user?.is_admin || role === 'admin');
+    const isManager = role === 'manager';
+    if (!isAdmin && !isManager) {
+        return res.status(403).json({ error: 'Chỉ Admin hoặc Manager mới có quyền thực hiện thao tác này.' });
+    }
+    next();
+};
 
 // Multer Config
 const storage = multer.diskStorage({
@@ -26,35 +38,56 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 80 * 1024 * 1024 }, // 80MB limit
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
     fileFilter: (req, file, cb) => {
+        const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
+        const ext = path.extname(file.originalname || '').toLowerCase();
+
+        // Strict extension check
+        if (!allowedExts.includes(ext)) {
+            return cb(new Error('Chỉ chấp nhận các định dạng ảnh (.jpg, .jpeg, .png, .webp) hoặc tài liệu (.pdf)'));
+        }
+
+        // Strict mime check: explicitly disallow dangerous SVG
+        if (file.mimetype === 'image/svg+xml') {
+            return cb(new Error('Không cho phép tải lên file định dạng SVG'));
+        }
+
         if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
             cb(null, true);
         } else {
-            cb(new Error('Chỉ cho phép tải lên file hình ảnh hoặc PDF'));
+            cb(new Error('Chỉ cho phép tải lên file hình ảnh hoặc PDF hợp lệ'));
         }
     }
 });
 
-// Route: Upload 1 file
-router.post('/upload', upload.single('file'), async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'Không có file nào được tải lên.' });
+// Route: Upload 1 file (Require authentication)
+router.post('/upload', auth, (req, res) => {
+    upload.single('file')(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({ error: `Lỗi tải file: ${err.message}` });
+        } else if (err) {
+            return res.status(400).json({ error: err.message });
         }
         
-        // Return public URL path
-        const fileUrl = `/uploads/receipts/${req.file.filename}`;
-        res.status(200).json({ url: fileUrl });
-    } catch (err) {
-        console.error('Upload error:', err);
-        res.status(500).json({ error: 'Lỗi tải file lên máy chủ.' });
-    }
+        try {
+            if (!req.file) {
+                return res.status(400).json({ error: 'Không có file nào được tải lên.' });
+            }
+            
+            // Return public URL path
+            const fileUrl = `/uploads/receipts/${req.file.filename}`;
+            res.status(200).json({ url: fileUrl });
+        } catch (postErr) {
+            console.error('Upload post-processing error:', postErr);
+            res.status(500).json({ error: 'Lỗi tải file lên máy chủ.' });
+        }
+    });
 });
 
-// Route: Bulk delete files
-router.post('/bulk-delete', (req, res) => {
-    console.log('[MEDIA] Called bulk-delete:', req.body);
+// Route: Bulk delete files (Require admin or manager)
+router.post('/bulk-delete', auth, requireAdminOrManager, (req, res) => {
+    console.log('[MEDIA] Called bulk-delete by:', req.user?.username, req.body);
     try {
         const filenames = req.body.filenames;
         if (!Array.isArray(filenames) || filenames.length === 0) {
@@ -63,9 +96,10 @@ router.post('/bulk-delete', (req, res) => {
         
         let deletedCount = 0;
         let notFoundCount = 0;
+        const resolvedBaseDir = path.resolve(baseUploadDir);
         
         for (const filename of filenames) {
-            if (filename.includes('..')) {
+            if (typeof filename !== 'string' || filename.includes('..')) {
                 continue; // Prevent directory traversal
             }
             
@@ -74,9 +108,15 @@ router.post('/bulk-delete', (req, res) => {
             
             // For backward compatibility: if filename doesn't contain '/', assume it's in receipts
             const actualFilePath = filename.includes('/') ? filePath : path.join(receiptUploadDir, filename);
+            const resolvedPath = path.resolve(actualFilePath);
 
-            if (fs.existsSync(actualFilePath)) {
-                fs.unlinkSync(actualFilePath);
+            // Double check resolvedPath is strictly within baseUploadDir
+            if (!resolvedPath.startsWith(resolvedBaseDir)) {
+                continue;
+            }
+
+            if (fs.existsSync(resolvedPath)) {
+                fs.unlinkSync(resolvedPath);
                 deletedCount++;
             } else {
                 notFoundCount++;
@@ -90,25 +130,35 @@ router.post('/bulk-delete', (req, res) => {
     }
 });
 
-// Route: Delete a file
-router.delete('/:filename', (req, res) => {
+// Route: Delete a file (Require admin or manager)
+router.delete('/:filename', auth, requireAdminOrManager, (req, res) => {
     try {
-        const filename = req.params.filename;
-        const filePath = path.join(receiptUploadDir, filename);
+        const rawFilename = req.params.filename;
+        const sanitizedFilename = path.basename(rawFilename);
+        if (!sanitizedFilename || sanitizedFilename !== rawFilename || sanitizedFilename.includes('..')) {
+            return res.status(400).json({ error: 'Tên file không hợp lệ.' });
+        }
+
+        const filePath = path.join(receiptUploadDir, sanitizedFilename);
+        const resolvedPath = path.resolve(filePath);
+        if (!resolvedPath.startsWith(path.resolve(receiptUploadDir))) {
+            return res.status(400).json({ error: 'Đường dẫn file không hợp lệ.' });
+        }
         
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
+        if (fs.existsSync(resolvedPath)) {
+            fs.unlinkSync(resolvedPath);
             res.status(200).json({ message: 'Đã xóa file thành công.' });
         } else {
             res.status(404).json({ error: 'File không tồn tại.' });
         }
     } catch (err) {
+        console.error('Delete file error:', err);
         res.status(500).json({ error: 'Lỗi xóa file trên máy chủ.' });
     }
 });
 
-// Route: Get all media for Admin config
-router.get('/', async (req, res) => {
+// Route: Get all media for Admin config (Require admin or manager)
+router.get('/', auth, requireAdminOrManager, async (req, res) => {
     try {
         if (!fs.existsSync(baseUploadDir)) {
             return res.json([]);
