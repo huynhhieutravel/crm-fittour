@@ -7,7 +7,7 @@ const db = require('../db');
 const STATE_FILE = path.resolve(__dirname, '../data/outing_teams_state.json');
 const MEMBERS_FILE = path.resolve(__dirname, '../../outing-dalat-2026/assets/members.json');
 
-const DEFAULT_EXCLUDED_STTS = ['9', '11', '2'];
+const DEFAULT_EXCLUDED_STTS = ['9', '27', '11', '2'];
 const DEFAULT_TEAM_NAMES = [
   'Phượng Hoàng Lửa',
   'Đại Ngàn Xanh',
@@ -96,9 +96,13 @@ async function loadCurrentState() {
     };
   }
 
-  // Đảm bảo không loại trừ STT 27 (Huỳnh Trọng Hiếu) khỏi danh sách thi đấu
-  if (Array.isArray(state.excludedStts)) {
-    state.excludedStts = state.excludedStts.filter(s => String(s) !== '27');
+  // Đảm bảo đầy đủ 4 người Ban Tổ Chức (Loại trừ, không thi đấu)
+  if (!Array.isArray(state.excludedStts)) {
+    state.excludedStts = [...DEFAULT_EXCLUDED_STTS];
+  } else {
+    DEFAULT_EXCLUDED_STTS.forEach(s => {
+      if (!state.excludedStts.includes(s)) state.excludedStts.push(s);
+    });
   }
   return state;
 }
@@ -319,7 +323,7 @@ router.post('/reset', async (req, res) => {
   try {
     const state = await loadCurrentState();
     state.teams = [[], [], []];
-    state.excludedStts = DEFAULT_EXCLUDED_STTS;
+    state.excludedStts = [...DEFAULT_EXCLUDED_STTS];
     state.isApproved = false;
     state.approvedTimestamp = null;
     state.lastSpin = null;

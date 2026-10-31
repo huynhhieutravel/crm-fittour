@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fit-dalat-v9';
+const CACHE_NAME = 'fit-dalat-v10';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

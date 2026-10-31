@@ -252,6 +252,26 @@
         </div>
       </div>
 
+      
+      <!-- ================= SECTION 4.5: BAN TỔ CHỨC & ĐIỀU HÀNH ================= -->
+      <div class="border-t border-black/[0.06] dark:border-white/[0.08] pt-6 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">👑</span>
+            <h2 class="text-lg sm:text-xl font-black text-[#1d1d1f] dark:text-white">
+              Ban Tổ Chức & Điều Hành (Không Tham Gia Bốc Thăm - 4 người)
+            </h2>
+          </div>
+          <span class="text-xs px-3 py-1 rounded-full font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 self-start sm:self-auto">
+            Ban Trọng Tài & Hậu Cần
+          </span>
+        </div>
+
+        <div id="excludedBtcContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
       <!-- ================= SECTION 5: ADMIN CONTROLS & DUYỆT ================= -->
       <div id="adminApprovalSection" class="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-900/50 border border-black/[0.08] dark:border-white/[0.1] flex flex-col sm:flex-row items-center justify-between gap-4">
         <!-- Rendered via JS -->
@@ -419,7 +439,7 @@
     }
 
     // 3. Constants & Team Meta
-    const DEFAULT_EXCLUDED_STTS = ['9', '11', '2'];
+    const DEFAULT_EXCLUDED_STTS = ['9', '27', '11', '2'];
     const TEAM_METADATA = [
       {
         id: 1,
@@ -591,24 +611,46 @@
 
         if (match) {
           currentErpMember = match;
-          const hasTeam = assignedTeams.flat().some(p => String(p.stt) === String(match.stt));
+          const isBtcMember = excludedStts.has(String(match.stt));
 
+          // 1. NẾU LÀ BAN TỔ CHỨC: TUYỆT ĐỐI LOẠI RA KHỎI VỤ QUAY VÀO ĐỘI!
+          if (isBtcMember) {
+            renderEmptySelection();
+            const erpBadge = document.getElementById('erpBadge');
+            const metaEl = document.getElementById('currentUserMeta');
+            const btnSpinText = document.getElementById('btnSpinText');
+            if (erpBadge) {
+              erpBadge.className = "text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-amber-500/15 text-amber-800 dark:text-amber-200 border border-amber-500/30";
+              erpBadge.innerHTML = `👑 Ban Tổ Chức: ${match.ho_ten}`;
+              erpBadge.classList.remove('hidden');
+            }
+            if (metaEl) {
+              metaEl.textContent = 'Bạn đang đăng nhập với tư cách Ban Tổ Chức (Không thi đấu). Hãy bấm nút để chọn thành viên lên quay.';
+            }
+            if (btnSpinText) {
+              btnSpinText.textContent = '👉 BẤM ĐÂY ĐỂ CHỌN THÀNH VIÊN LÊN QUAY';
+            }
+            return;
+          }
+
+          // 2. NẾU LÀ THÀNH VIÊN THI ĐẤU:
+          const hasTeam = assignedTeams.flat().some(p => String(p.stt) === String(match.stt));
           if (!hasTeam) {
-            // TỰ ĐỘNG CHỌN NGƯỜI ĐĂNG NHẬP (Ví dụ: Huỳnh Trọng Hiếu) RA ĐỂ QUAY!
             selectMemberForSpin(match);
             const erpBadge = document.getElementById('erpBadge');
             if (erpBadge) {
-              erpBadge.classList.remove('hidden');
+              erpBadge.className = "text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
               erpBadge.textContent = 'Tài khoản của bạn';
+              erpBadge.classList.remove('hidden');
             }
             return;
           } else {
-            // Người này đã có trong đội rồi -> hiển thị trạng thái trống và thông báo
             renderEmptySelection();
             const erpBadge = document.getElementById('erpBadge');
             if (erpBadge) {
-              erpBadge.classList.remove('hidden');
+              erpBadge.className = "text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-neutral-500/10 text-neutral-700 dark:text-neutral-300";
               erpBadge.textContent = `Tài khoản: ${match.ho_ten} (Đã có đội)`;
+              erpBadge.classList.remove('hidden');
             }
             return;
           }
@@ -1097,7 +1139,7 @@
       // Render quick ERP self-select banner if logged in and not yet assigned
       const erpBanner = document.getElementById('pickerErpBanner');
       if (erpBanner) {
-        if (currentErpMember && unassigned.some(p => String(p.stt) === String(currentErpMember.stt))) {
+        if (currentErpMember && !excludedStts.has(String(currentErpMember.stt)) && unassigned.some(p => String(p.stt) === String(currentErpMember.stt))) {
           erpBanner.classList.remove('hidden');
           erpBanner.innerHTML = `
             <div onclick="selectMemberForSpinByStt('${currentErpMember.stt}')" class="p-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-rose-500/15 border-2 border-amber-500/40 hover:border-amber-500 flex items-center justify-between gap-3 cursor-pointer transition shadow-sm mb-3">
@@ -1232,6 +1274,44 @@
             `;
           }).join('');
         }
+      }
+
+      // Render Ban Tổ Chức (4 thành viên)
+      const btcContainer = document.getElementById('excludedBtcContainer');
+      if (btcContainer) {
+        const btcList = allMembers.filter(m => excludedStts.has(String(m.stt)));
+        btcContainer.innerHTML = btcList.map(m => {
+          const isMe = currentErpMember && String(currentErpMember.stt) === String(m.stt);
+          let btcRoleTitle = 'Ban Tổ Chức';
+          if (String(m.stt) === '27') btcRoleTitle = 'Trưởng Ban Tổ Chức';
+          else if (String(m.stt) === '9') btcRoleTitle = 'BOD • Điều Hành';
+          else if (String(m.stt) === '11') btcRoleTitle = 'Ban Tổ Chức • Hậu Cần';
+          else if (String(m.stt) === '2') btcRoleTitle = 'Trọng Tài • Đi Riêng';
+
+          return `
+            <div class="p-3.5 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 flex items-center gap-3 relative overflow-hidden shadow-sm">
+              ${isMe ? `
+                <span class="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-orange-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-bl-lg shadow-sm">
+                  Bạn 👑
+                </span>
+              ` : ''}
+              <div class="w-11 h-11 rounded-xl overflow-hidden bg-neutral-200 dark:bg-neutral-800 flex-shrink-0 flex items-center justify-center font-bold text-amber-600 text-sm shadow-sm border border-amber-500/30">
+                ${m.avatar ? `<img src="${m.avatar}" class="w-full h-full object-cover">` : m.ho_ten.charAt(0)}
+              </div>
+              <div class="min-w-0">
+                <div class="font-extrabold text-sm text-[#1d1d1f] dark:text-white truncate">
+                  ${m.ho_ten}
+                </div>
+                <div class="text-[11px] text-amber-700 dark:text-amber-400 font-bold truncate">
+                  ${btcRoleTitle}
+                </div>
+                <div class="text-[10px] text-apple-textMuted dark:text-apple-textMutedDark truncate">
+                  @${m.nickname || 'BTC'} • ${m.phong_ban || 'FIT'}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
       }
 
       // 3 Team Cards
