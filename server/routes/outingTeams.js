@@ -144,6 +144,18 @@ function pickTargetTeam(member, teams, excludedStts, allMembers) {
   const isMale = (member.gioi_tinh || '').toLowerCase().includes('nam');
   const maxGenderCap = 5; // Tối đa 5 Nam / 5 Nữ mỗi đội
 
+  // Cơ cấu ngầm: Max Vũ (STT 1) & Pinkchan (STT 10) chung 1 đội
+  const memberSttStr = String(member.stt);
+  const isSpecialCouple = memberSttStr === '1' || memberSttStr === '10';
+  let coupleTeamIdx = -1;
+  const partnerStt = memberSttStr === '1' ? '10' : '1';
+  for (let t = 0; t < 3; t++) {
+    if ((teams[t] || []).some(p => String(p.stt) === partnerStt)) {
+      coupleTeamIdx = t;
+      break;
+    }
+  }
+
   // 1. Tìm các đội hợp lệ (chưa full dung lượng tổng và chưa full quota giới tính)
   let eligibleIndices = [];
   for (let i = 0; i < 3; i++) {
@@ -153,12 +165,27 @@ function pickTargetTeam(member, teams, excludedStts, allMembers) {
       return isMale ? pMale : !pMale;
     }).length;
 
-    const hasCapacity = team.length < capacities[i];
+    // Giữ dự trữ 1 slot cho partner nếu partner chưa vào đội
+    let capLimit = capacities[i];
+    if (!isSpecialCouple && coupleTeamIdx === -1) {
+      // nếu 1 trong 2 bạn đã ở đội i, giữ 1 slot cho bạn còn lại
+      const hasOnePartner = team.some(p => String(p.stt) === '1' || String(p.stt) === '10');
+      if (hasOnePartner) {
+        capLimit -= 1;
+      }
+    }
+
+    const hasCapacity = team.length < capLimit;
     const hasGenderSlot = teamGenderCount < maxGenderCap;
 
     if (hasCapacity && hasGenderSlot) {
       eligibleIndices.push(i);
     }
+  }
+
+  // Nếu là Max hoặc Pinkchan và đội của partner còn chỗ, ép luôn vào đội partner
+  if (coupleTeamIdx !== -1 && (teams[coupleTeamIdx] || []).length < capacities[coupleTeamIdx]) {
+    return coupleTeamIdx;
   }
 
   // Fallback nếu không có đội nào thỏa cả 2 (ví dụ dung lượng chặt chẽ):
@@ -175,6 +202,11 @@ function pickTargetTeam(member, teams, excludedStts, allMembers) {
   const targetBU = String(member.phong_ban || '').trim();
 
   const weights = eligibleIndices.map(idx => {
+    // Nếu partner đã ở một đội hợp lệ, ưu tiên tuyệt đối đội đó
+    if (coupleTeamIdx !== -1 && idx === coupleTeamIdx) {
+      return 10000.0;
+    }
+
     let score = 100.0;
     const team = teams[idx] || [];
 

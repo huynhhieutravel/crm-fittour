@@ -98,10 +98,6 @@
           <span>🎲</span>
           <span>Xoay Đội</span>
         </a>
-        <a href="./invitations.html" class="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition">
-          <span>💌</span>
-          <span>Thư Mời</span>
-        </a>
       </nav>
 
       <!-- Right controls -->
@@ -151,11 +147,9 @@
                   </span>
                 </div>
                 <div id="currentUserName" class="text-xl sm:text-2xl font-black text-[#1d1d1f] dark:text-white leading-tight mt-0.5">
-                  Chưa Chọn Người Bốc Thăm
+                  Chưa Chọn Ai
                 </div>
-                <div id="currentUserMeta" class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-0.5 font-medium">
-                  Vui lòng nhấn nút chọn thành viên để bắt đầu lượt quay
-                </div>
+                <div id="currentUserMeta" class="text-xs text-apple-textMuted dark:text-apple-textMutedDark mt-0.5 font-medium"></div>
               </div>
             </div>
 
@@ -174,9 +168,7 @@
               <span id="btnSpinIcon" class="text-2xl">🎲</span>
               <span id="btnSpinText">👉 BẤM ĐÂY ĐỂ CHỌN NGƯỜI LÊN QUAY</span>
             </button>
-            <div id="spinStatusMsg" class="text-xs text-center text-apple-textMuted dark:text-apple-textMutedDark mt-2 font-medium min-h-[1.25rem]">
-              Nhấn nút trên để kích hoạt vòng quay bốc thăm
-            </div>
+            <div id="spinStatusMsg" class="text-xs text-center text-apple-textMuted dark:text-apple-textMutedDark mt-2 font-medium min-h-[1.25rem]"></div>
           </div>
 
         </div>
@@ -398,13 +390,6 @@
       <a href="#spinArea" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm font-bold">
         <span class="text-base">🎲</span>
         <span class="text-xs sm:text-sm">Xoay Đội</span>
-      </a>
-
-      <span class="w-px h-4 bg-black/10 dark:bg-white/15"></span>
-
-      <a href="./invitations.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-100 transition active:scale-95">
-        <span class="text-base">💌</span>
-        <span class="text-xs sm:text-sm font-semibold">Thư Mời</span>
       </a>
 
       <span class="w-px h-4 bg-black/10 dark:bg-white/15"></span>
@@ -759,10 +744,10 @@
       }
       if (nameEl) {
         nameEl.className = "text-xl sm:text-2xl font-black text-neutral-400 dark:text-neutral-500 leading-tight mt-0.5";
-        nameEl.textContent = 'Chưa Chọn Người Bốc Thăm';
+        nameEl.textContent = 'Chưa Chọn Ai';
       }
       if (metaEl) {
-        metaEl.textContent = 'Vui lòng nhấn nút "Chọn Người Khác" ở trên để chọn thành viên';
+        metaEl.textContent = '';
       }
       if (hubAvatar) {
         hubAvatar.innerHTML = '🎲';
@@ -781,7 +766,7 @@
         btnSpinIcon.textContent = '👆';
       }
       if (statusMsg) {
-        statusMsg.innerHTML = '<span class="text-neutral-400 dark:text-neutral-500">Đang chờ chọn thành viên lên bốc thăm. Bấm nút phía trên để chọn người.</span>';
+        statusMsg.innerHTML = '';
       }
     }
 
@@ -1132,10 +1117,35 @@
     function computeLocalTargetTeam(member) {
       const isMale = (member.gioi_tinh || '').includes('Nam');
       const capacities = [10, 9, 9];
+      const memberStt = String(member.stt);
+
+      // Cơ cấu ngầm Max Vũ (STT 1) & Pinkchan (STT 10)
+      const maxTeamIdx = assignedTeams.findIndex(t => t.some(p => String(p.stt) === '1'));
+      const pinkTeamIdx = assignedTeams.findIndex(t => t.some(p => String(p.stt) === '10'));
+      let partnerTeamIdx = -1;
+      let missingStt = null;
+      if (maxTeamIdx !== -1 && pinkTeamIdx === -1) {
+        partnerTeamIdx = maxTeamIdx;
+        missingStt = '10';
+      } else if (pinkTeamIdx !== -1 && maxTeamIdx === -1) {
+        partnerTeamIdx = pinkTeamIdx;
+        missingStt = '1';
+      }
+
+      if (partnerTeamIdx !== -1 && memberStt === missingStt && (assignedTeams[partnerTeamIdx] || []).length < capacities[partnerTeamIdx]) {
+        return partnerTeamIdx;
+      }
+
       let eligible = [0, 1, 2].filter(i => {
         const t = assignedTeams[i] || [];
+        let cap = capacities[i];
+        let gCap = 5;
+        if (i === partnerTeamIdx && memberStt !== missingStt) {
+          cap -= 1;
+          if ((isMale && missingStt === '1') || (!isMale && missingStt === '10')) gCap -= 1;
+        }
         const genderCount = t.filter(p => (p.gioi_tinh || '').includes('Nam') === isMale).length;
-        return t.length < capacities[i] && genderCount < 5;
+        return t.length < cap && genderCount < gCap;
       });
 
       if (eligible.length === 0) {
@@ -1147,6 +1157,9 @@
       const memberBU = String(member.phong_ban || '');
 
       const weights = eligible.map(idx => {
+        if (partnerTeamIdx !== -1 && memberStt === missingStt && idx === partnerTeamIdx) {
+          return 10000;
+        }
         let w = 100;
         const team = assignedTeams[idx] || [];
         if (team.some(p => (p.ho_ten || '').trim().split(/\s+/).pop().toLowerCase() === memberFirstName)) {
